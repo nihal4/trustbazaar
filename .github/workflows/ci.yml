@@ -43,13 +43,21 @@ jobs:
       - name: Lint
         working-directory: backend
         run: npm run lint --if-present
-      - name: Run test suite (including concurrency tests)
+      - name: Run unit test suite
         working-directory: backend
         env:
           DATABASE_URL: postgresql://trustbazaar:trustbazaar@localhost:5432/trustbazaar_test
           REDIS_URL: redis://localhost:6379
           JWT_SECRET: ci-test-secret
         run: npm test
+
+      - name: Run concurrency/e2e test suite
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://trustbazaar:trustbazaar@localhost:5432/trustbazaar_test
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: ci-test-secret
+        run: npm run test:e2e
 
   frontend:
     runs-on: ubuntu-latest
