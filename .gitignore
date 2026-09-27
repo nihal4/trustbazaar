@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build output
+dist/
+build/
+**/dist/
+**/build/
+
+# Environment
+.env
+.env.local
+**/.env
+!.env.example
+!**/.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor/OS
+.vscode/
+.idea/
+.DS_Store
+
+# Test/coverage
+coverage/
+*.tsbuildinfo
+
+# Docker volumes (local dev data)
+pgdata/
