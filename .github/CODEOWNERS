@@ -1,0 +1,5 @@
+# Nihal reviews every PR, on every path in the repo, regardless of what
+# it touches. This single wildcard rule is intentional — see
+# "Require review from Code Owners" in the branch protection settings,
+# which uses this file to decide who must approve before a PR can merge.
+* @nihal4
