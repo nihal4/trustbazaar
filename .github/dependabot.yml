@@ -8,6 +8,12 @@ updates:
     groups:
       minor-and-patch:
         update-types: ["minor", "patch"]
+    ignore:
+      # Major version bumps for these need a coordinated, manual toolchain
+      # upgrade (ts-jest/@typescript-eslint compatibility) — see CI failures
+      # on PRs #15/#16. Revisit deliberately later, not via auto-PR.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "npm"
     directory: "/frontend"
@@ -17,6 +23,9 @@ updates:
     groups:
       minor-and-patch:
         update-types: ["minor", "patch"]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
