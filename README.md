@@ -4,7 +4,7 @@ A verified peer-to-peer auction and marketplace platform for used goods, built f
 
 This repository is the implementation scaffold for the Software Requirements Specification (SRS) and Project Proposal in `docs/`. It is a capstone project at Daffodil International University (DIU), Department of Software Engineering.
 
-## Team
+## Team.
 
 | Name | ID |
 |---|---|
