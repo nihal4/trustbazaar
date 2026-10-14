@@ -1,3 +1,5 @@
+// TODO(SEC-SES-03, SEC-SES-04): replace the localStorage bearer token below with the HttpOnly session
+// cookie set by the backend (fetch with credentials: 'include') plus an anti-CSRF header.
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {

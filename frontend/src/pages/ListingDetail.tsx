@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 
-// FR-23–FR-34, NFR-2, NFR-12: live bid feed, countdown, proxy-bid form, and
+// FR-AUC-01–FR-AUC-18, NFR-PERF-03, NFR-USE-01: live bid feed, countdown, proxy-bid form, and
 // the anti-sniping/proxy-bidding explainer a first-time bidder needs to see
 // without leaving this page. Should subscribe to the 'auction:join' socket
 // event defined in backend/src/realtime/realtime.gateway.ts.
