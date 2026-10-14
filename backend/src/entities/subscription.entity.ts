@@ -11,7 +11,7 @@ export enum SubscriptionStatus {
   CANCELLED = 'cancelled',
 }
 
-// FR-78–FR-86 (Could Have — Pro Seller subscription).
+// FR-MON-01–FR-MON-10 (Could Have — Pro Seller subscription).
 @Entity('subscriptions')
 export class Subscription {
   @PrimaryGeneratedColumn('uuid')

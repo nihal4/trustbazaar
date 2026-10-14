@@ -21,7 +21,7 @@ export enum ListingStatus {
   REMOVED = 'removed',
 }
 
-// FR-10–FR-22. Auction-only fields are nullable for fixed-price listings and
+// FR-LST-01–FR-LST-13, FR-SRC-01–FR-SRC-06. Auction-only fields are nullable for fixed-price listings and
 // vice versa; consider a check constraint or a discriminated subtype once
 // the schema stabilizes.
 @Entity('listings')

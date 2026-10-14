@@ -1,0 +1,170 @@
+\section{Conclusions: Why Users Would Move to TrustBazaar}
+\label{sec:conclusion}
+
+This section draws together the findings of
+Sections~\ref{sec:history}--\ref{sec:landscape}. Taken together, they show that Bikroy and
+Facebook Marketplace succeed at \emph{connecting} buyers and sellers, but that neither protects
+the \emph{transaction} that follows. Section~\ref{sec:history} showed that this weakness has
+existed since Bikroy began; Section~\ref{sec:users} showed where it harms users;
+Section~\ref{sec:solution} showed how TrustBazaar's design addresses each gap; and
+Section~\ref{sec:landscape} showed that no other platform addresses them.
+
+\subsection{Key findings and their implications for adoption}
+
+\paragraph{Finding 1: Bikroy's trust problem was managed, never solved.}
+Bikroy's own 2014 audit found that one ad in three was not genuine (Figure~\ref{fig:genuine}).
+Every measure it took afterwards cleaned up listings but neither protected a transaction nor
+helped a victim recover a loss (Table~\ref{tab:response}), and the audit was never repeated
+publicly. Users have therefore lived with the same risk for over a decade. TrustBazaar is
+designed to remove that risk rather than warn about it (Table~\ref{tab:mapping}).
+
+\paragraph{Finding 2: Bikroy is losing position and changing in ways that disadvantage
+individual sellers.}
+Bikroy fell from the 8th largest local website in 2014 to between \#67 and \#104 in 2026
+(Figure~\ref{fig:rank}), with month-on-month traffic declines (Figure~\ref{fig:traffic}). Its
+parent company stopped investing after 2015 and sold it to Jiji in 2026
+(Figure~\ref{fig:saltside}, Section~\ref{sec:sale}), and it is moving to pay-per-click pricing
+that favours sellers with marketing budgets (Section~\ref{sec:downfall}). TrustBazaar charges a
+commission only on completed deals (Table~\ref{tab:replay}), a better fit for the individual
+seller Bikroy is moving away from.
+
+\paragraph{Finding 3: users like the app but are not protected by it.}
+The Bikroy app is well rated (Figure~\ref{fig:ratings}), but app ratings measure usability, not
+safety. Among surveyed cybercrime victims, 40\% lost money and only 12\% took legal action
+(Figure~\ref{fig:ccaf}), so most fraud is never recorded. This explains how users can keep using
+Bikroy while remaining exposed. TrustBazaar does not require them to give up a familiar tool; it
+offers the protection that tool lacks.
+
+\paragraph{Finding 4: every documented scam occurs where Bikroy has no control.}
+The scam patterns in Table~\ref{tab:scams} strike at payment, handover and dispute, the three
+stages Bikroy does not control (Figure~\ref{fig:lifecycle}). Both the advance-payment scam
+(Figure~\ref{fig:advance}) and the cash note-swap scam (Figure~\ref{fig:noteswap}) depend on
+money changing hands outside the platform. Replayed against TrustBazaar, each pattern is stopped
+by escrow, verified identity or managed delivery (Table~\ref{tab:replay}), and all six stages of
+a deal come under platform control (Figure~\ref{fig:lifecycle_tb}).
+
+\paragraph{Finding 5: escrow already works in Bangladesh, but not for person-to-person deals.}
+Bangladesh Bank made escrow mandatory for e-commerce in 2021, and money still held in escrow
+could be returned to buyers (Figure~\ref{fig:escrow}). That rule never reached classifieds,
+because payment on Bikroy never passes through the platform (Section~\ref{sec:escrowlesson}).
+TrustBazaar's escrow settlement (Figure~\ref{fig:escrow_states}) extends a protection the country
+has already adopted to the gap left open by loophole L2 (Section~\ref{sec:loopholes}).
+
+\paragraph{Finding 6: Facebook is no safer, and its group admins are a risk of their own.}
+Facebook does not handle payment for person-to-person sales in Bangladesh, and scams there follow
+the same advance-payment pattern, including accounts opened with fake national IDs
+(Section~\ref{sec:facebook}). For digital goods, users rely on group admins who hold both the
+money and the credentials (Figure~\ref{fig:admin_deal}), a structure shown to be open to abuse by
+the 2026 arrest of a group admin. TrustBazaar replaces the trusted individual with a system that
+holds the money and records every decision (Table~\ref{tab:mapping}, loophole L5).
+
+\paragraph{Finding 7: no existing platform combines individual resale with transaction
+protection.}
+Bikroy and Facebook serve individuals but protect nothing; Daraz protects transactions but serves
+businesses selling new stock (Table~\ref{tab:landscape}, Figure~\ref{fig:capabilities}). The
+quadrant for individual resale with transaction protection is empty
+(Figure~\ref{fig:positioning}). TrustBazaar is designed for that quadrant, and escrow alone is the
+primary fix for three of the six loopholes (Figure~\ref{fig:mapping}).
+
+\subsection{Summary of adoption drivers}
+
+Table~\ref{tab:drivers} condenses these findings into the reasons a user would choose
+TrustBazaar, each linked to the evidence in this report.
+
+\begin{table}[!htbp]
+  \centering
+  \small
+  \caption{Adoption drivers: what users face on existing platforms, where this report shows it,
+  and what TrustBazaar offers instead.}
+  \label{tab:drivers}
+  \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.2cm}
+                                  >{\raggedright\arraybackslash}p{3.3cm} Y@{}}
+    \toprule
+    \textbf{What users face today} & \textbf{Shown in} & \textbf{What TrustBazaar offers} \\
+    \midrule
+    Payment goes straight to a stranger; no platform holds it
+      & Fig.~\ref{fig:lifecycle}, Table~\ref{tab:landscape}
+      & Escrow: seller paid only after the buyer confirms receipt \\
+    \addlinespace
+    Robbery and counterfeit cash at meetups
+      & Table~\ref{tab:scams}, Fig.~\ref{fig:noteswap}
+      & No cash at the meeting; safe meetup point or booked courier \\
+    \addlinespace
+    Identity is a phone number or a fake NID
+      & Fig.~\ref{fig:advance}, Sec.~\ref{sec:facebook}
+      & NID + selfie KYC, backed by escrow \\
+    \addlinespace
+    No refund or help after a scam
+      & Table~\ref{tab:response}, Fig.~\ref{fig:ccaf}
+      & Dispute raised while the money is still held \\
+    \addlinespace
+    Group admins hold money and passwords unchecked
+      & Fig.~\ref{fig:admin_deal}
+      & The system, not a person, holds the money; decisions logged \\
+    \addlinespace
+    Pay-per-click pricing favours bigger sellers
+      & Sec.~\ref{sec:sale}, Sec.~\ref{sec:downfall}
+      & Commission only on completed deals \\
+    \addlinespace
+    No fair auction format
+      & Table~\ref{tab:landscape}
+      & Server-timed auction with anti-sniping \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Likely order of adoption}
+
+Comparing where the documented scams cluster (Table~\ref{tab:scams}) with what TrustBazaar
+addresses (Table~\ref{tab:mapping}) suggests the order in which users are most likely to adopt
+it:
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+  \item \textbf{Buyers of mid- and high-value used electronics.} The advance-payment and
+  note-swap scams in Figures~\ref{fig:advance} and~\ref{fig:noteswap} involved phones and
+  electronics, where losing the money is most costly.
+  \item \textbf{Individual sellers.} They are exposed to fake buyers (Figure~\ref{fig:noteswap})
+  and to Bikroy's new pricing (Finding~2). Escrow protects them too: payment is secured before
+  the item leaves their hands (Figure~\ref{fig:escrow_states}).
+  \item \textbf{Sellers seeking competitive bidding.} Neither Bikroy nor Facebook offers a fair
+  auction (loophole L6, Table~\ref{tab:landscape}).
+  \item \textbf{Game-account buyers and sellers.} They currently depend on unaccountable group
+  admins (Figure~\ref{fig:admin_deal}); the game-account escrow in the revised
+  proposal~\cite{proposal_rev} replaces that middleman, although publisher bans remain a risk the
+  platform can disclose but not prevent (Section~\ref{sec:facebook}).
+\end{enumerate}
+
+\subsection{Limitations of this analysis}
+
+The conclusions above should be read within the following limits:
+
+\begin{itemize}
+  \item \textbf{Incumbents retain scale.} Bikroy still reports about 400{,}000 monthly buyers
+  (Section~\ref{sec:present}), and Facebook's reach cannot be matched (Table~\ref{tab:threats}).
+  Users will keep browsing there. The realistic shift is per transaction, not total: users are
+  likely to move the risky step, paying a stranger, to where the money is protected
+  (Tables~\ref{tab:limits} and~\ref{tab:threats}).
+  \item \textbf{Fraud is reduced, not eliminated.} KYC can be defeated by fake national IDs
+  (Section~\ref{sec:facebook}); TrustBazaar's response is that escrow and identity checks cover
+  each other's gaps (Table~\ref{tab:threats}).
+  \item \textbf{Evidence gaps.} The most recent police case naming Bikroy dates from 2023
+  (Section~\ref{sec:still}); traffic figures are third-party estimates (Table~\ref{tab:then_now});
+  the Trustpilot sample is small (Figure~\ref{fig:ratings}); and the description of admin deals
+  rests on the authors' familiarity with these groups (Section~\ref{sec:facebook}).
+  \item \textbf{No primary user data.} This analysis uses published sources only. A survey of
+  buyers and sellers would be needed to measure demand directly.
+\end{itemize}
+
+\subsection{Overall conclusion}
+
+Bikroy has led Bangladesh's online classifieds market since 2012, and no challenger has displaced
+it, because every challenger competed with the same model: a listing board that connects strangers
+and then steps away (Section~\ref{sec:downfall}). The evidence in this report shows that this
+model's weakness is structural. Bikroy controls who may post an ad, but not the money, the meeting
+or the dispute (Figure~\ref{fig:lifecycle}), and Facebook leaves the same gaps
+(Figure~\ref{fig:capabilities}). A new platform therefore does not need more listings than Bikroy
+to attract users. It needs to be the place where a buyer's money does not move until the item
+arrives, and a seller's item does not leave until the money is secured
+(Figure~\ref{fig:escrow_states}). On the evidence gathered here, no existing platform offers this
+for person-to-person resale in Bangladesh (Figure~\ref{fig:positioning}), and that is the basis on
+which TrustBazaar can persuade users to move.

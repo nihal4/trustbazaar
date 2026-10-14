@@ -1,0 +1,34 @@
+% Escrow settlement state machine (TrustBazaar proposal, Objective 3 and Acceptance criterion 3)
+\begin{tikzpicture}[
+  font=\footnotesize, node distance=14mm and 17mm,
+  st/.style={draw=#1, fill=#1!12, rounded corners=6pt, minimum height=1.0cm,
+             text width=2.1cm, align=center, font=\scriptsize\bfseries},
+  tr/.style={-{Stealth[length=2mm]}, thick, draw=ink},
+  lab/.style={font=\scriptsize, inner sep=1.5pt, align=center}]
+
+  \node[st=muted]                 (pay)  {Awaiting\\payment};
+  \node[st=good, right=of pay]    (held) {Funds held\\in escrow};
+  \node[st=good, right=of held]   (ship) {Item shipped or\\meetup set};
+  \node[st=good, right=of ship]   (conf) {Buyer confirms\\receipt};
+  \node[st=good, below=of conf]   (rel)  {Released\\to seller};
+  \node[st=bad, below=of ship]    (disp) {Dispute\\raised};
+  \node[st=muted, below=of held]  (dec)  {Operator\\decision};
+  \node[st=bad, below=of pay]     (ref)  {Refunded\\to buyer};
+
+  \draw[tr] (pay) -- node[lab, above]{buyer pays} (held);
+  \draw[tr] (held) -- node[lab, above]{seller sends} (ship);
+  \draw[tr] (ship) -- node[lab, above]{receives} (conf);
+  \draw[tr] (conf) -- node[lab, right]{release} (rel);
+  \draw[tr, densely dashed] (ship.south east) -- (rel.north west)
+     node[lab, pos=0.45, right=1mm]{timeout,\\no reply};
+  \draw[tr, bad] (ship) -- node[lab, left, text=bad]{buyer\\objects} (disp);
+  \draw[tr] (disp) -- node[lab, above]{evidence +\\ledger} (dec);
+  \draw[tr] (dec) -- node[lab, above]{buyer\\right} (ref);
+  \draw[tr] (dec.south) to[out=-35, in=-145] node[lab, below, pos=0.5]{seller right} (rel.south);
+
+  \node[font=\scriptsize\itshape, text=muted, align=left, anchor=north west, text width=13cm]
+    at ([yshift=-17mm]ref.south west)
+    {Money leaves escrow only after the buyer confirms, after the timeout expires, or by an
+     operator decision; never on the seller's word alone. A payment notice that the provider
+     sends twice is processed only once.};
+\end{tikzpicture}

@@ -2,7 +2,7 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 // NOTE: `synchronize: true` is convenient for early scaffolding only.
 // Switch to TypeORM migrations before anything resembling production data
-// exists — see docs/srs.tex NFR-20 for the indexing requirements migrations
+// exists — see docs/srs.tex NFR-SCL-03 for the indexing requirements migrations
 // should encode (listing_id, seller_id, buyer_id, geospatial index).
 export const typeOrmConfig: TypeOrmModuleOptions = {
   type: 'postgres',
