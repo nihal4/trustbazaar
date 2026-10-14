@@ -14,8 +14,8 @@ export enum EscrowState {
   FROZEN_DISPUTED = 'frozen_disputed',
 }
 
-// FR-39–FR-49. `stateHistory` is an append-only audit trail — never mutate
-// past entries, only append (supports NFR-10 reconciliation and dispute review).
+// FR-PAY-01–FR-PAY-21. `stateHistory` is an append-only audit trail — never mutate
+// past entries, only append (supports FR-PAY-15 reconciliation and dispute review).
 @Entity('escrow_transactions')
 export class EscrowTransaction {
   @PrimaryGeneratedColumn('uuid')
