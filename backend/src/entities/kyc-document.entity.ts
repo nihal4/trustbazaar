@@ -13,8 +13,8 @@ export enum KycReviewStatus {
   REJECTED = 'rejected',
 }
 
-// FR-1–FR-9. `encryptedFileRef` must never be a publicly guessable URL —
-// serve via short-lived signed URLs only (NFR-4).
+// FR-ACC-01–FR-ACC-11, FR-KYC-01–FR-KYC-12. `encryptedFileRef` must never be a publicly guessable URL —
+// serve via short-lived signed URLs only (SEC-DAT-02, SEC-DAT-04).
 @Entity('kyc_documents')
 export class KycDocument {
   @PrimaryGeneratedColumn('uuid')

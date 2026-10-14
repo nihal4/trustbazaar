@@ -1,0 +1,32 @@
+% The Facebook-group "admin deal" for digital goods, and its failure modes
+\begin{tikzpicture}[
+  font=\footnotesize,
+  party/.style={draw=#1, fill=#1!12, rounded corners=3pt, minimum width=2.6cm,
+                minimum height=1.0cm, align=center, font=\footnotesize\bfseries},
+  tr/.style={-{Stealth[length=2mm]}, thick, draw=#1},
+  lab/.style={font=\scriptsize, fill=white, inner sep=1.5pt, align=center},
+  fail/.style={draw=bad, fill=bad!7, rounded corners=2pt, text width=4.1cm,
+               align=left, font=\scriptsize, inner sep=4pt}]
+
+  \node[party=good]  (B) at (0,0)    {Buyer};
+  \node[party=muted] (A) at (6,0)    {Group admin\\{\scriptsize\normalfont (unverified, unaccountable)}};
+  \node[party=good]  (S) at (12,0)   {Seller};
+
+  \draw[tr=good] ([yshift=3mm]B.east) -- node[lab, above]{1. money} ([yshift=3mm]A.west);
+  \draw[tr=good] ([yshift=3mm]S.west) -- node[lab, above]{2. ID + password} ([yshift=3mm]A.east);
+  \draw[tr=ink]  ([yshift=-3mm]A.west) -- node[lab, below]{3. credentials} ([yshift=-3mm]B.east);
+  \draw[tr=ink]  ([yshift=-3mm]A.east) -- node[lab, below]{4. money} ([yshift=-3mm]S.west);
+
+  \node[fail] (f1) at (0,-2.6)
+    {\textbf{Admin + seller collude:} buyer's money kept, or the account is handed over
+     and later recovered by the seller.};
+  \node[fail] (f2) at (6,-2.6)
+    {\textbf{Admin acts alone:} holds both the money and the credentials with no identity
+     on record and nobody to answer to.};
+  \node[fail] (f3) at (12,-2.6)
+    {\textbf{Admin + buyer collude:} seller hands over the account and is never paid.};
+
+  \draw[-{Stealth[length=1.6mm]}, bad, densely dashed] (f1.north) -- (B.south);
+  \draw[-{Stealth[length=1.6mm]}, bad, densely dashed] (f2.north) -- (A.south);
+  \draw[-{Stealth[length=1.6mm]}, bad, densely dashed] (f3.north) -- (S.south);
+\end{tikzpicture}

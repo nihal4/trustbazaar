@@ -10,7 +10,7 @@ assignees: ""
 A clear description of what's wrong.
 
 **Related requirement**
-Which FR/NFR (if any) does this violate? e.g. FR-31, NFR-15.
+Which FR/NFR (if any) does this violate? e.g. FR-AUC-11, NFR-MNT-02.
 
 **Steps to reproduce**
 1.
