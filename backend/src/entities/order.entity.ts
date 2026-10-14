@@ -22,7 +22,7 @@ export enum OrderStatus {
   CANCELLED = 'cancelled',
 }
 
-// FR-35–FR-49. One Order has exactly one EscrowTransaction and exactly one
+// FR-FIX-01–FR-FIX-05, FR-PAY-01–FR-PAY-21. One Order has exactly one EscrowTransaction and exactly one
 // SettlementLedger entry; at most one DeliveryRequest and at most one Dispute.
 @Entity('orders')
 export class Order {

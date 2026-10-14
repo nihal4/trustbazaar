@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { DisputesController } from './disputes.controller';
 import { DisputesService } from './disputes.service';
 
-// Buyer-initiated dispute flow, freezes escrow release (FR-69–FR-73)
+// Buyer-initiated dispute flow, freezes escrow release (FR-DSP-01–FR-DSP-12)
 @Module({
   controllers: [DisputesController],
   providers: [DisputesService],
