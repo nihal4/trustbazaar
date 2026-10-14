@@ -1,0 +1,20 @@
+% Fake-buyer counterfeit/note-swap scam (Prothom Alo, 2023)
+\begin{tikzpicture}[
+  font=\footnotesize, node distance=3mm,
+  step/.style={draw=#1, fill=#1!10, rounded corners=2pt, text width=2.55cm,
+               minimum height=1.55cm, align=center, font=\scriptsize},
+  flow/.style={-{Stealth[length=2mm]}, thick, draw=ink}]
+
+  \node[step=good]                 (a) {\textbf{1. Listing}\\Seller posts iPhone~13 on Bikroy at Tk~81,000};
+  \node[step=muted, right=of a]    (b) {\textbf{2. Deal}\\``Buyer'' calls; price agreed at Tk~75,000};
+  \node[step=muted, right=of b]    (c) {\textbf{3. Meetup}\\Three men meet seller outside a market in Mouchak};
+  \node[step=bad, right=of c]      (d) {\textbf{4. Count}\\Seller counts a bundle of Tk~1,000 notes: correct};
+  \node[step=bad, below=7mm of d]  (e) {\textbf{5. Swap}\\Bundle taken back ``for a rubber band'', swapped in seconds};
+  \node[step=bad, left=of e]       (f) {\textbf{6. Loss}\\Inside: old Tk~20 notes. Phone gone; noticed only later, paying a restaurant bill};
+  \node[step=muted, left=of f]     (g) {\textbf{7. Recourse}\\Police case at Ramna; DB arrests 3 (gang active 3+ years)};
+  \node[step=good, left=of g, draw=good, fill=good!10, densely dashed]
+                                   (h) {\textbf{With escrow}\\no cash changes hands: nothing to count, nothing to swap};
+
+  \draw[flow] (a) -- (b); \draw[flow] (b) -- (c); \draw[flow] (c) -- (d);
+  \draw[flow] (d) -- (e); \draw[flow] (e) -- (f); \draw[flow] (f) -- (g);
+\end{tikzpicture}

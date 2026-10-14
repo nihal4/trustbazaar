@@ -11,7 +11,7 @@ export enum DeliveryStatus {
   CANCELLED = 'cancelled',
 }
 
-// FR-50–FR-58. Decision threshold (Appendix B in the SRS): <= 2km suggests
+// FR-DLV-01–FR-DLV-14. Decision threshold (Appendix B in the SRS): <= 2km suggests
 // self-pickup with a safe meetup point; > 2km books a courier at a
 // system-quoted blended fare.
 @Entity('delivery_requests')

@@ -16,7 +16,7 @@ export enum DisputeStatus {
   RESOLVED = 'resolved',
 }
 
-// FR-69–FR-73. Opening a dispute must freeze the associated
+// FR-DSP-01–FR-DSP-12. Opening a dispute must freeze the associated
 // EscrowTransaction (set state = FROZEN_DISPUTED) — enforce this as a
 // transactional side effect in the disputes service, not as a manual step.
 @Entity('disputes')

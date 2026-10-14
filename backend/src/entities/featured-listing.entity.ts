@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
 import { Listing } from './listing.entity';
 
-// FR-78–FR-86 (Could Have — boosted/featured listings).
+// FR-MON-01–FR-MON-10 (Could Have — boosted/featured listings).
 @Entity('featured_listings')
 export class FeaturedListing {
   @PrimaryGeneratedColumn('uuid')

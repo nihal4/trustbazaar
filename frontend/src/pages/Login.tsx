@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { api } from '../api/client';
 
-// FR-1–FR-9: email/phone + password auth. On success, store the JWT and
-// redirect based on kycStatus (unverified users can browse/chat only).
+// FR-ACC-05, FR-ACC-06, SEC-SES-03: email/phone + password auth. On success the backend sets an
+// HttpOnly session cookie (never store the token in localStorage, per SEC-SES-03); redirect based on
+// kycStatus (users who are not yet verified can browse/chat only).
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

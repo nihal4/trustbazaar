@@ -1,0 +1,624 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage[T1]{fontenc}
+\IfFileExists{lmodern.sty}{\usepackage{lmodern}}{}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xurl}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,decorations.pathreplacing}
+\definecolor{ink}{HTML}{1F2937}\definecolor{muted}{HTML}{6B7280}
+\definecolor{bad}{HTML}{DC2626}\definecolor{good}{HTML}{2563EB}\definecolor{partial}{HTML}{D97706}
+\captionsetup{font=small,labelfont=bf}
+\setlist{itemsep=2pt,topsep=4pt}
+\graphicspath{{figs/}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\title{\textbf{Trust in Bangladesh's Second-Hand Online Market:\\A Market Analysis of Bikroy.com and Its Alternatives}\\[6pt]
+\large Supplementary Report to the TrustBazaar Project Proposal}
+\author{S.\ M.\ Nihal Ahmed (232-35-002) \and Afrim Hossen Khan (232-35-076) \and Sabikun Nahar Sinthia (232-35-475)\\[4pt]
+\small Department of Software Engineering, Daffodil International University}
+\date{October 2026}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\fbox{\begin{minipage}{0.93\textwidth}
+\vspace{4pt}
+\textbf{Executive summary.}\quad
+Bikroy.com has been Bangladesh's largest online classifieds platform since 2012, and
+Facebook Marketplace and buy-and-sell groups carry much of the remaining person-to-person
+resale. This report examines why these established platforms remain exposed to fraud, and
+whether a new platform built around transaction protection could persuade users to move.
+Using news reports, police cases, company statements, platform terms, third-party traffic
+estimates and regulatory records, it finds that Bikroy's trust problem has existed since its
+own 2014 audit found one ad in three not genuine; that its market position and ownership
+have weakened, ending in its sale to Jiji in 2026; and that every documented scam occurs at
+the payment, handover or dispute stage, which neither Bikroy nor Facebook controls. Escrow,
+which Bangladesh Bank made mandatory for e-commerce in 2021, has never reached
+person-to-person resale. No existing platform combines resale between individuals with
+transaction protection. The report maps each identified loophole to TrustBazaar's design and
+concludes that users are most likely to adopt it first for high-value deals, where losing
+money to a stranger is most costly, rather than abandoning existing platforms outright.
+\vspace{4pt}
+\end{minipage}}
+\end{center}
+
+\section{Purpose, Scope and Method}
+\label{sec:intro}
+
+\paragraph{Purpose.} TrustBazaar is a proposed web platform for buying and selling used goods
+between individuals in Bangladesh, built around identity verification, escrow-held payment,
+a fair auction mechanism and coordinated delivery~\cite{proposal}. A new platform of this kind
+enters a market in which Bikroy.com has operated since 2012 and Facebook is used by most of
+the country's internet users. This report studies that market to answer one question: what
+would convince users to move from platforms they have used for years to a new one? It is a
+supplementary analysis to the project proposal, not a research paper, and is intended to
+provide the evidence behind the proposal's problem statement.
+
+\paragraph{Scope.} The analysis covers person-to-person resale of used goods in Bangladesh.
+It focuses on Bikroy.com as the market leader, compares it with Facebook Marketplace and
+buy-and-sell groups and with Daraz, and briefly examines the trade in digital goods such as
+game accounts and event tickets. Business-to-consumer sales of new goods are considered only
+as a point of comparison.
+
+\paragraph{Method and sources.} The report draws only on published or publicly accessible
+sources: national newspapers and police case reports; company statements, interviews and
+platform terms; regulatory announcements; app-store and review-site ratings; and third-party
+web-traffic estimates (Similarweb, Semrush). Every figure is attributed to its source. Where
+sources disagree, measure different things, or where evidence is missing, the report says so.
+No primary survey of users was conducted; this is noted as a limitation in
+Section~\ref{sec:conclusion}.
+
+\paragraph{Structure.} Section~\ref{sec:history} traces Bikroy's history and present state.
+Section~\ref{sec:users} examines users' experience and documented scams, and identifies six
+loopholes. Section~\ref{sec:solution} maps each loophole to TrustBazaar's design.
+Section~\ref{sec:landscape} compares all the available platforms, and
+Section~\ref{sec:conclusion} draws the conclusions on user adoption.
+
+\section{Bikroy.com: Market History, Present State, and Decline}
+\label{sec:history}
+
+This section establishes how Bikroy started, how dominant it became, where it stands in 2026,
+and what has gone wrong. Every number below is taken from a published source listed in the
+references; where sources disagree or measure different things, we say so.
+Figure~\ref{fig:timeline} summarises the full history.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{fig1_timeline.pdf}
+  \caption{Timeline of Bikroy.com, 2012--2026. Blue: growth milestones; red: events in the
+  decline of its parent company and its eventual sale; grey: anti-fraud measures.
+  Sources: \cite{wiki_bikroy,bn24_2014,fs_fraud,fs_ekhanei,fs_jiji,intellinews,ds_jiji}.}
+  \label{fig:timeline}
+\end{figure}
+
+\subsection{Launch and rapid growth (2012--2014)}
+
+Bikroy began operating in June 2012 and was formally launched at a press conference in
+Dhaka on 18~October~2012. The Daily Star described it at the time as the country's first
+bilingual (Bangla and English) classified website~\cite{wiki_bikroy}. It was owned by
+Saltside Technologies, a Swedish company that also ran classifieds sites in Ghana (Tonaton)
+and Sri Lanka (ikman)~\cite{fs_jiji}.
+
+Growth in the first two years was very fast (Figure~\ref{fig:growth}). Bikroy received
+26{,}000 advertisements in its first three months (June--August 2012), and 8.27~lakh
+(827{,}000) in March--May 2014 alone, an increase of roughly 32 times. By June 2014 it had
+received more than 32~lakh ads in total and was handling over 9{,}000 new ads per day,
+compared with about 3{,}000 a year earlier~\cite{bn24_2014}. In the same period it became,
+by Alexa ranking, the 8th largest local website in Bangladesh~\cite{bn24_2014}, and in 2013
+``Bikroy.com'' was the 4th most-searched keyword on Google in Bangladesh~\cite{wiki_bikroy}.
+In September 2014 the company stated that it received more than 2~million unique visitors
+per month~\cite{fe_2014}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{fig2_early_growth.pdf}
+  \caption{Bikroy's early growth. (a) Ads posted per quarter in the first quarter of
+  operation and in March--May 2014. (b) Ads posted per day, mid-2013 vs.\ mid-2014.
+  Source: Banglanews24~\cite{bn24_2014}.}
+  \label{fig:growth}
+\end{figure}
+
+\paragraph{Fraud was present from the start.} Rapid growth came with a trust problem that
+Bikroy itself acknowledged. In September 2014, Bikroy's marketing manager told the Crime
+Reporters Association of Bangladesh that in a random sample of 500 ads, only 330 (66\%)
+were genuine; some advertisers did not respond when their listed numbers were called
+(Figure~\ref{fig:genuine}). She added that fake sellers typically priced items below
+market and, in many cases, lured buyers to remote locations and robbed them. Bikroy's
+investigation team removed more than 750 fake ads in August 2014 alone~\cite{dt_2014}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.68\textwidth]{fig3_genuine_ads.pdf}
+  \caption{Result of Bikroy's own 2014 audit of 500 randomly sampled ads: one in three
+  was not genuine. Source: Dhaka Tribune~\cite{dt_2014}.}
+  \label{fig:genuine}
+\end{figure}
+
+Note that the audit measured \emph{ads}, not victims: the 170 non-genuine ads in the sample
+tell us how much of the catalogue could not be trusted, but Bikroy did not publish how many
+buyers had actually lost money to them.
+
+\paragraph{What Bikroy did about it.} Bikroy did respond, but every measure it took was
+aimed at cleaning up \emph{listings}, not at protecting or compensating the people who
+\emph{transacted} through them (Table~\ref{tab:response}).
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{Bikroy's documented responses to fraud, 2014--2026, and whether each one
+  protects money in a transaction or helps a victim recover a loss.}
+  \label{tab:response}
+  \begin{tabularx}{\textwidth}{@{}l Y c c@{}}
+    \toprule
+    \textbf{When} & \textbf{Measure} & \textbf{Protects payment?} & \textbf{Helps victims recover?} \\
+    \midrule
+    Aug 2014 & Internal investigation team; 750+ fake ads removed in one month;
+      press awareness event with crime reporters~\cite{dt_2014} & No & No \\
+    2016 & ``Buy Now'': Bikroy-coordinated delivery with cash on delivery after
+      inspection, for selected listings~\cite{fs_fraud,ds_buynow} & Partly & No \\
+    Feb 2017 & Mandatory SMS one-time-password for new ad posters; ban on replica and
+      clone products~\cite{fs_fraud} & No & No \\
+    Ongoing & Ads reviewed before publication~\cite{ds_jiji}; full records kept on
+      paying members, cited by Bikroy during a police case~\cite{ds_muktagacha} & No & Indirectly \\
+    2026 & Safety-tips page: check seller feedback, avoid prepayment, inspect before
+      paying; no escrow, payment protection or refund process~\cite{bikroy_safety} & No & No \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\paragraph{No compensation, by design.} We found no public record of Bikroy refunding or
+compensating any fraud victim, at any point from 2012 to 2026. This is not an oversight
+but the platform's stated policy. Bikroy's current Terms and Conditions (operated by Bikroy
+Marketplace Ltd., last updated 17~April~2026) state that the platform is not a party to
+transactions between users, accept no responsibility for loss or damage arising from user
+interactions, place the duty of due diligence on the user, and cap Bikroy's total liability
+at the lesser of the fees the user paid in the previous six months or BDT~6{,}700. Fees paid
+for promotion are non-refundable~\cite{bikroy_terms}. A buyer who sends a 50{,}000-taka
+advance to a fake seller therefore has no recourse against Bikroy; the only route is a
+police case against the scammer, as in the Muktagacha case, where Bikroy's public role was limited
+to pointing to the records it keeps on paying members and checking whether any of its own
+staff or courier employees were involved~\cite{ds_muktagacha}.
+
+\paragraph{The audit was never repeated publicly.} The 2014 figure of 66\% genuine ads is
+the only fraud-rate measurement Bikroy appears to have ever published. We found no later
+audit, no annual trust-and-safety report, and no statement of how the genuine-ad rate
+changed after the 2017 measures. Bikroy's later public statements on fraud are general
+assurances, such as that ads are reviewed before publication~\cite{ds_jiji}, rather than
+measured results, while fraud on the platform continues to surface in police reporting of
+individual scams (Section~\ref{sec:downfall}). Without a published follow-up, there is no evidence that the
+problem identified in 2014 was ever measured as solved.
+
+\subsection{Market dominance (2015--2019)}
+
+Bikroy did not win its market by out-competing rivals on trust; it won by outlasting them.
+Ekhanei (formerly CellBazaar, owned by Telenor, Schibsted and Naspers, and merged with OLX
+Bangladesh in 2015) shut down on 17~May~2017, with its owners stating that they had been
+unable to build a sustainable, profitable business~\cite{fs_ekhanei}. With its main rival
+gone, Bikroy became the clear market leader.
+
+During this period Bikroy added a membership programme for small businesses (2016), a
+``Buy Now'' service with partner couriers and cash-on-delivery after inspection, and, in
+February 2017, mandatory SMS one-time-password verification for new ad posters together
+with a ban on replica products~\cite{wiki_bikroy,ds_buynow,fs_fraud}. Future Startup noted at the time
+that there was ``a widespread allegation against Bikroy for allowing fake
+products''~\cite{fs_fraud}. In August 2019 Bikroy reached operating break-even for the
+first time~\cite{wiki_bikroy,fs_jiji}.
+
+Saltside's last institutional funding round, a \$40 million Series~B from Kinnevik,
+Hillhouse Capital and Brummer \& Partners, closed in January 2015~\cite{fs_jiji}. As
+Figure~\ref{fig:saltside} shows, no new capital followed for more than a decade.
+
+\subsection{Bikroy in 2026: still large, but losing position}
+\label{sec:present}
+
+Bikroy has not collapsed. At the time of its sale in May 2026 it reported over 10~million
+app downloads, about 400{,}000 monthly buyers, more than 100{,}000 monthly sellers,
+roughly 3~million unique monthly visitors, 420 employees, and more than \$3~billion in
+annual gross merchandise value (GMV)~\cite{fs_jiji}. That GMV is concentrated in
+high-value categories, mainly vehicles and real estate~\cite{fs_jiji}. Table~\ref{tab:then_now}
+compares its position then and now.
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{Bikroy.com then and now. Third-party traffic figures are estimates and are not
+  directly comparable with company-reported figures.}
+  \label{tab:then_now}
+  \begin{tabularx}{\textwidth}{@{}l Y Y@{}}
+    \toprule
+    \textbf{Indicator} & \textbf{2013--2014} & \textbf{2025--2026} \\
+    \midrule
+    Rank in Bangladesh & 8th largest local site (Alexa)~\cite{bn24_2014}
+      & \#67 (Similarweb, Sep 2026)~\cite{similarweb_2026}; \#104 (Semrush, Aug 2026)~\cite{semrush_2026} \\
+    Monthly audience & 2.0M+ unique visitors (company, 2014)~\cite{fe_2014}
+      & $\sim$3M unique visitors (company, 2026)~\cite{fs_jiji}; 3.3M total visits in the last three months (Similarweb, Jul--Sep 2026)~\cite{similarweb_2026} \\
+    Traffic trend & Ads $\times$32 in two years~\cite{bn24_2014}
+      & $-18.93\%$ MoM (Dec 2025, Semrush)~\cite{semrush_2025}; $-12.78\%$ MoM (Sep 2026, Similarweb)~\cite{similarweb_2026} \\
+    Owner & Saltside Technologies, actively funded (\$40M, Jan 2015)~\cite{fs_jiji}
+      & Jiji (Nigeria), acquired May 2026~\cite{ds_jiji} \\
+    User trust & Only 66\% of sampled ads genuine~\cite{dt_2014}
+      & Trustpilot score 2.0/5 (13 reviews)~\cite{trustpilot} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\paragraph{Ranking.} Bikroy has fallen from a top-ten local website in 2014 to between
+\#67 and \#104 among all websites visited in Bangladesh in 2026, depending on the analytics
+provider (Figure~\ref{fig:rank}). The two measures are not identical (Alexa's 2014 figure
+ranked \emph{local} sites, whereas today's figures rank all sites, including Google,
+Facebook and YouTube), so the size of the fall should not be overstated, but the direction
+is clear.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.78\textwidth]{fig4_bd_rank.pdf}
+  \caption{Bikroy's website rank in Bangladesh, 2014 vs.\ 2026. The 2014 figure is
+  Alexa's ranking among local websites; the 2026 figures rank all websites. Sources:
+  \cite{bn24_2014,semrush_2026,similarweb_2026}.}
+  \label{fig:rank}
+\end{figure}
+
+\paragraph{Recent traffic.} Both independent analytics providers we checked report
+month-on-month declines: Semrush estimated 1.35~million visits in December 2025, down
+18.93\% from November~\cite{semrush_2025}, and Similarweb reported a 12.78\% month-on-month
+fall for September 2026, with Bikroy's global rank slipping from \#10{,}746 to \#12{,}370
+over three months~\cite{similarweb_2026} (Figure~\ref{fig:traffic}). Single-month changes
+can reflect seasonality, so these figures indicate softening rather than proof of a
+long-term trend.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{fig5_recent_traffic.pdf}
+  \caption{Recent traffic signals. (a) Month-on-month change in visits reported by
+  Semrush (December 2025) and Similarweb (September 2026). (b) Similarweb global rank
+  at the start and end of the three months to September 2026. Sources:
+  \cite{semrush_2025,similarweb_2026}.}
+  \label{fig:traffic}
+\end{figure}
+
+\subsection{What Bikroy sells and how many people use it}
+\label{sec:catalogue}
+
+\paragraph{Most ads are everyday used goods.} A snapshot of Bikroy's category pages on
+7~October~2026 counted 296{,}743 live ads on the site as a whole; the 17 top-level categories
+sum to 300{,}635, a difference of about 1\% that reflects ads being added and removed while
+the pages were read~\cite{bikroy_cats}. Figure~\ref{fig:cat_counts} shows the breakdown.
+Phones and tablets (85{,}553 ads, 28.5\%) and electronics (57{,}170, 19.0\%) together make up
+almost half of all listings, followed by home, furniture and appliances (32{,}892, 10.9\%).
+Vehicles (29{,}987, 10.0\%) and property (14{,}242, 4.7\%) together account for only about
+15\% of ads.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{fig_cat_counts.pdf}
+  \caption{Live ads on Bikroy by top-level category, 7~October~2026. Red: the two high-value
+  categories (vehicles and property); blue: all others. Percentages are shares of the sum of
+  categories. Source: Bikroy category pages~\cite{bikroy_cats}.}
+  \label{fig:cat_counts}
+\end{figure}
+
+\paragraph{And they are mostly second-hand.} The condition filters show that Bikroy is still
+overwhelmingly a market for used goods (Figure~\ref{fig:used_share}). Of 75{,}392 mobile-phone
+ads, 68{,}360 (91\%) are for used phones, 1{,}528 (2\%) refurbished and 5{,}303 (7\%) new. Of
+20{,}717 laptop and computer ads, 18{,}308 (88\%) are used, 257 (1\%) refurbished and 2{,}130
+(10\%) new~\cite{bikroy_cats}. In 2017 Bikroy's marketing director said that about a quarter
+of goods traded on the site were new items sold by small retailers~\cite{fs_b2b}; that figure
+measured trades rather than listings, so it is not directly comparable, but both point the
+same way: most of what changes hands on Bikroy is second-hand.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{fig_used_share.pdf}
+  \caption{Share of ads by condition in Bikroy's two largest everyday-goods subcategories,
+  7~October~2026. Source: Bikroy condition filters~\cite{bikroy_cats}.}
+  \label{fig:used_share}
+\end{figure}
+
+\paragraph{Listings versus value.} These counts do not contradict the report at the time of the
+sale that Bikroy's \$3~billion annual GMV is concentrated in vehicles and real
+estate~\cite{fs_jiji}. A single flat or car is worth as much as hundreds of used phones, so the
+two high-value categories can dominate the money while everyday goods dominate the ads. Bikroy
+therefore still sells old goods in large numbers: by number of listings it is mainly a
+second-hand phone, electronics and household-goods market, while by value it is mainly a car
+and property market. The person-to-person resale of used goods, where the scams documented in
+Section~\ref{sec:users} occur, is the largest part of its catalogue.
+
+\paragraph{Digital goods.} Bikroy's video-games subcategory held 288 ads in the same snapshot,
+including game-account sales such as Free Fire and eFootball IDs priced at BDT~7{,}000 to
+32{,}500~\cite{bikroy_cats}. This trade is discussed in Section~\ref{sec:facebook}.
+
+\paragraph{How many people use Bikroy.} Bikroy does not publish a yearly traffic series, so
+visitor numbers over time have to be pieced together from occasional company statements and
+third-party estimates. The company figures use the same measure, monthly unique visitors or
+users, and are shown in Figure~\ref{fig:audience}: more than 2~million in September
+2014~\cite{fe_2014}, around 2~million in March 2017~\cite{fs_b2b}, and about 3~million at the
+time of the sale in May 2026~\cite{fs_jiji}. Taken at face value, the audience grew by roughly
+half over twelve years, and was essentially flat between 2014 and 2017.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.62\textwidth]{fig_audience_years.pdf}
+  \caption{Bikroy's monthly audience as reported by the company at three points in time.
+  Sources: \cite{fe_2014,fs_b2b,fs_jiji}.}
+  \label{fig:audience}
+\end{figure}
+
+Third-party estimates measure total visits rather than unique visitors, and they disagree
+sharply with each other (Table~\ref{tab:traffic_est}). Semrush's two estimates eight months
+apart differ by a factor of about nine, which reflects changes in estimation rather than a
+real ninefold jump. These figures are therefore used in this report only for direction of
+change over short periods (Figure~\ref{fig:traffic}), not for the size of Bikroy's audience.
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{Third-party traffic estimates for bikroy.com. Estimates from different providers, or
+  from the same provider at different times, are not directly comparable.}
+  \label{tab:traffic_est}
+  \begin{tabularx}{\textwidth}{@{}l l Y@{}}
+    \toprule
+    \textbf{Provider} & \textbf{Period} & \textbf{Estimate} \\
+    \midrule
+    Semrush & Dec 2025 & 1.35~million visits, down 18.93\% on the previous month~\cite{semrush_2025} \\
+    Semrush & Aug 2026 & 12.4~million visits~\cite{semrush_2026} \\
+    Similarweb & Jul--Sep 2026 & 3.3~million visits over three months (about 1.1~million a month);
+      down 12.78\% in September~\cite{similarweb_2026} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Owner retreat and sale (2022--2026)}
+\label{sec:sale}
+
+The clearest sign of decline is not in Bikroy's own numbers but in its owner's behaviour
+(Figure~\ref{fig:saltside}). Saltside sold its Ghanaian platform, Tonaton, to Jiji in 2022.
+By September 2024, Saltside's group-level headcount had fallen to 13 people. In January
+2025, Kinnevik, Saltside's largest shareholder with a 45\% stake, publicly announced it
+wanted to sell that stake~\cite{fs_jiji}. Two months later, in March 2025, the Nigerian
+classifieds company Jiji entered Bangladesh through \texttt{jiji-bd.com} as a direct
+competitor to Bikroy, Daraz and Ajkerdeal~\cite{intellinews}. Thirteen months after that,
+in May 2026, Jiji acquired Bikroy~\cite{ds_jiji,intellinews}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{fig6_saltside.pdf}
+  \caption{Number of markets in which Saltside Technologies still operates a classifieds
+  platform. After its last funding round in January 2015, it sold Ghana (2022) and
+  Bangladesh (2026), both to Jiji. Source: Future Startup~\cite{fs_jiji}.}
+  \label{fig:saltside}
+\end{figure}
+
+Under Jiji, the Bikroy brand will survive, but the platform is being moved onto Jiji's
+technology and its monetisation is changing from Bikroy's flat-fee model to a
+pay-per-click bidding system in which sellers bid for placement~\cite{fs_jiji}. Future
+Startup observes that this changes the economics for small sellers significantly,
+because it favours sellers with larger budgets and the skill to optimise bids~\cite{fs_jiji}.
+After the acquisition, Jiji's main competition in Bangladesh is Facebook Marketplace and
+social-media sellers~\cite{fs_jiji}.
+
+\subsection{Causes of decline}
+\label{sec:downfall}
+
+Bikroy is still a large, functioning business, so ``downfall'' here means a loss of
+momentum, market position and independence rather than a collapse. The evidence above
+points to six connected causes.
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+  \item \textbf{The trust problem was managed, never solved.} Bikroy's own 2014 audit found
+  that one ad in three was not genuine~\cite{dt_2014}. Its main response, SMS-OTP
+  verification in 2017~\cite{fs_fraud}, only proves control of a phone number, and police
+  later broke up a gang that bought registered SIM cards for 350--500 taka each to post
+  fake electronics ads on Bikroy~\cite{ds_muktagacha}. In 2026, Bikroy's listing pages
+  still tell users to avoid advance payment, meet in a public place and pay only after
+  inspection~\cite{bikroy_listing}; the responsibility for safety remains with the user.
+
+  \item \textbf{It never controlled the transaction.} Bikroy connects buyers and sellers
+  but, outside its ``Buy Now'' cash-on-delivery service, payment and handover happen
+  off-platform. A platform that does not hold the money cannot protect either party, and
+  cash meetings expose both sides to fraud, as in the 2023 case where a gang paid an
+  iPhone seller who had advertised on Bikroy with a bundle of mostly 20-taka notes
+  disguised as 1{,}000-taka notes~\cite{pa_2023}.
+
+  \item \textbf{It won by default, not by innovation.} Bikroy's dominance came after
+  well-funded rivals exited~\cite{fs_ekhanei}, and Future Startup notes it ``didn't face
+  much sustained competition''~\cite{fs_jiji}. Without competitive pressure, the core
+  model (a listing board) stayed essentially the same for over a decade.
+
+  \item \textbf{Its owner stopped investing.} Saltside raised no new capital after January
+  2015, shrank its headquarters to 13 people, sold Ghana, and saw its largest shareholder
+  seek an exit~\cite{fs_jiji}. A platform whose owner is looking for the door does not make
+  bold new bets on trust infrastructure.
+
+  \item \textbf{Its audience is being absorbed by social media.} In an interview with Future Startup, Bikroy's
+  marketing director called Facebook the biggest challenge for every online site in
+  Bangladesh~\cite{fs_misha}. Today Jiji itself names Facebook Marketplace and
+  social-media sellers as Bikroy's main competition~\cite{fs_jiji}, and third-party
+  traffic estimates show Bikroy losing rank (Figures~\ref{fig:rank} and~\ref{fig:traffic}).
+
+  \item \textbf{Small individual sellers are being priced toward the margins.} The switch
+  to pay-per-click bidding favours businesses with marketing budgets~\cite{fs_jiji}, and
+  sellers already complain that paid promotion produces fake inquiries rather than
+  buyers~\cite{trustpilot}. Most of Bikroy's transaction value is in cars and
+  property~\cite{fs_jiji}, yet most of its ads are everyday used goods posted by individuals
+  (Section~\ref{sec:catalogue}). The pricing change falls hardest on exactly the sellers who
+  make up the bulk of its catalogue.
+\end{enumerate}
+
+\paragraph{Implication for TrustBazaar.} Bikroy has not been ``replaced'' because every
+challenger (OLX, Ekhanei and Jiji) competed with the same model: a listing board where
+payment and delivery happen elsewhere. None competed on the transaction itself. The gap
+that remains, verified identity, money held until delivery, fair price discovery and
+coordinated delivery for individual-to-individual resale, is exactly the space TrustBazaar
+targets. TrustBazaar does not need to out-list Bikroy; it needs to make the transactions
+that Bikroy leaves to chance safe.
+
+\input{section2}
+\input{section3}
+\input{section4}
+\input{section5}
+
+\begin{thebibliography}{99}
+\small
+
+\bibitem{wiki_bikroy} Wikipedia, ``Bikroy.com.''
+\url{https://en.wikipedia.org/wiki/Bikroy.com} (accessed 7 Oct 2026).
+
+\bibitem{bn24_2014} Banglanews24, ``32-lakh adverts in Bikroy.com in 2-yr,'' 19 Jun 2014.
+\url{https://www.banglanews24.com/english/business/news/bd/23235.details}
+
+\bibitem{fe_2014} J.~U.~Haroon, ``Online mkts expand threefold in a year,''
+\emph{The Financial Express}, 29 Sep 2014.
+\url{https://today.thefinancialexpress.com.bd/print/online-mkts-expand-threefold-in-a-year}
+
+\bibitem{dt_2014} Dhaka Tribune, ``Beware of fake online advertisements,'' 10 Sep 2014.
+\url{https://www.dhakatribune.com/bangladesh/crime/78971/beware-of-fake-online-advertisements}
+
+\bibitem{fs_ekhanei} Future Startup, ``Online classifieds marketplace Ekhanei shuts down,''
+16 May 2017.
+\url{https://futurestartup.com/2017/05/16/online-classifieds-marketplace-ekhanei-shuts/}
+
+\bibitem{fs_fraud} Future Startup, ``Bikroy takes measures to tackle fraud,'' 25 Feb 2017.
+\url{https://futurestartup.com/2017/02/25/bikroy-takes-measures-to-tackle-fraud/}
+
+\bibitem{fs_misha} Future Startup, interview with Misha Ali, Director of Marketing, Bikroy.
+\url{https://futurestartup.com/?p=14612}
+
+\bibitem{ds_buynow} The Daily Star, ``Bikroy: More than an online classifieds site,''
+interview with Misha Ali. \url{https://www.thedailystar.net/node/1307005}
+
+\bibitem{fs_jiji} Future Startup, ``Jiji acquires Bikroy, Jiji's motivation, Bikroy's
+reason, and what it tells about the Bangladesh market,'' 14 May 2026.
+\url{https://futurestartup.com/2026/05/14/jiji-acquires-bikroy-jijis-motivation-bikroys-reason-and-what-it-tells-about-the-bangladesh-market/}
+
+\bibitem{intellinews} bne IntelliNews, ``Nigeria's Jiji acquires Bangladeshi classifieds
+platform peer Bikroy in first expansion deal outside Africa,'' May 2026.
+\url{https://www.intellinews.com/nigeria-s-jiji-acquires-bangladeshi-classifieds-platform-peer-bikroy-in-first-expansion-deal-outside-africa-442571/}
+
+\bibitem{ds_jiji} The Daily Star, ``Nigeria's Jiji acquires Bikroy.com,'' 15 May 2026.
+\url{https://thedailystar.net/business/economy/news/nigerias-jiji-acquires-bikroycom-4176081}
+
+\bibitem{similarweb_2026} Similarweb, ``bikroy.com traffic analytics, ranking \& audience
+[September 2026].'' \url{https://www.similarweb.com/website/bikroy.com/} (accessed 7 Oct 2026).
+
+\bibitem{semrush_2026} Semrush, ``bikroy.com website traffic, ranking, analytics
+[August 2026].'' \url{https://cw.semrush.com/website/bikroy.com/overview/} (accessed 7 Oct 2026).
+
+\bibitem{semrush_2025} Semrush, ``bikroy.com December 2025 traffic stats,'' last updated
+13 Jan 2026. \url{https://cw.semrush.com/website/bikroy.com/overview}
+
+\bibitem{trustpilot} Trustpilot, ``Bikroy reviews.''
+\url{https://fr-be.trustpilot.com/review/bikroy.com} (accessed 7 Oct 2026).
+
+\bibitem{ds_muktagacha} The Daily Star Bangla, ``Kom dame mobile-er prolobhon diye lakho
+taka attmoshat'' [Lakhs of taka embezzled with the lure of cheap mobiles]. Article ID 285801,
+\url{https://bangla.thedailystar.net}.
+
+\bibitem{pa_2023} N.~Amin, ``Taka gunte bole koyek second-e manushke boka banan tara''
+[They fool people within seconds by asking them to count money], \emph{Prothom Alo},
+1 Sep 2023. \url{https://www.prothomalo.com/bangladesh/crime/dmtvv1loj5}
+
+\bibitem{bikroy_terms} Bikroy Marketplace Ltd., ``Terms \& Conditions,'' last updated
+17 Apr 2026. \url{https://bikroy.com/rules.html} (accessed 7 Oct 2026).
+
+\bibitem{bikroy_safety} Bikroy.com, ``Safety tips.''
+\url{https://bikroy.com/safety-tips.html} (accessed 7 Oct 2026).
+
+\bibitem{bikroy_listing} Bikroy.com, example motorcycle listing showing the platform's
+safety tips (2026).
+\url{https://bikroy.com/bn/barisal/motorcycles-and-scooters/freedom-runner-2026-eMmVvngxQX2RhG3QQW5xzeKc.html}
+
+\bibitem{proposal} S.~M.~N.~Ahmed, A.~H.~Khan and S.~N.~Sinthia, ``TrustBazaar: A Verified
+Peer-to-Peer Auction and Marketplace Platform for Used Goods,'' capstone project proposal,
+Department of Software Engineering, Daffodil International University, 30 Sep 2026.
+
+\bibitem{play_store} Google Play, ``Bikroy -- Everything Sells'' (app page and user
+reviews), last updated 27 Aug 2026.
+\url{https://play.google.com/store/apps/details?id=com.bikroy} (accessed 7 Oct 2026).
+
+\bibitem{ccaf_2024} Cyber Crime Awareness Foundation (CCAF), cybercrime trend report
+presented at Independent University, Bangladesh, 29 Jun 2024.
+\url{https://iub.ac.bd/news-and-events/news-and-media-archive/2024-July/668621b7b4d241c7517839d0}
+
+\bibitem{itv_hilsa} ITV Bangladesh, ``Onlaine ilish bikrir bigyapon diye protarona korto
+tara'' [They cheated people with online ads for hilsa], 21 Aug 2026.
+\url{https://www.itvbd.com/country/chittagong/273601}
+
+\bibitem{bdnews_evaly} bdnews24.com (Bangla), Evaly founders sentenced to two years for
+fraud, 29 Jan 2025. \url{https://bangla.bdnews24.com/bangladesh/7a6293d95020}
+
+\bibitem{bdnews_eorange} bdnews24.com (Bangla), trial begins in e-Orange fraud case,
+16 Feb 2026. \url{https://bangla.bdnews24.com/bangladesh/ede0e11fe3f0}
+
+\bibitem{tbs_escrow} The Business Standard, ``No more direct payments into e-commerce
+accounts,'' 25 Aug 2021 (reporting Bangladesh Bank escrow circular of 30 Jun 2021).
+\url{https://www.tbsnews.net/economy/no-more-direct-payments-e-commerce-accounts-293197}
+
+\bibitem{fe_refund} The Financial Express, ``Bangladesh government readies repayments to
+cheated e-com clients,'' 9 Dec 2021.
+\url{https://old.thefinancialexpress.com.bd/trade/bangladesh-government-readies-repayments-to-cheated-e-com-clients-1639020592}
+
+\bibitem{jiji_kenya} TechTrends Kenya, ``Jiji online marketplace Kenya: new security measures
+to protect its users,'' 23 Nov 2020.
+\url{https://techtrendske.co.ke/2020/11/23/jiji-online-market-place-kenya-new-security-measures-to-protect-its-users-in-a-bid-to-dominate-kenyas-e-commerce-space/}
+
+\bibitem{fs_facebook} Future Startup, ``Facebook's e-commerce moves could upend Dhaka's digital
+commerce landscape,'' 3 Feb 2021.
+\url{https://futurestartup.com/2021/02/03/daily-update-facebooks-ecommerce-moves-could-upend-dhakas-digital-commerce-landscape/}
+
+\bibitem{tbs_fcommerce} The Business Standard, ``5 arrested for defrauding clients via fake
+f-commerce,'' 17 Feb 2021.
+\url{https://www.tbsnews.net/bangladesh/crime/5-arrested-defrauding-clients-fake-f-commerce-203515}
+
+\bibitem{fe_bcec} The Financial Express, ``Facebook group admin held in Dhaka over Atif Aslam
+concert ticket scam,'' 18 Jul 2026.
+\url{https://thefinancialexpress.com.bd/entertainment/facebook-group-admin-held-in-dhaka-over-atif-aslam-concert-ticket-scam}
+
+\bibitem{supercell_fairplay} Supercell, ``Safe and Fair Play.''
+\url{https://supercell.com/en/safe-and-fair-play/} (accessed 7 Oct 2026).
+
+\bibitem{steam_ssa} Valve Corporation, ``Steam Subscriber Agreement,'' Section 1.C.
+\url{https://store.steampowered.com/subscriber_agreement/} (accessed 7 Oct 2026).
+
+\bibitem{sk_garena} Sportskeeda, ``Fact check: can buying and selling Free Fire accounts get you
+banned?'' (citing Garena Terms of Service, Section 6.2).
+\url{https://www.sportskeeda.com/free-fire/fact-check-can-buying-selling-free-fire-accounts-get-banned}
+
+\bibitem{techjuice_pubg} TechJuice, ``Scammers were arrested by the FIA for selling fake PUBG IDs
+for a significant profit,'' 21 Sep 2022.
+\url{https://www.techjuice.pk/scammers-were-arrested-by-the-fia-for-selling-fake-pubg-ids-for-a-significant-profit/}
+
+\bibitem{bikroy_ff} Bikroy.com, Free Fire account listing, posted 6 Aug 2020.
+\url{https://bikroy.com/bn/faridpur-pabna/videogames/free-fire-id-8EHjZ6FI3tn1cdZriz1iqHAv.html}
+
+\bibitem{pcworld_steam} PCWorld, ``Steam thwarts Counter-Strike scammers with new trade reversal
+system,'' 17 Jul 2025.
+\url{https://www.pcworld.com/article/2851576/steam-thwarts-counter-strike-scammers-with-new-trade-reversal-system.html}
+
+\bibitem{pa_daraz} Prothom Alo English, ``Daraz introduces 14-day return policy for worry-free
+shopping all year,'' 23 Oct 2025. \url{https://en.prothomalo.com/corporate/3p9uo7y6l6}
+
+\bibitem{bikroy_cats} Bikroy.com, top-level category pages and condition filters (Phones \&
+Tablets, Electronics, Home, Vehicles, Property and others), snapshot taken 7 Oct 2026.
+\url{https://bikroy.com/en/ads/bangladesh}
+
+\bibitem{fs_b2b} Future Startup, ``Bikroy's growing B2B users,'' 19 Mar 2017.
+\url{https://futurestartup.com/2017/03/19/bikroys-growing-b2b-users/}
+
+\bibitem{proposal_rev} S.~M.~N.~Ahmed, A.~H.~Khan and S.~N.~Sinthia, ``TrustBazaar: A Verified
+Peer-to-Peer Auction and Marketplace Platform for Used Goods,'' revised capstone project
+proposal, Department of Software Engineering, Daffodil International University, October 2026.
+
+\end{thebibliography}
+
+\end{document}
