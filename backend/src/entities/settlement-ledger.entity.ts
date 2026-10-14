@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
 import { Order } from './order.entity';
 
-// FR-78–FR-86. This is the auditable record referenced throughout the
+// FR-MON-01–FR-MON-10. This is the auditable record referenced throughout the
 // proposal's "Evaluation Criteria" — item_price + platform_commission
 // + courier_payout + platform_delivery_margin + seller_payout must always
 // reconcile against the Order's `total`. Enforce that invariant in the
