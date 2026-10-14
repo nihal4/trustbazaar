@@ -5,7 +5,9 @@
 | Software Requirements Specification, v2.0 | `srs.tex` | `srs.pdf` |
 | Project Proposal (revised) | `proposal.tex` | `proposal.pdf` |
 | Supplementary Market Analysis: *Trust in Bangladesh's Second-Hand Online Market* | `supplementary/main.tex` | `supplementary/market_analysis.pdf` |
-| System Design Document | `design/` (in progress, one unit at a time) | — |
+| System Design Document, Unit 1: Identity & Access | `design/01_identity_access.tex` | `design/01_identity_access.pdf` |
+| System Design Document, Unit 2: Order, Payment & Escrow | `design/02_orders_payments.tex` | `design/02_orders_payments.pdf` |
+| System Design Document, Unit 3: Auction Engine; Listings, Search & Fixed-Price | `design/03_listings_auctions.tex` | `design/03_listings_auctions.pdf` |
 
 ## Building
 
