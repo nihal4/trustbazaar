@@ -4,7 +4,7 @@
  * corresponding feature is built — do not consider a feature "done" until
  * its test here passes under real concurrent load, not just sequentially.
  */
-describe('Auction concurrency (FR-23–FR-34, NFR-15)', () => {
+describe('Auction concurrency (FR-AUC-01–FR-AUC-18, NFR-MNT-02)', () => {
   it.todo(
     'when two bidders submit a bid on the same auction at the same time, ' +
       'exactly one becomes the recorded highest bid and the loser receives ' +
@@ -22,7 +22,7 @@ describe('Auction concurrency (FR-23–FR-34, NFR-15)', () => {
   );
 });
 
-describe('Fixed-price purchase concurrency (FR-35–FR-38, NFR-15)', () => {
+describe('Fixed-price purchase concurrency (FR-FIX-01–FR-FIX-05, NFR-MNT-02)', () => {
   it.todo(
     'when two buyers attempt to purchase the last unit of a listing at the ' +
       'same time, exactly one order is created and the other request is ' +
@@ -30,14 +30,14 @@ describe('Fixed-price purchase concurrency (FR-35–FR-38, NFR-15)', () => {
   );
 });
 
-describe('Payment webhook idempotency (FR-39–FR-49, NFR-15)', () => {
+describe('Payment webhook idempotency (FR-PAY-01–FR-PAY-21, NFR-MNT-02)', () => {
   it.todo(
     'a payment-confirmation webhook delivered twice by the provider results ' +
       'in exactly one escrow HELD transition, not two, and does not double-charge',
   );
 });
 
-describe('Settlement fee-split correctness (FR-78–FR-86, NFR-15)', () => {
+describe('Settlement fee-split correctness (FR-MON-01–FR-MON-10, NFR-MNT-02)', () => {
   it.todo(
     'seller_payout + platform_commission + courier_payout + ' +
       'platform_delivery_margin always reconciles exactly against the ' +

@@ -7,7 +7,7 @@
 ## Commits
 Follow [Conventional Commits](https://www.conventionalcommits.org/):
 ```
-feat(auctions): implement proxy bidding (FR-25)
+feat(auctions): implement proxy bidding (FR-AUC-06)
 fix(payments): prevent duplicate webhook settlement
 docs(readme): update setup instructions
 test(orders): add concurrent stock decrement test
