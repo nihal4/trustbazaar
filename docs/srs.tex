@@ -5,14 +5,13 @@
 \usepackage{tabularx}
 \usepackage{longtable}
 \usepackage{booktabs}
+\usepackage{array}
 \usepackage{enumitem}
-\usepackage{hyperref}
 \usepackage{xcolor}
 \usepackage{fancyhdr}
-\usepackage{graphicx}
 \usepackage{amsmath}
-\usepackage{tikz}
-\usetikzlibrary{shapes,arrows.meta,positioning,fit}
+\usepackage[hyphens]{url}
+\usepackage{hyperref}
 
 \definecolor{headcolor}{RGB}{15,70,60}
 \hypersetup{
@@ -21,7 +20,7 @@
     urlcolor=headcolor,
     citecolor=headcolor,
     pdftitle={Software Requirements Specification - TrustBazaar},
-    pdfauthor={S. M. Nihal Ahmed}
+    pdfauthor={S. M. Nihal Ahmed, Afrim Hossen Khan, Sabikun Nahar Sinthia}
 }
 
 \titleformat{\chapter}[hang]{\normalfont\huge\bfseries\color{headcolor}}{\thechapter}{20pt}{}
@@ -34,560 +33,1210 @@
 \fancyhead[R]{TrustBazaar}
 \fancyfoot[C]{\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
+\setlength{\headheight}{14pt}
 
-\newenvironment{reqtable}{\begin{longtable}{p{2.2cm}p{11.5cm}}}{\end{longtable}}
-\newenvironment{deftable}{\begin{longtable}{p{3.5cm}p{10.2cm}}}{\end{longtable}}
+\setlength{\parskip}{0.45em}
+\setlength{\parindent}{0pt}
 
-\title{
-    \vspace{-2cm}
-    {\Large Daffodil International University}\\[0.3cm]
-    {\large Department of Software Engineering}\\[1.5cm]
-    \rule{\linewidth}{0.5pt}\\[0.4cm]
-    {\huge \textbf{Software Requirements Specification}}\\[0.3cm]
-    {\Large TrustBazaar: A Verified Peer-to-Peer Auction \\ and Marketplace Platform for Used Goods}\\[0.4cm]
-    \rule{\linewidth}{0.5pt}\\[1cm]
-}
-\author{
-    S. M. Nihal Ahmed \\
-    BSc in Software Engineering \\
-    Daffodil International University (DIU) \\
-    \\
-    Prepared for: Capstone Project
-}
-\date{Version 1.0 \\ \today}
+% ---------------------------------------------------------------- requirement tables
+% \req{ID}{Priority}{Verification}{v1.1 ID(s) or "new"}{Requirement text}
+% The fourth argument is not printed; it feeds the v1.1-to-v2.0 mapping in Appendix D.
+\newenvironment{reqs}{%
+  \small
+  \begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.35cm}
+                       >{\raggedright\arraybackslash}p{10.3cm}
+                       >{\centering\arraybackslash}p{0.7cm}
+                       >{\centering\arraybackslash}p{0.7cm}@{}}
+  \toprule
+  \textbf{ID} & \textbf{Requirement} & \textbf{Pri} & \textbf{Ver} \\
+  \midrule
+  \endfirsthead
+  \toprule
+  \textbf{ID} & \textbf{Requirement (continued)} & \textbf{Pri} & \textbf{Ver} \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+}{\end{longtable}}
+\newcommand{\req}[5]{\leavevmode\textbf{#1}\hypertarget{#1}{} & #5 & #2 & #3 \\ \addlinespace[2pt]}
+\newcommand{\rr}[1]{\hyperlink{#1}{#1}}
+\newcommand{\cp}[1]{\hyperlink{#1}{#1}}
+
+\newenvironment{deftable}{\small\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.6cm}>{\raggedright\arraybackslash}p{11.3cm}@{}}}{\end{longtable}}
 
 \begin{document}
 
-\maketitle
-\thispagestyle{empty}
-
-\vspace{2cm}
-\begin{center}
-\begin{tabular}{|l|l|}
+% ================================================================ TITLE
+\begin{titlepage}
+\centering
+\vspace*{0.5cm}
+{\Large Daffodil International University}\\[0.3cm]
+{\large Department of Software Engineering}\\[1.8cm]
+\rule{\linewidth}{0.5pt}\\[0.4cm]
+{\huge \textbf{Software Requirements Specification}}\\[0.4cm]
+{\Large TrustBazaar: A Verified Peer-to-Peer Auction\\[0.1cm] and Marketplace Platform for Used Goods}\\[0.4cm]
+\rule{\linewidth}{0.5pt}\\[1.5cm]
+{\large
+S. M. Nihal Ahmed (232-35-002)\\[0.15cm]
+Afrim Hossen Khan (232-35-076)\\[0.15cm]
+Sabikun Nahar Sinthia (232-35-475)\\[0.8cm]
+BSc in Software Engineering, Capstone Project\\[1.5cm]
+}
+\begin{tabular}{|l|>{\raggedright\arraybackslash}p{8.2cm}|}
 \hline
-\textbf{Document Status} & Draft for Review \\ \hline
-\textbf{Version} & 1.0 \\ \hline
-\textbf{Prepared By} & S. M. Nihal Ahmed \\ \hline
-\textbf{Date} & \today \\ \hline
-\textbf{Standard Followed} & IEEE 830-1998 SRS Template \\ \hline
+\textbf{Document status} & Draft for review \\ \hline
+\textbf{Version} & 2.0 \\ \hline
+\textbf{Date} & 14 October 2026 \\ \hline
+\textbf{Standard followed} & IEEE Std 830-1998 (structure), informed by ISO/IEC/IEEE 29148:2018 \\ \hline
+\textbf{Companion documents} & Project Proposal (revised); Supplementary Market Analysis \\ \hline
 \end{tabular}
+\vfill
+\end{titlepage}
+
+\section*{Revision History}
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}l l X@{}}
+\toprule
+\textbf{Version} & \textbf{Date} & \textbf{Change} \\
+\midrule
+1.0 & September 2026 & Initial specification: 91 functional and 20 non-functional requirements in 13 feature areas. \\
+1.1 & October 2026 & Game-account escrow added (FR-92 to FR-103, NFR-21 to NFR-23); disputes raised to Must Have; technology constraints aligned with the repository. \\
+2.0 & 14 October 2026 & Full review. Flaws in v1.1 corrected (Appendix C); security requirements chapter added; per-requirement priority and verification method; area-based identifiers (mapping in Appendix D); configurable parameters collected in one table; architecture, sequence diagrams and entity fields removed, to be specified in the System Design Document. \\
+\bottomrule
+\end{tabularx}
 \end{center}
 
 \newpage
-\thispagestyle{empty}
 \tableofcontents
 \newpage
-
+% ================================================================ 1 INTRODUCTION
 \chapter{Introduction}
 
 \section{Purpose}
-This Software Requirements Specification (SRS) describes the functional and non-functional requirements for \textbf{TrustBazaar}, a web-based, peer-to-peer marketplace platform on which individuals sell pre-owned items to other individuals through either a fixed-price listing or a time-boxed auction, with identity-verified sellers, escrow-protected payments through local mobile financial services and cards, an integrated logistics/delivery layer, and in-app negotiation via real-time chat. This document is intended to serve as the single point of reference for the system's scope, behavior, data model, and quality attributes throughout design, implementation, testing, and academic evaluation. It follows the structure recommended by IEEE Std 830-1998.
+This Software Requirements Specification (SRS) defines what \textbf{TrustBazaar} must do and the qualities it must have. TrustBazaar is a web-based, peer-to-peer marketplace in which identity-verified individuals in Bangladesh sell used goods and game accounts to one another, either at a fixed price or through a time-boxed auction. Every payment is held in escrow until the buyer has received what they paid for, delivery is arranged either as a safe in-person handover or through a courier, and disputes are decided while the money is still held.
+
+The SRS is the single reference for the system's scope and required behaviour during design, implementation, testing and academic evaluation. It states \emph{what} the system shall do, not \emph{how} it is built: the architecture, component design, data schema and sequence diagrams belong to the System Design Document (SDD), which will be written after this specification is agreed. The reasons behind the requirements, drawn from a study of Bikroy, Facebook Marketplace and Daraz, are given in the Supplementary Market Analysis (``the Supplementary Report''), and the project plan is given in the revised Project Proposal.
 
 \section{Document Conventions}
-Functional requirements are labeled \textbf{FR-\#}, non-functional requirements \textbf{NFR-\#}, both numbered sequentially and grouped by feature area. Priorities follow the MoSCoW convention (\textbf{Must Have}, \textbf{Should Have}, \textbf{Could Have}, \textbf{Won't Have this release}). The words \textbf{shall}/\textbf{must} denote mandatory behavior; \textbf{should} denotes recommended but non-mandatory behavior. Monetary amounts are expressed in Bangladeshi Taka (BDT) unless stated otherwise.
+
+\paragraph{Requirement identifiers.} Each requirement has a stable identifier made of a type and an area code, for example \textbf{FR-PAY-07} (functional, payment and escrow), \textbf{SEC-AUTH-03} (security, authentication) or \textbf{NFR-PERF-02} (other non-functional, performance). Identifiers are never reused; a withdrawn requirement keeps its identifier and is marked as withdrawn. Version 1.1 used a single running number (FR-1 to FR-103, NFR-1 to NFR-23); Appendix~\ref{app:map} maps every old number to its new identifier.
+
+\paragraph{Keywords.} \textbf{shall} marks a mandatory requirement; \textbf{should} marks a recommended one whose omission must be justified; \textbf{may} marks an option. Each requirement states one testable behaviour.
+
+\paragraph{Priority (Pri column).} MoSCoW: \textbf{M} Must Have (required for the capstone deliverable), \textbf{S} Should Have (planned; may be descoped with the reason documented), \textbf{C} Could Have (built if time allows), \textbf{W} Won't Have in this release (recorded so the boundary is explicit). A requirement marked \textbf{(prod)} applies to a production deployment only; in the academic deliverable it is met by documentation or by a sandbox equivalent, as the requirement states.
+
+\paragraph{Verification method (Ver column).} \textbf{T} Test (automated or scripted), \textbf{D} Demonstration, \textbf{I} Inspection of code, configuration or documents, \textbf{A} Analysis (calculation, review or measurement report).
+
+\paragraph{Configurable parameters.} Every time limit, threshold and rate used by a requirement is a named parameter, written \textbf{CP-nn}, with its default value listed in Table~\ref{tab:params} (Chapter~\ref{ch:params}). Requirements refer to the parameter, not to a hard-coded number.
+
+\paragraph{Money and time.} Amounts are in Bangladeshi Taka (BDT). Internally, amounts are integers in poisha (1~BDT = 100~poisha), so no amount is ever stored or calculated in floating point. Times are recorded in UTC and shown to users in Bangladesh Standard Time (Asia/Dhaka, UTC+06:00).
 
 \section{Intended Audience and Reading Suggestions}
 \begin{itemize}[nosep]
-    \item \textbf{Evaluation panel / course supervisor} -- Chapters 1, 2, 3, and 9 (business model) give the fastest overview of scope and industrial justification.
-    \item \textbf{Development team members} -- Chapter 4 (Functional Requirements) and Chapter 6 (Data Model) are the primary implementation references, organized so each feature area can be assigned to a sub-team.
-    \item \textbf{Reviewers of quality attributes} -- Chapter 7 (Non-Functional Requirements) details performance, security, and compliance obligations, several of which are specific to handling KYC documents and real money.
+    \item \textbf{Course supervisor and evaluation panel}: Chapters~1 and~2 for scope; Appendix~\ref{app:accept} for the acceptance criteria; Appendix~\ref{app:trace} for how each requirement traces to the proposal and the Supplementary Report.
+    \item \textbf{Development team}: Chapter~\ref{ch:fr} (functional requirements), Chapter~\ref{ch:sec} (security) and Chapter~\ref{ch:params} (parameters and business rules) are the implementation references. Each functional area maps to one backend module.
+    \item \textbf{Testers and reviewers}: the Ver column of each table, Chapter~\ref{ch:nfr} (measurable quality targets) and Appendix~\ref{app:accept}.
 \end{itemize}
 
-\section{Project Scope}
-TrustBazaar is a single web platform, not a mobile-native app, targeting individual-to-individual resale of used goods within Bangladesh. It is explicitly \textbf{not} a general e-commerce storefront for new/branded retail, and it is explicitly \textbf{not} a management information system: there is no administrative module whose sole purpose is CRUD over inventory, customers, or orders. Instead, the system exists to solve four coupled, non-trivial problems:
+\section{Product Scope}
+TrustBazaar is a single responsive web application, not a native mobile app, for individual-to-individual resale within Bangladesh. It exists to solve five connected problems that informal channels leave open (Supplementary Report, Sections~3--5):
 \begin{enumerate}[nosep]
-    \item Establishing trust between two strangers transacting for real money over an item neither has a pre-existing relationship with (\textbf{KYC verification} and \textbf{escrow-held payment});
-    \item Running a fair, tamper-resistant \textbf{time-boxed auction} alongside conventional fixed-price sale, under concurrent multi-user load;
-    \item Coordinating \textbf{fulfilment} between two individuals, either via a self-arranged local meetup or a third-party courier with system-computed fare, split automatically between courier and platform; and
-    \item Sustaining the platform financially through a small number of clearly modeled \textbf{revenue streams} layered on top of the same settlement transaction.
+    \item \textbf{Trust between strangers}: every person who lists, bids, buys or receives money is identity-verified (KYC), and one person can hold only one verified account.
+    \item \textbf{Fair price discovery}: a server-timed auction with proxy bidding, a reserve price and anti-sniping runs alongside fixed-price sale and stays correct under simultaneous bidding.
+    \item \textbf{Protected payment}: every payment is held in escrow and leaves it only by buyer confirmation after handover, by a timeout counted from a recorded handover, or by an operator's dispute decision.
+    \item \textbf{Safe fulfilment}: no cash changes hands at a meeting; the buyer either collects the item at a suggested safe public meetup point or receives it by courier at a system-quoted fare.
+    \item \textbf{Safe game-account trading}: ownership is proven before listing, login details are encrypted so that only the buyer can read them, and the payment is held through a protection period after the buyer takes the account over.
 \end{enumerate}
-Real-time chat, ratings, dispute handling, and notification delivery support these four pillars but are not, individually, the system's central technical claim.
+Chat, ratings, notifications and monetization support this transaction lifecycle; they are not separate products.
 
-\section{Definitions, Acronyms, and Abbreviations}
+\subsection*{Out of scope}
+\begin{itemize}[nosep]
+    \item Sale of new or branded retail stock by businesses; TrustBazaar is not a general e-commerce storefront.
+    \item A general administration or management console. The internal roles (Platform Operator and Administrator, Section~\ref{sec:classes}) can perform only the specific actions listed in Section~\ref{sec:fr-ops}.
+    \item Integration with game publishers. TrustBazaar cannot prevent a publisher from acting against an account that has changed hands; this risk is disclosed to the buyer before payment (\rr{FR-GAM-05}).
+    \item Real money movement and live courier bookings in the academic deliverable. Sandbox and test-mode integrations are used, and every substitution is disclosed rather than presented as live.
+    \item Native mobile apps, cash on delivery, cryptocurrency payments, international shipping and sales outside Bangladesh.
+\end{itemize}
+
+\section{Definitions, Acronyms and Abbreviations}
 \begin{deftable}
-KYC & Know Your Customer -- identity verification process using a government-issued document. \\
-MFS & Mobile Financial Service (e.g., bKash, Nagad) -- Bangladesh's dominant mobile payment rails. \\
-Escrow & Funds held by the platform after payment and released to the seller only after buyer confirmation or timeout. \\
-Anti-sniping & Automatic auction time extension triggered by a bid placed near the scheduled end time. \\
-Ledger & An immutable, itemized record of how a single payment was split among parties (seller, courier, platform). \\
-SSE & Server-Sent Events, used for one-directional real-time updates (e.g., live bid counters). \\
-NID & National Identity Card (Bangladesh). \\
+Administrator & Internal role that manages operator accounts, configurable parameters and feature switches; has no access to case data (Section~\ref{sec:classes}). \\
+Auction & Listing sold to the highest valid bid at a server-determined end time. \\
+Anti-sniping & Automatic extension of an auction's end time when a valid bid arrives close to it. \\
+ASVS & OWASP Application Security Verification Standard. \\
+Blind index & Keyed hash (HMAC) of a sensitive value, used to test equality (for example, whether an NID is already registered) without storing the value in readable form. \\
+Ciphertext & Encrypted data; here, game-account login details encrypted for the buyer. \\
+CP-nn & Configurable parameter, defined in Table~\ref{tab:params}. \\
+Delivery event & The recorded moment from which post-delivery deadlines are counted: the handover-code entry for a meetup (\rr{FR-DLV-06}), the provider's \texttt{delivered} status for a courier order (\rr{FR-DLV-10}), or, for a game account, completion of the takeover (\rr{FR-GAM-15}). \\
+Dispute & A buyer's formal claim against an order, made while the payment is held, decided by an operator. \\
+Escrow & Funds collected from the buyer and held, not payable to the seller, until a release condition in \rr{FR-PAY-07} is met. \\
+Four-eyes approval & An action that takes effect only after a second, different authorised person approves it. \\
+Handover code & One-time code shown only to the buyer, given to the seller after the buyer has inspected the item, which records the handover. \\
+KYC & Know Your Customer: verifying a person's identity from a government-issued document and a live selfie. \\
+Ledger & Append-only, itemised record of how a payment was divided among seller, courier, platform and any refund. \\
+MFA & Multi-factor authentication. \\
+MFS & Mobile Financial Service, such as bKash or Nagad. \\
+NID & Bangladesh National Identity Card. \\
+Operator & Internal role that reviews KYC submissions, ownership proofs, reports and disputes (Section~\ref{sec:classes}). \\
+OTP & One-time password sent by SMS or generated by an authenticator app. \\
+PDPO & Personal Data Protection Ordinance, 2025 (Bangladesh). \\
+Protection period & Time after a game-account takeover (\cp{CP-24}) during which the payment stays in escrow so that recovery of the account by the seller can still be refunded. \\
+Proxy bid & A private maximum set by a bidder; the system bids on the bidder's behalf up to that maximum. \\
+Reserve price & A hidden minimum below which an auction does not sell. \\
+Sealed credentials & Game-account login details encrypted in the seller's browser with a key that only the buyer's browser holds. \\
+Step-up authentication & A fresh OTP or second-factor check required before a sensitive action even within a valid session. \\
+Takeover & The buyer securing a purchased game account by changing its password, recovery e-mail and phone, linked logins and two-step verification. \\
+TOTP & Time-based one-time password (RFC 6238), generated by an authenticator app. \\
+Verified user & A user whose KYC status is \texttt{verified}. \\
 \end{deftable}
 
 \section{References}
-\begin{itemize}[nosep]
-    \item IEEE Std 830-1998, IEEE Recommended Practice for Software Requirements Specifications
-    \item bKash Merchant / Payment Gateway API Documentation
-    \item Nagad Merchant API Documentation
-    \item Stripe API Documentation (card payments, webhook signature verification)
-    \item Representative Bangladeshi courier fare structures: Pathao Courier, Sundarban Courier Service, RedX, Steadfast Courier (publicly published rate cards)
-    \item OWASP Top 10 (2021); OWASP guidance on handling personally identifiable information
-    \item Bangladesh Data Protection Act (draft/prevailing regulatory guidance on personal data handling), for KYC document storage practice
-\end{itemize}
+{\sloppy
+\begin{enumerate}[label={[R\arabic*]}, nosep, leftmargin=*]
+    \item IEEE Std 830-1998, \emph{IEEE Recommended Practice for Software Requirements Specifications}.
+    \item ISO/IEC/IEEE 29148:2018, \emph{Systems and software engineering -- Life cycle processes -- Requirements engineering}.
+    \item OWASP, \emph{Application Security Verification Standard 5.0.0}, May 2025.
+    \item OWASP, \emph{Top 10:2021}.
+    \item NIST SP 800-63B-4, \emph{Digital Identity Guidelines: Authentication and Authenticator Management}, August 2025.
+    \item PCI Security Standards Council, \emph{PCI DSS v4.0.1}, June 2024, and FAQ 1588 on SAQ A eligibility, February 2025.
+    \item W3C, \emph{Web Content Accessibility Guidelines (WCAG) 2.2}, October 2023.
+    \item W3C, \emph{Web Cryptography API} (Recommendation).
+    \item IETF RFC 6238 (TOTP); RFC 6797 (HTTP Strict Transport Security); RFC 9116 (\texttt{security.txt}).
+    \item Government of Bangladesh, \emph{Personal Data Protection Ordinance, 2025} (Ordinance No.~61 of 2025), gazetted 6 November 2025.
+    \item Government of Bangladesh, \emph{Cyber Security Ordinance, 2025} (Ordinance No.~25 of 2025), gazetted 21 May 2025.
+    \item Bangladesh Bank, instructions on escrow service for digital commerce (June 2021), and Ministry of Commerce, \emph{Digital Commerce Operational Guidelines 2021}, as summarised in the Supplementary Report.
+    \item bKash Tokenized Checkout, Nagad Merchant and Stripe API documentation (sandbox and test modes, webhook verification).
+    \item Published rate cards of Pathao Courier, Steadfast Courier, RedX and Sundarban Courier Service.
+    \item S.~M.~N.~Ahmed, A.~H.~Khan and S.~N.~Sinthia, \emph{Trust in Bangladesh's Second-Hand Online Market: A Market Analysis of Bikroy.com and Its Alternatives}, supplementary report to the project proposal, October 2026.
+    \item TrustBazaar team, \emph{Project Proposal (revised)}, October 2026.
+    \item TrustBazaar repository, \url{https://github.com/nihal4/trustbazaar}.
+\end{enumerate}
+}
 
+\section{Overview of this Document}
+Chapter~2 describes the product's context, users, environment, constraints and assumptions. Chapter~\ref{ch:ifc} specifies external interfaces. Chapter~\ref{ch:fr} specifies functional requirements by area, following the transaction lifecycle. Chapter~\ref{ch:sec} specifies security requirements, and Chapter~\ref{ch:nfr} the other quality attributes. Chapter~\ref{ch:data} states what information the system must keep, how it is classified and how long it is retained. Chapter~\ref{ch:params} lists the configurable parameters and business rules. The appendices give the acceptance criteria, traceability, the corrections made to v1.1, the identifier mapping and the open issues.
+
+% ================================================================ 2 OVERALL
 \chapter{Overall Description}
 
 \section{Product Perspective}
-TrustBazaar is a new, self-contained system composed of the following subsystems:
-\begin{enumerate}[nosep]
-    \item \textbf{Web Client} -- listing browse/search, listing detail with live auction state, chat, checkout, seller dashboard, KYC submission wizard.
-    \item \textbf{Core API / Application Backend} -- authentication, listing management, auction engine, order and settlement logic, delivery decision engine, notification dispatch.
-    \item \textbf{Real-Time Layer} -- WebSocket/SSE server for live bid updates, countdown synchronization, chat delivery, and outbid/notification push.
-    \item \textbf{Payment Layer} -- integrations with bKash, Nagad, and card processing (Stripe or a local acquirer), plus the internal escrow ledger.
-    \item \textbf{Delivery Layer} -- distance computation, self-pickup vs. courier decision, courier fare lookup/booking, and delivery-fee revenue split.
-    \item \textbf{Data Layer} -- relational database holding users, KYC records, listings, bids, orders, ledger entries, chat, reviews, and disputes.
-\end{enumerate}
+TrustBazaar is a new, self-contained system. It replaces no existing system; it competes with Bikroy, Facebook Marketplace groups and informal ``admin deals'', which connect buyers and sellers but leave payment, handover and disputes to the parties (Supplementary Report, Sections~3 and~5). The system interacts with the following external parties; how it is divided internally is a design matter for the SDD.
+\begin{itemize}[nosep]
+    \item \textbf{Users} through a web browser on a phone or computer.
+    \item \textbf{Internal staff} (operators and administrators) through restricted views of the same web application.
+    \item \textbf{Payment providers}: bKash, Nagad and Stripe, for collecting payments, refunds and seller payouts.
+    \item \textbf{Courier providers}: Pathao or Steadfast through their sandbox APIs, or a documented mock courier service.
+    \item \textbf{Messaging providers}: an SMS gateway for OTPs and security alerts, and an e-mail service for transactional messages.
+    \item \textbf{Browser platform services}: camera access for the KYC selfie, geolocation for approximate location, and the Web Cryptography API for game-account credentials.
+\end{itemize}
 
-\section{Product Functions (Summary)}
-The system shall allow a user to: register and complete KYC verification; list an item for fixed-price sale or auction; browse, search, and filter listings; place bids on an active auction or purchase a fixed-price item outright; chat in real time with a counterparty about a specific listing; pay via bKash, Nagad, or card into an escrow-protected transaction; choose or be assigned a fulfilment method (self-pickup or courier) with a single blended price; confirm receipt to release escrowed funds, or open a dispute; rate a completed counterparty; and, for sellers, optionally boost a listing or subscribe to a Pro Seller tier.
+\section{Product Functions}
+At the highest level, the system shall allow users to:
+\begin{itemize}[nosep]
+    \item register, verify their phone and e-mail, sign in securely and complete KYC verification;
+    \item list a physical item or a game account for fixed-price sale or auction, and browse, search and filter listings;
+    \item bid in a server-timed auction or buy a fixed-price item, and chat with the counterparty about a listing;
+    \item pay by bKash, Nagad or card into escrow, and receive the item at a safe meetup point or by courier, or receive a game account through a sealed handover and guided takeover;
+    \item confirm receipt to release payment, or open a dispute while the payment is still held;
+    \item receive payouts to a verified payout account, rate the counterparty, and report fraud;
+    \item for sellers, optionally feature a listing or subscribe to the Pro Seller tier.
+\end{itemize}
+Internal staff can review KYC submissions, ownership proofs, reports and disputes, and manage configuration, each within the limits of Section~\ref{sec:fr-ops}.
 
 \section{User Classes and Characteristics}
-\begin{itemize}[nosep]
-    \item \textbf{Unverified User} -- registered, may browse and chat, but cannot list items or bid/buy until KYC is approved.
-    \item \textbf{Verified Individual User} -- completed KYC; may act as buyer and/or seller; default role for the platform.
-    \item \textbf{Pro Seller (subscribed)} -- verified user with an active paid subscription granting a lower commission rate, higher concurrent listing limits, and a storefront analytics view.
-    \item \textbf{Delivery/Courier Partner (external)} -- not a platform end user in the UI sense, but an integration partner whose API the system calls; may be simulated via a mock service for demonstration purposes.
-    \item \textbf{Platform Operator} -- restricted internal role for KYC review, dispute adjudication, and operational monitoring; this is a support function required by the trust model, not a general management console (see Section 2.6 for the explicit boundary).
-\end{itemize}
+\label{sec:classes}
+\begin{deftable}
+\textbf{Guest} & Not signed in. May browse and search active listings and view public profiles. Cannot chat, bid, buy or list. \\
+\textbf{Registered user} & Account with verified phone number but KYC not yet \texttt{verified} (statuses \texttt{unsubmitted}, \texttt{pending\_review}, \texttt{rejected} or \texttt{revoked}). May browse, save searches and chat. Cannot list, bid, buy or receive payouts. \\
+\textbf{Verified user} & KYC status \texttt{verified}, aged 18 or over. May act as buyer and seller of physical items and game accounts. The default class for transacting users. \\
+\textbf{Pro Seller} & Verified user with an active paid subscription: lower commission, higher listing limit and a sales analytics view (Could Have). \\
+\textbf{Platform Operator} & Internal staff. Works the KYC, ownership-proof, report, flagged-activity and dispute queues. Can perform only the actions in \rr{FR-OPS-02}; cannot change configuration or manage staff accounts. MFA is mandatory. \\
+\textbf{Administrator} & Internal staff. Manages operator accounts, configurable parameters and feature switches. Cannot view KYC documents, chats or dispute evidence and cannot decide cases. MFA is mandatory. \\
+\textbf{External providers} & Payment, courier and messaging providers. Not users of the interface; they interact through authenticated APIs and webhooks. \\
+\end{deftable}
+Users are assumed to be familiar with smartphones and mobile financial services, but not with auctions or escrow; the interface must explain both in plain language (\rr{NFR-USE-01}, \rr{NFR-USE-07}). Many users will reach the site on mid-range Android phones over mobile data.
 
 \section{Operating Environment}
 \begin{itemize}[nosep]
-    \item \textbf{Client:} any evergreen browser (Chrome, Firefox, Safari, Edge) supporting WebSockets and Server-Sent Events.
-    \item \textbf{Backend runtime:} Node.js 20+ (NestJS/Express) or Python 3.11+ (FastAPI/Django), containerized with Docker.
-    \item \textbf{Database:} PostgreSQL 15+, chosen specifically for strong transactional (ACID) guarantees required by bidding and settlement.
-    \item \textbf{Cache/Queue/Real-time backing store:} Redis 7+, used for auction countdown state, bid locks, and pub/sub fan-out to WebSocket connections.
-    \item \textbf{Geospatial computation:} PostGIS extension or application-level Haversine distance calculation.
+    \item \textbf{Client}: current versions of Chrome, Firefox, Safari and Edge, on Android, iOS and desktop, with WebSocket, camera (Media Capture) and Web Cryptography API support. Minimum supported viewport width: 360 CSS pixels.
+    \item \textbf{Server}: Linux containers run with Docker Compose: PostgreSQL 15, Redis 7, the backend (Node.js 20, NestJS 10, TypeScript 5, with its Socket.IO 4 real-time gateway) and the web client (React 18, React Router 6, built with Vite).
+    \item \textbf{Network}: all traffic over HTTPS and secure WebSockets; the system must remain usable on 4G mobile connections typical in Bangladesh.
 \end{itemize}
 
 \section{Design and Implementation Constraints}
-\begin{itemize}[nosep]
-    \item All payment integrations (bKash, Nagad, card) shall use official sandbox/test-mode credentials; no real financial transactions shall be processed in the academic deliverable.
-    \item Courier integration shall use a real courier's published sandbox API where available; where no public sandbox exists, a mock courier service reproducing realistic fare and status-update behavior shall be substituted, and this substitution shall be explicitly documented, not presented as a live integration.
-    \item KYC document images shall be stored encrypted at rest and shall never be exposed via a directly guessable or public URL.
-    \item The Platform Operator role described in Section 2.4 shall be strictly limited to KYC review and dispute adjudication queues; it shall not provide generic create/edit/delete access to listings, users, or orders, in order to preserve the system's identity as a marketplace rather than a management system.
-\end{itemize}
+\begin{enumerate}[label=\textbf{C-\arabic*}, nosep, leftmargin=*]
+    \item The technology stack is fixed by the project repository [R17]: TypeScript on Node.js 20 with NestJS 10, PostgreSQL 15 accessed through TypeORM, Redis 7 accessed through ioredis, Socket.IO 4, React 18, Docker Compose, Jest, ESLint and GitHub Actions. A change requires agreement of the whole team and an update to this SRS.
+    \item Payment integrations shall use official sandbox or test-mode credentials only; no real financial transaction shall be processed in the academic deliverable.
+    \item Courier integration shall use a real courier's sandbox API where one is available; otherwise a mock courier that reproduces realistic fares and status updates shall be used, and the substitution shall be labelled in the user interface and documentation.
+    \item No custom cryptographic algorithm or protocol shall be written. Only vetted library or platform implementations (Node.js \texttt{crypto}, the browser Web Cryptography API, established password-hashing libraries) shall be used.
+    \item The Operator and Administrator roles shall be limited to the actions listed in Section~\ref{sec:fr-ops}; no generic create, edit or delete access to listings, users or orders shall be provided, so that the system remains a marketplace and not a management system.
+    \item TrustBazaar shall not integrate with game publishers. Because most publishers prohibit account transfers (Supplementary Report, Section~5.2), the game-account feature shall be switchable off by configuration (\rr{FR-GAM-01}).
+    \item \textbf{(prod)} In a production deployment, buyers' funds shall be held through a payment service provider or bank licensed by Bangladesh Bank for escrow or payment services, not in an account controlled solely by TrustBazaar. In the academic deliverable, escrow is simulated by internal state over sandbox payments.
+    \item \textbf{(prod)} Personal data classified as Restricted or Confidential (Section~\ref{sec:classification}) shall be stored and processed in a manner compliant with the PDPO [R10], including any requirement to keep such data within Bangladesh.
+\end{enumerate}
 
 \section{User Documentation}
-Deliverables include this SRS, a System Design Document (data model, sequence diagrams, API contracts), a README with Docker Compose setup instructions, and in-app contextual help for the KYC submission flow and the auction bidding rules (including anti-sniping behavior, which must be explained to first-time bidders).
+The deliverables are this SRS, the System Design Document, a README with setup instructions for Docker Compose, a privacy notice and terms of use, and in-app help. In-app help shall cover at least: the KYC process; auction rules (minimum increment, proxy bidding, reserve price, anti-sniping); how escrow, the handover code and the release timeout work; how to open a dispute; and, for game accounts, the ownership proof, the takeover checklist, the protection period and the publisher-terms risk.
 
 \section{Assumptions and Dependencies}
-\begin{itemize}[nosep]
-    \item It is assumed that bKash and Nagad sandbox developer access can be obtained for the academic project; if unavailable, Stripe test mode alone shall be used and this limitation documented.
-    \item It is assumed that server-side clocks (used for auction countdown authority) are synchronized via NTP; auction fairness depends on this.
-    \item Courier fare figures are assumed to be reasonable approximations of real published rate cards rather than certified real-time quotes, unless a live sandbox is available.
-\end{itemize}
+\begin{enumerate}[label=\textbf{AS-\arabic*}, nosep, leftmargin=*]
+    \item Sandbox access to bKash and Nagad can be obtained. If it cannot, Stripe test mode alone is used and the limitation is documented (risk accepted in the proposal).
+    \item Server clocks are synchronised by NTP; auction fairness and every deadline in this SRS depend on it.
+    \item Courier fares are reasonable approximations of published rate cards, not certified live quotes, unless a live sandbox is available.
+    \item An SMS gateway with a test mode, or a logged mock that is labelled as such, is available for OTP delivery.
+    \item Users' browsers support the Web Cryptography API; a browser without it cannot take part in a game-account sale and is told so before purchase.
+    \item The protection given to game-account credentials assumes that the code the server sends to browsers has not been tampered with. It protects against database and backup compromise and against operators; it does not protect against an attacker who can change the deployed application code. That residual risk is reduced by the change controls in Section~\ref{sec:sec-sdl}.
+    \item KYC verification by an operator from an NID image and a selfie raises the cost of fraud but does not make it impossible; fake NIDs exist (Supplementary Report, Section~5.2). The design relies on escrow and identity checks covering each other's gaps.
+\end{enumerate}
 
-\chapter{System Features}
-Each feature below lists its purpose, priority, and associated functional requirement range detailed in Chapter 4.
-
-\section{Feature 1: Account Registration and KYC Verification}
-\textbf{Description:} Users register with email/phone and password, then submit a government ID and a selfie for identity verification before being permitted to list items or transact. \textbf{Priority:} Must Have. \textbf{Requirements:} FR-1 to FR-9.
-
-\section{Feature 2: Listing Creation (Fixed-Price and Auction)}
-\textbf{Description:} A verified seller creates a listing choosing either a fixed price with available stock count, or an auction with a starting price, reserve price (optional), and duration. \textbf{Priority:} Must Have. \textbf{Requirements:} FR-10 to FR-18.
-
-\section{Feature 3: Search and Discovery}
-\textbf{Description:} Buyers browse and filter listings by category, price, condition, distance, and listing type (auction/fixed). \textbf{Priority:} Must Have. \textbf{Requirements:} FR-19 to FR-22.
-
-\section{Feature 4: Auction Engine}
-\textbf{Description:} Server-authoritative bidding with anti-sniping extension, proxy (automatic) bidding, reserve price enforcement, live bid feed, and automatic winner determination. \textbf{Priority:} Must Have. \textbf{Requirements:} FR-23 to FR-34.
-
-\section{Feature 5: Fixed-Price Purchase}
-\textbf{Description:} Concurrency-safe stock decrement so that simultaneous buyers cannot both purchase the last unit of a listing. \textbf{Priority:} Must Have. \textbf{Requirements:} FR-35 to FR-38.
-
-\section{Feature 6: Payment and Escrow Settlement}
-\textbf{Description:} Collects payment via bKash, Nagad, or card; holds funds in escrow; releases to seller on buyer confirmation or automatic timeout; supports refunds and disputes. \textbf{Priority:} Must Have. \textbf{Requirements:} FR-39 to FR-49.
-
-\section{Feature 7: Delivery and Fulfilment}
-\textbf{Description:} Computes buyer-seller distance; recommends self-pickup with a safe meetup point under a distance threshold, or books a courier and quotes a blended price above it; splits the delivery fee between courier and platform. \textbf{Priority:} Should Have. \textbf{Requirements:} FR-50 to FR-58.
-
-\section{Feature 8: Real-Time Chat}
-\textbf{Description:} Per-listing buyer-seller messaging, including image sharing, tied to the transaction thread. \textbf{Priority:} Must Have. \textbf{Requirements:} FR-59 to FR-64.
-
-\section{Feature 9: Ratings, Reviews, and Trust Signals}
-\textbf{Description:} Post-transaction rating, unlockable only after a completed paid transaction; KYC-verified badge; Pro Seller badge. \textbf{Priority:} Should Have. \textbf{Requirements:} FR-65 to FR-68.
-
-\section{Feature 10: Dispute Resolution}
-\textbf{Description:} Buyer-initiated dispute flow that freezes escrow release pending operator adjudication. \textbf{Priority:} Should Have. \textbf{Requirements:} FR-69 to FR-73.
-
-\section{Feature 11: Notifications}
-\textbf{Description:} Real-time and asynchronous notifications for outbid events, auction-ending-soon, payment confirmation, delivery status, and new chat messages. \textbf{Priority:} Should Have. \textbf{Requirements:} FR-74 to FR-77.
-
-\section{Feature 12: Monetization Features}
-\textbf{Description:} Transaction commission, delivery-fee margin, featured/boosted listings, and Pro Seller subscription. \textbf{Priority:} Must Have (commission, delivery margin); Could Have (featured listings, subscription). \textbf{Requirements:} FR-78 to FR-86.
-
-\section{Feature 13: Trust and Safety Controls}
-\textbf{Description:} Listing reporting/flagging, bid-rate limiting, duplicate-listing fraud heuristics, and audit logging of all monetary and bidding events. \textbf{Priority:} Should Have. \textbf{Requirements:} FR-87 to FR-91.
-
-\chapter{Functional Requirements}
-
-\section{Account Registration and KYC Verification}
-\begin{reqtable}
-\textbf{FR-1} & The system shall allow a new user to register with an email or phone number and a password. \\
-\textbf{FR-2} & The system shall hash and salt passwords using a strong algorithm (bcrypt or argon2); plaintext passwords shall never be stored or logged. \\
-\textbf{FR-3} & The system shall issue a short-lived JWT access token and a rotating refresh token upon login. \\
-\textbf{FR-4} & The system shall require a registered user to submit a government-issued ID (NID or passport) image and a live selfie before being granted Verified status. \\
-\textbf{FR-5} & The system shall store submitted KYC documents encrypted at rest, accessible only to the reviewing operator role and the owning user. \\
-\textbf{FR-6} & The system shall track KYC status per user as one of: \texttt{unsubmitted}, \texttt{pending\_review}, \texttt{verified}, \texttt{rejected}, with rejection requiring a reason code. \\
-\textbf{FR-7} & The system shall prevent an \texttt{unsubmitted} or \texttt{rejected} user from creating a listing, placing a bid, or completing a purchase, enforced server-side on every relevant request. \\
-\textbf{FR-8} & The system shall display a Verified badge on the profile and listings of any user with \texttt{verified} KYC status. \\
-\textbf{FR-9} & The system shall allow a rejected user to resubmit KYC documents. \\
-\end{reqtable}
-
-\section{Listing Creation}
-\begin{reqtable}
-\textbf{FR-10} & The system shall allow a Verified user to create a listing with title, description, category, condition (new/like-new/used/for-parts), and one or more photos. \\
-\textbf{FR-11} & The system shall require at least two photos per listing, including one clearly showing any visible defects, before publication. \\
-\textbf{FR-12} & The system shall allow a seller to choose listing type: \texttt{fixed\_price} or \texttt{auction}, at creation time; the type shall not be changed after the first bid or purchase. \\
-\textbf{FR-13} & For a fixed-price listing, the system shall require a price and an available stock quantity of at least 1. \\
-\textbf{FR-14} & For an auction listing, the system shall require a starting price, an auction duration (default options of 1 or 2 hours, configurable up to 72 hours), and shall accept an optional hidden reserve price. \\
-\textbf{FR-15} & The system shall record the seller's pickup location (approximate, for distance calculation) at listing creation or from the seller's saved profile location. \\
-\textbf{FR-16} & The system shall allow a seller to edit a listing's description or photos before any bid or purchase has occurred, but not its price, type, or duration once active. \\
-\textbf{FR-17} & The system shall allow a seller to cancel a fixed-price listing with no completed sales at any time; an auction listing with at least one bid shall not be cancelable except by operator intervention. \\
-\textbf{FR-18} & The system shall enforce a maximum number of concurrently active listings per seller, higher for Pro Seller accounts than standard Verified accounts. \\
-\end{reqtable}
-
-\section{Search and Discovery}
-\begin{reqtable}
-\textbf{FR-19} & The system shall allow full-text search over listing titles and descriptions. \\
-\textbf{FR-20} & The system shall allow filtering results by category, price range, condition, listing type, and maximum distance from the buyer's location. \\
-\textbf{FR-21} & The system shall support sorting results by newest, price (ascending/descending), and auction ending soonest. \\
-\textbf{FR-22} & The system shall exclude listings whose seller's KYC status is not \texttt{verified} from public search results. \\
-\end{reqtable}
-
-\section{Auction Engine}
-\begin{reqtable}
-\textbf{FR-23} & The system shall maintain the authoritative auction end time on the server; the client shall treat any locally displayed countdown as informational only. \\
-\textbf{FR-24} & The system shall accept a bid only if it exceeds the current highest bid by at least a configured minimum increment. \\
-\textbf{FR-25} & The system shall process concurrent bids using a transaction-safe mechanism (row-level locking or equivalent) such that two simultaneous bids can never both be recorded as the current highest bid. \\
-\textbf{FR-26} & The system shall reject a bid placed after the auction's authoritative end time, even if the client submitted it before observing the end locally. \\
-\textbf{FR-27} & The system shall extend the auction end time by a configurable interval (default 2 minutes) whenever a valid bid is placed within that interval of the current end time (anti-sniping). \\
-\textbf{FR-28} & The system shall allow a bidder to set a maximum proxy bid amount; the system shall automatically place the minimum necessary incremental bid on the bidder's behalf whenever outbid, up to that maximum. \\
-\textbf{FR-29} & The system shall not reveal any bidder's proxy maximum to other bidders or the seller. \\
-\textbf{FR-30} & The system shall not declare a winning bid below the seller's reserve price, if one was set; the listing shall instead close as unsold. \\
-\textbf{FR-31} & The system shall broadcast live bid updates (new highest bid, time remaining) to all connected clients viewing the auction in real time. \\
-\textbf{FR-32} & The system shall notify the outbid bidder in real time when a higher bid is placed. \\
-\textbf{FR-33} & Upon auction close, the system shall determine the winning bidder and create a pending order requiring payment within a configured window (default 24 hours). \\
-\textbf{FR-34} & If the winning bidder does not complete payment within the window, the system shall offer the item to the next-highest bidder (second-chance offer) before relisting or closing the auction as unsold. \\
-\end{reqtable}
-
-\section{Fixed-Price Purchase}
-\begin{reqtable}
-\textbf{FR-35} & The system shall allow a Verified buyer to purchase a fixed-price listing at the listed price, subject to available stock. \\
-\textbf{FR-36} & The system shall decrement stock and create an order within a single atomic transaction, such that concurrent purchase requests cannot both succeed when only one unit remains. \\
-\textbf{FR-37} & The system shall mark a fixed-price listing as sold out and remove it from active search results once stock reaches zero. \\
-\textbf{FR-38} & The system shall queue purchase requests received during a burst (e.g., a popular relisted item) and process them in order rather than dropping or silently failing excess requests. \\
-\end{reqtable}
-
-\section{Payment and Escrow Settlement}
-\begin{reqtable}
-\textbf{FR-39} & The system shall support payment via bKash, Nagad, and card (Stripe or equivalent) at checkout, in sandbox/test mode for the academic deliverable. \\
-\textbf{FR-40} & The system shall confirm payment completion via a server-to-server webhook or callback from the payment provider, not solely via client-side redirect state. \\
-\textbf{FR-41} & The system shall process each payment webhook idempotently, such that duplicate delivery of the same payment confirmation event does not create duplicate orders or double-credit any party. \\
-\textbf{FR-42} & Upon confirmed payment, the system shall place the full amount (item price plus any delivery fee) into an escrow-held state, not immediately payable to the seller. \\
-\textbf{FR-43} & The system shall release escrowed seller funds automatically upon explicit buyer confirmation of receipt, or automatically after a configured timeout (default 5 days) if the buyer takes no action and no dispute is open. \\
-\textbf{FR-44} & The system shall record every escrow state transition (\texttt{held}, \texttt{released}, \texttt{refunded}, \texttt{frozen\_disputed}) with a timestamp and triggering actor. \\
-\textbf{FR-45} & The system shall support a full or partial refund to the buyer when a dispute is resolved in the buyer's favor. \\
-\textbf{FR-46} & The system shall generate a single itemized settlement ledger entry per completed order showing: item price, platform commission, delivery fee, courier payout, and platform delivery margin. \\
-\textbf{FR-47} & The system shall reconcile payment gateway state against internal order/escrow state via a periodic background job, to catch missed or delayed webhook deliveries. \\
-\textbf{FR-48} & The system shall retry a failed payment-provider API call with exponential backoff up to a configured maximum before surfacing a failure to the user. \\
-\textbf{FR-49} & The system shall never store raw card numbers or MFS account credentials; payment provider tokens/references shall be used exclusively. \\
-\end{reqtable}
-
-\section{Delivery and Fulfilment}
-\begin{reqtable}
-\textbf{FR-50} & The system shall compute the distance between buyer and seller locations at checkout using stored approximate coordinates. \\
-\textbf{FR-51} & If the computed distance is at or below a configurable threshold (default 2 km), the system shall recommend self-pickup and shall not add a delivery fee. \\
-\textbf{FR-52} & For a self-pickup transaction, the system shall suggest at least one safe public meetup point near the midpoint of buyer and seller locations, drawn from a curated list (e.g., police stations, shopping mall entrances). \\
-\textbf{FR-53} & The system shall share only approximate location (not exact home address) between buyer and seller prior to an agreed meetup. \\
-\textbf{FR-54} & If the computed distance exceeds the self-pickup threshold, the system shall compute a courier delivery fare based on a distance/weight fare model approximating published Bangladeshi courier rate cards. \\
-\textbf{FR-55} & The system shall present the buyer a single blended checkout price (item price plus delivery fare) without requiring the buyer to select a specific courier. \\
-\textbf{FR-56} & Upon payment confirmation for a courier-fulfilled order, the system shall create a booking request to the integrated (or mocked) courier service, including pickup and drop-off details. \\
-\textbf{FR-57} & The system shall track and display delivery status (\texttt{booked}, \texttt{picked\_up}, \texttt{in\_transit}, \texttt{delivered}) to both buyer and seller. \\
-\textbf{FR-58} & Upon delivery confirmation, the system shall split the collected delivery fee between the courier payout and the platform's delivery margin according to a configured percentage, recorded in the settlement ledger (FR-46). \\
-\end{reqtable}
-
-\section{Real-Time Chat}
-\begin{reqtable}
-\textbf{FR-59} & The system shall provide a real-time chat thread scoped to a specific listing between the prospective buyer and seller. \\
-\textbf{FR-60} & The system shall deliver messages to an online recipient via WebSocket in real time, and shall queue messages for delivery when the recipient reconnects if currently offline. \\
-\textbf{FR-61} & The system shall support sharing images within a chat thread. \\
-\textbf{FR-62} & The system shall persist full chat history per thread, retrievable by either participant on return. \\
-\textbf{FR-63} & The system shall display a delivered/read indicator per message. \\
-\textbf{FR-64} & The system shall allow a user to report a chat thread's content as abusive or fraudulent, feeding the trust-and-safety queue (FR-87). \\
-\end{reqtable}
-
-\section{Ratings, Reviews, and Trust Signals}
-\begin{reqtable}
-\textbf{FR-65} & The system shall allow a buyer and seller to rate each other (1--5 stars, optional text) only after an order's escrow has been released or refunded. \\
-\textbf{FR-66} & The system shall prevent a rating from being submitted for an order with no completed payment. \\
-\textbf{FR-67} & The system shall display a seller's average rating and completed-transaction count on their profile and listings. \\
-\textbf{FR-68} & The system shall display distinct badges for KYC-verified status and active Pro Seller subscription. \\
-\end{reqtable}
-
-\section{Dispute Resolution}
-\begin{reqtable}
-\textbf{FR-69} & The system shall allow a buyer to open a dispute against an order within a configured window after delivery/meetup (default 3 days), providing a reason and optional evidence photos. \\
-\textbf{FR-70} & Opening a dispute shall immediately transition the order's escrow to \texttt{frozen\_disputed}, preventing automatic timeout release. \\
-\textbf{FR-71} & The system shall notify the seller and the Platform Operator queue when a dispute is opened. \\
-\textbf{FR-72} & The system shall allow an operator to resolve a dispute with one of: release to seller, refund to buyer (full or partial), requiring a recorded reason. \\
-\textbf{FR-73} & The system shall log every dispute state change with timestamp and responsible actor for audit purposes. \\
-\end{reqtable}
-
-\section{Notifications}
-\begin{reqtable}
-\textbf{FR-74} & The system shall send a real-time notification to a bidder when they have been outbid. \\
-\textbf{FR-75} & The system shall send a notification when an auction the user is watching or bidding on is within a configured time of ending (default 5 minutes). \\
-\textbf{FR-76} & The system shall send a notification on payment confirmation, delivery status change, and new chat message. \\
-\textbf{FR-77} & The system shall allow a user to view a unified notification history within the app. \\
-\end{reqtable}
-
-\section{Monetization Features}
-\begin{reqtable}
-\textbf{FR-78} & The system shall deduct a platform commission, expressed as a configurable percentage of item price, from the seller's payout on every completed sale. \\
-\textbf{FR-79} & The system shall apply a lower commission percentage to Pro Seller accounts than to standard Verified accounts. \\
-\textbf{FR-80} & The system shall retain a configurable percentage of every courier delivery fee as platform delivery margin, per FR-58. \\
-\textbf{FR-81} & The system shall allow a seller to pay a flat fee to feature a listing in top-of-search placement or a homepage carousel for a fixed duration. \\
-\textbf{FR-82} & The system shall visually distinguish featured listings from organic results without misleading users as to their nature (labeled ``Featured''). \\
-\textbf{FR-83} & The system shall offer a recurring Pro Seller subscription granting a lower commission rate, a higher concurrent-listing limit, and a basic sales analytics view. \\
-\textbf{FR-84} & The system shall process Pro Seller subscription billing and renewal through the same payment providers used for purchases, with webhook-based confirmation. \\
-\textbf{FR-85} & The system shall automatically revert a Pro Seller account to standard status upon subscription cancellation or repeated renewal payment failure. \\
-\textbf{FR-86} & The system shall record every commission, delivery-margin, featured-listing, and subscription charge in an auditable revenue log separate from the buyer/seller settlement ledger. \\
-\end{reqtable}
-
-\section{Trust and Safety Controls}
-\begin{reqtable}
-\textbf{FR-87} & The system shall allow any user to report a listing as fraudulent, counterfeit, or misrepresented, adding it to an operator review queue. \\
-\textbf{FR-88} & The system shall rate-limit bid submissions per user per auction to mitigate bid-spam or automated bidding abuse outside the proxy-bid mechanism (FR-28). \\
-\textbf{FR-89} & The system shall flag for operator review a seller who repeatedly relists an item shortly after a cancelled or disputed sale. \\
-\textbf{FR-90} & The system shall maintain an immutable audit log of all bid placements, payment state transitions, and escrow transitions. \\
-\textbf{FR-91} & The system shall restrict the Platform Operator role to the KYC review queue, dispute queue, and trust-and-safety report queue; no generic listing/user/order edit capability shall be exposed through this role. \\
-\end{reqtable}
-
+\section{Release Scope}
+The capstone deliverable comprises all Must Have requirements. Should Have and Could Have requirements are descoped in the order given in the proposal (delivery automation, notifications beyond those required for security, featured listings, Pro Seller tier) if the schedule slips. Requirements marked W are deliberately excluded, including: a paid buyer-protection add-on (protection is the same for every buyer); cash on delivery; and automatic approval of KYC without an operator.
+% ================================================================ 3 INTERFACES
 \chapter{External Interface Requirements}
+\label{ch:ifc}
 
 \section{User Interfaces}
-The web client shall provide, at minimum: a registration/login view; a KYC submission wizard (document upload, selfie capture, status tracker); a listing browse/search view with filters; a listing detail view showing either a fixed-price ``Buy Now'' action or a live auction panel (current highest bid, countdown, bid/proxy-bid input, live bid log); a checkout flow presenting the blended item-plus-delivery price and payment method selection; an order status view (payment, escrow, delivery tracking, confirm-receipt action); a per-listing chat panel; a seller dashboard (active listings, sales, Pro Seller analytics if subscribed); and an operator-only queue view for KYC and disputes, access-restricted per FR-91.
+These requirements state which views must exist and what each must let the user do; layout and visual design are specified in the SDD.
+\begin{reqs}
+\req{IF-UI-01}{M}{D}{new}{The web client shall provide: registration with phone and e-mail verification; sign-in, including second-factor entry; password reset; and a security settings view listing active sessions, with an option to end them.}
+\req{IF-UI-02}{M}{D}{new}{The web client shall provide a KYC wizard covering document capture, live selfie capture and a status tracker, which shows the reason for any rejection.}
+\req{IF-UI-03}{M}{D}{new}{The web client shall provide listing creation, browse and search with filters, and a listing detail view. The detail view shows either a Buy action or a live auction panel with current price, server-synchronised countdown, bid and proxy-bid inputs, a masked bid history and a link to the auction rules.}
+\req{IF-UI-04}{M}{D}{new}{The web client shall provide a checkout view showing the item price, delivery fee and total as one amount, the fulfilment method, the payment method, and the platform's fee disclosure.}
+\req{IF-UI-05}{M}{D}{new}{The web client shall provide an order view showing payment and escrow status in plain language, the fulfilment status, every deadline that applies with its date and time, the handover code (buyer only), and the actions available at that point (confirm receipt, open dispute, cancel).}
+\req{IF-UI-06}{M}{D}{new}{For game-account orders, the web client shall provide: an ownership-proof screen for the seller; a credential-handover screen for the seller; and, for the buyer, a credential view and a takeover checklist with countdowns for the takeover window and the protection period.}
+\req{IF-UI-07}{M}{D}{new}{The web client shall provide a per-listing chat panel showing the off-platform payment warning when \rr{FR-CHT-07} applies.}
+\req{IF-UI-08}{M}{D}{new}{The web client shall provide a seller dashboard showing listings, orders, payout account and payout history, and, for Pro Sellers, sales analytics.}
+\req{IF-UI-09}{M}{D}{new}{The web client shall provide, to operators only, queue views for KYC, ownership proofs, reports, flagged activity and disputes, and, to administrators only, views for staff accounts, parameters and feature switches (Section~\ref{sec:fr-ops}).}
+\req{IF-UI-10}{M}{I}{new}{Every view that shows money, a deadline or an irreversible action shall state its consequence before the user confirms it (for example, ``Releasing payment pays the seller now and ends your right to dispute this order'').}
+\end{reqs}
 
 \section{Hardware Interfaces}
-No specialized hardware interfacing is required. KYC selfie capture uses the client device's standard camera via the browser's Media Capture API.
+No special hardware is required. The KYC selfie is captured with the device camera through the browser's Media Capture API; uploading an existing gallery image is not accepted for the selfie (\rr{FR-KYC-02}).
 
 \section{Software Interfaces}
-\begin{reqtable}
-\textbf{bKash API} & Merchant payment initiation, execution, and webhook-based payment confirmation (sandbox). \\
-\textbf{Nagad API} & Merchant payment initiation and confirmation (sandbox). \\
-\textbf{Card Processor API} & Stripe (test mode) or equivalent, for card payments and subscription billing, with webhook signature verification. \\
-\textbf{Courier API (or mock)} & Fare quotation and booking creation; sandbox where available (e.g., Pathao/Steadfast), otherwise a documented internal mock service. \\
-\textbf{Geolocation/Distance Service} & Browser Geolocation API for capturing approximate coordinates; server-side Haversine or PostGIS calculation for distance. \\
-\textbf{PostgreSQL} & Primary relational data store for all transactional data. \\
-\textbf{Redis} & Auction countdown state, bid-lock coordination, WebSocket pub/sub fan-out, rate-limit counters. \\
-\end{reqtable}
+\begin{reqs}
+\req{IF-SW-01}{M}{T}{new}{\textbf{bKash} (Tokenized Checkout, sandbox): payment creation, execution, query and refund, and webhook or callback confirmation; the buyer enters the wallet PIN on bKash's own page only.}
+\req{IF-SW-02}{S}{T}{new}{\textbf{Nagad} (Merchant API, sandbox): payment initiation, confirmation callback, verification query and refund.}
+\req{IF-SW-03}{M}{T}{new}{\textbf{Stripe} (test mode): card payment through a Stripe-hosted page or Stripe-hosted fields, refunds and subscription billing, with webhook signature verification.}
+\req{IF-SW-04}{S}{T}{new}{\textbf{Courier} (Pathao or Steadfast sandbox, or the mock courier): fare quotation, booking, cancellation and status webhooks.}
+\req{IF-SW-05}{M}{T}{new}{\textbf{SMS gateway} (test mode or labelled mock): delivery of OTPs and security alerts only.}
+\req{IF-SW-06}{M}{T}{new}{\textbf{E-mail service} (SMTP or provider API; development capture tool in the academic deliverable): e-mail verification links and transactional notices.}
+\req{IF-SW-07}{M}{T}{new}{\textbf{Web Cryptography API} (browser): key-pair generation, encryption and decryption of game-account credentials (\rr{FR-GAM-07}, \rr{FR-GAM-09}). No private key or plaintext credential is ever sent to the server.}
+\req{IF-SW-08}{S}{T}{new}{\textbf{Geolocation API} (browser) for approximate coordinates, with manual area selection as a fallback when permission is refused.}
+\req{IF-SW-09}{M}{I}{new}{\textbf{PostgreSQL 15} as the system of record for all transactional data, and \textbf{Redis 7} for countdown coordination, locks, publish/subscribe and rate-limit counters. Redis shall never be the only copy of authoritative state (\rr{NFR-REL-01}).}
+\req{IF-SW-10}{C}{T}{new}{\textbf{Identity-check service} (pretrained document-quality or face-match model or API) for the advisory KYC pre-check (\rr{FR-KYC-11}).}
+\end{reqs}
 
 \section{Communications Interfaces}
-All client-server traffic shall use HTTPS. Live auction updates, outbid notifications, and chat delivery shall use WebSocket connections; auction countdown broadcast may alternatively use Server-Sent Events. Payment and courier webhook callbacks shall be received over authenticated HTTPS endpoints and verified using each provider's signature-verification mechanism before being trusted.
+\begin{reqs}
+\req{IF-COM-01}{M}{T}{new}{All client--server traffic shall use HTTPS, and all real-time traffic shall use secure WebSockets (Socket.IO over \texttt{wss}), with the transport requirements of \rr{SEC-DAT-01}.}
+\req{IF-COM-02}{M}{T}{new}{Live auction updates, outbid notices, chat messages and in-app notifications shall be delivered over the authenticated WebSocket connection (\rr{SEC-SES-07}); a client that loses the connection shall resynchronise the current state from the server on reconnecting.}
+\req{IF-COM-03}{M}{T}{new}{Payment, courier and messaging provider callbacks shall be received only on dedicated HTTPS endpoints and accepted only after the checks in \rr{SEC-PAY-03} and \rr{SEC-PAY-04}.}
+\req{IF-COM-04}{M}{I}{new}{The backend shall expose its HTTP API under a versioned path (for example \texttt{/api/v1}) and document it in OpenAPI format (\rr{NFR-MNT-05}).}
+\end{reqs}
+% ================================================================ 4 FUNCTIONAL
+\chapter{Functional Requirements}
+\label{ch:fr}
+The areas follow the transaction lifecycle: account and identity, listing and discovery, the two purchase paths, payment and escrow, fulfilment (physical items, then game accounts), then the supporting areas. Security behaviour that applies across areas is specified once in Chapter~\ref{ch:sec} and referenced here.
 
-\chapter{Data Model Overview}
-This chapter summarizes the core entities and their relationships; a full normalized schema is provided in the accompanying System Design Document.
+\section{Account Registration and Authentication (ACC)}
+\begin{reqs}
+\req{FR-ACC-01}{M}{T}{FR-1}{The system shall allow a person to register with a Bangladeshi mobile number, an e-mail address, a display name and a password that satisfies \rr{SEC-AUTH-01} and \rr{SEC-AUTH-02}.}
+\req{FR-ACC-02}{M}{T}{new}{The system shall activate an account only after the mobile number has been verified by OTP (\rr{SEC-AUTH-09}). It shall verify the e-mail address by a single-use link (\cp{CP-06}) before the user's first purchase, listing or payout.}
+\req{FR-ACC-03}{M}{T}{new}{The system shall not create a second account for a mobile number or e-mail address already linked to an account. The attempt shall be handled as in \rr{SEC-AUTH-06}, so that it does not reveal which accounts exist.}
+\req{FR-ACC-04}{M}{T}{new}{At registration the system shall require the person to confirm they are 18 or older and to accept the current terms of use and privacy notice. It shall record the version of each document accepted and the time.}
+\req{FR-ACC-05}{M}{T}{FR-3}{The system shall allow a registered user to sign in with mobile number or e-mail plus password, followed by a second factor where one is enabled (\rr{FR-ACC-06}), and shall then establish a session as specified in Section~\ref{sec:sec-ses}.}
+\req{FR-ACC-06}{S}{T}{new}{The system shall allow a user to enable an authenticator-app second factor (TOTP, RFC 6238), shall issue single-use recovery codes when it is enabled, and shall require a current second factor to disable it. MFA is mandatory for staff accounts (\rr{SEC-AUTH-07}).}
+\req{FR-ACC-07}{M}{T}{new}{The system shall allow a user to reset a forgotten password through a single-use link sent to the verified e-mail, or an OTP sent to the verified mobile number, under the rules in \rr{SEC-AUTH-10}.}
+\req{FR-ACC-08}{M}{T}{new}{The system shall allow a user to view their active sessions (device type, approximate location, last activity), end any one of them, and end all sessions except the current one.}
+\req{FR-ACC-09}{M}{T}{new}{The system shall allow a user to change their mobile number or e-mail only after step-up authentication (\rr{SEC-AUTH-08}) and verification of the new value. It shall notify the old value of the change.}
+\req{FR-ACC-10}{M}{T}{new}{The system shall show other users only a user's display name, verification badge, rating summary, number of completed transactions, join month and approximate area (district). It shall never show another user's mobile number, e-mail address, NID details or exact location.}
+\req{FR-ACC-11}{S}{T}{new}{The system shall allow a user to request closure of their account. Closure shall be refused while the user has an open order, an unpaid auction win, an open dispute or an unpaid balance owed to the platform. After closure the user's data shall be handled as in Table~\ref{tab:retention}.}
+\end{reqs}
 
-\section{Core Entities}
-\begin{reqtable}
-\textbf{User} & id, email/phone, password\_hash, kyc\_status, role (standard/pro/operator), location (lat/long). \\
-\textbf{KYCDocument} & id, user\_id, document\_type, encrypted\_file\_ref, review\_status, reviewed\_by, reviewed\_at. \\
-\textbf{Listing} & id, seller\_id, type (fixed/auction), title, description, category, condition, photos, price or (starting\_price, reserve\_price, end\_time), stock, status. \\
-\textbf{Bid} & id, listing\_id, bidder\_id, amount, is\_proxy, proxy\_max, placed\_at. \\
-\textbf{Order} & id, listing\_id, buyer\_id, seller\_id, item\_price, delivery\_fee, total, fulfilment\_type, status. \\
-\textbf{EscrowTransaction} & id, order\_id, state (held/released/refunded/frozen\_disputed), state\_history. \\
-\textbf{SettlementLedger} & id, order\_id, item\_price, platform\_commission, delivery\_fee, courier\_payout, platform\_delivery\_margin, seller\_payout. \\
-\textbf{DeliveryRequest} & id, order\_id, fulfilment\_type, distance\_km, courier\_reference, status, meetup\_point (if self-pickup). \\
-\textbf{ChatThread / Message} & thread scoped to listing + participants; messages with sender, content, attachment, delivered/read state. \\
-\textbf{Review} & id, order\_id, rater\_id, ratee\_id, stars, comment. \\
-\textbf{Dispute} & id, order\_id, opened\_by, reason, evidence, status, resolution, resolved\_by. \\
-\textbf{Subscription} & id, user\_id, tier, status, renewal\_date, payment\_reference. \\
-\textbf{FeaturedListing} & id, listing\_id, start\_at, end\_at, fee\_paid. \\
-\end{reqtable}
+\section{Identity Verification (KYC)}
+\begin{reqs}
+\req{FR-KYC-01}{M}{T}{FR-4}{The system shall require a registered user to submit, for KYC: images of the front and back of their NID (or the photo page of a passport); the document number, full name and date of birth as printed; and a live selfie.}
+\req{FR-KYC-02}{M}{D}{new}{The system shall capture the selfie through the device camera in the browser and shall not accept an uploaded file in its place. It shall ask the user to perform one randomly chosen action (for example, turning the head or blinking) during capture, as a basic liveness check.}
+\req{FR-KYC-03}{M}{T}{new}{The system shall reject, and refer to an operator, any submission whose date of birth shows the person is under 18.}
+\req{FR-KYC-04}{M}{T}{new}{The system shall not allow one NID or passport number to belong to more than one account. A submission whose document number matches another account (in any status other than \texttt{unsubmitted}) or the NID blacklist (\rr{FR-TNS-06}) shall be routed to an operator and shall not be approved automatically. The comparison shall use a blind index (\rr{SEC-DAT-03}).}
+\req{FR-KYC-05}{M}{T}{FR-6}{The system shall track each user's KYC status as exactly one of \texttt{unsubmitted}, \texttt{pending\_review}, \texttt{verified}, \texttt{rejected} or \texttt{revoked}, and shall record every status change with time, actor and reason.}
+\req{FR-KYC-06}{M}{T}{FR-6}{An operator shall reject a submission only with a reason code from a fixed list (for example: image unreadable, selfie does not match, document expired, details do not match image, underage, duplicate identity). The reason shall be shown to the user with guidance on how to fix it.}
+\req{FR-KYC-07}{M}{T}{FR-7}{The system shall allow only users whose KYC status is \texttt{verified} to create a listing, place a bid, start a purchase, register a payout account or receive a payout. This shall be enforced server-side on every such request, and users in \texttt{pending\_review} shall be refused as well.}
+\req{FR-KYC-08}{M}{T}{FR-8}{The system shall display a Verified badge on the profile and listings of every user whose KYC status is \texttt{verified}, and shall remove it immediately if the status changes.}
+\req{FR-KYC-09}{M}{T}{FR-9}{The system shall allow a user whose submission was rejected to resubmit, up to \cp{CP-34}.}
+\req{FR-KYC-10}{M}{T}{new}{An operator may revoke a user's verification only with a recorded reason and four-eyes approval (\rr{FR-OPS-05}). On revocation, the system shall hide the user's active listings and block new bids and purchases. Open orders shall continue to completion under the normal escrow rules.}
+\req{FR-KYC-11}{C}{T}{proposal AI}{The system should run an automated pre-check on each submission (image legibility and cropping, plausibility of the selfie-to-photo match) using an existing model or API, and attach the result to the review as advisory information. The pre-check shall never approve a submission; it may only flag one for closer review.}
+\req{FR-KYC-12}{S}{A}{new}{The system should present each new submission in the operator queue within one minute, and operators should decide it within \cp{CP-44}. The user shall be shown the expected review time.}
+\end{reqs}
 
-\section{Key Relationships}
-A \emph{User} may own many \emph{Listings}; a \emph{Listing} of type auction has many \emph{Bids} but exactly one winning \emph{Order}; every \emph{Order} has exactly one \emph{EscrowTransaction} and exactly one \emph{SettlementLedger} entry; an \emph{Order} has at most one \emph{DeliveryRequest} and at most one \emph{Dispute}; \emph{Reviews} reference a completed \emph{Order} and are directional (buyer-to-seller and seller-to-buyer are separate rows).
+\section{Listing Creation and Management (LST)}
+\begin{reqs}
+\req{FR-LST-01}{M}{T}{FR-10, FR-12}{The system shall allow a verified user to create a listing with: title, description, category, item kind (\texttt{physical} or \texttt{game\_account}) and sale format (\texttt{fixed\_price} or \texttt{auction}). Item kind and sale format shall not be changeable after publication.}
+\req{FR-LST-02}{M}{T}{FR-10, FR-11}{For a physical item, the system shall require a condition (new, like new, used, for parts) and at least two photos. The seller shall either mark one photo as showing defects or declare that the item has no visible defects; the declaration shall be shown on the listing.}
+\req{FR-LST-03}{S}{T}{new}{For a physical item, the system shall require a weight class and a package-size class, for use by the courier fare model (\rr{FR-DLV-07}).}
+\req{FR-LST-04}{M}{T}{FR-13}{For a fixed-price listing, the system shall require a price and an available quantity of at least 1.}
+\req{FR-LST-05}{M}{T}{FR-14}{For an auction listing, the system shall require a starting price and a duration chosen from \cp{CP-07}. It shall accept an optional reserve price, which shall be at least the starting price. The quantity of an auction listing is always 1.}
+\req{FR-LST-06}{M}{T}{FR-15}{For a physical item, the system shall record the seller's approximate pickup location, taken from the listing or from the seller's saved area, for distance calculation. Only the district or area name shall be shown on the listing.}
+\req{FR-LST-07}{M}{T}{FR-16}{Before the first bid or order on a listing, the seller may edit its title, description and photos, and, for a fixed-price listing, its price and quantity. After the first bid or order, the seller may only add time-stamped clarifications, shown below the original description. An auction's starting price, reserve price and duration shall never be editable after publication.}
+\req{FR-LST-08}{M}{T}{FR-17}{The seller may cancel a fixed-price listing that has no order awaiting payment or fulfilment, or an auction that has no bids. An auction with at least one bid may be cancelled only by an operator, with a recorded reason, and all bidders shall be notified.}
+\req{FR-LST-09}{M}{T}{FR-18}{The system shall limit the number of active listings per seller to \cp{CP-28}, with a higher limit for Pro Sellers.}
+\req{FR-LST-10}{M}{T}{new}{The system shall maintain a list of prohibited item categories, including at least: weapons and ammunition; drugs and controlled medicines; alcohol and tobacco; stolen goods; counterfeit or replica goods; government-issued documents; SIM cards registered to another person; live animals; adult content; and accounts other than game accounts (for example social-media, banking or MFS accounts). The prohibited categories shall not be selectable when creating a listing.}
+\req{FR-LST-11}{S}{T}{new}{The system should screen listing text against a maintained list of prohibited and high-risk keywords (in Bangla and English) and should hold a matching listing in \texttt{pending\_review} for an operator, rather than publishing it.}
+\req{FR-LST-12}{M}{T}{new}{The system shall give each listing exactly one status out of \texttt{draft}, \texttt{pending\_review}, \texttt{active}, \texttt{sold}, \texttt{ended\_unsold}, \texttt{cancelled} or \texttt{removed}. It shall record every status change with time, actor and reason.}
+\req{FR-LST-13}{C}{D}{proposal AI}{The system may offer to draft a title and description from the uploaded photos using an existing vision-language model or API. The draft shall be shown to the seller for editing and shall never be published without the seller's explicit confirmation.}
+\end{reqs}
 
-\chapter{Non-Functional Requirements}
+\section{Search and Discovery (SRC)}
+\begin{reqs}
+\req{FR-SRC-01}{M}{T}{FR-19}{The system shall provide full-text search over listing titles and descriptions, matching both Bangla and English text.}
+\req{FR-SRC-02}{M}{T}{FR-20}{The system shall allow results to be filtered by category, item kind, sale format, price range, condition, and maximum distance from the searcher's location or chosen area.}
+\req{FR-SRC-03}{M}{T}{FR-21}{The system shall allow results to be sorted by newest, price ascending, price descending, distance and auctions ending soonest.}
+\req{FR-SRC-04}{M}{T}{FR-22}{Search results and listing pages shall include only \texttt{active} listings whose seller is currently \texttt{verified} and not suspended.}
+\req{FR-SRC-05}{M}{T}{new}{Guests shall be able to browse and search. Distances shall be shown rounded to the nearest kilometre and shall never reveal a seller's exact coordinates.}
+\req{FR-SRC-06}{C}{D}{proposal AI}{The system may show recommended listings based on category, price range and the user's own browsing and purchase history. Recommendations shall be labelled and shall never include featured placement that is not labelled as such (\rr{FR-MON-05}).}
+\end{reqs}
 
-\section{Performance Requirements}
-\begin{reqtable}
-\textbf{NFR-1} & A bid placement request shall be acknowledged (accepted or rejected) within 500 ms under normal load. \\
-\textbf{NFR-2} & Live auction state (highest bid, time remaining) shall propagate to all connected viewers of that auction within 1 second of a state change. \\
-\textbf{NFR-3} & Search results for a filtered query shall return within 2 seconds for a catalog of up to 100,000 listings, assuming appropriate indexing. \\
-\end{reqtable}
+\section{Auction Engine (AUC)}
+\begin{reqs}
+\req{FR-AUC-01}{M}{T}{FR-23}{The server shall hold the authoritative end time of every auction. Countdowns shown by the client shall be derived from server time and treated as informational only.}
+\req{FR-AUC-02}{M}{T}{FR-24, new}{The system shall accept a bid only if all of the following hold: the bidder is \texttt{verified}, not suspended from bidding, and not the seller; the auction is \texttt{active}; the server receives the bid before the authoritative end time; and the amount is at least the starting price (first bid) or at least the current price plus the minimum increment \cp{CP-08}.}
+\req{FR-AUC-03}{M}{T}{FR-25}{The system shall serialise bid processing per auction so that, however many bids arrive at the same moment, each is evaluated against the state left by the previous one, and two bids can never both be recorded as the highest.}
+\req{FR-AUC-04}{M}{T}{FR-26}{The system shall reject any bid received after the authoritative end time, even if the client sent it before its local countdown reached zero. Acceptance shall be decided by the time the server receives the bid.}
+\req{FR-AUC-05}{M}{T}{FR-27}{When a valid bid is accepted within the anti-sniping window \cp{CP-09} before the current end time, the system shall set the end time to the time the bid was received plus the extension in \cp{CP-09}, and shall broadcast the new end time.}
+\req{FR-AUC-06}{M}{T}{FR-28}{The system shall allow a bidder to set a proxy maximum. Whenever that bidder is outbid, it shall automatically place the smallest bid that restores them as highest bidder, never exceeding their maximum.}
+\req{FR-AUC-07}{M}{T}{new}{When two proxy maximums are equal, the one set earlier shall win. The current price shall be the lower of the winner's maximum and the second-highest maximum plus the minimum increment.}
+\req{FR-AUC-08}{M}{T}{FR-29}{The system shall never reveal a bidder's proxy maximum to anyone else, including the seller and operators, except to an operator investigating a fraud flag on that auction.}
+\req{FR-AUC-09}{M}{T}{FR-30}{If a reserve price is set and the highest bid at close is below it, the auction shall end as \texttt{ended\_unsold} and no order shall be created. While the reserve has not been met, the listing shall say ``reserve not met'' without revealing the amount.}
+\req{FR-AUC-10}{M}{T}{new}{Bids are binding and cannot be retracted by the bidder. An operator may void a bid only on evidence of fraud or account compromise, with a recorded reason. The system shall then recompute the auction state as if the bid had never been placed, and shall notify affected bidders.}
+\req{FR-AUC-11}{M}{T}{FR-31}{The system shall broadcast every change of current price, highest-bidder mask and end time to every client viewing the auction (\rr{NFR-PERF-03}).}
+\req{FR-AUC-12}{M}{T}{FR-32}{The system shall notify a bidder in real time when they are outbid (\rr{FR-NTF-01}).}
+\req{FR-AUC-13}{M}{T}{new}{The bid history shall be public, showing amounts and times, with each bidder shown by a consistent mask per auction (for example ``Bidder 3''). It shall not identify bidders to the seller, to other bidders or to the public.}
+\req{FR-AUC-14}{M}{T}{FR-33}{When an auction closes with a valid winning bid, the system shall create an order for the winner at the winning price and require payment within \cp{CP-10}. It shall notify the winner and the seller.}
+\req{FR-AUC-15}{M}{T}{FR-34}{If the winner does not pay within \cp{CP-10}, the system shall cancel that order and offer the item to the next-highest eligible bidder at that bidder's highest bid, to be accepted and paid within \cp{CP-11}. If no eligible bidder accepts, the listing shall end as \texttt{ended\_unsold}, and the seller may relist it.}
+\req{FR-AUC-16}{M}{T}{new}{A winner who fails to pay shall receive a non-payment strike. On reaching \cp{CP-12} strikes, the user shall be suspended from bidding for the period in \cp{CP-12}, and told why.}
+\req{FR-AUC-17}{M}{T}{FR-88}{The system shall rate-limit bid submissions per user per auction (\cp{CP-35}). This shall not limit bids placed automatically by the proxy mechanism.}
+\req{FR-AUC-18}{S}{T}{proposal AI}{The system should score bidding activity for patterns that suggest shill bidding or collusion (for example, many small bids from newly verified accounts, or accounts linked by device or payout account to the seller). It should place flagged auctions in the operator's flagged-activity queue without blocking any bid automatically.}
+\end{reqs}
 
-\section{Security Requirements}
-\begin{reqtable}
-\textbf{NFR-4} & KYC document files shall be encrypted at rest and served only via short-lived signed URLs to authorized viewers (the owning user and the reviewing operator). \\
-\textbf{NFR-5} & The system shall enforce per-user data isolation such that one user cannot retrieve another user's KYC documents, chat threads, or order details by manipulating identifiers (IDOR protection). \\
-\textbf{NFR-6} & All payment and courier webhook endpoints shall verify provider-supplied signatures before processing the payload. \\
-\textbf{NFR-7} & The system shall rate-limit authentication, bid-placement, and checkout endpoints to mitigate brute-force and abuse. \\
-\textbf{NFR-8} & Secrets (API keys, database credentials, webhook signing secrets) shall be stored in environment variables or a secrets manager, never committed to source control. \\
-\end{reqtable}
+\section{Fixed-Price Purchase (FIX)}
+These requirements apply to physical items and game accounts sold at a fixed price.
+\begin{reqs}
+\req{FR-FIX-01}{M}{T}{FR-35}{The system shall allow a verified buyer, other than the seller, to start a purchase of a fixed-price listing at the listed price, for a quantity not exceeding the quantity available.}
+\req{FR-FIX-02}{M}{T}{FR-36}{Starting a purchase shall reserve the quantity and create an order awaiting payment in one atomic operation. Concurrent requests shall never reserve more units than are available.}
+\req{FR-FIX-03}{M}{T}{new}{If payment is not confirmed within the checkout hold \cp{CP-13}, the system shall cancel the order and return the reserved quantity to the listing.}
+\req{FR-FIX-04}{M}{T}{FR-37}{When the available quantity reaches zero and no reservation remains open, the system shall mark the listing \texttt{sold} and remove it from search results. While reservations are still open it shall show the listing as ``currently reserved''.}
+\req{FR-FIX-05}{M}{T}{FR-38}{Under a burst of simultaneous purchase requests, every request shall receive a definite response (reserved, or not available) and none shall be silently dropped. The total reserved shall never exceed the quantity listed.}
+\end{reqs}
+\section{Payment and Escrow Settlement (PAY)}
+\label{sec:fr-pay}
+\begin{reqs}
+\req{FR-PAY-01}{M}{T}{FR-39}{The system shall accept payment by bKash, Nagad and card, using each provider's sandbox or test mode in the academic deliverable (C-2).}
+\req{FR-PAY-02}{M}{T}{FR-40}{The system shall treat a payment as confirmed only on a server-to-server confirmation from the provider (webhook, callback or verification query), never on the client's redirect or on any value sent by the browser.}
+\req{FR-PAY-03}{M}{T}{new}{Before confirming a payment, the system shall verify that the provider reports a successful payment whose order reference, amount and currency exactly match the order. On any mismatch it shall not place funds in escrow, shall flag the payment for operator review and shall start a refund through the provider.}
+\req{FR-PAY-04}{M}{T}{FR-41}{The system shall process provider confirmations idempotently: a confirmation delivered more than once, or confirmed both by webhook and by query, shall have exactly one effect.}
+\req{FR-PAY-05}{M}{T}{FR-42}{On confirmed payment, the system shall place the full amount collected (item price plus any delivery fee) in escrow in state \texttt{held}. No part of it shall be payable to the seller until a release condition in \rr{FR-PAY-07} is met.}
+\req{FR-PAY-06}{M}{T}{FR-44}{The escrow of each order shall be in exactly one of the states \texttt{held}, \texttt{frozen\_disputed}, \texttt{released}, \texttt{refunded} or \texttt{partially\_refunded}, and shall change state only by a transition listed in Table~\ref{tab:escrow}. Any other transition shall be rejected and logged as a security event.}
+\req{FR-PAY-07}{M}{T}{FR-43}{Escrowed funds shall be released to the seller only by one of the following. (a) The buyer confirms receipt after the delivery event. (b) The auto-release timeout \cp{CP-19} expires after the delivery event, with no dispute open. (c) An operator decides a dispute in the seller's favour. (d) For game accounts only, the rule in \rr{FR-GAM-17} applies. The system shall not offer the buyer a ``confirm receipt'' action before the delivery event.}
+\req{FR-PAY-08}{M}{T}{new}{The auto-release timeout shall be counted from the delivery event, never from payment. If the required fulfilment step is not recorded by its deadline, the system shall cancel the order and refund the buyer in full, unless a dispute is open. The steps and deadlines are: the handover for a meetup (\cp{CP-15}); courier pickup (\cp{CP-16}); and credential delivery for a game account (\cp{CP-22}).}
+\req{FR-PAY-09}{M}{T}{new}{Before the delivery event, the buyer may request cancellation and the seller may accept it, and the seller may cancel unilaterally; either cancellation shall refund the buyer in full. A unilateral seller cancellation after payment shall count as a seller strike (\rr{FR-TNS-04}).}
+\req{FR-PAY-10}{M}{T}{FR-44}{The system shall record every escrow state transition with time, triggering actor (buyer, seller, operator or system timer), reason and the amounts affected, in an append-only history that cannot be edited or deleted through the application.}
+\req{FR-PAY-11}{M}{T}{FR-45}{The system shall support full and partial refunds when a dispute is decided in the buyer's favour. In a partial refund, the refunded amount shall be taken from the item price first; platform commission shall be charged only on the part of the item price released to the seller; and the delivery fee shall be refunded only if the courier had not picked up the item.}
+\req{FR-PAY-12}{M}{T}{new}{Refunds shall be paid to the original payment method through the provider's refund function. Each refund shall have its own ledger entry and provider reference, and a failed refund shall be retried (\rr{FR-PAY-16}) and shown to an operator.}
+\req{FR-PAY-13}{M}{T}{FR-46}{When an order reaches a terminal escrow state, the system shall create one itemised settlement record showing: amount collected, item price, delivery fee, platform commission, courier payout, platform delivery margin, seller payout and any refund.}
+\req{FR-PAY-14}{M}{T}{new}{All monetary amounts shall be integers in poisha. Percentages shall be applied with half-up rounding to the nearest poisha, and the seller's payout shall be calculated last as the remainder. In every settlement record, the parts shall add up exactly to the amount collected.}
+\req{FR-PAY-15}{M}{T}{FR-47, NFR-10}{A scheduled reconciliation job shall compare every non-terminal order's payment and refund status with the provider's records at least every \cp{CP-46}. It shall correct missed confirmations through the normal idempotent path and report any discrepancy it cannot resolve to an operator.}
+\req{FR-PAY-16}{M}{T}{FR-48, NFR-9}{Failed calls to a payment provider shall be retried with exponential backoff and jitter up to a configured maximum, reusing the same idempotency key (\rr{SEC-PAY-07}). After the maximum, the user shall see a clear failure message and no duplicate charge shall result.}
+\req{FR-PAY-17}{M}{T}{new}{A seller shall register a payout account before their first payout. An MFS payout account shall be a wallet on the seller's own verified mobile number. A bank account shall be in a name matching the seller's KYC name and shall be checked by an operator.}
+\req{FR-PAY-18}{M}{T}{new}{Adding or changing a payout account shall require step-up authentication (\rr{SEC-AUTH-08}) and shall be notified to the seller's verified mobile number and e-mail. No payout shall be sent to a new or changed account until the cooling-off period \cp{CP-29} has passed.}
+\req{FR-PAY-19}{M}{T}{new}{After release, the system shall create a payout of the seller's amount to the registered payout account and track it as \texttt{pending}, \texttt{sent} or \texttt{failed}. A failed payout shall be retried and the seller notified. In the academic deliverable, payouts are simulated with a recorded reference, and are labelled as simulated.}
+\req{FR-PAY-20}{C}{T}{new}{If a card payment is charged back after release, the system should record it against the order, notify an operator, and recover the amount from the seller's next payouts.}
+\req{FR-PAY-21}{S}{T}{new}{The system should give the buyer a receipt for every payment and refund, and give the seller a statement of every settlement and payout.}
+\end{reqs}
 
-\section{Reliability and Availability}
-\begin{reqtable}
-\textbf{NFR-9} & Failed calls to a payment or courier provider shall be retried with exponential backoff up to a configured maximum before the user is shown an error. \\
-\textbf{NFR-10} & A periodic reconciliation job shall compare internal escrow/order state against payment-provider state to catch missed webhook events (supports FR-47). \\
-\textbf{NFR-11} & The auction countdown authority shall survive a single application server restart without resetting or extending any auction's true end time (state persisted in Redis/DB, not in-process memory). \\
-\end{reqtable}
-
-\section{Usability Requirements}
-\begin{reqtable}
-\textbf{NFR-12} & A first-time bidder shall be able to view the anti-sniping and proxy-bidding rules from the auction detail page without leaving it. \\
-\textbf{NFR-13} & The KYC submission wizard shall clearly communicate document requirements and current review status at every step. \\
-\end{reqtable}
-
-\section{Maintainability and Portability}
-\begin{reqtable}
-\textbf{NFR-14} & The backend, database, cache, and real-time service shall run as separate containers orchestrated via Docker Compose. \\
-\textbf{NFR-15} & Automated unit tests shall cover, at minimum: concurrent bid processing, concurrent fixed-price stock decrement, payment-webhook idempotency, and the delivery-fee split calculation. \\
-\textbf{NFR-16} & A continuous integration pipeline shall run the automated test suite on every push to the main branch. \\
-\end{reqtable}
-
-\section{Legal and Compliance Considerations}
-\begin{reqtable}
-\textbf{NFR-17} & KYC document collection, storage, and retention shall follow applicable Bangladeshi data protection guidance; documents shall be retained no longer than necessary and deletable on account closure. \\
-\textbf{NFR-18} & The system shall present clear terms disclosing the platform commission rate and delivery-margin percentage to sellers before listing creation. \\
-\end{reqtable}
-
-\section{Scalability Considerations}
-\begin{reqtable}
-\textbf{NFR-19} & The real-time layer shall use a pub/sub mechanism (Redis pub/sub or equivalent) so that additional application server instances can be added without each needing a direct in-memory reference to every connected client. \\
-\textbf{NFR-20} & Database indexes shall be defined on frequently queried columns (\texttt{listing\_id}, \texttt{seller\_id}, \texttt{buyer\_id}, geospatial index on location) to avoid full-table scans as data volume grows. \\
-\end{reqtable}
-
-\chapter{System Architecture Overview}
-
-\section{High-Level Component Architecture}
-Figure~\ref{fig:architecture} shows the major subsystems and their interactions.
-
-\begin{figure}[h]
+\begin{table}[!htbp]
 \centering
-\begin{tikzpicture}[
-    box/.style={draw, rounded corners, minimum width=3.6cm, minimum height=1cm, align=center, font=\small},
-    arrow/.style={-{Latex[length=2mm]}, thick}
-]
-\node[box, fill=blue!10] (client) {Web Client\\(Browse, Bid, Chat, Checkout)};
-\node[box, fill=orange!15, below=1.4cm of client] (api) {Core API Backend};
-\node[box, fill=teal!15, below left=2.0cm and -0.6cm of api] (rt) {Real-Time Layer\\(WebSocket/SSE)};
-\node[box, fill=green!10, below=2.0cm of api] (pay) {Payment Layer\\(bKash/Nagad/Card)};
-\node[box, fill=purple!10, below right=2.0cm and -0.6cm of api] (delivery) {Delivery Layer\\(Distance + Courier)};
-\node[box, fill=gray!15, below=2.0cm of rt] (redis) {Redis};
-\node[box, fill=gray!15, below=2.0cm of delivery] (db) {PostgreSQL};
+\small
+\caption{Permitted escrow state transitions (FR-PAY-06). No other transition is allowed.}
+\label{tab:escrow}
+\begin{tabularx}{\textwidth}{@{}l l l X@{}}
+\toprule
+\textbf{From} & \textbf{To} & \textbf{Actor} & \textbf{Condition} \\
+\midrule
+(none) & \texttt{held} & system & Payment confirmed and verified (\rr{FR-PAY-03}--\rr{FR-PAY-05}). \\
+\texttt{held} & \texttt{released} & buyer & Buyer confirms receipt after the delivery event, or releases a game-account payment early (\rr{FR-GAM-17}). \\
+\texttt{held} & \texttt{released} & system & Auto-release timeout \cp{CP-19} after the delivery event, or end of the protection period \cp{CP-24} for a game account, with no dispute open. \\
+\texttt{held} & \texttt{refunded} & system & Fulfilment deadline missed (\rr{FR-PAY-08}), or a cancellation under \rr{FR-PAY-09}. \\
+\texttt{held} & \texttt{frozen\_disputed} & buyer & Dispute opened within its window (\rr{FR-DSP-01}, \rr{FR-GAM-14}, \rr{FR-GAM-16}). \\
+\texttt{frozen\_disputed} & \texttt{released} & operator & Dispute decided for the seller (\rr{FR-DSP-06}). \\
+\texttt{frozen\_disputed} & \texttt{refunded} & operator & Dispute decided for the buyer, full refund. \\
+\texttt{frozen\_disputed} & \texttt{partially\_refunded} & operator & Dispute decided with a partial refund (\rr{FR-PAY-11}). \\
+\texttt{frozen\_disputed} & \texttt{held} & buyer & Buyer withdraws the dispute (\rr{FR-DSP-10}). \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-\draw[arrow] (client) to[out=180,in=90] (rt);
-\draw[arrow] (client) -- node[right, font=\scriptsize]{HTTPS} (api);
-\draw[arrow] (api) -- (rt);
-\draw[arrow] (api) -- (pay);
-\draw[arrow] (api) -- (delivery);
-\draw[arrow] (rt) -- (redis);
-\draw[arrow] (pay) -- (db);
-\draw[arrow] (delivery) -- (db);
-\draw[arrow] (pay) -- (redis);
-\end{tikzpicture}
-\caption{High-level component architecture of TrustBazaar}
-\label{fig:architecture}
-\end{figure}
+\section{Delivery and Handover of Physical Items (DLV)}
+\label{sec:fr-dlv}
+\begin{reqs}
+\req{FR-DLV-01}{M}{T}{FR-50}{At checkout, the system shall compute the straight-line distance between the buyer's and the seller's approximate locations.}
+\req{FR-DLV-02}{M}{T}{FR-51}{The seller shall choose, per listing, which fulfilment methods are allowed: self-pickup, courier, or both. Within the allowed methods, the system shall recommend self-pickup when the distance is at or below \cp{CP-14}, and courier otherwise. The buyer may choose any allowed method; self-pickup shall add no delivery fee.}
+\req{FR-DLV-03}{M}{T}{FR-52}{For self-pickup, the system shall suggest at least one safe public meetup point near the midpoint of the two locations, drawn from a curated list (for example police stations, shopping-mall entrances or bank branches).}
+\req{FR-DLV-04}{M}{T}{new}{For self-pickup, either party may propose a meetup point and time in the order view, and the other shall accept it before it is final. The agreed point and time shall be recorded on the order.}
+\req{FR-DLV-05}{M}{T}{FR-52}{Payment shall always be made through the platform before the meetup. The system shall not offer cash payment, and the order view shall show both parties that the item is already paid for.}
+\req{FR-DLV-06}{M}{T}{new}{For self-pickup, the system shall show the buyer, and only the buyer, a one-time handover code, with an instruction to give it to the seller only after inspecting the item. The seller shall enter the code in the order view; a correct code records the handover as the delivery event. After \cp{CP-45} wrong entries, code entry shall be locked and both parties notified.}
+\req{FR-DLV-07}{M}{T}{FR-53}{Before the meetup, the system shall share only approximate locations between buyer and seller. For courier orders, exact pickup and drop-off addresses shall be sent only to the courier provider and shown to each party only for their own address.}
+\req{FR-DLV-08}{S}{T}{FR-54}{For courier fulfilment, the system shall calculate the delivery fare from the fare table \cp{CP-43}, using the listing's weight and size classes, the delivery zone and the distance. The fare shall be fixed at checkout.}
+\req{FR-DLV-09}{S}{T}{FR-55}{The system shall show the buyer one total price (item plus delivery) without requiring the buyer to choose a courier.}
+\req{FR-DLV-10}{S}{T}{FR-56, FR-57}{After payment is confirmed for a courier order, the system shall create a booking with the configured courier provider (or the mock) and track its status as \texttt{booked}, \texttt{picked\_up}, \texttt{in\_transit}, \texttt{delivered}, \texttt{delivery\_failed} or \texttt{returned\_to\_seller}, shown to both parties. The provider's verified \texttt{delivered} status records the delivery event.}
+\req{FR-DLV-11}{S}{T}{new}{If the courier has not picked up the item within \cp{CP-16} of payment, the order shall be cancelled and the buyer refunded in full (\rr{FR-PAY-08}). If the item is not delivered within \cp{CP-17} of pickup, the buyer may open a non-delivery dispute.}
+\req{FR-DLV-12}{S}{T}{new}{If the courier returns the item to the seller, the system shall cancel the order and refund the buyer in full, including the delivery fee. Any charge from the courier for the failed delivery shall be recorded as a platform cost in the revenue log.}
+\req{FR-DLV-13}{S}{T}{FR-58}{On the delivery event of a courier order, the system shall split the delivery fee between courier payout and platform delivery margin \cp{CP-26}, and record both in the settlement record (\rr{FR-PAY-13}).}
+\req{FR-DLV-14}{M}{I}{C-3}{Whenever the mock courier is in use, the order view and the documentation shall state that courier bookings are simulated.}
+\end{reqs}
 
-\section{Auction Bid Sequence}
-Figure~\ref{fig:bidflow} shows the server-authoritative bid handling sequence, including anti-sniping.
+\section{Game-Account Escrow (GAM)}
+\label{sec:fr-gam}
+Game accounts use the order, payment, escrow and dispute requirements of Sections~\ref{sec:fr-pay} and~\ref{sec:fr-dsp}. The requirements below add what a game account needs in place of physical delivery: proof of ownership before listing, a sealed credential handover, a guided takeover and a protection hold (Supplementary Report, Section~5.2; Proposal, Section~1.7).
+\begin{reqs}
+\req{FR-GAM-01}{M}{T}{C-6}{The game-account feature shall be controlled by the feature switch \cp{CP-36}. When it is off, new game-account listings and purchases shall be refused and active game-account listings hidden. Orders already paid shall continue to completion under these requirements.}
+\req{FR-GAM-02}{M}{T}{FR-92}{A verified seller shall be able to create a game-account listing recording: the game, the platform, the in-game player ID, and a description of the account's contents (for example level, items and linked purchases). The listing shall not contain or request any login detail.}
+\req{FR-GAM-03}{M}{T}{FR-93}{Before a game-account listing is published, the system shall issue the seller a one-time ownership code. The seller shall place the code in a visible field of the game profile (for example the bio or in-game name) and upload a screenshot showing the code and the player ID. An operator shall approve the listing only after checking both, and shall reject it with a reason otherwise.}
+\req{FR-GAM-04}{M}{T}{FR-94}{The system shall allow at most one active game-account listing per game and player ID. It shall refuse a new listing for a player ID whose earlier sale is still in its takeover window or protection period.}
+\req{FR-GAM-05}{M}{T}{FR-95}{Every game-account listing shall display a disclosure that the game's publisher may prohibit account transfers and may suspend or ban the account. The disclosure shall state that TrustBazaar's protection covers the handover, the takeover, and recovery by the seller during the protection period, but not action by the publisher. The system shall record the buyer's acknowledgement before accepting payment.}
+\req{FR-GAM-06}{M}{T}{new}{A game account may be sold at a fixed price or by auction. No delivery fee applies, and the delivery requirements of Section~\ref{sec:fr-dlv} do not apply.}
+\req{FR-GAM-07}{M}{T}{FR-96}{At checkout, the buyer's browser shall generate an encryption key pair using the Web Cryptography API (\rr{SEC-DAT-10}). The private key shall be non-extractable and shall remain only in that browser's storage. Only the public key shall be sent to the server, attached to the order. The buyer shall be told to complete the purchase and takeover in the same browser.}
+\req{FR-GAM-08}{S}{T}{new}{The system should show the buyer and the seller a short fingerprint of the buyer's public key, so that they can compare it before the seller encrypts.}
+\req{FR-GAM-09}{M}{T}{FR-97}{The seller's browser shall encrypt the login details (login identifier, password and any recovery or backup codes) with the buyer's public key. Only the resulting ciphertext shall be sent to and stored by the server; the plaintext shall never leave the seller's browser.}
+\req{FR-GAM-10}{M}{T}{FR-98}{The system shall ask the seller for the credentials only after the payment is \texttt{held}. If the seller does not deliver them within \cp{CP-22}, the order shall be cancelled and the buyer refunded in full (\rr{FR-PAY-08}).}
+\req{FR-GAM-11}{M}{T}{FR-98}{The ciphertext shall be retrievable only by the buyer of that order, from an authenticated session. Every retrieval shall be recorded in the credential-access log with time, user and session (\rr{SEC-GAM-02}).}
+\req{FR-GAM-12}{S}{T}{new}{If the buyer loses access to the private key (for example by clearing browser data), the buyer may request one re-key during the takeover window. The buyer's browser shall generate a new key pair, and the seller shall be asked to encrypt again. The takeover window shall restart when the new ciphertext is delivered. The re-key shall be logged.}
+\req{FR-GAM-13}{M}{T}{FR-99}{The takeover window \cp{CP-23} shall start when the seller's ciphertext is delivered, whether or not the buyer has opened it. When the buyer retrieves the credentials, the system shall present a takeover checklist: change the password; change the recovery e-mail; change the recovery phone; remove linked social logins; and enable two-step verification. The buyer shall confirm each step, and the remaining takeover window shall be shown as a countdown.}
+\req{FR-GAM-14}{M}{T}{FR-100}{If, within the takeover window, the buyer reports that the credentials do not work, the system shall open a dispute of type \texttt{credentials\_invalid} (\rr{FR-DSP-01}). Once the buyer has confirmed changing the recovery e-mail, the system shall no longer accept a \texttt{credentials\_invalid} report for that order.}
+\req{FR-GAM-15}{M}{T}{new}{The takeover is complete when the buyer confirms every checklist step. If the takeover window ends without the buyer confirming every step or reporting a problem, the takeover shall be treated as complete at the end of the window. The moment of completion is the delivery event for the order.}
+\req{FR-GAM-16}{M}{T}{FR-101}{After the takeover is confirmed or treated as complete, the payment shall stay \texttt{held} for the protection period \cp{CP-24}. During this period the buyer may open a dispute of type \texttt{seller\_recovery} with evidence (for example the publisher's security e-mails or screenshots).}
+\req{FR-GAM-17}{M}{T}{FR-102}{The payment for a game-account order shall be released when the protection period ends, or earlier if the buyer chooses to release it. An open dispute shall prevent release until an operator decides it. The general auto-release timeout \cp{CP-19} shall not apply to game-account orders.}
+\req{FR-GAM-18}{M}{T}{FR-103}{When an operator confirms that a seller recovered a sold account, whether through a dispute during the protection period or a report after release, the system shall do three things. It shall suspend the seller. It shall add the seller's NID blind index to the blacklist, with four-eyes approval (\rr{FR-OPS-05}). And it shall let the operator export the order's evidence (ownership proof, credential-access log, takeover confirmations and dispute history) for a complaint to law enforcement.}
+\req{FR-GAM-19}{M}{T}{new}{The system shall delete the ciphertext once the order has reached a terminal escrow state and no dispute is open on it. The credential-access log shall be kept (Table~\ref{tab:retention}).}
+\req{FR-GAM-20}{C}{T}{new}{The system may warn a seller who appears to be sending a password or login details in chat, and direct them to the sealed handover instead.}
+\end{reqs}
+\section{Real-Time Chat (CHT)}
+\begin{reqs}
+\req{FR-CHT-01}{M}{T}{FR-59}{The system shall provide a chat thread for each pair of listing and prospective buyer, between that buyer and the seller. Only registered users may start a thread, and only from a listing.}
+\req{FR-CHT-02}{M}{T}{FR-60}{The system shall deliver a message to an online recipient in real time (\rr{NFR-PERF-04}) and shall deliver queued messages when an offline recipient reconnects.}
+\req{FR-CHT-03}{M}{T}{FR-61}{The system shall allow images to be shared in a thread, subject to \rr{SEC-INP-04} and with metadata removed (\rr{SEC-DAT-08}).}
+\req{FR-CHT-04}{M}{T}{FR-62}{The system shall keep the full history of a thread, retrievable by either participant, for the period in Table~\ref{tab:retention}.}
+\req{FR-CHT-05}{S}{T}{FR-63}{The system should show a delivered and a read indicator for each message.}
+\req{FR-CHT-06}{M}{T}{FR-64}{The system shall allow a participant to report a thread or a message as abusive or fraudulent, adding it to the operator's report queue (\rr{FR-TNS-01}).}
+\req{FR-CHT-07}{M}{T}{new}{The system shall detect messages that appear to move payment or contact off the platform. These include mobile numbers, MFS wallet numbers, bank account numbers, links to external payment pages, and phrases asking for advance or direct payment (in Bangla and English). The system shall show both participants a warning that payments outside TrustBazaar are not protected. The message itself shall still be delivered.}
+\req{FR-CHT-08}{M}{T}{new}{The system shall allow a user to block another user. A blocked user cannot send messages to, bid on the listings of, or buy from the user who blocked them. Orders already paid shall continue.}
+\req{FR-CHT-09}{S}{T}{new}{Chat shall support plain text only. Web addresses should be shown as non-clickable text, with a warning.}
+\req{FR-CHT-10}{M}{T}{new}{An operator may read a chat thread only as part of a dispute or a report that concerns it (\rr{FR-DSP-05}), and every such access shall be logged (\rr{SEC-LOG-01}).}
+\end{reqs}
 
-\begin{figure}[h]
+\section{Ratings, Reviews and Trust Signals (REV)}
+\begin{reqs}
+\req{FR-REV-01}{S}{T}{FR-65}{After an order reaches a terminal escrow state, the buyer and the seller may each rate the other (1--5 stars, with optional text) within \cp{CP-39}.}
+\req{FR-REV-02}{S}{T}{FR-66}{The system shall not accept a rating for an order that was never paid, and shall allow at most one rating in each direction per order.}
+\req{FR-REV-03}{S}{T}{new}{A rating may be edited within the edit period in \cp{CP-39} and is fixed afterwards.}
+\req{FR-REV-04}{S}{T}{FR-67}{The system shall show each user's average rating and number of completed transactions on their profile and listings.}
+\req{FR-REV-05}{S}{T}{FR-68}{The system shall show distinct badges for verified status and for an active Pro Seller subscription.}
+\req{FR-REV-06}{C}{T}{new}{The rated user may post one public reply to a written review.}
+\req{FR-REV-07}{S}{T}{new}{An operator may remove a review only when it breaks the content policy (for example abuse, or personal data), with a recorded reason. A removed review shall not count towards the average.}
+\end{reqs}
+
+\section{Dispute Resolution (DSP)}
+\label{sec:fr-dsp}
+\begin{reqs}
+\req{FR-DSP-01}{M}{T}{FR-69}{The buyer may open a dispute, giving a type, a description and up to \cp{CP-33} evidence files. The types are: \texttt{not\_as\_described}, \texttt{damaged}, \texttt{not\_received}, \texttt{credentials\_invalid}, \texttt{seller\_recovery} and \texttt{other}. A dispute may be opened only while the payment is \texttt{held} and within its window. For physical items the window is \cp{CP-18} after the delivery event; a \texttt{not\_received} dispute may also be opened when the condition in \rr{FR-DLV-11} is met. For game accounts the windows are those in \rr{FR-GAM-14} and \rr{FR-GAM-16}.}
+\req{FR-DSP-02}{M}{T}{FR-70}{Opening a dispute shall move the escrow to \texttt{frozen\_disputed} at once, stopping every automatic release.}
+\req{FR-DSP-03}{M}{T}{FR-71}{The system shall notify the seller and add the dispute to the operator's dispute queue.}
+\req{FR-DSP-04}{M}{T}{new}{The seller may respond with a statement and evidence within \cp{CP-20}. If the seller does not respond, the operator shall decide on the evidence available.}
+\req{FR-DSP-05}{M}{T}{new}{The system shall assemble a case file for the operator containing: the order and listing as they were at the time of sale; the escrow history; the settlement and ledger entries; the delivery or handover records; the chat thread for the listing; both parties' evidence; and, for game accounts, the ownership proof, takeover confirmations and credential-access log.}
+\req{FR-DSP-06}{M}{T}{FR-72}{The operator shall decide a dispute with one of the following outcomes, and shall record a reason in every case: (a) release to the seller; (b) full refund to the buyer; (c) partial refund (\rr{FR-PAY-11}); or (d) refund after return of the item. Under (d), the return goes by courier at the system-quoted fare, the decision states which party pays that fare, and the refund is made when the seller's receipt of the item is recorded or the courier reports it delivered back.}
+\req{FR-DSP-07}{M}{T}{FR-72}{The system shall notify both parties of the outcome and its reason.}
+\req{FR-DSP-08}{S}{A}{new}{Operators should decide disputes within \cp{CP-21}. The system shall show each dispute's age in the queue.}
+\req{FR-DSP-09}{M}{T}{FR-73}{Each dispute shall have exactly one status out of \texttt{open}, \texttt{awaiting\_seller}, \texttt{under\_review}, \texttt{awaiting\_return}, \texttt{decided} or \texttt{withdrawn}. Every change shall be logged with time, actor and reason.}
+\req{FR-DSP-10}{M}{T}{new}{The buyer may withdraw a dispute before it is decided. The escrow then returns to \texttt{held}. Automatic release shall then take place at whichever is later: the original release time, or 24 hours after the withdrawal. A withdrawn dispute cannot be reopened with the same type.}
+\req{FR-DSP-11}{M}{T}{new}{Only one dispute may be open on an order at a time. No dispute may be opened after the payment has been released or refunded; later complaints are handled as reports (\rr{FR-TNS-01}), apart from the sanction in \rr{FR-GAM-18}.}
+\req{FR-DSP-12}{C}{T}{new}{Either party may request one review of a decision by a different operator within three days of the decision. A changed outcome shall require four-eyes approval.}
+\end{reqs}
+
+\section{Notifications (NTF)}
+\begin{reqs}
+\req{FR-NTF-01}{M}{T}{FR-74}{The system shall notify a bidder in real time when they are outbid.}
+\req{FR-NTF-02}{S}{T}{FR-75}{The system should notify users who are watching or bidding on an auction when it is within \cp{CP-38} of ending.}
+\req{FR-NTF-03}{M}{T}{FR-76}{The system shall notify the users concerned, in the app, of: payment confirmed; escrow released or refunded; every fulfilment status change; new chat messages; every dispute status change; KYC decisions; payout status; and listing approval, rejection or removal.}
+\req{FR-NTF-04}{S}{T}{FR-77}{The system shall show each user a history of their notifications.}
+\req{FR-NTF-05}{S}{T}{new}{In-app notifications shall always be sent. The notices in \rr{FR-NTF-03} should also be sent by e-mail. SMS shall be used only for OTPs and the security notices in \rr{FR-NTF-06}.}
+\req{FR-NTF-06}{M}{T}{new}{The system shall always notify a user, by SMS and e-mail, of: a sign-in from a new device; a change of password, mobile number or e-mail; enabling or disabling MFA; and adding or changing a payout account. Users shall not be able to switch these notices off.}
+\req{FR-NTF-07}{S}{T}{new}{The system should remind users of each deadline that applies to them (payment window, meetup handover, courier dispatch, credential delivery, takeover window, dispute window and protection period) at the times in \cp{CP-38}.}
+\req{FR-NTF-08}{M}{T}{new}{No notification shall contain a password, an OTP other than in its own OTP message, game-account credentials, a full NID number, or another user's contact details.}
+\end{reqs}
+
+\section{Monetization (MON)}
+\begin{reqs}
+\req{FR-MON-01}{M}{T}{FR-78}{The system shall deduct a platform commission \cp{CP-25}, a percentage of the item price, from the seller's payout on every sale. It shall be charged only on the part of the item price actually released to the seller (\rr{FR-PAY-11}).}
+\req{FR-MON-02}{C}{T}{FR-79}{The system shall apply the lower Pro Seller commission rate in \cp{CP-25} to orders of a seller with an active Pro Seller subscription when the order is created.}
+\req{FR-MON-03}{S}{T}{FR-80}{The system shall retain the delivery margin \cp{CP-26} from each courier delivery fee (\rr{FR-DLV-13}).}
+\req{FR-MON-04}{M}{T}{new}{The system shall not charge any fee for publishing a standard listing and shall not charge sellers per view or per click.}
+\req{FR-MON-05}{C}{T}{FR-81, FR-82}{A seller may pay a flat fee \cp{CP-37} to feature a listing at the top of search results or on the home page for a fixed period. Featured listings shall be labelled ``Featured'' wherever they appear.}
+\req{FR-MON-06}{C}{T}{FR-83}{The system shall offer a recurring Pro Seller subscription granting the lower commission, the higher listing limit \cp{CP-28} and a sales analytics view.}
+\req{FR-MON-07}{C}{T}{FR-84}{Subscription billing and renewal shall use the same payment providers as purchases, confirmed by webhook under \rr{FR-PAY-02} to \rr{FR-PAY-04}.}
+\req{FR-MON-08}{C}{T}{FR-85}{On cancellation, or after repeated failure of renewal payment, the account shall revert to standard status. Listings above the standard limit shall stay active until they end, but no new listing shall be accepted while the limit is exceeded.}
+\req{FR-MON-09}{M}{T}{FR-86}{The system shall record every commission, delivery margin, featured-listing fee, subscription charge and fee refund in a revenue log kept separate from the buyer and seller settlement records.}
+\req{FR-MON-10}{M}{T}{NFR-18}{The system shall show sellers the commission and delivery-margin rates before they create a listing, and shall show the buyer the full price breakdown at checkout. The rates that apply to an order are those in force when the order is created.}
+\end{reqs}
+
+\section{Trust and Safety (TNS)}
+\begin{reqs}
+\req{FR-TNS-01}{M}{T}{FR-87}{Any registered user may report a listing, a user or a chat message as fraudulent, counterfeit, prohibited, misrepresented or abusive. The report shall be added to the operator's report queue.}
+\req{FR-TNS-02}{S}{T}{FR-89}{The system should flag for review a seller who relists a similar item shortly after a cancelled or disputed sale.}
+\req{FR-TNS-03}{M}{T}{new}{An operator may apply the following sanctions: a warning; removal of a listing; suspension of selling; suspension of bidding and buying; or suspension of the account. Each sanction shall have a recorded reason and an end date or ``until review'', and the user shall be notified of the reason.}
+\req{FR-TNS-04}{S}{T}{new}{The system should give a seller a strike for: cancelling unilaterally after payment; missing a fulfilment deadline; or losing a dispute. On reaching \cp{CP-47} strikes, the seller's selling rights should be suspended automatically, pending operator review.}
+\req{FR-TNS-05}{M}{T}{new}{While an account is suspended, the user's listings shall be hidden, and new bids, purchases and listings refused. Paid orders shall continue to completion under the normal escrow rules. If the suspension is for suspected fraud, payouts to the user shall be held until an operator reviews them.}
+\req{FR-TNS-06}{M}{T}{new}{The system shall keep an NID blacklist of identities banned for fraud (\rr{FR-GAM-18}, or an operator decision under \rr{FR-TNS-03}). A blacklisted identity cannot be verified on any account. Each entry shall record its reason and the related order. Removing an entry shall require four-eyes approval.}
+\req{FR-TNS-07}{S}{T}{new}{The system should limit the value of a single order and the total value of open orders for users verified fewer than 30 days ago, as set in \cp{CP-27}.}
+\req{FR-TNS-08}{S}{T}{new}{The system should flag for review accounts that share a device, a payout account or a payment instrument with another account, especially where one account bids on the other's auctions.}
+\req{FR-TNS-09}{S}{T}{new}{The person who made a report should be told when it has been reviewed and whether action was taken, without being given details of any sanction.}
+\end{reqs}
+
+\section{Operator and Administrator Functions (OPS)}
+\label{sec:fr-ops}
+\begin{reqs}
+\req{FR-OPS-01}{M}{T}{FR-91}{The system shall provide operators with these queues and no others: KYC submissions; game-account ownership proofs; listings in \texttt{pending\_review}; reports; flagged activity; disputes; bank payout-account checks; and payment discrepancies.}
+\req{FR-OPS-02}{M}{T}{FR-91}{An operator shall be able to perform only the following actions: approve, reject or revoke KYC; approve or reject a listing under review, or remove a listing for a policy breach; approve or reject an ownership proof; decide a dispute; void a bid (\rr{FR-AUC-10}); cancel an auction that has bids (\rr{FR-LST-08}); apply or lift a sanction; add an identity to the NID blacklist; approve or reject a bank payout account; resolve a payment discrepancy; remove a review (\rr{FR-REV-07}); and export an evidence pack (\rr{FR-GAM-18}). Every action shall require a reason. No generic create, edit or delete of listings, users, orders or payments shall exist.}
+\req{FR-OPS-03}{M}{T}{new}{An administrator shall be able to perform only the following actions: create, disable and assign roles to staff accounts; reset a staff member's MFA, with approval from a second administrator; change configurable parameters within their allowed ranges; turn feature switches on or off; and read the audit log. An administrator shall not be able to view KYC documents, chats, dispute evidence or case files, or decide any case.}
+\req{FR-OPS-04}{M}{T}{new}{Staff accounts shall be created only by an administrator; the first administrator shall be created by a deployment-time command and not through the web interface. Staff accounts shall have no self-registration and shall not be usable to buy, sell or bid.}
+\req{FR-OPS-05}{M}{T}{new}{The actions listed in \cp{CP-30} shall take effect only after approval by a second staff member with the required role, who is not the one who proposed the action.}
+\req{FR-OPS-06}{M}{T}{new}{A staff member shall not be able to act on a case involving a user account registered with the same mobile number, e-mail or NID as their own, or a user with whom they have declared a conflict of interest.}
+\req{FR-OPS-07}{M}{T}{new}{Every staff action shall be logged with: staff identity; time; the object affected; the values before and after; the reason; and, where applicable, the approver (\rr{SEC-LOG-01}).}
+\req{FR-OPS-08}{M}{T}{new}{Changes to parameters shall be versioned. A change shall apply only to listings, auctions and orders created after it, which keep the values in force at their creation.}
+\req{FR-OPS-09}{M}{T}{new}{The system shall reject a parameter change that breaks a rule in Table~\ref{tab:params}, for example an auto-release timeout \cp{CP-19} not longer than the dispute window \cp{CP-18}.}
+\end{reqs}
+
+\section{Privacy and Data-Subject Rights (PRV)}
+\begin{reqs}
+\req{FR-PRV-01}{M}{I}{new}{Before collecting personal data, the system shall show a privacy notice stating: the purposes; the categories of data collected; how long each is kept (Table~\ref{tab:retention}); who receives it (payment, courier and messaging providers); any transfer outside Bangladesh; and how to withdraw consent. This is as required by the PDPO [R10].}
+\req{FR-PRV-02}{S}{T}{new}{Processing that is not needed for a transaction, such as marketing messages and personalised recommendations, should require separate opt-in consent that the user can withdraw at any time.}
+\req{FR-PRV-03}{S}{T}{new}{A user should be able to download a copy of their personal data and transaction history in a machine-readable format.}
+\req{FR-PRV-04}{M}{T}{NFR-17}{On account closure, the system shall delete or anonymise personal data within \cp{CP-41}, except data that must be kept under Table~\ref{tab:retention} (for example settlement records, audit logs and blacklist entries).}
+\req{FR-PRV-05}{M}{I}{new}{KYC data shall be used only to verify identity, to prevent fraud and to meet legal obligations, and never for marketing, recommendations or profiling.}
+\req{FR-PRV-06}{S}{I}{new}{Personal data shall be disclosed to an authority only on a documented lawful request. The disclosure shall be approved under four-eyes control and logged, and the user shall be told unless the law forbids it.}
+\end{reqs}
+% ================================================================ 5 SECURITY
+\chapter{Security Requirements}
+\label{ch:sec}
+TrustBazaar holds identity documents, moves money and holds game-account credentials, so security is part of the product's central claim. This chapter states the security objectives, the threats the system must withstand, and the requirements that follow from them. The baseline is OWASP ASVS 5.0 Level~2 [R3], with NIST SP 800-63B-4 [R5] for authentication and PCI DSS v4.0.1 [R6] for card data. How each control is implemented is a design matter for the SDD.
+
+\section{Security Objectives}
+\begin{enumerate}[label=\textbf{SO-\arabic*}, nosep, leftmargin=*]
+    \item \textbf{Money moves only by the rules}: no actor, including an operator, can release or redirect escrowed funds except by a transition in Table~\ref{tab:escrow}.
+    \item \textbf{Identity data stays confidential}: KYC images, NID numbers and selfies are readable only by the owning user and by the operator reviewing them, and only while doing so.
+    \item \textbf{Game-account credentials are unreadable to the platform}: the server and its staff never hold them in readable form.
+    \item \textbf{Auctions cannot be manipulated}: bid order, end time and the winner are decided by the server and cannot be altered by any client.
+    \item \textbf{Accounts cannot be taken over cheaply}: credential stuffing, OTP abuse and session theft are resisted.
+    \item \textbf{Every consequential action is attributable}: actions on money, identity, credentials and cases leave a tamper-evident record.
+\end{enumerate}
+
+\section{Threats Considered}
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.5cm} X >{\raggedright\arraybackslash}p{3.0cm}@{}}
+\toprule
+\textbf{Threat actor} & \textbf{Examples of what they attempt} & \textbf{Main requirements} \\
+\midrule
+External attacker & Credential stuffing, OTP flooding (SMS pumping), injection, XSS, CSRF, enumeration of other users' orders or documents (IDOR), forged webhooks & SEC-AUTH, SEC-SES, SEC-ACC, SEC-INP, SEC-WEB, SEC-PAY \\
+Fraudulent seller & Fake listings, advance-payment requests in chat, shill bidding, recovering a sold game account, payout to a stolen account & FR-CHT-07, FR-AUC-18, FR-GAM, FR-PAY-17, FR-PAY-18 \\
+Fraudulent buyer & False ``not received'' or ``credentials invalid'' claims, keeping an account and claiming a refund, chargebacks after release & FR-DLV-06, FR-GAM-14, FR-PAY-20 \\
+Multi-account or identity fraud & Several accounts for one person, fake or borrowed NIDs, returning after a ban & FR-KYC-04, FR-TNS-06, FR-TNS-08 \\
+Malicious or compromised staff & Reading KYC documents without cause, releasing escrow to an accomplice, deciding own cases, changing parameters to favour an order & FR-OPS-02 to FR-OPS-08, SEC-ACC-06, SEC-LOG \\
+Data or backup theft & Copy of the database or a backup leaked & SEC-DAT-02, SEC-DAT-03, SEC-DAT-06, FR-GAM-09 \\
+Supply-chain compromise & Malicious dependency or container image, leaked CI secret & SEC-SDL \\
+\bottomrule
+\end{tabularx}
+\end{center}
+Out of scope: attacks on the payment providers' own systems, compromise of a user's own device, and national-level adversaries. Assumption AS-6 states the limit of the game-credential protection.
+
+\section{General}
+\begin{reqs}
+\req{SEC-GEN-01}{M}{A}{new}{The system shall meet the Level~2 requirements of OWASP ASVS 5.0 [R3]. Before each release, an ASVS checklist shall record, for each requirement, whether it is met, not applicable, or deliberately deviated from, with the reason.}
+\req{SEC-GEN-02}{M}{A}{new}{A threat model of each feature area shall be recorded in the SDD before that area is implemented, and reviewed when the area changes.}
+\req{SEC-GEN-03}{M}{T}{new}{Every security requirement marked T shall have at least one automated test in the CI pipeline.}
+\end{reqs}
+
+\section{Authentication (SEC-AUTH)}
+\begin{reqs}
+\req{SEC-AUTH-01}{M}{T}{FR-2}{Passwords shall be at least 15 characters long, or at least 8 characters for an account with MFA enabled; when a user turns MFA off, a password shorter than 15 characters must be changed. At least 64 characters and all printable Unicode characters, including spaces, shall be accepted. No composition rules, periodic expiry, hints or security questions shall be used [R5].}
+\req{SEC-AUTH-02}{M}{T}{new}{New and changed passwords shall be checked against a list of breached and commonly used passwords and against context-specific words (for example ``trustbazaar'' or the user's own name or number), and rejected if found.}
+\req{SEC-AUTH-03}{M}{T}{FR-2}{Passwords shall be stored only as salted Argon2id hashes, with at least the parameters OWASP recommends (19~MiB memory, 2 iterations, parallelism 1). bcrypt shall not be used: it ignores input beyond 72 bytes, and a Bangla passphrase of 25 characters can already exceed that. Passwords shall never be logged or stored in plaintext.}
+\req{SEC-AUTH-04}{M}{T}{NFR-7}{After \cp{CP-04} failed sign-ins for one account, the system shall delay further attempts progressively, and shall also limit attempts per source address. The account owner shall be notified, and the throttling shall not lock out the legitimate owner permanently.}
+\req{SEC-AUTH-05}{M}{T}{new}{Sign-in, registration and password-reset responses shall not reveal whether a mobile number or e-mail is registered. Their response times shall not differ measurably either.}
+\req{SEC-AUTH-06}{M}{T}{new}{Registration shall resist enumeration as in \rr{SEC-AUTH-05}: a duplicate number or e-mail shall get the same response as a new one, and the owner of the existing account shall be notified instead.}
+\req{SEC-AUTH-07}{M}{T}{new}{MFA shall be mandatory for operator and administrator accounts, using TOTP or a phishing-resistant authenticator (WebAuthn/passkey). SMS shall not be accepted as a staff second factor.}
+\req{SEC-AUTH-08}{M}{T}{new}{Step-up authentication (TOTP if enabled, otherwise an OTP to the verified mobile number) shall be required, even in a valid session, for: changing password, mobile number or e-mail; turning MFA off; adding or changing a payout account; releasing a game-account payment early; and closing the account.}
+\req{SEC-AUTH-09}{M}{T}{new}{OTPs shall be 6 random digits from a cryptographically secure generator, single-use, valid for \cp{CP-05}, and stored only as hashes. Entry attempts shall be limited per OTP, and sends shall be limited per number and per source address (\cp{CP-05}) to prevent SMS pumping.}
+\req{SEC-AUTH-10}{M}{T}{new}{Password-reset tokens shall carry at least 128 bits of randomness, be single-use, expire after \cp{CP-06}, and be stored only as hashes. A successful reset shall end all of the user's sessions and notify the user (\rr{FR-NTF-06}).}
+\req{SEC-AUTH-11}{M}{T}{new}{Changing a password shall end every other session of that user.}
+\req{SEC-AUTH-12}{S}{T}{new}{The system should recognise devices previously used by an account, and should treat a sign-in from an unrecognised device as new for \rr{FR-NTF-06}.}
+\end{reqs}
+
+\section{Session Management (SEC-SES)}
+\label{sec:sec-ses}
+\begin{reqs}
+\req{SEC-SES-01}{M}{T}{FR-3}{Access tokens shall be short-lived (\cp{CP-01}) and signed with an algorithm fixed on the server; tokens with \texttt{alg=none} or an unexpected algorithm shall be rejected.}
+\req{SEC-SES-02}{M}{T}{FR-3}{Refresh tokens shall be rotated on every use, subject to an idle limit and an absolute limit (\cp{CP-02}), and stored only as hashes on the server. Reuse of an already rotated refresh token shall revoke the whole session family and notify the user.}
+\req{SEC-SES-03}{M}{T}{new}{Session tokens shall be kept in cookies marked \texttt{HttpOnly}, \texttt{Secure} and \texttt{SameSite}, and shall never be placed in browser local storage, in URLs or in logs.}
+\req{SEC-SES-04}{M}{T}{new}{Every state-changing request authenticated by cookie shall be protected against cross-site request forgery by an anti-CSRF token or an equivalent origin check, in addition to the \texttt{SameSite} attribute.}
+\req{SEC-SES-05}{M}{T}{new}{Sign-out, ``end session'', password change and account suspension shall invalidate the affected sessions on the server immediately; an access token still within its lifetime shall then be refused.}
+\req{SEC-SES-06}{M}{T}{new}{Staff sessions shall be subject to the shorter idle and absolute limits in \cp{CP-03}.}
+\req{SEC-SES-07}{M}{T}{new}{A WebSocket connection shall be authenticated when it is opened and closed when its session ends or is revoked. Joining an auction room or a chat room shall be authorised on the server: a user may join only chats they participate in, and the order rooms of their own orders.}
+\end{reqs}
+
+\section{Access Control (SEC-ACC)}
+\begin{reqs}
+\req{SEC-ACC-01}{M}{T}{new}{Every request shall be authorised on the server, with access denied by default. Hiding a control in the user interface shall never count as access control.}
+\req{SEC-ACC-02}{M}{T}{NFR-5}{Every request that names an object (order, listing, chat, KYC document, dispute, payout account, ciphertext) shall be checked to confirm that the requester is allowed to access that particular object. A user shall not be able to read or change another user's data by altering an identifier.}
+\req{SEC-ACC-03}{M}{T}{new}{The roles Guest, Registered user, Verified user, Pro Seller, Operator and Administrator shall have the permissions in Section~\ref{sec:classes} and Section~\ref{sec:fr-ops}, and no others. Role checks shall be made on the server for every protected function.}
+\req{SEC-ACC-04}{M}{T}{new}{Request bodies shall be accepted only for fields the endpoint explicitly allows. Fields such as role, KYC status, price after bidding, escrow state or seller payout shall never be settable from client input.}
+\req{SEC-ACC-05}{M}{T}{new}{Staff views shall mask personal data by default (for example, phone and NID showing only their last digits), and show the full value only where the task requires it, logging each such display.}
+\req{SEC-ACC-06}{M}{T}{FR-5}{KYC images shall be viewable only by the owning user and by an operator assigned to review that submission or a case involving that user. Every view shall be logged with the reason.}
+\end{reqs}
+
+\section{Data Protection and Cryptography (SEC-DAT)}
+\begin{reqs}
+\req{SEC-DAT-01}{M}{T}{new}{All external connections shall use TLS 1.2 or later (TLS 1.3 preferred), with HTTP Strict Transport Security on every response [R9]. Plain HTTP shall only redirect to HTTPS. Connections to providers shall verify certificates.}
+\req{SEC-DAT-02}{M}{T}{FR-5, NFR-4}{KYC images and dispute evidence shall be encrypted at rest with AES-256-GCM, or an equivalent authenticated cipher, under keys held outside the database. They shall never be reachable through a public or guessable URL.}
+\req{SEC-DAT-03}{M}{T}{new}{NID and passport numbers shall be stored encrypted. For the uniqueness check (\rr{FR-KYC-04}) and the blacklist (\rr{FR-TNS-06}), a blind index (HMAC-SHA-256 under a separate secret key) shall be used, so that a copy of the database does not reveal the numbers.}
+\req{SEC-DAT-04}{M}{T}{NFR-4}{Protected files shall be served only through short-lived signed URLs (\cp{CP-31}) issued to an authorised viewer after the check in \rr{SEC-ACC-06}.}
+\req{SEC-DAT-05}{M}{I}{NFR-8}{Encryption keys, signing secrets and provider credentials shall be kept in environment configuration or a secrets manager, never in source control, container images or logs. Every key shall carry a version so that it can be rotated without losing access to older data.}
+\req{SEC-DAT-06}{S}{T}{new}{Backups shall be encrypted, and access to them shall be restricted and logged.}
+\req{SEC-DAT-07}{M}{T}{new}{Passwords, OTPs, tokens, NID numbers, payout account numbers and game-account ciphertext shall never be written to application logs, error messages, analytics or URLs. Mobile numbers and e-mail addresses in logs shall be masked.}
+\req{SEC-DAT-08}{M}{T}{new}{Metadata (including EXIF location data) shall be removed from every uploaded image before it is stored or shown.}
+\req{SEC-DAT-09}{M}{T}{new}{Random values used for security (tokens, codes, keys, identifiers that grant access) shall come from a cryptographically secure generator.}
+\req{SEC-DAT-10}{M}{I}{new}{Game-account credential encryption shall use standard Web Cryptography API algorithms, either RSA-OAEP with SHA-256 and a key of at least 3072 bits, or ECDH on P-256 with AES-256-GCM. No other algorithm shall be used and no custom construction written (C-4).}
+\req{SEC-DAT-11}{M}{T}{new}{Public identifiers of orders, listings, files and users shall not be sequential or predictable.}
+\end{reqs}
+
+\section{Game-Account Credential Security (SEC-GAM)}
+\begin{reqs}
+\req{SEC-GAM-01}{M}{T}{NFR-21}{Game-account login details shall never be transmitted to or stored on the server in plaintext, or in any form that the server or a staff member can decrypt.}
+\req{SEC-GAM-02}{M}{T}{NFR-22}{The credential-access log (\rr{FR-GAM-11}) shall be append-only and shall be kept for the lifetime of the order and of any dispute on it, and then for the period in Table~\ref{tab:retention}.}
+\req{SEC-GAM-03}{M}{T}{new}{Credential-entry and credential-view pages shall load no third-party scripts, and shall be protected by the strict content security policy in \rr{SEC-WEB-01}.}
+\end{reqs}
+
+\section{Input, Output and File Handling (SEC-INP)}
+\begin{reqs}
+\req{SEC-INP-01}{M}{T}{new}{Every input shall be validated on the server against an explicit schema (type, length, range, format). Requests with unknown or invalid fields shall be rejected.}
+\req{SEC-INP-02}{M}{I}{new}{Database access shall use parameterised queries or the ORM's parameter binding only. Building a query by concatenating user input shall not be allowed, and this shall be checked by static analysis (\rr{SEC-SDL-03}).}
+\req{SEC-INP-03}{M}{T}{new}{User-supplied text (listing text, chat, reviews, display names) shall be treated as plain text and encoded for its output context. User-supplied HTML shall never be rendered.}
+\req{SEC-INP-04}{M}{T}{new}{Uploads shall be accepted only as JPEG, PNG or WebP, identified by file content and not by name or declared type, within the limits in \cp{CP-33}. Each upload shall be re-encoded, stored under a random name outside any executable path, and served with a fixed content type and \texttt{X-Content-Type-Options: nosniff}. They should also be scanned for malware.}
+\req{SEC-INP-05}{M}{T}{new}{The server shall not fetch any web address supplied by a user.}
+\req{SEC-INP-06}{M}{T}{new}{Error responses shown to users shall be generic and shall carry a correlation identifier. Stack traces, queries and internal paths shall appear only in protected logs.}
+\end{reqs}
+
+\section{Browser and API Hardening (SEC-WEB)}
+\begin{reqs}
+\req{SEC-WEB-01}{M}{T}{new}{Every page shall be served with a content security policy that forbids inline scripts (nonces or hashes only), restricts script sources to the site and the named payment provider, and sets \texttt{frame-ancestors 'none'}, except on any page a payment provider must frame.}
+\req{SEC-WEB-02}{M}{T}{new}{Responses shall set \texttt{X-Content-Type-Options}, a strict \texttt{Referrer-Policy} and a restrictive \texttt{Permissions-Policy}. Camera and geolocation shall be allowed only on the pages that need them.}
+\req{SEC-WEB-03}{M}{T}{new}{Cross-origin requests to the API shall be allowed only from the configured web-client origins.}
+\req{SEC-WEB-04}{S}{I}{new}{Any third-party script or stylesheet loaded from another origin should carry a Subresource Integrity hash.}
+\req{SEC-WEB-05}{M}{T}{new}{The API shall return only the fields each view needs. Internal fields (hashes, blind indexes, other users' contact details, proxy maximums) shall never appear in responses.}
+\end{reqs}
+
+\section{Payment Security (SEC-PAY)}
+\begin{reqs}
+\req{SEC-PAY-01}{M}{I}{FR-49}{Card data shall be entered only on Stripe-hosted pages or Stripe-hosted fields, so that card numbers never reach TrustBazaar's servers. The payment pages shall meet the SAQ A conditions of PCI DSS v4.0.1 [R6], including protection of the page against malicious scripts.}
+\req{SEC-PAY-02}{M}{I}{FR-49}{MFS wallet PINs and OTPs shall be entered only on the provider's own pages. TrustBazaar shall never request, receive or store them, or store raw card or wallet credentials; only provider tokens and references shall be stored.}
+\req{SEC-PAY-03}{M}{T}{NFR-6}{Every provider webhook or callback shall be accepted only after its signature (or the provider's equivalent verification query) has been checked with the secret for the current environment.}
+\req{SEC-PAY-04}{M}{T}{new}{Webhooks shall be rejected if their timestamp is outside \cp{CP-32}, and every event identifier shall be stored, so that a replayed event has no effect (\rr{FR-PAY-04}).}
+\req{SEC-PAY-05}{M}{T}{new}{Sandbox and production provider credentials shall be separate. A build configured for sandbox shall refuse production credentials, and the reverse.}
+\req{SEC-PAY-06}{M}{T}{new}{Amounts, currency and order references shall be computed on the server; any amount sent by the client shall be ignored.}
+\req{SEC-PAY-07}{M}{T}{new}{Every payment, refund and payout request to a provider shall carry an idempotency key unique to that operation, so that a retry can never charge, refund or pay twice.}
+\end{reqs}
+
+\section{Abuse Prevention (SEC-ABU)}
+\begin{reqs}
+\req{SEC-ABU-01}{M}{T}{NFR-7, FR-88}{The system shall rate-limit sign-in, registration, OTP requests, password reset, bidding, chat, listing creation, reporting, search and checkout, per account and per source address, using the limits in \cp{CP-04}, \cp{CP-05} and \cp{CP-35}. A limited request shall receive a clear retry-after response.}
+\req{SEC-ABU-02}{S}{T}{new}{The system should present a human-verification challenge after repeated failures or unusual request rates on registration, sign-in and OTP requests.}
+\req{SEC-ABU-03}{M}{T}{new}{Rate-limit state shall be shared across backend instances, so that adding instances does not multiply the allowance.}
+\end{reqs}
+
+\section{Logging, Audit and Monitoring (SEC-LOG)}
+\begin{reqs}
+\req{SEC-LOG-01}{M}{T}{FR-90}{The system shall log these security events: sign-in success and failure; MFA changes; password, mobile and e-mail changes; session revocation; OTP failures; every staff action (\rr{FR-OPS-07}); every view of KYC data or case files; every credential retrieval; every bid; every payment, escrow, refund and payout state change; every parameter or feature-switch change; and every rejected escrow transition (\rr{FR-PAY-06}).}
+\req{SEC-LOG-02}{M}{T}{FR-90}{The audit log shall be append-only through the application and tamper-evident: each entry shall include a hash of the previous entry, and a verification job shall report any break in the chain.}
+\req{SEC-LOG-03}{M}{T}{new}{Log entries shall record UTC time from an NTP-synchronised clock, the actor, the source address and a correlation identifier.}
+\req{SEC-LOG-04}{M}{T}{new}{The audit log shall be readable only by administrators (read-only) and by operators for the cases they handle. It shall not be changeable or deletable by any application role.}
+\req{SEC-LOG-05}{S}{T}{new}{The system should alert the team on at least these events: a spike in failed sign-ins; OTP send volume above normal; one staff member viewing many KYC records in a short time; a break in the audit-log hash chain; repeated webhook signature failures; and any rejected escrow transition.}
+\end{reqs}
+
+\section{Secure Development and Supply Chain (SEC-SDL)}
+\label{sec:sec-sdl}
+\begin{reqs}
+\req{SEC-SDL-01}{M}{I}{new}{The main branch shall be protected. Every change shall be merged by pull request after passing CI and after review by a team member other than the author. Changes to authentication, payment, escrow, credential handling or authorisation shall be reviewed specifically for security.}
+\req{SEC-SDL-02}{M}{T}{NFR-16}{The CI pipeline shall run linting, unit tests, the concurrency suite and the security tests on every push and pull request to the main branch.}
+\req{SEC-SDL-03}{M}{I}{new}{Static analysis (CodeQL) shall run on every pull request and weekly. A new high-severity finding shall block the merge until it is fixed or documented as a false positive.}
+\req{SEC-SDL-04}{M}{T}{new}{Dependencies shall be pinned by lock file and scanned for known vulnerabilities on every pull request (\texttt{npm audit} and Dependabot). The build shall fail on a known critical or high vulnerability with an available fix, unless a documented exception exists.}
+\req{SEC-SDL-05}{M}{I}{NFR-8}{Secret scanning with push protection shall be enabled for the repository. Any secret found in history shall be treated as compromised and rotated.}
+\req{SEC-SDL-06}{S}{T}{new}{Container images should be scanned for known vulnerabilities before release.}
+\req{SEC-SDL-07}{C}{I}{new}{A software bill of materials (SBOM) in a standard format may be produced for each release.}
+\req{SEC-SDL-08}{S}{T}{new}{A dynamic scan (OWASP ZAP baseline) should be run against the release candidate, and its findings triaged before the demonstration.}
+\req{SEC-SDL-09}{M}{T}{new}{The automated tests shall include negative authorisation tests for each protected endpoint: another user's object; a lower role; no session; and an expired session.}
+\end{reqs}
+
+\section{Deployment and Infrastructure (SEC-INF)}
+\begin{reqs}
+\req{SEC-INF-01}{M}{I}{new}{Containers shall run as non-root users from minimal base images, with only the ports they need exposed.}
+\req{SEC-INF-02}{M}{T}{new}{PostgreSQL and Redis shall not be reachable from outside the internal container network, and both shall require authentication.}
+\req{SEC-INF-03}{M}{I}{new}{The application shall connect to the database with an account that cannot change the schema. Migrations shall run under a separate account.}
+\req{SEC-INF-04}{M}{I}{new}{Development, test and production environments shall be separate, with separate credentials. Production personal data shall never be copied into development or test.}
+\req{SEC-INF-05}{M}{T}{new}{Production configuration shall disable debug output and automatic schema synchronisation.}
+\end{reqs}
+
+\section{Vulnerability and Incident Management (SEC-IRM)}
+\begin{reqs}
+\req{SEC-IRM-01}{S}{I}{new}{Known vulnerabilities in the deployed system should be fixed within \cp{CP-42} according to severity.}
+\req{SEC-IRM-02}{C}{I}{new}{The site may publish a security contact in \texttt{/.well-known/security.txt} [R9].}
+\req{SEC-IRM-03}{S}{I}{new}{An incident-response procedure should define roles, how incidents are contained and evidence preserved, and how affected users and the authority are notified of a personal-data breach as required by the PDPO [R10].}
+\req{SEC-IRM-04}{S}{T}{new}{Administrators should be able, with four-eyes approval, to: suspend new orders and payouts; turn off the game-account feature (\cp{CP-36}); end all user sessions; and rotate signing keys, each without redeploying the application.}
+\end{reqs}
+% ================================================================ 6 NFR
+\chapter{Other Non-Functional Requirements}
+\label{ch:nfr}
+
+\section{Performance (PERF)}
+Performance targets are measured under the reference load in \rr{NFR-PERF-01}, on the Docker Compose deployment, using a load-testing tool, and reported as the 95th percentile (p95) of server-side response time unless stated otherwise.
+\begin{reqs}
+\req{NFR-PERF-01}{M}{A}{new}{Reference load: 500 concurrent signed-in users; 200 clients viewing one auction; 20 bids per second on that auction for 60 seconds; 50 simultaneous purchase attempts on the last unit of one fixed-price listing; and a catalogue of 100{,}000 listings.}
+\req{NFR-PERF-02}{M}{T}{NFR-1}{A bid shall be accepted or rejected within 500~ms (p95).}
+\req{NFR-PERF-03}{M}{T}{NFR-2}{A change in auction state shall reach every connected viewer of that auction within 1~second (p95), measured from acceptance of the bid to receipt by the client.}
+\req{NFR-PERF-04}{M}{T}{new}{A chat message shall reach an online recipient within 1~second (p95).}
+\req{NFR-PERF-05}{M}{T}{NFR-3}{A filtered search shall return within 2~seconds (p95).}
+\req{NFR-PERF-06}{M}{T}{new}{A verified provider confirmation shall move the order to \texttt{held} within 5~seconds of receipt (p95).}
+\req{NFR-PERF-07}{S}{T}{new}{On a simulated 4G connection and a mid-range phone profile, the home, listing and checkout pages should reach Largest Contentful Paint within 2.5~seconds.}
+\req{NFR-PERF-08}{M}{T}{new}{Under the reference load, the correctness guarantees in Appendix~\ref{app:accept} shall hold without exception: no duplicate highest bid, no over-sale, no duplicate settlement.}
+\end{reqs}
+
+\section{Reliability and Availability (REL)}
+\begin{reqs}
+\req{NFR-REL-01}{M}{T}{NFR-11}{Restarting any single container, including Redis, shall not change any auction's authoritative end time and shall not lose an accepted bid, a confirmed payment or an escrow transition. Authoritative state shall be held durably in PostgreSQL.}
+\req{NFR-REL-02}{M}{T}{new}{A bid, purchase reservation, payment confirmation or escrow transition shall be acknowledged only after it has been durably committed.}
+\req{NFR-REL-03}{M}{T}{new}{Scheduled actions (auction close, payment-window expiry, checkout-hold expiry, fulfilment deadlines, auto-release, end of protection period, reconciliation) shall be idempotent and shall catch up after downtime. An action that fell due during an outage shall run once on recovery, based on the recorded times, and never twice.}
+\req{NFR-REL-04}{S}{T}{new}{When a payment or courier provider is unavailable, the system should refuse new checkouts that depend on it, with a clear message, and leave existing orders unaffected. The payment window of an auction that ends during a provider outage should be extended by the length of the outage.}
+\req{NFR-REL-05}{S}{T}{new}{\textbf{(prod)} The database should be backed up daily, with continuous write-ahead-log archiving, for a recovery point objective of 15 minutes and a recovery time objective of 4 hours. A restore should be tested before each release.}
+\req{NFR-REL-06}{C}{A}{new}{\textbf{(prod)} Target availability is 99.5\% per calendar month, excluding announced maintenance.}
+\end{reqs}
+
+\section{Usability and Accessibility (USE)}
+\begin{reqs}
+\req{NFR-USE-01}{M}{D}{NFR-12}{A first-time bidder shall be able to read the auction rules (increment, proxy bidding, reserve, anti-sniping) from the auction page without leaving it.}
+\req{NFR-USE-02}{M}{D}{NFR-13}{The KYC wizard shall state the document requirements before capture and show the current review status at every step.}
+\req{NFR-USE-03}{M}{D}{NFR-23}{The takeover checklist shall show the time remaining in the takeover window and the date on which the protection period ends.}
+\req{NFR-USE-04}{S}{D}{new}{The interface should be available in Bangla and English, switchable at any time, with all money-related and deadline text available in both languages.}
+\req{NFR-USE-05}{M}{T}{new}{Every view shall be usable at a viewport width of 360 CSS pixels without horizontal scrolling.}
+\req{NFR-USE-06}{S}{A}{new}{The interface should conform to WCAG 2.2 Level AA [R7].}
+\req{NFR-USE-07}{M}{D}{new}{The order view shall describe the money's state in plain language (for example ``Your payment is held by TrustBazaar. The seller is paid when you confirm receipt, or automatically on 20 Oct at 18:00 unless you open a dispute'').}
+\req{NFR-USE-08}{M}{T}{new}{All dates and times shall be shown in Asia/Dhaka time with the date, and deadlines shall be shown as both a time and a countdown.}
+\end{reqs}
+
+\section{Maintainability and Portability (MNT)}
+\begin{reqs}
+\req{NFR-MNT-01}{M}{I}{NFR-14}{The system shall run as four containers orchestrated by Docker Compose: PostgreSQL, Redis, the backend (including its real-time gateway) and the web client. Health checks shall make the backend wait for the database and cache.}
+\req{NFR-MNT-02}{M}{T}{NFR-15}{Automated tests shall cover at least: concurrent bidding; anti-sniping; proxy bidding; the last-unit purchase race; webhook idempotency and replay; escrow transitions (permitted and forbidden); fee-split arithmetic; the game-account release rules; and the authorisation tests in \rr{SEC-SDL-09}.}
+\req{NFR-MNT-03}{S}{A}{new}{Line coverage of the auction, order, payment, escrow, delivery and game-account modules should be at least 70\%.}
+\req{NFR-MNT-04}{M}{I}{new}{Database schema changes shall be made only by versioned migrations kept in the repository. Automatic schema synchronisation shall be used only in local development.}
+\req{NFR-MNT-05}{S}{I}{new}{The HTTP API should be documented in OpenAPI format generated from the code.}
+\req{NFR-MNT-06}{M}{I}{new}{Every value in Table~\ref{tab:params} shall be read from configuration, not hard-coded.}
+\req{NFR-MNT-07}{M}{I}{new}{The code shall pass the repository's ESLint rules with no errors in CI.}
+\req{NFR-MNT-08}{M}{T}{new}{The whole system shall start from a clean checkout with one documented command on any Linux, macOS or Windows host with Docker installed.}
+\end{reqs}
+
+\section{Scalability (SCL)}
+\begin{reqs}
+\req{NFR-SCL-01}{M}{T}{NFR-19}{Real-time messages shall be distributed through a publish/subscribe channel, so that further backend instances can be added without any instance needing every client connection.}
+\req{NFR-SCL-02}{S}{T}{NFR-20}{No backend instance shall hold state that another instance needs in order to serve a request correctly; a request shall be servable by any instance.}
+\req{NFR-SCL-03}{S}{A}{NFR-20}{Performance targets \rr{NFR-PERF-02} to \rr{NFR-PERF-05} shall hold with the catalogue at 100{,}000 listings and with 1{,}000{,}000 bids stored.}
+\end{reqs}
+
+\section{Observability (OBS)}
+\begin{reqs}
+\req{NFR-OBS-01}{M}{T}{new}{The backend shall expose a liveness check and a readiness check that reports database and cache connectivity.}
+\req{NFR-OBS-02}{M}{I}{new}{Application logs shall be structured (JSON), with level, time, correlation identifier and module, subject to \rr{SEC-DAT-07}.}
+\req{NFR-OBS-03}{S}{T}{new}{The backend should expose metrics for request rates, error rates, response times, active WebSocket connections, queue depths and job outcomes.}
+\end{reqs}
+
+\section{Legal and Regulatory Compliance (CMP)}
+\begin{reqs}
+\req{NFR-CMP-01}{M}{I}{NFR-17}{Collection, storage, retention and deletion of personal data shall follow the PDPO [R10], including consent and notice at collection (\rr{FR-PRV-01}), the retention schedule in Table~\ref{tab:retention}, and constraint C-8 in production.}
+\req{NFR-CMP-02}{M}{I}{C-7}{\textbf{(prod)} Escrow shall be operated through a Bangladesh Bank-licensed provider (C-7), in line with the escrow instructions for digital commerce [R12].}
+\req{NFR-CMP-03}{M}{I}{new}{Card handling shall stay within PCI DSS SAQ A scope (\rr{SEC-PAY-01}).}
+\req{NFR-CMP-04}{M}{I}{new}{The terms of use shall state at least: the age requirement; prohibited items; the fees; the escrow, release and dispute rules; the game-account risk disclosure; the sanctions; and the platform's role and limits of liability.}
+\req{NFR-CMP-05}{M}{I}{new}{The academic deliverable shall make clear, on every payment and courier screen and in the documentation, that payments and courier bookings are simulated (C-2, C-3).}
+\end{reqs}
+
+% ================================================================ 7 DATA
+\chapter{Data Requirements}
+\label{ch:data}
+This chapter states what information the system must keep, how sensitive it is and how long it is kept. The entities, fields and relationships that implement it are specified in the SDD.
+
+\section{Information the System Shall Keep}
+\begin{reqs}
+\req{DR-01}{M}{I}{new}{Accounts and authentication: identity of the account; verified contact details; password hash; MFA settings; sessions; consent records (\rr{FR-ACC-04}).}
+\req{DR-02}{M}{I}{new}{KYC: submissions, their images, the document details as printed, the blind index, status history and operator decisions.}
+\req{DR-03}{M}{I}{new}{Listings, including their status history and any clarifications, and a copy of the listing as it was when each order was created.}
+\req{DR-04}{M}{I}{new}{Bids, including proxy maximums and the server receipt time of each.}
+\req{DR-05}{M}{I}{new}{Orders, escrow state history, settlement records, refunds, payouts, provider references and webhook event identifiers.}
+\req{DR-06}{M}{I}{new}{Fulfilment: meetup proposals and agreements, handover-code events, courier bookings and status history.}
+\req{DR-07}{M}{I}{new}{Game accounts: listing details, ownership proofs, public keys, ciphertext until deletion, takeover confirmations, credential-access log.}
+\req{DR-08}{M}{I}{new}{Chat threads and messages, reviews, disputes with evidence and decisions, reports, sanctions, strikes and the NID blacklist.}
+\req{DR-09}{M}{I}{new}{Staff accounts, parameter versions, feature-switch history, revenue log and audit log.}
+\req{DR-10}{M}{T}{new}{Histories of escrow, KYC status, listing status, dispute status and the audit log shall be append-only. Settlement records shall satisfy the balance rule in \rr{FR-PAY-14}.}
+\end{reqs}
+
+\section{Data Classification}
+\label{sec:classification}
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.2cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Class} & \textbf{Examples} & \textbf{Handling} \\
+\midrule
+Public & Active listings, display names, ratings, masked bid history & May be shown to guests. \\
+Internal & Order status, aggregate statistics, parameter values & Signed-in parties and staff with a need. \\
+Confidential & Mobile numbers, e-mail, addresses, chat, transaction history, payout accounts, dispute evidence & Owner and counterparty only as needed; staff only through a case; masked in staff views and logs (\rr{SEC-ACC-05}, \rr{SEC-DAT-07}). \\
+Restricted & KYC images and selfies, NID numbers, password hashes, OTP and token hashes, game-account ciphertext, encryption keys & Encrypted at rest; access logged; never in logs or exports to third parties; stored in Bangladesh in production (C-8). \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Retention}
+\begin{table}[!htbp]
 \centering
-\begin{tikzpicture}[
-    node distance=1.1cm and 1.7cm,
-    box/.style={draw, rounded corners, minimum width=2.8cm, minimum height=0.9cm, align=center, font=\small},
-    arrow/.style={-{Latex[length=2mm]}, thick}
-]
-\node[box, fill=blue!10] (bid) {Bidder submits\\bid};
-\node[box, fill=orange!15, right=of bid] (lock) {Acquire row lock\\on auction};
-\node[box, fill=yellow!15, right=of lock] (check) {Validate amount \&\\end time};
-\node[box, fill=green!10, below=of check] (accept) {Record bid,\\update highest};
-\node[box, fill=red!10, left=of accept] (extend) {Within anti-snipe\\window?};
-\node[box, fill=purple!10, left=of extend] (broadcast) {Broadcast update\\to all viewers};
-\node[box, fill=teal!15, below=of broadcast] (notify) {Notify previous\\highest bidder};
+\small
+\caption{Retention schedule. Periods marked ``to be confirmed'' depend on legal review (Appendix~\ref{app:open}).}
+\label{tab:retention}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.4cm} X@{}}
+\toprule
+\textbf{Data} & \textbf{Retention} \\
+\midrule
+KYC images and selfie & Until 30 days after account closure or rejection without resubmission, unless held for an open dispute, fraud investigation or legal request. \\
+NID number (encrypted) & As KYC images. \\
+NID blind index on the blacklist & While the blacklist entry exists. \\
+Game-account ciphertext & Deleted when the order reaches a terminal state with no open dispute (\rr{FR-GAM-19}). \\
+Credential-access log & 2 years after the order closes. \\
+Settlement records, refunds, payouts, revenue log & 6 years (to be confirmed against accounting and tax law). \\
+Audit and security logs & At least \cp{CP-40}; entries relating to money as for settlement records. \\
+Chat messages & 1 year after the last message, or longer while part of an open dispute or report. \\
+Dispute case files & 2 years after the decision. \\
+Account data after closure & Deleted or anonymised within \cp{CP-41}, except as above. \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-\draw[arrow] (bid) -- (lock);
-\draw[arrow] (lock) -- (check);
-\draw[arrow] (check) -- (accept);
-\draw[arrow] (accept) -- (extend);
-\draw[arrow] (extend) -- node[above, font=\scriptsize, align=center]{extends\\end\_time} (broadcast);
-\draw[arrow] (broadcast) -- (notify);
-\end{tikzpicture}
-\caption{Server-authoritative bid processing with anti-sniping}
-\label{fig:bidflow}
-\end{figure}
+% ================================================================ 8 PARAMETERS
+\chapter{Business Rules and Configurable Parameters}
+\label{ch:params}
 
-\section{Settlement and Delivery Split Flow}
-Figure~\ref{fig:settlement} shows how a single confirmed payment is decomposed into the settlement ledger.
+\section{Configurable Parameters}
+Each parameter is changed only by an administrator (\rr{FR-OPS-03}), is versioned, applies to items created after the change (\rr{FR-OPS-08}), and must satisfy the stated rule (\rr{FR-OPS-09}). Defaults for fees and limits are initial values for the academic deliverable and are to be confirmed by the team.
 
-\begin{figure}[h]
-\centering
-\begin{tikzpicture}[
-    node distance=1.2cm and 0.7cm,
-    box/.style={draw, rounded corners, minimum width=3.4cm, minimum height=1.3cm, align=center, font=\scriptsize},
-    arrow/.style={-{Latex[length=2mm]}, thick}
-]
-\node[box, fill=blue!10, minimum width=4.5cm, font=\small] (payment) {Confirmed Payment\\(item + delivery)};
-\node[box, fill=orange!15, below=1.3cm of payment, minimum width=4.5cm, font=\small] (escrow) {Escrow: Held};
-\node[box, fill=purple!10, below=2.2cm of escrow] (platform) {Platform Revenue\\(commission +\\delivery margin)};
-\node[box, fill=green!10, left=1.0cm of platform] (seller) {Seller Payout\\(price minus\\commission)};
-\node[box, fill=teal!15, right=1.0cm of platform] (courier) {Courier Payout\\(delivery fee\\minus margin)};
+{\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.25cm} >{\raggedright\arraybackslash}p{4.6cm} >{\raggedright\arraybackslash}p{5.2cm} >{\raggedright\arraybackslash}p{3.6cm}@{}}
+\caption{Configurable parameters.}\label{tab:params}\\
+\toprule
+\textbf{ID} & \textbf{Parameter} & \textbf{Default} & \textbf{Rule} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{ID} & \textbf{Parameter} & \textbf{Default} & \textbf{Rule} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\leavevmode CP-01\hypertarget{CP-01}{} & Access-token lifetime & 15 minutes & 5--30 min \\
+\leavevmode CP-02\hypertarget{CP-02}{} & Refresh session idle / absolute limit & 7 days / 30 days & idle $\le$ absolute \\
+\leavevmode CP-03\hypertarget{CP-03}{} & Staff session idle / absolute limit & 15 minutes / 8 hours & idle $\le$ 30 min \\
+\leavevmode CP-04\hypertarget{CP-04}{} & Failed sign-in threshold & 5 per account per 15 min; 50 per source address per 15 min & --- \\
+\leavevmode CP-05\hypertarget{CP-05}{} & OTP validity, attempts, sends & 5 min; 5 attempts; 3 sends per number per hour, 10 per day & validity $\le$ 10 min \\
+\leavevmode CP-06\hypertarget{CP-06}{} & Password-reset link / e-mail verification link validity & 30 minutes / 24 hours & reset $\le$ 60 min \\
+\leavevmode CP-07\hypertarget{CP-07}{} & Auction durations offered & 1, 2, 6, 24, 72 hours & max 72 h \\
+\leavevmode CP-08\hypertarget{CP-08}{} & Minimum bid increment & Greater of 2\% of current price and BDT 50, rounded up to whole taka & $>$ 0 \\
+\leavevmode CP-09\hypertarget{CP-09}{} & Anti-sniping window / extension & 2 minutes / 2 minutes & both $>$ 0 \\
+\leavevmode CP-10\hypertarget{CP-10}{} & Auction winner's payment window & 24 hours & 1--72 h \\
+\leavevmode CP-11\hypertarget{CP-11}{} & Second-chance offer: accept and pay within & 24 hours & 1--72 h \\
+\leavevmode CP-12\hypertarget{CP-12}{} & Non-payment strikes & 2 strikes in 90 days suspend bidding for 30 days & $\ge$ 1 \\
+\leavevmode CP-13\hypertarget{CP-13}{} & Fixed-price checkout hold & 15 minutes & 5--60 min \\
+\leavevmode CP-14\hypertarget{CP-14}{} & Self-pickup distance threshold & 2 km & $>$ 0 \\
+\leavevmode CP-15\hypertarget{CP-15}{} & Meetup handover deadline & 7 days after payment & --- \\
+\leavevmode CP-16\hypertarget{CP-16}{} & Courier pickup deadline & 3 days after payment & --- \\
+\leavevmode CP-17\hypertarget{CP-17}{} & Courier delivery limit before a non-delivery dispute is allowed & 7 days after pickup & --- \\
+\leavevmode CP-18\hypertarget{CP-18}{} & Dispute window (physical items) & 3 days after the delivery event & $<$ CP-19 \\
+\leavevmode CP-19\hypertarget{CP-19}{} & Auto-release timeout (physical items) & 5 days after the delivery event & $>$ CP-18 \\
+\leavevmode CP-20\hypertarget{CP-20}{} & Seller's dispute response window & 48 hours & --- \\
+\leavevmode CP-21\hypertarget{CP-21}{} & Operator dispute decision target & 5 days after the seller's response or its deadline & --- \\
+\leavevmode CP-22\hypertarget{CP-22}{} & Game-account credential delivery deadline & 24 hours after payment & --- \\
+\leavevmode CP-23\hypertarget{CP-23}{} & Takeover window & 24 hours after the credentials are delivered & --- \\
+\leavevmode CP-24\hypertarget{CP-24}{} & Protection period & 7 days after takeover & $\ge$ 3 days \\
+\leavevmode CP-25\hypertarget{CP-25}{} & Commission (standard / Pro Seller) & 5\% / 3\% of item price (to be confirmed) & Pro $\le$ standard \\
+\leavevmode CP-26\hypertarget{CP-26}{} & Delivery margin & 10\% of delivery fee & 0--50\% \\
+\leavevmode CP-27\hypertarget{CP-27}{} & Order value limits & First 30 days after verification: BDT 50{,}000 per order, BDT 100{,}000 in open orders. Then BDT 200{,}000 per order. & --- \\
+\leavevmode CP-28\hypertarget{CP-28}{} & Active listing limit (standard / Pro) & 10 / 50 & Pro $\ge$ standard \\
+\leavevmode CP-29\hypertarget{CP-29}{} & Payout account cooling-off & 24 hours & $\ge$ 12 h \\
+\leavevmode CP-30\hypertarget{CP-30}{} & Actions requiring four-eyes approval & KYC revocation; NID blacklisting and removal; dispute outcomes of BDT 20{,}000 or more; lifting an account suspension; staff MFA reset; emergency controls (\rr{SEC-IRM-04}) & list may only grow \\
+\leavevmode CP-31\hypertarget{CP-31}{} & Signed-URL lifetime & 5 minutes & $\le$ 15 min \\
+\leavevmode CP-32\hypertarget{CP-32}{} & Webhook timestamp tolerance / event-ID retention & 5 minutes / 30 days & --- \\
+\leavevmode CP-33\hypertarget{CP-33}{} & Upload limits & 10 MB per image; 10 photos per listing; 10 evidence files per dispute & --- \\
+\leavevmode CP-34\hypertarget{CP-34}{} & KYC resubmission limit & 3 per 30 days & $\ge$ 1 \\
+\leavevmode CP-35\hypertarget{CP-35}{} & Rate limits & Bids: 10 per minute per user per auction. Chat: 30 messages per minute. Listing creation: 10 per day. Reports: 20 per day. Search: 60 per minute per source address. & --- \\
+\leavevmode CP-36\hypertarget{CP-36}{} & Game-account feature switch & On & --- \\
+\leavevmode CP-37\hypertarget{CP-37}{} & Featured listing periods and fees & 24 h or 48 h; flat fee (to be set) & --- \\
+\leavevmode CP-38\hypertarget{CP-38}{} & Notification lead times & Auction ending: 5 minutes. Deadline reminders: 24 hours and 2 hours before. & --- \\
+\leavevmode CP-39\hypertarget{CP-39}{} & Rating window / edit period & 14 days after the order closes / 48 hours after posting & --- \\
+\leavevmode CP-40\hypertarget{CP-40}{} & Security-log retention & 1 year & $\ge$ 1 year \\
+\leavevmode CP-41\hypertarget{CP-41}{} & Erasure after account closure & 30 days & $\le$ 30 days \\
+\leavevmode CP-42\hypertarget{CP-42}{} & Vulnerability fix targets & Critical: 7 days. High: 30 days. & --- \\
+\leavevmode CP-43\hypertarget{CP-43}{} & Courier fare table & Base fare by weight class and zone (inside Dhaka, Dhaka suburbs, outside Dhaka), from published rate cards [R14] & maintained by administrator \\
+\leavevmode CP-44\hypertarget{CP-44}{} & KYC review target & 48 hours & --- \\
+\leavevmode CP-45\hypertarget{CP-45}{} & Handover-code wrong-entry limit & 5 & 3--10 \\
+\leavevmode CP-46\hypertarget{CP-46}{} & Reconciliation interval & 15 minutes & $\le$ 60 min \\
+\leavevmode CP-47\hypertarget{CP-47}{} & Seller strikes before automatic selling suspension & 3 in 90 days & $\ge$ 1 \\
+\end{longtable}
+}
 
-\draw[arrow] (payment) -- (escrow);
-\draw[arrow] (escrow) -- node[left, font=\scriptsize, align=center]{on confirm\\/timeout} (seller);
-\draw[arrow] (escrow) -- (platform);
-\draw[arrow] (escrow) -- (courier);
-\end{tikzpicture}
-\caption{Settlement ledger split on order completion}
-\label{fig:settlement}
-\end{figure}
-
-\chapter{Business Model and Revenue Design}
+\section{Settlement Example}
+The following worked example fixes the fee arithmetic of \rr{FR-PAY-13}, \rr{FR-PAY-14}, \rr{FR-MON-01} and \rr{FR-DLV-13}, and is to be used as a test case. A standard seller sells an item for BDT 10{,}000 with courier delivery at BDT 150. Commission is 5\% and delivery margin is 10\%.
+\begin{center}
+\small
+\begin{tabular}{@{}l r@{}}
+\toprule
+\textbf{Line} & \textbf{BDT} \\
+\midrule
+Collected from buyer & 10{,}150.00 \\
+Platform commission (5\% of 10{,}000) & 500.00 \\
+Platform delivery margin (10\% of 150) & 15.00 \\
+Courier payout (150 $-$ 15) & 135.00 \\
+Seller payout (10{,}000 $-$ 500) & 9{,}500.00 \\
+\midrule
+Check: 500 + 15 + 135 + 9{,}500 & 10{,}150.00 \\
+\bottomrule
+\end{tabular}
+\end{center}
+With a partial refund of BDT 2{,}000 decided after delivery: the refund is taken from the item price; the commission is 5\% of the BDT 8{,}000 released, which is BDT 400; the seller receives BDT 7{,}600; and the delivery fee is not refunded because the courier had delivered. The parts then total 2{,}000 + 400 + 15 + 135 + 7{,}600 = 10{,}150.
 
 \section{Revenue Streams}
-\begin{longtable}{p{3.3cm}p{3.6cm}p{5.9cm}}
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.4cm} >{\raggedright\arraybackslash}p{3.4cm} X c@{}}
 \toprule
-\textbf{Stream} & \textbf{Trigger} & \textbf{Model} \\
+\textbf{Stream} & \textbf{Charged when} & \textbf{Rule} & \textbf{Pri} \\
 \midrule
-Transaction commission & Completed sale (fixed-price or auction) & Percentage of item price, deducted at seller payout (lower rate for Pro Sellers) \\
-Delivery margin & Courier-fulfilled delivery & Percentage of buyer-paid delivery fee retained before courier payout \\
-Featured listings & Seller opts to boost & Flat fee per fixed duration (e.g., 24/48 hours) \\
-Pro Seller subscription & Recurring opt-in & Monthly flat fee; grants lower commission, higher listing limits, analytics \\
-Buyer protection add-on (optional) & High-value item checkout & Flat fee or small percentage for extended dispute coverage \\
+Transaction commission & Payment released to seller & \rr{FR-MON-01}; only on the amount released & M \\
+Delivery margin & Courier order delivered & \rr{FR-MON-03} & S \\
+Featured listing & Seller opts in & \rr{FR-MON-05}; flat fee, always labelled & C \\
+Pro Seller subscription & Monthly, opt-in & \rr{FR-MON-06} & C \\
+Buyer-protection add-on & --- & Withdrawn: every buyer has the same protection & W \\
+Listing fees, pay-per-click & --- & Not charged (\rr{FR-MON-04}) & W \\
 \bottomrule
+\end{tabularx}
+\end{center}
+% ================================================================ APPENDICES
+\appendix
+\chapter{Acceptance Criteria}
+\label{app:accept}
+These are the six acceptance criteria of the Project Proposal (Section~2.3), stated as testable properties. Each must hold under the reference load (\rr{NFR-PERF-01}) and is verified by an automated test (\rr{NFR-MNT-02}).
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}c X >{\raggedright\arraybackslash}p{4.2cm}@{}}
+\toprule
+\textbf{AC} & \textbf{Property} & \textbf{Requirements} \\
+\midrule
+1 & Two simultaneous bids on the same auction never both register as the winning bid. & \rr{FR-AUC-03}, \rr{FR-AUC-04}, \rr{NFR-PERF-08} \\
+2 & Two simultaneous buyers can never both purchase the last unit of a fixed-price listing. & \rr{FR-FIX-02}, \rr{FR-FIX-05} \\
+3 & An escrow payment is never released to a seller except by buyer confirmation after the delivery event, a genuine timeout counted from that event, or an operator's dispute decision. & \rr{FR-PAY-06}, \rr{FR-PAY-07}, \rr{FR-PAY-08}, Table~\ref{tab:escrow} \\
+4 & A payment webhook delivered twice never results in the order being charged or settled twice. & \rr{FR-PAY-04}, \rr{SEC-PAY-04}, \rr{SEC-PAY-07} \\
+5 & Game-account login details are never stored on the server in a form the server or an operator can read. & \rr{FR-GAM-09}, \rr{SEC-GAM-01}, \rr{SEC-DAT-10} \\
+6 & Payment for a game-account order is never released before the protection period ends, unless the buyer releases it early or an operator decides a dispute. & \rr{FR-GAM-16}, \rr{FR-GAM-17} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+Criterion~3 is stated more precisely than in the proposal: the timeout runs from the delivery event, not from payment (see Appendix~\ref{app:changes}, item~1).
+
+\chapter{Traceability}
+\label{app:trace}
+\section{Proposal Objectives to Requirements}
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}c X >{\raggedright\arraybackslash}p{5.2cm}@{}}
+\toprule
+\textbf{Obj.} & \textbf{Objective (Proposal, Section~1.3)} & \textbf{Main requirements} \\
+\midrule
+1 & Gate listing and transacting behind KYC & FR-KYC-01 to FR-KYC-10, FR-TNS-06, SEC-DAT-02, SEC-DAT-03 \\
+2 & Server-authoritative auction with anti-sniping & FR-AUC-01 to FR-AUC-18, NFR-PERF-02, NFR-PERF-03, NFR-REL-01 \\
+3 & Single escrow step for every payment & FR-PAY-01 to FR-PAY-19, Table~\ref{tab:escrow}, SEC-PAY \\
+4 & Distance-based meetup or courier at a system fare & FR-DLV-01 to FR-DLV-13 \\
+5 & Auditable record of each payment split & FR-PAY-10, FR-PAY-13, FR-PAY-14, FR-MON-09, SEC-LOG-02 \\
+6 & Game-account escrow & FR-GAM-01 to FR-GAM-20, SEC-GAM-01 to SEC-GAM-03 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Supplementary Report Loopholes to Requirements}
+The Supplementary Report (Section~4, Table~5) identifies six loopholes on existing platforms and states how TrustBazaar closes each. The requirements below are what the system must do to keep those commitments.
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.6cm} X >{\raggedright\arraybackslash}p{4.4cm}@{}}
+\toprule
+\textbf{Loophole} & \textbf{Commitment in the report} & \textbf{Requirements} \\
+\midrule
+L1 Weak identity & NID + selfie KYC before listing or buying, with an AI pre-check; a banned person cannot return with a new number & FR-KYC-01 to FR-KYC-11, FR-TNS-06 \\
+L2 No payment protection & Buyer pays into escrow; seller paid on confirmation or timeout & FR-PAY-05 to FR-PAY-08, Table~\ref{tab:escrow} \\
+L3 Unsafe handover & Safe public meetup point or courier; no cash at the meeting & FR-DLV-03 to FR-DLV-06, FR-DLV-08 to FR-DLV-10 \\
+L4 No recourse & Dispute decided while funds are still held & FR-DSP-01 to FR-DSP-11, FR-PAY-11 \\
+L5 No accountability record & Ratings only from completed escrow deals; auditable ledger & FR-REV-01, FR-REV-02, FR-PAY-13, SEC-LOG-02 \\
+L6 No fair price discovery & Server-timed auction, proxy bids, reserve, anti-sniping, bid-fraud detection & FR-AUC-01 to FR-AUC-18 \\
+Admin deals (Section~5.2) & The system, not a person, holds money and credentials; decisions logged & FR-GAM-01 to FR-GAM-20, FR-OPS-02 to FR-OPS-07 \\
+Off-platform payment & Users warned that payments outside the platform are unprotected & FR-CHT-07, FR-DLV-05 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\chapter{Corrections to Version 1.1}
+\label{app:changes}
+The review for version 2.0 found the following flaws in version 1.1. Each is listed with the requirement that now resolves it.
+{\small
+\begin{longtable}{@{}>{\raggedleft\arraybackslash}p{0.5cm} >{\raggedright\arraybackslash}p{7.3cm} >{\raggedright\arraybackslash}p{6.8cm}@{}}
+\toprule
+\textbf{\#} & \textbf{Flaw in v1.1} & \textbf{Resolution in v2.0} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{\#} & \textbf{Flaw in v1.1} & \textbf{Resolution in v2.0} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+1 & The auto-release timeout (FR-43) had no defined start. Read literally, money could be released to the seller for an item that was never handed over. & Timeout counted from a recorded delivery event; missed fulfilment deadlines refund the buyer (\rr{FR-PAY-07}, \rr{FR-PAY-08}, \rr{FR-DLV-06}). \\
+2 & There was no proof of handover at a meetup, so neither party could show the item had changed hands. & One-time handover code given by the buyer after inspection (\rr{FR-DLV-06}). \\
+3 & Users in \texttt{pending\_review} were not blocked from listing, bidding or buying (FR-7 named only \texttt{unsubmitted} and \texttt{rejected}). & \rr{FR-KYC-07}. \\
+4 & One person could hold several verified accounts, and the NID blacklist (FR-103) had no NID number to compare against. & Document number captured, uniqueness enforced through a blind index (\rr{FR-KYC-01}, \rr{FR-KYC-04}, \rr{SEC-DAT-03}). \\
+5 & There was no age requirement. & 18 or over (\rr{FR-ACC-04}, \rr{FR-KYC-03}). \\
+6 & Phone and e-mail were never verified; there was no password reset, MFA, sign-in throttling, session revocation or step-up for sensitive actions. & \rr{FR-ACC-02}, \rr{FR-ACC-06} to \rr{FR-ACC-09}; Section~\ref{sec:sec-ses}; \rr{SEC-AUTH-04}, \rr{SEC-AUTH-08}. \\
+7 & Listing type mixed item kind with sale format (\texttt{game\_account} was an alternative to \texttt{auction}), so a game account could not be auctioned. The two-photo rule (FR-11) contradicted game accounts and forced a defect photo even for items without defects. & Separate item kind and sale format (\rr{FR-LST-01}); photo rule for physical items only, with a no-defects declaration (\rr{FR-LST-02}). \\
+8 & FR-16 contradicted itself: price editable ``before any bid'' but not ``once active''. & \rr{FR-LST-07}. \\
+9 & There was no prohibited-items policy. & \rr{FR-LST-10}, \rr{FR-LST-11}. \\
+10 & A seller was not forbidden from bidding on their own auction (shill bidding). There was no proxy tie rule, no rule on bid retraction, and no consequence for a winner who never pays. & \rr{FR-AUC-02}, \rr{FR-AUC-07}, \rr{FR-AUC-10}, \rr{FR-AUC-16}, \rr{FR-AUC-18}. \\
+11 & Bid history could identify bidders to the seller, inviting off-platform deals. & Masked bidders (\rr{FR-AUC-13}). \\
+12 & Fixed-price stock was not returned when payment was abandoned. FR-38 (``queue and process in order'') was untestable and conflicted with the atomic decrement. & Checkout hold with expiry (\rr{FR-FIX-03}); definite response per request (\rr{FR-FIX-05}). \\
+13 & Seller payouts had no destination, ownership check or protection against account takeover. & \rr{FR-PAY-17} to \rr{FR-PAY-19}. \\
+14 & Webhook amount and currency were not checked against the order; webhook replay was not prevented. & \rr{FR-PAY-03}, \rr{SEC-PAY-04}. \\
+15 & Effect of a partial refund on commission, delivery fee and ledger was undefined; refunds had no ledger entries; rounding was unspecified. & \rr{FR-PAY-11}, \rr{FR-PAY-12}, \rr{FR-PAY-14}; worked example in Chapter~\ref{ch:params}. \\
+16 & Escrow states could change in any order. & Permitted transitions only (Table~\ref{tab:escrow}, \rr{FR-PAY-06}). \\
+17 & The courier fare depended on weight, but weight was never captured. Buyer choice under and over the distance threshold was undefined. There was no pickup deadline and no handling of returned parcels. & \rr{FR-LST-03}, \rr{FR-DLV-02}, \rr{FR-DLV-11}, \rr{FR-DLV-12}. \\
+18 & Sellers had no right to respond in a dispute; there was no return-for-refund outcome, no withdrawal rule, and no rule against disputes after release. & \rr{FR-DSP-04}, \rr{FR-DSP-06}, \rr{FR-DSP-10}, \rr{FR-DSP-11}. \\
+19 & The operator's scope was contradictory: constraints said KYC and disputes only, FR-91 added reports, FR-93 added ownership proofs and FR-103 added suspension. No role could create operator accounts. There was no four-eyes control, and an operator could decide their own case. & Exhaustive action lists for operator and the new administrator role (\rr{FR-OPS-01} to \rr{FR-OPS-06}). \\
+20 & Game accounts: a buyer who lost the browser key could never decrypt; a buyer's silence after 24 hours and a seller who never delivered were undefined; ciphertext was kept forever; the limit of the protection was not stated. & \rr{FR-GAM-12}, \rr{FR-GAM-15}, \rr{FR-GAM-10}, \rr{FR-GAM-19}, AS-6. \\
+21 & Chat had no warning against off-platform payment (the main scam pattern in the Supplementary Report), no blocking, and uploaded photos could leak GPS location through EXIF data. & \rr{FR-CHT-07}, \rr{FR-CHT-08}, \rr{SEC-DAT-08}. \\
+22 & ``Normal load'' in the performance requirements was undefined, so they could not be tested. & Reference load \rr{NFR-PERF-01}; p95 targets. \\
+23 & NFR-11 allowed auction state to be kept in Redis alone, so a cache loss could lose an end time. & \rr{NFR-REL-01}, \rr{NFR-REL-02}. \\
+24 & Scheduled releases and deadlines did not say what happens if the system is down when they fall due. & \rr{NFR-REL-03}. \\
+25 & Parameter changes could alter the rules of orders already in progress. & \rr{FR-OPS-08}, \rr{FR-OPS-09}. \\
+26 & The legal references were out of date (a ``draft'' data protection act). There was no PCI scope statement, and nothing said that production escrow needs a licensed provider. & PDPO 2025 and Cyber Security Ordinance 2025 [R10, R11]; \rr{SEC-PAY-01}; C-7, C-8. \\
+27 & The ``buyer protection add-on'' revenue stream had no requirement and contradicted equal protection for every buyer. & Withdrawn (W), Chapter~\ref{ch:params}. \\
+28 & The Pro Seller commission (FR-79) was Must Have while the Pro Seller tier was Could Have. Delivery margin was Must Have while courier delivery was Should Have. & Priorities aligned (\rr{FR-MON-02}, \rr{FR-MON-03}). \\
+29 & Requirements were duplicated: FR-47/NFR-10, FR-48/NFR-9, FR-88/NFR-7 and FR-46/FR-58. & Merged (Appendix~\ref{app:map}). \\
+30 & Requirements had no individual priority or verification method, and feature ranges in Chapter~3 differed from the repository README. & Pri and Ver columns; one area per backend module. \\
+31 & Notification channels were unspecified, and notifications could carry sensitive data. & \rr{FR-NTF-05}, \rr{FR-NTF-06}, \rr{FR-NTF-08}. \\
+32 & Design content was mixed into the requirements: architecture, bid-sequence and settlement diagrams, and entity field lists. & Removed; to be specified in the SDD. Data needs stated at requirement level in Chapter~\ref{ch:data}. \\
+33 & There was no privacy notice, consent record, data export or retention schedule. & \rr{FR-PRV-01} to \rr{FR-PRV-06}; Table~\ref{tab:retention}. \\
+34 & Security requirements covered only six concerns (KYC encryption, IDOR, webhook signatures, rate limiting, secrets and the Docker setup). & Chapter~\ref{ch:sec}, with an ASVS 5.0 Level~2 baseline. \\
+35 & FR-2 allowed bcrypt, which silently ignores input beyond 72 bytes. Long passphrases, especially in Bangla (3 bytes per character), would be truncated. & Argon2id required (\rr{SEC-AUTH-03}). \\
 \end{longtable}
+}
 
-\section{Implementation Priority}
-The transaction commission and delivery margin streams are treated as \textbf{Must Have} since they reuse the settlement ledger already required by Feature 6 and 7 at no additional architectural cost. Featured listings and the Pro Seller subscription are treated as \textbf{Could Have}, fully designed in this document but subject to time-boxing during implementation.
+\chapter{Mapping of Version 1.1 Identifiers}
+\label{app:map}
+The Proposal, the repository README and the Supplementary Report refer to version~1.1 numbers (for example ``FR-23 to FR-34'' for the auction engine). This table gives the version~2.0 identifier for each.
+{\small\begin{longtable}{@{}l >{\raggedright\arraybackslash}p{4.6cm} @{\hspace{1.2cm}} l >{\raggedright\arraybackslash}p{4.6cm}@{}}
+\toprule \textbf{v1.1} & \textbf{v2.0} & \textbf{v1.1} & \textbf{v2.0} \\ \midrule\endfirsthead
+\toprule \textbf{v1.1} & \textbf{v2.0} & \textbf{v1.1} & \textbf{v2.0} \\ \midrule\endhead \bottomrule\endfoot
+FR-1 & \rr{FR-ACC-01} & FR-64 & \rr{FR-CHT-06} \\
+FR-2 & \rr{SEC-AUTH-01}, \rr{SEC-AUTH-03} & FR-65 & \rr{FR-REV-01} \\
+FR-3 & \rr{FR-ACC-05}, \rr{SEC-SES-01}, \rr{SEC-SES-02} & FR-66 & \rr{FR-REV-02} \\
+FR-4 & \rr{FR-KYC-01} & FR-67 & \rr{FR-REV-04} \\
+FR-5 & \rr{SEC-ACC-06}, \rr{SEC-DAT-02} & FR-68 & \rr{FR-REV-05} \\
+FR-6 & \rr{FR-KYC-05}, \rr{FR-KYC-06} & FR-69 & \rr{FR-DSP-01} \\
+FR-7 & \rr{FR-KYC-07} & FR-70 & \rr{FR-DSP-02} \\
+FR-8 & \rr{FR-KYC-08} & FR-71 & \rr{FR-DSP-03} \\
+FR-9 & \rr{FR-KYC-09} & FR-72 & \rr{FR-DSP-06}, \rr{FR-DSP-07} \\
+FR-10 & \rr{FR-LST-01}, \rr{FR-LST-02} & FR-73 & \rr{FR-DSP-09} \\
+FR-11 & \rr{FR-LST-02} & FR-74 & \rr{FR-NTF-01} \\
+FR-12 & \rr{FR-LST-01} & FR-75 & \rr{FR-NTF-02} \\
+FR-13 & \rr{FR-LST-04} & FR-76 & \rr{FR-NTF-03} \\
+FR-14 & \rr{FR-LST-05} & FR-77 & \rr{FR-NTF-04} \\
+FR-15 & \rr{FR-LST-06} & FR-78 & \rr{FR-MON-01} \\
+FR-16 & \rr{FR-LST-07} & FR-79 & \rr{FR-MON-02} \\
+FR-17 & \rr{FR-LST-08} & FR-80 & \rr{FR-MON-03} \\
+FR-18 & \rr{FR-LST-09} & FR-81 & \rr{FR-MON-05} \\
+FR-19 & \rr{FR-SRC-01} & FR-82 & \rr{FR-MON-05} \\
+FR-20 & \rr{FR-SRC-02} & FR-83 & \rr{FR-MON-06} \\
+FR-21 & \rr{FR-SRC-03} & FR-84 & \rr{FR-MON-07} \\
+FR-22 & \rr{FR-SRC-04} & FR-85 & \rr{FR-MON-08} \\
+FR-23 & \rr{FR-AUC-01} & FR-86 & \rr{FR-MON-09} \\
+FR-24 & \rr{FR-AUC-02} & FR-87 & \rr{FR-TNS-01} \\
+FR-25 & \rr{FR-AUC-03} & FR-88 & \rr{FR-AUC-17}, \rr{SEC-ABU-01} \\
+FR-26 & \rr{FR-AUC-04} & FR-89 & \rr{FR-TNS-02} \\
+FR-27 & \rr{FR-AUC-05} & FR-90 & \rr{SEC-LOG-01}, \rr{SEC-LOG-02} \\
+FR-28 & \rr{FR-AUC-06} & FR-91 & \rr{FR-OPS-01}, \rr{FR-OPS-02} \\
+FR-29 & \rr{FR-AUC-08} & FR-92 & \rr{FR-GAM-02} \\
+FR-30 & \rr{FR-AUC-09} & FR-93 & \rr{FR-GAM-03} \\
+FR-31 & \rr{FR-AUC-11} & FR-94 & \rr{FR-GAM-04} \\
+FR-32 & \rr{FR-AUC-12} & FR-95 & \rr{FR-GAM-05} \\
+FR-33 & \rr{FR-AUC-14} & FR-96 & \rr{FR-GAM-07} \\
+FR-34 & \rr{FR-AUC-15} & FR-97 & \rr{FR-GAM-09} \\
+FR-35 & \rr{FR-FIX-01} & FR-98 & \rr{FR-GAM-10}, \rr{FR-GAM-11} \\
+FR-36 & \rr{FR-FIX-02} & FR-99 & \rr{FR-GAM-13} \\
+FR-37 & \rr{FR-FIX-04} & FR-100 & \rr{FR-GAM-14} \\
+FR-38 & \rr{FR-FIX-05} & FR-101 & \rr{FR-GAM-16} \\
+FR-39 & \rr{FR-PAY-01} & FR-102 & \rr{FR-GAM-17} \\
+FR-40 & \rr{FR-PAY-02} & FR-103 & \rr{FR-GAM-18} \\
+FR-41 & \rr{FR-PAY-04} & NFR-1 & \rr{NFR-PERF-02} \\
+FR-42 & \rr{FR-PAY-05} & NFR-2 & \rr{NFR-PERF-03} \\
+FR-43 & \rr{FR-PAY-07} & NFR-3 & \rr{NFR-PERF-05} \\
+FR-44 & \rr{FR-PAY-06}, \rr{FR-PAY-10} & NFR-4 & \rr{SEC-DAT-02}, \rr{SEC-DAT-04} \\
+FR-45 & \rr{FR-PAY-11} & NFR-5 & \rr{SEC-ACC-02} \\
+FR-46 & \rr{FR-PAY-13} & NFR-6 & \rr{SEC-PAY-03} \\
+FR-47 & \rr{FR-PAY-15} & NFR-7 & \rr{SEC-AUTH-04}, \rr{SEC-ABU-01} \\
+FR-48 & \rr{FR-PAY-16} & NFR-8 & \rr{SEC-DAT-05}, \rr{SEC-SDL-05} \\
+FR-49 & \rr{SEC-PAY-01}, \rr{SEC-PAY-02} & NFR-9 & \rr{FR-PAY-16} \\
+FR-50 & \rr{FR-DLV-01} & NFR-10 & \rr{FR-PAY-15} \\
+FR-51 & \rr{FR-DLV-02} & NFR-11 & \rr{NFR-REL-01} \\
+FR-52 & \rr{FR-DLV-03}, \rr{FR-DLV-05} & NFR-12 & \rr{NFR-USE-01} \\
+FR-53 & \rr{FR-DLV-07} & NFR-13 & \rr{NFR-USE-02} \\
+FR-54 & \rr{FR-DLV-08} & NFR-14 & \rr{NFR-MNT-01} \\
+FR-55 & \rr{FR-DLV-09} & NFR-15 & \rr{NFR-MNT-02} \\
+FR-56 & \rr{FR-DLV-10} & NFR-16 & \rr{SEC-SDL-02} \\
+FR-57 & \rr{FR-DLV-10} & NFR-17 & \rr{FR-PRV-04}, \rr{NFR-CMP-01} \\
+FR-58 & \rr{FR-DLV-13} & NFR-18 & \rr{FR-MON-10} \\
+FR-59 & \rr{FR-CHT-01} & NFR-19 & \rr{NFR-SCL-01} \\
+FR-60 & \rr{FR-CHT-02} & NFR-20 & \rr{NFR-SCL-02}, \rr{NFR-SCL-03} \\
+FR-61 & \rr{FR-CHT-03} & NFR-21 & \rr{SEC-GAM-01} \\
+FR-62 & \rr{FR-CHT-04} & NFR-22 & \rr{SEC-GAM-02} \\
+FR-63 & \rr{FR-CHT-05} & NFR-23 & \rr{NFR-USE-03} \\
+\end{longtable}}
 
-\chapter{Appendix}
 
-\section{Appendix A: Auction Rule Summary}
-\begin{reqtable}
-\textbf{Minimum increment} & Configurable, e.g., 2\% of current bid or a flat minimum, whichever is greater. \\
-\textbf{Anti-sniping window} & Default 2 minutes before scheduled end; a qualifying bid extends the end time by 2 minutes. \\
-\textbf{Proxy bidding} & Bidder sets a private maximum; system bids the minimum increment above the next-highest bid automatically, up to that maximum. \\
-\textbf{Reserve price} & Hidden minimum; auction closes unsold if not met. \\
-\textbf{Payment window} & 24 hours after auction close for winner to pay, else second-chance offer to next-highest bidder. \\
-\end{reqtable}
-
-\section{Appendix B: Delivery Decision Thresholds}
-\begin{reqtable}
-\textbf{$\leq$ 2 km} & Self-pickup recommended; safe public meetup point suggested; no delivery fee. \\
-\textbf{$>$ 2 km} & Courier booking with system-quoted blended fare; fee split between courier payout and platform margin. \\
-\end{reqtable}
-
-\section{Appendix C: Glossary}
-\begin{deftable}
-Escrow & Platform-held funds between payment and confirmed delivery/receipt. \\
-Anti-sniping & Automatic auction extension to prevent last-second unfair bidding. \\
-Proxy bid & An automatically incrementing bid up to a hidden maximum set by the bidder. \\
-Settlement ledger & Auditable record of how one payment was divided among seller, courier, and platform. \\
-KYC & Identity verification using a government-issued document and a live selfie. \\
-\end{deftable}
+\chapter{Open Issues}
+\label{app:open}
+\begin{enumerate}[label=\textbf{OI-\arabic*}, leftmargin=*]
+    \item \textbf{Fee levels.} The commission rates (\cp{CP-25}), delivery margin (\cp{CP-26}) and featured-listing fees (\cp{CP-37}) are placeholders until the team agrees them.
+    \item \textbf{Retention periods.} The six-year period for financial records and the periods for KYC data (Table~\ref{tab:retention}) are to be confirmed against Bangladeshi accounting, tax and anti-money-laundering rules and the PDPO, including any rules made under it.
+    \item \textbf{PDPO detail.} The PDPO was gazetted on 6 November 2025, with a compliance window reported as 18 months. The deadline for breach notification and the data-localisation categories are to be confirmed from the official text before production use.
+    \item \textbf{Payouts in sandbox.} Whether bKash or Nagad sandboxes offer disbursement (payout) APIs to the project is not yet known; until then payouts are simulated (\rr{FR-PAY-19}).
+    \item \textbf{Courier sandbox.} Availability of Pathao or Steadfast sandbox access is not yet known; the mock courier is the default (C-3).
+    \item \textbf{Liveness check.} Whether the basic randomized-action check (\rr{FR-KYC-02}) is reviewed manually by the operator or by the optional pre-check service (\rr{FR-KYC-11}) is to be decided in design.
+    \item \textbf{Game-account legality.} Trading accounts conflicts with most publishers' terms (Supplementary Report, Section~5.2). Legal advice is needed before any production launch of the game-account feature, which is why it can be switched off (\cp{CP-36}).
+\end{enumerate}
 
 \end{document}

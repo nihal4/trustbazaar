@@ -9,7 +9,7 @@ import {
 import { Listing } from './listing.entity';
 import { User } from './user.entity';
 
-// FR-59–FR-64. A thread is scoped to one listing and its two participants.
+// FR-CHT-01–FR-CHT-10. A thread is scoped to one listing and its two participants.
 @Entity('chat_threads')
 export class ChatThread {
   @PrimaryGeneratedColumn('uuid')

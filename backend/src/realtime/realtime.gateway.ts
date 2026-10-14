@@ -7,7 +7,7 @@ import {
 import { Server } from 'socket.io';
 
 // Live bid updates, countdown sync, chat delivery, outbid/notification push.
-// SRS 3 (Real-Time Layer) + NFR-2 (state propagation within 1s) + NFR-19
+// SRS 3 (Real-Time Layer) + NFR-PERF-03 (state propagation within 1s) + NFR-SCL-01
 // (must run on Redis pub/sub once there is more than one app server instance
 // — do NOT keep per-connection state only in this process's memory).
 @WebSocketGateway({ cors: { origin: process.env.FRONTEND_ORIGIN ?? '*' } })
@@ -25,7 +25,7 @@ export class RealtimeGateway {
   @SubscribeMessage('chat:join')
   handleJoinThread(@MessageBody() data: { threadId: string }) {
     // TODO: join a room per threadId; authorize that the connecting user is
-    // actually a participant before allowing the join (NFR-5, IDOR protection).
+    // actually a participant before allowing the join (SEC-ACC-02, IDOR protection).
     return { event: 'chat:joined', data };
   }
 

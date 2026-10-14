@@ -1,0 +1,41 @@
+% Fake-seller / advance-payment scam, compiled from documented cases
+\begin{tikzpicture}[
+  font=\footnotesize,
+  actor/.style={draw=ink, fill=#1!15, rounded corners=2pt, minimum width=2.6cm,
+                minimum height=0.75cm, font=\footnotesize\bfseries},
+  life/.style={draw=muted, densely dotted},
+  msg/.style={-{Stealth[length=2mm]}, thick, draw=#1},
+  lab/.style={font=\scriptsize, fill=white, inner sep=1.5pt, align=center}]
+
+  \node[actor=bad]   (S) at (0,0)   {Scammer};
+  \node[actor=muted] (B) at (5.2,0) {Bikroy};
+  \node[actor=good]  (V) at (10.4,0){Buyer};
+  \foreach \n in {S,B,V}{ \draw[life] (\n.south) -- ++(0,-8.1); }
+
+  % 1
+  \node[lab, anchor=west, text width=4.4cm] at (0.15,-1.0)
+    {\textbf{1.} Buys registered SIM cards (Tk 350--500 each) and opens e-mail accounts};
+  % 2
+  \draw[msg=bad] (0,-1.9) -- node[lab, above]{\textbf{2.} Posts ad: phone/electronics far below market} (5.2,-1.9);
+  % 3
+  \draw[msg=muted] (5.2,-2.7) -- node[lab, above]{\textbf{3.} SMS-OTP passes; ad reviewed and published} (0,-2.7);
+  % 4
+  \draw[msg=muted] (5.2,-3.5) -- node[lab, above]{\textbf{4.} Ad shown to buyers} (10.4,-3.5);
+  % 5
+  \draw[msg=good] (10.4,-4.3) -- node[lab, above]{\textbf{5.} Contacts seller directly (phone)} (0,-4.3);
+  % 6
+  \draw[msg=bad] (0,-5.1) -- node[lab, above]{\textbf{6.} Asks for payment before sending the item} (10.4,-5.1);
+  % 7
+  \draw[msg=good] (10.4,-5.9) -- node[lab, above]{\textbf{7.} Pays in advance --- \emph{off-platform}} (0,-5.9);
+  % 8
+  \node[lab, anchor=west, text width=4.4cm, text=bad] at (0.15,-6.75)
+    {\textbf{8.} Item never delivered; money kept (Tk lakhs across victims)};
+  % 9
+  \draw[msg=good, densely dashed] (10.4,-7.5) -- node[lab, above]{\textbf{9.} Reports: Bikroy is ``not a party''; liability capped} (5.2,-7.5);
+
+  % bracket: Bikroy never touches the money
+  \draw[decorate, decoration={brace, amplitude=5pt, mirror}, thick, bad]
+    (10.9,-4.0) -- (10.9,-8.0)
+    node[midway, right=7pt, font=\scriptsize, text=bad, align=left, text width=1.6cm]
+    {Money moves with no platform control};
+\end{tikzpicture}
