@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } f
 import { Order } from './order.entity';
 import { User } from './user.entity';
 
-// FR-65–FR-68. Directional: buyer-to-seller and seller-to-buyer are separate
+// FR-REV-01–FR-REV-07. Directional: buyer-to-seller and seller-to-buyer are separate
 // rows, and a review can only be created against a completed, paid Order.
 @Entity('reviews')
 export class Review {

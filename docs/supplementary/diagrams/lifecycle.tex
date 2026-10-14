@@ -1,0 +1,50 @@
+% Where Bikroy's protection stops along a used-goods transaction
+\begin{tikzpicture}[
+  font=\footnotesize,
+  stage/.style={draw=ink, fill=white, rounded corners=2pt, minimum width=2.15cm,
+                minimum height=0.9cm, align=center, font=\footnotesize\bfseries},
+  cover/.style={rounded corners=2pt, minimum width=2.15cm, minimum height=1.25cm,
+                align=center, text width=2.0cm, font=\scriptsize},
+  hit/.style={draw=bad, fill=bad!8, rounded corners=2pt, align=center,
+              font=\scriptsize, inner sep=3pt},
+  flow/.style={-{Stealth[length=2mm]}, draw=ink, thick}]
+
+  % stages
+  \foreach \i/\name in {1/Identity, 2/Listing, 3/Contact \&\\negotiation,
+                        4/Payment, 5/Handover, 6/Dispute \&\\recourse}{
+    \node[stage] (s\i) at ({(\i-1)*2.45},0) {\name};
+  }
+  \foreach \a/\b in {1/2,2/3,3/4,4/5,5/6}{ \draw[flow] (s\a) -- (s\b); }
+
+  % Bikroy's coverage at each stage
+  \node[cover, fill=partial!25] (c1) [below=0.35cm of s1] {Phone OTP only\\(2017)};
+  \node[cover, fill=partial!25] (c2) [below=0.35cm of s2] {Ad review before\\publishing};
+  \node[cover, fill=partial!25] (c3) [below=0.35cm of s3] {In-app chat\\or phone call};
+  \node[cover, fill=bad!22]     (c4) [below=0.35cm of s4] {\textbf{None}: cash or\\mobile money,\\off-platform};
+  \node[cover, fill=bad!22]     (c5) [below=0.35cm of s5] {\textbf{None}: meet in\\person; ``Buy Now''\\on few listings};
+  \node[cover, fill=bad!22]     (c6) [below=0.35cm of s6] {\textbf{None}: ``not a\\party''; liability\\$\le$ BDT 6,700};
+
+  \node[anchor=east, font=\scriptsize\itshape, text=muted, align=right]
+    at ([xshift=-2pt]c1.west) {Bikroy\\covers};
+
+  % where documented scams strike
+  \node[hit, text width=4.4cm] (h1) at ($(c1.south)!0.5!(c2.south)+(0,-1.0)$)
+    {Fake identity: SIMs bought for Tk 350--500 pass OTP; one in three ads not genuine (2014)};
+  \node[hit, text width=1.95cm] (h2) at ($(c4.south)+(0,-1.15)$)
+    {Advance paid to fake seller is lost};
+  \node[hit, text width=1.95cm] (h3) at ($(c5.south)+(0,-1.15)$)
+    {Robbery at meetup; counterfeit-cash swap};
+  \node[hit, text width=1.95cm] (h4) at ($(c6.south)+(0,-1.15)$)
+    {Victim's only route: police case};
+  \foreach \h/\c in {h1/c1,h1/c2,h2/c4,h3/c5,h4/c6}{
+    \draw[-{Stealth[length=1.6mm]}, bad, densely dashed] (\h.north) -- (\c.south);
+  }
+  \node[anchor=east, font=\scriptsize\itshape, text=bad, align=right]
+    at ([xshift=-2pt]h1.west) {Documented\\scams};
+
+  % legend
+  \node[draw=partial, fill=partial!25, minimum width=3mm, minimum height=3mm] (l1) at (3.4,-5.25) {};
+  \node[right=1mm of l1, font=\scriptsize] {weak, partial control};
+  \node[draw=bad, fill=bad!22, minimum width=3mm, minimum height=3mm] (l2) at (7.3,-5.25) {};
+  \node[right=1mm of l2, font=\scriptsize] {no platform control};
+\end{tikzpicture}
