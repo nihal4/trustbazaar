@@ -1,5 +1,5 @@
 ## What this PR does
-<!-- One or two sentences. Link the requirement(s) it implements, e.g. "Implements FR-23–FR-26". -->
+<!-- One or two sentences. Link the requirement(s) it implements, e.g. "Implements FR-AUC-01–FR-AUC-04". -->
 
 ## Type of change
 - [ ] New feature

@@ -7,7 +7,7 @@ assignees: ""
 ---
 
 **Requirement**
-Which FR/NFR does this implement? e.g. FR-39–FR-42 (payment collection).
+Which FR/NFR does this implement? e.g. FR-PAY-01–FR-PAY-05 (payment collection).
 
 **Description**
 What needs to be built, in a sentence or two.

@@ -1,0 +1,36 @@
+% Same six stages as Figure 11: Bikroy (top row) vs TrustBazaar (bottom row)
+\begin{tikzpicture}[
+  font=\footnotesize,
+  stage/.style={draw=ink, fill=white, rounded corners=2pt, minimum width=2.15cm,
+                minimum height=0.9cm, align=center, font=\footnotesize\bfseries},
+  cover/.style={rounded corners=2pt, minimum width=2.15cm, minimum height=1.25cm,
+                align=center, text width=2.0cm, font=\scriptsize},
+  flow/.style={-{Stealth[length=2mm]}, draw=ink, thick}]
+
+  \foreach \i/\name in {1/Identity, 2/Listing, 3/Contact \&\\negotiation,
+                        4/Payment, 5/Handover, 6/Dispute \&\\recourse}{
+    \node[stage] (s\i) at ({(\i-1)*2.45},0) {\name};
+  }
+  \foreach \a/\b in {1/2,2/3,3/4,4/5,5/6}{ \draw[flow] (s\a) -- (s\b); }
+
+  % Bikroy row
+  \node[cover, fill=partial!25] (b1) [below=0.35cm of s1] {Phone OTP only};
+  \node[cover, fill=partial!25] (b2) [below=0.35cm of s2] {Ad review};
+  \node[cover, fill=partial!25] (b3) [below=0.35cm of s3] {Chat or phone call};
+  \node[cover, fill=bad!22]     (b4) [below=0.35cm of s4] {\textbf{None}:\\off-platform};
+  \node[cover, fill=bad!22]     (b5) [below=0.35cm of s5] {\textbf{None}:\\cash meeting};
+  \node[cover, fill=bad!22]     (b6) [below=0.35cm of s6] {\textbf{None}: liability\\$\le$ BDT 6,700};
+
+  % TrustBazaar row
+  \node[cover, fill=good!18] (t1) [below=0.25cm of b1] {NID + selfie KYC,\\operator review};
+  \node[cover, fill=good!18] (t2) [below=0.25cm of b2] {Verified sellers only};
+  \node[cover, fill=good!18] (t3) [below=0.25cm of b3] {In-app chat tied\\to the order};
+  \node[cover, fill=good!18] (t4) [below=0.25cm of b4] {\textbf{Escrow}: held\\until receipt};
+  \node[cover, fill=good!18] (t5) [below=0.25cm of b5] {Safe meetup point\\or booked courier;\\no cash};
+  \node[cover, fill=good!18] (t6) [below=0.25cm of b6] {Operator dispute\\while funds\\are held};
+
+  \node[anchor=east, font=\scriptsize\bfseries, text=muted, align=right]
+    at ([xshift=-3pt]b1.west) {Bikroy};
+  \node[anchor=east, font=\scriptsize\bfseries, text=good, align=right]
+    at ([xshift=-3pt]t1.west) {Trust-\\Bazaar};
+\end{tikzpicture}
