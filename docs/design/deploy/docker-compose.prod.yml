@@ -1,0 +1,43 @@
+# Production override (Unit 9). Every secret must be supplied; nothing falls back to a development value.
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file prod.env up -d
+# The TLS front (a reverse proxy on the host, or the cloud load balancer) terminates HTTPS, sets HSTS
+# and forwards to the web container's port, which is bound to the loopback interface only.
+x-app-env-prod: &app-env-prod
+  NODE_ENV: production
+  TB_ENV: production
+  PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?set PUBLIC_ORIGIN, e.g. https://trustbazaar.example}
+  PAYMENT_MODE: ${PAYMENT_MODE:?set PAYMENT_MODE}
+  COURIER_MODE: ${COURIER_MODE:?set COURIER_MODE}
+  SMS_MODE: ${SMS_MODE:?set SMS_MODE}
+  EMAIL_MODE: smtp
+
+services:
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      TB_OWNER_PASSWORD: ${TB_OWNER_PASSWORD:?set TB_OWNER_PASSWORD}
+      TB_APP_PASSWORD: ${TB_APP_PASSWORD:?set TB_APP_PASSWORD}
+  redis:
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD}
+  migrate:
+    environment:
+      <<: *app-env-prod
+      DATABASE_URL: postgres://tb_owner:${TB_OWNER_PASSWORD:?set TB_OWNER_PASSWORD}@postgres:5432/trustbazaar
+  backend:
+    environment:
+      <<: *app-env-prod
+      DATABASE_URL: postgres://tb_app:${TB_APP_PASSWORD:?set TB_APP_PASSWORD}@postgres:5432/trustbazaar
+      REDIS_URL: redis://:${REDIS_PASSWORD:?set REDIS_PASSWORD}@redis:6379/0
+      JWT_KEY_V1: ${JWT_KEY_V1:?set JWT_KEY_V1}
+      FIELD_KEY_V1: ${FIELD_KEY_V1:?set FIELD_KEY_V1}
+      BIDX_KEY: ${BIDX_KEY:?set BIDX_KEY}
+      KYC_KEK_V1: ${KYC_KEK_V1:?set KYC_KEK_V1}
+      CSRF_KEY: ${CSRF_KEY:?set CSRF_KEY}
+      LINK_KEY: ${LINK_KEY:?set LINK_KEY}
+      OTP_PEPPER: ${OTP_PEPPER:?set OTP_PEPPER}
+      CALLBACK_STATE_KEY: ${CALLBACK_STATE_KEY:?set CALLBACK_STATE_KEY}
+      HANDOVER_KEY: ${HANDOVER_KEY:?set HANDOVER_KEY}
+      SMTP_URL: ${SMTP_URL:?set SMTP_URL}
+  web:
+    ports: !override ["127.0.0.1:${TB_HTTP_PORT:-8080}:8080"]

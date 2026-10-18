@@ -1,0 +1,91 @@
+# TrustBazaar CI (Unit 9; SEC-SDL-02, SEC-SDL-04, SEC-GEN-03, NFR-MNT-02, NFR-MNT-03, NFR-MNT-07).
+# Runs on every push and pull request to main. Actions are pinned to commits (supply chain).
+name: ci
+on:
+  push: { branches: [main] }
+  pull_request: { branches: [main] }
+permissions: { contents: read }
+concurrency: { group: "ci-${{ github.ref }}", cancel-in-progress: true }
+
+jobs:
+  lint-and-unit:
+    runs-on: ubuntu-24.04
+    strategy: { matrix: { app: [backend, frontend] } }
+    defaults: { run: { working-directory: "${{ matrix.app }}" } }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: 20, cache: npm, cache-dependency-path: "${{ matrix.app }}/package-lock.json" }
+      - run: npm ci
+      - run: npm run lint                                   # NFR-MNT-07: no ESLint errors
+      - run: npm audit --audit-level=high                   # SEC-SDL-04
+      - run: npm test -- --coverage                         # NFR-MNT-03: thresholds in the test configuration
+
+  database:                                                 # the design's database rules, on PostgreSQL 15
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env: { POSTGRES_PASSWORD: ci-only-password }
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U postgres" --health-interval 5s --health-retries 20
+    env: { PGHOST: localhost, PGUSER: postgres, PGPASSWORD: ci-only-password }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+      - run: sudo apt-get install -y postgresql-client
+      - name: Schemas, unit tests and integration checks
+        run: |
+          createdb tb_ci
+          for n in 01_identity_access 02_orders_payments 03_listings_auctions 04_delivery 05_game_accounts 06_chat_notifications 07_disputes_trust_staff 09_integration; do
+            psql -v ON_ERROR_STOP=1 -q -d tb_ci -f docs/design/sql/$n.sql
+          done
+          for n in 01_identity_access 02_orders_payments 03_listings_auctions 04_delivery 05_game_accounts 06_chat_notifications 07_disputes_trust_staff; do
+            psql -v ON_ERROR_STOP=1 -q -d tb_ci -f docs/design/sql/${n}_tests.sql
+          done
+          psql -v ON_ERROR_STOP=1 -q -d tb_ci -f docs/design/sql/09_integration_checks.sql
+      - name: Concurrency suites (NFR-MNT-02), each on a fresh database
+        run: |
+          for n in 04_delivery 05_game_accounts 06_chat_notifications 07_disputes_trust_staff; do
+            dropdb --if-exists tb_race; createdb tb_race
+            for m in 01_identity_access 02_orders_payments 03_listings_auctions 04_delivery 05_game_accounts 06_chat_notifications 07_disputes_trust_staff; do
+              psql -v ON_ERROR_STOP=1 -q -d tb_race -f docs/design/sql/$m.sql
+            done
+            sh docs/design/sql/${n}_concurrency.sh tb_race
+          done
+      - name: Negative control of the integration checks; backup and restore (NFR-REL-05)
+        run: |
+          createdb tb_neg && sh docs/design/sql/09_integration_checks_selftest.sh tb_neg docs/design/sql
+          mkdir -p /tmp/tbwork && sh docs/design/sql/09_backup_restore_test.sh docs/design/sql /tmp/tbwork
+
+  reference-browser:                                        # Units 5 and 8 reference code in Chromium
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: 20 }
+      - run: sudo apt-get install -y nginx-light
+      - run: cd docs/design/crypto && npm ci && npx playwright install --with-deps chromium && npm test
+      - run: cd docs/design/web && npm ci && npx playwright install chromium && sh test/run_all.sh
+
+  documents:                                                # cross-checks of the SRS and the design units
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with: { python-version: "3.12" }
+      - run: python3 docs/design/integration/check_documents.py docs
+      - run: python3 docs/design/deploy/test_compose.py .
+      - run: python3 scripts/check_progress.py --summary    # PROGRESS.md (BUILDING.md section 8)
+
+  images:                                                   # SEC-SDL-06, SEC-SDL-07
+    runs-on: ubuntu-24.04
+    needs: [lint-and-unit]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+      - run: docker compose build backend web
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with: { image-ref: "trustbazaar/backend:dev", severity: "CRITICAL,HIGH", exit-code: "1", ignore-unfixed: true }
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with: { image-ref: "trustbazaar/web:dev", severity: "CRITICAL,HIGH", exit-code: "1", ignore-unfixed: true }
+      - uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        with: { image: "trustbazaar/backend:dev", format: spdx-json, artifact-name: sbom-backend.spdx.json }

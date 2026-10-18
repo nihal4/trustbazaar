@@ -1,0 +1,17 @@
+{
+  "name": "trustbazaar-sealed-handover-reference",
+  "private": true,
+  "description": "Unit 5 reference browser module for the sealed game-account handover, and its Chromium test",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild sealed.js --bundle --format=iife --global-name=Sealed --outfile=sealed.bundle.js",
+    "test": "npm run build && node browser_test.mjs"
+  },
+  "dependencies": {
+    "@hpke/core": "1.9.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.0",
+    "playwright": "1.56.0"
+  }
+}

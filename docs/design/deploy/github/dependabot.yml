@@ -1,0 +1,9 @@
+# Dependabot (Unit 9; SEC-SDL-04): weekly updates of npm packages, Actions and base images.
+version: 2
+updates:
+  - { package-ecosystem: npm, directory: /backend, schedule: { interval: weekly } }
+  - { package-ecosystem: npm, directory: /frontend, schedule: { interval: weekly } }
+  - { package-ecosystem: npm, directory: /docs/design/web, schedule: { interval: weekly } }
+  - { package-ecosystem: npm, directory: /docs/design/crypto, schedule: { interval: weekly } }
+  - { package-ecosystem: github-actions, directory: /, schedule: { interval: weekly } }
+  - { package-ecosystem: docker, directory: /docs/design/deploy, schedule: { interval: weekly } }
