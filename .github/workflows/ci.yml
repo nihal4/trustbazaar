@@ -74,3 +74,10 @@ jobs:
       - name: Build
         working-directory: frontend
         run: npm run build
+
+  progress:                                   # PROGRESS.md follows BUILDING.md section 8
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check the build tracker
+        run: python3 scripts/check_progress.py --summary
