@@ -1,0 +1,19 @@
+{
+  "name": "trustbazaar-web-reference",
+  "private": true,
+  "description": "Unit 8 reference modules for the web client (API client, money, Dhaka time, server clock, plain-language money state, live ordering, catalogues) and their tests",
+  "type": "module",
+  "scripts": {
+    "test:unit": "node --test test/*.test.js",
+    "build": "esbuild test/browser_entry.js --bundle --format=iife --global-name=TB --outfile=test/browser_bundle.js",
+    "test:browser": "npm run build && node test/browser_test.mjs",
+    "test:container": "node test/container_test.mjs",
+    "test": "npm run test:unit && npm run test:browser"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.0",
+    "playwright": "1.56.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}

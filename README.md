@@ -54,6 +54,14 @@ Requirement identifiers are area-based since SRS v2.0 (Appendix D of the SRS map
 
 Each module currently contains a minimal, working NestJS module/controller/service stub with `TODO` markers pointing at the specific requirement it needs to implement — this is a scaffold to build on, not a finished system.
 
+## Building it
+
+The design is finished (`docs/design/`, Units 1 to 9). Before writing code, read **[`BUILDING.md`](BUILDING.md)**,
+the builder guide that everyone, including AI assistants, follows; then see **[`PROGRESS.md`](PROGRESS.md)** for
+the tasks, who owns them, and what is finished (`python3 scripts/check_progress.py --next` lists what can be
+started now). `CLAUDE.md` points Claude to both. The module table below describes the old scaffold; the
+target structure is in `BUILDING.md` section 3.
+
 ## Getting Started
 
 ### Prerequisites
@@ -102,7 +110,7 @@ See [`docs/README.md`](docs/README.md) for build instructions.
 - `docs/srs.tex` / `docs/srs.pdf` — Software Requirements Specification v2.0 (IEEE 830-1998 structure): functional, security and quality requirements, configurable parameters, acceptance criteria and traceability
 - `docs/proposal.tex` / `docs/proposal.pdf` — Project Proposal (revised), including the 12-week timeline
 - `docs/supplementary/` — Supplementary Market Analysis of Bikroy.com and its alternatives, cited by the proposal and the SRS
-- The System Design Document (architecture, data model, sequence diagrams, API contracts) is the next deliverable. It will be designed one unit at a time under `docs/design/`, then combined into the full system architecture.
+- `docs/design/` — the System Design Document, in nine units (Unit 9 is the integration of the whole system), with tested reference files; see `docs/design/README.md`
 
 ## License
 

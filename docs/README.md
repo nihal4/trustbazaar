@@ -8,6 +8,12 @@
 | System Design Document, Unit 1: Identity & Access | `design/01_identity_access.tex` | `design/01_identity_access.pdf` |
 | System Design Document, Unit 2: Order, Payment & Escrow | `design/02_orders_payments.tex` | `design/02_orders_payments.pdf` |
 | System Design Document, Unit 3: Auction Engine; Listings, Search & Fixed-Price | `design/03_listings_auctions.tex` | `design/03_listings_auctions.pdf` |
+| System Design Document, Unit 4: Delivery & Handover | `design/04_delivery.tex` | `design/04_delivery.pdf` |
+| System Design Document, Unit 5: Game-Account Escrow | `design/05_game_accounts.tex` | `design/05_game_accounts.pdf` |
+| System Design Document, Unit 6: Chat & Notifications | `design/06_chat_notifications.tex` | `design/06_chat_notifications.pdf` |
+| System Design Document, Unit 7: Disputes, Trust & Safety, Staff Tools | `design/07_disputes_trust_staff.tex` | `design/07_disputes_trust_staff.pdf` |
+| System Design Document, Unit 8: Frontend | `design/08_frontend.tex` | `design/08_frontend.pdf` |
+| System Design Document, Unit 9: Integration | `design/09_integration.tex` | `design/09_integration.pdf` |
 
 ## Building
 
