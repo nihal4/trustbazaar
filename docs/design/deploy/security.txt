@@ -1,0 +1,5 @@
+Contact: https://github.com/nihal4/trustbazaar/security/advisories/new
+Contact: mailto:sm.nihal4@gmail.com
+Expires: 2027-10-31T00:00:00.000Z
+Preferred-Languages: en, bn
+Policy: https://github.com/nihal4/trustbazaar/blob/main/SECURITY.md
