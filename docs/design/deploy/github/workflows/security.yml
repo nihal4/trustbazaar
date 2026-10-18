@@ -1,0 +1,31 @@
+# TrustBazaar security analysis (Unit 9; SEC-SDL-03, SEC-SDL-08).
+# CodeQL on every pull request and weekly; the OWASP ZAP baseline against a release candidate.
+name: security
+on:
+  pull_request: { branches: [main] }
+  schedule: [{ cron: "17 3 * * 1" }]        # Mondays 03:17 UTC
+  workflow_dispatch:
+    inputs:
+      zap: { description: "Run the ZAP baseline against the Compose system", type: boolean, default: false }
+permissions: { contents: read }
+
+jobs:
+  codeql:
+    runs-on: ubuntu-24.04
+    permissions: { contents: read, security-events: write }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1    # v7.0.1
+      - uses: github/codeql-action/init@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee  # v4.39.0
+        with: { languages: javascript-typescript, queries: security-extended }
+      - uses: github/codeql-action/analyze@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
+
+  zap-baseline:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.zap }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1    # v7.0.1
+      - run: docker compose up --build -d --wait
+      - uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25  # v0.15.0
+        with: { target: "http://localhost:8080", allow_issue_writing: false, fail_action: false }
+      - if: always()
+        run: docker compose down -v
