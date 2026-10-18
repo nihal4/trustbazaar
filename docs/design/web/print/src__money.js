@@ -12,7 +12,7 @@ export function toLocalDigits(s, lang) {
 
 /** Bangla digits to ASCII; other characters unchanged. @param {string} s */
 export function toAsciiDigits(s) {
-  return s.replace(/[<U+09E6>-<U+09EF>]/g, (c) => String(BN.indexOf(c)));
+  return s.replace(/[\u09E6-\u09EF]/g, (c) => String(BN.indexOf(c)));
 }
 
 /** @param {string} digits */
