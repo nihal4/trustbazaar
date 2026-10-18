@@ -1,0 +1,169 @@
+# TrustBazaar - the whole system (Unit 9, docs/design/09_integration.pdf). Placed at the repository root.
+#   docker compose up --build          development: one command, simulated providers (NFR-MNT-08)
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file prod.env up -d
+# Four long-running containers (NFR-MNT-01): postgres, redis, backend, web. "migrate" is a one-shot job
+# that applies the versioned migrations as tb_owner and exits before the backend starts (SEC-INF-03).
+# The development values below start with "dev-only-"; the backend refuses them in production (I-59).
+name: trustbazaar
+
+x-hardening: &hardening
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  restart: unless-stopped
+  logging: &logging            # JSON lines to stdout, rotated by Docker (DV-62)
+    driver: local
+    options: { max-size: "50m", max-file: "5" }
+
+x-app-env: &app-env
+  NODE_ENV: ${NODE_ENV:-development}
+  TB_ENV: ${TB_ENV:-development}
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  TZ: UTC
+  PAYMENT_MODE: ${PAYMENT_MODE:-mock}               # mock | sandbox (C-2)
+  COURIER_MODE: ${COURIER_MODE:-mock}               # mock | sandbox (C-3)
+  SMS_MODE: ${SMS_MODE:-log}                        # log | provider test mode
+  EMAIL_MODE: ${EMAIL_MODE:-log}                    # log | smtp
+  PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:8080}
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    logging: *logging
+    stop_grace_period: 60s
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev-only-postgres-superuser-password}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+      TB_DATABASE: trustbazaar
+      TB_OWNER_PASSWORD: ${TB_OWNER_PASSWORD:-dev-only-owner-password-0123456789}
+      TB_APP_PASSWORD: ${TB_APP_PASSWORD:-dev-only-app-password-0123456789ab}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docs/design/deploy/postgres/init:/docker-entrypoint-initdb.d:ro
+    networks: [data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d trustbazaar"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    shm_size: 256mb
+
+  redis:
+    image: redis:7-alpine
+    <<: *hardening
+    command: ["sh", "-c", "exec redis-server --requirepass \"$$REDIS_PASSWORD\" --save '' --appendonly no --maxmemory 256mb --maxmemory-policy noeviction"]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-dev-only-redis-password-0123456789}
+    user: "999:999"
+    tmpfs: ["/data"]
+    networks: [data]
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli ping | grep -q PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  migrate:
+    build: { context: ./backend, dockerfile: ../docs/design/deploy/backend.Dockerfile }
+    image: trustbazaar/backend:${TB_VERSION:-dev}
+    command: ["node", "dist/migrate.js"]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    restart: "no"
+    environment:
+      <<: *app-env
+      DATABASE_URL: postgres://tb_owner:${TB_OWNER_PASSWORD:-dev-only-owner-password-0123456789}@postgres:5432/trustbazaar
+    networks: [data]
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  backend:
+    image: trustbazaar/backend:${TB_VERSION:-dev}
+    build: { context: ./backend, dockerfile: ../docs/design/deploy/backend.Dockerfile }
+    <<: *hardening
+    environment:
+      <<: *app-env
+      DATABASE_URL: postgres://tb_app:${TB_APP_PASSWORD:-dev-only-app-password-0123456789ab}@postgres:5432/trustbazaar
+      REDIS_URL: redis://:${REDIS_PASSWORD:-dev-only-redis-password-0123456789}@redis:6379/0
+      # Unit 1 secrets (each at least 32 bytes; SEC-DAT-05)
+      JWT_KEY_V1: ${JWT_KEY_V1:-dev-only-jwt-signing-key-0123456789abcdef}
+      FIELD_KEY_V1: ${FIELD_KEY_V1:-dev-only-field-key-0123456789abcdef0123}
+      BIDX_KEY: ${BIDX_KEY:-dev-only-blind-index-key-0123456789abcdef}
+      KYC_KEK_V1: ${KYC_KEK_V1:-dev-only-kyc-kek-0123456789abcdef012345}
+      CSRF_KEY: ${CSRF_KEY:-dev-only-csrf-key-0123456789abcdef0123456}
+      LINK_KEY: ${LINK_KEY:-dev-only-link-key-0123456789abcdef0123456}
+      OTP_PEPPER: ${OTP_PEPPER:-dev-only-otp-pepper-0123456789abcdef01234}
+      # Unit 2 and Unit 4 secrets
+      CALLBACK_STATE_KEY: ${CALLBACK_STATE_KEY:-dev-only-callback-state-key-0123456789ab}
+      HANDOVER_KEY: ${HANDOVER_KEY:-dev-only-handover-code-key-0123456789ab}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      BKASH_APP_KEY: ${BKASH_APP_KEY:-}
+      BKASH_APP_SECRET: ${BKASH_APP_SECRET:-}
+      BKASH_USERNAME: ${BKASH_USERNAME:-}
+      BKASH_PASSWORD: ${BKASH_PASSWORD:-}
+      NAGAD_MERCHANT_ID: ${NAGAD_MERCHANT_ID:-}
+      NAGAD_PRIVATE_KEY: ${NAGAD_PRIVATE_KEY:-}
+      COURIER_API_KEY: ${COURIER_API_KEY:-}
+      COURIER_WEBHOOK_SECRET: ${COURIER_WEBHOOK_SECRET:-}
+      SMTP_URL: ${SMTP_URL:-}
+      SMS_API_KEY: ${SMS_API_KEY:-}
+    volumes:                                   # one volume per file purpose (Units 1, 3, 5, 6, 7)
+      - kyc_files:/srv/files/kyc
+      - listing_media:/srv/files/listings
+      - proof_files:/srv/files/proofs
+      - chat_media:/srv/files/chat
+      - evidence_files:/srv/files/evidence
+      - export_files:/srv/files/exports
+    tmpfs: ["/tmp"]
+    stop_grace_period: 30s       # finish requests, close sockets (DV-66)
+    networks: [data, edge]
+    expose: ["3000"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/api/v1/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
+
+  web:
+    image: trustbazaar/web:${TB_VERSION:-dev}
+    build:
+      context: ./frontend
+      dockerfile: ../docs/design/deploy/web.Dockerfile
+      additional_contexts:
+        webconf: ./docs/design/web/container
+        deploy: ./docs/design/deploy
+      args:
+        VITE_PAYMENT_HOSTS: ${VITE_PAYMENT_HOSTS:-}
+    <<: *hardening
+    tmpfs: ["/tmp", "/var/cache/nginx"]
+    networks: [edge]
+    ports: ["${TB_HTTP_PORT:-8080}:8080"]       # the only published port
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    depends_on:
+      backend: { condition: service_healthy }
+
+networks:
+  data: { internal: true }     # PostgreSQL and Redis are unreachable from outside (SEC-INF-02)
+  edge: {}
+
+volumes:
+  pgdata: {}
+  kyc_files: {}
+  listing_media: {}
+  proof_files: {}
+  chat_media: {}
+  evidence_files: {}
+  export_files: {}
