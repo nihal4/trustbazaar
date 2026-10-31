@@ -9,9 +9,11 @@
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main.js",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
-    "test": "jest --passWithNoTests",
+    "test": "jest",
     "test:watch": "jest --watch",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "posttest": "ts-node test/tools/coverage-gate.ts",
+    "test:integration": "jest --config test/jest.integration.json --runInBand",
+    "migrate": "node dist/migrate.js"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.0",
@@ -55,15 +57,31 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "rootDir": ".",
+    "roots": [
+      "<rootDir>/src",
+      "<rootDir>/test/tools"
+    ],
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "src/**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "\\.module\\.ts$",
+      "/ports/index\\.ts$",
+      "/migrations/",
+      "/main\\.ts$"
+    ],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "json-summary"
+    ],
+    "coverageDirectory": "coverage",
     "testEnvironment": "node"
   },
   "overrides": {

@@ -47,7 +47,7 @@ describe('module import boundaries', () => {
   it.each([
     ['src/kernel/kernel.module.ts', '../modules/orders/orders.module'],
     ['src/kernel/outbox/dispatcher.ts', '../../modules/chat/ports'],
-  ])('the kernel %s may not import the unit %s', async (file, importPath) => {
+  ])('DC-1 the kernel %s may not import the unit %s', async (file, importPath) => {
     expect(await boundaryErrors(file, importPath)).toHaveLength(1);
   });
 });
