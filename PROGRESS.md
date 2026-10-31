@@ -279,6 +279,7 @@ Any change to the design made while building: what, why, who agreed, and which d
 
 | Date | Task | Decision | Agreed by | Document to update |
 |---|---|---|---|---|
+| 2026-10-31 | P0-02 | CI `reference-browser`: run `apt-get update` before `apt-get install -y nginx-light`; without it the runner's stale package index asks for a version the mirror no longer has (404). Applied to `.github/workflows/ci.yml` and the reference `docs/design/deploy/github/workflows/ci.yml`. | S. M. Nihal Ahmed; reviewer of #35 | Unit 9 (`09_integration.tex`) if it quotes the CI steps |
 
 ## Finished log
 
