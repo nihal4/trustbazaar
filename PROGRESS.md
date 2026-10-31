@@ -26,7 +26,7 @@ This file is the single record of what is being built, by whom, and what is fini
 | ID | Task | Needs | Status | Owner | Branch / PR | Done | Notes |
 |---|---|---|---|---|---|---|---|
 | P0-01 | Merge `docs/srs-v2` into `main` (the design documents become the reference) | - | done | S. M. Nihal Ahmed | #33 | 2026-10-31 | No `docs/srs-v2` branch remained on the remote; `main` already held `docs/design/` (units 01 to 09, sql, web, crypto, deploy, integration) and `docs/srs.tex`, so no merge was needed. |
-| P0-02 | Move the deployment files into place: `docs/design/deploy/docker-compose*.yml` to the root, `deploy/github/*` to `.github/` (replacing the old `ci.yml`, `codeql.yml`, `dependabot.yml`), `prod.env.example` next to `.env.example` | P0-01 | review | S. M. Nihal Ahmed | `feature/p0-02-deploy-files`, #35 | | Compose files are copied, not moved: `ci.yml` runs `docs/design/deploy/test_compose.py`, which reads the reference copies. |
+| P0-02 | Move the deployment files into place: `docs/design/deploy/docker-compose*.yml` to the root, `deploy/github/*` to `.github/` (replacing the old `ci.yml`, `codeql.yml`, `dependabot.yml`), `prod.env.example` next to `.env.example` | P0-01 | done | S. M. Nihal Ahmed | #35 | 2026-10-31 | Compose files are copied, not moved: `ci.yml` runs `docs/design/deploy/test_compose.py`, which reads the reference copies. |
 | P0-03 | Repository settings: branch protection on `main`, one review by a non-author, required CI, secret scanning with push protection; add security paths to `CODEOWNERS` (SEC-SDL-01, SEC-SDL-05) | P0-01 | todo | | | | |
 | P0-04 | Restructure `backend/src` into `kernel/` and the seven unit modules of BUILDING.md section 3; remove the old stubs and `entities/`; ESLint import boundaries | P0-01 | todo | | | | |
 | P0-05 | Migrations: one TypeORM migration per `docs/design/sql/0N_*.sql` plus `09_integration.sql`; `src/migrate.ts` entry run as `tb_owner` (I-60) | P0-04 | todo | | | | |
@@ -288,3 +288,4 @@ Append one line when a task becomes `done` (newest last).
 | Date | Task | Owner | PR |
 |---|---|---|---|
 | 2026-10-31 | P0-01 | S. M. Nihal Ahmed | #33 |
+| 2026-10-31 | P0-02 | S. M. Nihal Ahmed | #35 |
