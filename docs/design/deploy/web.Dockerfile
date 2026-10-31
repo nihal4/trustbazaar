@@ -14,6 +14,7 @@ RUN npm run build
 
 FROM nginxinc/nginx-unprivileged:1.27-alpine AS runtime
 USER root
+RUN apk upgrade --no-cache   # Alpine security fixes for the image scan (SEC-SDL-07)
 COPY --from=webconf nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=webconf tb/ /etc/nginx/tb/
 RUN sed -i 's/BACKEND/backend:3000/g' /etc/nginx/conf.d/default.conf
