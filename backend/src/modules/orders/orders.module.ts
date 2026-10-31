@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
-import { OrdersController } from './orders.controller';
-import { OrdersService } from './orders.service';
 
-// Fixed-price purchase with concurrency-safe stock decrement (FR-FIX-01–FR-FIX-05)
+// Unit 2 (docs/design/02_orders_payments.pdf). Schemas: orders, payments.
+// Payment provider adapters live in adapters/.
+// Folder layout and rules: BUILDING.md section 3. This module exports only its ports (ports/),
+// and imports other units only through their ports (DC-1; enforced by .eslintrc.js).
 @Module({
-  controllers: [OrdersController],
-  providers: [OrdersService],
-  exports: [OrdersService],
+  imports: [],
+  providers: [],
+  exports: [],
 })
 export class OrdersModule {}
