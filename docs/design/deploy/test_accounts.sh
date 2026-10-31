@@ -37,6 +37,12 @@ $app -c "SELECT count(*) FROM identity.users" >/dev/null 2>&1 && ok "tb_app conn
 $app -c "BEGIN; INSERT INTO identity.users (display_name, phone_e164, phone_verified_at, email, password_hash, password_single_factor_ok, adult_confirmed_at)
          VALUES ('Probe', '+8801711999999', now(), 'probe@tb.test', '\$argon2id\$v=19\$x', true, now()); ROLLBACK;" >/dev/null 2>&1 \
   && ok "tb_app writes data" || bad "tb_app cannot write"
+r=$($app -A -t -c "BEGIN; INSERT INTO identity.users (display_name, phone_e164, phone_verified_at, email, password_hash, password_single_factor_ok, adult_confirmed_at)
+         VALUES ('Probe', '+8801711999998', now(), 'probe@tb.test', '\$argon2id\$v=19\$x', true, now());
+         SELECT count(*) FROM identity.users WHERE email = 'PROBE@TB.TEST'; ROLLBACK;" 2>/dev/null | grep -x '[0-9]*')
+[ "$r" = 1 ] && ok "tb_app compares citext case-insensitively (uses the extensions in public)" || bad "tb_app citext lookup found $r"
+$app -c "BEGIN; INSERT INTO audit.events (actor_type, action) VALUES ('system', 'test.app_role.insert'); ROLLBACK;" >/dev/null 2>&1 \
+  && ok "tb_app appends to the audit log (the chain trigger's digest() resolves)" || bad "tb_app cannot append to the audit log"
 for stmt in "CREATE TABLE identity.x (a int)" "CREATE TABLE public.x (a int)" "ALTER TABLE identity.users ADD COLUMN x int" \
             "DROP TABLE trust.ratings" "CREATE SCHEMA x" "TRUNCATE chat.messages" "CREATE FUNCTION identity.f() RETURNS int LANGUAGE sql AS 'SELECT 1'" \
             "CREATE TEMP TABLE t (a int)" "DELETE FROM disputes.history" "UPDATE staff.config_values SET value = '1'"; do
