@@ -41,7 +41,7 @@ Design: `docs/design/09_integration.pdf` (source `.tex` beside it).
 
 | ID | Task | Needs | Status | Owner | Branch / PR | Done | Notes |
 |---|---|---|---|---|---|---|---|
-| K-01 | Configuration and secrets: read at start, at least 32 bytes, refuse `dev-only-` values in production (I-59, SEC-DAT-05) | P0-04 | review | S. M. Nihal Ahmed | `feature/k-01-config`, #72 | | `config()` / `TB_CONFIG` in the kernel (global). Provider credentials are checked against `dev-only-` only; which ones a mode needs, and the SMS mode values, are for the units' adapters. |
+| K-01 | Configuration and secrets: read at start, at least 32 bytes, refuse `dev-only-` values in production (I-59, SEC-DAT-05) | P0-04 | done | S. M. Nihal Ahmed | #72 | 2026-11-01 | `config()` / `TB_CONFIG` in the kernel (global). Provider credentials are checked against `dev-only-` only; which ones a mode needs, and the SMS mode values, are for the units' adapters. |
 | K-02 | JSON logging with correlation id, module and the redaction list (NFR-OBS-02, SEC-DAT-07) | P0-04 | todo | | | | |
 | K-03 | Health endpoints `/api/v1/health/live` and `/ready` (NFR-OBS-01) | P0-04 | done | S. M. Nihal Ahmed | #67 | 2026-11-01 | Also adds the kernel's database connection (tb_app, never synchronised) and Redis client, and the `/api/v1` prefix (DC-3). U1-02 must give both routes the public policy. |
 | K-04 | Outbox dispatcher for all seven outboxes, consumer registry, retries (DC-6, DV-67) | P0-05 | todo | | | | |
@@ -75,7 +75,7 @@ Design: `docs/design/01_identity_access.pdf` (source `.tex` beside it).
 - [ ] I-36 (from Unit 6): `NotificationPort` is implemented here; OTP rate limits stay in Unit 1.
 - [ ] I-43 (from Unit 7): `assertCanTransact` must call `SanctionPort.restrictions` (selling, or buying and bidding).
 - [ ] I-51 (from Unit 8): (a) Staff sessions use their own cookies, for example `__Host-tb_sat`, `__Host-tb_scsrf` and `__Secure-tb_srt` on `/api/v1/staff/auth/refresh`, with `POST /staff/auth/refresh` ...
-- [ ] I-59 (from Unit 9): Shared kernel: The backend refuses to start in production if a secret is missing, is shorter than 32 bytes or starts with `dev-only-`.
+- [x] I-59 (from Unit 9): Shared kernel: The backend refuses to start in production if a secret is missing, is shorter than 32 bytes or starts with `dev-only-`.
 - [x] I-60 (from Unit 9): All units: One TypeORM migration per design SQL file, in unit order, then `09_integration.sql`.
 - [ ] I-61 (from Unit 9): Implement `FileVault`, `IdentityCrypto` and `StaffQuery` (Unit 1) and `ListingsQueries` (Unit 3) as declared in Section .
 - [ ] I-64 (from Unit 9): The human-verification challenge of SEC-ABU-02: Unit 1 issues and checks it and answers `428`; Unit 8 solves it in a Web Worker.
@@ -303,3 +303,4 @@ Append one line when a task becomes `done` (newest last).
 | 2026-11-01 | P0-05 | S. M. Nihal Ahmed | #65 |
 | 2026-11-01 | K-03 | S. M. Nihal Ahmed | #67 |
 | 2026-11-01 | P0-06 | S. M. Nihal Ahmed | #70 |
+| 2026-11-01 | K-01 | S. M. Nihal Ahmed | #72 |
