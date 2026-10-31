@@ -33,7 +33,7 @@ This file is the single record of what is being built, by whom, and what is fini
 | P0-06 | Test harness: Jest unit tests, integration tests against PostgreSQL 15 in CI, test names that start with the requirement ID (BUILDING.md section 6) | P0-04 | todo | | | | |
 | P0-07 | Restructure `frontend/` to the Unit 8 layout; copy `docs/design/web/src` to `frontend/src/lib` unchanged; four Vite entries | P0-01 | review | S. M. Nihal Ahmed | `feature/p0-07-frontend-structure`, #61 | | Layout, four documents with placeholder entries (U8-01 builds the shell), ESLint 9 with the Unit 8 rules and Vitest. Removes the old pages, the `localStorage` token client and the development-server Dockerfile (replaced by `web.Dockerfile`). Vitest 4.1.12 is needed for `npm audit`; its lockfile entry was written with npm 11 because of an npm 10 resolver bug, and `npm ci` with npm 10.8 installs it. |
 | P0-08 | SRS update: DV-1 to DV-67, DC-15 and the SRS clarifications of the integration register (does not block coding) | - | todo | | | | |
-| P0-09 | Clear `npm audit --audit-level=high` in the backend while keeping NestJS 10 (C-1): npm `overrides` to the patched versions, each scoped to the package that needs it (SEC-SDL-04) | P0-04 | doing | S. M. Nihal Ahmed | `fix/p0-09-backend-audit` | | Found when `lint-and-unit (backend)` first ran to the end (#61). |
+| P0-09 | Clear `npm audit --audit-level=high` in the backend while keeping NestJS 10 (C-1): npm `overrides` to the patched versions, each scoped to the package that needs it (SEC-SDL-04) | P0-04 | review | S. M. Nihal Ahmed | `fix/p0-09-backend-audit`, #63 | | Found when `lint-and-unit (backend)` first ran to the end (#61). |
 
 ## K: Shared kernel (with Unit 1)
 
