@@ -3,8 +3,8 @@
 
 A test title must start with an ID:
   FR-/NFR-/SEC-/IF-<AREA>-<nn>  a requirement of the SRS (docs/srs.tex), which must exist
-  AC-<n>, DC-<n>, DV-<n>, CP-<n>, I-<n>  an acceptance criterion, design convention, design value,
-                                parameter or integration note
+  AC-<n>, DC-<n>, DV-<n>, CP-<n>, C-<n>, I-<n>  an acceptance criterion, design convention, design value,
+                                parameter, constraint or integration note
 Reads the test files of backend/ and frontend/ (it, test, and their .each/.todo/.skip/.only forms).
 
 usage: python3 scripts/check_test_names.py [REPO_ROOT]     exit 1 if any title breaks the rule
@@ -15,7 +15,7 @@ import sys
 
 ROOT = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else '.').resolve()
 GLOBS = ['backend/src/**/*.spec.ts', 'backend/test/**/*.spec.ts', 'frontend/src/**/*.test.ts', 'frontend/src/**/*.test.tsx']
-ID = re.compile(r'^(?:(?P<req>(?:FR|NFR|SEC|IF)-[A-Z]+-\d+)|(?:AC|DC|DV|CP|I)-\d+)\b')
+ID = re.compile(r'^(?:(?P<req>(?:FR|NFR|SEC|IF)-[A-Z]+-\d+)|(?:AC|DC|DV|CP|C|I)-\d+)\b')
 MODIFIERS = {'each', 'todo', 'skip', 'only', 'concurrent', 'failing'}
 
 
