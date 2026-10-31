@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ListingsController } from './listings.controller';
-import { ListingsService } from './listings.service';
 
-// Listing creation (fixed/auction), search and discovery (FR-LST-01–FR-LST-13, FR-SRC-01–FR-SRC-06)
+// Unit 3 (docs/design/03_listings_auctions.pdf). Schemas: listings, auctions.
+// Folder layout and rules: BUILDING.md section 3. This module exports only its ports (ports/),
+// and imports other units only through their ports (DC-1; enforced by .eslintrc.js).
 @Module({
-  controllers: [ListingsController],
-  providers: [ListingsService],
-  exports: [ListingsService],
+  imports: [],
+  providers: [],
+  exports: [],
 })
 export class ListingsModule {}
