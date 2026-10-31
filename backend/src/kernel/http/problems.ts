@@ -11,6 +11,9 @@ export const PROBLEMS = {
   'otp-failed': { status: 400, title: 'The code is not correct.' },
   'otp-expired': { status: 410, title: 'This code has expired or was used too many times. Please ask for a new one.' },
   'link-invalid': { status: 410, title: 'This link is not valid or has expired.' },
+  'mfa-required': { status: 403, title: 'Please also enter the code from your authenticator app or a recovery code.' },
+  'password-incorrect': { status: 400, title: 'The current password is not correct.' },
+  'contact-unavailable': { status: 409, title: 'This number or e-mail cannot be used. Please try another one.' },
   'password-rejected': { status: 422, title: 'Please choose a different password.' },
   'registration-refused': {
     status: 409,
