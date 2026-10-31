@@ -25,7 +25,7 @@ This file is the single record of what is being built, by whom, and what is fini
 
 | ID | Task | Needs | Status | Owner | Branch / PR | Done | Notes |
 |---|---|---|---|---|---|---|---|
-| P0-01 | Merge `docs/srs-v2` into `main` (the design documents become the reference) | - | todo | | | | |
+| P0-01 | Merge `docs/srs-v2` into `main` (the design documents become the reference) | - | done | S. M. Nihal Ahmed | #33 | 2026-10-31 | No `docs/srs-v2` branch remained on the remote; `main` already held `docs/design/` (units 01 to 09, sql, web, crypto, deploy, integration) and `docs/srs.tex`, so no merge was needed. |
 | P0-02 | Move the deployment files into place: `docs/design/deploy/docker-compose*.yml` to the root, `deploy/github/*` to `.github/` (replacing the old `ci.yml`, `codeql.yml`, `dependabot.yml`), `prod.env.example` next to `.env.example` | P0-01 | todo | | | | |
 | P0-03 | Repository settings: branch protection on `main`, one review by a non-author, required CI, secret scanning with push protection; add security paths to `CODEOWNERS` (SEC-SDL-01, SEC-SDL-05) | P0-01 | todo | | | | |
 | P0-04 | Restructure `backend/src` into `kernel/` and the seven unit modules of BUILDING.md section 3; remove the old stubs and `entities/`; ESLint import boundaries | P0-01 | todo | | | | |
@@ -286,3 +286,4 @@ Append one line when a task becomes `done` (newest last).
 
 | Date | Task | Owner | PR |
 |---|---|---|---|
+| 2026-10-31 | P0-01 | S. M. Nihal Ahmed | #33 |
