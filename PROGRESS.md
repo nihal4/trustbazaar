@@ -29,7 +29,7 @@ This file is the single record of what is being built, by whom, and what is fini
 | P0-02 | Move the deployment files into place: `docs/design/deploy/docker-compose*.yml` to the root, `deploy/github/*` to `.github/` (replacing the old `ci.yml`, `codeql.yml`, `dependabot.yml`), `prod.env.example` next to `.env.example` | P0-01 | done | S. M. Nihal Ahmed | #35 | 2026-10-31 | Compose files are copied, not moved: `ci.yml` runs `docs/design/deploy/test_compose.py`, which reads the reference copies. |
 | P0-03 | Repository settings: branch protection on `main`, one review by a non-author, required CI, secret scanning with push protection; add security paths to `CODEOWNERS` (SEC-SDL-01, SEC-SDL-05) | P0-01 | done | S. M. Nihal Ahmed | #58 | 2026-11-01 | Settings on (owner): `main` protected; 1 non-author approval with last-push approval and stale dismissal; admins included; no force push or deletion; conversation resolution; secret scanning with push protection; Dependabot. Required checks: `database`, `documents`, `reference-browser`, `lint-and-unit (backend)`, `lint-and-unit (frontend)`. `CODEOWNERS` in #58. |
 | P0-04 | Restructure `backend/src` into `kernel/` and the seven unit modules of BUILDING.md section 3; remove the old stubs and `entities/`; ESLint import boundaries | P0-01 | done | S. M. Nihal Ahmed | #59 | 2026-10-31 | Skeleton only: each unit module and `ports/index.ts` are empty until the unit's tasks add ports; the other folders of BUILDING.md section 3 appear with the code that needs them. Also removes the unused `bcrypt` (SRS forbids it; Unit 1 uses Argon2id) and adds `tsconfig.build.json` so the build writes `dist/main.js`, the path the image runs. |
-| P0-05 | Migrations: one TypeORM migration per `docs/design/sql/0N_*.sql` plus `09_integration.sql`; `src/migrate.ts` entry run as `tb_owner` (I-60) | P0-04 | review | S. M. Nihal Ahmed | `feature/p0-05-migrations`, #65 | | Each migration embeds a frozen copy of its design SQL file; later schema changes come as new migrations. In `src/migrations/`, see the Decisions log. |
+| P0-05 | Migrations: one TypeORM migration per `docs/design/sql/0N_*.sql` plus `09_integration.sql`; `src/migrate.ts` entry run as `tb_owner` (I-60) | P0-04 | done | S. M. Nihal Ahmed | #65 | 2026-11-01 | Each migration embeds a frozen copy of its design SQL file; later schema changes come as new migrations. In `src/migrations/`, see the Decisions log. |
 | P0-06 | Test harness: Jest unit tests, integration tests against PostgreSQL 15 in CI, test names that start with the requirement ID (BUILDING.md section 6) | P0-04 | todo | | | | |
 | P0-07 | Restructure `frontend/` to the Unit 8 layout; copy `docs/design/web/src` to `frontend/src/lib` unchanged; four Vite entries | P0-01 | done | S. M. Nihal Ahmed | #61 | 2026-11-01 | Layout, four documents with placeholder entries (U8-01 builds the shell), ESLint 9 with the Unit 8 rules and Vitest. Removes the old pages, the `localStorage` token client and the development-server Dockerfile (replaced by `web.Dockerfile`). Vitest 4.1.12 is needed for `npm audit`; its lockfile entry was written with npm 11 because of an npm 10 resolver bug, and `npm ci` with npm 10.8 installs it. |
 | P0-08 | SRS update: DV-1 to DV-67, DC-15 and the SRS clarifications of the integration register (does not block coding) | - | todo | | | | |
@@ -76,7 +76,7 @@ Design: `docs/design/01_identity_access.pdf` (source `.tex` beside it).
 - [ ] I-43 (from Unit 7): `assertCanTransact` must call `SanctionPort.restrictions` (selling, or buying and bidding).
 - [ ] I-51 (from Unit 8): (a) Staff sessions use their own cookies, for example `__Host-tb_sat`, `__Host-tb_scsrf` and `__Secure-tb_srt` on `/api/v1/staff/auth/refresh`, with `POST /staff/auth/refresh` ...
 - [ ] I-59 (from Unit 9): Shared kernel: The backend refuses to start in production if a secret is missing, is shorter than 32 bytes or starts with `dev-only-`.
-- [ ] I-60 (from Unit 9): All units: One TypeORM migration per design SQL file, in unit order, then `09_integration.sql`.
+- [x] I-60 (from Unit 9): All units: One TypeORM migration per design SQL file, in unit order, then `09_integration.sql`.
 - [ ] I-61 (from Unit 9): Implement `FileVault`, `IdentityCrypto` and `StaffQuery` (Unit 1) and `ListingsQueries` (Unit 3) as declared in Section .
 - [ ] I-64 (from Unit 9): The human-verification challenge of SEC-ABU-02: Unit 1 issues and checks it and answers `428`; Unit 8 solves it in a Web Worker.
 
@@ -107,7 +107,7 @@ Design: `docs/design/02_orders_payments.pdf` (source `.tex` beside it).
 - [ ] I-37 (from Unit 6): Call `BlockPort.assertNotBlocked` when creating an order and when accepting a second-chance offer (FR-CHT-08).
 - [ ] I-44 (from Unit 7): The refund event at a missed fulfilment deadline must carry its reason, so it can count as a strike.
 - [ ] I-52 (from Unit 8): Idempotency keys on `POST /orders` and `/orders/{id}/payments`. `GET /orders/{id}` returns every field `describeMoney` reads: status, escrow state, release policy, total, ...
-- [ ] I-60 (from Unit 9): All units: One TypeORM migration per design SQL file, in unit order, then `09_integration.sql`.
+- [x] I-60 (from Unit 9): All units: One TypeORM migration per design SQL file, in unit order, then `09_integration.sql`.
 - [ ] I-63 (from Unit 9): Retention jobs: the credential-access log after 2 years and ownership screenshots under DV-39 (Unit 5); dispute statements and evidence files 2 years after the decision (Unit ...
 
 ## U3: Listings & Auctions
@@ -133,7 +133,7 @@ Design: `docs/design/03_listings_auctions.pdf` (source `.tex` beside it).
 - [ ] I-38 (from Unit 6): Call `BlockPort.assertNotBlocked` in `BidService` before `auctions.place_bid`.
 - [ ] I-45 (from Unit 7): Publish `listings.listing.relisting_flagged`. Hide and show a user's listings also on `trust.sanction.applied` and `.lifted` for selling and account suspensions.
 - [ ] I-53 (from Unit 8): Idempotency keys on `POST /auctions/{id}/bids` and `POST /listings`. A bid's answer carries the new state with `seq` and `serverTime`.
-- [ ] I-60 (from Unit 9): All units: One TypeORM migration per design SQL file, in unit order, then `09_integration.sql`.
+- [x] I-60 (from Unit 9): All units: One TypeORM migration per design SQL file, in unit order, then `09_integration.sql`.
 - [ ] I-61 (from Unit 9): Implement `FileVault`, `IdentityCrypto` and `StaffQuery` (Unit 1) and `ListingsQueries` (Unit 3) as declared in Section .
 - [ ] I-62 (from Unit 9): Publish `listings.listing.cancelled` and `listings.listing.relisting_flagged` (Unit 3) and `delivery.issue.opened` (Unit 4); list `chat.message.flagged` among Unit 6's events.
 
@@ -155,7 +155,7 @@ Design: `docs/design/04_delivery.pdf` (source `.tex` beside it).
 - [ ] I-39 (from Unit 6): Their events already carry the deadlines (meetup, pickup, credential delivery, takeover window, re-key); this unit schedules and cancels reminders from them.
 - [ ] I-46 (from Unit 7): Publish `delivery.issue.opened`, so delivery issues appear as signals in the flagged-activity queue rather than a queue of their own.
 - [ ] I-54 (from Unit 8): The handover answer includes the code attempts left. The credential screens are routes under `/secure/orders/{id}/`, served by `secure.html`, which imports `sealed.js` ...
-- [ ] I-60 (from Unit 9): All units: One TypeORM migration per design SQL file, in unit order, then `09_integration.sql`.
+- [x] I-60 (from Unit 9): All units: One TypeORM migration per design SQL file, in unit order, then `09_integration.sql`.
 - [ ] I-62 (from Unit 9): Publish `listings.listing.cancelled` and `listings.listing.relisting_flagged` (Unit 3) and `delivery.issue.opened` (Unit 4); list `chat.message.flagged` among Unit 6's events.
 
 ## U5: Game-Account Escrow
@@ -177,7 +177,7 @@ Design: `docs/design/05_game_accounts.pdf` (source `.tex` beside it).
 - [ ] I-39 (from Unit 6): Their events already carry the deadlines (meetup, pickup, credential delivery, takeover window, re-key); this unit schedules and cancels reminders from them.
 - [ ] I-47 (from Unit 7): `DisputeCommands.open` is implemented as designed, for the `credentials_invalid` report and the overdue re-key (`opened_by = system`).
 - [ ] I-54 (from Unit 8): The handover answer includes the code attempts left. The credential screens are routes under `/secure/orders/{id}/`, served by `secure.html`, which imports `sealed.js` ...
-- [ ] I-60 (from Unit 9): All units: One TypeORM migration per design SQL file, in unit order, then `09_integration.sql`.
+- [x] I-60 (from Unit 9): All units: One TypeORM migration per design SQL file, in unit order, then `09_integration.sql`.
 - [ ] I-63 (from Unit 9): Retention jobs: the credential-access log after 2 years and ownership screenshots under DV-39 (Unit 5); dispute statements and evidence files 2 years after the decision (Unit ...
 
 ## U6: Chat & Notifications
@@ -200,7 +200,7 @@ Design: `docs/design/06_chat_notifications.pdf` (source `.tex` beside it).
 - [ ] I-32 (from Unit 5): Notify the seller when credentials are requested and the buyer when they are delivered, and remind both at CP-38 before the credential deadline, the window end and the ...
 - [ ] I-48 (from Unit 7): Holds are placed when a dispute opens or a report concerns a thread, and released on decision, withdrawal or resolution.
 - [ ] I-55 (from Unit 8): `notification.new` names the object it concerns (for example the order id), so the client refreshes exactly that data.
-- [ ] I-60 (from Unit 9): All units: One TypeORM migration per design SQL file, in unit order, then `09_integration.sql`.
+- [x] I-60 (from Unit 9): All units: One TypeORM migration per design SQL file, in unit order, then `09_integration.sql`.
 - [ ] I-62 (from Unit 9): Publish `listings.listing.cancelled` and `listings.listing.relisting_flagged` (Unit 3) and `delivery.issue.opened` (Unit 4); list `chat.message.flagged` among Unit 6's events.
 
 ## U7: Disputes, Trust & Safety, Staff Tools
@@ -227,7 +227,7 @@ Design: `docs/design/07_disputes_trust_staff.pdf` (source `.tex` beside it).
 - [ ] I-33 (from Unit 5): The ownership-proof queue (FR-OPS-01) calls `reviewProof`. A `credentials_invalid` dispute is opened in the same transaction as the report, and also when a re-key is overdue.
 - [ ] I-40 (from Unit 6): Use `ChatCommands.hold` and `release` for every dispute and report that concerns a thread, and `chat.staff_read` in the case file (FR-DSP-05).
 - [ ] I-56 (from Unit 8): The dispute form needs the types that may be opened now: `GET /orders/{id}/dispute-types` answers from the owning units' checks.
-- [ ] I-60 (from Unit 9): All units: One TypeORM migration per design SQL file, in unit order, then `09_integration.sql`.
+- [x] I-60 (from Unit 9): All units: One TypeORM migration per design SQL file, in unit order, then `09_integration.sql`.
 - [ ] I-63 (from Unit 9): Retention jobs: the credential-access log after 2 years and ownership screenshots under DV-39 (Unit 5); dispute statements and evidence files 2 years after the decision (Unit ...
 
 ## U8: Frontend
@@ -298,3 +298,4 @@ Append one line when a task becomes `done` (newest last).
 | 2026-11-01 | P0-07 | S. M. Nihal Ahmed | #61 |
 | 2026-11-01 | P0-03 | S. M. Nihal Ahmed | #58 |
 | 2026-11-01 | P0-09 | S. M. Nihal Ahmed | #63 |
+| 2026-11-01 | P0-05 | S. M. Nihal Ahmed | #65 |
