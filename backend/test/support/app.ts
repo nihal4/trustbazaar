@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import type { AddressInfo } from 'net';
 import { AppModule } from '../../src/app.module';
 import { configureApp } from '../../src/app.setup';
-import { requireEnv } from './env';
+import { requireEnv, useTestSecrets } from './env';
 
 export interface TestApp {
   app: INestApplication;
@@ -16,6 +16,7 @@ export interface TestApp {
 export async function startApp(): Promise<TestApp> {
   requireEnv('DATABASE_URL');
   requireEnv('REDIS_URL');
+  useTestSecrets();
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
   const app = configureApp(moduleRef.createNestApplication({ logger: false }));
   await app.listen(0, '127.0.0.1');
