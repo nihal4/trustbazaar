@@ -19,4 +19,8 @@ SQL
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$DB" <<'SQL'
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
 ALTER SCHEMA public OWNER TO tb_owner;
+-- The extensions (citext, pgcrypto, pg_trgm) live in public. Without USAGE, tb_app cannot find their
+-- functions and operators by name: the audit chain trigger's digest() fails, and citext comparisons
+-- silently fall back to case-sensitive text. USAGE only: tb_app still cannot create anything here.
+GRANT USAGE ON SCHEMA public TO tb_app;
 SQL
