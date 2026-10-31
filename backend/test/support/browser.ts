@@ -16,8 +16,8 @@ export class Browser {
     private readonly csrfCookie = '__Host-tb_csrf',
   ) {}
 
-  async request(method: string, path: string, body?: unknown): Promise<Response> {
-    const headers: Record<string, string> = { origin: this.origin, 'x-forwarded-for': this.ip, 'user-agent': 'Mozilla/5.0 (Linux; Android 14) Chrome/130.0' };
+  async request(method: string, path: string, body?: unknown, extra: Record<string, string> = {}): Promise<Response> {
+    const headers: Record<string, string> = { origin: this.origin, 'x-forwarded-for': this.ip, 'user-agent': 'Mozilla/5.0 (Linux; Android 14) Chrome/130.0', ...extra };
     if (this.cookies.size > 0) headers.cookie = [...this.cookies].map(([k, v]) => `${k}=${v}`).join('; ');
     const csrf = this.cookies.get(this.csrfCookie);
     if (csrf && method !== 'GET') headers['x-csrf-token'] = csrf;
@@ -37,7 +37,7 @@ export class Browser {
   }
 
   get = (path: string) => this.request('GET', path);
-  post = (path: string, body?: unknown) => this.request('POST', path, body ?? {});
+  post = (path: string, body?: unknown, headers?: Record<string, string>) => this.request('POST', path, body ?? {}, headers);
   del = (path: string) => this.request('DELETE', path);
 
   /** The attributes of the last Set-Cookie for a name, lower-cased, e.g. {httponly: true, path: '/'}. */
