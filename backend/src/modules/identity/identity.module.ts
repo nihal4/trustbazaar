@@ -4,10 +4,12 @@ import { NOTIFICATIONS, SimulatedNotifications } from './adapters/notifications'
 import { PasswordHasher } from './crypto/password';
 import { ENTITIES } from './db/entities';
 import { AuthController } from './http/auth.controller';
+import { RegistrationController } from './http/registration.controller';
 import { pipelineGuards } from './security/guards';
 import { RateLimiter } from './security/rate-limiter.service';
 import { noRestrictionsYet, RESTRICTIONS } from './security/restrictions';
 import { AuditService } from './services/audit.service';
+import { RegistrationService } from './services/registration.service';
 import { SessionService } from './services/session.service';
 import { SignInService } from './services/signin.service';
 
@@ -20,13 +22,14 @@ import { SignInService } from './services/signin.service';
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
 @Module({
   imports: [TypeOrmModule.forFeature(ENTITIES)],
-  controllers: [AuthController],
+  controllers: [AuthController, RegistrationController],
   providers: [
     RateLimiter,
     PasswordHasher,
     AuditService,
     SessionService,
     SignInService,
+    RegistrationService,
     // Until the Notifications unit (Unit 6) provides NotificationPort: logged, labelled simulated (AS-4).
     SimulatedNotifications,
     { provide: NOTIFICATIONS, useExisting: SimulatedNotifications },

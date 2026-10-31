@@ -56,6 +56,8 @@ export interface TbConfig {
   readonly port: number;
   readonly logLevel: LogLevel;
   readonly publicOrigin: string;
+  /** The current terms of use and privacy notice; registration must accept exactly these (FR-ACC-04). */
+  readonly legal: { readonly termsVersion: string; readonly privacyVersion: string };
   readonly databaseUrl: Secret;
   readonly redisUrl: Secret;
   readonly paymentMode: 'mock' | 'sandbox';
@@ -198,6 +200,14 @@ export function loadConfig(env: Env): TbConfig {
     problems.push('PUBLIC_ORIGIN: not a valid URL');
   }
 
+  // FR-ACC-04: the versions a person must accept at registration (Decisions log, U1-03).
+  const legalVersion = (name: string): string => {
+    const v = get(name) ?? '2026-11-01';
+    if (!/^[A-Za-z0-9._-]{1,20}$/.test(v)) problems.push(`${name}: 1 to 20 letters, digits, dots, dashes or underscores`);
+    return v;
+  };
+  const legal = Object.freeze({ termsVersion: legalVersion('TERMS_VERSION'), privacyVersion: legalVersion('PRIVACY_VERSION') });
+
   // C-2 and C-3: payments and couriers are mock or sandbox only; the deliverable never moves real money.
   const paymentMode = oneOf('PAYMENT_MODE', ['mock', 'sandbox'] as const, 'mock');
   const courierMode = oneOf('COURIER_MODE', ['mock', 'sandbox'] as const, 'mock');
@@ -230,6 +240,7 @@ export function loadConfig(env: Env): TbConfig {
     port,
     logLevel,
     publicOrigin,
+    legal,
     databaseUrl,
     redisUrl,
     paymentMode,
