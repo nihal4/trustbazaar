@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import { DataSource, EntityManager, QueryFailedError } from 'typeorm';
 import { CLOCK, Clock } from '../../../kernel/clock';
 import { TbConfig } from '../../../kernel/config/config';
@@ -7,13 +6,14 @@ import { TB_CONFIG } from '../../../kernel/config/config.provider';
 import { CONFIG_PORT, ConfigPort } from '../../../kernel/config-port';
 import { Problem } from '../../../kernel/http/problems';
 import { NOTIFICATIONS, NotificationPort } from '../adapters/notifications';
-import { generateLinkToken, generateOtp, hashLinkToken, hashOtp, otpMatches } from '../crypto/otp';
+import { generateLinkToken, generateOtp, hashLinkToken } from '../crypto/otp';
 import { PasswordHasher } from '../crypto/password';
 import { checkPassword } from '../crypto/password-policy';
 import type { IssuedCookies } from '../http/session-cookies';
-import { RateLimiter } from '../security/rate-limiter.service';
 import { AuditService } from './audit.service';
+import { OtpService, RESEND_GAP_SECONDS } from './otp.service';
 import { publish } from './outbox';
+import { bangladeshiMobile } from './phone';
 import { RequestContext, SessionService } from './session.service';
 
 // Registration (Unit 1 section 6.1; FR-ACC-01 to FR-ACC-04, SEC-AUTH-01, 02, 06, 09; FR-PRV-01).
@@ -23,16 +23,7 @@ import { RequestContext, SessionService } from './session.service';
 // 2. verify: the right code creates the account, its consents and an e-mail verification link in one
 //    transaction, and signs the person in. Five wrong codes end the challenge (also enforced by the database).
 //    An e-mail already used by an open account is refused with a generic answer; its owner is told.
-// 3. The e-mail link sets email_verified_at, which @Verified actions require (FR-ACC-02).
-export const RESEND_GAP_SECONDS = 60; // Decisions log (U1-03): the "resend time" of the 202 answer.
-const VERIFY_PER_NUMBER_HOUR = 20; // CP-05: 20 entries per account (here: per number) per hour
-
-interface CP05 {
-  otpValidityMinutes: number;
-  attemptsPerOtp: number;
-  sendsPerNumberHour: number;
-  sendsPerNumberDay: number;
-}
+// 3. The e-mail link sets email_verified_at, which @Verified actions require (FR-ACC-02); ContactService.verifyEmail.
 interface CP06 {
   emailLinkHours: number;
 }
@@ -65,15 +56,6 @@ interface PendingRow {
 }
 
 // TypeORM's PostgreSQL driver answers UPDATE ... RETURNING with [rows, count], INSERT/SELECT with rows.
-const rowsOf = <T>(result: unknown): T[] =>
-  (Array.isArray(result) && Array.isArray(result[0]) && typeof result[1] === 'number' ? result[0] : result) as T[];
-
-/** E.164 for a Bangladeshi mobile number (+8801[3-9]XXXXXXXX), or null. */
-export function bangladeshiMobile(input: string): string | null {
-  const p = parsePhoneNumberFromString(input.trim(), 'BD');
-  return p?.isValid() && /^\+8801[3-9]\d{8}$/.test(p.number) ? p.number : null;
-}
-
 const isUniqueViolation = (e: unknown) => e instanceof QueryFailedError && (e as unknown as { code?: string }).code === '23505';
 
 @Injectable()
@@ -83,16 +65,12 @@ export class RegistrationService {
     private readonly sessions: SessionService,
     private readonly passwords: PasswordHasher,
     private readonly audit: AuditService,
-    private readonly limiter: RateLimiter,
+    private readonly otp: OtpService,
     @Inject(NOTIFICATIONS) private readonly notify: NotificationPort,
     @Inject(TB_CONFIG) private readonly config: TbConfig,
     @Inject(CLOCK) private readonly clock: Clock,
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
   ) {}
-
-  private get pepper(): string {
-    return this.config.secrets.otpPepper.reveal();
-  }
 
   async register(input: RegistrationInput, ctx: RequestContext): Promise<RegistrationStarted> {
     const phone = bangladeshiMobile(input.phone);
@@ -109,8 +87,8 @@ export class RegistrationService {
     const refusal = checkPassword(input.password, { mfa: false, context: { displayName, phoneE164: phone, email } });
     if (refusal) throw new Problem('password-rejected', { errors: [{ field: 'password', reason: refusal }] });
 
-    await this.countSend(phone);
-    const cp05 = await this.cp05();
+    await this.otp.countSend(phone);
+    const cp05 = await this.otp.cp05();
     const passwordHash = await this.passwords.hash(input.password);
     const now = this.clock.now();
     const expiresAt = new Date(now.getTime() + cp05.otpValidityMinutes * 60_000);
@@ -124,7 +102,7 @@ export class RegistrationService {
          VALUES ($1, $2, $3, $4, true, $5, $6, true, $7, $8) RETURNING id`,
         [phone, email, displayName, passwordHash, input.termsVersion, input.privacyVersion, expiresAt, ctx.ip],
       );
-      await this.newChallenge(m, id, phone, code, now, expiresAt, cp05.attemptsPerOtp);
+      await this.otp.issue(m, { purpose: 'register_phone', phone, pendingRegistrationId: id }, code);
       return id as string;
     });
 
@@ -138,15 +116,14 @@ export class RegistrationService {
     const [p] = await this.db.query(`SELECT phone_e164 FROM identity.pending_registrations WHERE id = $1 AND completed_at IS NULL`, [registrationId]);
     if (!p) throw new Problem('not-found');
     const phone: string = p.phone_e164;
-    await this.countSend(phone);
-    const cp05 = await this.cp05();
+    await this.otp.countSend(phone);
+    const cp05 = await this.otp.cp05();
     const now = this.clock.now();
-    const expiresAt = new Date(now.getTime() + cp05.otpValidityMinutes * 60_000);
     const existing = await this.liveAccountWithPhone(phone);
     const code = generateOtp();
     await this.db.transaction(async (m) => {
+      const expiresAt = await this.otp.issue(m, { purpose: 'register_phone', phone, pendingRegistrationId: registrationId }, code);
       await m.query(`UPDATE identity.pending_registrations SET expires_at = $2 WHERE id = $1`, [registrationId, expiresAt]);
-      await this.newChallenge(m, registrationId, phone, code, now, expiresAt, cp05.attemptsPerOtp);
     });
     // The owner of an existing number was told once, at registration; a resend sends nothing to them.
     if (!existing) await this.notify.sendSms(phone, 'otp_register', { code, minutes: String(cp05.otpValidityMinutes) });
@@ -158,25 +135,16 @@ export class RegistrationService {
     const now = this.clock.now();
     const [p] = await this.db.query(`SELECT phone_e164 FROM identity.pending_registrations WHERE id = $1`, [registrationId]);
     if (!p) throw new Problem('otp-expired');
-    const r = await this.limiter.hit(`rl:otp-verify:phone:${p.phone_e164}`, VERIFY_PER_NUMBER_HOUR, 3600);
-    if (!r.allowed) throw new Problem('rate-limited', { retryAfter: r.retryAfterSeconds });
+    await this.otp.countEntry(`phone:${p.phone_e164}`);
 
     let outcome: { kind: 'created'; cookies: IssuedCookies; email: string; token: string } | { kind: 'failed' | 'expired' } | { kind: 'refused'; pending: PendingRow };
     try {
       outcome = await this.db.transaction(async (m) => {
         const [pending] = (await m.query(`SELECT * FROM identity.pending_registrations WHERE id = $1 FOR UPDATE`, [registrationId])) as PendingRow[];
         if (!pending || pending.completed_at) return { kind: 'expired' as const };
-        const [ch] = await m.query(
-          `SELECT id, code_hash, attempts, max_attempts, expires_at, consumed_at FROM identity.otp_challenges
-           WHERE pending_registration_id = $1 ORDER BY created_at DESC, id LIMIT 1 FOR UPDATE`,
-          [registrationId],
-        );
-        if (!ch || ch.consumed_at || new Date(ch.expires_at) <= now || ch.attempts >= ch.max_attempts) return { kind: 'expired' as const };
-        if (!otpMatches(this.pepper, code, ch.code_hash)) {
-          await m.query(`UPDATE identity.otp_challenges SET attempts = attempts + 1 WHERE id = $1`, [ch.id]);
-          return { kind: 'failed' as const };
-        }
-        await this.close(m, registrationId, ch.id, now);
+        const check = await this.otp.consume(m, `pending_registration_id = $1`, [registrationId], code);
+        if (check.kind !== 'ok') return { kind: check.kind };
+        await m.query(`UPDATE identity.pending_registrations SET completed_at = $2 WHERE id = $1`, [registrationId, now]);
         const [taken] = await m.query(
           `SELECT 1 FROM identity.users WHERE (phone_e164 = $1 OR email = $2) AND account_status <> 'closed' LIMIT 1`,
           [pending.phone_e164, pending.email],
@@ -193,7 +161,8 @@ export class RegistrationService {
           `SELECT id FROM identity.otp_challenges WHERE pending_registration_id = $1 ORDER BY created_at DESC, id LIMIT 1 FOR UPDATE`,
           [registrationId],
         );
-        await this.close(m, registrationId, ch.id, now);
+        await this.otp.markUsed(m, ch.id);
+        await m.query(`UPDATE identity.pending_registrations SET completed_at = $2 WHERE id = $1`, [registrationId, now]);
       });
       outcome = { kind: 'refused', pending };
     }
@@ -212,35 +181,6 @@ export class RegistrationService {
         return outcome.cookies;
       }
     }
-  }
-
-  /** FR-ACC-02: the single-use e-mail link. */
-  async verifyEmail(token: string, ctx: RequestContext): Promise<void> {
-    const now = this.clock.now();
-    const done = await this.db.transaction(async (m) => {
-      const [t] = rowsOf<{ user_id: string }>(
-        await m.query(
-          `UPDATE identity.one_time_tokens SET used_at = $2
-           WHERE token_hash = $1 AND purpose = 'email_verify' AND used_at IS NULL AND expires_at > $2 RETURNING user_id`,
-          [hashLinkToken(token), now],
-        ),
-      );
-      if (!t) return false;
-      const [u] = rowsOf<{ id: string }>(
-        await m.query(
-          `UPDATE identity.users SET email_verified_at = COALESCE(email_verified_at, $2), updated_at = $2
-           WHERE id = $1 AND account_status <> 'closed' RETURNING id`,
-          [t.user_id, now],
-        ),
-      );
-      if (!u) return false;
-      await this.audit.record(m, {
-        actorType: 'user', actorId: t.user_id, action: 'identity.email.verified', objectType: 'user', objectId: t.user_id,
-        sourceIp: ctx.ip, correlationId: ctx.correlationId,
-      });
-      return true;
-    });
-    if (!done) throw new Problem('link-invalid');
   }
 
   private async createAccount(m: EntityManager, p: PendingRow, deviceKey: string | undefined, ctx: RequestContext, now: Date) {
@@ -270,11 +210,7 @@ export class RegistrationService {
     return { cookies, email: p.email as string, token };
   }
 
-  /** The challenge is used up and the registration finished, whether or not an account results. */
-  private async close(m: EntityManager, registrationId: string, challengeId: string, now: Date): Promise<void> {
-    await m.query(`UPDATE identity.otp_challenges SET consumed_at = $2 WHERE id = $1`, [challengeId, now]);
-    await m.query(`UPDATE identity.pending_registrations SET completed_at = $2 WHERE id = $1`, [registrationId, now]);
-  }
+
 
   /** SEC-AUTH-06: the owner of the number or e-mail is told that someone tried to register with it. */
   private async tellOwners(p: PendingRow): Promise<void> {
@@ -288,33 +224,16 @@ export class RegistrationService {
     }
   }
 
-  private async newChallenge(m: EntityManager, registrationId: string, phone: string, code: string, now: Date, expiresAt: Date, maxAttempts: number) {
-    await m.query(
-      `INSERT INTO identity.otp_challenges (purpose, pending_registration_id, phone_e164, code_hash, max_attempts, created_at, expires_at)
-       VALUES ('register_phone', $1, $2, $3, $4, $5, $6)`,
-      [registrationId, phone, hashOtp(this.pepper, code), maxAttempts, now, expiresAt],
-    );
-  }
 
-  /** CP-05 send limits per number (Redis otp:send:{phone}:h and :d) and the gap before a resend. */
-  private async countSend(phone: string): Promise<void> {
-    const cp05 = await this.cp05();
-    const gap = await this.limiter.hit(`otp:gap:${phone}`, 1, RESEND_GAP_SECONDS);
-    if (!gap.allowed) throw new Problem('rate-limited', { retryAfter: gap.retryAfterSeconds });
-    for (const [key, limit, window] of [[`otp:send:${phone}:h`, cp05.sendsPerNumberHour, 3600], [`otp:send:${phone}:d`, cp05.sendsPerNumberDay, 86400]] as const) {
-      const r = await this.limiter.hit(key, limit, window);
-      if (!r.allowed) throw new Problem('rate-limited', { retryAfter: r.retryAfterSeconds });
-    }
-  }
+
+
 
   private async liveAccountWithPhone(phone: string): Promise<boolean> {
     const [u] = await this.db.query(`SELECT 1 FROM identity.users WHERE phone_e164 = $1 AND account_status <> 'closed' LIMIT 1`, [phone]);
     return Boolean(u);
   }
 
-  private async cp05(): Promise<CP05> {
-    return (await this.params.current()).get<CP05>('CP-05');
-  }
+
 
   private async cp06(): Promise<CP06> {
     return (await this.params.current()).get<CP06>('CP-06');

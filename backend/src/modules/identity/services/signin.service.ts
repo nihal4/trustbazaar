@@ -4,18 +4,15 @@ import type Redis from 'ioredis';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import { DataSource } from 'typeorm';
 import { CLOCK, Clock } from '../../../kernel/clock';
-import { TbConfig } from '../../../kernel/config/config';
-import { TB_CONFIG } from '../../../kernel/config/config.provider';
 import { CONFIG_PORT, ConfigPort } from '../../../kernel/config-port';
 import { Problem } from '../../../kernel/http/problems';
 import { REDIS } from '../../../kernel/redis.provider';
 import { NOTIFICATIONS, NotificationPort } from '../adapters/notifications';
-import { decryptField } from '../crypto/field-crypto';
 import { PasswordHasher } from '../crypto/password';
-import { checkTotp, hashRecoveryCode } from '../crypto/totp';
 import type { IssuedCookies } from '../http/session-cookies';
 import { RateLimiter } from '../security/rate-limiter.service';
 import { AuditService } from './audit.service';
+import { SecondFactorService } from './second-factor.service';
 import { RequestContext, SessionService } from './session.service';
 
 // Sign-in (Unit 1 section 6.2; FR-ACC-05, FR-ACC-06, SEC-AUTH-03 to SEC-AUTH-05, SEC-LOG-01).
@@ -28,6 +25,8 @@ export const MFA_TICKET_SECONDS = 300; // DV-1
 const MFA_ATTEMPTS = 5; // CP-05: attempts per challenge
 const MAX_DELAY_SECONDS = 15 * 60; // DV-10
 const sha256hex = (s: string) => createHash('sha256').update(s).digest('hex');
+/** The Redis key of the CP-04 failure count for a normalised login (E.164 number or lower-case e-mail). */
+export const signInThrottleKey = (login: string) => `signin:fail:${sha256hex(login)}`;
 const USER_COLUMNS = `SELECT id, password_hash, mfa_enabled, phone_e164, email FROM identity.users`;
 const BY_PHONE = `${USER_COLUMNS} WHERE phone_e164 = $1 AND account_status <> 'closed' LIMIT 1`;
 const BY_EMAIL = `${USER_COLUMNS} WHERE email = $1 AND account_status <> 'closed' LIMIT 1`;
@@ -63,9 +62,9 @@ export class SignInService {
     private readonly passwords: PasswordHasher,
     private readonly audit: AuditService,
     private readonly limiter: RateLimiter,
+    private readonly secondFactor: SecondFactorService,
     @Inject(REDIS) private readonly redis: Redis,
     @Inject(NOTIFICATIONS) private readonly notify: NotificationPort,
-    @Inject(TB_CONFIG) private readonly config: TbConfig,
     @Inject(CLOCK) private readonly clock: Clock,
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
   ) {}
@@ -73,7 +72,7 @@ export class SignInService {
   async signIn(login: string, password: string, deviceKey: string | undefined, ctx: RequestContext): Promise<SignInResult> {
     const account = normaliseLogin(login);
     // Keyed by the login as typed (normalised), so unknown accounts are throttled exactly like real ones.
-    const failKey = `signin:fail:${sha256hex(account ? Object.values(account)[0] : login.trim().toLowerCase())}`;
+    const failKey = signInThrottleKey(account ? Object.values(account)[0] : login.trim().toLowerCase());
     const now = this.clock.now();
     const until = Number(await this.redis.hget(failKey, 'until').catch(() => null));
     if (until > now.getTime()) throw new Problem('rate-limited', { retryAfter: Math.ceil((until - now.getTime()) / 1000) });
@@ -112,7 +111,7 @@ export class SignInService {
     const r = await this.limiter.hit(`rl:otp-verify:user:${t.userId}`, 20, 3600); // CP-05: 20 per account per hour
     if (!r.allowed) throw new Problem('rate-limited', { retryAfter: r.retryAfterSeconds });
 
-    const accepted = await this.checkSecondFactor(t.userId, code, now);
+    const accepted = await this.secondFactor.check(t.userId, code, now);
     if (!accepted) {
       await this.db.transaction((m) =>
         this.audit.record(m, { actorType: 'user', actorId: t.userId, action: 'identity.mfa.failed', objectType: 'user', objectId: t.userId, sourceIp: ctx.ip, correlationId: ctx.correlationId }),
@@ -126,32 +125,6 @@ export class SignInService {
     const [live] = await this.db.query(`SELECT 1 FROM identity.users WHERE id = $1 AND account_status <> 'closed'`, [t.userId]);
     if (!live) throw new Problem('session-ended');
     return this.startSession(t.userId, deviceKey, ctx, accepted);
-  }
-
-  /** 'totp' or 'recovery' if the code is accepted (and now used up), else null. */
-  private async checkSecondFactor(userId: string, code: string, now: Date): Promise<'totp' | 'recovery' | null> {
-    const [f] = await this.db.query(
-      `SELECT id, secret_enc FROM identity.totp_factors
-       WHERE user_id = $1 AND removed_at IS NULL AND confirmed_at IS NOT NULL`,
-      [userId],
-    );
-    if (!f) return null;
-    if (/^\d{6}$/.test(code)) {
-      const secret = decryptField(this.config.keys.field, f.secret_enc, { table: 'totp_factors', column: 'secret_enc', rowId: f.id }).toString('utf8');
-      const step = checkTotp(secret, code, now);
-      if (step === null) return null;
-      // Only a step later than the last one used is accepted, so a code cannot be replayed.
-      const used = await this.db.query(
-        `UPDATE identity.totp_factors SET last_used_step = $2 WHERE id = $1 AND (last_used_step IS NULL OR last_used_step < $2) RETURNING id`,
-        [f.id, step],
-      );
-      return (Array.isArray(used[0]) ? used[0] : used).length > 0 ? 'totp' : null;
-    }
-    const used = await this.db.query(
-      `UPDATE identity.recovery_codes SET used_at = $3 WHERE totp_factor_id = $1 AND code_hash = $2 AND used_at IS NULL RETURNING id`,
-      [f.id, hashRecoveryCode(code), now],
-    );
-    return (Array.isArray(used[0]) ? used[0] : used).length > 0 ? 'recovery' : null;
   }
 
   private startSession(userId: string, deviceKey: string | undefined, ctx: RequestContext, method: string): Promise<IssuedCookies> {
