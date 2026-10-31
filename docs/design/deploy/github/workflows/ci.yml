@@ -63,7 +63,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: 20 }
-      - run: sudo apt-get install -y nginx-light
+      - run: sudo apt-get update && sudo apt-get install -y nginx-light
       - run: cd docs/design/crypto && npm ci && npx playwright install --with-deps chromium && npm test
       - run: cd docs/design/web && npm ci && npx playwright install chromium && sh test/run_all.sh
 
