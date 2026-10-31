@@ -1,4 +1,5 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, Type } from '@nestjs/common';
+import { DiscoveryModule } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import type { AddressInfo } from 'net';
 import { AppModule } from '../../src/app.module';
@@ -13,11 +14,12 @@ export interface TestApp {
 
 // Starts the whole backend (kernel and seven units) on a free port, configured exactly as main.ts does.
 // API tests call it over HTTP with fetch: url('/health/live') -> http://127.0.0.1:<port>/api/v1/health/live
-export async function startApp(): Promise<TestApp> {
+// controllers: extra, test-only controllers mounted next to the real ones (they pass the same guards).
+export async function startApp(controllers: Type[] = []): Promise<TestApp> {
   requireEnv('DATABASE_URL');
   requireEnv('REDIS_URL');
   useTestSecrets();
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+  const moduleRef = await Test.createTestingModule({ imports: [AppModule, DiscoveryModule], controllers }).compile();
   const app = configureApp(moduleRef.createNestApplication({ logger: false }));
   await app.listen(0, '127.0.0.1');
   const { port } = app.getHttpServer().address() as AddressInfo;
