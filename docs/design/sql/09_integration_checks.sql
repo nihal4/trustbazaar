@@ -21,9 +21,13 @@ END $$;
 SELECT pg_temp.check('every schema outside the system belongs to one unit',
   array(SELECT nspname FROM pg_namespace WHERE nspname NOT LIKE 'pg\_%' AND nspname NOT IN ('information_schema', 'public')
         AND nspname NOT IN (SELECT s FROM unit_schema)));
-SELECT pg_temp.check('nothing of the design is in the public schema (extension objects aside)',
+-- The migration tool's bookkeeping table public.migrations (and its sequence and key) is not part of the design.
+SELECT pg_temp.check('nothing of the design is in the public schema (extension objects and public.migrations aside)',
   array(SELECT c.oid::regclass::text FROM pg_class c WHERE c.relnamespace = 'public'::regnamespace
           AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.objid = c.oid AND d.deptype = 'e')
+          AND c.oid IS DISTINCT FROM to_regclass('public.migrations')
+          AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.objid = c.oid AND d.refobjid = to_regclass('public.migrations'))
+          AND NOT EXISTS (SELECT 1 FROM pg_index i WHERE i.indexrelid = c.oid AND i.indrelid = to_regclass('public.migrations'))
         UNION ALL
         SELECT p.oid::regprocedure::text FROM pg_proc p WHERE p.pronamespace = 'public'::regnamespace
           AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.objid = p.oid AND d.deptype = 'e')));
