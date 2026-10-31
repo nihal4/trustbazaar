@@ -1,7 +1,7 @@
 {
   "name": "trustbazaar-backend",
   "version": "0.1.0",
-  "description": "TrustBazaar core API — auth, listings, auctions, orders, payments/escrow, delivery, chat, disputes",
+  "description": "TrustBazaar core API \u2014 auth, listings, auctions, orders, payments/escrow, delivery, chat, disputes",
   "private": true,
   "scripts": {
     "build": "nest build",
@@ -65,5 +65,19 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "overrides": {
+    "body-parser": "1.20.9",
+    "multer": "2.5.0",
+    "lodash": "4.18.1",
+    "@angular-devkit/core": {
+      "picomatch": "4.0.7"
+    },
+    "external-editor": {
+      "tmp": "0.2.7"
+    },
+    "@nestjs/cli": {
+      "glob": "10.5.0"
+    }
   }
 }
