@@ -1,6 +1,7 @@
 import { Global, Inject, Module, OnModuleDestroy } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import type Redis from 'ioredis';
+import { clockProvider, CLOCK } from './clock';
 import { config } from './config/config';
 import { configProvider, TB_CONFIG } from './config/config.provider';
 import { HealthController } from './health/health.controller';
@@ -29,8 +30,8 @@ import { REDIS, redisProvider } from './redis.provider';
     }),
   ],
   controllers: [HealthController],
-  providers: [configProvider, redisProvider, HealthService],
-  exports: [TB_CONFIG, REDIS],
+  providers: [configProvider, redisProvider, clockProvider, HealthService],
+  exports: [TB_CONFIG, REDIS, CLOCK],
 })
 export class KernelModule implements OnModuleDestroy {
   constructor(@Inject(REDIS) private readonly redis: Redis) {}
