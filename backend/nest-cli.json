@@ -1,5 +1,14 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src"
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "assets": [
+      {
+        "include": "modules/identity/crypto/common-passwords.txt",
+        "outDir": "dist"
+      }
+    ],
+    "watchAssets": true
+  }
 }
