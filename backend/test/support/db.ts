@@ -1,9 +1,13 @@
-import { DataSource, QueryRunner } from 'typeorm';
+import { DataSource, DataSourceOptions, QueryRunner } from 'typeorm';
 import { requireEnv } from './env';
 
 // Runs fn as tb_app inside a transaction that is always rolled back, so database tests leave no rows.
-export async function inRolledBackTransaction<T>(fn: (q: QueryRunner) => Promise<T>): Promise<T> {
-  const ds = await new DataSource({ type: 'postgres', url: requireEnv('DATABASE_URL') }).initialize();
+// entities: the TypeORM entities to load, so q.manager.getRepository(Entity) works.
+export async function inRolledBackTransaction<T>(
+  fn: (q: QueryRunner) => Promise<T>,
+  entities: DataSourceOptions['entities'] = [],
+): Promise<T> {
+  const ds = await new DataSource({ type: 'postgres', url: requireEnv('DATABASE_URL'), entities }).initialize();
   const q = ds.createQueryRunner();
   try {
     await q.startTransaction();
