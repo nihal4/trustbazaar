@@ -57,6 +57,56 @@ jobs:
           createdb tb_neg && sh docs/design/sql/09_integration_checks_selftest.sh tb_neg docs/design/sql
           mkdir -p /tmp/tbwork && sh docs/design/sql/09_backup_restore_test.sh docs/design/sql /tmp/tbwork
 
+  integration:                                              # the database as the container builds it, and the API tests (P0-06)
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env: { POSTGRES_PASSWORD: ci-only-password }
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U postgres" --health-interval 5s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-retries 20
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: ci-only-password
+      POSTGRES_USER: postgres
+      TB_DATABASE: trustbazaar
+      TB_OWNER_PASSWORD: ci-only-owner-password-0123456789
+      TB_APP_PASSWORD: ci-only-app-password-0123456789ab
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: 20, cache: npm, cache-dependency-path: backend/package-lock.json }
+      - run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Accounts and database, as the container's init script creates them (SEC-INF-03)
+        run: sh docs/design/deploy/postgres/init/01_roles.sh
+      - name: Build the backend
+        working-directory: backend
+        run: npm ci && npm run build
+      - name: Migrations as tb_owner; a second run applies nothing (I-60, NFR-MNT-04)
+        working-directory: backend
+        env: { DATABASE_URL: "postgres://tb_owner:ci-only-owner-password-0123456789@localhost:5432/trustbazaar" }
+        run: |
+          node dist/migrate.js
+          node dist/migrate.js | tee /tmp/second-run.json
+          grep -q '"applied":\[\]' /tmp/second-run.json
+      - name: The design's SQL tests and integration checks on the migrated database
+        run: |
+          for n in 01_identity_access 02_orders_payments 03_listings_auctions 04_delivery 05_game_accounts 06_chat_notifications 07_disputes_trust_staff; do
+            psql -v ON_ERROR_STOP=1 -q -d trustbazaar -f docs/design/sql/${n}_tests.sql
+          done
+          psql -v ON_ERROR_STOP=1 -q -d trustbazaar -f docs/design/sql/09_integration_checks.sql
+      - name: API and database tests as tb_app (BUILDING.md section 6)
+        working-directory: backend
+        env:
+          DATABASE_URL: "postgres://tb_app:ci-only-app-password-0123456789ab@localhost:5432/trustbazaar"
+          REDIS_URL: "redis://localhost:6379/0"
+        run: npm run test:integration
+
   reference-browser:                                        # Units 5 and 8 reference code in Chromium
     runs-on: ubuntu-24.04
     steps:
@@ -76,6 +126,7 @@ jobs:
       - run: python3 docs/design/integration/check_documents.py docs
       - run: python3 docs/design/deploy/test_compose.py .
       - run: python3 scripts/check_progress.py --summary    # PROGRESS.md (BUILDING.md section 8)
+      - run: python3 scripts/check_test_names.py              # tests named after requirements (BUILDING.md section 6)
 
   images:                                                   # SEC-SDL-06, SEC-SDL-07
     runs-on: ubuntu-24.04
