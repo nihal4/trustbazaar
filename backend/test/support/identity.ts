@@ -1,4 +1,6 @@
 import { randomBytes, randomInt, randomUUID } from 'crypto';
+import * as argon2 from 'argon2';
+import { authenticator } from 'otplib';
 import { DataSource } from 'typeorm';
 import Redis from 'ioredis';
 import { loadConfig } from '../../src/kernel/config/config';
@@ -6,6 +8,9 @@ import { signAccessToken } from '../../src/modules/identity/security/access-toke
 import { STAFF_COOKIES, USER_COOKIES } from '../../src/modules/identity/security/cookies';
 import { csrfToken } from '../../src/modules/identity/security/csrf';
 import { hashGrant, stepUpKey } from '../../src/modules/identity/security/step-up';
+import { encryptField } from '../../src/modules/identity/crypto/field-crypto';
+import { ARGON2_PARAMS } from '../../src/modules/identity/crypto/password';
+import { hashRecoveryCode } from '../../src/modules/identity/crypto/totp';
 import { requireEnv, useTestSecrets } from './env';
 
 // Accounts and sessions for API tests, created as tb_app (the rows stay: tb_app may not delete users,
@@ -72,6 +77,45 @@ export class IdentityFixtures {
        o.ended ? new Date() : null, o.ended ? 'logout' : null],
     );
     return id;
+  }
+
+  /** A user who can sign in: a real Argon2id password, and optionally TOTP with recovery codes. */
+  async account(o: { password?: string; mfa?: boolean; status?: 'active' | 'suspended' | 'closed'; weakHash?: boolean } = {}) {
+    const password = o.password ?? `pw-${randomUUID()}`;
+    const params = o.weakHash ? { ...ARGON2_PARAMS, memoryCost: 4096, timeCost: 1 } : ARGON2_PARAMS;
+    const hash = await argon2.hash(password, params);
+    const local = `01${randomInt(3, 10)}${String(randomInt(0, 1e8)).padStart(8, '0')}`;
+    const phone = `+88${local}`;
+    const email = `a-${randomUUID()}@TB.test`;
+    const closed = o.status === 'closed';
+    const [{ id }] = await this.db.query(
+      `INSERT INTO identity.users (display_name, phone_e164, phone_verified_at, email, email_verified_at, password_hash,
+                                   password_single_factor_ok, mfa_enabled, adult_confirmed_at, kyc_status, account_status, closed_at)
+       VALUES ('Signer', $1, now(), $2, now(), $3, true, $4, now(), 'verified', $5, $6) RETURNING id`,
+      [phone, email, hash, o.mfa === true, o.status ?? 'active', closed ? new Date() : null],
+    );
+    let totpSecret: string | undefined;
+    const recoveryCodes: string[] = [];
+    if (o.mfa) {
+      totpSecret = authenticator.generateSecret();
+      const factorId = randomUUID();
+      const blob = encryptField(this.config.keys.field, Buffer.from(totpSecret), { table: 'totp_factors', column: 'secret_enc', rowId: factorId });
+      await this.db.query(
+        `INSERT INTO identity.totp_factors (id, principal_type, user_id, secret_enc, key_version, confirmed_at)
+         VALUES ($1, 'user', $2, $3, $4, now())`,
+        [factorId, id, blob, this.config.keys.field.current],
+      );
+      for (let i = 0; i < 3; i++) {
+        const code = randomBytes(6).toString('hex').toUpperCase().replace(/(.{4})(.{4})(.{4})/, '$1-$2-$3');
+        recoveryCodes.push(code);
+        await this.db.query(`INSERT INTO identity.recovery_codes (totp_factor_id, code_hash) VALUES ($1, $2)`, [factorId, hashRecoveryCode(code)]);
+      }
+    }
+    return { userId: id as string, password, phone, local, email, totpSecret, recoveryCodes };
+  }
+
+  query<T = Record<string, unknown>>(sql: string, params: unknown[] = []): Promise<T[]> {
+    return this.db.query(sql, params);
   }
 
   async lastSeen(sessionId: string): Promise<Date> {
