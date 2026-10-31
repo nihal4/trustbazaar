@@ -10,6 +10,7 @@ export const MFA_COOKIE = '__Host-tb_mfa';
 export const DEVICE_COOKIE = '__Host-tb_dev';
 const YEAR_MS = 365 * 24 * 3600 * 1000;
 
+// `secure: true` is also written out in every call below so that static analysis (CodeQL) can see it.
 const base: CookieOptions = { secure: true, sameSite: 'strict', path: '/' };
 
 export interface IssuedCookies {
@@ -22,19 +23,19 @@ export interface IssuedCookies {
 }
 
 export function setSessionCookies(res: Response, c: IssuedCookies): void {
-  res.cookie(USER_COOKIES.access, c.accessToken, { ...base, httpOnly: true, maxAge: c.accessMaxAgeMs });
-  res.cookie(USER_COOKIES.csrf, c.csrfToken, { ...base, httpOnly: false, maxAge: c.accessMaxAgeMs });
-  res.cookie(REFRESH_COOKIE, c.refreshToken, { ...base, httpOnly: true, path: REFRESH_PATH, maxAge: c.refreshMaxAgeMs });
-  if (c.deviceKey) res.cookie(DEVICE_COOKIE, c.deviceKey, { ...base, httpOnly: true, maxAge: YEAR_MS });
-  res.clearCookie(MFA_COOKIE, { ...base, httpOnly: true });
+  res.cookie(USER_COOKIES.access, c.accessToken, { ...base, secure: true, httpOnly: true, maxAge: c.accessMaxAgeMs });
+  res.cookie(USER_COOKIES.csrf, c.csrfToken, { ...base, secure: true, httpOnly: false, maxAge: c.accessMaxAgeMs });
+  res.cookie(REFRESH_COOKIE, c.refreshToken, { ...base, secure: true, httpOnly: true, path: REFRESH_PATH, maxAge: c.refreshMaxAgeMs });
+  if (c.deviceKey) res.cookie(DEVICE_COOKIE, c.deviceKey, { ...base, secure: true, httpOnly: true, maxAge: YEAR_MS });
+  res.clearCookie(MFA_COOKIE, { ...base, secure: true, httpOnly: true });
 }
 
 export function clearSessionCookies(res: Response): void {
-  res.clearCookie(USER_COOKIES.access, { ...base, httpOnly: true });
-  res.clearCookie(USER_COOKIES.csrf, { ...base, httpOnly: false });
-  res.clearCookie(REFRESH_COOKIE, { ...base, httpOnly: true, path: REFRESH_PATH });
+  res.clearCookie(USER_COOKIES.access, { ...base, secure: true, httpOnly: true });
+  res.clearCookie(USER_COOKIES.csrf, { ...base, secure: true, httpOnly: false });
+  res.clearCookie(REFRESH_COOKIE, { ...base, secure: true, httpOnly: true, path: REFRESH_PATH });
 }
 
 export function setMfaCookie(res: Response, ticket: string, maxAgeMs: number): void {
-  res.cookie(MFA_COOKIE, ticket, { ...base, httpOnly: true, maxAge: maxAgeMs });
+  res.cookie(MFA_COOKIE, ticket, { ...base, secure: true, httpOnly: true, maxAge: maxAgeMs });
 }
