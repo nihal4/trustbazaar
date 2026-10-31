@@ -55,7 +55,7 @@ describe('import boundaries', () => {
     ['src/features/orders/OrderPage.tsx', './useOrder'],
     ['src/entries/staff.tsx', '../staff/queues/Queues'],
     ['src/staff/cases/CaseFile.tsx', '../../shared/ConfirmDialog'],
-  ])('Unit 8 section 3.2: %s may import %s', async (file, path) => {
+  ])('NFR-MNT-07 Unit 8 section 3.2: %s may import %s', async (file, path) => {
     expect(await errors(file, `import '${path}';\n`)).toEqual([]);
   });
 
@@ -63,7 +63,7 @@ describe('import boundaries', () => {
     ['src/features/orders/OrderPage.tsx', '../checkout/useCheckout'],
     ['src/features/orders/OrderPage.tsx', '../../features/chat/Thread'],
     ['src/features/game/screens/Offer.tsx', '../../listings/ListingCard'],
-  ])('Unit 8 section 3.2: %s may not import %s', async (file, path) => {
+  ])('NFR-MNT-07 Unit 8 section 3.2: %s may not import %s', async (file, path) => {
     expect(await errors(file, `import '${path}';\n`)).toEqual([
       expect.stringMatching(/a feature may not import another feature/),
     ]);
