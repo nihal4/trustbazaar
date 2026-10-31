@@ -1,5 +1,22 @@
-# Nihal reviews every PR, on every path in the repo, regardless of what
-# it touches. This single wildcard rule is intentional — see
-# "Require review from Code Owners" in the branch protection settings,
-# which uses this file to decide who must approve before a PR can merge.
-* @nihal4
+# Security review (SEC-SDL-01; Unit 9, repository settings).
+#
+# Every pull request needs one approval from someone other than its author: that is the
+# branch rule on main, not this file. This file adds the security review: a change under
+# the paths below also needs an approval from one of their owners, and GitHub never counts
+# the author's own approval, so the security reviewer is always someone who did not write it.
+# Any one of the three owners is enough.
+#
+# Paths not listed here need only the ordinary review.
+
+# Unit 1: authentication, sessions, KYC, and the security pipeline (guards)
+/backend/src/modules/identity/        @nihal4 @jbon8397 @afrim3000
+
+# Unit 2: payments and escrow
+/backend/src/modules/orders/          @nihal4 @jbon8397 @afrim3000
+
+# Unit 5: game-account escrow and credential handling
+/backend/src/modules/game-accounts/   @nihal4 @jbon8397 @afrim3000
+
+# CI, Dependabot and this file, so the review rules cannot be weakened by an ordinary review
+# (an addition to the design; see the Decisions log in PROGRESS.md)
+/.github/                             @nihal4 @jbon8397 @afrim3000
