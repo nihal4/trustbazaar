@@ -25,6 +25,8 @@ x-app-env: &app-env
   SMS_MODE: ${SMS_MODE:-log}                        # log | provider test mode
   EMAIL_MODE: ${EMAIL_MODE:-log}                    # log | smtp
   PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:8080}
+  TERMS_VERSION: ${TERMS_VERSION:-2026-11-01}           # FR-ACC-04: the versions sign-up must accept
+  PRIVACY_VERSION: ${PRIVACY_VERSION:-2026-11-01}
 
 services:
   postgres:

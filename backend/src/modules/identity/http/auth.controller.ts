@@ -1,24 +1,15 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Req, Res } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { correlationId } from '../../../kernel/http/correlation';
 import { Credential, Public, RateLimit, SignedIn } from '../../../kernel/http/policies';
 import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
 import { MFA_TICKET_SECONDS, SignInService } from '../services/signin.service';
-import { RequestContext, SessionService, SessionSummary } from '../services/session.service';
+import { SessionService, SessionSummary } from '../services/session.service';
 import { MfaDto, SignInDto } from './auth.dto';
+import { cookie, ctxOf } from './request';
 import { clearSessionCookies, DEVICE_COOKIE, MFA_COOKIE, REFRESH_COOKIE, setMfaCookie, setSessionCookies } from './session-cookies';
 
 // Sign-in, MFA, refresh, sign-out and sessions (Unit 1 section 4.2, U1-04). Paths under /api/v1/auth.
-const ctxOf = (req: Request): RequestContext => ({
-  ip: req.ip ?? null,
-  userAgent: req.header('user-agent') ?? null,
-  correlationId: correlationId(req),
-});
-const cookie = (req: Request, name: string): string | undefined => {
-  const v = (req.cookies as Record<string, unknown> | undefined)?.[name];
-  return typeof v === 'string' && v !== '' ? v : undefined;
-};
 const userOf = (p: Principal) => {
   if (p.type !== 'user') throw new Problem('forbidden');
   return p;

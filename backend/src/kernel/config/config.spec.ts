@@ -127,6 +127,14 @@ describe('configuration', () => {
     ]);
   });
 
+  it('FR-ACC-04 the current terms and privacy versions come from the environment and fit the consent record', () => {
+    expect(loadConfig(dev()).legal).toEqual({ termsVersion: '2026-11-01', privacyVersion: '2026-11-01' });
+    expect(loadConfig({ ...dev(), TERMS_VERSION: 'v2', PRIVACY_VERSION: '2027.1' }).legal).toEqual({ termsVersion: 'v2', privacyVersion: '2027.1' });
+    expect(problems({ ...dev(), TERMS_VERSION: 'x'.repeat(21) })).toEqual([
+      'TERMS_VERSION: 1 to 20 letters, digits, dots, dashes or underscores',
+    ]);
+  });
+
   it('C-2 payments run in mock or sandbox mode only', () => {
     expect(problems({ ...dev(), PAYMENT_MODE: 'live' })).toEqual(['PAYMENT_MODE: must be one of mock, sandbox']);
     expect(problems({ ...dev(), COURIER_MODE: 'live' })).toEqual(['COURIER_MODE: must be one of mock, sandbox']);
