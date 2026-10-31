@@ -22,6 +22,8 @@ export const SRS_DEFAULTS: Record<string, unknown> = {
   'CP-02': { idleDays: 7, absoluteDays: 30 },
   'CP-03': { idleMinutes: 15, absoluteHours: 8 },
   'CP-04': { failuresPerAccount: 5, windowMinutes: 15, perAddress: 50 },
+  'CP-05': { otpValidityMinutes: 5, attemptsPerOtp: 5, sendsPerNumberHour: 3, sendsPerNumberDay: 10 },
+  'CP-06': { resetLinkMinutes: 30, emailLinkHours: 24 },
   'CP-35': { profileReadsPerMinute: 60 },
 };
 
