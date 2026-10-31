@@ -43,7 +43,7 @@ Design: `docs/design/09_integration.pdf` (source `.tex` beside it).
 |---|---|---|---|---|---|---|---|
 | K-01 | Configuration and secrets: read at start, at least 32 bytes, refuse `dev-only-` values in production (I-59, SEC-DAT-05) | P0-04 | todo | | | | |
 | K-02 | JSON logging with correlation id, module and the redaction list (NFR-OBS-02, SEC-DAT-07) | P0-04 | todo | | | | |
-| K-03 | Health endpoints `/api/v1/health/live` and `/ready` (NFR-OBS-01) | P0-04 | todo | | | | |
+| K-03 | Health endpoints `/api/v1/health/live` and `/ready` (NFR-OBS-01) | P0-04 | doing | S. M. Nihal Ahmed | `feature/k-03-health` | | Also adds the kernel's database connection (tb_app, never synchronised) and Redis client, and the `/api/v1` prefix (DC-3). U1-02 must give both routes the public policy. |
 | K-04 | Outbox dispatcher for all seven outboxes, consumer registry, retries (DC-6, DV-67) | P0-05 | todo | | | | |
 | K-05 | Job runner: intervals with spread, `SKIP LOCKED` claims, run metrics (NFR-REL-03) | P0-05 | todo | | | | |
 | K-06 | Metrics on port 9464; graceful shutdown (NFR-OBS-03, DV-66) | K-02 | todo | | | | |

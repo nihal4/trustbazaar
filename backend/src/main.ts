@@ -7,6 +7,9 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // All paths are under /api/v1 (DC-3).
+  app.setGlobalPrefix('api/v1');
+
   // DTOs with class-validator; unknown fields are rejected, not stripped (BUILDING.md section 4).
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
 
