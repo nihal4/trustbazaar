@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
-import { ChatController } from './chat.controller';
-import { ChatService } from './chat.service';
 
-// Per-listing real-time chat threads (FR-CHT-01–FR-CHT-10)
+// Unit 6 (docs/design/06_chat_notifications.pdf). Schemas: chat, notify.
+// E-mail and SMS adapters live in adapters/.
+// Folder layout and rules: BUILDING.md section 3. This module exports only its ports (ports/),
+// and imports other units only through their ports (DC-1; enforced by .eslintrc.js).
 @Module({
-  controllers: [ChatController],
-  providers: [ChatService],
-  exports: [ChatService],
+  imports: [],
+  providers: [],
+  exports: [],
 })
 export class ChatModule {}

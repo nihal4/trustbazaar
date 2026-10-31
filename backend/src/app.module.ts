@@ -1,40 +1,26 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { typeOrmConfig } from './config/typeorm.config';
 
-import { AuthModule } from './modules/auth/auth.module';
-import { UsersModule } from './modules/users/users.module';
-import { KycModule } from './modules/kyc/kyc.module';
-import { ListingsModule } from './modules/listings/listings.module';
-import { AuctionsModule } from './modules/auctions/auctions.module';
+import { KernelModule } from './kernel/kernel.module';
+import { IdentityModule } from './modules/identity/identity.module';
 import { OrdersModule } from './modules/orders/orders.module';
-import { PaymentsModule } from './modules/payments/payments.module';
+import { ListingsModule } from './modules/listings/listings.module';
 import { DeliveryModule } from './modules/delivery/delivery.module';
+import { GameAccountsModule } from './modules/game-accounts/game-accounts.module';
 import { ChatModule } from './modules/chat/chat.module';
-import { ReviewsModule } from './modules/reviews/reviews.module';
-import { DisputesModule } from './modules/disputes/disputes.module';
-import { NotificationsModule } from './modules/notifications/notifications.module';
-import { RealtimeModule } from './realtime/realtime.module';
+import { TrustModule } from './modules/trust/trust.module';
 
+// One NestJS application: the kernel first, then the seven unit modules in unit order
+// (BUILDING.md section 3; docs/design/09_integration.pdf, section 2).
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRoot(typeOrmConfig),
-
-    AuthModule,
-    UsersModule,
-    KycModule,
-    ListingsModule,
-    AuctionsModule,
+    KernelModule,
+    IdentityModule,
     OrdersModule,
-    PaymentsModule,
+    ListingsModule,
     DeliveryModule,
+    GameAccountsModule,
     ChatModule,
-    ReviewsModule,
-    DisputesModule,
-    NotificationsModule,
-    RealtimeModule,
+    TrustModule,
   ],
 })
 export class AppModule {}
