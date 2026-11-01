@@ -84,7 +84,13 @@ class ProbeController {
   }
 }
 
-const ip = () => `203.0.113.${randomInt(1, 255)}, 198.51.100.${randomInt(1, 255)}`;
+// The backend trusts one proxy hop, so the client address is the last one: it must differ between tests
+// (a counter, not a random byte, so two tests never share a rate-limit counter by chance).
+let nextAddress = randomInt(0, 50_000);
+const ip = () => {
+  const n = nextAddress++ % 65_000;
+  return `203.0.113.${randomInt(1, 255)}, 10.${200 + (n >> 16)}.${(n >> 8) & 255}.${n & 255}`;
+};
 
 describe('security pipeline', () => {
   let t: TestApp;
