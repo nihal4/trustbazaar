@@ -16,7 +16,8 @@ async function bootstrap() {
     console.error(JSON.stringify({ level: 'fatal', msg: 'configuration refused', problems: err.problems }));
     process.exit(1);
   }
-  const app = configureApp(await NestFactory.create(AppModule));
+  // rawBody: Stripe's webhook signature is over the exact bytes received (SEC-PAY-03)
+  const app = configureApp(await NestFactory.create(AppModule, { rawBody: true }));
   await app.listen(port);
 }
 
