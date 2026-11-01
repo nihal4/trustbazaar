@@ -2,11 +2,13 @@
 // a skip link, the header with the language switch, the signed-out notice and the main region.
 // After a navigation, focus moves to the main region so keyboard and screen-reader users start at
 // the new page.
-import { Suspense, useEffect, useRef } from 'react';
+import { Suspense, useEffect, useRef, useSyncExternalStore } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useLanguage } from './language/Language';
 import { LanguageSwitch } from './language/LanguageSwitch';
-import { useMe } from './me';
+import { ME_KEY, useMe } from './me';
+import { useLive } from './live';
 import { useLanguageSync, useUnreadCount } from './notifications';
 import { useSignedOut } from './session';
 import { usePendingStepUp } from './stepUp';
@@ -50,6 +52,7 @@ export function Shell({ titleKey, home, accountLinks = false }: ShellProps) {
       </header>
       <SignedOutNotice />
       <PendingStepUp />
+      <LiveConnection />
       <main id="main" ref={main} tabIndex={-1} className={styles.main}>
         <Suspense fallback={<p role="status">{t('shell.loading')}</p>}>
           <Outlet />
@@ -107,4 +110,25 @@ function NotificationsLink({ unread }: { unread: number | null }) {
       {n > 0 && <span className={styles.badge} aria-hidden="true">{toLocalDigits(String(n > 99 ? 99 : n), lang)}{n > 99 ? '+' : ''}</span>}
     </Link>
   );
+}
+
+/** The live connection follows the session: open while /me answers, closed after (section 5). User app only. */
+function LiveConnection() {
+  const live = useLive();
+  return live ? <SessionLive live={live} /> : null;
+}
+
+function SessionLive({ live }: { live: NonNullable<ReturnType<typeof useLive>> }) {
+  // follows the account the header has loaded (GET /me), without asking for it again
+  const queryClient = useQueryClient();
+  const signedIn = useSyncExternalStore(
+    (changed) => queryClient.getQueryCache().subscribe(changed),
+    () => queryClient.getQueryData(ME_KEY) !== undefined,
+  );
+  useEffect(() => {
+    if (signedIn) live.start();
+    else live.stop();
+  }, [live, signedIn]);
+  useEffect(() => () => live.stop(), [live]);
+  return null;
 }
