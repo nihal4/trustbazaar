@@ -1,0 +1,71 @@
+/* Design tokens and base styles (docs/design/08_frontend.pdf, sections 2.3 and 7). Colours keep text
+   contrast of at least 4.5:1 on the page background; the focus ring is 2px with at least 3:1. */
+:root {
+  --tb-bg: #ffffff;
+  --tb-surface: #f4f6f8;
+  --tb-text: #1b1f24;
+  --tb-muted: #4a5360;
+  --tb-border: #c9d0d8;
+  --tb-accent: #0b5cad;
+  --tb-accent-text: #ffffff;
+  --tb-warning-bg: #fff4d6;
+  --tb-warning-border: #8a5a00;
+  --tb-focus: #0b5cad;
+  --tb-radius: 6px;
+  --tb-space-1: 0.25rem;
+  --tb-space-2: 0.5rem;
+  --tb-space-3: 1rem;
+  --tb-space-4: 1.5rem;
+  --tb-max-width: 72rem;
+  --tb-font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Noto Sans Bengali covers only the Bengali block, so Latin text keeps the system font. */
+:root:lang(bn) {
+  --tb-font: 'Noto Sans Bengali', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--tb-bg);
+  color: var(--tb-text);
+  font-family: var(--tb-font);
+  font-size: 1rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+a {
+  color: var(--tb-accent);
+}
+
+button {
+  font: inherit;
+  min-height: 24px;
+  min-width: 24px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--tb-focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
