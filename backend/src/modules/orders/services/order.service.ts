@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 import { CLOCK, Clock } from '../../../kernel/clock';
 import { CONFIG_PORT, ConfigPort, ParameterValues } from '../../../kernel/config-port';
+import { cursorAt, decodeCursor, encodeCursor } from '../../../kernel/http/cursor';
 import { IdempotencyKeys } from '../../../kernel/http/idempotency';
 import { Problem } from '../../../kernel/http/problems';
 import { AUDIT_SERVICE, AuditServicePort, IDENTITY_QUERY, IdentityQuery } from '../../identity/ports';
@@ -186,15 +187,10 @@ export class OrderService implements OrdersPort {
   // ---------------------------------------------------------------- my orders
 
   async list(userId: string, role: 'buyer' | 'seller', cursor: string | undefined) {
-    let after: { at: string; id: string } | null = null;
-    if (cursor) {
-      const [at, id] = Buffer.from(cursor, 'base64url').toString().split('|');
-      if (!at || !id || Number.isNaN(Date.parse(at)) || !/^[0-9a-f-]{36}$/.test(id)) throw new Problem('validation-failed', { errors: [{ field: 'cursor', reason: 'format' }] });
-      after = { at, id };
-    }
+    const after = decodeCursor(cursor);
     const column = role === 'seller' ? 'seller_id' : 'buyer_id';
-    const rows: { id: string; created_at: Date }[] = await this.db.query(
-      `SELECT id, created_at FROM orders.orders
+    const rows: { id: string; cursor_at: string }[] = await this.db.query(
+      `SELECT id, ${cursorAt('created_at')} AS cursor_at FROM orders.orders
        WHERE ${column} = $1 AND ($2::timestamptz IS NULL OR (created_at, id) < ($2::timestamptz, $3::uuid))
        ORDER BY created_at DESC, id DESC LIMIT ${PAGE + 1}`,
       [userId, after?.at ?? null, after?.id ?? null],
@@ -204,7 +200,7 @@ export class OrderService implements OrdersPort {
     const last = page[page.length - 1];
     return {
       items,
-      nextCursor: rows.length > PAGE && last ? Buffer.from(`${last.created_at.toISOString()}|${last.id}`).toString('base64url') : null,
+      nextCursor: rows.length > PAGE && last ? encodeCursor(last.cursor_at, last.id) : null,
     };
   }
 
