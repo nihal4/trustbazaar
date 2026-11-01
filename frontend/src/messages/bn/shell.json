@@ -24,5 +24,7 @@
   "stepup.resend_in": "{seconds} সেকেন্ড পরে নতুন কোড",
   "stepup.wait": "{seconds} সেকেন্ড পরে আবার চেষ্টা করুন",
   "stepup.wrong_code": "কোডটি সঠিক নয়। দেখে আবার চেষ্টা করুন।",
-  "stepup.expired": "এই কোডের মেয়াদ শেষ হয়ে গেছে। নতুন কোড চেয়ে নিন।"
+  "stepup.expired": "এই কোডের মেয়াদ শেষ হয়ে গেছে। নতুন কোড চেয়ে নিন।",
+  "shell.notifications": "নোটিফিকেশন",
+  "shell.notifications_unread": "নোটিফিকেশন, {count}টি পড়া হয়নি"
 }

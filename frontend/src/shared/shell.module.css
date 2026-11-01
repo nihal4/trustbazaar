@@ -116,3 +116,16 @@
 .dialogActions button {
   min-height: 44px;
 }
+
+.badge {
+  display: inline-block;
+  min-width: 1.5em;
+  margin-left: var(--tb-space-1);
+  padding: 0 var(--tb-space-1);
+  border-radius: 999px;
+  background: var(--tb-accent);
+  color: var(--tb-accent-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-align: center;
+}
