@@ -63,6 +63,10 @@ env = S['backend']['environment']
 check('development secrets are at least 32 bytes and marked dev-only (SEC-DAT-05, I-59)',
       all(len(env[k]) >= 32 and env[k].startswith('dev-only-') for k in secrets))
 
+args = S['web']['build'].get('args', {})
+check('the web build gets the same terms and privacy versions as the backend (FR-ACC-04)',
+      args.get('VITE_TERMS_VERSION') == env.get('TERMS_VERSION') and args.get('VITE_PRIVACY_VERSION') == env.get('PRIVACY_VERSION'), str(args))
+
 # ---------------------------------------------------------------- production override
 rc, _, err = render(prod)
 check('production refuses to render while a secret is missing', rc != 0 and 'required variable' in err, err[:120])
