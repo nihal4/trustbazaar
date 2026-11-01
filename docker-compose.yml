@@ -145,6 +145,8 @@ services:
         deploy: ./docs/design/deploy
       args:
         VITE_PAYMENT_HOSTS: ${VITE_PAYMENT_HOSTS:-}
+        VITE_TERMS_VERSION: ${TERMS_VERSION:-2026-11-01}       # the same values as the backend's (FR-ACC-04)
+        VITE_PRIVACY_VERSION: ${PRIVACY_VERSION:-2026-11-01}
     <<: *hardening
     tmpfs: ["/tmp", "/var/cache/nginx"]
     networks: [edge]
