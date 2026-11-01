@@ -10,6 +10,10 @@ RUN npm ci
 COPY . .
 ARG VITE_PAYMENT_HOSTS=""
 ENV VITE_PAYMENT_HOSTS=$VITE_PAYMENT_HOSTS
+# The terms and privacy versions registration sends; Compose passes the backend's TERMS_VERSION and PRIVACY_VERSION.
+ARG VITE_TERMS_VERSION="2026-11-01"
+ARG VITE_PRIVACY_VERSION="2026-11-01"
+ENV VITE_TERMS_VERSION=$VITE_TERMS_VERSION VITE_PRIVACY_VERSION=$VITE_PRIVACY_VERSION
 RUN npm run build
 
 FROM nginxinc/nginx-unprivileged:1.27-alpine AS runtime
