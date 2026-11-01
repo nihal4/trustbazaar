@@ -3,6 +3,7 @@ import { Client } from 'pg';
 import { io, Socket } from 'socket.io-client';
 import { loadConfig } from '../../src/kernel/config/config';
 import { startApp, TestApp } from '../support/app';
+import { AuctionOptions, openAuction } from '../support/auctions';
 import { IdentityFixtures } from '../support/identity';
 
 // U3-04: the bid engine over HTTP against PostgreSQL and Redis, through the security pipeline
@@ -56,30 +57,9 @@ describe('auctions', () => {
     });
 
   /** An active auction listing, open since a minute ago unless said otherwise. */
-  async function auction(o: { start?: string; reserve?: string; endsIn?: string; startedAgo?: string; window?: string; extension?: string } = {}) {
+  async function auction(o: AuctionOptions = {}) {
     const seller = await member();
-    const [{ id }] = await fx.query<{ id: string }>(
-      `INSERT INTO listings.listings (seller_id, item_kind, sale_format, category_id, title, description, condition, no_visible_defects,
-                                      fulfilment_options, area_district, approx_lat, approx_lng, status, published_at)
-       VALUES ($1, 'physical', 'auction', $2, 'Old film camera', 'A working film camera with its leather case.', 'used', true,
-               'pickup_only', 'Dhaka', 23.81, 90.41, 'draft', null) RETURNING id`,
-      [seller.userId, category],
-    );
-    // published as the database allows it: two photos first (listings.check_publishable)
-    for (const position of [1, 2]) {
-      await fx.query(
-        `INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`,
-        [id, position, randomUUID().replace(/-/g, '')],
-      );
-    }
-    await fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [id]);
-    await fx.query(
-      `INSERT INTO auctions.auctions (listing_id, seller_id, start_price, reserve_price, inc_bps, inc_min, snipe_window, snipe_extension,
-                                      starts_at, original_end_at, end_at)
-       VALUES ($1, $2, $3, $4, 200, 5000, $5::interval, $6::interval, now() - $7::interval, now() + $8::interval, now() + $8::interval)`,
-      [id, seller.userId, o.start ?? '100000', o.reserve ?? null, o.window ?? '2 minutes', o.extension ?? '2 minutes', o.startedAgo ?? '1 minute', o.endsIn ?? '1 day'],
-    );
-    return { id, seller };
+    return { id: await openAuction(fx, seller.userId, category, o), seller };
   }
   const state = async (id: string) => (await (await guest('GET', `/auctions/${id}/state`)).json()) as Record<string, unknown>;
   const refusal = async (r: Response) => {
@@ -140,8 +120,8 @@ describe('auctions', () => {
     const { id } = await auction();
     const [asha, babu] = [await member(), await member()];
     expect((await asha.bid(id, '180000')).status).toBe(201);
-    expect(await (await asha.call('GET', `/auctions/${id}/my-status`)).json()).toEqual({ hasBid: true, yourMaximum: '180000', leading: true, yourAlias: 1 });
-    expect(await (await babu.call('GET', `/auctions/${id}/my-status`)).json()).toEqual({ hasBid: false, yourMaximum: null, leading: false, yourAlias: null });
+    expect(await (await asha.call('GET', `/auctions/${id}/my-status`)).json()).toEqual({ hasBid: true, yourMaximum: '180000', leading: true, yourAlias: 1, orderId: null, secondChanceOffer: null });
+    expect(await (await babu.call('GET', `/auctions/${id}/my-status`)).json()).toEqual({ hasBid: false, yourMaximum: null, leading: false, yourAlias: null, orderId: null, secondChanceOffer: null });
     expect((await guest('GET', `/auctions/${id}/my-status`)).status).toBe(401);
   });
 

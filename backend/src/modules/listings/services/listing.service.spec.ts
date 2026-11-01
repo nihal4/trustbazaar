@@ -439,11 +439,14 @@ describe('StockService (ListingsPort, I-9)', () => {
     expect(calls).toEqual(['mark_sold', 'release']);
   });
 
-  it('I-9 auction orders are left to the closer; a bad event is reported, not swallowed', async () => {
+  it('I-14 a paid auction order sells the held unit; an unpaid one is left to the second-chance chain; a bad event is reported', async () => {
     const s = stock();
     const a = s.listing({ saleFormat: 'auction' });
-    await s.svc.onOrder({ aggregateId: 'o', payload: { listingId: a.id, quantity: 1 } }, 'sold');
+    await s.svc.onOrder({ aggregateId: 'o0', payload: { listingId: a.id, quantity: 1 } }, 'released');
     expect(s.manager.query).not.toHaveBeenCalled();
+    await s.svc.onOrder({ aggregateId: 'o', payload: { listingId: a.id, quantity: 1 } }, 'sold');
+    // recorded as sold once per order (marking the listing sold is checked on PostgreSQL in test/api/auction-close.spec.ts)
+    expect(s.manager.query).toHaveBeenCalledWith(expect.stringContaining('INSERT INTO listings.stock_moves'), ['o', 'sold', a.id, 1]);
     await expect(s.svc.onOrder({ aggregateId: 'o', payload: { listingId: a.id } }, 'sold')).rejects.toThrow('lacks listingId or quantity');
     await expect(s.svc.onOrder({ aggregateId: 'o', payload: { listingId: randomUUID(), quantity: 1 } }, 'sold')).rejects.toThrow('unknown listing');
     const [handler] = s.bus.consumersOf('orders.order.cancelled');
