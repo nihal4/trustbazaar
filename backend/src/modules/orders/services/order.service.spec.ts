@@ -157,7 +157,7 @@ describe('OrderService', () => {
   });
 
   it('IF-UI-05 my orders in pages of 50 with a cursor', async () => {
-    const rows = Array.from({ length: 51 }, (_, i) => ({ id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`, created_at: NOW }));
+    const rows = Array.from({ length: 51 }, (_, i) => ({ id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`, cursor_at: '2026-11-01T10:00:00.123456Z' }));
     const s = setup({ rows });
     for (const r of rows) s.orders.rows.push({ id: r.id, buyerId: 'B', sellerId: 'S', listingSnapshot: snapshot(), itemKind: 'physical', paymentDueAt: NOW, createdAt: NOW });
     const page = await s.svc.list('S', 'seller', undefined);
@@ -165,7 +165,7 @@ describe('OrderService', () => {
     expect(page.items[0].role).toBe('seller');
     expect(s.manager.query.mock.calls[0][0]).toContain('seller_id');
     await s.svc.list('B', 'buyer', page.nextCursor!);
-    expect(s.manager.query.mock.calls[1][1]).toEqual(['B', NOW.toISOString(), rows[49].id]);
+    expect(s.manager.query.mock.calls[1][1]).toEqual(['B', '2026-11-01T10:00:00.123456Z', rows[49].id]);
     expect(await problemOf(s.svc.list('B', 'buyer', 'eA'))).toEqual(['validation-failed', 'cursor:format']);
     expect((await setup().svc.list('B', 'buyer', undefined)).nextCursor).toBeNull();
   });
