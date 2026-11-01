@@ -5,6 +5,9 @@ import { FileVault } from './crypto/file-vault';
 import { IdentityCrypto } from './crypto/identity-crypto';
 import { PasswordHasher } from './crypto/password';
 import { ENTITIES } from './db/entities';
+import {
+  APPROVAL_SERVICE, AUDIT_SERVICE, FILE_VAULT, IDENTITY_COMMANDS, IDENTITY_CRYPTO, IDENTITY_QUERY, RATE_LIMITER, STAFF_QUERY,
+} from './ports';
 import { AccountController } from './http/account.controller';
 import { AuthController } from './http/auth.controller';
 import { FilesController, KycController, StaffKycController } from './http/kyc.controller';
@@ -18,6 +21,10 @@ import { AuditService } from './services/audit.service';
 import { StaffAuthService } from './services/staff-auth.service';
 import { StaffService } from './services/staff.service';
 import { ContactService } from './services/contact.service';
+import {
+  ApprovalPortAdapter, AuditPortAdapter, FileVaultPortAdapter, IdentityCommandsService, IdentityQueryService, RateLimiterPortAdapter,
+  StaffQueryService,
+} from './services/identity-ports';
 import { KycReviewService } from './services/kyc-review.service';
 import { KycService } from './services/kyc.service';
 import { OtpService } from './services/otp.service';
@@ -58,6 +65,15 @@ import { StepUpService } from './services/step-up.service';
     FileVault,
     KycService,
     KycReviewService,
+    // The ports (ports/index.ts): the only things other units may use (DC-1).
+    { provide: IDENTITY_QUERY, useClass: IdentityQueryService },
+    { provide: IDENTITY_COMMANDS, useClass: IdentityCommandsService },
+    { provide: STAFF_QUERY, useClass: StaffQueryService },
+    { provide: APPROVAL_SERVICE, useClass: ApprovalPortAdapter },
+    { provide: AUDIT_SERVICE, useClass: AuditPortAdapter },
+    { provide: RATE_LIMITER, useClass: RateLimiterPortAdapter },
+    { provide: FILE_VAULT, useClass: FileVaultPortAdapter },
+    { provide: IDENTITY_CRYPTO, useExisting: IdentityCrypto },
     RegistrationService,
     // Until the Notifications unit (Unit 6) provides NotificationPort: logged, labelled simulated (AS-4).
     SimulatedNotifications,
@@ -65,6 +81,6 @@ import { StepUpService } from './services/step-up.service';
     { provide: RESTRICTIONS, useValue: noRestrictionsYet },
     ...pipelineGuards,
   ],
-  exports: [],
+  exports: [IDENTITY_QUERY, IDENTITY_COMMANDS, STAFF_QUERY, APPROVAL_SERVICE, AUDIT_SERVICE, RATE_LIMITER, FILE_VAULT, IDENTITY_CRYPTO],
 })
 export class IdentityModule {}
