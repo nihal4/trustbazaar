@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { promises as fs } from 'fs';
-import { join } from 'path';
+import { join, resolve, sep } from 'path';
 import { TbConfig } from '../../../kernel/config/config';
 import { TB_CONFIG } from '../../../kernel/config/config.provider';
 
@@ -93,7 +93,9 @@ export class MediaPipeline {
 
   path(key: string, size: PhotoSize): string {
     if (!STORAGE_KEY.test(key)) throw new Error('not a storage key');
-    return join(this.dir, size === 'full' ? `${key}.jpg` : `${key}-${THUMB_SIZE}.jpg`);
+    const file = resolve(this.dir, size === 'full' ? `${key}.jpg` : `${key}-${THUMB_SIZE}.jpg`);
+    if (!file.startsWith(resolve(this.dir) + sep)) throw new Error('not a storage key'); // never outside the volume
+    return file;
   }
 
   private async write(path: string, data: Buffer): Promise<void> {

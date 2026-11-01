@@ -8,7 +8,7 @@ import { Public, RateLimit, SignedIn, Verified } from '../../../kernel/http/poli
 import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
 import { ListingService } from '../services/listing.service';
-import { MAX_PHOTO_BYTES } from '../services/media';
+import { MAX_PHOTO_BYTES, STORAGE_KEY } from '../services/media';
 import {
   ClarificationDto, CreateListingDto, MyListingsQuery, PhotoQuery, PhotoUploadDto, PublishListingDto, UpdateListingDto,
 } from './listings.dto';
@@ -132,7 +132,8 @@ export class ListingPhotosController {
   @Public()
   @Get(':key')
   async photo(@Param('key') key: string, @Query() q: PhotoQuery, @Res() res: Response): Promise<void> {
-    const path = await this.listings.photoFile(key, q.size ?? 'full');
+    if (!STORAGE_KEY.test(key)) throw new Problem('not-found'); // a random hex name, never a path
+    const path = await this.listings.photoFile(key, q.size === 'thumb' ? 'thumb' : 'full');
     const bytes = await fs.readFile(path).catch(() => {
       throw new Problem('not-found');
     });

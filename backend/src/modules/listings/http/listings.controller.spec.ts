@@ -55,9 +55,12 @@ describe('listings controllers', () => {
     s.photoFile.mockResolvedValueOnce(file).mockResolvedValueOnce(join(dir, 'missing.jpg'));
     const c = new ListingPhotosController(s as unknown as ListingService);
     const res = { status: jest.fn().mockReturnThis(), set: jest.fn().mockReturnThis(), send: jest.fn() };
-    await c.photo('k', { size: 'thumb' }, res as never);
-    expect(s.photoFile).toHaveBeenCalledWith('k', 'thumb');
+    const key = 'c'.repeat(32);
+    await c.photo(key, { size: 'thumb' }, res as never);
+    expect(s.photoFile).toHaveBeenCalledWith(key, 'thumb');
     expect(res.set.mock.calls[0][0]).toMatchObject({ 'Content-Type': 'image/jpeg', 'X-Content-Type-Options': 'nosniff' });
-    await expect(c.photo('k', {}, res as never)).rejects.toMatchObject({ problem: 'not-found' });
+    await expect(c.photo(key, {}, res as never)).rejects.toMatchObject({ problem: 'not-found' });
+    await expect(c.photo('../../etc/passwd', {}, res as never)).rejects.toMatchObject({ problem: 'not-found' });
+    expect(s.photoFile).toHaveBeenCalledTimes(2);
   });
 });
