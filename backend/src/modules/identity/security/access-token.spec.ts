@@ -1,6 +1,7 @@
 import { sign } from 'jsonwebtoken';
 import { loadConfig } from '../../../kernel/config/config';
-import { signAccessToken, verifyAccessToken } from './access-token';
+import { accessTokenStatus, signAccessToken, verifyAccessToken } from './access-token';
+import { cookieValue } from './live-auth';
 
 const base = {
   DATABASE_URL: 'postgres://u:p@h/db', REDIS_URL: 'redis://h:6379/0',
@@ -49,5 +50,21 @@ describe('access token', () => {
     expect(JSON.parse(Buffer.from(fresh.split('.')[0], 'base64url').toString()).kid).toBe('v2');
     expect(verifyAccessToken(rotated, old, now)).not.toBeNull();
     expect(verifyAccessToken(rotated, fresh, now)).not.toBeNull();
+  });
+
+  it('I-51 an expired but well-signed token is told apart from a bad one, so the client knows to refresh', () => {
+    const t = signAccessToken(keys, claims, 900, now);
+    expect(accessTokenStatus(keys, t, now)).toEqual({ ...claims, iat: sec, exp: sec + 900 });
+    expect(accessTokenStatus(keys, t, new Date(now.getTime() + 901_000))).toBe('expired');
+    expect(accessTokenStatus(keys, `${t.slice(0, -4)}AAAA`, new Date(now.getTime() + 901_000))).toBe('invalid');
+    expect(accessTokenStatus(keys, sign({ sid: claims.sid, pt: 'user' }, 'k'.repeat(32), { algorithm: 'HS512', keyid: 'v1', subject: claims.sub }), now)).toBe('invalid');
+    expect(accessTokenStatus(keys, 'nonsense', now)).toBe('invalid');
+  });
+
+  it('SEC-SES-07 the handshake reads the access cookie by its exact name', () => {
+    expect(cookieValue('a=1; __Host-tb_at=tok%2Ben; b=2', '__Host-tb_at')).toBe('tok+en');
+    expect(cookieValue('x__Host-tb_at=evil; __Host-tb_atx=evil', '__Host-tb_at')).toBeUndefined();
+    expect(cookieValue(undefined, '__Host-tb_at')).toBeUndefined();
+    expect(cookieValue('__Host-tb_at=%E0%A4%A', '__Host-tb_at')).toBeUndefined();
   });
 });

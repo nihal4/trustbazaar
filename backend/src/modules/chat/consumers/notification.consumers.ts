@@ -88,7 +88,11 @@ export class NotificationConsumers implements OnModuleInit {
     let made = 0;
     for (const n of await mapper(e)) {
       if (typeof n.to !== 'string' || !n.to) throw new Error(`${e.type} ${e.id}: no recipient for ${n.code}`); // retried, then reported (K-04)
-      if (await this.notices.create(n.to, n.code, n.params ?? {}, `${e.outbox}:${e.id}:${n.code}`, n.subject)) made++;
+      const id = await this.notices.create(n.to, n.code, n.params ?? {}, `${e.outbox}:${e.id}:${n.code}`, n.subject);
+      if (id) {
+        made++;
+        await this.notices.push(n.to, id); // after its commit: the live connection may now show it
+      }
     }
     return made;
   }
