@@ -10,6 +10,8 @@ export interface Limit {
   per: 'ip' | 'principal';
   limit: number;
   windowSeconds: number;
+  /** Read the limit from a parameter instead (ConfigPort, U7-01): get(code)[field]. */
+  cp?: { code: string; field: string };
 }
 
 export const RATE_RULES: Record<string, Limit[]> = {
@@ -22,6 +24,6 @@ export const RATE_RULES: Record<string, Limit[]> = {
   refresh: [],
   kyc: [{ per: 'principal', limit: 10, windowSeconds: 24 * 60 * 60 }],
   files: [{ per: 'principal', limit: 120, windowSeconds: 60 * 60 }],
-  // CP-35. Its SRS default until Unit 7's ConfigPort (U7-01) serves parameter values (Decisions log).
-  search: [{ per: 'ip', limit: 60, windowSeconds: 60 }],
+  // CP-35, read from ConfigPort; 60 is only a fallback should the parameter be missing.
+  search: [{ per: 'ip', limit: 60, windowSeconds: 60, cp: { code: 'CP-35', field: 'search_per_min' } }],
 };

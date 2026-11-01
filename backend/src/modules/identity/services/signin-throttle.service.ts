@@ -13,8 +13,9 @@ import { REDIS } from '../../../kernel/redis.provider';
 const MAX_DELAY_SECONDS = 15 * 60; // DV-10
 
 interface CP04 {
-  failuresPerAccount: number;
-  windowMinutes: number;
+  per_account: number;
+  per_address: number;
+  window: string;
 }
 
 /** The Redis key of the CP-04 failure count for a normalised login (users: E.164 or e-mail; staff: "staff:" + e-mail). */
@@ -38,15 +39,16 @@ export class SignInThrottle {
   /** Counts a failure; true when this failure starts the delay (the owner is told once). */
   async failed(login: string): Promise<boolean> {
     const key = signInThrottleKey(login);
-    const cp04 = (await this.params.current()).get<CP04>('CP-04');
+    const p = await this.params.current();
+    const cp04 = { failuresPerAccount: p.get<CP04>('CP-04').per_account, windowSeconds: p.ms('CP-04', 'window') / 1000 };
     const now = this.clock.now().getTime();
     try {
       const count = await this.redis.hincrby(key, 'count', 1);
-      if (count === 1) await this.redis.expire(key, cp04.windowMinutes * 60);
+      if (count === 1) await this.redis.expire(key, cp04.windowSeconds);
       if (count < cp04.failuresPerAccount) return false;
       const delay = Math.min(2 ** (count - cp04.failuresPerAccount), MAX_DELAY_SECONDS);
       await this.redis.hset(key, 'until', String(now + delay * 1000));
-      await this.redis.expire(key, Math.max(cp04.windowMinutes * 60, delay));
+      await this.redis.expire(key, Math.max(cp04.windowSeconds, delay));
       return count === cp04.failuresPerAccount;
     } catch {
       return false;

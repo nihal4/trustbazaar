@@ -7,6 +7,7 @@ import { RATE_LIMIT_KEY } from '../../../../kernel/http/policies';
 import { Problem } from '../../../../kernel/http/problems';
 import { verifyAccessToken } from '../access-token';
 import { cookiesFor } from '../cookies';
+import { CONFIG_PORT, ConfigPort } from '../../../../kernel/config-port';
 import { RATE_RULES } from '../rate-rules';
 import { RateLimiter } from '../rate-limiter.service';
 import { policyOf, requestOf } from './policy-of';
@@ -21,7 +22,13 @@ export class RateLimitGuard implements CanActivate {
     private readonly limiter: RateLimiter,
     @Inject(TB_CONFIG) private readonly config: TbConfig,
     @Inject(CLOCK) private readonly clock: Clock,
+    @Inject(CONFIG_PORT) private readonly params: ConfigPort,
   ) {}
+
+  private async fromConfig(cp: { code: string; field: string }, fallback: number): Promise<number> {
+    const v = (await this.params.current()).get<Record<string, unknown>>(cp.code)?.[cp.field];
+    return typeof v === 'number' && v > 0 ? v : fallback;
+  }
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const rule = this.reflector.getAllAndOverride<string | undefined>(RATE_LIMIT_KEY, [ctx.getHandler(), ctx.getClass()]);
@@ -36,7 +43,8 @@ export class RateLimitGuard implements CanActivate {
         const claims = typeof token === 'string' ? verifyAccessToken(this.config.keys.jwt, token, this.clock.now()) : null;
         if (claims) subject = `${claims.pt}:${claims.sub}`;
       }
-      const r = await this.limiter.hit(`rl:${rule}:${subject}`, l.limit, l.windowSeconds);
+      const limit = l.cp ? await this.fromConfig(l.cp, l.limit) : l.limit;
+      const r = await this.limiter.hit(`rl:${rule}:${subject}`, limit, l.windowSeconds);
       if (!r.allowed) throw new Problem('rate-limited', { retryAfter: r.retryAfterSeconds });
     }
     return true;

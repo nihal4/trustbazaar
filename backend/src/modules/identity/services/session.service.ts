@@ -41,17 +41,6 @@ export interface SessionSummary {
 
 export type RefreshResult = { kind: 'rotated'; cookies: IssuedCookies } | { kind: 'retry' };
 
-interface CP01 {
-  accessTokenMinutes: number;
-}
-interface CP02 {
-  idleDays: number;
-  absoluteDays: number;
-}
-interface CP03 {
-  idleMinutes: number;
-  absoluteHours: number;
-}
 type PrincipalKind = 'user' | 'staff';
 
 @Injectable()
@@ -68,19 +57,13 @@ export class SessionService {
   /** CP-01 for the access token; CP-02 for user sessions, CP-03 for staff sessions (SEC-SES-06). */
   private async limits(kind: PrincipalKind = 'user') {
     const p = await this.params.current();
-    const cp01 = p.get<CP01>('CP-01');
+    const accessMs = p.ms('CP-01', 'access');
     if (kind === 'staff') {
-      const cp03 = p.get<CP03>('CP-03');
-      const idleMs = cp03.idleMinutes * 60_000;
+      const idleMs = p.ms('CP-03', 'idle');
       // A staff access token never outlives the idle limit.
-      return { accessMs: Math.min(cp01.accessTokenMinutes * 60_000, idleMs), idleMs, absoluteMs: cp03.absoluteHours * 3_600_000 };
+      return { accessMs: Math.min(accessMs, idleMs), idleMs, absoluteMs: p.ms('CP-03', 'absolute') };
     }
-    const cp02 = p.get<CP02>('CP-02');
-    return {
-      accessMs: cp01.accessTokenMinutes * 60_000,
-      idleMs: cp02.idleDays * 86_400_000,
-      absoluteMs: cp02.absoluteDays * 86_400_000,
-    };
+    return { accessMs, idleMs: p.ms('CP-02', 'idle'), absoluteMs: p.ms('CP-02', 'absolute') };
   }
 
   private tokens(sessionId: string, sub: string, now: Date, accessMs: number, pt: PrincipalKind = 'user') {
