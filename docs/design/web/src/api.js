@@ -101,7 +101,7 @@ export function createApi({
    * @param {string} method
    * @param {string} path            under /api/v1
    * @param {object} [o]
-   * @param {unknown} [o.body]
+   * @param {unknown} [o.body]      JSON, or a FormData for file uploads (sent as multipart/form-data)
    * @param {string} [o.stepUpAction]  Unit 1 step-up action; a grant is obtained first (SEC-AUTH-08)
    * @param {boolean} [o.idempotent]   send an Idempotency-Key that stays the same across retries
    * @param {AbortSignal} [o.signal]
@@ -110,7 +110,10 @@ export function createApi({
   async function request(method, path, { body, stepUpAction, idempotent = false, signal } = {}) {
     /** @type {Record<string, string>} */
     const headers = { Accept: 'application/json, application/problem+json' };
-    if (body !== undefined) headers['Content-Type'] = 'application/json';
+    // A FormData is sent as it is: the browser sets the multipart Content-Type with its boundary.
+    // It can be sent again unchanged, so the retry after a refresh needs nothing special.
+    const form = typeof FormData !== 'undefined' && body instanceof FormData;
+    if (body !== undefined && !form) headers['Content-Type'] = 'application/json';
     if (idempotent) headers['Idempotency-Key'] = globalThis.crypto.randomUUID();
     if (stepUpAction) {
       if (!stepUp) throw new Error('stepUp handler not configured');
@@ -123,7 +126,7 @@ export function createApi({
       let res;
       try {
         res = await f(base + path, { method, headers, credentials: 'same-origin', signal,
-          body: body === undefined ? undefined : JSON.stringify(body) });
+          body: body === undefined ? undefined : form ? body : JSON.stringify(body) });
       } catch (e) {
         if (/** @type {any} */ (e)?.name === 'AbortError') throw e;
         throw new ApiError(0, { title: 'network' });
