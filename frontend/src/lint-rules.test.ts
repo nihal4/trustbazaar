@@ -46,6 +46,15 @@ describe('browser storage', () => {
     const found = await errors('src/features/account/session.ts', `export function keep(t: string) { ${line} }\n`);
     expect(found).toEqual([expect.stringMatching(/SEC-SES-03/)]);
   });
+
+  it('SEC-SES-03 the language module may keep the language choice', async () => {
+    expect(await errors('src/shared/language/storage.ts', "export const k = () => localStorage.getItem('tb-lang');\n")).toEqual([]);
+  });
+
+  it('SEC-SES-03 the rest of the shell may not use browser storage', async () => {
+    const found = await errors('src/shared/language/Language.tsx', "export const k = () => localStorage.getItem('tb-lang');\n");
+    expect(found).toEqual([expect.stringMatching(/SEC-SES-03/)]);
+  });
 });
 
 describe('import boundaries', () => {
