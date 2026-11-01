@@ -70,6 +70,13 @@ describe('payout accounts and payouts', () => {
   const statusOf = async (id: string) => (await one<{ status: string }>(`SELECT status FROM payments.payouts WHERE id = $1`, [id])).status;
   /** Ends the cooling-off of the seller's account now, as if CP-29 had passed. */
   const cooled = (userId: string) => fx.query(`UPDATE payments.payout_accounts SET effective_at = now() - interval '1 second' WHERE user_id = $1 AND status = 'cooling_off'`, [userId]);
+  /** Delivers every waiting event; earlier test files and runs may leave more than one batch (100). */
+  const deliver = async () => {
+    for (let i = 0; i < 100; i++) {
+      const r = await t.app.get(OutboxDispatcher).drain();
+      if (r.dispatched + r.failed + r.givenUp === 0) break;
+    }
+  };
   const drain = async () => { for (let i = 0; i < 50 && (await payouts.processDue()).length > 0; i++); }; // other specs leave due payouts too
 
   it('FR-PAY-17 a wallet only on the verified number, after step-up; it cools off and the seller is alerted', async () => {
@@ -153,7 +160,7 @@ describe('payout accounts and payouts', () => {
     const waiting = await payout(s.userId, 'waiting_cooling_off', account.id);
     const op = await fx.staff('operator');
     await t.app.get<IdentityCommands>(IDENTITY_COMMANDS).suspendAccount(s.userId, 'Reported for fraud', op, { fraud: true });
-    await t.app.get(OutboxDispatcher).drain();
+    await deliver();
     expect([await statusOf(pending.id), await statusOf(waiting.id)]).toEqual(['held', 'held']);
     await drain();
     expect(await statusOf(pending.id)).toBe('held'); // the worker does not send held payouts
@@ -165,7 +172,7 @@ describe('payout accounts and payouts', () => {
     const plain = await seller();
     const kept = await payout(plain.userId, 'waiting_account');
     await t.app.get<IdentityCommands>(IDENTITY_COMMANDS).suspendAccount(plain.userId, 'Rude to buyers', op);
-    await t.app.get(OutboxDispatcher).drain();
+    await deliver();
     expect(await statusOf(kept.id)).toBe('waiting_account'); // only a fraud suspension holds existing payouts
   });
 
