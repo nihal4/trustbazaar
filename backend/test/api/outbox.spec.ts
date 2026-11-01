@@ -25,7 +25,12 @@ describe('outbox dispatcher', () => {
     fx = await IdentityFixtures.open();
     bus = t.app.get(EventBus);
     dispatcher = t.app.get(OutboxDispatcher);
-    await dispatcher.drain(); // whatever earlier test files left behind
+    // whatever earlier test files left behind: with the job runner off in tests (U2-07) nothing drains the
+    // outboxes between files, and one drain takes at most a batch of 100 per outbox
+    for (let i = 0; i < 200; i++) {
+      const r = await dispatcher.drain();
+      if (r.dispatched + r.failed + r.givenUp === 0) break;
+    }
   });
   afterAll(async () => {
     if (before === undefined) delete process.env.OUTBOX_DISPATCHER;

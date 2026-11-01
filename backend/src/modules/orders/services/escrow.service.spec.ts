@@ -203,6 +203,7 @@ describe('EscrowService: release and cancellation by the parties (U2-05)', () =>
     expect(history(s, o.id)[0]).toMatchObject({ actorType: 'system', actorId: null, reason: 'auto-release after the delivery event' });
     expect(await s.svc.autoRelease(o.id)).toBe(false);
     expect(await s.svc.autoRelease(s.order().o.id)).toBe(false); // no delivery event: no date
+    expect(await s.svc.autoRelease(s.order({}, { autoReleaseAt: NOW }).o.id)).toBe(false); // AC-3: a stray date without a delivery event
     const g = s.order({ itemKind: 'game_account', ...delivered }, { autoReleaseAt: NOW });
     expect(await s.svc.autoRelease(g.o.id)).toBe(true);
     expect(history(s, g.o.id)[0].reason).toBe('protection period ended');
