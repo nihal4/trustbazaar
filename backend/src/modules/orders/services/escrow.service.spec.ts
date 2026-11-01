@@ -4,7 +4,7 @@ import type { Clock } from '../../../kernel/clock';
 import { ConfigPort, parameterValues } from '../../../kernel/config-port';
 import { Problem } from '../../../kernel/http/problems';
 import type { AuditServicePort, IdentityQuery } from '../../identity/ports';
-import { Escrow, EscrowHistory, JournalEntry, JournalLine, Order, OrdersOutboxEvent, PaymentAttempt, Payout, Refund, Settlement } from '../db/entities';
+import { CancellationRequest, Escrow, EscrowHistory, JournalEntry, JournalLine, Order, OrdersOutboxEvent, PaymentAttempt, Payout, Refund, Settlement } from '../db/entities';
 import { EscrowService } from './escrow.service';
 import { split } from './split';
 
@@ -14,6 +14,7 @@ type Row = Record<string, unknown>;
 const matches = (row: Row, where: Row) => Object.entries(where).every(([k, v]) => row[k] === v);
 class Repo {
   rows: Row[] = [];
+  constructor(private readonly defaults: Row = {}) {}
   async findOne(o: { where: Row }) {
     return this.rows.find((r) => matches(r, o.where)) ?? null;
   }
@@ -26,7 +27,7 @@ class Repo {
     return r;
   }
   async insert(obj: Row) {
-    const row = { id: randomUUID(), ...obj };
+    const row = { id: randomUUID(), ...this.defaults, ...obj };
     this.rows.push(row);
     return { identifiers: [{ id: row.id }] };
   }
@@ -39,7 +40,7 @@ const NOW = new Date('2026-11-01T12:00:00Z');
 const DAY = 86_400_000;
 
 function setup(o: { account?: { id: string; status: string; effective_at: Date }; suspended?: boolean } = {}) {
-  const repos = new Map<unknown, Repo>([Order, Escrow, EscrowHistory, JournalEntry, JournalLine, OrdersOutboxEvent, PaymentAttempt, Payout, Refund, Settlement].map((e) => [e, new Repo()]));
+  const repos = new Map<unknown, Repo>([CancellationRequest, Order, Escrow, EscrowHistory, JournalEntry, JournalLine, OrdersOutboxEvent, PaymentAttempt, Payout, Refund, Settlement].map((e) => [e, new Repo(e === CancellationRequest ? { status: 'pending' } : {})]));
   const manager = { getRepository: (e: unknown) => repos.get(e)!, query: jest.fn(async () => (o.account ? [o.account] : [])) };
   const db = { ...manager, manager, transaction: (cb: (m: typeof manager) => unknown) => cb(manager) };
   const identity = { getPrincipal: jest.fn(async () => ({ accountStatus: o.suspended ? 'suspended' : 'active' })) };
@@ -167,6 +168,85 @@ describe('EscrowService', () => {
     await s.svc.applyDisputeOutcome(c.o.id, 'd', { kind: 'release' }, s.m);
     expect(c.e).toMatchObject({ state: 'partially_refunded', amountRefunded: '15000' });
     expect(s.repo(Refund).rows[0]).toMatchObject({ reason: 'fee_refund', amount: '15000' });
+  });
+});
+
+describe('EscrowService: release and cancellation by the parties (U2-05)', () => {
+  const delivered = { deliveryEventAt: NOW, fulfilmentDoneAt: NOW };
+  const history = (s: ReturnType<typeof setup>, id: string) => s.repo(EscrowHistory).rows.filter((r) => r.orderId === id);
+
+  it('FR-PAY-07 confirm receipt: the buyer, after the delivery event, on the standard policy only', async () => {
+    const s = setup();
+    const early = s.order();
+    expect(await reason(s.svc.confirmReceipt('B', early.o.id))).toBe('order-state');
+    const { o, e } = s.order(delivered);
+    expect(await reason(s.svc.confirmReceipt('S', o.id))).toBe('forbidden');
+    expect(await reason(s.svc.confirmReceipt('X', o.id))).toBe('not-found');
+    await s.svc.confirmReceipt('B', o.id);
+    expect(e.state).toBe('released');
+    expect(history(s, o.id)[0]).toMatchObject({ toState: 'released', actorType: 'user', actorId: 'B' });
+    expect(await reason(s.svc.confirmReceipt('B', o.id))).toBe('order-state');
+    const g = s.order({ itemKind: 'game_account', fulfilment: 'game_account', ...delivered });
+    expect(await reason(s.svc.confirmReceipt('B', g.o.id))).toBe('order-state');
+    expect(await reason(s.svc.releaseEarly('B', o.id))).toBe('order-state'); // early release is for game accounts
+    await s.svc.releaseEarly('B', g.o.id);
+    expect(g.e.state).toBe('released');
+    expect(await reason(s.svc.releaseEarly('B', s.order({ itemKind: 'game_account' }).o.id))).toBe('order-state');
+  });
+
+  it('FR-PAY-07 auto-release: only when due and held; the system is the actor', async () => {
+    const s = setup();
+    const { o, e } = s.order(delivered, { autoReleaseAt: new Date(NOW.getTime() + 1) });
+    expect(await s.svc.autoRelease(o.id)).toBe(false);
+    Object.assign(e, { autoReleaseAt: NOW });
+    expect(await s.svc.autoRelease(o.id)).toBe(true);
+    expect(history(s, o.id)[0]).toMatchObject({ actorType: 'system', actorId: null, reason: 'auto-release after the delivery event' });
+    expect(await s.svc.autoRelease(o.id)).toBe(false);
+    expect(await s.svc.autoRelease(s.order().o.id)).toBe(false); // no delivery event: no date
+    const g = s.order({ itemKind: 'game_account', ...delivered }, { autoReleaseAt: NOW });
+    expect(await s.svc.autoRelease(g.o.id)).toBe(true);
+    expect(history(s, g.o.id)[0].reason).toBe('protection period ended');
+    const courier = s.order({ fulfilment: 'courier', fulfilmentStep: 'courier_pickup', deliveryFee: '15000', ...delivered }, { autoReleaseAt: NOW });
+    await s.svc.autoRelease(courier.o.id);
+    expect(courier.e.amountRefunded).toBe('0'); // the courier carried it: the fee is not given back
+  });
+
+  it('FR-PAY-09 a cancellation request: one at a time, decided by the seller only', async () => {
+    const s = setup();
+    const { o, e } = s.order({ fulfilment: 'courier', fulfilmentStep: 'courier_pickup', deliveryFee: '15000' });
+    expect(await reason(s.svc.requestCancellation('S', o.id, 'x'))).toBe('forbidden');
+    const id = await s.svc.requestCancellation('B', o.id, '  Wrong model  ');
+    expect(s.repo(CancellationRequest).rows[0]).toMatchObject({ id, orderId: o.id, requestedBy: 'B', reason: 'Wrong model' });
+    expect(await reason(s.svc.requestCancellation('B', o.id, 'again'))).toBe('already-pending');
+    expect(await reason(s.svc.decideCancellation('B', o.id, id, 'accept'))).toBe('forbidden');
+    expect(await reason(s.svc.decideCancellation('S', o.id, randomUUID(), 'accept'))).toBe('not-found');
+    await s.svc.decideCancellation('S', o.id, id, 'decline');
+    expect(s.repo(CancellationRequest).rows[0]).toMatchObject({ status: 'declined', decidedAt: NOW });
+    expect(await reason(s.svc.decideCancellation('S', o.id, id, 'accept'))).toBe('order-state');
+    const second = await s.svc.requestCancellation('B', o.id, 'please');
+    await s.svc.decideCancellation('S', o.id, second, 'accept');
+    expect(e).toMatchObject({ state: 'refunded', amountRefunded: '1015000' });
+    expect(s.repo(Refund).rows[0]).toMatchObject({ amount: '1015000', reason: 'cancellation' });
+    expect(s.repo(OrdersOutboxEvent).rows.map((r) => r.eventType)).toEqual(expect.arrayContaining(['orders.cancellation.requested', 'orders.cancellation.declined']));
+    const late = s.order(delivered);
+    expect(await reason(s.svc.requestCancellation('B', late.o.id, 'x'))).toBe('order-state');
+    const pending = s.order();
+    const rid = await s.svc.requestCancellation('B', pending.o.id, 'x');
+    Object.assign(pending.o, { deliveryEventAt: NOW }); // delivered while the seller was deciding
+    expect(await reason(s.svc.decideCancellation('S', pending.o.id, rid, 'accept'))).toBe('order-state');
+  });
+
+  it('FR-TNS-04 the seller cancels: full refund, pending requests lapse, a strike event; not after delivery', async () => {
+    const s = setup();
+    const { o, e } = s.order();
+    const rid = await s.svc.requestCancellation('B', o.id, 'x');
+    expect(await reason(s.svc.sellerCancel('B', o.id, 'x'))).toBe('forbidden');
+    await s.svc.sellerCancel('S', o.id, ' Damaged ');
+    expect(e.state).toBe('refunded');
+    expect(s.repo(CancellationRequest).rows.find((r) => r.id === rid)).toMatchObject({ status: 'lapsed' });
+    expect(s.repo(OrdersOutboxEvent).rows.find((r) => r.eventType === 'orders.order.cancelled_by_seller')?.payload).toEqual({ orderId: o.id, sellerId: 'S', buyerId: 'B', reason: 'Damaged' });
+    expect(await reason(s.svc.sellerCancel('S', s.order(delivered).o.id, 'x'))).toBe('order-state');
+    expect(await reason(s.svc.sellerCancel('S', o.id, 'x'))).toBe('order-state');
   });
 });
 
