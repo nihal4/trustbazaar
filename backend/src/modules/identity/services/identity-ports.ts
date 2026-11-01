@@ -42,8 +42,8 @@ export class IdentityQueryService implements IdentityQuery {
     @Inject(RESTRICTIONS) private readonly restrictions: Restrictions,
   ) {}
 
-  async getPrincipal(userId: string): Promise<PrincipalInfo> {
-    const [u] = await this.db.query(
+  async getPrincipal(userId: string, tx?: EntityManager): Promise<PrincipalInfo> {
+    const [u] = await (tx ?? this.db).query(
       `SELECT u.id, u.display_name, u.kyc_status, u.account_status, u.email_verified_at IS NOT NULL AS email_verified,
               CASE WHEN u.kyc_status = 'verified' THEN (SELECT max(h.at) FROM identity.kyc_status_history h
                                                         WHERE h.user_id = u.id AND h.to_status = 'verified') END AS verified_at
