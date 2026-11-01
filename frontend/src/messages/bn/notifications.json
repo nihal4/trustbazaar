@@ -1,0 +1,18 @@
+{
+  "notifications.title": "নোটিফিকেশন",
+  "notifications.signed_out": "আপনার নোটিফিকেশন দেখতে সাইন ইন করুন।",
+  "notifications.list": "আপনার নোটিফিকেশন",
+  "notifications.unread_count": "{count}টি পড়া হয়নি",
+  "notifications.all_read": "সব পড়া হয়েছে।",
+  "notifications.mark_all": "সব পড়া হয়েছে চিহ্নিত করুন",
+  "notifications.empty": "এখনো কোনো নোটিফিকেশন নেই। আপনার অর্ডার, পেমেন্ট ও অ্যাকাউন্ট সম্পর্কে আমরা এখানে জানাব।",
+  "notifications.new": "নতুন",
+  "notifications.more": "পুরোনো নোটিফিকেশন দেখুন",
+  "preferences.title": "নোটিফিকেশন সেটিংস",
+  "preferences.language": "নোটিফিকেশনের ভাষা",
+  "preferences.language_hint": "নোটিফিকেশন, ই-মেইল ও এসএমএস এই সাইটের ভাষাতেই পাঠানো হয়।",
+  "preferences.email": "আমার অর্ডার ও পেমেন্ট সম্পর্কে আমাকে ই-মেইল পাঠান",
+  "preferences.email_hint": "নিরাপত্তার নোটিশ, যেমন নতুন ডিভাইস থেকে সাইন ইন, সবসময় পাঠানো হয়।",
+  "preferences.save": "সেটিংস সংরক্ষণ করুন",
+  "preferences.saved": "আপনার সেটিংস সংরক্ষণ হয়েছে।"
+}
