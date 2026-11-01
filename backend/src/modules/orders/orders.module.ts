@@ -3,10 +3,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { IdentityModule } from '../identity/identity.module';
 import { ListingsModule } from '../listings/listings.module';
 import { ENTITIES } from './db/entities';
-import { OrdersController } from './http/orders.controller';
+import { OrderActionsController, OrdersController } from './http/orders.controller';
 import { MockPayController, PaymentsController, StripeWebhookController } from './http/payments.controller';
 import { ESCROW_COMMANDS, ESCROW_QUERY, ORDERS_PORT } from './ports';
 import { EscrowService } from './services/escrow.service';
+import { RefundService } from './services/refund.service';
 import { OrderService } from './services/order.service';
 import { PAYMENT_PROVIDERS, PaymentService } from './services/payment.service';
 import { buildProviders } from './adapters/providers';
@@ -22,13 +23,14 @@ import type Redis from 'ioredis';
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
 @Module({
   imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule, ListingsModule],
-  controllers: [OrdersController, PaymentsController, StripeWebhookController, MockPayController],
+  controllers: [OrdersController, OrderActionsController, PaymentsController, StripeWebhookController, MockPayController],
   providers: [
     OrderService,
     PaymentService,
     { provide: PAYMENT_PROVIDERS, inject: [TB_CONFIG, REDIS], useFactory: (c: TbConfig, r: Redis) => buildProviders(c, r) },
     { provide: ORDERS_PORT, useExisting: OrderService },
     EscrowService,
+    RefundService,
     { provide: ESCROW_COMMANDS, useExisting: EscrowService },
     { provide: ESCROW_QUERY, useExisting: EscrowService },
   ],
