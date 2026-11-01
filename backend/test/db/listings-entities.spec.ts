@@ -8,7 +8,7 @@ import { IdentityFixtures } from '../support/identity';
 // A schema change that is not reflected in the entities fails here (regenerate with
 // scripts/generate_entities.py --schemas listings,auctions ...). Reads pg_catalog as tb_app.
 describe('listings and auctions entities', () => {
-  entityChecks({ label: 'listings and auctions', schemas: ['listings', 'auctions'], entities: ENTITIES, tables: 14 });
+  entityChecks({ label: 'listings and auctions', schemas: ['listings', 'auctions'], entities: ENTITIES, tables: 15 });
 
   let fx: IdentityFixtures;
   beforeAll(async () => {
