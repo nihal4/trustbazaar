@@ -1,0 +1,11 @@
+/* Checkout (section 7.4): one column; the main action at least 44 px high. */
+.page { max-width: 40rem; }
+.item { border: 1px solid var(--tb-border); border-radius: var(--tb-radius); background: var(--tb-surface); padding: var(--tb-space-2) var(--tb-space-3); margin-bottom: var(--tb-space-3); }
+.form { display: flex; flex-direction: column; gap: var(--tb-space-2); }
+.field { display: flex; flex-direction: column; gap: var(--tb-space-1); border: 0; padding: 0; margin: 0; }
+.field input[type='text'] { min-height: 44px; max-width: 8rem; font: inherit; padding: 0 var(--tb-space-2); }
+.option { display: flex; align-items: center; gap: var(--tb-space-2); min-height: 44px; }
+.hint { color: var(--tb-muted); margin: 0; }
+.total { font-size: 1.25rem; font-weight: 700; }
+.primary { align-self: flex-start; min-height: 44px; padding: 0 var(--tb-space-3); border-radius: var(--tb-radius); background: var(--tb-accent); color: var(--tb-accent-text); border: 0; font: inherit; font-weight: 700; }
+.primary:disabled { opacity: 0.6; }
