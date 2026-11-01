@@ -32,13 +32,6 @@ export const REJECTION_REASONS = [
 export type RejectionReason = (typeof REJECTION_REASONS)[number];
 export const BLACKLIST_SOURCES = ['game_account_recovery', 'fraud_decision'] as const;
 
-interface CP31 {
-  signedLinkMinutes: number;
-}
-interface CP44 {
-  reviewHours: number;
-}
-
 export interface QueueItem {
   id: string;
   userId: string;
@@ -79,7 +72,7 @@ export class KycReviewService implements OnModuleInit {
   /** FR-KYC-12: oldest first, with flags and the age against CP-44. */
   async queue(): Promise<QueueItem[]> {
     const now = this.clock.now();
-    const target = (await this.params.current()).get<CP44>('CP-44').reviewHours;
+    const target = (await this.params.current()).ms('CP-44') / 3_600_000;
     const rows = await this.db.query(
       `SELECT id, user_id, doc_type, routed_flags, submitted_at, claimed_by, claimed_until FROM identity.kyc_submissions
        WHERE status = 'pending_review' ORDER BY submitted_at LIMIT 200`,
@@ -330,7 +323,7 @@ export class KycReviewService implements OnModuleInit {
   }
 
   private async link(fileId: string, sessionId: string, p: 'user' | 'staff'): Promise<{ url: string; expiresAt: string }> {
-    const minutes = (await this.params.current()).get<CP31>('CP-31').signedLinkMinutes;
+    const minutes = (await this.params.current()).ms('CP-31') / 60_000;
     const e = this.clock.now().getTime() + minutes * 60_000;
     const token = signFileLink(this.config.secrets.linkKey.reveal(), { f: fileId, s: sessionId, p, e });
     return { url: `/api/v1/files/v/${token}`, expiresAt: new Date(e).toISOString() };

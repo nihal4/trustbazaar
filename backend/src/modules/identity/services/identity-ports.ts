@@ -32,10 +32,6 @@ const ctxOf = (c?: CallContext): RequestContext => ({ ip: c?.ip ?? null, userAge
 const rowsOf = <T>(result: unknown): T[] =>
   (Array.isArray(result) && Array.isArray(result[0]) && typeof result[1] === 'number' ? result[0] : result) as T[];
 
-interface CP31 {
-  signedLinkMinutes: number;
-}
-
 @Injectable()
 export class IdentityQueryService implements IdentityQuery {
   constructor(
@@ -309,7 +305,7 @@ export class FileVaultPortAdapter implements FileVaultPort {
         }),
       );
     }
-    const minutes = (await this.params.current()).get<CP31>('CP-31').signedLinkMinutes;
+    const minutes = (await this.params.current()).ms('CP-31') / 60_000;
     const e = this.clock.now().getTime() + minutes * 60_000;
     const token = signFileLink(this.config.secrets.linkKey.reveal(), { f: key, s: viewer.sessionId, p: viewer.type, e });
     return { url: `/api/v1/files/v/${token}`, expiresAt: new Date(e).toISOString() };

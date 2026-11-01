@@ -236,6 +236,6 @@ export class RegistrationService {
 
 
   private async cp06(): Promise<CP06> {
-    return (await this.params.current()).get<CP06>('CP-06');
+    return { emailLinkHours: (await this.params.current()).ms('CP-06', 'verify') / 3_600_000 };
   }
 }

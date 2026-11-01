@@ -26,10 +26,6 @@ import { normaliseLogin } from './signin.service';
 // change (signed in, after step-up) needs the current password and ends every other session.
 const RESETS_PER_ACCOUNT_HOUR = 3; // Unit 1 section 5.4: reset, 3 per account per hour
 
-interface CP06 {
-  resetLinkMinutes: number;
-}
-
 interface UserRow {
   id: string;
   display_name: string;
@@ -72,7 +68,7 @@ export class PasswordService {
     if (!(await this.limiter.hit(`rl:reset:user:${user.id}`, RESETS_PER_ACCOUNT_HOUR, 3600)).allowed) return;
 
     if ('email' in account) {
-      const minutes = (await this.params.current()).get<CP06>('CP-06').resetLinkMinutes;
+      const minutes = (await this.params.current()).ms('CP-06', 'reset') / 60_000;
       const token = generateLinkToken();
       await this.db.query(
         `INSERT INTO identity.one_time_tokens (purpose, user_id, token_hash, expires_at) VALUES ('password_reset', $1, $2, $3)`,
