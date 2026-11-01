@@ -37,6 +37,15 @@ export interface KycInput {
   challengeId: string;
 }
 
+/**
+ * FR-KYC-06 with FR-TNS-06: the user sees the reason code and the operator's note, except for a blacklist
+ * match, which is shown as 'other' with no note so that a person under a fraud investigation is not told
+ * (Decisions log, 2026-11-01). Staff and the history keep the real reason.
+ */
+export function userFacing(reason: string, note: string | null): { reason: string; note: string | null } {
+  return reason === 'blacklisted' ? { reason: 'other', note: null } : { reason, note };
+}
+
 export interface KycStatusView {
   status: 'unsubmitted' | 'pending_review' | 'verified' | 'rejected' | 'revoked';
   changedAt: Date;
@@ -91,7 +100,7 @@ export class KycService {
     return {
       status: u.kyc_status,
       changedAt: u.kyc_status_changed_at,
-      rejection: u.kyc_status === 'rejected' && last?.status === 'rejected' ? { reason: last.rejection_reason, note: last.rejection_note } : null,
+      rejection: u.kyc_status === 'rejected' && last?.status === 'rejected' ? userFacing(last.rejection_reason, last.rejection_note) : null,
       submissionsLeft: await this.submissionsLeft(userId),
       expectedReviewHours: (await this.params.current()).ms('CP-44') / 3_600_000,
     };
