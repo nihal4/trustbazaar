@@ -89,3 +89,7 @@
 .device {
   font-weight: 700;
 }
+
+.version {
+  color: var(--tb-muted);
+}
