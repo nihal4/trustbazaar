@@ -253,7 +253,7 @@ Design: `docs/design/08_frontend.pdf` (source `.tex` beside it).
 | U8-09 | Disputes, ratings, seller dashboard, privacy screens | U8-06, U7-05 | todo | | | | |
 | U8-10 | Staff console (`staff.html`) | U8-01, U7-06 | todo | | | | |
 | U8-11 | End-to-end, accessibility, 360 and 320 pixel, Lighthouse runs | U8-09, U8-10 | todo | | | | |
-| U8-12 | MFA settings screens (TOTP enrolment, recovery codes, turning MFA off) | U8-02, U1-12 | review | Sabikun Nahar Sinthia | `feature/u8-12-mfa-settings`, #141 | | Split from U8-02 on 2026-11-01 (agreed with the user): Unit 1's `/me/mfa/*` is U1-12. On `/account/security` (`MfaSettings.tsx`): turning on with the QR code (`qrcode-generator`, lazily loaded), the key as text in fours with copy, the `otpauth://` link and the first code; the ten recovery codes shown once with copy, a text file and "I have saved them"; new codes behind step-up (`recovery.regenerate`); turning off behind step-up (`mfa.disable`) with a current app code and an optional new password, which Unit 1 asks for when the password is under 15 characters. The secret and the codes stay in the page only. Merge after #142 (a wrong code there is `otp-failed`, 400). The step-up dialog now starts a step-up once per request. |
+| U8-12 | MFA settings screens (TOTP enrolment, recovery codes, turning MFA off) | U8-02, U1-12 | done | Sabikun Nahar Sinthia | `feature/u8-12-mfa-settings`, #141 | 2026-11-01 | Split from U8-02 on 2026-11-01 (agreed with the user): Unit 1's `/me/mfa/*` is U1-12. On `/account/security` (`MfaSettings.tsx`): turning on with the QR code (`qrcode-generator`, lazily loaded), the key as text in fours with copy, the `otpauth://` link and the first code; the ten recovery codes shown once with copy, a text file and "I have saved them"; new codes behind step-up (`recovery.regenerate`); turning off behind step-up (`mfa.disable`) with a current app code and an optional new password, which Unit 1 asks for when the password is under 15 characters. The secret and the codes stay in the page only. Merge after #142 (a wrong code there is `otp-failed`, 400). The step-up dialog now starts a step-up once per request. |
 
 **Integration notes this unit must apply** (they override the older text of its document where they differ):
 
@@ -418,3 +418,4 @@ Append one line when a task becomes `done` (newest last).
 | 2026-11-01 | U8-02 | Sabikun Nahar Sinthia | #129, #133 |
 | 2026-11-01 | U1-12 | S. M. Nihal Ahmed | #134 |
 | 2026-11-01 | U8-03 | Sabikun Nahar Sinthia | #136 |
+| 2026-11-01 | U8-12 | Sabikun Nahar Sinthia | #141 |
