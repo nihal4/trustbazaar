@@ -152,7 +152,8 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
   async autoRelease(orderId: string): Promise<boolean> {
     return this.db.transaction(async (m) => {
       const { o, e } = await this.lock(m, orderId);
-      if (!e || e.state !== 'held' || e.autoReleaseAt === null || e.autoReleaseAt > this.clock.now()) return false;
+      // AC-3: a timeout counts only from a recorded delivery event, whatever date the escrow holds
+      if (!e || e.state !== 'held' || o.deliveryEventAt === null || e.autoReleaseAt === null || e.autoReleaseAt > this.clock.now()) return false;
       await this.settle(m, o, e, { itemRefund: 0n, courierDone: this.courierDone(o), reason: null, actor: 'system', note: e.releasePolicy === 'game_protection' ? 'protection period ended' : 'auto-release after the delivery event' });
       return true;
     });
@@ -292,7 +293,8 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
   /** Section 5.7: the payout's status from the seller's payout account, or a hold while the seller is suspended (FR-TNS-05). */
   private async createPayout(m: EntityManager, o: Order, amount: bigint): Promise<void> {
     const now = this.clock.now();
-    const seller = await this.identity.getPrincipal(o.sellerId);
+    // on this transaction's connection: under load every pool connection may be waiting for this order's lock (U2-08)
+    const seller = await this.identity.getPrincipal(o.sellerId, m);
     const [account] = (await m.query(
       `SELECT id, status, effective_at FROM payments.payout_accounts WHERE user_id = $1 AND status IN ('active', 'cooling_off') LIMIT 1`,
       [o.sellerId],
