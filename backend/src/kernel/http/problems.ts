@@ -41,6 +41,7 @@ export const PROBLEMS = {
   'not-available': { status: 409, title: 'This item is no longer available in that quantity.' },
   'order-limit': { status: 409, title: 'This order is above the value your account can place right now.' },
   'order-state': { status: 409, title: 'This order cannot be changed in its current state.' },
+  'payout-state': { status: 409, title: 'This payout or payout account cannot be changed in its current state.' },
   'provider-unavailable': { status: 503, title: 'The payment service cannot be reached right now. Please try again shortly.' },
   'request-in-progress': { status: 409, title: 'This request is still being processed. Please wait a moment.' },
   forbidden: { status: 403, title: 'You are not allowed to do this.' },
