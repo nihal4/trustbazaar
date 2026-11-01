@@ -172,6 +172,8 @@ SELECT pg_temp.ok('FR-NTF-03 an order notice is created with an e-mail delivery'
 SELECT pg_temp.ok('DC-6 the same event delivered twice creates one notification',
   notify.create('c0000000-0000-4000-8000-000000000001', 'order.paid', '{"listing_title":"Used phone 1","amount_bdt":10000}', 'evt-1:order.paid') IS NULL
   AND (SELECT count(*) FROM notify.notifications WHERE dedupe_key = 'evt-1:order.paid') = 1);
+SELECT pg_temp.expect_fail('I-55 a notification names its subject completely or not at all',
+ $q$UPDATE notify.notifications SET subject_type = 'order' WHERE id = '$q$ || :'n1' || $q$'$q$, 'notification_subject');
 SELECT pg_temp.expect_fail('FR-NTF-08 only the template''s declared parameters are accepted',
  $q$SELECT notify.create('c0000000-0000-4000-8000-000000000001', 'order.paid', '{"listing_title":"x","buyer_phone":"x"}', 'k2')$q$, 'not allowed in template');
 SELECT pg_temp.expect_fail('parameters must be plain values',
