@@ -3,7 +3,7 @@
 # "webconf" = docs/design/web/container (Unit 8's tested nginx configuration), "deploy" = docs/design/deploy.
 # Two stages: the Vite production build, then nginx running unprivileged on port 8080 (SEC-INF-01).
 
-FROM node:20-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
