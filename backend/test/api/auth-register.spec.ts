@@ -1,7 +1,7 @@
 import { randomInt, randomUUID } from 'crypto';
 import Redis from 'ioredis';
 import { loadConfig } from '../../src/kernel/config/config';
-import { NOTIFICATIONS, SimulatedNotifications } from '../../src/modules/identity/adapters/notifications';
+import { NOTIFICATIONS, ForwardedNotifications } from '../../src/modules/identity/adapters/notifications';
 import { hashOtp } from '../../src/modules/identity/crypto/otp';
 import { startApp, TestApp } from '../support/app';
 import { Browser } from '../support/browser';
@@ -22,7 +22,7 @@ describe('registration', () => {
   let redis: Redis;
   let origin: string;
   let legal: { termsVersion: string; privacyVersion: string };
-  let notes: SimulatedNotifications;
+  let notes: ForwardedNotifications;
   const browser = () => new Browser(t, origin);
 
   beforeAll(async () => {
@@ -32,7 +32,7 @@ describe('registration', () => {
     const cfg = loadConfig(process.env);
     origin = cfg.publicOrigin;
     legal = cfg.legal;
-    notes = t.app.get<SimulatedNotifications>(NOTIFICATIONS);
+    notes = t.app.get<ForwardedNotifications>(NOTIFICATIONS);
   });
   afterAll(async () => {
     redis?.disconnect();
