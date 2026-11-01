@@ -48,7 +48,7 @@ const snapshot = (o: Partial<ListingSnapshot> = {}): ListingSnapshot => ({
   price: '1000000', clarifications: [], photoKeys: ['k1'], capturedAt: NOW.toISOString(), ...o,
 });
 
-function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; verifiedAt?: Date | null; switchOn?: boolean; rows?: { id: string; created_at: Date }[] } = {}) {
+function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; verifiedAt?: Date | null; switchOn?: boolean; rows?: { id: string; cursor_at: string }[] } = {}) {
   const repos = new Map<unknown, Repo>([
     [Order, new Repo(() => ({ status: 'awaiting_payment', createdAt: NOW, paidAt: null, fulfilmentStep: null, fulfilmentDueAt: null, fulfilmentDoneAt: null, deliveryEventAt: null, cancelledAt: null, cancelReason: null, closedAt: null }))],
     [Escrow, new Repo()],
