@@ -33,6 +33,9 @@ import { OtpService } from './services/otp.service';
 import { PasswordService } from './services/password.service';
 import { RegistrationService } from './services/registration.service';
 import { SecondFactorService } from './services/second-factor.service';
+import { SessionAuthenticator } from './security/session-auth';
+import { LiveAuth, SessionSocketCloser } from './security/live-auth';
+import { LIVE_AUTHENTICATOR } from '../../kernel/live/live';
 import { SessionService } from './services/session.service';
 import { SignInService } from './services/signin.service';
 import { SignInThrottle } from './services/signin-throttle.service';
@@ -53,6 +56,9 @@ import { StepUpService } from './services/step-up.service';
     PasswordHasher,
     AuditService,
     SessionService,
+    SessionAuthenticator,
+    SessionSocketCloser,
+    { provide: LIVE_AUTHENTICATOR, useClass: LiveAuth },
     SignInService,
     SignInThrottle,
     OtpService,

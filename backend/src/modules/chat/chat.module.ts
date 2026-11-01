@@ -50,7 +50,12 @@ import { NotificationService } from './services/notification.service';
     {
       provide: NOTIFIER,
       inject: [NotificationService],
-      useFactory: (n: NotificationService): Notifier => ({ notify: async (userId, template, params, key) => void (await n.create(userId, template, params, key)) }),
+      useFactory: (n: NotificationService): Notifier => ({
+        notify: async (userId, template, params, key) => {
+          const id = await n.create(userId, template, params, key);
+          if (id) await n.push(userId, id);
+        },
+      }),
     },
   ],
   exports: [NOTIFIER],
