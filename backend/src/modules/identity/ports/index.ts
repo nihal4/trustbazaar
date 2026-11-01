@@ -41,7 +41,8 @@ export interface PublicProfile {
 }
 
 export interface IdentityQuery {
-  getPrincipal(userId: string): Promise<PrincipalInfo>;
+  /** With `tx`, read on the caller's transaction: a caller holding row locks must not wait for a second pool connection. */
+  getPrincipal(userId: string, tx?: EntityManager): Promise<PrincipalInfo>;
   /** FR-KYC-07, FR-TNS-05, I-43: throws transaction-not-allowed (403) with the reason. */
   assertCanTransact(userId: string, action: TransactAction): Promise<void>;
   getPublicProfile(userId: string): Promise<PublicProfile>;
