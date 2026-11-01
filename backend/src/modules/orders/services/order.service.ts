@@ -7,7 +7,7 @@ import { Problem } from '../../../kernel/http/problems';
 import { AUDIT_SERVICE, AuditServicePort, IDENTITY_QUERY, IdentityQuery } from '../../identity/ports';
 import { LISTINGS_PORT, ListingSnapshot, ListingsPort } from '../../listings/ports';
 import { Escrow, Order, OrdersOutboxEvent } from '../db/entities';
-import type { Fulfilment, OrderView, OrdersPort } from '../ports';
+import type { Fulfilment, FulfilmentFacts, OrderView, OrdersPort } from '../ports';
 
 // Orders (docs/design/02_orders_payments.pdf sections 5.3 and 5.4; FR-FIX-01, 02, 05, FR-TNS-07; I-52).
 //
@@ -146,6 +146,18 @@ export class OrderService implements OrdersPort {
 
   getOrderForParty(orderId: string, userId: string): Promise<OrderView> {
     return this.view(this.db.manager, orderId, userId);
+  }
+
+  /** I-20, DC-14: the order row locked in the caller's transaction, with the facts a fulfilment action needs. */
+  async lockForFulfilment(orderId: string, tx: EntityManager): Promise<FulfilmentFacts> {
+    const o = await tx.getRepository(Order).findOne({ where: { id: orderId }, lock: { mode: 'pessimistic_write' } });
+    if (!o) throw new Problem('not-found');
+    const e = await tx.getRepository(Escrow).findOneBy({ orderId });
+    return {
+      orderId: o.id, status: o.status, itemKind: o.itemKind, listingId: o.listingId, buyerId: o.buyerId, sellerId: o.sellerId,
+      fulfilment: o.fulfilment, fulfilmentStep: o.fulfilmentStep, fulfilmentDueAt: o.fulfilmentDueAt,
+      stepRecorded: o.fulfilmentDoneAt !== null, deliveryEventRecorded: o.deliveryEventAt !== null, escrowState: e?.state ?? null,
+    };
   }
 
   // ---------------------------------------------------------------- my orders
