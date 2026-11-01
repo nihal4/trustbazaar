@@ -28,6 +28,7 @@ export function Component() {
   const [accept, setAccept] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
   const [message, setMessage] = useState<string | null>(null);
+  const [termsChanged, setTermsChanged] = useState(false);
   const [busy, setBusy] = useState(false);
   const [waitUntil, setWaitUntil] = useState<number | null>(null);
   const waitFor = useSecondsLeft(waitUntil);
@@ -57,6 +58,7 @@ export function Component() {
     ev.preventDefault();
     if (busy) return;
     setMessage(null);
+    setTermsChanged(false);
     const e = check();
     setErrors(e);
     if (Object.keys(e).length > 0) return;
@@ -72,21 +74,23 @@ export function Component() {
     } catch (err) {
       const reason = rejectedPasswordReason(err);
       const wait = retryAfter(err);
-      if (reason) setErrors({ password: passwordReasonText(reason, t, lang) });
+      const fields = fieldErrors(err);
+      if (fields.some((f) => (f.field === 'termsVersion' || f.field === 'privacyVersion') && f.reason === 'not-current')) {
+        // the terms or the notice changed after this page loaded: only a reload shows the current ones
+        setTermsChanged(true);
+      } else if (reason) setErrors({ password: passwordReasonText(reason, t, lang) });
       else if (wait !== null) setWaitUntil(untilAfter(wait));
       else if (problemName(err) === 'validation-failed') {
         const fe: Partial<Record<Field, string>> = {};
-        let formMessage: string | null = null;
-        for (const f of fieldErrors(err)) {
+        for (const f of fields) {
           if (f.field === 'phone') fe.phone = t('field.phone_invalid');
           else if (f.field === 'email') fe.email = t('field.email_invalid');
           else if (f.field === 'displayName') fe.displayName = t('register.name_invalid');
           else if (f.field === 'password') fe.password = t('password.rejected');
           else if (f.field === 'adultConfirmed') fe.adult = t('register.adult_required');
-          else if (f.field === 'termsVersion' || f.field === 'privacyVersion') formMessage = t('register.terms_changed');
         }
         setErrors(fe);
-        setMessage(formMessage ?? (Object.keys(fe).length === 0 ? otherError(err, t, lang) : null));
+        setMessage(Object.keys(fe).length === 0 ? otherError(err, t, lang) : null);
       } else setMessage(otherError(err, t, lang));
     } finally {
       setBusy(false);
@@ -162,6 +166,12 @@ export function Component() {
       <PrivacyNotice />
       <ErrorSummary title={t('form.errors_title')} items={summary} />
       {message && <FormMessage kind="error">{message}</FormMessage>}
+      {termsChanged && (
+        <FormMessage kind="error">
+          <p>{t('register.terms_changed')}</p>
+          <button type="button" className={styles.secondary} onClick={() => window.location.reload()}>{t('register.reload')}</button>
+        </FormMessage>
+      )}
       <form onSubmit={submit} noValidate>
         <TextField id="register-displayName" label={t('register.name')} hint={t('register.name_hint')} value={form.displayName}
           onChange={set('displayName')} error={errors.displayName} autoComplete="nickname" maxLength={40} />
