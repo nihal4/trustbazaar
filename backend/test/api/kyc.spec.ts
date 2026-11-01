@@ -139,6 +139,21 @@ describe('KYC', () => {
       expect((await fs.readdir(join(filesRoot, 'kyc'))).length).toBe(before);
     });
 
+    it('FR-TNS-06 a rejection for a blacklist match reaches the user as "other", without the note', async () => {
+      const u = await user();
+      const id = await submitted(u);
+      const op = await operator();
+      await claim(op, id);
+      expect((await decide(op, id, { decision: 'reject', reason: 'blacklisted', note: 'Matches the NID banned after order 42' })).status).toBe(200);
+      const body = await (await u.b.get('/kyc/status')).json();
+      expect(body).toMatchObject({ status: 'rejected', rejection: { reason: 'other', note: null } });
+      expect(JSON.stringify(body)).not.toMatch(/blacklist|banned/i);
+      const [row] = await fx.query(`SELECT rejection_reason FROM identity.kyc_submissions WHERE id = $1`, [id]);
+      expect(row).toEqual({ rejection_reason: 'blacklisted' }); // staff keep the real reason
+      const [ev] = await fx.query(`SELECT payload FROM identity.outbox WHERE event_type = 'identity.kyc.rejected' AND aggregate_id = $1`, [u.userId]);
+      expect(ev).toEqual({ payload: expect.objectContaining({ reason: 'other' }) }); // Notifications tells the user
+    });
+
     it('FR-KYC-01 every image of the document type is required', async () => {
       const u = await user();
       const { r } = await submit(u, {}, { doc_back: null });
