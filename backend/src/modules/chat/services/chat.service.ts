@@ -215,7 +215,7 @@ export class ChatService {
       this.identity.getPublicProfile(senderId), this.listings.threadFacts(listingId), this.live.isConnected(recipient),
     ]);
     const id = await this.db.transaction(async (tx) => {
-      const nid = await this.notices.create(recipient, 'chat.new_message', { listing_title: listing.title, sender_name: sender.displayName },
+      const nid = await this.notices.create(recipient, 'chat.message_received', { listing_title: listing.title, sender_name: sender.displayName },
         `chat.message:${messageId}`, { type: 'thread', id: threadId }, tx);
       if (!nid) return null;
       const [{ allowed }] = online
