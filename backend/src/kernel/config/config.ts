@@ -58,6 +58,8 @@ export interface TbConfig {
   readonly publicOrigin: string;
   /** The current terms of use and privacy notice; registration must accept exactly these (FR-ACC-04). */
   readonly legal: { readonly termsVersion: string; readonly privacyVersion: string };
+  /** The protected-file volumes, one folder per purpose (Unit 9 Compose: /srv/files/kyc, ...). */
+  readonly filesRoot: string;
   readonly databaseUrl: Secret;
   readonly redisUrl: Secret;
   readonly paymentMode: 'mock' | 'sandbox';
@@ -208,6 +210,9 @@ export function loadConfig(env: Env): TbConfig {
   };
   const legal = Object.freeze({ termsVersion: legalVersion('TERMS_VERSION'), privacyVersion: legalVersion('PRIVACY_VERSION') });
 
+  const filesRoot = get('FILES_ROOT') ?? '/srv/files';
+  if (!filesRoot.startsWith('/')) problems.push('FILES_ROOT: must be an absolute path');
+
   // C-2 and C-3: payments and couriers are mock or sandbox only; the deliverable never moves real money.
   const paymentMode = oneOf('PAYMENT_MODE', ['mock', 'sandbox'] as const, 'mock');
   const courierMode = oneOf('COURIER_MODE', ['mock', 'sandbox'] as const, 'mock');
@@ -241,6 +246,7 @@ export function loadConfig(env: Env): TbConfig {
     logLevel,
     publicOrigin,
     legal,
+    filesRoot,
     databaseUrl,
     redisUrl,
     paymentMode,

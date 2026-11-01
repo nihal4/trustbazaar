@@ -135,6 +135,11 @@ describe('configuration', () => {
     ]);
   });
 
+  it('SEC-DAT-02 protected files live under FILES_ROOT, an absolute path (default: the Compose volumes)', () => {
+    expect(loadConfig(dev()).filesRoot).toBe('/srv/files');
+    expect(problems({ ...dev(), FILES_ROOT: 'files' })).toEqual(['FILES_ROOT: must be an absolute path']);
+  });
+
   it('C-2 payments run in mock or sandbox mode only', () => {
     expect(problems({ ...dev(), PAYMENT_MODE: 'live' })).toEqual(['PAYMENT_MODE: must be one of mock, sandbox']);
     expect(problems({ ...dev(), COURIER_MODE: 'live' })).toEqual(['COURIER_MODE: must be one of mock, sandbox']);
