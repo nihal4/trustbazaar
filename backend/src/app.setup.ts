@@ -1,7 +1,9 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import * as cookieParser from 'cookie-parser';
+import { config } from './kernel/config/config';
 import { correlationMiddleware } from './kernel/http/correlation';
+import { RedisIoAdapter } from './kernel/live/redis-io.adapter';
 import { ProblemFilter } from './kernel/http/problem.filter';
 
 // What every running backend gets on top of AppModule. Shared by main.ts and the API tests
@@ -27,6 +29,9 @@ export function configureApp(app: INestApplication): INestApplication {
 
   // Every error is an RFC 9457 problem document (DC-3).
   app.useGlobalFilters(new ProblemFilter());
+
+  // The live connection at /socket.io: WebSocket only, our origin only, rooms across instances (K-07).
+  app.useWebSocketAdapter(new RedisIoAdapter(app, config().publicOrigin));
 
   return app;
 }
