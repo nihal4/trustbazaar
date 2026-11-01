@@ -12,7 +12,7 @@ import { Language, render, TemplateTexts } from './templates';
 // dedupe key makes a redelivered event create nothing (DC-6). The e-mail and SMS rows are sent by U6-05's
 // delivery worker; the live notification.new push comes with the Socket.IO gateway (K-07).
 export interface Subject {
-  type: 'order' | 'listing' | 'payout' | 'refund' | 'account';
+  type: 'order' | 'listing' | 'payout' | 'refund' | 'account' | 'thread';
   id: string;
 }
 

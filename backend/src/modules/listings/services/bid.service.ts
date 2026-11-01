@@ -3,7 +3,9 @@ import { DataSource, QueryFailedError } from 'typeorm';
 import { IdempotencyKeys } from '../../../kernel/http/idempotency';
 import { Problem } from '../../../kernel/http/problems';
 import { LIVE, LivePort } from '../../../kernel/live/live';
+import type { BlockPort } from '../../chat/ports';
 import { IDENTITY_QUERY, IdentityQuery, RATE_LIMITER, RateLimiterPort } from '../../identity/ports';
+import { AUCTION_BLOCKS } from '../adapters/blocks';
 import { Bid } from '../db/entities';
 import type { BidOutcome } from '../db/enums';
 import type { AuctionQuery, AuctionState } from '../ports';
@@ -77,6 +79,7 @@ export class BidService implements AuctionQuery {
     @Inject(IDENTITY_QUERY) private readonly identity: IdentityQuery,
     @Inject(RATE_LIMITER) private readonly limiter: RateLimiterPort,
     @Inject(LIVE) private readonly live: LivePort,
+    @Inject(AUCTION_BLOCKS) private readonly blocks: BlockPort,
   ) {}
 
   /**
@@ -89,7 +92,8 @@ export class BidService implements AuctionQuery {
       // section 5.4, before the lock: the bidder may transact, within CP-35 for this auction, and the listing is visible
       await this.identity.assertCanTransact(userId, 'bid');
       await this.limiter.consume('bid', `${userId}:${auctionId}`);
-      await this.listings.visible(auctionId, userId);
+      const listing = await this.listings.visible(auctionId, userId);
+      await this.blocks.assertNotBlocked(listing.sellerId, userId); // FR-CHT-08, I-38: a block in either direction
       return (await this.decide(userId, auctionId, maximum)).bid_id;
     });
     const bid = await this.db.getRepository(Bid).findOneBy({ id, bidderId: userId, auctionId });
