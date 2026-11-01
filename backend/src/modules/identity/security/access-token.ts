@@ -43,3 +43,22 @@ export function verifyAccessToken(keys: Keyring, token: string, now: Date): Acce
     return null;
   }
 }
+
+/**
+ * I-51 (d): like verifyAccessToken, but tells an expired token whose signature is still good ('expired': the
+ * client refreshes and reconnects) apart from anything else ('invalid': the client signs in again).
+ */
+export function accessTokenStatus(keys: Keyring, token: string, now: Date): AccessClaims | 'expired' | 'invalid' {
+  const valid = verifyAccessToken(keys, token, now);
+  if (valid) return valid;
+  const header = decode(token, { complete: true })?.header;
+  const version = /^v([1-9]\d*)$/.exec(header?.kid ?? '')?.[1];
+  const key = version ? keys.key(Number(version)) : undefined;
+  if (!header || header.alg !== 'HS256' || !key) return 'invalid';
+  try {
+    verify(token, key.reveal(), { algorithms: ['HS256'], ignoreExpiration: true });
+    return 'expired';
+  } catch {
+    return 'invalid';
+  }
+}

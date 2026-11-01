@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 import { CLOCK, Clock } from '../../../kernel/clock';
+import { LIVE, LivePort } from '../../../kernel/live/live';
 import { cursorAt, decodeCursor, encodeCursor } from '../../../kernel/http/cursor';
 import { Language, render, TemplateTexts } from './templates';
 
@@ -41,6 +42,7 @@ export class NotificationService {
   constructor(
     private readonly db: DataSource,
     @Inject(CLOCK) private readonly clock: Clock,
+    @Inject(LIVE) private readonly live: LivePort,
   ) {}
 
   /** Creates one notice; null if this dedupe key already made one for the user (an event delivered twice). */
@@ -55,6 +57,26 @@ export class NotificationService {
       return id;
     };
     return tx ? work(tx) : this.db.transaction(work);
+  }
+
+  /**
+   * Section 3.2: after commit, notification.new to the user's live connections, with the notice's id, its title
+   * in the user's language, the unread count and its subject (I-55), so the client refreshes exactly that object.
+   */
+  async push(userId: string, id: string): Promise<void> {
+    const { language } = await this.preferences(userId);
+    const [r] = (await this.db.query(
+      `SELECT n.params, n.subject_type, n.subject_id, t.title_en, t.title_bn, t.body_en, t.body_bn,
+              (SELECT count(*)::int FROM notify.notifications u WHERE u.user_id = n.user_id AND u.read_at IS NULL) AS unread
+         FROM notify.notifications n JOIN notify.templates t ON t.code = n.template_code AND t.version = n.template_version
+        WHERE n.id = $1 AND n.user_id = $2`,
+      [id, userId],
+    )) as { params: Record<string, unknown>; subject_type: string | null; subject_id: string | null; title_en: string; title_bn: string; body_en: string; body_bn: string; unread: number }[];
+    if (!r) return;
+    const { title } = render({ titleEn: r.title_en, titleBn: r.title_bn, bodyEn: r.body_en, bodyBn: r.body_bn }, r.params ?? {}, language);
+    this.live.toUser(userId, 'notification.new', {
+      id, title, unread: r.unread, subject: r.subject_type && r.subject_id ? { type: r.subject_type, id: r.subject_id } : null,
+    });
   }
 
   /** FR-NTF-04: the user's notices, newest first, 50 a page, in their language; with the unread count. */
