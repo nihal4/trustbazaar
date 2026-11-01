@@ -11,6 +11,8 @@
   --tb-warning-bg: #fff4d6;
   --tb-warning-border: #8a5a00;
   --tb-focus: #0b5cad;
+  --tb-error: #b3261e;
+  --tb-success: #1e6b34;
   --tb-radius: 6px;
   --tb-space-1: 0.25rem;
   --tb-space-2: 0.5rem;
