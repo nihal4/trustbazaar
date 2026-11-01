@@ -27,7 +27,7 @@ describe('e-mail and SMS channels', () => {
     expect(() => compose('unknown', {})).toThrow(/no message text/);
   });
 
-  it('AS-4 the mailbox command accepts a local number as the stored international one', () => {
+  it('IF-SW-05 the mailbox command accepts a local number as the stored international one (AS-4)', () => {
     expect([normaliseTo('01712345678'), normaliseTo('017 1234-5678'), normaliseTo('a@b.c'), normaliseTo(undefined)]).toEqual(['+8801712345678', '+8801712345678', 'a@b.c', undefined]);
   });
 });
