@@ -4,7 +4,6 @@ import { IdentityModule } from '../identity/identity.module';
 import { ENTITIES } from './db/entities';
 import { CategoriesController, ListingPhotosController, ListingsController, MyListingsController } from './http/listings.controller';
 import { LISTINGS_PORT } from './ports';
-import { IdempotencyKeys } from './services/idempotency';
 import { ListingService } from './services/listing.service';
 import { MediaPipeline } from './services/media';
 import { ScreeningService } from './services/screening.service';
@@ -21,7 +20,6 @@ import { StockService } from './services/stock.service';
     ListingService,
     MediaPipeline,
     ScreeningService,
-    IdempotencyKeys,
     StockService,
     { provide: LISTINGS_PORT, useExisting: StockService },
   ],
