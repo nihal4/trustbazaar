@@ -1,4 +1,4 @@
-import { IsIn, IsInt, IsOptional, IsString, IsUUID, Max, MaxLength, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, IsUUID, Matches, Max, MaxLength, Min } from 'class-validator';
 import { FULFILMENT } from '../db/enums';
 import type { Fulfilment } from '../ports';
 
@@ -47,4 +47,17 @@ export class StartPaymentDto {
 export class MockPayDto {
   @IsIn(['succeeded', 'failed'])
   outcome!: 'succeeded' | 'failed';
+}
+
+/** FR-PAY-09: the buyer's request, or the seller's own cancellation, with its reason. */
+export class CancellationDto {
+  @IsString()
+  @MaxLength(500)
+  @Matches(/\S/, { message: 'reason must not be empty' })
+  reason!: string;
+}
+
+export class CancellationDecisionDto {
+  @IsIn(['accept', 'decline'])
+  decision!: 'accept' | 'decline';
 }
