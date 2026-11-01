@@ -120,6 +120,14 @@ export class StripeProvider implements PaymentProvider {
     return fromSession(s, `query:${s.id}:${s.payment_status ?? s.status}`, 'checkout.session.query', 'query', JSON.stringify(s));
   }
 
+  /** FR-PAY-12: Stripe's refunds API on the payment intent, with the refund's idempotency key. */
+  async refund(r: { providerTxnId: string | null; amount: bigint; idempotencyKey: string }): Promise<{ status: 'succeeded' | 'pending' | 'unsupported'; providerRefundId?: string }> {
+    if (!r.providerTxnId) return { status: 'unsupported' }; // no payment intent to refund: an operator handles it
+    const res = (await this.call('POST', '/refunds', r.idempotencyKey, formEncode({ payment_intent: r.providerTxnId, amount: r.amount.toString() }))) as unknown as { id: string; status: string };
+    if (res.status === 'failed' || res.status === 'canceled') throw new ProviderUnavailable(`stripe refund ${res.status}`);
+    return { status: res.status === 'succeeded' ? 'succeeded' : 'pending', providerRefundId: res.id };
+  }
+
   /** A verified webhook event as a result; null for event types this unit does not act on. */
   static fromEvent(raw: Buffer): VerifiedResult | null {
     const e = JSON.parse(raw.toString('utf8')) as { id: string; type: string; data: { object: Session } };

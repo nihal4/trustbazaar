@@ -6,7 +6,7 @@ import { IdempotencyKeys } from '../../../kernel/http/idempotency';
 import { Problem } from '../../../kernel/http/problems';
 import { AUDIT_SERVICE, AuditServicePort, IDENTITY_QUERY, IdentityQuery } from '../../identity/ports';
 import { LISTINGS_PORT, ListingSnapshot, ListingsPort } from '../../listings/ports';
-import { Escrow, Order, OrdersOutboxEvent } from '../db/entities';
+import { CancellationRequest, Escrow, Order, OrdersOutboxEvent } from '../db/entities';
 import type { Fulfilment, FulfilmentFacts, OrderView, OrdersPort } from '../ports';
 
 // Orders (docs/design/02_orders_payments.pdf sections 5.3 and 5.4; FR-FIX-01, 02, 05, FR-TNS-07; I-52).
@@ -221,6 +221,7 @@ export class OrderService implements OrdersPort {
     const o = await m.getRepository(Order).findOneBy({ id: orderId });
     if (!o || (o.buyerId !== userId && o.sellerId !== userId)) throw new Problem('not-found'); // SEC-SDL-09
     const e = await m.getRepository(Escrow).findOneBy({ orderId });
+    const [req] = await m.getRepository(CancellationRequest).find({ where: { orderId }, order: { createdAt: 'DESC' }, take: 1 });
     const snap = o.listingSnapshot as ListingSnapshot;
     const iso = (d: Date | null) => d?.toISOString() ?? null;
     return {
@@ -232,6 +233,7 @@ export class OrderService implements OrdersPort {
       paymentDueAt: o.paymentDueAt.toISOString(), paidAt: iso(o.paidAt), fulfilmentStep: o.fulfilmentStep,
       fulfilmentDueAt: iso(o.fulfilmentDueAt), deliveryEventAt: iso(o.deliveryEventAt), cancelledAt: iso(o.cancelledAt),
       cancelReason: o.cancelReason, closedAt: iso(o.closedAt), createdAt: o.createdAt.toISOString(),
+      cancellationRequest: req ? { id: req.id, status: req.status, reason: req.reason, createdAt: req.createdAt.toISOString() } : null,
       escrow: e && {
         state: e.state, releasePolicy: e.releasePolicy, amountCollected: e.amountCollected, amountRefunded: e.amountRefunded,
         disputeWindowEndsAt: iso(e.disputeWindowEndsAt), autoReleaseAt: iso(e.autoReleaseAt),
