@@ -1,4 +1,5 @@
 import { createRoot } from 'react-dom/client';
+import { accountRoutes } from '../features/account/routes';
 import { createDocument, DocumentRoot, signInHere } from '../shared/document';
 import '../shared/tokens.css';
 
@@ -9,7 +10,11 @@ const doc = createDocument({
   kind: 'user',
   home: { path: '/', sameDocument: true },
   signIn: signInHere,
-  routes: [{ index: true, lazy: () => import('../shared/HomePlaceholder') }],
+  accountLinks: true,
+  routes: [
+    { index: true, lazy: () => import('../shared/HomePlaceholder') },
+    ...accountRoutes,
+  ],
 });
 
 createRoot(document.getElementById('root')!).render(<DocumentRoot doc={doc} />);

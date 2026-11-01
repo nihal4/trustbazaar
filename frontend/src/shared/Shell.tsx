@@ -6,7 +6,10 @@ import { Suspense, useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useLanguage } from './language/Language';
 import { LanguageSwitch } from './language/LanguageSwitch';
+import { useMe } from './me';
 import { useSignedOut } from './session';
+import { usePendingStepUp } from './stepUp';
+import { StepUpDialog } from './StepUpDialog';
 import styles from './shell.module.css';
 
 export interface ShellProps {
@@ -14,9 +17,11 @@ export interface ShellProps {
   titleKey?: string;
   /** the logo's target; a path of another document is a normal page load */
   home: { path: string; sameDocument: boolean };
+  /** the user app shows "Sign in" or "Account" in the header */
+  accountLinks?: boolean;
 }
 
-export function Shell({ titleKey, home }: ShellProps) {
+export function Shell({ titleKey, home, accountLinks = false }: ShellProps) {
   const { t } = useLanguage();
   const main = useRef<HTMLElement>(null);
   const { pathname } = useLocation();
@@ -38,9 +43,11 @@ export function Shell({ titleKey, home }: ShellProps) {
           : <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}>{brand}</a>}
         {titleKey && <span className={styles.docTitle}>{t(titleKey)}</span>}
         <span className={styles.spacer} />
+        {accountLinks && <AccountLink />}
         <LanguageSwitch />
       </header>
       <SignedOutNotice />
+      <PendingStepUp />
       <main id="main" ref={main} tabIndex={-1} className={styles.main}>
         <Suspense fallback={<p role="status">{t('shell.loading')}</p>}>
           <Outlet />
@@ -60,4 +67,19 @@ function SignedOutNotice() {
       <button type="button" onClick={dismiss}>{t('shell.close')}</button>
     </div>
   );
+}
+
+/** "Account" once /me answers; otherwise "Sign in", returning to this page. */
+function AccountLink() {
+  const { t } = useLanguage();
+  const me = useMe();
+  const { pathname, search } = useLocation();
+  if (me.isSuccess) return <Link className={styles.account} to="/account">{t('shell.account')}</Link>;
+  if (pathname === '/signin' || pathname === '/register') return null;
+  return <Link className={styles.account} to={`/signin?next=${encodeURIComponent(pathname + search)}`}>{t('shell.sign_in')}</Link>;
+}
+
+function PendingStepUp() {
+  const pending = usePendingStepUp();
+  return pending ? <StepUpDialog key={pending.action} request={pending} /> : null;
 }
