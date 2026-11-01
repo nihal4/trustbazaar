@@ -11,7 +11,7 @@ import { signFileLink, verifyFileLink } from '../security/file-links';
 import { verifyAccessToken } from '../security/access-token';
 import { ApprovalService, ApprovalView } from './approval.service';
 import { AuditService } from './audit.service';
-import { KycFileKind, KycService } from './kyc.service';
+import { KycFileKind, KycService, userFacing } from './kyc.service';
 import { publish } from './outbox';
 import { RequestContext } from './session.service';
 import { StaffService } from './staff.service';
@@ -181,7 +181,7 @@ export class KycReviewService implements OnModuleInit {
           reason: d.note?.trim() || null, sourceIp: ctx.ip, correlationId: ctx.correlationId,
         });
         await publish(m, d.decision === 'approve' ? 'identity.kyc.verified' : 'identity.kyc.rejected', s.user_id, {
-          userId: s.user_id, submissionId: s.id, ...(d.decision === 'reject' ? { reason: d.reason } : {}),
+          userId: s.user_id, submissionId: s.id, ...(d.decision === 'reject' ? { reason: userFacing(d.reason!, null).reason } : {}), // tells the user (FR-TNS-06)
         });
         return { status } as const;
       });
