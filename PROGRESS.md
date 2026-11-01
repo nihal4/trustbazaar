@@ -249,7 +249,7 @@ Design: `docs/design/08_frontend.pdf` (source `.tex` beside it).
 | U8-05 | Checkout and payment return | U8-04, U2-03 | todo | | | | |
 | U8-06 | Order view, handover code, shipments | U8-05, U4-03 | todo | | | | |
 | U8-07 | Game-account screens (`secure.html`) | U8-06, U5-04 | todo | | | | |
-| U8-08 | Notification centre, notification preferences, and the language saved to them | U8-01, U6-04 | doing | Sabikun Nahar Sinthia | `feature/u8-08-notifications` | | Split on 2026-11-01 (agreed with the user): chat moved to U8-13. Also: save a signed-in user's language in Unit 6's notification preferences (section 6.1); until then the choice is kept in the browser for everyone (Decisions log, U8-01). |
+| U8-08 | Notification centre, notification preferences, and the language saved to them | U8-01, U6-04 | review | Sabikun Nahar Sinthia | `feature/u8-08-notifications`, #151 | | Split on 2026-11-01 (agreed with the user): chat moved to U8-13. `/notifications` (`features/notifications/`): notices newest first with Dhaka times, "New" in words, plain text, older pages by cursor; opening one marks it read and goes to its order, listing, payout or security page; "Mark all as read"; preferences (transactional e-mails; language). Header: "Notifications" with the unread count, polled every 60 s until K-07 (Decisions log). The signed-in user's language is saved to the preferences after sign-in and on every switch, the page's language winning (Decisions log). |
 | U8-09 | Disputes, ratings, seller dashboard, privacy screens | U8-06, U7-05 | todo | | | | |
 | U8-10 | Staff console (`staff.html`) | U8-01, U7-06 | todo | | | | |
 | U8-11 | End-to-end, accessibility, 360 and 320 pixel, Lighthouse runs | U8-09, U8-10 | todo | | | | |

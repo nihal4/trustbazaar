@@ -24,5 +24,7 @@
   "stepup.resend_in": "New code in {seconds} s",
   "stepup.wait": "Try again in {seconds} s",
   "stepup.wrong_code": "The code is not correct. Check it and try again.",
-  "stepup.expired": "This code has expired. Ask for a new one."
+  "stepup.expired": "This code has expired. Ask for a new one.",
+  "shell.notifications": "Notifications",
+  "shell.notifications_unread": "Notifications, {count} unread"
 }

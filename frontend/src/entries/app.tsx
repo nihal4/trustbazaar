@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import { accountRoutes } from '../features/account/routes';
+import { notificationRoutes } from '../features/notifications/routes';
 import { createDocument, DocumentRoot, signInHere } from '../shared/document';
 import '../shared/tokens.css';
 
@@ -14,6 +15,7 @@ const doc = createDocument({
   routes: [
     { index: true, lazy: () => import('../shared/HomePlaceholder') },
     ...accountRoutes,
+    ...notificationRoutes,
   ],
 });
 
