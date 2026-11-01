@@ -57,10 +57,11 @@ describe('listings', () => {
     const upload = (path: string, form: FormData) => fetch(t.url(path), { method: 'POST', headers: base(), body: form });
     return { userId, sid, call, upload };
   }
+  // no session; its own address, so the per-address limits of earlier runs never answer first (429)
   const guest = (method: string, path: string, body?: unknown) =>
     fetch(t.url(path), {
       method,
-      headers: { origin, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
+      headers: { origin, 'x-forwarded-for': `192.0.2.${randomInt(1, 255)}, 10.2.${randomInt(0, 255)}.${randomInt(1, 255)}`, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
 

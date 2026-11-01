@@ -21,6 +21,12 @@ export class Notification {
   @Column({ type: 'varchar', name: 'dedupe_key', length: 200 })
   dedupeKey!: string;
 
+  @Column({ type: 'varchar', name: 'subject_type', length: 30, nullable: true })
+  subjectType!: string | null;
+
+  @Column({ type: 'uuid', name: 'subject_id', nullable: true })
+  subjectId!: string | null;
+
   @Column({ type: 'timestamptz', name: 'created_at' })
   createdAt!: Date;
 

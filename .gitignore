@@ -33,3 +33,4 @@ pgdata/
 
 # Production secrets (the example file is committed, the real one never)
 prod.env
+**/node_modules
