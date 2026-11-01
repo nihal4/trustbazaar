@@ -84,6 +84,49 @@ describe('register', () => {
   });
 });
 
+describe('outdated terms', () => {
+  it.each([[422], [400]])('FR-ACC-04 a %s naming termsVersion or privacyVersion as not current asks for a reload, not a generic error', async (status) => {
+    const be = fakeBackend({
+      'POST /auth/register': problem(status, 'validation-failed',
+        { errors: [{ field: 'termsVersion', reason: 'not-current' }, { field: 'privacyVersion', reason: 'not-current' }] }),
+    });
+    renderApp('/register', be);
+    await screen.findByRole('heading', { name: 'Create your account' });
+    type('Display name', 'Rahim');
+    type('Mobile number', '01712345678');
+    type('E-mail address', 'rahim@example.com');
+    type('Password', 'correct horse battery staple');
+    fireEvent.click(screen.getByLabelText('I am 18 years old or older.'));
+    fireEvent.click(screen.getByLabelText(/accept the terms of use/));
+    click('Create account');
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toMatch(/terms or privacy notice have just changed/);
+    expect(within(alert).getByRole('button', { name: 'Reload the page' })).toBeTruthy();
+    expect(alert.textContent).not.toMatch(/Something went wrong|not valid/);
+  });
+});
+
+describe('help pages', () => {
+  it('FR-PRV-01 the register screen links to the privacy notice and the terms, which are real pages in both languages', async () => {
+    const doc = renderApp('/register', fakeBackend({}));
+    await screen.findByRole('heading', { name: 'Create your account' });
+    fireEvent.click(screen.getByRole('link', { name: 'Full privacy notice' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'How we use your information' })).toBeTruthy();
+    expect(screen.getByText('Version 2026-11-01')).toBeTruthy();
+    expect(screen.getByText(/Payment records: 6 years/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('link', { name: 'Terms of use' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Terms of use' })).toBeTruthy();
+    expect(doc.router.state.location.pathname).toBe('/help/terms');
+    expect(screen.getByText(/publisher may forbid account transfers/)).toBeTruthy();
+  });
+
+  it('NFR-USE-04 the terms page is in Bangla too', async () => {
+    renderApp('/help/terms', fakeBackend({}), 'bn');
+    expect(await screen.findByRole('heading', { level: 1, name: 'ব্যবহারের শর্তাবলি' })).toBeTruthy();
+    expect(screen.getByText('সংস্করণ ২০২৬-১১-০১')).toBeTruthy();
+  });
+});
+
 describe('sign in', () => {
   it('SEC-AUTH-05 every refusal reads the same, so the page never tells which accounts exist', async () => {
     const be = fakeBackend({
