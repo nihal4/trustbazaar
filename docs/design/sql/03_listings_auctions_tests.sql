@@ -67,6 +67,12 @@ SELECT pg_temp.expect_fail('FR-LST-05 an auction has quantity 1',
 SELECT pg_temp.expect_fail('FR-LST-03 courier needs weight and size classes',
  $q$INSERT INTO listings.listings (seller_id, item_kind, sale_format, category_id, title, description, condition, no_visible_defects, fulfilment_options, area_district, approx_lat, approx_lng, price) VALUES ('c0000000-0000-4000-8000-000000000005','physical','fixed_price',104,'Phone','A phone in good working condition.','used',true,'pickup_or_courier','Dhaka',23.8,90.4,100000)$q$,
  'courier_needs_parcel');
+SELECT pg_temp.expect_fail('I-23 no courier for an item over 10 kg',
+ $q$INSERT INTO listings.listings (seller_id, item_kind, sale_format, category_id, title, description, condition, no_visible_defects, fulfilment_options, weight_class, size_class, area_district, approx_lat, approx_lng, price) VALUES ('c0000000-0000-4000-8000-000000000005','physical','fixed_price',104,'Heavy phone stand','A heavy stand in good working condition.','used',true,'courier_only','over_10kg','medium','Dhaka',23.8,90.4,100000)$q$,
+ 'courier_parcel_fits');
+SELECT pg_temp.expect_fail('I-23 no courier for an oversize item',
+ $q$INSERT INTO listings.listings (seller_id, item_kind, sale_format, category_id, title, description, condition, no_visible_defects, fulfilment_options, weight_class, size_class, area_district, approx_lat, approx_lng, price) VALUES ('c0000000-0000-4000-8000-000000000005','physical','fixed_price',104,'Phone display wall','A large display wall for phones.','used',true,'pickup_or_courier','up_to_5kg','oversize','Dhaka',23.8,90.4,100000)$q$,
+ 'courier_parcel_fits');
 SELECT pg_temp.expect_fail('a game account has no physical fields',
  $q$INSERT INTO listings.listings (seller_id, item_kind, sale_format, category_id, title, description, condition, price) VALUES ('c0000000-0000-4000-8000-000000000005','game_account','fixed_price',102,'PUBG account','Level 70 account with many skins.','used',500000)$q$,
  'game_fields');
@@ -87,6 +93,14 @@ VALUES ('e0000000-0000-4000-8000-000000000001', 2, 'p-2', 800, 600);
 SELECT pg_temp.expect_fail('FR-LST-02 a defect photo or a no-defects declaration is required',
  $q$UPDATE listings.listings SET status='active', published_at=now() WHERE id='e0000000-0000-4000-8000-000000000001'$q$,
  'declare that there are none');
+SELECT pg_temp.expect_fail('two photos shown cannot share a position',
+ $q$INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ('e0000000-0000-4000-8000-000000000001', 2, 'p-2b', 800, 600)$q$,
+ 'listing_photos_live_position');
+UPDATE listings.listing_photos SET removed_at = now() WHERE storage_key = 'p-1';
+INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height)
+VALUES ('e0000000-0000-4000-8000-000000000001', 1, 'p-1b', 800, 600);
+SELECT pg_temp.ok('a removed photo''s position can be used again',
+ (SELECT count(*) = 2 FROM listings.listing_photos WHERE listing_id = 'e0000000-0000-4000-8000-000000000001' AND removed_at IS NULL));
 UPDATE listings.listing_photos SET shows_defects = true WHERE storage_key = 'p-2';
 UPDATE listings.listings SET status='active', published_at=now() WHERE id='e0000000-0000-4000-8000-000000000001';
 SELECT pg_temp.ok('a listing with two photos, one showing defects, is published', true);
@@ -108,6 +122,13 @@ SELECT listings.reserve('e0000000-0000-4000-8000-000000000001', 1);
 SELECT listings.mark_sold('e0000000-0000-4000-8000-000000000001', 1);
 SELECT pg_temp.ok('FR-FIX-04 sold when nothing is available or reserved',
  (SELECT status='sold' FROM listings.listings WHERE id='e0000000-0000-4000-8000-000000000001'));
+INSERT INTO listings.stock_moves (order_id, kind, listing_id, quantity)
+VALUES ('f0000000-0000-4000-8000-000000000001', 'sold', 'e0000000-0000-4000-8000-000000000001', 1);
+SELECT pg_temp.expect_fail('DC-6 an order moves stock once: no release after its sale',
+ $q$INSERT INTO listings.stock_moves (order_id, kind, listing_id, quantity) VALUES ('f0000000-0000-4000-8000-000000000001', 'released', 'e0000000-0000-4000-8000-000000000001', 1)$q$,
+ 'stock_moves_pkey');
+SELECT pg_temp.expect_fail('stock moves are append-only',
+ $q$UPDATE listings.stock_moves SET quantity = 2$q$, 'append-only');
 SELECT pg_temp.expect_fail('stock must always add up',
  $q$UPDATE listings.listings SET quantity_sold = 2 WHERE id='e0000000-0000-4000-8000-000000000001'$q$,
  'stock_adds_up');
@@ -267,6 +288,8 @@ SELECT pg_temp.expect_fail('application role cannot rewrite listing history',
  $q$UPDATE listings.status_history SET reason='x'$q$, 'permission denied');
 SELECT pg_temp.expect_fail('application role cannot delete bids',
  $q$DELETE FROM auctions.bids$q$, 'permission denied');
+SELECT pg_temp.expect_fail('application role cannot rewrite stock moves',
+ $q$UPDATE listings.stock_moves SET quantity = 2$q$, 'permission denied');
 RESET ROLE;
 
 ROLLBACK;

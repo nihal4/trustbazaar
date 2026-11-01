@@ -98,6 +98,9 @@ CREATE TABLE listings.listings (
       AND approx_lat IS NOT NULL AND area_district IS NOT NULL)),
   CONSTRAINT courier_needs_parcel CHECK (fulfilment_options IS NULL OR fulfilment_options = 'pickup_only'
                                          OR (weight_class IS NOT NULL AND size_class IS NOT NULL)),
+  -- no courier fare covers an item over 10 kg or an oversize item (I-23; Unit 4 DV-24, DV-25)
+  CONSTRAINT courier_parcel_fits CHECK (fulfilment_options IS NULL OR fulfilment_options = 'pickup_only'
+                                        OR (weight_class <> 'over_10kg' AND size_class <> 'oversize')),
   CONSTRAINT game_fields CHECK (item_kind <> 'game_account' OR
      (condition IS NULL AND fulfilment_options IS NULL AND weight_class IS NULL AND quantity_total = 1)),
   CONSTRAINT location_pair CHECK ((approx_lat IS NULL) = (approx_lng IS NULL)),
@@ -158,9 +161,10 @@ CREATE TABLE listings.listing_photos (                                       -- 
   height         smallint NOT NULL CHECK (height BETWEEN 1 AND 4000),
   shows_defects  boolean NOT NULL DEFAULT false,
   created_at     timestamptz NOT NULL DEFAULT now(),
-  removed_at     timestamptz,
-  UNIQUE (listing_id, position)
+  removed_at     timestamptz
 );
+-- positions are unique among the photos shown, so a removed photo's position can be used again
+CREATE UNIQUE INDEX listing_photos_live_position ON listings.listing_photos (listing_id, position) WHERE removed_at IS NULL;
 
 -- a physical listing is published only with two photos and a defect photo or a no-defects declaration
 CREATE FUNCTION listings.check_publishable() RETURNS trigger LANGUAGE plpgsql AS $$
@@ -201,6 +205,20 @@ CREATE TABLE listings.status_history (                                      -- F
   at          timestamptz NOT NULL DEFAULT now()
 );
 CREATE TRIGGER listing_history_append_only BEFORE UPDATE OR DELETE ON listings.status_history
+  FOR EACH ROW EXECUTE FUNCTION identity.forbid_change();
+
+-- what an order's events did to its reserved units (orders.order.paid: sold; orders.order.cancelled:
+-- released). One outcome per order, so a redelivered event never moves stock twice (DC-6), and a
+-- cancellation after payment returns nothing (I-14: the seller relists). Append-only.
+CREATE TABLE listings.stock_moves (
+  order_id    uuid PRIMARY KEY,                    -- Unit 2's order (DC-5: no foreign key to a later unit)
+  kind        varchar(10) NOT NULL CHECK (kind IN ('sold', 'released')),
+  listing_id  uuid NOT NULL REFERENCES listings.listings(id),
+  quantity    integer NOT NULL CHECK (quantity >= 1),
+  at          timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX stock_moves_listing ON listings.stock_moves (listing_id);
+CREATE TRIGGER stock_moves_append_only BEFORE UPDATE OR DELETE ON listings.stock_moves
   FOR EACH ROW EXECUTE FUNCTION identity.forbid_change();
 
 -- ---------------------------------------------------------------- stock port (DC-13): single statements
@@ -617,6 +635,6 @@ CREATE VIEW listings.searchable AS
 -- =====================================================================
 GRANT USAGE ON SCHEMA listings, auctions TO tb_app;
 GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA listings, auctions TO tb_app;
-REVOKE UPDATE ON listings.clarifications, listings.status_history FROM tb_app;
+REVOKE UPDATE ON listings.clarifications, listings.status_history, listings.stock_moves FROM tb_app;
 GRANT SELECT ON listings.searchable TO tb_app;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA listings, auctions TO tb_app;
