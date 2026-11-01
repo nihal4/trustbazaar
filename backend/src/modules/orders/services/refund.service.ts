@@ -75,12 +75,49 @@ export class RefundService {
       await m.getRepository(Refund).update({ id: r.id }, { status: 'sent', providerRefundId: result.providerRefundId ?? null, attemptsMade: r.attemptsMade + 1 });
       return 'sent'; // confirmed later by reconciliation (U2-07)
     }
-    await m.getRepository(Refund).update({ id: r.id }, { status: 'succeeded', providerRefundId: result.providerRefundId ?? null, attemptsMade: r.attemptsMade + 1, completedAt: now });
+    await this.succeed(m, r, a, result.providerRefundId ?? null, r.attemptsMade + 1);
+    return 'succeeded';
+  }
+
+  /**
+   * Reconciliation (section 5.12; U2-07): asks the provider about refunds it took for later ('sent'). A
+   * success is posted as at once; a failure goes to an operator, since resending with the same idempotency
+   * key would only repeat the failed refund. Returns how many changed.
+   */
+  async confirmSent(limit = 100): Promise<number> {
+    let changed = 0;
+    const rows = (await this.db.query(`SELECT id FROM payments.refunds WHERE status = 'sent' ORDER BY next_attempt_at LIMIT $1`, [limit])) as { id: string }[];
+    for (const { id } of rows) {
+      const done = await this.db.transaction(async (m) => {
+        const [locked] = (await m.query(`SELECT id FROM payments.refunds WHERE id = $1 AND status = 'sent' FOR UPDATE SKIP LOCKED`, [id])) as { id: string }[];
+        if (!locked) return false;
+        const r = await m.getRepository(Refund).findOneByOrFail({ id });
+        const a = await m.getRepository(PaymentAttempt).findOneByOrFail({ id: r.attemptId });
+        const adapter = this.providers[a.provider];
+        if (!adapter?.queryRefund || !r.providerRefundId) return false;
+        let status: 'succeeded' | 'pending' | 'failed';
+        try {
+          status = await adapter.queryRefund(r.providerRefundId);
+        } catch (err) {
+          if (err instanceof ProviderUnavailable) return false; // asked again next run
+          throw err;
+        }
+        if (status === 'pending') return false;
+        if (status === 'succeeded') await this.succeed(m, r, a, r.providerRefundId, r.attemptsMade);
+        else await this.manual(m, r, 'refund_failed', `${a.provider} reports the refund failed`);
+        return true;
+      });
+      if (done) changed++;
+    }
+    return changed;
+  }
+
+  private async succeed(m: EntityManager, r: Refund, a: PaymentAttempt, providerRefundId: string | null, attemptsMade: number): Promise<void> {
+    await m.getRepository(Refund).update({ id: r.id }, { status: 'succeeded', providerRefundId, attemptsMade, completedAt: this.clock.now() });
     const buyer = r.orderId ? (await m.getRepository(Order).findOneBy({ id: r.orderId }))?.buyerId ?? a.payerId : a.payerId;
     await post(m, 'refund_paid', r.orderId, r.id, `refund ${r.reason} paid out by ${a.provider}`, [['buyer_refund_payable', buyer, BigInt(r.amount)], ['provider_clearing', null, -BigInt(r.amount)]]);
     await m.getRepository(OrdersOutboxEvent).insert({ eventType: 'payments.refund.succeeded', aggregateId: r.orderId ?? r.id, payload: { refundId: r.id, orderId: r.orderId, buyerId: buyer, amount: r.amount, reason: r.reason } });
     await this.audit.record({ actorType: 'system', action: 'payments.refund.succeeded', objectType: 'refund', objectId: r.id, after: { amount: r.amount, provider: a.provider } }, m);
-    return 'succeeded';
   }
 
   /** FR-PAY-12: an operator takes over, and the buyer is told when to expect the money. */
