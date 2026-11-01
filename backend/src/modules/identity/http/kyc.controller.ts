@@ -65,7 +65,11 @@ export class KycController {
     @Req() req: Request,
   ) {
     const images: Partial<Record<KycFileKind, Buffer>> = {};
-    for (const [kind, list] of Object.entries(files ?? {})) if (list?.[0]) images[kind as KycFileKind] = list[0].buffer;
+    // Only the fixed kinds are read (multer also refuses any other part name).
+    for (const kind of KINDS) {
+      const part = files?.[kind]?.[0];
+      if (part) images[kind] = part.buffer;
+    }
     return this.kyc.submit(userOf(p).userId, dto, images, ctxOf(req));
   }
 
