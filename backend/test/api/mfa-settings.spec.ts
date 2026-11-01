@@ -47,7 +47,7 @@ describe('MFA settings', () => {
     expect(secretOf(otpauthUri)).toBe(secret);
     expect(secret).not.toBe(first.secret);
     expect(Buffer.from(secret.replace(/=+$/, ''), 'utf8').length).toBeGreaterThanOrEqual(32); // 160 bits in base32
-    expect((await a.call('POST', '/me/mfa/totp/confirm', { code: at(first.secret) })).status).toBe(401); // the replaced secret is gone
+    expect((await a.call('POST', '/me/mfa/totp/confirm', { code: at(first.secret) })).status).toBe(400); // the replaced secret is gone
     const c = await a.call('POST', '/me/mfa/totp/confirm', { code: at(secret) });
     expect(c.status).toBe(200);
     const { recoveryCodes } = await c.json();
@@ -70,7 +70,9 @@ describe('MFA settings', () => {
     expect((await a.call('POST', '/me/mfa/totp/confirm', { code: '123456' })).status).toBe(409);
     await a.call('POST', '/me/mfa/totp');
     const wrong = await a.call('POST', '/me/mfa/totp/confirm', { code: '000000' });
-    expect([wrong.status, (await wrong.json()).type]).toEqual([401, '/problems/mfa-failed']);
+    // 400, not 401: the client reads every 401 as an ended session and would refresh, resend and sign out
+    expect([wrong.status, (await wrong.json()).type]).toEqual([400, '/problems/otp-failed']);
+    expect((await a.call('GET', '/me')).status).toBe(200); // the session is untouched
     expect((await a.call('POST', '/me/mfa/totp/confirm', { code: 'abc' })).status).toBe(400);
     expect(await user(a.userId)).toMatchObject({ mfa_enabled: false });
   });
@@ -79,7 +81,7 @@ describe('MFA settings', () => {
     const a = await signedIn({ mfa: true });
     expect((await a.call('DELETE', '/me/mfa/totp', { code: at(a.totpSecret!) })).status).toBe(403); // no step-up
     expect((await a.call('DELETE', '/me/mfa/totp', { code: a.recoveryCodes[0] }, await a.grant('mfa.disable'))).status).toBe(400);
-    expect((await a.call('DELETE', '/me/mfa/totp', { code: '000000' }, await a.grant('mfa.disable'))).status).toBe(401);
+    expect((await a.call('DELETE', '/me/mfa/totp', { code: '000000' }, await a.grant('mfa.disable'))).status).toBe(400);
     const r = await a.call('DELETE', '/me/mfa/totp', { code: at(a.totpSecret!) }, await a.grant('mfa.disable'));
     expect(r.status).toBe(204);
     expect(await user(a.userId)).toMatchObject({ mfa_enabled: false });
