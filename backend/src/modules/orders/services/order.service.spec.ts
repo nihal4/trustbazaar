@@ -171,6 +171,26 @@ describe('OrderService', () => {
   });
 });
 
+describe('OrderService.expireUnpaid (U2-07)', () => {
+  it('FR-FIX-03 an unpaid order past its due time is cancelled with the reason of its kind', async () => {
+    const s = setup();
+    const { order } = await s.svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined);
+    expect(await s.svc.expireUnpaid(order.id)).toBe(false); // the hold is still running
+    const row = s.orders.rows[0];
+    row.paymentDueAt = new Date(NOW.getTime() - 1);
+    expect(await s.svc.expireUnpaid(order.id)).toBe(true);
+    expect(row).toMatchObject({ status: 'cancelled', cancelledAt: NOW, cancelReason: 'checkout_expired' });
+    expect(s.outbox.rows.map((r) => r.eventType)).toContain('orders.order.cancelled');
+    expect(await s.svc.expireUnpaid(order.id)).toBe(false);
+    expect(await s.svc.expireUnpaid('missing')).toBe(false);
+    s.orders.rows.push({ id: 'A1', kind: 'auction', status: 'awaiting_payment', paymentDueAt: NOW, listingId: 'L2', quantity: 1, buyerId: 'B', sellerId: 'S' });
+    expect(await s.svc.expireUnpaid('A1')).toBe(true);
+    expect(s.outbox.rows.slice(-2).map((r) => [r.eventType, (r.payload as { reason: string }).reason])).toEqual([
+      ['orders.order.cancelled', 'payment_window_expired'], ['orders.order.payment_expired', 'payment_window_expired'],
+    ]);
+  });
+});
+
 describe('OrderService.lockForFulfilment (I-20)', () => {
   it('I-20 the order is locked in the caller\'s transaction and its fulfilment facts returned', async () => {
     const s = setup();
