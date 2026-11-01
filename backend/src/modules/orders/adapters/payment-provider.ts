@@ -35,6 +35,12 @@ export interface PaymentProvider {
   redirectUrl(a: AttemptRef): Promise<string>;
   /** Reconciliation, expiry checks and browser callbacks: the provider's own answer. */
   query(a: AttemptRef): Promise<VerifiedResult>;
+  /**
+   * FR-PAY-12: a refund to the original payment, with the refund's own idempotency key (SEC-PAY-07).
+   * 'pending' means the provider accepted it and will confirm later; 'unsupported' sends it to an operator.
+   * Throws ProviderUnavailable when the provider cannot be reached (retried by the worker).
+   */
+  refund(r: { attempt: AttemptRef; providerTxnId: string | null; amount: bigint; idempotencyKey: string }): Promise<{ status: 'succeeded' | 'pending' | 'unsupported'; providerRefundId?: string }>;
 }
 
 export class ProviderUnavailable extends Error {}

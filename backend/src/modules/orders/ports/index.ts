@@ -42,6 +42,8 @@ export interface OrderView {
   cancelReason: string | null;
   closedAt: string | null;
   createdAt: string;
+  /** FR-PAY-09: the latest cancellation request, if any (the seller answers it by id). */
+  cancellationRequest: null | { id: string; status: 'pending' | 'accepted' | 'declined' | 'lapsed'; reason: string; createdAt: string };
   escrow: null | {
     state: EscrowState;
     releasePolicy: 'standard' | 'game_protection';
