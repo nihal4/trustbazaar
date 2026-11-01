@@ -20,10 +20,6 @@ import { RequestContext } from './session.service';
 // and the old address is told. Earlier e-mail links of the account stop working.
 // If the new number already belongs to an open account, the same is done as at registration: a code is
 // made but not sent, its owner is told, and the answer is the same (SEC-AUTH-06).
-interface CP06 {
-  emailLinkHours: number;
-}
-
 const rowsOf = <T>(result: unknown): T[] =>
   (Array.isArray(result) && Array.isArray(result[0]) && typeof result[1] === 'number' ? result[0] : result) as T[];
 
@@ -89,7 +85,7 @@ export class ContactService {
     const email = input.trim().toLowerCase();
     const [me] = await this.db.query(`SELECT email FROM identity.users WHERE id = $1`, [userId]);
     if (String(me?.email).toLowerCase() === email) throw new Problem('validation-failed', { errors: [{ field: 'email', reason: 'unchanged' }] });
-    const hours = (await this.params.current()).get<CP06>('CP-06').emailLinkHours;
+    const hours = (await this.params.current()).ms('CP-06', 'verify') / 3_600_000;
     const token = generateLinkToken();
     await this.db.query(
       `INSERT INTO identity.one_time_tokens (purpose, user_id, token_hash, new_email, expires_at) VALUES ('email_change', $1, $2, $3, $4)`,

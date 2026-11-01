@@ -48,7 +48,9 @@ export class OtpService {
   }
 
   async cp05(): Promise<CP05> {
-    return (await this.params.current()).get<CP05>('CP-05');
+    const p = await this.params.current();
+    const v = p.get<{ attempts: number; sends_per_hour: number; sends_per_day: number }>('CP-05');
+    return { otpValidityMinutes: p.ms('CP-05', 'validity') / 60_000, attemptsPerOtp: v.attempts, sendsPerNumberHour: v.sends_per_hour, sendsPerNumberDay: v.sends_per_day };
   }
 
   /** CP-05 send limits per number (Redis otp:send:{phone}:h and :d) and the gap before the next send. */

@@ -4,5 +4,6 @@
 //   ReportCommands
 //   SanctionPort
 //   TrustQuery
-//   ConfigPort
+//   ConfigPort: the interface and token are the kernel's (kernel/config-port.ts), provided by this unit's
+//   ConfigPortModule (U7-01), so that every unit reads parameters without importing Unit 7.
 export {};
