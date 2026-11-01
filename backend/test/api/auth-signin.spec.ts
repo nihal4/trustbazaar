@@ -1,7 +1,7 @@
 import { randomInt } from 'crypto';
 import { authenticator } from 'otplib';
 import { loadConfig } from '../../src/kernel/config/config';
-import { NOTIFICATIONS, SimulatedNotifications } from '../../src/modules/identity/adapters/notifications';
+import { NOTIFICATIONS, ForwardedNotifications } from '../../src/modules/identity/adapters/notifications';
 import { startApp, TestApp } from '../support/app';
 import { Browser } from '../support/browser';
 import { IdentityFixtures } from '../support/identity';
@@ -73,7 +73,7 @@ describe('sign-in and sessions', () => {
     it('SEC-AUTH-04 after five failures the next attempt waits, doubling; the owner is notified once', async () => {
       const a = await fx.account();
       const b = browser();
-      const notes = t.app.get<SimulatedNotifications>(NOTIFICATIONS);
+      const notes = t.app.get<ForwardedNotifications>(NOTIFICATIONS);
       for (let i = 0; i < 5; i++) expect((await signIn(b, a.phone, 'wrong')).status).toBe(401);
       let r = await signIn(b, a.phone, a.password);
       expect(r.status).toBe(429);
