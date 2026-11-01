@@ -17,18 +17,20 @@ export function untilServerTime(iso: string, now = Date.now(), capSeconds = 120)
 
 const secondsUntil = (until: number | null) => (until === null ? 0 : Math.max(0, Math.ceil((until - Date.now()) / 1000)));
 
-/** Whole seconds left until `until` (ms since the epoch), updated every second; 0 when passed. */
+/**
+ * Whole seconds left until `until` (ms since the epoch); 0 when passed. The value is worked out on
+ * every render, so it is right from the first render after `until` changes (a button never shows as
+ * free for a moment before its wait begins); the timer only asks for a new render each second.
+ */
 export function useSecondsLeft(until: number | null): number {
-  const [secs, setSecs] = useState(() => secondsUntil(until));
+  const [, setTick] = useState(0);
   useEffect(() => {
-    setSecs(secondsUntil(until));
-    if (until === null) return;
+    if (until === null || secondsUntil(until) === 0) return;
     const id = setInterval(() => {
-      const s = secondsUntil(until);
-      setSecs(s);
-      if (s === 0) clearInterval(id);
+      setTick((n) => n + 1);
+      if (secondsUntil(until) === 0) clearInterval(id);
     }, 1000);
     return () => clearInterval(id);
   }, [until]);
-  return secs;
+  return secondsUntil(until);
 }
