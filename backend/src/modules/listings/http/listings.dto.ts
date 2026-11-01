@@ -8,7 +8,7 @@ import type { Fulfilment, ItemCondition, ItemKind, ListingStatus, SaleFormat, Si
 // The request bodies of the listings API (docs/design/03_listings_auctions.pdf section 3.1). Money is
 // integer poisha as a decimal string, never a number (BUILDING.md section 4). Text is plain text; the
 // service trims it, and the database checks the minimum lengths again.
-const POISHA = /^[1-9][0-9]{0,15}$/;
+export const POISHA = /^[1-9][0-9]{0,15}$/;
 
 /** FR-LST-06: the area shown (district) and the location used for distance, rounded to 3 decimals (about 110 m). */
 export class AreaDto {

@@ -31,6 +31,9 @@ export const RATE_RULES: Record<string, Limit[]> = {
   // Unit 2 (section 7.4, SEC-ABU-01): checkout and payment start per user per hour (Decisions log, U2-03).
   checkout: [{ per: 'principal', limit: 30, windowSeconds: 60 * 60 }],
   'payment-start': [{ per: 'principal', limit: 30, windowSeconds: 60 * 60 }],
+  // Unit 3 (FR-AUC-17): bids per user per auction per minute from CP-35. No route names it: BidService consumes
+  // it through RateLimiterPort with the subject user:auction (Decisions log, U3-04). 10 is the fallback.
+  bid: [{ per: 'principal', limit: 10, windowSeconds: 60, cp: { code: 'CP-35', field: 'bids_per_min' } }],
   // CP-35, read from ConfigPort; 60 is only a fallback should the parameter be missing.
   search: [{ per: 'ip', limit: 60, windowSeconds: 60, cp: { code: 'CP-35', field: 'search_per_min' } }],
 };
