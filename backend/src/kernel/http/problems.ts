@@ -17,6 +17,12 @@ export const PROBLEMS = {
   'own-proposal': { status: 403, title: 'A proposal must be decided by another staff member.' },
   'already-proposed': { status: 409, title: 'This action is already waiting for approval.' },
   'approval-closed': { status: 409, title: 'This proposal has already been decided or has expired.' },
+  'conflict-of-interest': { status: 403, title: 'You cannot act on this case because of a conflict of interest.' },
+  'kyc-not-allowed': { status: 409, title: 'Identity verification cannot be submitted or changed in the current status.' },
+  'kyc-limit': { status: 409, title: 'You have reached the number of verification attempts for now. Please try again later.' },
+  'already-claimed': { status: 409, title: 'Another operator is reviewing this submission.' },
+  'not-claimed': { status: 409, title: 'Claim this submission before reviewing it.' },
+  'kyc-cannot-approve': { status: 409, title: 'This submission cannot be approved; reject it with the reason shown.' },
   'password-rejected': { status: 422, title: 'Please choose a different password.' },
   'registration-refused': {
     status: 409,
