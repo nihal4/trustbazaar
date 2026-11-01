@@ -1,0 +1,23 @@
+{
+  "checkout.title": "Checkout",
+  "checkout.item": "Item",
+  "checkout.unit_price": "Price for one: {price}",
+  "checkout.quantity": "Quantity",
+  "checkout.available": "Available: {count}",
+  "checkout.fulfilment": "How you get it",
+  "checkout.fulfilment.self_pickup": "Pick it up from the seller (no delivery fee)",
+  "checkout.fulfilment.courier": "Courier delivery",
+  "checkout.courier_not_yet": "Courier delivery cannot be booked yet. This item can only be sent by courier, so it cannot be bought for now.",
+  "checkout.courier_also": "Courier delivery cannot be booked yet; you can pick the item up from the seller.",
+  "checkout.game_not_yet": "Game accounts cannot be bought yet. This will be possible soon.",
+  "checkout.total": "Total to pay: {total}",
+  "checkout.reserve_note": "Continuing reserves the item for you while you pay.",
+  "checkout.continue": "Continue to payment",
+  "checkout.own": "This is your own listing.",
+  "checkout.unavailable": "This item is no longer available in that quantity.",
+  "checkout.not_active": "This item cannot be bought now.",
+  "checkout.limit": "This order is above the amount your account can buy right now.",
+  "checkout.sign_in": "Sign in to buy",
+  "checkout.verify": "Only members with a verified identity and e-mail can buy.",
+  "checkout.quantity_invalid": "Enter a quantity from 1 to {max}."
+}
