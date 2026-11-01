@@ -9,7 +9,7 @@ import { requireEnv } from './env';
 const PG: Record<string, string> = {
   uuid: 'uuid', text: 'text', varchar: 'varchar', citext: 'citext', boolean: 'bool', smallint: 'int2',
   integer: 'int4', bigint: 'int8', numeric: 'numeric', timestamptz: 'timestamptz', date: 'date', bytea: 'bytea',
-  inet: 'inet', jsonb: 'jsonb', char: 'bpchar',
+  inet: 'inet', jsonb: 'jsonb', char: 'bpchar', interval: 'interval', tsvector: 'tsvector',
 };
 
 interface DbColumn {
