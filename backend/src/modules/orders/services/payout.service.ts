@@ -4,6 +4,7 @@ import { DataSource, EntityManager } from 'typeorm';
 import { CLOCK, Clock } from '../../../kernel/clock';
 import { CONFIG_PORT, ConfigPort } from '../../../kernel/config-port';
 import { EventBus, OutboxEvent } from '../../../kernel/events/event-bus';
+import { cursorAt, decodeCursor, encodeCursor } from '../../../kernel/http/cursor';
 import { Problem } from '../../../kernel/http/problems';
 import {
   AUDIT_SERVICE, AuditServicePort, CallContext, IDENTITY_CRYPTO, IDENTITY_QUERY, IdentityCryptoPort, IdentityQuery,
@@ -131,25 +132,18 @@ export class PayoutService implements OnModuleInit {
 
   /** IF-UI-08: the seller's payouts, newest first, 50 a page. */
   async listPayouts(userId: string, before?: string): Promise<{ items: PayoutView[]; nextCursor: string | null }> {
-    let at: Date | null = null;
-    let id: string | null = null;
-    if (before !== undefined) {
-      const [t, i] = Buffer.from(before, 'base64url').toString().split('|');
-      at = new Date(t);
-      id = i ?? null;
-      if (Number.isNaN(at.getTime()) || !id || !/^[0-9a-f-]{36}$/.test(id)) throw new Problem('validation-failed', { errors: [{ field: 'cursor', reason: 'format' }] });
-    }
+    const after = decodeCursor(before);
     const rows = (await this.db.query(
-      `SELECT id, order_id, amount, status, simulated, created_at, sent_at FROM payments.payouts
+      `SELECT id, order_id, amount, status, simulated, created_at, sent_at, ${cursorAt('created_at')} AS cursor_at FROM payments.payouts
         WHERE seller_id = $1 AND ($2::timestamptz IS NULL OR (created_at, id) < ($2::timestamptz, $3::uuid))
         ORDER BY created_at DESC, id DESC LIMIT 51`,
-      [userId, at, id],
-    )) as { id: string; order_id: string; amount: string; status: Payout['status']; simulated: boolean; created_at: Date; sent_at: Date | null }[];
+      [userId, after?.at ?? null, after?.id ?? null],
+    )) as { id: string; order_id: string; amount: string; status: Payout['status']; simulated: boolean; created_at: Date; sent_at: Date | null; cursor_at: string }[];
     const page = rows.slice(0, 50);
     const last = page[page.length - 1];
     return {
       items: page.map((r) => ({ id: r.id, orderId: r.order_id, amount: String(r.amount), status: r.status, simulated: r.simulated, createdAt: r.created_at.toISOString(), sentAt: r.sent_at?.toISOString() ?? null })),
-      nextCursor: rows.length > 50 ? Buffer.from(`${last.created_at.toISOString()}|${last.id}`).toString('base64url') : null,
+      nextCursor: rows.length > 50 ? encodeCursor(last.cursor_at, last.id) : null,
     };
   }
 
