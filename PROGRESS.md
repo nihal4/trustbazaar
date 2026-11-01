@@ -67,7 +67,7 @@ Design: `docs/design/01_identity_access.pdf` (source `.tex` beside it).
 | U1-10 | API tests, including the negative authorisation tests of SEC-SDL-09 | U1-08 | todo | | | | |
 | U1-11 | Shared security middleware: `helmet` headers on API responses (HSTS, CSP, `nosniff`, `Referrer-Policy`, `Permissions-Policy`) and the CORS allow-list (DC-11, SEC-WEB-01 to SEC-WEB-03); cookie parsing is done in U1-02 | U1-02 | todo | | | | Found in U1-02: DC-11 had no task. |
 | U1-12 | MFA settings: TOTP enrolment and confirmation with recovery codes, turning MFA off, regenerating recovery codes (FR-ACC-06; `/me/mfa/*`) | U1-05 | todo | | | | Found in U1-05: these endpoints of Unit 1 section 4.2 had no task. |
-| U1-13 | `GET /me`: the signed-in user's own account and the web client's refresh probe (I-51 (c)) | U1-04 | doing | S. M. Nihal Ahmed | `feature/u1-13-me` | | Found by U8-02 on 2026-11-01: Unit 8 needs it (section 5, refresh probe; cache table), but Unit 1 section 4.2 does not list it and no task covered it. Answers `{id, displayName, phoneMasked, email, emailVerified, kycStatus, accountStatus, mfaEnabled}`; no rate-limit rule. |
+| U1-13 | `GET /me`: the signed-in user's own account and the web client's refresh probe (I-51 (c)) | U1-04 | review | S. M. Nihal Ahmed | `feature/u1-13-me`, #128 | | Found by U8-02 on 2026-11-01: Unit 8 needs it (section 5, refresh probe; cache table), but Unit 1 section 4.2 does not list it and no task covered it. Answers `{id, displayName, phoneMasked, email, emailVerified, kycStatus, accountStatus, mfaEnabled}`; no rate-limit rule. |
 
 **Integration notes this unit must apply** (they override the older text of its document where they differ):
 
