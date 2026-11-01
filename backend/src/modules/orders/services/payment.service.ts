@@ -216,7 +216,7 @@ export class PaymentService {
       eventType: 'orders.order.paid', aggregateId: o.id,
       // I-19 (Delivery), U3-02 (Listings: listingId and quantity), Unit 5 and Notifications
       payload: {
-        orderId: o.id, kind: o.kind, itemKind: o.itemKind, listingId: o.listingId, listingTitle: (o.listingSnapshot as { title?: string }).title ?? null, quantity: o.quantity, buyerId: o.buyerId, sellerId: o.sellerId,
+        orderId: o.id, kind: o.kind, itemKind: o.itemKind, listingId: o.listingId, listingTitle: (o.listingSnapshot as { title?: string } | null)?.title ?? null, quantity: o.quantity, buyerId: o.buyerId, sellerId: o.sellerId,
         fulfilment: o.fulfilment, fulfilmentStep: f.step, fulfilmentDueAt: due.toISOString(), deliveryQuoteId: o.deliveryQuoteId, total: o.total,
       },
     });

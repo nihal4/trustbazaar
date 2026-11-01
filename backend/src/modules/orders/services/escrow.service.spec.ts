@@ -244,7 +244,7 @@ describe('EscrowService: release and cancellation by the parties (U2-05)', () =>
     await s.svc.sellerCancel('S', o.id, ' Damaged ');
     expect(e.state).toBe('refunded');
     expect(s.repo(CancellationRequest).rows.find((r) => r.id === rid)).toMatchObject({ status: 'lapsed' });
-    expect(s.repo(OrdersOutboxEvent).rows.find((r) => r.eventType === 'orders.order.cancelled_by_seller')?.payload).toEqual({ orderId: o.id, sellerId: 'S', buyerId: 'B', reason: 'Damaged' });
+    expect(s.repo(OrdersOutboxEvent).rows.find((r) => r.eventType === 'orders.order.cancelled_by_seller')?.payload).toEqual({ orderId: o.id, sellerId: 'S', buyerId: 'B', reason: 'Damaged', listingTitle: null });
     expect(await reason(s.svc.sellerCancel('S', s.order(delivered).o.id, 'x'))).toBe('order-state');
     expect(await reason(s.svc.sellerCancel('S', o.id, 'x'))).toBe('order-state');
   });
