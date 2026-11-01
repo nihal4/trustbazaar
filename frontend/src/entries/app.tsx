@@ -1,7 +1,9 @@
 import { createRoot } from 'react-dom/client';
 import { accountRoutes } from '../features/account/routes';
+import { checkoutRoutes } from '../features/checkout/routes';
 import { listingRoutes } from '../features/listings/routes';
 import { notificationRoutes } from '../features/notifications/routes';
+import { orderRoutes } from '../features/orders/routes';
 import { searchRoutes } from '../features/search/routes';
 import { createDocument, DocumentRoot, signInHere } from '../shared/document';
 import '../shared/tokens.css';
@@ -17,6 +19,8 @@ const doc = createDocument({
   routes: [
     ...searchRoutes,
     ...listingRoutes,
+    ...checkoutRoutes,
+    ...orderRoutes,
     ...accountRoutes,
     ...notificationRoutes,
   ],
