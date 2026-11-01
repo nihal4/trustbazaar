@@ -5,6 +5,7 @@ import { FileVault } from './crypto/file-vault';
 import { IdentityCrypto } from './crypto/identity-crypto';
 import { PasswordHasher } from './crypto/password';
 import { ENTITIES } from './db/entities';
+import { IdentityJobs } from './jobs/identity.jobs';
 import {
   APPROVAL_SERVICE, AUDIT_SERVICE, FILE_VAULT, IDENTITY_COMMANDS, IDENTITY_CRYPTO, IDENTITY_QUERY, RATE_LIMITER, STAFF_QUERY,
 } from './ports';
@@ -65,6 +66,7 @@ import { StepUpService } from './services/step-up.service';
     FileVault,
     KycService,
     KycReviewService,
+    IdentityJobs,
     // The ports (ports/index.ts): the only things other units may use (DC-1).
     { provide: IDENTITY_QUERY, useClass: IdentityQueryService },
     { provide: IDENTITY_COMMANDS, useClass: IdentityCommandsService },
