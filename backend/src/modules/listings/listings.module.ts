@@ -4,6 +4,7 @@ import { IdentityModule } from '../identity/identity.module';
 import { AUCTION_ORDERS, ForwardedAuctionOrders } from './adapters/orders';
 import { ENTITIES } from './db/entities';
 import { AuctionsController } from './http/auctions.controller';
+import { SearchController } from './http/search.controller';
 import { CategoriesController, ListingPhotosController, ListingsController, MyListingsController } from './http/listings.controller';
 import { AuctionsJobs } from './jobs/auctions.jobs';
 import { AUCTION_QUERY, LISTINGS_PORT } from './ports';
@@ -12,6 +13,7 @@ import { BidService } from './services/bid.service';
 import { ListingService } from './services/listing.service';
 import { MediaPipeline } from './services/media';
 import { ScreeningService } from './services/screening.service';
+import { SearchService } from './services/search.service';
 import { SecondChanceService } from './services/second-chance.service';
 import { StockService } from './services/stock.service';
 
@@ -21,7 +23,7 @@ import { StockService } from './services/stock.service';
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
 @Module({
   imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule],
-  controllers: [CategoriesController, ListingsController, MyListingsController, ListingPhotosController, AuctionsController],
+  controllers: [CategoriesController, ListingsController, MyListingsController, ListingPhotosController, AuctionsController, SearchController],
   providers: [
     AuctionCloser,
     AuctionsJobs,
@@ -29,6 +31,7 @@ import { StockService } from './services/stock.service';
     ListingService,
     MediaPipeline,
     ScreeningService,
+    SearchService,
     SecondChanceService,
     StockService,
     { provide: AUCTION_ORDERS, useClass: ForwardedAuctionOrders },
