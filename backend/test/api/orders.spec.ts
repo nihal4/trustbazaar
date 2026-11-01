@@ -240,4 +240,22 @@ describe('orders', () => {
     expect((await (await winner.call('GET', `/orders/${o.id}`)).json()).listing.id).toBe(id);
     await expect(port.getOrderForParty(o.id, randomUUID())).rejects.toThrow();
   });
+
+  it('IF-UI-05 paging never skips orders created within the same millisecond', async () => {
+    const buyer = await member();
+    const seller = await member();
+    for (let i = 0; i < 51; i++) {
+      await fx.query(
+        `INSERT INTO orders.orders (kind, listing_id, item_kind, buyer_id, seller_id, quantity, unit_price, item_price, total, listing_snapshot,
+            commission_bps, delivery_margin_bps, params_version, payment_due_at, created_at)
+         VALUES ('fixed_price', $1, 'physical', $2, $3, 1, 100, 100, 100, '{"title":"Same millisecond"}', 500, 1000, 1, now(),
+                 '2026-11-01 10:00:00.1231+00'::timestamptz + make_interval(secs => $4::double precision / 1000000))`,
+        [randomUUID(), buyer.userId, seller.userId, i * 7],
+      );
+    }
+    const first = await (await buyer.call('GET', '/orders?role=buyer')).json();
+    const second = await (await buyer.call('GET', `/orders?role=buyer&cursor=${first.nextCursor}`)).json();
+    expect([first.items.length, second.items.length, second.nextCursor]).toEqual([50, 1, null]);
+    expect(new Set([...first.items, ...second.items].map((o: { id: string }) => o.id)).size).toBe(51);
+  });
 });
