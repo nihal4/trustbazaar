@@ -15,9 +15,13 @@ const STAFF: ApiOptions = {
   probePath: '/staff/me',
 };
 
-/** `overrides` are for tests (fetch, cookies, locks, store); the application passes none. */
-export function createDocumentApi(kind: DocumentKind, onSignedOut: () => void, overrides: ApiOptions = {}): Api {
-  return createApi({ ...(kind === 'staff' ? STAFF : {}), ...overrides, onSignedOut });
+/**
+ * `stepUp` obtains a grant for a step-up action (the user app's dialog). `overrides` are for tests
+ * (fetch, cookies, locks, store); the application passes none.
+ */
+export function createDocumentApi(kind: DocumentKind, onSignedOut: () => void, overrides: ApiOptions = {},
+  stepUp?: (action: string) => Promise<string>): Api {
+  return createApi({ ...(kind === 'staff' ? STAFF : {}), stepUp, ...overrides, onSignedOut });
 }
 
 export const ApiContext = createContext<Api | null>(null);
