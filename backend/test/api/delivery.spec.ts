@@ -80,7 +80,7 @@ describe('delivery of e-mail and SMS', () => {
            FROM notify.deliveries d JOIN notify.notifications n ON n.id = d.notification_id WHERE n.user_id = $1`, [u.userId]);
       expect(first).toEqual({ status: 'failed', attempts: 1, last_error: 'EPROVIDER', delay_min: RETRY_MINUTES[0] });
       for (let i = 2; i <= MAX_ATTEMPTS + 1; i++) {
-        await fx.query(`UPDATE notify.deliveries d SET next_attempt_at = now() FROM notify.notifications n WHERE n.id = d.notification_id AND n.user_id = $1`, [u.userId]);
+        await fx.query(`UPDATE notify.deliveries d SET next_attempt_at = now() - interval '1 second' FROM notify.notifications n WHERE n.id = d.notification_id AND n.user_id = $1`, [u.userId]);
         await drain();
       }
       expect(await statusOf(u.userId)).toEqual([{ channel: 'email', status: 'failed', attempts: MAX_ATTEMPTS, last_error: 'EPROVIDER' }]);
@@ -113,7 +113,7 @@ describe('delivery of e-mail and SMS', () => {
     await expect(port.sendEmail('a@tb.test', 'no_such_template', {})).rejects.toThrow(/no message text/);
   });
 
-  it('AS-4 staff read the development mailbox; users and guests cannot', async () => {
+  it('SEC-SDL-09 staff read the development mailbox (AS-4); users and guests cannot', async () => {
     const phone = `+8801${randomInt(3, 10)}${String(randomInt(0, 1e8)).padStart(8, '0')}`;
     await t.app.get<NotificationPort>(NOTIFICATION_PORT).sendSms(phone, 'otp_step_up', { code: '111222', minutes: '5' });
     const staffId = await fx.staff('operator');
