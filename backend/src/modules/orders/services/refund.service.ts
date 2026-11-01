@@ -114,17 +114,23 @@ export class RefundService {
 
   private async succeed(m: EntityManager, r: Refund, a: PaymentAttempt, providerRefundId: string | null, attemptsMade: number): Promise<void> {
     await m.getRepository(Refund).update({ id: r.id }, { status: 'succeeded', providerRefundId, attemptsMade, completedAt: this.clock.now() });
-    const buyer = r.orderId ? (await m.getRepository(Order).findOneBy({ id: r.orderId }))?.buyerId ?? a.payerId : a.payerId;
+    const buyer = await this.buyerOf(m, r, a);
     await post(m, 'refund_paid', r.orderId, r.id, `refund ${r.reason} paid out by ${a.provider}`, [['buyer_refund_payable', buyer, BigInt(r.amount)], ['provider_clearing', null, -BigInt(r.amount)]]);
     await m.getRepository(OrdersOutboxEvent).insert({ eventType: 'payments.refund.succeeded', aggregateId: r.orderId ?? r.id, payload: { refundId: r.id, orderId: r.orderId, buyerId: buyer, amount: r.amount, reason: r.reason } });
     await this.audit.record({ actorType: 'system', action: 'payments.refund.succeeded', objectType: 'refund', objectId: r.id, after: { amount: r.amount, provider: a.provider } }, m);
+  }
+
+  /** The buyer of the refund's order, else the payer of its attempt. */
+  private async buyerOf(m: EntityManager, r: Refund, a?: PaymentAttempt): Promise<string> {
+    const o = r.orderId ? await m.getRepository(Order).findOneBy({ id: r.orderId }) : null;
+    return o?.buyerId ?? (a ?? (await m.getRepository(PaymentAttempt).findOneByOrFail({ id: r.attemptId }))).payerId;
   }
 
   /** FR-PAY-12: an operator takes over, and the buyer is told when to expect the money. */
   private async manual(m: EntityManager, r: Refund, kind: 'refund_failed' | 'manual_refund_required', detail: string, made = r.attemptsMade): Promise<RefundOutcome> {
     await m.getRepository(Refund).update({ id: r.id }, { status: 'manual_required', attemptsMade: made });
     await m.getRepository(ReconciliationIssue).insert({ kind, orderId: r.orderId, attemptId: r.attemptId, refundId: r.id, detail: { reason: r.reason, amount: r.amount, detail } });
-    await m.getRepository(OrdersOutboxEvent).insert({ eventType: 'payments.refund.manual_required', aggregateId: r.orderId ?? r.id, payload: { refundId: r.id, orderId: r.orderId, amount: r.amount } });
+    await m.getRepository(OrdersOutboxEvent).insert({ eventType: 'payments.refund.manual_required', aggregateId: r.orderId ?? r.id, payload: { refundId: r.id, orderId: r.orderId, buyerId: await this.buyerOf(m, r), amount: r.amount } });
     this.log.error(`refund ${r.id} needs an operator: ${detail}`);
     return 'manual_required';
   }
