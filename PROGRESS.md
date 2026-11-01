@@ -240,7 +240,7 @@ Design: `docs/design/08_frontend.pdf` (source `.tex` beside it).
 
 | ID | Task | Needs | Status | Owner | Branch / PR | Done | Notes |
 |---|---|---|---|---|---|---|---|
-| U8-01 | App shell, router, the four entries, `lib/` wired in, language switch | P0-07 | todo | | | | |
+| U8-01 | App shell, router, the four entries, `lib/` wired in, language switch | P0-07 | doing | Sabikun Nahar Sinthia | `feature/u8-01-app-shell` | | |
 | U8-02 | Account and sign-in screens | U8-01, U1-05 | todo | | | | |
 | U8-03 | KYC wizard (`kyc.html`) | U8-01, U1-06 | todo | | | | |
 | U8-04 | Listings, search and the auction panel | U8-01, U3-04 | todo | | | | |
