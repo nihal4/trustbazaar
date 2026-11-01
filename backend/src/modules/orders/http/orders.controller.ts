@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Headers, Param, ParseUUIDPipe, Post, Put, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
-import { SignedIn, Verified } from '../../../kernel/http/policies';
+import { RateLimit, SignedIn, Verified } from '../../../kernel/http/policies';
 import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
 import { OrderService } from '../services/order.service';
@@ -21,6 +21,7 @@ export class OrdersController {
 
   /** FR-FIX-01, 02, 05: reserve and create the order; a repeat with the same Idempotency-Key answers 200 (I-52). */
   @Verified('buy')
+  @RateLimit('checkout')
   @Post()
   async checkout(
     @Body() dto: CheckoutDto,

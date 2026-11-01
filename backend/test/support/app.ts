@@ -20,7 +20,7 @@ export async function startApp(controllers: Type[] = []): Promise<TestApp> {
   requireEnv('REDIS_URL');
   useTestSecrets();
   const moduleRef = await Test.createTestingModule({ imports: [AppModule, DiscoveryModule], controllers }).compile();
-  const app = configureApp(moduleRef.createNestApplication({ logger: false }));
+  const app = configureApp(moduleRef.createNestApplication({ logger: false, rawBody: true }));
   await app.listen(0, '127.0.0.1');
   const { port } = app.getHttpServer().address() as AddressInfo;
   return {
