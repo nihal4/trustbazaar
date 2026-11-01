@@ -330,8 +330,11 @@ CREATE TABLE notify.notifications (
   template_version  smallint NOT NULL,
   params            jsonb NOT NULL DEFAULT '{}' CHECK (jsonb_typeof(params) = 'object'),
   dedupe_key        varchar(200) NOT NULL,              -- source event id + recipient + kind: consumers are idempotent
+  subject_type      varchar(30) CHECK (subject_type ~ '^[a-z_]+$'), -- what it is about, so the client refreshes exactly that (I-55)
+  subject_id        uuid,
   created_at        timestamptz NOT NULL DEFAULT now(),
   read_at           timestamptz,
+  CONSTRAINT notification_subject CHECK ((subject_type IS NULL) = (subject_id IS NULL)),
   FOREIGN KEY (template_code, template_version) REFERENCES notify.templates(code, version),
   CONSTRAINT notification_once UNIQUE (user_id, dedupe_key)
 );

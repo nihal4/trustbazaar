@@ -334,7 +334,9 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     });
   }
 
-  private event(m: EntityManager, eventType: string, orderId: string, payload: Record<string, unknown>) {
-    return m.getRepository(OrdersOutboxEvent).insert({ eventType, aggregateId: orderId, payload });
+  /** I-37: every order event carries the listing title, for the notices of Unit 6. */
+  private async event(m: EntityManager, eventType: string, orderId: string, payload: Record<string, unknown>) {
+    const [o] = (await m.query(`SELECT listing_snapshot->>'title' AS title FROM orders.orders WHERE id = $1`, [orderId])) as { title: string | null }[];
+    return m.getRepository(OrdersOutboxEvent).insert({ eventType, aggregateId: orderId, payload: { ...payload, listingTitle: o?.title ?? null } });
   }
 }
