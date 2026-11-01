@@ -18,6 +18,11 @@ export interface LivePort {
   toRoom(room: `auction:${string}`, event: string, payload: Record<string, unknown>): void;
   /** SEC-SES-07: closes every connection of an ended session, on every instance. */
   endSession(sessionId: string): void;
+  /**
+   * Whether the user has a live connection on any instance (Unit 6 section 7.4: a chat e-mail only when they are
+   * not connected; Decisions log, U6-02). False when it cannot be told within a second.
+   */
+  isConnected(userId: string): Promise<boolean>;
 }
 export const LIVE = Symbol('LIVE');
 
