@@ -7,9 +7,11 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useLanguage } from './language/Language';
 import { LanguageSwitch } from './language/LanguageSwitch';
 import { useMe } from './me';
+import { useLanguageSync, useUnreadCount } from './notifications';
 import { useSignedOut } from './session';
 import { usePendingStepUp } from './stepUp';
 import { StepUpDialog } from './StepUpDialog';
+import { toLocalDigits } from '../lib/money.js';
 import styles from './shell.module.css';
 
 export interface ShellProps {
@@ -69,12 +71,21 @@ function SignedOutNotice() {
   );
 }
 
-/** "Account" once /me answers; otherwise "Sign in", returning to this page. */
+/** "Account" and the notifications once /me answers; otherwise "Sign in", returning to this page. */
 function AccountLink() {
   const { t } = useLanguage();
   const me = useMe();
+  const unread = useUnreadCount();
+  useLanguageSync();
   const { pathname, search } = useLocation();
-  if (me.isSuccess) return <Link className={styles.account} to="/account">{t('shell.account')}</Link>;
+  if (me.isSuccess) {
+    return (
+      <>
+        <NotificationsLink unread={unread} />
+        <Link className={styles.account} to="/account">{t('shell.account')}</Link>
+      </>
+    );
+  }
   if (pathname === '/signin' || pathname === '/register') return null;
   return <Link className={styles.account} to={`/signin?next=${encodeURIComponent(pathname + search)}`}>{t('shell.sign_in')}</Link>;
 }
@@ -82,4 +93,18 @@ function AccountLink() {
 function PendingStepUp() {
   const pending = usePendingStepUp();
   return pending ? <StepUpDialog key={pending.action} request={pending} /> : null;
+}
+
+/** The notification centre, with the unread count in words as well as a number (not colour alone). */
+function NotificationsLink({ unread }: { unread: number | null }) {
+  const { t, lang } = useLanguage();
+  const n = unread ?? 0;
+  const label = n > 0 ? t('shell.notifications_unread', { count: toLocalDigits(String(n > 99 ? 99 : n), lang) + (n > 99 ? '+' : '') })
+    : t('shell.notifications');
+  return (
+    <Link className={styles.account} to="/notifications" aria-label={label}>
+      {t('shell.notifications')}
+      {n > 0 && <span className={styles.badge} aria-hidden="true">{toLocalDigits(String(n > 99 ? 99 : n), lang)}{n > 99 ? '+' : ''}</span>}
+    </Link>
+  );
 }
