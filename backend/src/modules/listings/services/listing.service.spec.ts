@@ -362,15 +362,15 @@ describe('ListingService', () => {
 
   it('FR-LST-12 my listings in pages of 50, with a cursor', async () => {
     const at = new Date('2026-11-01T10:00:00Z');
-    const rows = Array.from({ length: 51 }, (_, i) => ({ id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`, title: 't', status: 'draft', item_kind: 'physical', sale_format: 'fixed_price', price: '1', quantity_total: 1, quantity_available: 1, created_at: at, published_at: null, photo_key: i === 0 ? 'b'.repeat(32) : null }));
+    const rows = Array.from({ length: 51 }, (_, i) => ({ id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`, title: 't', status: 'draft', item_kind: 'physical', sale_format: 'fixed_price', price: '1', quantity_total: 1, quantity_available: 1, created_at: at, cursor_at: '2026-11-01T10:00:00.123456Z', published_at: null, photo_key: i === 0 ? 'b'.repeat(32) : null }));
     const s = setup({ query: () => rows });
     const page = await s.svc.mine(SELLER, 'draft', undefined);
     expect(page.items).toHaveLength(50);
     expect(page.items[0].thumbUrl).toMatch(/size=thumb$/);
     const [atText, lastId] = Buffer.from(page.nextCursor!, 'base64url').toString().split('|');
-    expect([atText, lastId]).toEqual([at.toISOString(), rows[49].id]);
+    expect([atText, lastId]).toEqual(['2026-11-01T10:00:00.123456Z', rows[49].id]); // the database's microseconds, not the Date's milliseconds
     await s.svc.mine(SELLER, undefined, page.nextCursor!);
-    expect(s.manager.query.mock.calls[1][1]).toEqual([SELLER, null, at.toISOString(), rows[49].id]);
+    expect(s.manager.query.mock.calls[1][1]).toEqual([SELLER, null, '2026-11-01T10:00:00.123456Z', rows[49].id]);
     expect((await problemOf(s.svc.mine(SELLER, undefined, 'bm9wZQ'))).errors).toEqual(['cursor:format']);
     const short = setup({ query: () => rows.slice(0, 3) });
     expect((await short.svc.mine(SELLER, undefined, undefined)).nextCursor).toBeNull();
