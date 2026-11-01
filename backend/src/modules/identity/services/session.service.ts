@@ -255,13 +255,13 @@ export class SessionService {
    * Ends every live session of the user except `keep` (null: all of them), in the caller's transaction:
    * a password change or reset (SEC-AUTH-10, SEC-AUTH-11). Returns how many.
    */
-  async endAllIn(m: EntityManager, userId: string, keep: string | null, reason: 'user_ended' | 'password_changed', ctx: RequestContext): Promise<number> {
+  async endAllIn(m: EntityManager, userId: string, keep: string | null, reason: 'user_ended' | 'password_changed' | 'suspended' | 'closed' | 'emergency', ctx: RequestContext, actor?: { type: 'user' | 'staff'; id: string }): Promise<number> {
     const live: { id: string }[] = await m.query(
       `SELECT id FROM identity.sessions WHERE user_id = $1 AND ($2::uuid IS NULL OR id <> $2) AND ended_at IS NULL FOR UPDATE`,
       [userId, keep],
     );
     let n = 0;
-    for (const s of live) if (await this.endIn(m, s.id, reason, userId, ctx)) n++;
+    for (const s of live) if (await this.endIn(m, s.id, reason, actor?.id ?? userId, ctx, actor?.type ?? 'user')) n++;
     return n;
   }
 

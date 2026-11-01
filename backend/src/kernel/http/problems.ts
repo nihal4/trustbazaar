@@ -23,6 +23,7 @@ export const PROBLEMS = {
   'already-claimed': { status: 409, title: 'Another operator is reviewing this submission.' },
   'not-claimed': { status: 409, title: 'Claim this submission before reviewing it.' },
   'kyc-cannot-approve': { status: 409, title: 'This submission cannot be approved; reject it with the reason shown.' },
+  'transaction-not-allowed': { status: 403, title: 'Your account cannot do this right now.' },
   'password-rejected': { status: 422, title: 'Please choose a different password.' },
   'registration-refused': {
     status: 409,
