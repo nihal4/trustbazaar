@@ -168,18 +168,42 @@ export class BidService implements AuctionQuery {
     };
   }
 
-  /** GET /auctions/{id}/my-status: the caller's own maximum and whether they lead, for them only. */
+  /**
+   * GET /auctions/{id}/my-status: the caller's own maximum and whether they lead, for them only (FR-AUC-08); after the
+   * close, the order they won (orderId: the award's, or their accepted second-chance offer's) and an open
+   * second-chance offer for them (Decisions log, U3-05). The award's order id is the one announced in the unit's own
+   * auctions.auction.awarded event, which the outbox keeps.
+   */
   async myStatus(auctionId: string, userId: string) {
     await this.listings.visible(auctionId, userId);
     const [r] = (await this.db.query(
-      `SELECT a.leader_id = $2 AS leading,
+      `SELECT a.leader_id = $2 AS leading, a.winner_id = $2 AS won,
               (SELECT max(b.max_amount) FROM auctions.bids b
                 WHERE b.auction_id = a.listing_id AND b.bidder_id = $2 AND b.voided_at IS NULL)::text AS maximum,
-              (SELECT ba.alias_no FROM auctions.bidder_aliases ba WHERE ba.auction_id = a.listing_id AND ba.bidder_id = $2) AS alias
+              (SELECT ba.alias_no FROM auctions.bidder_aliases ba WHERE ba.auction_id = a.listing_id AND ba.bidder_id = $2) AS alias,
+              (SELECT o.payload->>'orderId' FROM auctions.outbox o
+                WHERE o.event_type = 'auctions.auction.awarded' AND o.aggregate_id = a.listing_id AND o.payload->>'winnerId' = $2::text
+                LIMIT 1) AS won_order,
+              (SELECT s.order_id FROM auctions.second_chance_offers s
+                WHERE s.auction_id = a.listing_id AND s.bidder_id = $2 AND s.status = 'accepted') AS offer_order,
+              (SELECT json_build_object('id', s.id, 'price', s.price::text, 'expiresAt', s.expires_at)
+                 FROM auctions.second_chance_offers s
+                WHERE s.auction_id = a.listing_id AND s.bidder_id = $2 AND s.status = 'offered' AND s.expires_at > now()) AS offer
          FROM auctions.auctions a WHERE a.listing_id = $1`,
       [auctionId, userId],
-    )) as { leading: boolean | null; maximum: string | null; alias: number | null }[];
+    )) as {
+      leading: boolean | null; won: boolean | null; maximum: string | null; alias: number | null;
+      won_order: string | null; offer_order: string | null; offer: { id: string; price: string; expiresAt: string } | null;
+    }[];
     if (!r) throw new Problem('not-found');
-    return { hasBid: r.maximum !== null, yourMaximum: r.maximum, leading: r.leading === true, yourAlias: r.alias };
+    return {
+      hasBid: r.maximum !== null,
+      yourMaximum: r.maximum,
+      leading: r.leading === true,
+      yourAlias: r.alias,
+      orderId: r.offer_order ?? (r.won === true ? r.won_order : null),
+      secondChanceOffer: r.offer ? { id: r.offer.id, price: r.offer.price, expiresAt: new Date(r.offer.expiresAt).toISOString() } : null,
+    };
   }
+
 }

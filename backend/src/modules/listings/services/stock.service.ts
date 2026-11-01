@@ -13,8 +13,8 @@ import { publish } from './outbox';
 // It also consumes Unit 2's order events (DC-6): orders.order.paid turns the order's reserved units into
 // sold ones, orders.order.cancelled returns them. listings.stock_moves keeps one outcome per order, so a
 // redelivered event moves nothing twice, and a cancellation after payment returns nothing (I-14: the seller
-// relists). Both events carry the listing and the quantity (Decisions log, U3-02). Auction listings are
-// sold by the auction closer (U3-05), not here.
+// relists). Both events carry the listing and the quantity (Decisions log, U3-02). An auction's unit is held by
+// the auction closer at the award (U3-05) and sold here when its order is paid.
 @Injectable()
 export class StockService implements ListingsPort, OnModuleInit {
   private readonly log = new Logger('StockService');
@@ -82,7 +82,9 @@ export class StockService implements ListingsPort, OnModuleInit {
     await this.db.transaction(async (m) => {
       const l = await m.getRepository(Listing).findOne({ where: { id: listingId }, lock: { mode: 'pessimistic_write' } });
       if (!l) throw new Error(`order ${e.aggregateId} names an unknown listing ${listingId}`);
-      if (l.saleFormat !== 'fixed_price') return; // auctions: U3-05
+      // an auction's unit is held at the award and sold when its order is paid (I-14); an unpaid auction order passes
+      // the unit on through the second-chance chain, which releases it at the end (U3-05)
+      if (l.saleFormat !== 'fixed_price' && kind === 'released') return;
       const moved: unknown[] = await m.query(
         `INSERT INTO listings.stock_moves (order_id, kind, listing_id, quantity) VALUES ($1, $2, $3, $4)
          ON CONFLICT (order_id) DO NOTHING RETURNING order_id`,
