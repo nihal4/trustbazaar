@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { NOTIFICATIONS, SimulatedNotifications } from './adapters/notifications';
+import { NOTIFICATIONS, ForwardedNotifications } from './adapters/notifications';
 import { FileVault } from './crypto/file-vault';
 import { IdentityCrypto } from './crypto/identity-crypto';
 import { PasswordHasher } from './crypto/password';
@@ -79,9 +79,8 @@ import { StepUpService } from './services/step-up.service';
     { provide: FILE_VAULT, useClass: FileVaultPortAdapter },
     { provide: IDENTITY_CRYPTO, useExisting: IdentityCrypto },
     RegistrationService,
-    // Until the Notifications unit (Unit 6) provides NotificationPort: logged, labelled simulated (AS-4).
-    SimulatedNotifications,
-    { provide: NOTIFICATIONS, useExisting: SimulatedNotifications },
+    // NotificationPort is Unit 6's (I-36); this forwards to it.
+    { provide: NOTIFICATIONS, useClass: ForwardedNotifications },
     { provide: RESTRICTIONS, useValue: noRestrictionsYet },
     ...pipelineGuards,
   ],
