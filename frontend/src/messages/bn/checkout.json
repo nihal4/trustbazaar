@@ -1,0 +1,23 @@
+{
+  "checkout.title": "চেকআউট",
+  "checkout.item": "জিনিস",
+  "checkout.unit_price": "একটির দাম: {price}",
+  "checkout.quantity": "পরিমাণ",
+  "checkout.available": "পাওয়া যাচ্ছে: {count}",
+  "checkout.fulfilment": "কীভাবে পাবেন",
+  "checkout.fulfilment.self_pickup": "বিক্রেতার কাছ থেকে নিজে নিন (ডেলিভারি চার্জ নেই)",
+  "checkout.fulfilment.courier": "কুরিয়ারে ডেলিভারি",
+  "checkout.courier_not_yet": "কুরিয়ার এখনো বুক করা যায় না। এই জিনিসটি শুধু কুরিয়ারে পাঠানো যায়, তাই আপাতত কেনা যাবে না।",
+  "checkout.courier_also": "কুরিয়ার এখনো বুক করা যায় না; আপনি বিক্রেতার কাছ থেকে জিনিসটি নিজে নিতে পারেন।",
+  "checkout.game_not_yet": "গেম অ্যাকাউন্ট এখনো কেনা যায় না। শিগগিরই যাবে।",
+  "checkout.total": "মোট দিতে হবে: {total}",
+  "checkout.reserve_note": "এগিয়ে গেলে আপনি দাম দেওয়া পর্যন্ত জিনিসটি আপনার জন্য সংরক্ষিত থাকবে।",
+  "checkout.continue": "পেমেন্টে যান",
+  "checkout.own": "এটি আপনার নিজের বিজ্ঞাপন।",
+  "checkout.unavailable": "এই পরিমাণে জিনিসটি আর পাওয়া যাচ্ছে না।",
+  "checkout.not_active": "এই জিনিসটি এখন কেনা যাবে না।",
+  "checkout.limit": "এই অর্ডারটি আপনার অ্যাকাউন্ট এখন যতটা কিনতে পারে তার চেয়ে বেশি।",
+  "checkout.sign_in": "কিনতে সাইন ইন করুন",
+  "checkout.verify": "পরিচয় ও ই-মেইল যাচাই করা সদস্যরাই কিনতে পারেন।",
+  "checkout.quantity_invalid": "১ থেকে {max}-এর মধ্যে পরিমাণ লিখুন।"
+}
