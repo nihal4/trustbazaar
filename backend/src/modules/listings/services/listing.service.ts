@@ -10,6 +10,7 @@ import { Auction, Category, Clarification, Listing, ListingPhoto, ListingStatusC
 import type { CreateListingDto, PublishListingDto, UpdateListingDto } from '../http/listings.dto';
 import type { ListingStatus } from '../ports';
 import { MediaPipeline, PhotoRejected, PhotoSize, STORAGE_KEY } from './media';
+import { readAuctionState } from './auction-state';
 import { publish } from './outbox';
 import { ScreeningService } from './screening.service';
 
@@ -327,24 +328,33 @@ export class ListingService {
   // ---------------------------------------------------------------- reading
 
   /**
-   * The listing page. Others see only active, sold and ended listings of visible sellers (FR-SRC-04), and
+   * Who may see a listing: others see only active, sold and ended listings of visible sellers (FR-SRC-04), and
    * while CP-36 is off no active game-account listing (I-30); the seller sees their own in every state.
-   * Never in the public view: the exact or approximate coordinates, the reserve amount, units reserved.
+   * Anything else is not-found, as for an unknown id. Also the bid engine's "listing is visible" check (U3-04).
+   */
+  async visible(id: string, viewerId: string | undefined): Promise<Listing> {
+    const l = await this.db.getRepository(Listing).findOneBy({ id });
+    if (!l) throw new Problem('not-found');
+    if (viewerId === l.sellerId) return l;
+    if (!PUBLIC_STATUSES.includes(l.status) || !l.sellerVisible) throw new Problem('not-found');
+    if (l.itemKind === 'game_account' && l.status === 'active' && (await this.params.current()).get<boolean>('CP-36') !== true) throw new Problem('not-found');
+    return l;
+  }
+
+  /**
+   * The listing page, under visible()'s rule. Never in the public view: the exact or approximate coordinates,
+   * the reserve amount, units reserved.
    */
   async view(id: string, viewer: Principal | { userId: string } | undefined) {
     const viewerId = viewer && 'type' in viewer ? userOf(viewer) : viewer?.userId;
-    const l = await this.db.getRepository(Listing).findOneBy({ id });
-    if (!l) throw new Problem('not-found');
+    const l = await this.visible(id, viewerId);
     const own = viewerId === l.sellerId;
-    if (!own) {
-      if (!PUBLIC_STATUSES.includes(l.status) || !l.sellerVisible) throw new Problem('not-found');
-      if (l.itemKind === 'game_account' && l.status === 'active' && (await this.params.current()).get<boolean>('CP-36') !== true) throw new Problem('not-found');
-    }
-    const [category, photos, clarifications, auction, seller] = await Promise.all([
+    const [category, photos, clarifications, auction, state, seller] = await Promise.all([
       this.db.getRepository(Category).findOneByOrFail({ id: l.categoryId }),
       this.db.getRepository(ListingPhoto).find({ where: { listingId: id }, order: { position: 'ASC' } }),
       this.db.getRepository(Clarification).find({ where: { listingId: id }, order: { createdAt: 'ASC', id: 'ASC' } }),
       l.saleFormat === 'auction' ? this.db.getRepository(Auction).findOneBy({ listingId: id }) : Promise.resolve(null),
+      l.saleFormat === 'auction' ? readAuctionState(this.db, id) : Promise.resolve(null),
       this.identity.getPublicProfile(l.sellerId),
     ]);
     return {
@@ -369,15 +379,11 @@ export class ListingService {
         .filter((p) => p.removedAt === null)
         .map((p) => ({ id: p.id, position: p.position, url: photoUrl(p.storageKey), thumbUrl: photoUrl(p.storageKey, 'thumb'), width: p.width, height: p.height, showsDefects: p.showsDefects })),
       clarifications: clarifications.map((c) => ({ id: c.id, body: c.body, at: c.createdAt.toISOString() })),
-      auction: auction && {
-        status: auction.status,
-        startPrice: auction.startPrice,
-        currentPrice: auction.currentPrice,
-        bidCount: auction.bidCount,
-        endAt: auction.endAt.toISOString(),
-        hasReserve: auction.reservePrice !== null,
-        reserveMet: auction.reservePrice === null || BigInt(auction.currentPrice ?? '0') >= BigInt(auction.reservePrice),
-        serverTime: new Date().toISOString(), // FR-AUC-01: the client counts down on the server's clock
+      // the public state of GET /auctions/{id}/state (U3-04), currentPrice kept for U3-02's readers; serverTime
+      // is the database's clock, which also decides bids (FR-AUC-01, AS-2)
+      auction: auction && state && {
+        ...state,
+        currentPrice: state.price,
         ...(own ? { reservePrice: auction.reservePrice } : {}),
       },
       seller: { id: seller.id, displayName: seller.displayName, verified: seller.verified, joinMonth: seller.joinMonth },
