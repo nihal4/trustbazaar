@@ -1,0 +1,13 @@
+/* The order page, first part (section 7.4): one column; the main actions at least 44 px high. */
+.page { max-width: 44rem; }
+.money { border-left: 4px solid var(--tb-accent); padding-left: var(--tb-space-2); }
+.panel { border: 1px solid var(--tb-border); border-radius: var(--tb-radius); background: var(--tb-surface); padding: var(--tb-space-2) var(--tb-space-3); }
+.breakdown { display: grid; grid-template-columns: 1fr max-content; gap: var(--tb-space-1) var(--tb-space-3); max-width: 24rem; }
+.breakdown dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.total { font-weight: 700; border-top: 1px solid var(--tb-border); padding-top: var(--tb-space-1); }
+.choice { border: 0; padding: 0; margin: var(--tb-space-2) 0; }
+.choice div { display: flex; align-items: center; gap: var(--tb-space-2); min-height: 44px; }
+.choice button { min-height: 44px; padding: 0 var(--tb-space-3); font: inherit; }
+.primary { min-height: 44px; padding: 0 var(--tb-space-3); border-radius: var(--tb-radius); background: var(--tb-accent); color: var(--tb-accent-text); border: 0; font: inherit; font-weight: 700; }
+.primary:disabled { opacity: 0.6; }
+.error { color: var(--tb-error); font-weight: 700; }
