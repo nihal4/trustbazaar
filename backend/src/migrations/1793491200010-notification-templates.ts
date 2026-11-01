@@ -21,7 +21,7 @@ export class NotificationTemplates1793491200010 implements MigrationInterface {
   }
 }
 
-const CODES = ["security.new_device", "security.password_changed", "security.phone_changed", "security.email_changed", "security.mfa_enabled", "security.mfa_disabled", "security.payout_account_changed", "account.kyc_verified", "account.kyc_rejected", "account.kyc_revoked", "account.suspended", "account.reinstated", "order.auction_won", "order.paid_buyer", "order.paid_seller", "order.unpaid_cancelled", "order.delivered", "order.cancellation_requested", "order.cancellation_declined", "order.cancelled_by_seller", "escrow.released_buyer", "escrow.released_seller", "escrow.refunded_buyer", "escrow.refunded_seller", "escrow.partly_refunded_buyer", "escrow.partly_refunded_seller", "escrow.frozen", "payment.refund_sent", "payment.refund_delayed", "payment.payout_sent", "payment.payout_failed", "payment.payout_account_approved", "payment.payout_account_rejected", "listing.published"];
+const CODES = ["security.signin_new_device", "security.password_changed", "security.phone_changed", "security.email_changed", "security.mfa_enabled", "security.mfa_disabled", "security.payout_account_changed", "account.kyc_verified", "account.kyc_rejected", "account.kyc_revoked", "account.suspended", "account.reinstated", "order.auction_won", "order.paid_buyer", "order.paid_seller", "order.unpaid_cancelled", "order.delivered", "order.cancellation_requested", "order.cancellation_declined", "order.cancelled_by_seller", "escrow.released_buyer", "escrow.released_seller", "escrow.refunded_buyer", "escrow.refunded_seller", "escrow.partly_refunded_buyer", "escrow.partly_refunded_seller", "escrow.frozen", "payment.refund_sent", "payment.refund_delayed", "payment.payout_sent", "payment.payout_failed", "payment.payout_account_approved", "payment.payout_account_rejected", "listing.published"];
 
 const SQL = String.raw`
 ALTER TABLE notify.notifications
@@ -30,7 +30,7 @@ ALTER TABLE notify.notifications
   ADD CONSTRAINT notification_subject CHECK ((subject_type IS NULL) = (subject_id IS NULL));
 
 INSERT INTO notify.templates (code, version, category, channels, allowed_params, title_en, title_bn, body_en, body_bn) VALUES
- ('security.new_device', 1, 'security', '{email,sms}', '{device}',
+ ('security.signin_new_device', 1, 'security', '{email,sms}', '{device}',
   'New sign-in to your account', 'আপনার অ্যাকাউন্টে নতুন সাইন-ইন',
   'Your TrustBazaar account was signed in on a new device ({device}). If this was not you, change your password now.',
   'নতুন একটি ডিভাইস ({device}) থেকে আপনার TrustBazaar অ্যাকাউন্টে সাইন-ইন হয়েছে। এটি আপনি না হলে এখনই পাসওয়ার্ড পরিবর্তন করুন।'),
