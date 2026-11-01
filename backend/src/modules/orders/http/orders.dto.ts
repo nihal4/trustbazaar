@@ -36,3 +36,15 @@ export class OrdersQuery {
   @MaxLength(100)
   cursor?: string;
 }
+
+/** FR-PAY-01: which provider's page to pay on. */
+export class StartPaymentDto {
+  @IsIn(['bkash', 'nagad', 'stripe'])
+  provider!: 'bkash' | 'nagad' | 'stripe';
+}
+
+/** The mock provider's page: the outcome the buyer chose (form field). */
+export class MockPayDto {
+  @IsIn(['succeeded', 'failed'])
+  outcome!: 'succeeded' | 'failed';
+}
