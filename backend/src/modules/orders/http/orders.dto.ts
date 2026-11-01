@@ -1,4 +1,4 @@
-import { IsIn, IsInt, IsOptional, IsString, IsUUID, Matches, Max, MaxLength, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, IsUUID, Matches, Max, MaxLength, Min, ValidateIf } from 'class-validator';
 import { FULFILMENT } from '../db/enums';
 import type { Fulfilment } from '../ports';
 
@@ -60,4 +60,60 @@ export class CancellationDto {
 export class CancellationDecisionDto {
   @IsIn(['accept', 'decline'])
   decision!: 'accept' | 'decline';
+}
+
+/** FR-PAY-17: a wallet (on the verified number) or a bank account; fields by kind. */
+export class PayoutAccountDto {
+  @IsIn(['bkash_wallet', 'nagad_wallet', 'bank'])
+  kind!: 'bkash_wallet' | 'nagad_wallet' | 'bank';
+
+  @ValidateIf((o: PayoutAccountDto) => o.kind !== 'bank')
+  @IsString()
+  @MaxLength(20)
+  walletNumber?: string;
+
+  @ValidateIf((o: PayoutAccountDto) => o.kind === 'bank')
+  @IsString()
+  @Matches(/\S/)
+  @MaxLength(80)
+  bankName?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  branchName?: string;
+
+  @ValidateIf((o: PayoutAccountDto) => o.kind === 'bank')
+  @Matches(/^[0-9]{9}$/)
+  routingNumber?: string;
+
+  @ValidateIf((o: PayoutAccountDto) => o.kind === 'bank')
+  @IsString()
+  @Matches(/\S/)
+  @MaxLength(120)
+  accountName?: string;
+
+  @ValidateIf((o: PayoutAccountDto) => o.kind === 'bank')
+  @Matches(/^[0-9]{6,20}$/)
+  accountNumber?: string;
+}
+
+export class PayoutsQuery {
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  cursor?: string;
+}
+
+/** A staff action's recorded reason (section 7.5). */
+export class StaffReasonDto {
+  @IsString()
+  @Matches(/\S/)
+  @MaxLength(500)
+  reason!: string;
+}
+
+export class BankAccountDecisionDto extends StaffReasonDto {
+  @IsIn(['approve', 'reject'])
+  decision!: 'approve' | 'reject';
 }
