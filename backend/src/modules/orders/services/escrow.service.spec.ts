@@ -250,6 +250,23 @@ describe('EscrowService: release and cancellation by the parties (U2-05)', () =>
   });
 });
 
+describe('EscrowService: missed fulfilment deadline (U2-07)', () => {
+  it('FR-PAY-08 a paid order past its deadline without its step is refunded in full; requests lapse', async () => {
+    const s = setup();
+    const { o, e } = s.order({ fulfilmentDueAt: new Date(NOW.getTime() - 1) });
+    s.repo(CancellationRequest).rows.push({ id: 'C1', orderId: o.id, status: 'pending' });
+    expect(await s.svc.refundMissedDeadline(o.id)).toBe(true);
+    expect(e).toMatchObject({ state: 'refunded', amountRefunded: '1000000' });
+    expect(s.repo(Refund).rows[0]).toMatchObject({ reason: 'fulfilment_deadline' });
+    expect(s.repo(CancellationRequest).rows[0]).toMatchObject({ status: 'lapsed', decidedAt: NOW });
+    expect(s.repo(EscrowHistory).rows[0]).toMatchObject({ actorType: 'system' });
+    expect(await s.svc.refundMissedDeadline(o.id)).toBe(false); // once
+    expect(await s.svc.refundMissedDeadline(s.order({ fulfilmentDueAt: new Date(NOW.getTime() + 1) }).o.id)).toBe(false);
+    expect(await s.svc.refundMissedDeadline(s.order({ fulfilmentDueAt: NOW, fulfilmentDoneAt: NOW }).o.id)).toBe(false);
+    expect(await s.svc.refundMissedDeadline(s.order({ fulfilmentDueAt: NOW }, { state: 'frozen_disputed' }).o.id)).toBe(false);
+  });
+});
+
 describe('split (section 4.4)', () => {
   it('FR-PAY-14 the SRS example and its parts always add up', () => {
     expect(split(1_000_000n, 15_000n, 0n, true, 500, 1000)).toEqual({ commission: 50_000n, courierPayout: 13_500n, deliveryMargin: 1_500n, sellerPayout: 950_000n, refundTotal: 0n });
