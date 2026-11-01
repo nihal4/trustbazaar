@@ -1,12 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type Redis from 'ioredis';
 import { DataSource, EntityManager } from 'typeorm';
 import { CLOCK, Clock } from '../../../kernel/clock';
 import { TbConfig } from '../../../kernel/config/config';
 import { TB_CONFIG } from '../../../kernel/config/config.provider';
 import { CONFIG_PORT, ConfigPort } from '../../../kernel/config-port';
 import { Problem } from '../../../kernel/http/problems';
-import { REDIS } from '../../../kernel/redis.provider';
 import { NOTIFICATIONS, NotificationPort } from '../adapters/notifications';
 import { generateLinkToken, generateOtp, hashLinkToken } from '../crypto/otp';
 import { PasswordHasher } from '../crypto/password';
@@ -17,7 +15,8 @@ import { OtpService } from './otp.service';
 import { publish } from './outbox';
 import { SecondFactorService } from './second-factor.service';
 import { RequestContext, SessionService } from './session.service';
-import { normaliseLogin, signInThrottleKey } from './signin.service';
+import { SignInThrottle } from './signin-throttle.service';
+import { normaliseLogin } from './signin.service';
 
 // Password reset and change (Unit 1 section 6.4; FR-ACC-07, SEC-AUTH-10, SEC-AUTH-11).
 // forgot always answers 202: a verified e-mail gets a 256-bit link (CP-06), a verified number an SMS code;
@@ -52,7 +51,7 @@ export class PasswordService {
     private readonly otp: OtpService,
     private readonly audit: AuditService,
     private readonly limiter: RateLimiter,
-    @Inject(REDIS) private readonly redis: Redis,
+    private readonly throttle: SignInThrottle,
     @Inject(NOTIFICATIONS) private readonly notify: NotificationPort,
     @Inject(TB_CONFIG) private readonly config: TbConfig,
     @Inject(CLOCK) private readonly clock: Clock,
@@ -135,7 +134,7 @@ export class PasswordService {
     });
     if ('problem' in outcome) throw new Problem(outcome.problem);
     // SEC-AUTH-04: a reset always lifts the sign-in delay.
-    await this.redis.del(signInThrottleKey(outcome.user.phone_e164), signInThrottleKey(outcome.user.email.toLowerCase())).catch(() => undefined);
+    await this.throttle.clear(outcome.user.phone_e164, outcome.user.email.toLowerCase());
   }
 
   /** SEC-AUTH-11: signed in, after step-up, with the current password; ends every other session. */

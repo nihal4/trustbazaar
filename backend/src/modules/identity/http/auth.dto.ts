@@ -1,4 +1,4 @@
-import { IsBoolean, IsEmail, IsIn, IsOptional, IsString, IsUUID, Length, Matches, MaxLength, MinLength, ValidateIf } from 'class-validator';
+import { IsBoolean, IsEmail, IsIn, IsISO8601, IsOptional, IsString, IsUUID, Length, Matches, MaxLength, MinLength, ValidateIf } from 'class-validator';
 import { STEP_UP_ACTIONS, StepUpAction } from '../../../kernel/http/policies';
 
 export class SignInDto {
@@ -148,4 +148,71 @@ export class EmailChangeDto {
   @IsEmail({}, { message: 'email must be an e-mail address' })
   @MaxLength(254)
   email!: string;
+}
+
+export class StaffSignInDto {
+  @IsEmail({}, { message: 'email must be an e-mail address' })
+  @MaxLength(254)
+  email!: string;
+
+  @IsString()
+  @MinLength(1)
+  @MaxLength(256)
+  password!: string;
+}
+
+export class StaffEnrolDto {
+  @IsString()
+  @MaxLength(1024)
+  newPassword!: string;
+}
+
+export class NewStaffDto {
+  @IsEmail({}, { message: 'email must be an e-mail address' })
+  @MaxLength(254)
+  email!: string;
+
+  @IsString()
+  @Length(2, 60)
+  displayName!: string;
+
+  @IsIn(['operator', 'administrator'])
+  role!: 'operator' | 'administrator';
+
+  /** FR-OPS-06: compared with users' numbers for conflicts of interest. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  phone?: string;
+}
+
+export class ReasonDto {
+  @IsString()
+  @Length(10, 1000)
+  reason!: string;
+}
+
+export class DecisionDto {
+  @IsIn(['approved', 'rejected'])
+  decision!: 'approved' | 'rejected';
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  note?: string;
+}
+
+export class ConflictDto extends ReasonDto {
+  @IsUUID()
+  userId!: string;
+}
+
+export class AuditQueryDto {
+  @IsOptional() @IsUUID() actorId?: string;
+  @IsOptional() @IsUUID() objectId?: string;
+  @IsOptional() @IsString() @Matches(/^[a-z_.]{1,80}$/) action?: string;
+  @IsOptional() @IsISO8601() from?: string;
+  @IsOptional() @IsISO8601() to?: string;
+  @IsOptional() @Matches(/^\d{1,18}$/) before?: string;
+  @IsOptional() @Matches(/^\d{1,3}$/) limit?: string;
 }

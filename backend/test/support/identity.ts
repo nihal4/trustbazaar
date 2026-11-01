@@ -60,6 +60,30 @@ export class IdentityFixtures {
     return id;
   }
 
+  /** A staff member who can sign in: a real password and, unless pending_mfa, a confirmed TOTP factor. */
+  async staffAccount(role: 'operator' | 'administrator', o: { status?: 'active' | 'pending_mfa'; email?: string; phone?: string } = {}) {
+    const id = randomUUID();
+    const password = `staff pw ${randomUUID()}`;
+    const email = o.email ?? `s-${id}@tb.test`;
+    const status = o.status ?? 'active';
+    await this.db.query(
+      `INSERT INTO identity.staff_accounts (id, email, display_name, role, status, password_hash, phone_e164, created_by)
+       VALUES ($1, $2, 'Staff member', $3, $4, $5, $6, $1)`,
+      [id, email, role, status, await argon2.hash(password, ARGON2_PARAMS), o.phone ?? null],
+    );
+    let totpSecret: string | undefined;
+    if (status === 'active') {
+      totpSecret = authenticator.generateSecret(20);
+      const factorId = randomUUID();
+      const blob = encryptField(this.config.keys.field, Buffer.from(totpSecret), { table: 'totp_factors', column: 'secret_enc', rowId: factorId });
+      await this.db.query(
+        `INSERT INTO identity.totp_factors (id, principal_type, staff_id, secret_enc, key_version, confirmed_at) VALUES ($1, 'staff', $2, $3, $4, now())`,
+        [factorId, id, blob, this.config.keys.field.current],
+      );
+    }
+    return { staffId: id, email, password, totpSecret };
+  }
+
   /** A session; idleSeconds/absoluteSeconds may be negative for an expired one. */
   async session(
     principal: { userId: string } | { staffId: string },
