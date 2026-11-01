@@ -1,7 +1,7 @@
 // The language of the page (NFR-USE-04; section 6.1): chosen at any time from the header, kept for
 // the next visit, and reflected in <html lang> so screen readers pronounce the text correctly.
 import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
-import { translator, type T } from './catalogue';
+import { translator, type Catalogue, type T } from './catalogue';
 import { loadBanglaFont } from './font';
 import { chooseLang, type Lang } from './lang';
 import { readStoredLang, storeLang } from './storage';
@@ -39,4 +39,14 @@ export function useLanguage(): LanguageValue {
   const v = useContext(LanguageContext);
   if (!v) throw new Error('useLanguage outside LanguageProvider');
   return v;
+}
+
+/**
+ * The translator for a feature: the shell's messages plus the feature's own catalogue
+ * (section 6.1). Pass a constant object, so the translator changes only with the language.
+ */
+export function useT(feature: Record<Lang, Catalogue>): { t: T; lang: Lang } {
+  const { lang } = useLanguage();
+  const t = useMemo(() => translator(lang, feature), [lang, feature]);
+  return { t, lang };
 }
