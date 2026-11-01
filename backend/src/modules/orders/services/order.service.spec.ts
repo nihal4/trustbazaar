@@ -7,7 +7,7 @@ import { Problem } from '../../../kernel/http/problems';
 import type { AuditServicePort, IdentityQuery } from '../../identity/ports';
 import type { ListingSnapshot, ListingsPort } from '../../listings/ports';
 import { OrdersController } from '../http/orders.controller';
-import { Escrow, Order, OrdersOutboxEvent } from '../db/entities';
+import { CancellationRequest, Escrow, Order, OrdersOutboxEvent } from '../db/entities';
 import { fulfilmentRefusal, OrderService } from './order.service';
 
 // Unit tests of OrderService over an in-memory stand-in for TypeORM; the same behaviour against
@@ -31,6 +31,9 @@ class Repo {
   async update(where: Row, patch: Row) {
     for (const r of this.rows.filter((x) => matches(x, where))) Object.assign(r, patch);
   }
+  async find(o: { where: Row; take?: number }) {
+    return this.rows.filter((r) => matches(r, o.where)).reverse().slice(0, o.take ?? Infinity); // newest first
+  }
 }
 
 const NOW = new Date('2026-11-01T12:00:00Z');
@@ -50,6 +53,7 @@ function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; ve
     [Order, new Repo(() => ({ status: 'awaiting_payment', createdAt: NOW, paidAt: null, fulfilmentStep: null, fulfilmentDueAt: null, fulfilmentDoneAt: null, deliveryEventAt: null, cancelledAt: null, cancelReason: null, closedAt: null }))],
     [Escrow, new Repo()],
     [OrdersOutboxEvent, new Repo()],
+    [CancellationRequest, new Repo()],
   ]);
   const manager = {
     getRepository: (e: unknown) => repos.get(e)!,
@@ -67,7 +71,7 @@ function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; ve
     db as unknown as DataSource, idempotency as unknown as IdempotencyKeys, listings as unknown as ListingsPort,
     identity as unknown as IdentityQuery, audit as unknown as AuditServicePort, params, clock,
   );
-  return { svc, manager, listings, audit, orders: repos.get(Order)!, outbox: repos.get(OrdersOutboxEvent)!, escrows: repos.get(Escrow)! };
+  return { svc, manager, listings, audit, orders: repos.get(Order)!, outbox: repos.get(OrdersOutboxEvent)!, escrows: repos.get(Escrow)!, cancellations: repos.get(CancellationRequest)! };
 }
 
 const problemOf = async (p: Promise<unknown>) => {
@@ -147,6 +151,9 @@ describe('OrderService', () => {
     s.escrows.rows.push({ orderId: order.id, state: 'held', releasePolicy: 'standard', amountCollected: '1000000', amountRefunded: '0', disputeWindowEndsAt: null, autoReleaseAt: NOW });
     expect(await s.svc.getOrderForParty(order.id, 'S')).toMatchObject({ role: 'seller', escrow: { state: 'held', autoReleaseAt: NOW.toISOString() } });
     expect(await problemOf(s.svc.getOrderForParty(order.id, 'X'))).toEqual(['not-found']);
+    expect((await s.svc.getOrderForParty(order.id, 'B')).cancellationRequest).toBeNull();
+    s.cancellations.rows.push({ id: 'C1', orderId: order.id, status: 'pending', reason: 'Wrong model', createdAt: NOW });
+    expect((await s.svc.getOrderForParty(order.id, 'B')).cancellationRequest).toEqual({ id: 'C1', status: 'pending', reason: 'Wrong model', createdAt: NOW.toISOString() });
   });
 
   it('IF-UI-05 my orders in pages of 50 with a cursor', async () => {
