@@ -8,8 +8,6 @@
   "shell.loading": "Loading…",
   "shell.close": "Close",
   "shell.error.unexpected": "Something went wrong on this page. Reload the page to try again.",
-  "shell.home.title": "Buy and sell safely",
-  "shell.home.lead": "Every member is verified, and your payment is held until you get what you paid for.",
   "shell.not_found.title": "Page not found",
   "shell.not_found.home": "Go to the home page",
   "shell.account": "Account",

@@ -4,8 +4,11 @@ import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { createMemoryRouter, type RouteObject } from 'react-router-dom';
 import { accountRoutes } from '../features/account/routes';
+import { listingRoutes } from '../features/listings/routes';
 import { notificationRoutes } from '../features/notifications/routes';
+import { searchRoutes } from '../features/search/routes';
 import { createDocument, DocumentRoot, signInHere } from '../shared/document';
+import type { LiveSocket } from '../shared/live';
 import type { Me } from '../shared/me';
 
 export interface Call { method: string; path: string; query: URLSearchParams; body: unknown; headers: Headers }
@@ -53,22 +56,94 @@ export function fakeBackend(answers: Record<string, Answer | Answer[]>) {
   return { calls, fetch: fetch as typeof globalThis.fetch, called: (key: string) => calls.filter((c) => `${c.method} ${c.path}` === key) };
 }
 
-export function renderApp(at: string, be: ReturnType<typeof fakeBackend>, lang: 'en' | 'bn' = 'en') {
+/**
+ * A stand-in for the Socket.IO connection (shared/live.ts): the test plays the server, connecting, refusing,
+ * dropping and pushing messages, and reads what the client emitted (join, leave).
+ */
+export class FakeSocket implements LiveSocket {
+  connected = false;
+  opened = 0;
+  connects = 0;
+  disconnects = 0;
+  readonly emitted: { event: string; payload: unknown }[] = [];
+  private readonly handlers = new Map<string, Set<(...a: never[]) => void>>();
+  on(event: string, fn: (...a: never[]) => void) {
+    const set = this.handlers.get(event) ?? new Set();
+    set.add(fn);
+    this.handlers.set(event, set);
+    return this;
+  }
+  off(event: string, fn: (...a: never[]) => void) {
+    this.handlers.get(event)?.delete(fn);
+    return this;
+  }
+  emit(event: string, payload?: unknown) {
+    this.emitted.push({ event, payload });
+    return this;
+  }
+  connect() {
+    this.connects++;
+    return this;
+  }
+  disconnect() {
+    this.connected = false;
+    this.disconnects++;
+    return this;
+  }
+  private fire(event: string, payload?: unknown) {
+    for (const fn of [...(this.handlers.get(event) ?? [])]) (fn as (p: unknown) => void)(payload);
+  }
+  /** The server accepts the connection (also a reconnection). */
+  accept() {
+    this.connected = true;
+    this.fire('connect');
+  }
+  /** The connection drops. */
+  drop() {
+    this.connected = false;
+    this.fire('disconnect', 'transport close');
+  }
+  /** The server refuses the handshake with Unit 1's reason. */
+  refuse(message: string) {
+    this.connected = false;
+    this.fire('connect_error', { message });
+  }
+  /** A message from the server. */
+  push(event: string, payload: Record<string, unknown>) {
+    this.fire(event, payload);
+  }
+  rooms(): string[] {
+    const joined = new Map<string, number>();
+    for (const e of this.emitted) {
+      const room = (e.payload as { room?: string } | undefined)?.room;
+      if (!room) continue;
+      joined.set(room, (joined.get(room) ?? 0) + (e.event === 'join' ? 1 : e.event === 'leave' ? -1 : 0));
+    }
+    return [...joined].filter(([, n]) => n > 0).map(([r]) => r);
+  }
+}
+
+export function renderApp(at: string, be: ReturnType<typeof fakeBackend>, lang: 'en' | 'bn' = 'en', socket?: FakeSocket) {
   return renderDocument(at, be, lang, {
     home: { path: '/', sameDocument: true }, accountLinks: true,
-    routes: [{ index: true, element: <h1>Home</h1> }, ...accountRoutes, ...notificationRoutes],
-  });
+    routes: [{ index: true, element: <h1>Home</h1> }, ...searchRoutes.filter((r) => !r.index), ...listingRoutes, ...accountRoutes, ...notificationRoutes],
+  }, undefined, socket);
 }
 
 /** Any user document (the user app, kyc.html) on a memory router; `wrap` adds providers around it. */
 export function renderDocument(at: string, be: ReturnType<typeof fakeBackend>, lang: 'en' | 'bn',
   setup: { routes: RouteObject[]; home: { path: string; sameDocument: boolean }; accountLinks?: boolean; titleKey?: string },
-  wrap: (root: ReactNode) => ReactNode = (r) => r) {
+  wrap: (root: ReactNode) => ReactNode = (r) => r, socket?: FakeSocket) {
   const doc = createDocument(
     { kind: 'user', signIn: signInHere, ...setup },
     {
       createRouter: (r) => createMemoryRouter(r, { initialEntries: [at] }),
       apiOverrides: { fetch: be.fetch, cookies: () => '__Host-tb_csrf=csrf-1', locks: undefined, store: undefined },
+      openSocket: () => {
+        const s = socket ?? new FakeSocket();
+        s.opened++;
+        return s;
+      },
     },
   );
   render(wrap(<DocumentRoot doc={doc} lang={lang} />));

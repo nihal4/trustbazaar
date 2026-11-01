@@ -10,6 +10,7 @@ import { LanguageProvider } from './language/Language';
 import type { Lang } from './language/lang';
 import { NotFound, RouteError } from './pages';
 import { createQueryClient } from './query';
+import { Live, LiveContext, openSocket as defaultOpenSocket, type OpenSocket } from './live';
 import { ME_KEY } from './me';
 import { createSessionNotice, SessionContext, type SessionNotice } from './session';
 import { createStepUpBroker, StepUpContext, type StepUpBroker } from './stepUp';
@@ -33,14 +34,18 @@ export interface ClientDocument {
   router: Router;
   session: SessionNotice;
   stepUp: StepUpBroker;
+  /** The user app's live connection (section 5); null in the other documents. */
+  live: Live | null;
 }
 
 interface Options {
   createRouter?: (routes: RouteObject[]) => Router;
   apiOverrides?: Parameters<typeof createDocumentApi>[2];
+  /** Tests pass a stand-in socket. */
+  openSocket?: OpenSocket;
 }
 
-export function createDocument(setup: DocumentSetup, { createRouter = createBrowserRouter, apiOverrides }: Options = {}): ClientDocument {
+export function createDocument(setup: DocumentSetup, { createRouter = createBrowserRouter, apiOverrides, openSocket = defaultOpenSocket }: Options = {}): ClientDocument {
   const queryClient = createQueryClient();
   const session = createSessionNotice();
   const stepUp = createStepUpBroker();
@@ -50,6 +55,7 @@ export function createDocument(setup: DocumentSetup, { createRouter = createBrow
     // log, U8-02). Someone was signed in when their account is in the cache.
     if (setup.kind === 'user' && queryClient.getQueryData(ME_KEY) === undefined) return;
     queryClient.clear();
+    live?.stop();
     session.signedOut();
     if (setup.signIn) {
       const { pathname, search } = router.state.location;
@@ -67,7 +73,9 @@ export function createDocument(setup: DocumentSetup, { createRouter = createBrow
       ],
     },
   ]);
-  return { api, queryClient, router, session, stepUp };
+  // the live connection renews an expired access token with any request: api.js refreshes on its 401
+  const live = setup.kind === 'user' ? new Live(openSocket, () => api.get('/me')) : null;
+  return { api, queryClient, router, session, stepUp, live };
 }
 
 export function DocumentRoot({ doc, lang }: { doc: ClientDocument; lang?: Lang }) {
@@ -78,7 +86,9 @@ export function DocumentRoot({ doc, lang }: { doc: ClientDocument; lang?: Lang }
           <QueryClientProvider client={doc.queryClient}>
             <SessionContext.Provider value={doc.session}>
               <StepUpContext.Provider value={doc.stepUp}>
-                <RouterProvider router={doc.router} />
+                <LiveContext.Provider value={doc.live}>
+                  <RouterProvider router={doc.router} />
+                </LiveContext.Provider>
               </StepUpContext.Provider>
             </SessionContext.Provider>
           </QueryClientProvider>
