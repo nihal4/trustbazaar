@@ -1,7 +1,8 @@
 // Test support (not part of any bundle): a fake backend answering by method and path, the stand-in for
 // GET /me (U1-13), and the user app mounted on a memory router.
 import { render } from '@testing-library/react';
-import { createMemoryRouter } from 'react-router-dom';
+import type { ReactNode } from 'react';
+import { createMemoryRouter, type RouteObject } from 'react-router-dom';
 import { accountRoutes } from '../features/account/routes';
 import { createDocument, DocumentRoot, signInHere } from '../shared/document';
 import type { Me } from '../shared/me';
@@ -36,7 +37,8 @@ export function fakeBackend(answers: Record<string, Answer | Answer[]>) {
   const fetch = async (url: string | URL | Request, init: RequestInit = {}) => {
     const path = new URL(String(url), 'https://tb.test').pathname.replace(/^\/api\/v1/, '');
     const method = (init.method ?? 'GET').toUpperCase();
-    const call: Call = { method, path, body: init.body ? JSON.parse(String(init.body)) : undefined, headers: new Headers(init.headers) };
+    const body = init.body instanceof FormData ? init.body : init.body ? JSON.parse(String(init.body)) : undefined;
+    const call: Call = { method, path, body, headers: new Headers(init.headers) };
     calls.push(call);
     const key = `${method} ${path}`;
     const a = answers[key];
@@ -50,16 +52,23 @@ export function fakeBackend(answers: Record<string, Answer | Answer[]>) {
 }
 
 export function renderApp(at: string, be: ReturnType<typeof fakeBackend>, lang: 'en' | 'bn' = 'en') {
+  return renderDocument(at, be, lang, {
+    home: { path: '/', sameDocument: true }, accountLinks: true,
+    routes: [{ index: true, element: <h1>Home</h1> }, ...accountRoutes],
+  });
+}
+
+/** Any user document (the user app, kyc.html) on a memory router; `wrap` adds providers around it. */
+export function renderDocument(at: string, be: ReturnType<typeof fakeBackend>, lang: 'en' | 'bn',
+  setup: { routes: RouteObject[]; home: { path: string; sameDocument: boolean }; accountLinks?: boolean; titleKey?: string },
+  wrap: (root: ReactNode) => ReactNode = (r) => r) {
   const doc = createDocument(
-    {
-      kind: 'user', home: { path: '/', sameDocument: true }, signIn: signInHere, accountLinks: true,
-      routes: [{ index: true, element: <h1>Home</h1> }, ...accountRoutes],
-    },
+    { kind: 'user', signIn: signInHere, ...setup },
     {
       createRouter: (r) => createMemoryRouter(r, { initialEntries: [at] }),
       apiOverrides: { fetch: be.fetch, cookies: () => '__Host-tb_csrf=csrf-1', locks: undefined, store: undefined },
     },
   );
-  render(<DocumentRoot doc={doc} lang={lang} />);
+  render(wrap(<DocumentRoot doc={doc} lang={lang} />));
   return doc;
 }
