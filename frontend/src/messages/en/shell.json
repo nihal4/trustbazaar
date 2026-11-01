@@ -11,5 +11,18 @@
   "shell.home.title": "Buy and sell safely",
   "shell.home.lead": "Every member is verified, and your payment is held until you get what you paid for.",
   "shell.not_found.title": "Page not found",
-  "shell.not_found.home": "Go to the home page"
+  "shell.not_found.home": "Go to the home page",
+  "shell.account": "Account",
+  "shell.sign_in": "Sign in",
+  "stepup.title": "Confirm it is you",
+  "stepup.totp": "Enter the 6-digit code from your authenticator app, or one of your recovery codes.",
+  "stepup.sms": "We sent a 6-digit code to your mobile number. Enter it to continue.",
+  "stepup.code_label": "Code",
+  "stepup.confirm": "Confirm",
+  "stepup.cancel": "Cancel",
+  "stepup.resend": "Send a new code",
+  "stepup.resend_in": "New code in {seconds} s",
+  "stepup.wait": "Try again in {seconds} s",
+  "stepup.wrong_code": "The code is not correct. Check it and try again.",
+  "stepup.expired": "This code has expired. Ask for a new one."
 }

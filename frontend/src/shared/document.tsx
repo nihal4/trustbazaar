@@ -10,7 +10,9 @@ import { LanguageProvider } from './language/Language';
 import type { Lang } from './language/lang';
 import { NotFound, RouteError } from './pages';
 import { createQueryClient } from './query';
+import { ME_KEY } from './me';
 import { createSessionNotice, SessionContext, type SessionNotice } from './session';
+import { createStepUpBroker, StepUpContext, type StepUpBroker } from './stepUp';
 import { Shell, type ShellProps } from './Shell';
 
 type Router = ReturnType<typeof createBrowserRouter>;
@@ -30,6 +32,7 @@ export interface ClientDocument {
   queryClient: QueryClient;
   router: Router;
   session: SessionNotice;
+  stepUp: StepUpBroker;
 }
 
 interface Options {
@@ -40,18 +43,22 @@ interface Options {
 export function createDocument(setup: DocumentSetup, { createRouter = createBrowserRouter, apiOverrides }: Options = {}): ClientDocument {
   const queryClient = createQueryClient();
   const session = createSessionNotice();
+  const stepUp = createStepUpBroker();
   // The callback runs only after a request, so the router below exists by then.
   const api = createDocumentApi(setup.kind, () => {
+    // A guest's request answered 401 ended no session: nothing to clear, nothing to say (Decisions
+    // log, U8-02). Someone was signed in when their account is in the cache.
+    if (setup.kind === 'user' && queryClient.getQueryData(ME_KEY) === undefined) return;
     queryClient.clear();
     session.signedOut();
     if (setup.signIn) {
       const { pathname, search } = router.state.location;
       setup.signIn(pathname + search, router);
     }
-  }, apiOverrides);
+  }, apiOverrides, setup.kind === 'user' ? stepUp.request : undefined);
   const router = createRouter([
     {
-      element: <Shell titleKey={setup.titleKey} home={setup.home} />,
+      element: <Shell titleKey={setup.titleKey} home={setup.home} accountLinks={setup.accountLinks} />,
       children: [
         {
           errorElement: <RouteError />,
@@ -60,7 +67,7 @@ export function createDocument(setup: DocumentSetup, { createRouter = createBrow
       ],
     },
   ]);
-  return { api, queryClient, router, session };
+  return { api, queryClient, router, session, stepUp };
 }
 
 export function DocumentRoot({ doc, lang }: { doc: ClientDocument; lang?: Lang }) {
@@ -70,7 +77,9 @@ export function DocumentRoot({ doc, lang }: { doc: ClientDocument; lang?: Lang }
         <ApiContext.Provider value={doc.api}>
           <QueryClientProvider client={doc.queryClient}>
             <SessionContext.Provider value={doc.session}>
-              <RouterProvider router={doc.router} />
+              <StepUpContext.Provider value={doc.stepUp}>
+                <RouterProvider router={doc.router} />
+              </StepUpContext.Provider>
             </SessionContext.Provider>
           </QueryClientProvider>
         </ApiContext.Provider>
