@@ -3,15 +3,21 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NOTIFICATIONS, SimulatedNotifications } from './adapters/notifications';
 import { PasswordHasher } from './crypto/password';
 import { ENTITIES } from './db/entities';
+import { AccountController } from './http/account.controller';
 import { AuthController } from './http/auth.controller';
 import { RegistrationController } from './http/registration.controller';
 import { pipelineGuards } from './security/guards';
 import { RateLimiter } from './security/rate-limiter.service';
 import { noRestrictionsYet, RESTRICTIONS } from './security/restrictions';
 import { AuditService } from './services/audit.service';
+import { ContactService } from './services/contact.service';
+import { OtpService } from './services/otp.service';
+import { PasswordService } from './services/password.service';
 import { RegistrationService } from './services/registration.service';
+import { SecondFactorService } from './services/second-factor.service';
 import { SessionService } from './services/session.service';
 import { SignInService } from './services/signin.service';
+import { StepUpService } from './services/step-up.service';
 
 // Unit 1 (docs/design/01_identity_access.pdf). Schemas: identity, audit.
 // Also the security pipeline that every request passes (section 4.1): RateLimitGuard, AuthGuard, CsrfGuard,
@@ -22,13 +28,18 @@ import { SignInService } from './services/signin.service';
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
 @Module({
   imports: [TypeOrmModule.forFeature(ENTITIES)],
-  controllers: [AuthController, RegistrationController],
+  controllers: [AuthController, RegistrationController, AccountController],
   providers: [
     RateLimiter,
     PasswordHasher,
     AuditService,
     SessionService,
     SignInService,
+    OtpService,
+    SecondFactorService,
+    StepUpService,
+    PasswordService,
+    ContactService,
     RegistrationService,
     // Until the Notifications unit (Unit 6) provides NotificationPort: logged, labelled simulated (AS-4).
     SimulatedNotifications,

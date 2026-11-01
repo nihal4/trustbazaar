@@ -214,15 +214,21 @@ export class SessionService {
 
   /** Ends every other live session of the user (FR-ACC-08); returns how many. */
   async endOthers(userId: string, keep: string, ctx: RequestContext): Promise<number> {
-    return this.db.transaction(async (m) => {
-      const others: { id: string }[] = await m.query(
-        `SELECT id FROM identity.sessions WHERE user_id = $1 AND id <> $2 AND ended_at IS NULL FOR UPDATE`,
-        [userId, keep],
-      );
-      let n = 0;
-      for (const o of others) if (await this.endIn(m, o.id, 'user_ended', userId, ctx)) n++;
-      return n;
-    });
+    return this.db.transaction((m) => this.endAllIn(m, userId, keep, 'user_ended', ctx));
+  }
+
+  /**
+   * Ends every live session of the user except `keep` (null: all of them), in the caller's transaction:
+   * a password change or reset (SEC-AUTH-10, SEC-AUTH-11). Returns how many.
+   */
+  async endAllIn(m: EntityManager, userId: string, keep: string | null, reason: 'user_ended' | 'password_changed', ctx: RequestContext): Promise<number> {
+    const live: { id: string }[] = await m.query(
+      `SELECT id FROM identity.sessions WHERE user_id = $1 AND ($2::uuid IS NULL OR id <> $2) AND ended_at IS NULL FOR UPDATE`,
+      [userId, keep],
+    );
+    let n = 0;
+    for (const s of live) if (await this.endIn(m, s.id, reason, userId, ctx)) n++;
+    return n;
   }
 
   /** The user's live sessions, newest activity first (FR-ACC-08). */
