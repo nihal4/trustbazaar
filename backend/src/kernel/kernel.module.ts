@@ -6,6 +6,8 @@ import { config } from './config/config';
 import { configProvider, TB_CONFIG } from './config/config.provider';
 import { HealthController } from './health/health.controller';
 import { HealthService } from './health/health.service';
+import { EventBus } from './events/event-bus';
+import { OutboxDispatcher } from './events/outbox-dispatcher';
 import { REDIS, redisProvider } from './redis.provider';
 
 // The shared kernel (docs/design/09_integration.pdf, section 2): configuration and secrets (K-01),
@@ -30,8 +32,8 @@ import { REDIS, redisProvider } from './redis.provider';
     }),
   ],
   controllers: [HealthController],
-  providers: [configProvider, redisProvider, clockProvider, HealthService],
-  exports: [TB_CONFIG, REDIS, CLOCK], // CONFIG_PORT is provided by Unit 7 (U7-01)
+  providers: [configProvider, redisProvider, clockProvider, HealthService, EventBus, OutboxDispatcher],
+  exports: [TB_CONFIG, REDIS, CLOCK, EventBus], // CONFIG_PORT is provided by Unit 7 (U7-01)
 })
 export class KernelModule implements OnModuleDestroy {
   constructor(@Inject(REDIS) private readonly redis: Redis) {}
