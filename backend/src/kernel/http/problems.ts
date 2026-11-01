@@ -40,6 +40,8 @@ export const PROBLEMS = {
   'photo-limit': { status: 409, title: 'This listing already has the most photos allowed.' },
   'feature-off': { status: 409, title: 'This is not available right now.' },
   'not-available': { status: 409, title: 'This item is no longer available in that quantity.' },
+  'bid-refused': { status: 422, title: 'This bid cannot be accepted.' },
+  'auction-busy': { status: 409, title: 'Many bids are arriving at this moment. Please try again.' },
   'order-limit': { status: 409, title: 'This order is above the value your account can place right now.' },
   'order-state': { status: 409, title: 'This order cannot be changed in its current state.' },
   'payout-state': { status: 409, title: 'This payout or payout account cannot be changed in its current state.' },

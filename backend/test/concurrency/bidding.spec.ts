@@ -1,5 +1,6 @@
 /**
- * Placeholders (NFR-MNT-02) for the auction concurrency suite, which Unit 3 writes with U3-04.
+ * Placeholders (NFR-MNT-02) for the auction concurrency suite, which Unit 3 writes with U3-07 (AC-1). The
+ * sequential rules of the bid engine are in test/api/auctions.spec.ts (U3-04).
  * These are the tests the project's evaluation criteria (docs/proposal.tex,
  * "Evaluation Criteria") actually depend on. Fill each one in as the
  * corresponding feature is built — do not consider a feature "done" until
