@@ -4,6 +4,8 @@ import { CONFIG_PORT, ConfigPort } from '../../../kernel/config-port';
 import { EventBus, OutboxEvent } from '../../../kernel/events/event-bus';
 import { Problem } from '../../../kernel/http/problems';
 import { AUDIT_SERVICE, AuditServicePort, IDENTITY_QUERY, IdentityQuery } from '../../identity/ports';
+import type { BlockPort } from '../../chat/ports';
+import { AUCTION_BLOCKS } from '../adapters/blocks';
 import { AUCTION_ORDERS, AuctionOrders } from '../adapters/orders';
 import { endUnsold } from './auction-closer.service';
 import { publish } from './outbox';
@@ -32,6 +34,7 @@ export class SecondChanceService implements OnModuleInit {
     @Inject(IDENTITY_QUERY) private readonly identity: IdentityQuery,
     @Inject(AUDIT_SERVICE) private readonly audit: AuditServicePort,
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
+    @Inject(AUCTION_BLOCKS) private readonly blocks: BlockPort,
   ) {}
 
   onModuleInit(): void {
@@ -98,6 +101,9 @@ export class SecondChanceService implements OnModuleInit {
         await this.offerNext(m, auctionId);
         return { offerId, status: 'declined' as const, orderId: null };
       }
+      // FR-CHT-08, I-37: no purchase while a block exists between the bidder and the seller, either way
+      const [l] = (await m.query(`SELECT seller_id FROM listings.listings WHERE id = $1`, [auctionId])) as { seller_id: string }[];
+      if (l) await this.blocks.assertNotBlocked(l.seller_id, userId, m);
       const order = await this.orders.createAuctionOrder({ listingId: auctionId, winnerId: userId, price: BigInt(o.price), kind: 'second_chance' }, m);
       await m.query(`UPDATE auctions.second_chance_offers SET status = 'accepted', decided_at = now(), order_id = $2 WHERE id = $1`, [offerId, order.id]);
       await this.audit.record({

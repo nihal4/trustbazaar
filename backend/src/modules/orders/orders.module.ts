@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { IdentityModule } from '../identity/identity.module';
+import { ChatModule } from '../chat/chat.module';
 import { ListingsModule } from '../listings/listings.module';
 import { ENTITIES } from './db/entities';
 import { OrderActionsController, OrdersController } from './http/orders.controller';
@@ -26,7 +27,7 @@ import type Redis from 'ioredis';
 // and imports other units only through their ports (DC-1; enforced by .eslintrc.js).
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
 @Module({
-  imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule, ListingsModule],
+  imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule, ListingsModule, ChatModule],
   controllers: [OrdersController, OrderActionsController, PaymentsController, StripeWebhookController, MockPayController, MyPayoutsController, StaffPayoutsController],
   providers: [
     OrderService,

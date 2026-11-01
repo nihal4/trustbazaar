@@ -85,6 +85,17 @@ export class LiveGateway implements OnGatewayInit, LivePort, OnApplicationShutdo
     this.server?.in(`sid:${sessionId}`).disconnectSockets(true);
   }
 
+  async isConnected(userId: string): Promise<boolean> {
+    if (!this.server) return false;
+    try {
+      // through the Redis adapter, so a connection on another instance counts too; it waits at most a second
+      const sockets = await this.server.in(`user:${userId}`).timeout(1000).fetchSockets();
+      return sockets.length > 0;
+    } catch {
+      return false;
+    }
+  }
+
   /** Closes this instance's connections whose session is no longer live (ended, timed out, account closed). */
   async recheck(): Promise<number> {
     if (!this.server) return 0;
