@@ -16,8 +16,8 @@ export class ChatImageKeyTemplate1793491200011 implements MigrationInterface {
 
   public async down(q: QueryRunner): Promise<void> {
     await q.query(`
-      DELETE FROM notify.notifications WHERE template_code = 'chat.new_message' AND template_version = 1;
-      DELETE FROM notify.templates WHERE code = 'chat.new_message' AND version = 1;
+      DELETE FROM notify.notifications WHERE template_code = 'chat.message_received' AND template_version = 1;
+      DELETE FROM notify.templates WHERE code = 'chat.message_received' AND version = 1;
       ALTER TABLE chat.messages ALTER COLUMN image_key TYPE varchar(80);`);
   }
 }
@@ -26,7 +26,7 @@ const SQL = String.raw`
 ALTER TABLE chat.messages ALTER COLUMN image_key TYPE varchar(300);
 
 INSERT INTO notify.templates (code, version, category, channels, allowed_params, title_en, title_bn, body_en, body_bn) VALUES
- ('chat.new_message', 1, 'chat', '{email}', '{listing_title,sender_name}',
+ ('chat.message_received', 1, 'chat', '{email}', '{listing_title,sender_name}',
   'New message about {listing_title}', '{listing_title} নিয়ে নতুন বার্তা',
   'You have a new message from {sender_name} about {listing_title}. Open TrustBazaar to read it and reply. Pay only through the app: payments outside it are not protected.',
   '{listing_title} নিয়ে {sender_name} আপনাকে একটি বার্তা পাঠিয়েছেন। পড়তে ও উত্তর দিতে TrustBazaar খুলুন। শুধু অ্যাপের মাধ্যমেই টাকা দিন: অ্যাপের বাইরের পেমেন্ট সুরক্ষিত নয়।');
