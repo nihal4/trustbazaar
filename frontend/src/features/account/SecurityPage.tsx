@@ -1,6 +1,6 @@
-// Account security (IF-UI-01; FR-ACC-08, FR-ACC-09, SEC-AUTH-11): the live sessions with device and
-// last use, "this device" marked; ending sessions; password, mobile number and e-mail changes, each
-// behind step-up (SEC-AUTH-08). MFA settings arrive with Unit 1's endpoints (U1-12).
+// Account security (IF-UI-01; FR-ACC-06, FR-ACC-08, FR-ACC-09, SEC-AUTH-11): the live sessions with
+// device and last use, "this device" marked; ending sessions; password, mobile number and e-mail
+// changes, each behind step-up (SEC-AUTH-08); the authenticator app and recovery codes (MfaSettings).
 import { useState, type FormEvent } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApi } from '../../shared/api';
@@ -13,6 +13,7 @@ import { StepUpCancelled } from '../../shared/stepUp';
 import { formatDateTime } from '../../lib/time.js';
 import { toAsciiDigits } from '../../lib/money.js';
 import { SignInPrompt } from './AccountPage';
+import { MfaSettings } from './MfaSettings';
 import { digits, otherError, passwordReasonText, rejectedPasswordReason, retryAfter, useAccountT } from './common';
 import { bangladeshiMobile, isSixDigits, looksLikeEmail, PASSWORD } from './input';
 import styles from './account.module.css';
@@ -46,6 +47,7 @@ export function Component() {
       <h1>{t('security.title')}</h1>
       <Sessions list={sessions.data ?? []} error={sessions.isError ? sessions.error : null} />
       <PasswordChange />
+      <MfaSettings sessionsKey={SESSIONS_KEY} />
       <PhoneChange />
       <EmailChange />
     </div>
