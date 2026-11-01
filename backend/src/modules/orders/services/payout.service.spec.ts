@@ -165,14 +165,14 @@ describe('PayoutService', () => {
   });
 
   it('IF-UI-08 payout history in pages of 50 with a cursor', async () => {
-    const rows = Array.from({ length: 51 }, (_, i) => ({ id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`, order_id: 'O', amount: '1', status: 'sent', simulated: true, created_at: NOW, sent_at: NOW }));
+    const rows = Array.from({ length: 51 }, (_, i) => ({ id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`, order_id: 'O', amount: '1', status: 'sent', simulated: true, created_at: NOW, sent_at: NOW, cursor_at: '2026-11-01T10:00:00.123456Z' }));
     const s = setup();
     s.query.mockImplementation(async () => rows as never);
     const page = await s.svc.listPayouts('S');
     expect(page.items).toHaveLength(50);
     expect(page.items[0]).toEqual({ id: rows[0].id, orderId: 'O', amount: '1', status: 'sent', simulated: true, createdAt: NOW.toISOString(), sentAt: NOW.toISOString() });
     await s.svc.listPayouts('S', page.nextCursor!);
-    expect(s.query.mock.calls[1][1]).toEqual(['S', NOW, rows[49].id]);
+    expect(s.query.mock.calls[1][1]).toEqual(['S', '2026-11-01T10:00:00.123456Z', rows[49].id]);
     expect(await reason(s.svc.listPayouts('S', 'eA'))).toBe('format');
     s.query.mockImplementation(async () => [] as never);
     expect((await s.svc.listPayouts('S')).nextCursor).toBeNull();
