@@ -51,6 +51,13 @@ export class MockProvider implements PaymentProvider {
     };
   }
 
+  /** The simulated provider refunds at once; the key makes a retry return the same refund. */
+  async refund(r: { amount: bigint; idempotencyKey: string }): Promise<{ status: 'succeeded'; providerRefundId: string }> {
+    const key = `mockrefund:${r.idempotencyKey}`;
+    await this.redis.set(key, r.amount.toString(), 'EX', TTL_SECONDS, 'NX');
+    return { status: 'succeeded', providerRefundId: `mockrefund_${r.idempotencyKey.slice(0, 8)}` };
+  }
+
   /** What the buyer did on the mock page; only a pending payment can be decided. */
   static async decide(redis: Redis, attemptId: string, outcome: 'succeeded' | 'failed'): Promise<boolean> {
     const raw = await redis.get(mockKey(attemptId));
