@@ -1,24 +1,31 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { CLOCK, Clock } from '../../../kernel/clock';
 import { ConfigPort, ConfigValues, ParameterValues, parameterValues, SwitchName } from '../../../kernel/config-port';
+import { EventBus } from '../../../kernel/events/event-bus';
 
 // ConfigPort over the versioned parameter set (Unit 7 section "Parameters and Feature Switches"; FR-OPS-08,
-// DV-50). current() is cached per instance and refreshed at least every 60 seconds, and at once after this
-// instance publishes; a new order may use the previous version for up to a minute, which is acceptable
+// DV-50). current() is cached per instance and refreshed at least every 60 seconds, and when
+// staff.config.published arrives; a new order may use the previous version for up to a minute, which is acceptable
 // because every order keeps the version it was created with. Versions never change, so atVersion() caches
 // them for good. The emergency switches are always read from the database (switchOn).
 export const CACHE_MS = 60_000; // DV-50
 
 @Injectable()
-export class ConfigService implements ConfigPort {
+export class ConfigService implements ConfigPort, OnModuleInit {
   private cached: { values: ConfigValues; at: number } | undefined;
   private readonly versions = new Map<number, ParameterValues>();
 
   constructor(
     private readonly db: DataSource,
     @Inject(CLOCK) private readonly clock: Clock,
+    private readonly bus?: EventBus,
   ) {}
+
+  onModuleInit(): void {
+    // DV-50: every instance refreshes when any instance publishes (the outbox dispatcher, K-04).
+    this.bus?.on('staff.config.published', 'trust.config-cache', async () => this.invalidate());
+  }
 
   async current(): Promise<ConfigValues> {
     const now = this.clock.now().getTime();
@@ -48,7 +55,7 @@ export class ConfigService implements ConfigPort {
     return r?.value === true;
   }
 
-  /** After a publication by this instance; other instances refresh within DV-50 (or on staff.config.published, K-04). */
+  /** After a publication: at once by the publishing instance, and on staff.config.published by the others. */
   invalidate(): void {
     this.cached = undefined;
   }

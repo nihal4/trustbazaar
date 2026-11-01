@@ -31,3 +31,6 @@ REDIS_URL=redis://localhost:6379/0 npm run test:integration
 The roles are created once per PostgreSQL cluster; to start again, drop the database and both roles.
 The Compose stack's PostgreSQL is not reachable from the host (it is on an internal network, SEC-INF-02), so
 use a separate PostgreSQL for tests.
+
+**The outbox dispatcher (K-04)** polls every 5 seconds in every test app. A test file that drains the outboxes
+by hand (`test/api/outbox.spec.ts`) sets `OUTBOX_DISPATCHER=off` before starting its app and restores it after.
