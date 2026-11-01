@@ -206,7 +206,7 @@ describe('BidService', () => {
 
   it('FR-AUC-08 my-status shows the caller their own maximum', async () => {
     const t = setup();
-    expect(await t.service.myStatus(AUCTION, ASHA)).toEqual({ hasBid: true, yourMaximum: '150000', leading: true, yourAlias: 1 });
+    expect(await t.service.myStatus(AUCTION, ASHA)).toEqual({ hasBid: true, yourMaximum: '150000', leading: true, yourAlias: 1, orderId: null, secondChanceOffer: null });
   });
 
   it('FR-AUC-01 the state of an unknown auction is not-found', async () => {
