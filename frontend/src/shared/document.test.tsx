@@ -153,11 +153,22 @@ describe('when the session ends', () => {
   it('SEC-SES-03 without a sign-in route in the document, the notice is shown in place', async () => {
     const be = ended();
     const doc = mount({}, { at: '/orders/7', fetch: be.fetch, lang: 'bn' });
+    doc.queryClient.setQueryData(['me'], { displayName: 'Previous user' });
     await act(async () => { await doc.api.get('/orders/7').catch(() => undefined); });
     expect((await screen.findByRole('alert')).textContent).toContain('আপনি সাইন আউট হয়ে গেছেন');
     expect(doc.router.state.location.pathname).toBe('/orders/7');
     fireEvent.click(screen.getByRole('button', { name: 'বন্ধ করুন' }));
     expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('SEC-SES-03 a guest answered 401 was never signed in: no notice, no redirect, the cache is kept', async () => {
+    const be = ended();
+    const doc = mount({ signIn: signInHere }, { at: '/orders/7', fetch: be.fetch, lang: 'en' });
+    doc.queryClient.setQueryData(['categories'], [{ id: 'c1' }]);
+    await act(async () => { await doc.api.get('/orders/7').catch(() => undefined); });
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(doc.router.state.location.pathname).toBe('/orders/7');
+    expect(doc.queryClient.getQueryData(['categories'])).toEqual([{ id: 'c1' }]);
   });
 });
 

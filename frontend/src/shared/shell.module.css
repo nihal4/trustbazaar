@@ -84,3 +84,35 @@
 .main:focus {
   outline: none;
 }
+
+.account {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--tb-space-2);
+}
+
+.dialog {
+  width: min(28rem, calc(100vw - 2rem));
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius);
+  padding: var(--tb-space-3);
+}
+
+.dialog::backdrop {
+  background: rgb(0 0 0 / 0.4);
+}
+
+.dialog h2 {
+  margin-top: 0;
+}
+
+.dialogActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-2);
+}
+
+.dialogActions button {
+  min-height: 44px;
+}
