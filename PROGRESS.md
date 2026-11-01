@@ -253,7 +253,7 @@ Design: `docs/design/08_frontend.pdf` (source `.tex` beside it).
 | U8-09 | Disputes, ratings, seller dashboard, privacy screens | U8-06, U7-05 | todo | | | | |
 | U8-10 | Staff console (`staff.html`) | U8-01, U7-06 | todo | | | | |
 | U8-11 | End-to-end, accessibility, 360 and 320 pixel, Lighthouse runs | U8-09, U8-10 | todo | | | | |
-| U8-12 | MFA settings screens (TOTP enrolment, recovery codes, turning MFA off) | U8-02, U1-12 | doing | Sabikun Nahar Sinthia | `feature/u8-12-mfa-settings`
+| U8-12 | MFA settings screens (TOTP enrolment, recovery codes, turning MFA off) | U8-02, U1-12 | doing | Sabikun Nahar Sinthia | `feature/u8-12-mfa-settings`, #141 | | Split from U8-02 on 2026-11-01 (agreed with the user): Unit 1's `/me/mfa/*` is U1-12. Under `/account/security`, with step-up for `mfa.disable` and `recovery.regenerate`. |
 
 **Integration notes this unit must apply** (they override the older text of its document where they differ):
 
