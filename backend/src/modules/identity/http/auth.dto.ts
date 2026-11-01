@@ -267,3 +267,15 @@ export class BlacklistDto extends ReasonDto {
   @IsUUID()
   relatedOrderId?: string;
 }
+
+/** SEC-AUTH-01: turning MFA off takes a current TOTP code, and a new 15-character password if the current one is shorter. */
+export class MfaDisableDto {
+  @IsString()
+  @Matches(/^\d{6}$/)
+  code!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1024)
+  newPassword?: string;
+}

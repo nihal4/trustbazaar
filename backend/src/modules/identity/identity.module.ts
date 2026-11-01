@@ -22,6 +22,7 @@ import { AuditService } from './services/audit.service';
 import { StaffAuthService } from './services/staff-auth.service';
 import { StaffService } from './services/staff.service';
 import { ContactService } from './services/contact.service';
+import { MfaService } from './services/mfa.service';
 import {
   ApprovalPortAdapter, AuditPortAdapter, FileVaultPortAdapter, IdentityCommandsService, IdentityQueryService, RateLimiterPortAdapter,
   StaffQueryService,
@@ -59,6 +60,7 @@ import { StepUpService } from './services/step-up.service';
     StepUpService,
     PasswordService,
     ContactService,
+    MfaService,
     ApprovalService,
     StaffAuthService,
     StaffService,
