@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NOTIFICATIONS, SimulatedNotifications } from './adapters/notifications';
+import { FileVault } from './crypto/file-vault';
+import { IdentityCrypto } from './crypto/identity-crypto';
 import { PasswordHasher } from './crypto/password';
 import { ENTITIES } from './db/entities';
 import { AccountController } from './http/account.controller';
 import { AuthController } from './http/auth.controller';
+import { FilesController, KycController, StaffKycController } from './http/kyc.controller';
 import { RegistrationController } from './http/registration.controller';
 import { AdminController, StaffAuthController, StaffController } from './http/staff.controller';
 import { pipelineGuards } from './security/guards';
@@ -15,6 +18,8 @@ import { AuditService } from './services/audit.service';
 import { StaffAuthService } from './services/staff-auth.service';
 import { StaffService } from './services/staff.service';
 import { ContactService } from './services/contact.service';
+import { KycReviewService } from './services/kyc-review.service';
+import { KycService } from './services/kyc.service';
 import { OtpService } from './services/otp.service';
 import { PasswordService } from './services/password.service';
 import { RegistrationService } from './services/registration.service';
@@ -33,7 +38,7 @@ import { StepUpService } from './services/step-up.service';
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
 @Module({
   imports: [TypeOrmModule.forFeature(ENTITIES)],
-  controllers: [AuthController, RegistrationController, AccountController, StaffAuthController, StaffController, AdminController],
+  controllers: [AuthController, RegistrationController, AccountController, StaffAuthController, StaffController, AdminController, KycController, StaffKycController, FilesController],
   providers: [
     RateLimiter,
     PasswordHasher,
@@ -49,6 +54,10 @@ import { StepUpService } from './services/step-up.service';
     ApprovalService,
     StaffAuthService,
     StaffService,
+    IdentityCrypto,
+    FileVault,
+    KycService,
+    KycReviewService,
     RegistrationService,
     // Until the Notifications unit (Unit 6) provides NotificationPort: logged, labelled simulated (AS-4).
     SimulatedNotifications,
