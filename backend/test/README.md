@@ -10,7 +10,8 @@ Every test title starts with the requirement it proves, e.g. `it('FR-AUC-04 a bi
 
 **Coverage (NFR-MNT-03).** After `npm test -- --coverage`, `test/tools/coverage-gate.ts` fails the run if the
 orders, listings, delivery or game-accounts module has measured code with less than 70% of its lines covered.
-A module without code yet is reported as pending. Wiring files (`*.module.ts`, `ports/index.ts`) and the
+A module without code yet is reported as pending. Wiring files (`*.module.ts`, `ports/index.ts`), the generated entities (`db/entities/`, `db/enums.ts`,
+checked instead by `test/db/*-entities.spec.ts`) and the
 migrations are not measured.
 
 ## A database for the integration tests
