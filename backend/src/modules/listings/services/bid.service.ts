@@ -158,8 +158,9 @@ export class BidService implements AuctionQuery {
     await this.listings.visible(auctionId, viewerId);
     if (!(await readAuctionState(this.db, auctionId))) throw new Problem('not-found');
     const rows = (await this.db.query(
-      `SELECT bid_id::text, received_at, alias_no, shown_amount::text, is_leading
-         FROM auctions.replay($1) WHERE counted ORDER BY bid_id DESC`,
+      // ordered by the replay's numeric id (r.bid_id), not the text column of the same name: as text, 100 sorts before 99
+      `SELECT r.bid_id::text AS bid_id, r.received_at, r.alias_no, r.shown_amount::text AS shown_amount, r.is_leading
+         FROM auctions.replay($1) r WHERE r.counted ORDER BY r.bid_id DESC`,
       [auctionId],
     )) as { bid_id: string; received_at: Date; alias_no: number; shown_amount: string; is_leading: boolean }[];
     return {
