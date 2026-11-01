@@ -19,6 +19,9 @@ export async function startApp(controllers: Type[] = []): Promise<TestApp> {
   requireEnv('DATABASE_URL');
   requireEnv('REDIS_URL');
   useTestSecrets();
+  // Scheduled jobs would act on other tests' rows mid-test (Unit 2 runs some every 30 seconds); tests run
+  // them by hand with JobRunner.runNow or the services. A test may set JOB_RUNNER itself before starting.
+  process.env.JOB_RUNNER ??= 'off';
   const moduleRef = await Test.createTestingModule({ imports: [AppModule, DiscoveryModule], controllers }).compile();
   const app = configureApp(moduleRef.createNestApplication({ logger: false, rawBody: true }));
   await app.listen(0, '127.0.0.1');

@@ -149,6 +149,29 @@ export class OrderService implements OrdersPort {
   }
 
   /** I-20, DC-14: the order row locked in the caller's transaction, with the facts a fulfilment action needs. */
+  /**
+   * Section 5.8 (U2-07): an order still unpaid after payment_due_at is cancelled, checkout_expired for a
+   * fixed-price order and payment_window_expired for an auction or second-chance order. Its unfinished
+   * attempts expire. orders.order.cancelled returns the reserved stock (FR-FIX-03); an auction order also
+   * emits orders.order.payment_expired for the strike and the second-chance offer. The expiry job queries
+   * in-flight attempts first, outside this lock. False when nothing was due (re-checked under the lock).
+   */
+  async expireUnpaid(orderId: string): Promise<boolean> {
+    return this.db.transaction(async (m) => {
+      const o = await m.getRepository(Order).findOne({ where: { id: orderId }, lock: { mode: 'pessimistic_write' } });
+      const now = this.clock.now();
+      if (!o || o.status !== 'awaiting_payment' || o.paymentDueAt > now) return false;
+      const reason = o.kind === 'fixed_price' ? 'checkout_expired' : 'payment_window_expired';
+      await m.query(`UPDATE payments.attempts SET status = 'expired' WHERE order_id = $1 AND status IN ('created', 'redirected')`, [orderId]);
+      await m.getRepository(Order).update({ id: orderId }, { status: 'cancelled', cancelledAt: now, cancelReason: reason });
+      const facts = { orderId, kind: o.kind, listingId: o.listingId, quantity: o.quantity, buyerId: o.buyerId, sellerId: o.sellerId, reason };
+      await m.getRepository(OrdersOutboxEvent).insert({ eventType: 'orders.order.cancelled', aggregateId: orderId, payload: facts });
+      if (o.kind !== 'fixed_price') await m.getRepository(OrdersOutboxEvent).insert({ eventType: 'orders.order.payment_expired', aggregateId: orderId, payload: facts });
+      await this.audit.record({ actorType: 'system', action: 'orders.order.cancelled', objectType: 'order', objectId: orderId, before: { status: 'awaiting_payment' }, after: { status: 'cancelled' }, reason }, m);
+      return true;
+    });
+  }
+
   async lockForFulfilment(orderId: string, tx: EntityManager): Promise<FulfilmentFacts> {
     const o = await tx.getRepository(Order).findOne({ where: { id: orderId }, lock: { mode: 'pessimistic_write' } });
     if (!o) throw new Problem('not-found');
