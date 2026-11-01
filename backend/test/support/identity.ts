@@ -136,6 +136,11 @@ export class IdentityFixtures {
     };
   }
 
+  /** Lifts the 60-second gap between SMS sends to one number, so a test can ask for a second code. */
+  async clearSendGap(phone: string): Promise<void> {
+    await this.redis.del(`otp:gap:${phone}`);
+  }
+
   /** Stores a step-up grant as StepUpService will (U1-05) and returns the grant for X-Step-Up. */
   async stepUpGrant(sessionId: string, action: string): Promise<string> {
     const grant = randomBytes(32).toString('base64url');
