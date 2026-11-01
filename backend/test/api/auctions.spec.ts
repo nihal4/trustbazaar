@@ -126,6 +126,9 @@ describe('auctions', () => {
     expect(history.items.map((b) => [b.bidderAlias, b.amount, b.leading])).toEqual([
       [3, '155000', true], [3, '155000', true], [2, '150000', false], [2, '120000', false], [1, '100000', true],
     ]);
+    // newest first by the numeric id, also where the ids differ in length (as text, 100 sorts before 99)
+    const ids = history.items.map((b) => BigInt(b.id as string));
+    expect(ids).toEqual([...ids].sort((a, b) => (a > b ? -1 : a < b ? 1 : 0)));
     const s = await state(id);
     expect(s).toMatchObject({ status: 'open', price: '155000', bidCount: 5, leaderAlias: 3, minimumBid: '160000', hasReserve: false, reserveMet: true });
     expect(s.seq).toBe((raised.state.seq as number));
