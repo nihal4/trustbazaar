@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 import { CLOCK, Clock } from '../../../kernel/clock';
-import { Problem } from '../../../kernel/http/problems';
+import { cursorAt, decodeCursor, encodeCursor } from '../../../kernel/http/cursor';
 import { Language, render, TemplateTexts } from './templates';
 
 // Notifications (docs/design/06_chat_notifications.pdf sections 3.1 and 7; FR-NTF-03 to FR-NTF-06, FR-NTF-08; U6-04).
@@ -59,29 +59,23 @@ export class NotificationService {
 
   /** FR-NTF-04: the user's notices, newest first, 50 a page, in their language; with the unread count. */
   async list(userId: string, cursor?: string): Promise<{ items: NotificationView[]; unread: number; nextCursor: string | null }> {
-    let at: string | null = null;
-    let id: string | null = null;
-    if (cursor !== undefined) {
-      const [t, i] = Buffer.from(cursor, 'base64url').toString().split('|');
-      if (!t || Number.isNaN(Date.parse(t)) || !/^[0-9a-f-]{36}$/.test(i ?? '')) throw new Problem('validation-failed', { errors: [{ field: 'cursor', reason: 'format' }] });
-      [at, id] = [t, i];
-    }
+    const after = decodeCursor(cursor);
     const { language } = await this.preferences(userId);
     const rows = (await this.db.query(
-      `SELECT n.id, n.template_code, n.params, n.subject_type, n.subject_id, n.created_at, n.read_at,
+      `SELECT n.id, n.template_code, n.params, n.subject_type, n.subject_id, n.created_at, n.read_at, ${cursorAt('n.created_at')} AS cursor_at,
               t.title_en, t.title_bn, t.body_en, t.body_bn
          FROM notify.notifications n JOIN notify.templates t ON t.code = n.template_code AND t.version = n.template_version
         WHERE n.user_id = $1 AND ($2::timestamptz IS NULL OR (n.created_at, n.id) < ($2::timestamptz, $3::uuid))
         ORDER BY n.created_at DESC, n.id DESC LIMIT ${PAGE + 1}`,
-      [userId, at, id],
-    )) as (Row & { title_en: string; title_bn: string; body_en: string; body_bn: string })[];
+      [userId, after?.at ?? null, after?.id ?? null],
+    )) as (Row & { cursor_at: string } & { title_en: string; title_bn: string; body_en: string; body_bn: string })[];
     const [{ n: unread }] = (await this.db.query(`SELECT count(*)::int AS n FROM notify.notifications WHERE user_id = $1 AND read_at IS NULL`, [userId])) as { n: number }[];
     const page = rows.slice(0, PAGE);
     const last = page[page.length - 1];
     return {
       items: page.map((r) => this.view(r, { titleEn: r.title_en, titleBn: r.title_bn, bodyEn: r.body_en, bodyBn: r.body_bn }, language)),
       unread,
-      nextCursor: rows.length > PAGE ? Buffer.from(`${last.created_at.toISOString()}|${last.id}`).toString('base64url') : null,
+      nextCursor: rows.length > PAGE ? encodeCursor(last.cursor_at, last.id) : null,
     };
   }
 
