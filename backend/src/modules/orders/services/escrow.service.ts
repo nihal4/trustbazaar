@@ -158,6 +158,23 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     });
   }
 
+  /**
+   * FR-PAY-08: for the fulfilment job (U2-07). A paid order whose required step is not recorded by its
+   * fulfilment_due_at, with the escrow still held (no open dispute), is refunded in full; the refund event
+   * carries the reason fulfilment_deadline and the seller, so Unit 7 can count the strike (I-44). Pending
+   * cancellation requests lapse. False when nothing was due (re-checked under the lock).
+   */
+  async refundMissedDeadline(orderId: string): Promise<boolean> {
+    return this.db.transaction(async (m) => {
+      const { o, e } = await this.lock(m, orderId);
+      const now = this.clock.now();
+      if (o.status !== 'paid' || !e || e.state !== 'held' || o.fulfilmentDoneAt !== null || !o.fulfilmentDueAt || o.fulfilmentDueAt > now) return false;
+      await m.getRepository(CancellationRequest).update({ orderId, status: 'pending' }, { status: 'lapsed', decidedAt: now });
+      await this.settle(m, o, e, { itemRefund: BigInt(o.itemPrice), courierDone: false, reason: 'fulfilment_deadline', actor: 'system', note: `fulfilment step ${o.fulfilmentStep} missed its deadline` });
+      return true;
+    });
+  }
+
   /** FR-PAY-09: the buyer asks to cancel a paid order before the delivery event; one request at a time. */
   async requestCancellation(buyerId: string, orderId: string, reason: string): Promise<string> {
     return this.db.transaction(async (m) => {
