@@ -25,6 +25,8 @@ x-app-env: &app-env
   SMS_MODE: ${SMS_MODE:-log}                        # log | provider test mode
   EMAIL_MODE: ${EMAIL_MODE:-log}                    # log | smtp
   PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:8080}
+  TERMS_VERSION: ${TERMS_VERSION:-2026-11-01}           # FR-ACC-04: the versions sign-up must accept
+  PRIVACY_VERSION: ${PRIVACY_VERSION:-2026-11-01}
 
 services:
   postgres:
@@ -143,6 +145,8 @@ services:
         deploy: ./docs/design/deploy
       args:
         VITE_PAYMENT_HOSTS: ${VITE_PAYMENT_HOSTS:-}
+        VITE_TERMS_VERSION: ${TERMS_VERSION:-2026-11-01}       # the same values as the backend's (FR-ACC-04)
+        VITE_PRIVACY_VERSION: ${PRIVACY_VERSION:-2026-11-01}
     <<: *hardening
     tmpfs: ["/tmp", "/var/cache/nginx"]
     networks: [edge]
