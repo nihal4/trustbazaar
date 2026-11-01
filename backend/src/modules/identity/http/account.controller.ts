@@ -1,9 +1,9 @@
-import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { Public, RateLimit, SignedIn, StepUp } from '../../../kernel/http/policies';
 import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
-import { ContactService } from '../services/contact.service';
+import { ContactService, Me } from '../services/contact.service';
 import { PasswordService } from '../services/password.service';
 import { StepUpService, StepUpStart } from '../services/step-up.service';
 import { CodeDto, EmailChangeDto, PasswordChangeDto, PasswordForgotDto, PasswordResetDto, PhoneChangeDto, StepUpStartDto, StepUpVerifyDto } from './auth.dto';
@@ -22,6 +22,13 @@ export class AccountController {
     private readonly passwords: PasswordService,
     private readonly contacts: ContactService,
   ) {}
+
+  /** I-51 (c): who is signed in; also the web client's refresh probe, so it has no rate-limit rule (U1-13). */
+  @SignedIn()
+  @Get('me')
+  me(@CurrentPrincipal() p: Principal): Promise<Me> {
+    return this.contacts.me(userOf(p).userId);
+  }
 
   /** SEC-AUTH-08: begin step-up for one action; {method: 'totp'} or an SMS code ({method: 'sms'}). */
   @SignedIn()
