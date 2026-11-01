@@ -98,7 +98,7 @@ Design: `docs/design/02_orders_payments.pdf` (source `.tex` beside it).
 | U2-07 | Jobs: payment expiry, fulfilment deadline, auto-release, reconciliation, workers | U2-04, K-05 | todo | | | | |
 | U2-08 | Concurrency tests: AC-2 checkout race, AC-3, AC-4 webhook replay | U2-07 | todo | | | | |
 | U2-09 | bKash and Nagad sandbox adapters (Tokenized Checkout: create, execute, query, refund; Nagad: initialise, complete, verify) | U2-03 | todo | | | | Split from U2-03 on 2026-11-01. Needs the sandbox credentials in the developer's `.env` (never committed) and network access to the sandboxes; until then both providers answer `feature-off` in sandbox mode and are simulated in mock mode. |
-| U2-10 | Payout accounts (step-up; wallet on the verified number, bank with the operator's name check), sending payouts, fraud holds and their staff endpoints | U2-05 | review | S. M. Nihal Ahmed | `feature/u2-10-payouts`, #131 | | Split from U2-05 on 2026-11-01. Endpoints `GET`/`POST /me/payout-account` (`Verified(payout)`, step-up `payout.change` to add or replace), `GET /me/payouts`; staff `GET /staff/payout-accounts/pending` (with the KYC name, audited read), `POST /staff/payout-accounts/{id}/decision`, `POST /staff/payouts/{id}/release-hold`. `PayoutService.processDue()` (activate cooled-off accounts, send due payouts through the simulated adapter) is ready for U2-07; the fraud hold consumes `identity.account.suspended`. `GET /me/statements` is left to U2-06 (settlement statements). |
+| U2-10 | Payout accounts (step-up; wallet on the verified number, bank with the operator's name check), sending payouts, fraud holds and their staff endpoints | U2-05 | done | S. M. Nihal Ahmed | `feature/u2-10-payouts`, #131 |  2026-11-01 | Split from U2-05 on 2026-11-01. Endpoints `GET`/`POST /me/payout-account` (`Verified(payout)`, step-up `payout.change` to add or replace), `GET /me/payouts`; staff `GET /staff/payout-accounts/pending` (with the KYC name, audited read), `POST /staff/payout-accounts/{id}/decision`, `POST /staff/payouts/{id}/release-hold`. `PayoutService.processDue()` (activate cooled-off accounts, send due payouts through the simulated adapter) is ready for U2-07; the fraud hold consumes `identity.account.suspended`. `GET /me/statements` is left to U2-06 (settlement statements). |
 
 **Integration notes this unit must apply** (they override the older text of its document where they differ):
 
@@ -401,3 +401,4 @@ Append one line when a task becomes `done` (newest last).
 | 2026-11-01 | U8-01 | Sabikun Nahar Sinthia | #124 |
 | 2026-11-01 | U2-05 | S. M. Nihal Ahmed | #123 |
 | 2026-11-01 | U1-13 | S. M. Nihal Ahmed | #128 |
+| 2026-11-01 | U2-10 | S. M. Nihal Ahmed | #131 |
