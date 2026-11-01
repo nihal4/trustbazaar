@@ -23,6 +23,19 @@ import { RequestContext } from './session.service';
 const rowsOf = <T>(result: unknown): T[] =>
   (Array.isArray(result) && Array.isArray(result[0]) && typeof result[1] === 'number' ? result[0] : result) as T[];
 
+/** I-51 (c): the signed-in user's own account, for the web client (U1-13; Decisions log). */
+export interface Me {
+  id: string;
+  displayName: string;
+  /** SEC-DAT-07: the last three digits only, as in notifications. */
+  phoneMasked: string | null;
+  email: string | null;
+  emailVerified: boolean;
+  kycStatus: string;
+  accountStatus: string;
+  mfaEnabled: boolean;
+}
+
 export const isUniqueViolation = (e: unknown) => e instanceof QueryFailedError && (e as unknown as { code?: string }).code === '23505';
 
 @Injectable()
@@ -36,6 +49,19 @@ export class ContactService {
     @Inject(CLOCK) private readonly clock: Clock,
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
   ) {}
+
+  /** I-51 (c): one primary-key read, so it stays cheap as the web client's refresh probe. */
+  async me(userId: string): Promise<Me> {
+    const [u] = await this.db.query(
+      `SELECT id, display_name, phone_e164, email, email_verified_at, kyc_status, account_status, mfa_enabled FROM identity.users WHERE id = $1`,
+      [userId],
+    );
+    if (!u) throw new Problem('session-ended');
+    return {
+      id: u.id, displayName: u.display_name, phoneMasked: u.phone_e164 ? `***${String(u.phone_e164).slice(-3)}` : null, email: u.email,
+      emailVerified: u.email_verified_at !== null, kycStatus: u.kyc_status, accountStatus: u.account_status, mfaEnabled: u.mfa_enabled,
+    };
+  }
 
   async startPhoneChange(userId: string, sessionId: string, input: string): Promise<{ resendAt: string }> {
     const phone = bangladeshiMobile(input);
