@@ -1,0 +1,18 @@
+{
+  "notifications.title": "Notifications",
+  "notifications.signed_out": "Sign in to see your notifications.",
+  "notifications.list": "Your notifications",
+  "notifications.unread_count": "{count} unread",
+  "notifications.all_read": "Everything is read.",
+  "notifications.mark_all": "Mark all as read",
+  "notifications.empty": "No notifications yet. We will tell you here about your orders, payments and account.",
+  "notifications.new": "New",
+  "notifications.more": "Show older notifications",
+  "preferences.title": "Notification settings",
+  "preferences.language": "Language of notifications",
+  "preferences.language_hint": "Notifications, e-mails and SMS use the same language as this site.",
+  "preferences.email": "Send me e-mails about my orders and payments",
+  "preferences.email_hint": "Security notices, such as a sign-in from a new device, are always sent.",
+  "preferences.save": "Save settings",
+  "preferences.saved": "Your settings are saved."
+}

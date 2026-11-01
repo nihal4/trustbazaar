@@ -1,0 +1,116 @@
+/* The notification centre: one column, each notice a full-width target (NFR-USE-05, section 7). */
+.page {
+  max-width: 44rem;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tb-space-2);
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: var(--tb-space-2) 0 var(--tb-space-3);
+}
+
+.list li {
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius);
+  margin-bottom: var(--tb-space-2);
+}
+
+.unread {
+  border-left: 4px solid var(--tb-accent) !important;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-1);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--tb-space-2) var(--tb-space-3);
+  border: 0;
+  background: none;
+  color: var(--tb-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.new {
+  align-self: flex-start;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--tb-accent);
+}
+
+.title {
+  font-weight: 700;
+}
+
+.time {
+  color: var(--tb-muted);
+  font-size: 0.875rem;
+}
+
+.read .title {
+  font-weight: 400;
+}
+
+.secondary {
+  min-height: 44px;
+  padding: var(--tb-space-1) var(--tb-space-3);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius);
+  background: var(--tb-bg);
+  color: var(--tb-text);
+  cursor: pointer;
+}
+
+.preferences {
+  border-top: 1px solid var(--tb-border);
+  margin-top: var(--tb-space-4);
+  padding-top: var(--tb-space-3);
+}
+
+.choice {
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--tb-space-3);
+}
+
+.choice legend {
+  font-weight: 700;
+}
+
+.choice div {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  min-height: 44px;
+}
+
+.choice input {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+}
+
+.hint {
+  color: var(--tb-muted);
+  margin: 0 0 var(--tb-space-2);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
