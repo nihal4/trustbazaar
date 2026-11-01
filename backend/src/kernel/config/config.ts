@@ -234,6 +234,15 @@ export function loadConfig(env: Env): TbConfig {
     providers[key] = new Secret(name, v);
   }
   if (emailMode === 'smtp' && !providers.smtpUrl) problems.push('SMTP_URL: missing (EMAIL_MODE is smtp)');
+  // SEC-PAY-05: the payment credentials must match the mode; C-2 never allows live keys. In sandbox mode Stripe's
+  // test keys are required (bKash and Nagad come with U2-09); in mock mode none is used.
+  const stripeKey = get('STRIPE_SECRET_KEY');
+  const stripeHook = get('STRIPE_WEBHOOK_SECRET');
+  if (stripeKey !== undefined && !stripeKey.startsWith('sk_test_')) problems.push('STRIPE_SECRET_KEY: must be a test key (sk_test_...); live keys are never accepted (C-2)');
+  if (stripeHook !== undefined && !stripeHook.startsWith('whsec_')) problems.push('STRIPE_WEBHOOK_SECRET: must be a webhook signing secret (whsec_...)');
+  if (paymentMode === 'sandbox' && (stripeKey === undefined || stripeHook === undefined)) {
+    problems.push('STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET: required when PAYMENT_MODE is sandbox');
+  }
 
   const databaseUrl = secretUrl('DATABASE_URL');
   const redisUrl = secretUrl('REDIS_URL');

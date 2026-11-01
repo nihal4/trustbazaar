@@ -23,6 +23,8 @@ const prod = (): Record<string, string> => {
   env.EMAIL_MODE = 'smtp';
   env.SMTP_URL = 'smtps://mailer:prod-mail-password@smtp.example:465';
   env.PAYMENT_MODE = 'sandbox';
+  env.STRIPE_SECRET_KEY = 'sk_test_prod-xxxxx-0123456789abcdef';
+  env.STRIPE_WEBHOOK_SECRET = 'whsec_prod-xxxxx-0123456789abcdef';
   return env;
 };
 
@@ -91,11 +93,11 @@ describe('configuration', () => {
   });
 
   it('I-59 in production, every dev-only- value is refused, including passwords and credentials', () => {
-    const env = { ...prod(), HANDOVER_KEY: dev().HANDOVER_KEY, REDIS_URL: dev().REDIS_URL, STRIPE_SECRET_KEY: 'dev-only-stripe' };
+    const env = { ...prod(), HANDOVER_KEY: dev().HANDOVER_KEY, REDIS_URL: dev().REDIS_URL, BKASH_APP_KEY: 'dev-only-bkash' };
     expect(problems(env).sort()).toEqual([
+      'BKASH_APP_KEY: a dev-only- value in production',
       'HANDOVER_KEY: a dev-only- value in production',
       'REDIS_URL password: a dev-only- value in production',
-      'STRIPE_SECRET_KEY: a dev-only- value in production',
     ]);
   });
 
@@ -138,6 +140,15 @@ describe('configuration', () => {
   it('SEC-DAT-02 protected files live under FILES_ROOT, an absolute path (default: the Compose volumes)', () => {
     expect(loadConfig(dev()).filesRoot).toBe('/srv/files');
     expect(problems({ ...dev(), FILES_ROOT: 'files' })).toEqual(['FILES_ROOT: must be an absolute path']);
+  });
+
+  it('SEC-PAY-05 payment credentials must match the mode: test keys only, and required in sandbox', () => {
+    expect(problems({ ...dev(), STRIPE_SECRET_KEY: 'sk_live_0123456789abcdef' })).toEqual([
+      'STRIPE_SECRET_KEY: must be a test key (sk_test_...); live keys are never accepted (C-2)',
+    ]);
+    expect(problems({ ...dev(), STRIPE_WEBHOOK_SECRET: 'secret' })).toEqual(['STRIPE_WEBHOOK_SECRET: must be a webhook signing secret (whsec_...)']);
+    expect(problems({ ...dev(), PAYMENT_MODE: 'sandbox' })).toEqual(['STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET: required when PAYMENT_MODE is sandbox']);
+    expect(problems({ ...dev(), PAYMENT_MODE: 'sandbox', STRIPE_SECRET_KEY: 'sk_test_x', STRIPE_WEBHOOK_SECRET: 'whsec_x' })).toEqual([]);
   });
 
   it('C-2 payments run in mock or sandbox mode only', () => {
