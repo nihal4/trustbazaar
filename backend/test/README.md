@@ -34,3 +34,4 @@ use a separate PostgreSQL for tests.
 
 **The outbox dispatcher (K-04)** polls every 5 seconds in every test app. A test file that drains the outboxes
 by hand (`test/api/outbox.spec.ts`) sets `OUTBOX_DISPATCHER=off` before starting its app and restores it after.
+Likewise **the job runner (K-05)**: `test/api/jobs.spec.ts` sets `JOB_RUNNER=off` and runs jobs with `runNow()`.
