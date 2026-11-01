@@ -26,7 +26,7 @@ export class NotificationConsumers implements OnModuleInit {
   /** Event type -> the notices it makes. */
   readonly map: Record<string, Mapper> = {
     // security notices: app, e-mail and SMS; they cannot be switched off (FR-NTF-06)
-    'identity.signin.new_device': (e) => [{ to: e.payload.userId, code: 'security.new_device', params: { device: str(e.payload.device).slice(0, 80) || '?' } }],
+    'identity.signin.new_device': (e) => [{ to: e.payload.userId, code: 'security.signin_new_device', params: { device: str(e.payload.device).slice(0, 80) || '?' } }],
     'identity.password.changed': (e) => [{ to: e.payload.userId, code: 'security.password_changed' }],
     'identity.contact.changed': (e) => [{ to: e.payload.userId, code: e.payload.kind === 'email' ? 'security.email_changed' : 'security.phone_changed' }],
     'identity.mfa.enabled': (e) => [{ to: e.payload.userId, code: 'security.mfa_enabled' }],

@@ -101,7 +101,7 @@ describe('notifications', () => {
     const notices = t.app.get(NotificationService);
     await expect(notices.create(u.userId, 'payment.refund_sent', { amount_bdt: 5, extra: 'x' }, 'k1')).rejects.toThrow(/not allowed/);
     await expect(t.app.get<Notifier>(NOTIFIER).notify(u.userId, 'payment.refund_sent', { amount_bdt: '01711234567' }, 'k2')).rejects.toThrow(/contact details/);
-    await t.app.get<Notifier>(NOTIFIER).notify(u.userId, 'security.new_device', { device: 'call me on 01711234567' }, 'k3'); // user text is masked, not refused
+    await t.app.get<Notifier>(NOTIFIER).notify(u.userId, 'security.signin_new_device', { device: 'call me on 01711234567' }, 'k3'); // user text is masked, not refused
     expect(await fx.query(`SELECT params FROM notify.notifications WHERE user_id = $1 AND dedupe_key = 'k3'`, [u.userId])).toEqual([{ params: { device: 'call me on [hidden]' } }]);
     await expect(consumers.handle(event('orders.order.paid', { orderId: randomUUID(), total: '1' }))).rejects.toThrow(/no recipient/);
     expect(await consumers.handle(event('orders.order.cancelled', { orderId: randomUUID(), buyerId: u.userId, reason: 'listing_withdrawn' }))).toBe(0);
