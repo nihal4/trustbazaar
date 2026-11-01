@@ -25,6 +25,9 @@ export interface ConfigVersionView {
 const isDbRuleError = (e: unknown) =>
   e instanceof QueryFailedError && ['23514', '22007', '22P02', '22023'].includes((e as unknown as { code?: string }).code ?? '');
 
+/** The data source, or a transaction's manager: both answer query(). */
+type Queryable = Pick<EntityManager, 'query'>;
+
 @Injectable()
 export class ConfigAdminService implements OnModuleInit {
   constructor(
@@ -44,9 +47,9 @@ export class ConfigAdminService implements OnModuleInit {
     }
   }
 
-  async currentSet(): Promise<{ version: number; values: Record<string, unknown> }> {
-    const [{ version }] = await this.db.query(`SELECT staff.current_config_version() AS version`);
-    const [{ set }] = await this.db.query(`SELECT staff.config_as_json($1) AS set`, [version]);
+  async currentSet(q: Queryable = this.db): Promise<{ version: number; values: Record<string, unknown> }> {
+    const [{ version }] = await q.query(`SELECT staff.current_config_version() AS version`);
+    const [{ set }] = await q.query(`SELECT staff.config_as_json($1) AS set`, [version]);
     return { version, values: set };
   }
 
@@ -60,13 +63,17 @@ export class ConfigAdminService implements OnModuleInit {
     }));
   }
 
-  /** FR-OPS-09: every broken rule of the candidate set, without publishing. */
-  async violations(changes: Record<string, unknown>): Promise<string[]> {
-    const { values } = await this.currentSet();
+  /**
+   * FR-OPS-09: every broken rule of the candidate set, without publishing. Inside a publication it runs on that
+   * transaction's connection: ten publications at once otherwise held all ten pool connections and each waited
+   * for an eleventh (U2-08).
+   */
+  async violations(changes: Record<string, unknown>, q: Queryable = this.db): Promise<string[]> {
+    const { values } = await this.currentSet(q);
     const unknown = Object.keys(changes).filter((k) => !(k in values)).map((k) => `unknown parameter ${k}`);
     if (unknown.length) return unknown;
     try {
-      const [{ bad }] = await this.db.query(`SELECT staff.config_violations($1::jsonb || $2::jsonb, $1::jsonb) AS bad`, [
+      const [{ bad }] = await q.query(`SELECT staff.config_violations($1::jsonb || $2::jsonb, $1::jsonb) AS bad`, [
         JSON.stringify(values), JSON.stringify(changes),
       ]);
       return bad as string[];
@@ -93,9 +100,9 @@ export class ConfigAdminService implements OnModuleInit {
     );
   }
 
-  private async check(changes: Record<string, unknown>): Promise<void> {
+  private async check(changes: Record<string, unknown>, q: Queryable = this.db): Promise<void> {
     if (Object.keys(changes).length === 0) throw new Problem('validation-failed', { errors: [{ field: 'changes', reason: 'empty' }] });
-    const bad = await this.violations(changes);
+    const bad = await this.violations(changes, q);
     if (bad.length) throw new Problem('config-invalid', { errors: bad.map((rule) => ({ rule })) });
   }
 
@@ -107,7 +114,7 @@ export class ConfigAdminService implements OnModuleInit {
     approvalId: string | null,
     o: { ctx?: CallContext; approvedBy?: string | null },
   ): Promise<number> {
-    await this.check(changes);
+    await this.check(changes, m);
     const [{ set: before }] = await m.query(`SELECT staff.config_as_json(staff.current_config_version()) AS set`);
     let version: number;
     try {
