@@ -159,14 +159,14 @@ export class FilesController {
   @RateLimit('files')
   @Get('v/:token')
   async serve(@Param('token') token: string, @Req() req: Request, @Res() res: Response): Promise<void> {
-    if (token.length > 600) throw new Problem('link-invalid');
-    const bytes = await this.review.serve(token, (req.cookies ?? {}) as Record<string, string | undefined>);
+    if (token.length > 1200) throw new Problem('link-invalid');
+    const { bytes, mime } = await this.review.serve(token, (req.cookies ?? {}) as Record<string, string | undefined>);
     res.set({
-      'Content-Type': 'image/jpeg',
+      'Content-Type': mime,
       'Cache-Control': 'no-store',
       'X-Content-Type-Options': 'nosniff',
       'Content-Security-Policy': "sandbox; default-src 'none'",
-      'Content-Disposition': 'inline',
+      'Content-Disposition': mime.startsWith('image/') ? 'inline' : 'attachment',
     });
     res.status(200).end(bytes);
   }
