@@ -216,3 +216,54 @@ export class AuditQueryDto {
   @IsOptional() @Matches(/^\d{1,18}$/) before?: string;
   @IsOptional() @Matches(/^\d{1,3}$/) limit?: string;
 }
+
+/** FR-KYC-01: the multipart fields; the images are the file parts named by kind. */
+export class KycSubmissionDto {
+  @IsIn(['nid', 'passport'])
+  docType!: 'nid' | 'passport';
+
+  @IsString()
+  @Length(6, 30)
+  docNumber!: string;
+
+  @IsString()
+  @Length(2, 100)
+  fullName!: string;
+
+  /** As printed, YYYY-MM-DD. */
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/)
+  dateOfBirth!: string;
+
+  @IsUUID()
+  challengeId!: string;
+}
+
+export class KycDecisionDto {
+  @IsIn(['approve', 'reject'])
+  decision!: 'approve' | 'reject';
+
+  @IsOptional()
+  @IsIn(['image_unreadable', 'selfie_mismatch', 'liveness_failed', 'document_expired', 'details_mismatch', 'underage',
+    'duplicate_identity', 'blacklisted', 'other'])
+  reason?: 'image_unreadable' | 'selfie_mismatch' | 'liveness_failed' | 'document_expired' | 'details_mismatch' | 'underage'
+    | 'duplicate_identity' | 'blacklisted' | 'other';
+
+  /** Shown to the user with the reason (FR-KYC-06). */
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  note?: string;
+}
+
+export class BlacklistDto extends ReasonDto {
+  @IsUUID()
+  userId!: string;
+
+  @IsIn(['game_account_recovery', 'fraud_decision'])
+  source!: 'game_account_recovery' | 'fraud_decision';
+
+  @IsOptional()
+  @IsUUID()
+  relatedOrderId?: string;
+}

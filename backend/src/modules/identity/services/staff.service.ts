@@ -15,7 +15,7 @@ import { RequestContext, SessionService } from './session.service';
 // over in person. Disabling ends the account's sessions. Resetting a staff member's MFA is the four-eyes
 // action staff.mfa_reset: once a second administrator approves, the factor is removed, the sessions end and
 // the account is back in pending_mfa. Conflicts of interest (FR-OPS-06): declared ones, and any user with the
-// staff member's own mobile number or e-mail (the NID comparison joins when KYC claims exist, U1-06).
+// staff member's own mobile number, e-mail or NID (its blind index against the user's KYC submissions).
 export interface StaffSummary {
   id: string;
   email: string;
@@ -151,7 +151,9 @@ export class StaffService implements OnModuleInit {
     const [r] = await this.db.query(
       `SELECT EXISTS (SELECT 1 FROM identity.staff_conflicts WHERE staff_id = $1 AND user_id = $2)
            OR EXISTS (SELECT 1 FROM identity.staff_accounts s JOIN identity.users u ON u.id = $2
-                      WHERE s.id = $1 AND (u.email = s.email OR (s.phone_e164 IS NOT NULL AND u.phone_e164 = s.phone_e164))) AS conflict`,
+                      WHERE s.id = $1 AND (u.email = s.email OR (s.phone_e164 IS NOT NULL AND u.phone_e164 = s.phone_e164)))
+           OR EXISTS (SELECT 1 FROM identity.staff_accounts s JOIN identity.kyc_submissions k ON k.user_id = $2
+                      WHERE s.id = $1 AND s.nid_bidx IS NOT NULL AND k.doc_number_bidx = s.nid_bidx) AS conflict`,
       [staffId, userId],
     );
     return r.conflict === true;

@@ -5,11 +5,12 @@
 
 FROM node:20-alpine AS build
 WORKDIR /app
-# argon2's bundled musl prebuild crashes (segfault) on current Alpine, so it is compiled here from source.
-# The compilers stay in this stage; the runtime image below has none.
+# argon2's bundled musl prebuild crashes (segfault) on current Alpine, so argon2 alone is compiled here
+# from source (sharp keeps its own prebuilt libvips for musl). The compilers stay in this stage; the
+# runtime image below has none.
 RUN apk add --no-cache python3 make g++
 COPY package.json package-lock.json ./
-RUN npm_config_build_from_source=true npm ci
+RUN npm ci && npm rebuild argon2 --build-from-source
 COPY . .
 RUN npm run build && npm prune --omit=dev
 
