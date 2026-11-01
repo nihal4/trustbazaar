@@ -128,6 +128,12 @@ export class StripeProvider implements PaymentProvider {
     return { status: res.status === 'succeeded' ? 'succeeded' : 'pending', providerRefundId: res.id };
   }
 
+  /** Reconciliation: a pending Stripe refund's current status. */
+  async queryRefund(providerRefundId: string): Promise<'succeeded' | 'pending' | 'failed'> {
+    const res = (await this.call('GET', `/refunds/${encodeURIComponent(providerRefundId)}`)) as unknown as { status: string };
+    return res.status === 'succeeded' ? 'succeeded' : res.status === 'failed' || res.status === 'canceled' ? 'failed' : 'pending';
+  }
+
   /** A verified webhook event as a result; null for event types this unit does not act on. */
   static fromEvent(raw: Buffer): VerifiedResult | null {
     const e = JSON.parse(raw.toString('utf8')) as { id: string; type: string; data: { object: Session } };
