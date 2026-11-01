@@ -177,7 +177,7 @@ describe('chat', () => {
     const notices = await fx.query<{ id: string; params: Record<string, string>; subject_type: string; email: string | null }>(
       `SELECT n.id, n.params, n.subject_type, d.status AS email FROM notify.notifications n
          LEFT JOIN notify.deliveries d ON d.notification_id = n.id AND d.channel = 'email'
-        WHERE n.user_id = $1 AND n.template_code = 'chat.new_message' ORDER BY n.created_at`, [seller.userId]);
+        WHERE n.user_id = $1 AND n.template_code = 'chat.message_received' ORDER BY n.created_at`, [seller.userId]);
     expect(notices).toHaveLength(2);
     expect(notices[0].params).toEqual({ listing_title: 'Phone for the chat tests', sender_name: expect.any(String) });
     expect(JSON.stringify(notices)).not.toContain('question');
@@ -190,7 +190,7 @@ describe('chat', () => {
     await b2.send(t2, 'Are you there?');
     const [n] = await fx.query<{ email: string }>(
       `SELECT d.status AS email FROM notify.notifications n JOIN notify.deliveries d ON d.notification_id = n.id AND d.channel = 'email'
-        WHERE n.user_id = $1 AND n.template_code = 'chat.new_message'`, [s2.userId]);
+        WHERE n.user_id = $1 AND n.template_code = 'chat.message_received'`, [s2.userId]);
     expect(n.email).toBe('suppressed');
     expect(t2).toBeDefined();
   });
