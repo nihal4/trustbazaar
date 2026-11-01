@@ -93,3 +93,34 @@
 .version {
   color: var(--tb-muted);
 }
+
+/* The QR code keeps a white background and quiet zone in dark mode too, so cameras can read it. */
+.qr {
+  display: block;
+  background: #fff;
+  max-width: 100%;
+  height: auto;
+  margin: var(--tb-space-2) 0;
+}
+
+.secret {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 1.125rem;
+  letter-spacing: 0.05em;
+  word-spacing: 0.4em;
+}
+
+.codes {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 1.125rem;
+  columns: 2 10rem;
+  padding-left: 1.5rem;
+}
+
+.subsection {
+  margin-top: var(--tb-space-4);
+}
+
+.steps {
+  padding-left: 1.5rem;
+}

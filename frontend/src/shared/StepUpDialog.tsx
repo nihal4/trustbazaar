@@ -20,6 +20,7 @@ export function StepUpDialog({ request }: { request: StepUpRequest }) {
   const { t, lang } = useLanguage();
   const dialog = useRef<HTMLDialogElement>(null);
   const opener = useRef<Element | null>(null);
+  const startedFor = useRef<StepUpRequest | null>(null);
   const [started, setStarted] = useState<Started | null>(null);
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
@@ -42,11 +43,16 @@ export function StepUpDialog({ request }: { request: StepUpRequest }) {
   };
 
   useEffect(() => {
-    opener.current = document.activeElement;
+    if (startedFor.current !== request) opener.current = document.activeElement;
     const d = dialog.current;
     if (d && typeof d.showModal === 'function' && !d.open) d.showModal();
     else d?.setAttribute('open', '');
-    void start();
+    // Started once per request, also when development mode runs this effect twice: a second start
+    // would send a second SMS code.
+    if (startedFor.current !== request) {
+      startedFor.current = request;
+      void start();
+    }
     return () => {
       if (opener.current instanceof HTMLElement) opener.current.focus();
     };
