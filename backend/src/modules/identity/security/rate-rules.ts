@@ -24,6 +24,10 @@ export const RATE_RULES: Record<string, Limit[]> = {
   refresh: [],
   kyc: [{ per: 'principal', limit: 10, windowSeconds: 24 * 60 * 60 }],
   files: [{ per: 'principal', limit: 120, windowSeconds: 60 * 60 }],
+  // Unit 3 (SEC-ABU-01): listing creation per user per day from CP-35 (10 is the fallback), and photo uploads
+  // per user per hour (Decisions log, U3-02: CP-33 bounds photos per listing, this bounds the work per user).
+  'listing-create': [{ per: 'principal', limit: 10, windowSeconds: 24 * 60 * 60, cp: { code: 'CP-35', field: 'listings_per_day' } }],
+  'listing-photo': [{ per: 'principal', limit: 100, windowSeconds: 60 * 60 }],
   // CP-35, read from ConfigPort; 60 is only a fallback should the parameter be missing.
   search: [{ per: 'ip', limit: 60, windowSeconds: 60, cp: { code: 'CP-35', field: 'search_per_min' } }],
 };
