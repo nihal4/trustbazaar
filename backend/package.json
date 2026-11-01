@@ -82,6 +82,8 @@
       "/node_modules/",
       "\\.module\\.ts$",
       "/ports/index\\.ts$",
+      "/db/entities/",
+      "/db/enums\\.ts$",
       "/migrations/",
       "/main\\.ts$"
     ],
