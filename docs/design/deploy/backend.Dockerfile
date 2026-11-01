@@ -3,7 +3,7 @@
 # Two stages: dependencies and the TypeScript build, then a runtime image with production
 # dependencies only, running as an unprivileged user (SEC-INF-01).
 
-FROM node:20-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 # argon2's bundled musl prebuild crashes (segfault) on current Alpine, so argon2 alone is compiled here
 # from source (sharp keeps its own prebuilt libvips for musl). The compilers stay in this stage; the
@@ -14,7 +14,7 @@ RUN npm ci && npm rebuild argon2 --build-from-source
 COPY . .
 RUN npm run build && npm prune --omit=dev
 
-FROM node:20-alpine AS runtime
+FROM node:26-alpine AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 # Alpine security fixes, and no npm, npx, yarn or corepack: the image runs only `node`, and npm's own
