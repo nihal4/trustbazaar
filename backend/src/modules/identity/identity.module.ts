@@ -6,10 +6,14 @@ import { ENTITIES } from './db/entities';
 import { AccountController } from './http/account.controller';
 import { AuthController } from './http/auth.controller';
 import { RegistrationController } from './http/registration.controller';
+import { AdminController, StaffAuthController, StaffController } from './http/staff.controller';
 import { pipelineGuards } from './security/guards';
 import { RateLimiter } from './security/rate-limiter.service';
 import { noRestrictionsYet, RESTRICTIONS } from './security/restrictions';
+import { ApprovalService } from './services/approval.service';
 import { AuditService } from './services/audit.service';
+import { StaffAuthService } from './services/staff-auth.service';
+import { StaffService } from './services/staff.service';
 import { ContactService } from './services/contact.service';
 import { OtpService } from './services/otp.service';
 import { PasswordService } from './services/password.service';
@@ -17,6 +21,7 @@ import { RegistrationService } from './services/registration.service';
 import { SecondFactorService } from './services/second-factor.service';
 import { SessionService } from './services/session.service';
 import { SignInService } from './services/signin.service';
+import { SignInThrottle } from './services/signin-throttle.service';
 import { StepUpService } from './services/step-up.service';
 
 // Unit 1 (docs/design/01_identity_access.pdf). Schemas: identity, audit.
@@ -28,18 +33,22 @@ import { StepUpService } from './services/step-up.service';
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
 @Module({
   imports: [TypeOrmModule.forFeature(ENTITIES)],
-  controllers: [AuthController, RegistrationController, AccountController],
+  controllers: [AuthController, RegistrationController, AccountController, StaffAuthController, StaffController, AdminController],
   providers: [
     RateLimiter,
     PasswordHasher,
     AuditService,
     SessionService,
     SignInService,
+    SignInThrottle,
     OtpService,
     SecondFactorService,
     StepUpService,
     PasswordService,
     ContactService,
+    ApprovalService,
+    StaffAuthService,
+    StaffService,
     RegistrationService,
     // Until the Notifications unit (Unit 6) provides NotificationPort: logged, labelled simulated (AS-4).
     SimulatedNotifications,

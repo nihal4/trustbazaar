@@ -14,6 +14,9 @@ export const PROBLEMS = {
   'mfa-required': { status: 403, title: 'Please also enter the code from your authenticator app or a recovery code.' },
   'password-incorrect': { status: 400, title: 'The current password is not correct.' },
   'contact-unavailable': { status: 409, title: 'This number or e-mail cannot be used. Please try another one.' },
+  'own-proposal': { status: 403, title: 'A proposal must be decided by another staff member.' },
+  'already-proposed': { status: 409, title: 'This action is already waiting for approval.' },
+  'approval-closed': { status: 409, title: 'This proposal has already been decided or has expired.' },
   'password-rejected': { status: 422, title: 'Please choose a different password.' },
   'registration-refused': {
     status: 409,

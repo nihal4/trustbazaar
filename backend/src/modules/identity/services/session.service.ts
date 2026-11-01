@@ -48,6 +48,11 @@ interface CP02 {
   idleDays: number;
   absoluteDays: number;
 }
+interface CP03 {
+  idleMinutes: number;
+  absoluteHours: number;
+}
+type PrincipalKind = 'user' | 'staff';
 
 @Injectable()
 export class SessionService {
@@ -60,9 +65,16 @@ export class SessionService {
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
   ) {}
 
-  private async limits() {
+  /** CP-01 for the access token; CP-02 for user sessions, CP-03 for staff sessions (SEC-SES-06). */
+  private async limits(kind: PrincipalKind = 'user') {
     const p = await this.params.current();
     const cp01 = p.get<CP01>('CP-01');
+    if (kind === 'staff') {
+      const cp03 = p.get<CP03>('CP-03');
+      const idleMs = cp03.idleMinutes * 60_000;
+      // A staff access token never outlives the idle limit.
+      return { accessMs: Math.min(cp01.accessTokenMinutes * 60_000, idleMs), idleMs, absoluteMs: cp03.absoluteHours * 3_600_000 };
+    }
     const cp02 = p.get<CP02>('CP-02');
     return {
       accessMs: cp01.accessTokenMinutes * 60_000,
@@ -71,9 +83,9 @@ export class SessionService {
     };
   }
 
-  private tokens(sessionId: string, userId: string, now: Date, accessMs: number) {
+  private tokens(sessionId: string, sub: string, now: Date, accessMs: number, pt: PrincipalKind = 'user') {
     return {
-      accessToken: signAccessToken(this.config.keys.jwt, { sub: userId, sid: sessionId, pt: 'user' }, accessMs / 1000, now),
+      accessToken: signAccessToken(this.config.keys.jwt, { sub, sid: sessionId, pt }, accessMs / 1000, now),
       csrfToken: csrfToken(this.config.secrets.csrfKey, sessionId),
     };
   }
@@ -131,33 +143,55 @@ export class SessionService {
     };
   }
 
+  /** A new staff session (after MFA, SEC-AUTH-07) inside the caller's transaction, with CP-03 limits. */
+  async createStaff(m: EntityManager, staffId: string, ctx: RequestContext): Promise<{ sessionId: string; cookies: IssuedCookies }> {
+    const now = this.clock.now();
+    const { accessMs, idleMs, absoluteMs } = await this.limits('staff');
+    const absolute = new Date(now.getTime() + absoluteMs);
+    const idle = new Date(Math.min(now.getTime() + idleMs, absolute.getTime()));
+    const [s] = await m.query(
+      `INSERT INTO identity.sessions (principal_type, staff_id, user_agent, first_ip, created_at, last_seen_at, idle_expires_at, absolute_expires_at)
+       VALUES ('staff', $1, $2, $3, $4, $4, $5, $6) RETURNING id`,
+      [staffId, ctx.userAgent?.slice(0, 300) ?? null, ctx.ip, now, idle, absolute],
+    );
+    const refreshToken = randomToken();
+    await m.query(`INSERT INTO identity.refresh_tokens (session_id, token_hash, issued_at) VALUES ($1, $2, $3)`, [s.id, sha256(refreshToken), now]);
+    return {
+      sessionId: s.id,
+      cookies: { ...this.tokens(s.id, staffId, now, accessMs, 'staff'), refreshToken, accessMaxAgeMs: accessMs, refreshMaxAgeMs: absoluteMs },
+    };
+  }
+
   /** Rotates a refresh token (SEC-SES-02). Throws 401 for an unknown, ended or expired session. */
-  async refresh(raw: string | undefined, ctx: RequestContext): Promise<RefreshResult> {
+  async refresh(raw: string | undefined, ctx: RequestContext, kind: PrincipalKind = 'user'): Promise<RefreshResult> {
     if (!raw) throw new Problem('session-ended');
     const now = this.clock.now();
-    const { accessMs, idleMs } = await this.limits();
+    const { accessMs, idleMs } = await this.limits(kind);
     return this.db.transaction(async (m) => {
       const [row] = await m.query(
-        `SELECT rt.id, rt.used_at, s.id AS session_id, s.principal_type, s.user_id, s.ended_at, s.idle_expires_at,
-                s.absolute_expires_at, u.account_status
+        `SELECT rt.id, rt.used_at, s.id AS session_id, s.principal_type, s.user_id, s.staff_id, s.ended_at, s.idle_expires_at,
+                s.absolute_expires_at, u.account_status, st.status AS staff_status
          FROM identity.refresh_tokens rt
          JOIN identity.sessions s ON s.id = rt.session_id
          LEFT JOIN identity.users u ON u.id = s.user_id
+         LEFT JOIN identity.staff_accounts st ON st.id = s.staff_id
          WHERE rt.token_hash = $1
          FOR UPDATE OF rt, s`,
         [sha256(raw)],
       );
-      // Staff sessions refresh on their own path (U1-07, I-51).
-      if (!row || row.principal_type !== 'user') throw new Problem('session-ended');
+      // Staff sessions refresh on their own path (I-51), user sessions on theirs.
+      if (!row || row.principal_type !== kind) throw new Problem('session-ended');
+      const subject: string = kind === 'staff' ? row.staff_id : row.user_id;
       const live =
-        row.ended_at === null && now < row.idle_expires_at && now < row.absolute_expires_at && row.account_status !== 'closed';
+        row.ended_at === null && now < row.idle_expires_at && now < row.absolute_expires_at &&
+        (kind === 'staff' ? row.staff_status === 'active' : row.account_status !== 'closed');
       if (!live) throw new Problem('session-ended');
 
       if (row.used_at !== null) {
         if (now.getTime() - new Date(row.used_at).getTime() < REUSE_GRACE_MS) return { kind: 'retry' } as const;
         // A replaced token presented again after the grace window: it was copied. End the whole session.
-        await this.endIn(m, row.session_id, 'refresh_reuse', row.user_id, ctx);
-        await publish(m, 'identity.session.reuse_detected', row.user_id, { userId: row.user_id, sessionId: row.session_id });
+        await this.endIn(m, row.session_id, 'refresh_reuse', subject, ctx, kind);
+        await publish(m, 'identity.session.reuse_detected', subject, { [kind === 'staff' ? 'staffId' : 'userId']: subject, sessionId: row.session_id });
         return { kind: 'reused' } as const;
       }
 
@@ -178,7 +212,7 @@ export class SessionService {
       return {
         kind: 'rotated',
         cookies: {
-          ...this.tokens(row.session_id, row.user_id, now, accessMs),
+          ...this.tokens(row.session_id, subject, now, accessMs, kind),
           refreshToken: next,
           accessMaxAgeMs: accessMs,
           refreshMaxAgeMs: absolute.getTime() - now.getTime(),
@@ -191,14 +225,14 @@ export class SessionService {
     });
   }
 
-  private async endIn(m: EntityManager, sessionId: string, reason: string, userId: string, ctx: RequestContext): Promise<boolean> {
+  private async endIn(m: EntityManager, sessionId: string, reason: string, actorId: string, ctx: RequestContext, actorType: PrincipalKind = 'user'): Promise<boolean> {
     const ended = await m.query(
       `UPDATE identity.sessions SET ended_at = $2, end_reason = $3 WHERE id = $1 AND ended_at IS NULL RETURNING id`,
       [sessionId, this.clock.now(), reason],
     );
     if (rowsOf(ended).length === 0) return false;
     await this.audit.record(m, {
-      actorType: 'user', actorId: userId, action: 'identity.session.ended', objectType: 'session', objectId: sessionId,
+      actorType, actorId, action: 'identity.session.ended', objectType: 'session', objectId: sessionId,
       reason, sourceIp: ctx.ip, correlationId: ctx.correlationId,
     });
     return true;
@@ -228,6 +262,22 @@ export class SessionService {
     );
     let n = 0;
     for (const s of live) if (await this.endIn(m, s.id, reason, userId, ctx)) n++;
+    return n;
+  }
+
+  /** Ends one staff session: the staff member's own sign-out. */
+  async endStaff(staffId: string, sessionId: string, ctx: RequestContext): Promise<boolean> {
+    return this.db.transaction(async (m) => {
+      const [own] = await m.query(`SELECT 1 FROM identity.sessions WHERE id = $1 AND staff_id = $2 FOR UPDATE`, [sessionId, staffId]);
+      return own ? this.endIn(m, sessionId, 'logout', staffId, ctx, 'staff') : false;
+    });
+  }
+
+  /** Ends every live session of a staff member (disabled, MFA reset), recorded as done by `byStaffId`. */
+  async endAllStaffIn(m: EntityManager, staffId: string, reason: 'staff_disabled' | 'mfa_reset', byStaffId: string, ctx: RequestContext): Promise<number> {
+    const live: { id: string }[] = await m.query(`SELECT id FROM identity.sessions WHERE staff_id = $1 AND ended_at IS NULL FOR UPDATE`, [staffId]);
+    let n = 0;
+    for (const s of live) if (await this.endIn(m, s.id, reason, byStaffId, ctx, 'staff')) n++;
     return n;
   }
 
