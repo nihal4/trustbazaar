@@ -66,9 +66,23 @@ function fakeDb(query: (sql: string, params: unknown[]) => unknown[] = () => [])
     [Auction, new Repo('listingId')],
     [AuctionsOutboxEvent, new Repo('id')],
   ]);
+  // readAuctionState's query (U3-04), answered from the auction rows; the increment is CP-08's 2 %, at least 50 poisha
+  const auctionState = (id: unknown) => {
+    const a = repos.get(Auction)!.rows.find((r) => r.listingId === id);
+    if (!a) return [];
+    const price = a.currentPrice === null || a.currentPrice === undefined ? null : BigInt(a.currentPrice as string);
+    const reserve = a.reservePrice === null || a.reservePrice === undefined ? null : BigInt(a.reservePrice as string);
+    return [{
+      listing_id: id, status: a.status ?? 'open', start_price: a.startPrice, current_price: price === null ? null : String(price),
+      bid_count: a.bidCount ?? 0, end_at: a.endAt ?? new Date(), version: String(a.version ?? 0), has_reserve: reserve !== null,
+      reserve_met: reserve === null || (price ?? 0n) >= reserve, leader_alias: price === null ? null : 1,
+      minimum_bid: price === null ? a.startPrice : String(price + (price / 50n > 50n ? price / 50n : 50n)), server_time: new Date(),
+    }];
+  };
   const manager = {
     getRepository: (e: unknown) => repos.get(e)!,
-    query: jest.fn(async (sql: string, params: unknown[] = []) => query(sql, params)),
+    query: jest.fn(async (sql: string, params: unknown[] = []) =>
+      sql.includes('FROM auctions.auctions a') ? auctionState(params[0]) : query(sql, params)),
   };
   const db = { ...manager, manager, transaction: (cb: (m: typeof manager) => unknown) => cb(manager) };
   return { db, manager, repo: (e: unknown) => repos.get(e)! };

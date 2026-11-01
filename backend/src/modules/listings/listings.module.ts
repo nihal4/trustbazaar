@@ -2,8 +2,10 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { IdentityModule } from '../identity/identity.module';
 import { ENTITIES } from './db/entities';
+import { AuctionsController } from './http/auctions.controller';
 import { CategoriesController, ListingPhotosController, ListingsController, MyListingsController } from './http/listings.controller';
-import { LISTINGS_PORT } from './ports';
+import { AUCTION_QUERY, LISTINGS_PORT } from './ports';
+import { BidService } from './services/bid.service';
 import { ListingService } from './services/listing.service';
 import { MediaPipeline } from './services/media';
 import { ScreeningService } from './services/screening.service';
@@ -15,14 +17,16 @@ import { StockService } from './services/stock.service';
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
 @Module({
   imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule],
-  controllers: [CategoriesController, ListingsController, MyListingsController, ListingPhotosController],
+  controllers: [CategoriesController, ListingsController, MyListingsController, ListingPhotosController, AuctionsController],
   providers: [
+    BidService,
     ListingService,
     MediaPipeline,
     ScreeningService,
     StockService,
     { provide: LISTINGS_PORT, useExisting: StockService },
+    { provide: AUCTION_QUERY, useExisting: BidService },
   ],
-  exports: [LISTINGS_PORT],
+  exports: [LISTINGS_PORT, AUCTION_QUERY],
 })
 export class ListingsModule {}

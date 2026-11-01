@@ -6,7 +6,7 @@ import type { EntityManager } from 'typeorm';
 //   ListingsPort      (U3-02, below)
 //   ListingsCommands  (U3-08)
 //   ListingsQueries   (U3-06, I-61)
-//   AuctionQuery      (U3-04 to U3-06)
+//   AuctionQuery      (U3-04: getPublicState, below; U3-06: getFlags)
 
 export type ItemKind = 'physical' | 'game_account';
 export type SaleFormat = 'fixed_price' | 'auction';
@@ -54,3 +54,34 @@ export interface ListingsPort {
 }
 
 export const LISTINGS_PORT = Symbol('LISTINGS_PORT');
+
+/**
+ * The public state of an auction (section 3.2, IF-COM-02): the body of GET /auctions/{id}/state and of the live
+ * auction.state message. Money in poisha, as strings. Never a maximum, the reserve amount or an identity
+ * (FR-AUC-08): the leader is the auction's alias ("Bidder 2"). seq is the auction's version (FR-AUC-11).
+ */
+export interface AuctionState {
+  auctionId: string;
+  status: 'open' | 'awarded' | 'unsold' | 'cancelled';
+  startPrice: string;
+  /** null before the first bid */
+  price: string | null;
+  bidCount: number;
+  leaderAlias: number | null;
+  endAt: string;
+  hasReserve: boolean;
+  reserveMet: boolean;
+  /** The lowest maximum another bidder may send now (CP-08); null once the auction is closed. */
+  minimumBid: string | null;
+  /** The database server's time, for the countdown on the server's clock (FR-AUC-01). */
+  serverTime: string;
+  seq: number;
+}
+
+/** Used by Units 2 and 7. getFlags is added with the shill signals (U3-06). */
+export interface AuctionQuery {
+  /** Throws not-found for an unknown auction. */
+  getPublicState(auctionId: string): Promise<AuctionState>;
+}
+
+export const AUCTION_QUERY = Symbol('AUCTION_QUERY');
