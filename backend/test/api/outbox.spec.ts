@@ -36,9 +36,13 @@ describe('outbox dispatcher', () => {
 
   /** A fresh event type per test, so consumers registered by one test never see another's events. */
   const kind = () => `k${randomUUID().replace(/-/g, '').slice(0, 10).replace(/\d/g, 'x')}`;
+  // Written as already due: the database stamps next_attempt_at in microseconds, the dispatcher compares it
+  // with the clock in milliseconds, so an event drained within the same millisecond would otherwise wait for
+  // the next pass (harmless in production, where the next poll takes it; a flaky assertion here).
   const emit = async (outbox: string, type: string) => {
     const [{ id }] = await fx.query<{ id: string }>(
-      `INSERT INTO ${outbox}.outbox (event_type, aggregate_id, payload) VALUES ($1, $2, '{"n": 1}') RETURNING id::text`,
+      `INSERT INTO ${outbox}.outbox (event_type, aggregate_id, payload, next_attempt_at)
+       VALUES ($1, $2, '{"n": 1}', now() - interval '1 second') RETURNING id::text`,
       [type, randomUUID()],
     );
     return id;
