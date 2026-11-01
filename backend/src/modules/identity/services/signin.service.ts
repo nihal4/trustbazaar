@@ -4,7 +4,6 @@ import type Redis from 'ioredis';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import { DataSource } from 'typeorm';
 import { CLOCK, Clock } from '../../../kernel/clock';
-import { CONFIG_PORT, ConfigPort } from '../../../kernel/config-port';
 import { Problem } from '../../../kernel/http/problems';
 import { REDIS } from '../../../kernel/redis.provider';
 import { NOTIFICATIONS, NotificationPort } from '../adapters/notifications';
@@ -13,6 +12,7 @@ import type { IssuedCookies } from '../http/session-cookies';
 import { RateLimiter } from '../security/rate-limiter.service';
 import { AuditService } from './audit.service';
 import { SecondFactorService } from './second-factor.service';
+import { SignInThrottle } from './signin-throttle.service';
 import { RequestContext, SessionService } from './session.service';
 
 // Sign-in (Unit 1 section 6.2; FR-ACC-05, FR-ACC-06, SEC-AUTH-03 to SEC-AUTH-05, SEC-LOG-01).
@@ -23,18 +23,11 @@ import { RequestContext, SessionService } from './session.service';
 //    Each code works once; five wrong codes end the ticket.
 export const MFA_TICKET_SECONDS = 300; // DV-1
 const MFA_ATTEMPTS = 5; // CP-05: attempts per challenge
-const MAX_DELAY_SECONDS = 15 * 60; // DV-10
 const sha256hex = (s: string) => createHash('sha256').update(s).digest('hex');
-/** The Redis key of the CP-04 failure count for a normalised login (E.164 number or lower-case e-mail). */
-export const signInThrottleKey = (login: string) => `signin:fail:${sha256hex(login)}`;
+export { signInThrottleKey } from './signin-throttle.service';
 const USER_COLUMNS = `SELECT id, password_hash, mfa_enabled, phone_e164, email FROM identity.users`;
 const BY_PHONE = `${USER_COLUMNS} WHERE phone_e164 = $1 AND account_status <> 'closed' LIMIT 1`;
 const BY_EMAIL = `${USER_COLUMNS} WHERE email = $1 AND account_status <> 'closed' LIMIT 1`;
-
-interface CP04 {
-  failuresPerAccount: number;
-  windowMinutes: number;
-}
 
 interface UserRow {
   id: string;
@@ -63,19 +56,18 @@ export class SignInService {
     private readonly audit: AuditService,
     private readonly limiter: RateLimiter,
     private readonly secondFactor: SecondFactorService,
+    private readonly throttle: SignInThrottle,
     @Inject(REDIS) private readonly redis: Redis,
     @Inject(NOTIFICATIONS) private readonly notify: NotificationPort,
     @Inject(CLOCK) private readonly clock: Clock,
-    @Inject(CONFIG_PORT) private readonly params: ConfigPort,
   ) {}
 
   async signIn(login: string, password: string, deviceKey: string | undefined, ctx: RequestContext): Promise<SignInResult> {
     const account = normaliseLogin(login);
     // Keyed by the login as typed (normalised), so unknown accounts are throttled exactly like real ones.
-    const failKey = signInThrottleKey(account ? Object.values(account)[0] : login.trim().toLowerCase());
+    const failKey = account ? Object.values(account)[0] : login.trim().toLowerCase();
     const now = this.clock.now();
-    const until = Number(await this.redis.hget(failKey, 'until').catch(() => null));
-    if (until > now.getTime()) throw new Problem('rate-limited', { retryAfter: Math.ceil((until - now.getTime()) / 1000) });
+    await this.throttle.check(failKey);
 
     let user: UserRow | undefined;
     if (account) {
@@ -87,7 +79,7 @@ export class SignInService {
       await this.failed(failKey, user, ctx);
       throw new Problem('signin-failed');
     }
-    await this.redis.del(failKey).catch(() => undefined);
+    await this.throttle.clear(failKey);
     if (this.passwords.needsRehash(user.password_hash!)) {
       await this.db.query(`UPDATE identity.users SET password_hash = $2 WHERE id = $1`, [user.id, await this.passwords.hash(password)]);
     }
@@ -139,22 +131,9 @@ export class SignInService {
   }
 
   private async failed(failKey: string, user: UserRow | undefined, ctx: RequestContext): Promise<void> {
-    const cp04 = (await this.params.current()).get<CP04>('CP-04');
-    const now = this.clock.now().getTime();
-    try {
-      const count = await this.redis.hincrby(failKey, 'count', 1);
-      if (count === 1) await this.redis.expire(failKey, cp04.windowMinutes * 60);
-      if (count >= cp04.failuresPerAccount) {
-        const delay = Math.min(2 ** (count - cp04.failuresPerAccount), MAX_DELAY_SECONDS);
-        await this.redis.hset(failKey, 'until', String(now + delay * 1000));
-        await this.redis.expire(failKey, Math.max(cp04.windowMinutes * 60, delay));
-        if (count === cp04.failuresPerAccount && user?.phone_e164) {
-          await this.notify.sendSms(user.phone_e164, 'signin_throttled', {});
-          if (user.email) await this.notify.sendEmail(user.email, 'signin_throttled', {});
-        }
-      }
-    } catch {
-      // Redis unavailable: the per-address limit and the audit log still apply (NFR-REL-01).
+    if ((await this.throttle.failed(failKey)) && user?.phone_e164) {
+      await this.notify.sendSms(user.phone_e164, 'signin_throttled', {});
+      if (user.email) await this.notify.sendEmail(user.email, 'signin_throttled', {});
     }
     await this.db.transaction((m) =>
       this.audit.record(m, {

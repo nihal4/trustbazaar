@@ -13,7 +13,8 @@
     "test:watch": "jest --watch",
     "posttest": "ts-node test/tools/coverage-gate.ts",
     "test:integration": "jest --config test/jest.integration.json --runInBand",
-    "migrate": "node dist/migrate.js"
+    "migrate": "node dist/migrate.js",
+    "staff:bootstrap": "node dist/staff-bootstrap.js"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.0",
