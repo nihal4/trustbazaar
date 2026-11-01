@@ -6,6 +6,7 @@ import { config } from './config/config';
 import { configProvider, TB_CONFIG } from './config/config.provider';
 import { HealthController } from './health/health.controller';
 import { HealthService } from './health/health.service';
+import { IdempotencyKeys } from './http/idempotency';
 import { EventBus } from './events/event-bus';
 import { OutboxDispatcher } from './events/outbox-dispatcher';
 import { JobRunner } from './jobs/job-runner';
@@ -33,8 +34,8 @@ import { REDIS, redisProvider } from './redis.provider';
     }),
   ],
   controllers: [HealthController],
-  providers: [configProvider, redisProvider, clockProvider, HealthService, EventBus, OutboxDispatcher, JobRunner],
-  exports: [TB_CONFIG, REDIS, CLOCK, EventBus, JobRunner], // CONFIG_PORT is provided by Unit 7 (U7-01)
+  providers: [configProvider, redisProvider, clockProvider, HealthService, EventBus, OutboxDispatcher, JobRunner, IdempotencyKeys],
+  exports: [TB_CONFIG, REDIS, CLOCK, EventBus, JobRunner, IdempotencyKeys], // CONFIG_PORT is provided by Unit 7 (U7-01)
 })
 export class KernelModule implements OnModuleDestroy {
   constructor(@Inject(REDIS) private readonly redis: Redis) {}
