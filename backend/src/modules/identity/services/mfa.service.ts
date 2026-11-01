@@ -90,7 +90,7 @@ export class MfaService {
       if (!f) throw new Problem('mfa-state', { errors: [{ field: 'mfa', reason: 'not-started' }] });
       const secret = decryptField(this.config.keys.field, f.secret_enc, { table: 'totp_factors', column: 'secret_enc', rowId: f.id }).toString('utf8');
       const step = checkTotp(secret, code, now);
-      if (step === null) throw new Problem('mfa-failed');
+      if (step === null) throw new Problem('otp-failed'); // 400, not 401: the session is fine (the client reads 401 as an ended session)
       await m.query(`UPDATE identity.totp_factors SET confirmed_at = $2, last_used_step = $3 WHERE id = $1`, [f.id, now, step]);
       await m.query(`UPDATE identity.users SET mfa_enabled = true, updated_at = $2 WHERE id = $1`, [userId, now]);
       const codes = await this.issueCodes(m, f.id);
@@ -114,7 +114,7 @@ export class MfaService {
       hash = await this.passwords.hash(newPassword);
     }
     // A TOTP code only (not a recovery code): the design asks for "a current TOTP code".
-    if (!/^\d{6}$/.test(code) || (await this.secondFactor.check(userId, code, now)) !== 'totp') throw new Problem('mfa-failed');
+    if (!/^\d{6}$/.test(code) || (await this.secondFactor.check(userId, code, now)) !== 'totp') throw new Problem('otp-failed'); // 400, as step-up
     await this.db.transaction(async (m) => {
       if (hash) {
         await m.query(`UPDATE identity.users SET password_hash = $2, password_single_factor_ok = true, password_changed_at = $3 WHERE id = $1`, [userId, hash, now]);
