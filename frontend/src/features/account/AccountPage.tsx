@@ -11,7 +11,7 @@ import { otherError, useAccountT } from './common';
 import styles from './account.module.css';
 
 const KYC_ACTION: Record<KycStatus, boolean> = {
-  unsubmitted: true, rejected: true, revoked: true, pending_review: false, verified: false,
+  unsubmitted: true, rejected: true, revoked: false, pending_review: false, verified: false,
 };
 
 export function Component() {
