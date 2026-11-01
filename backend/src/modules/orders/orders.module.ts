@@ -9,6 +9,7 @@ import { MyPayoutsController, StaffPayoutsController } from './http/payouts.cont
 import { ESCROW_COMMANDS, ESCROW_QUERY, ORDERS_PORT } from './ports';
 import { EscrowService } from './services/escrow.service';
 import { RefundService } from './services/refund.service';
+import { OrdersJobs } from './jobs/orders.jobs';
 import { PayoutService } from './services/payout.service';
 import { PAYOUT_PROVIDER, SimulatedPayoutProvider } from './adapters/payout-provider';
 import { OrderService } from './services/order.service';
@@ -35,6 +36,7 @@ import type Redis from 'ioredis';
     EscrowService,
     RefundService,
     PayoutService,
+    OrdersJobs,
     { provide: PAYOUT_PROVIDER, useClass: SimulatedPayoutProvider },
     { provide: ESCROW_COMMANDS, useExisting: EscrowService },
     { provide: ESCROW_QUERY, useExisting: EscrowService },
