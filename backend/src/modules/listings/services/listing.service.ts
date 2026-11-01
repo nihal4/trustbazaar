@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, QueryFailedError } from 'typeorm';
 import { CONFIG_PORT, ConfigPort } from '../../../kernel/config-port';
+import { cursorAt, decodeCursor, encodeCursor } from '../../../kernel/http/cursor';
 import { IdempotencyKeys } from '../../../kernel/http/idempotency';
 import { Problem } from '../../../kernel/http/problems';
 import type { Principal } from '../../../kernel/http/principal';
@@ -398,14 +399,9 @@ export class ListingService {
 
   /** The seller's own listings, newest first, in pages of 50 (cursor = the last item's creation time and id). */
   async mine(userId: string, status: ListingStatus | undefined, cursor: string | undefined) {
-    let after: { at: string; id: string } | null = null;
-    if (cursor) {
-      const [at, id] = Buffer.from(cursor, 'base64url').toString().split('|');
-      if (!at || !id || Number.isNaN(Date.parse(at)) || !/^[0-9a-f-]{36}$/.test(id)) throw new Problem('validation-failed', { errors: [{ field: 'cursor', reason: 'format' }] });
-      after = { at, id };
-    }
+    const after = decodeCursor(cursor);
     const rows: Record<string, unknown>[] = await this.db.query(
-      `SELECT l.id, l.title, l.status, l.item_kind, l.sale_format, l.price, l.quantity_total, l.quantity_available, l.created_at, l.published_at,
+      `SELECT l.id, l.title, l.status, l.item_kind, l.sale_format, l.price, l.quantity_total, l.quantity_available, l.created_at, l.published_at, ${cursorAt('l.created_at')} AS cursor_at,
               (SELECT p.storage_key FROM listings.listing_photos p WHERE p.listing_id = l.id AND p.removed_at IS NULL ORDER BY p.position LIMIT 1) AS photo_key
        FROM listings.listings l
        WHERE l.seller_id = $1 AND ($2::listings.status IS NULL OR l.status = $2)
@@ -422,7 +418,7 @@ export class ListingService {
         thumbUrl: r.photo_key ? photoUrl(r.photo_key as string, 'thumb') : null,
         createdAt: (r.created_at as Date).toISOString(), publishedAt: (r.published_at as Date | null)?.toISOString() ?? null,
       })),
-      nextCursor: rows.length > PAGE && last ? Buffer.from(`${(last.created_at as Date).toISOString()}|${last.id}`).toString('base64url') : null,
+      nextCursor: rows.length > PAGE && last ? encodeCursor(last.cursor_at as string, last.id as string) : null,
     };
   }
 
