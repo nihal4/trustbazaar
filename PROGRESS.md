@@ -211,7 +211,7 @@ Design: `docs/design/07_disputes_trust_staff.pdf` (source `.tex` beside it).
 
 | ID | Task | Needs | Status | Owner | Branch / PR | Done | Notes |
 |---|---|---|---|---|---|---|---|
-| U7-01 | `ConfigPort` over `staff` parameter versions (needed early by every unit) | P0-05 | doing | S. M. Nihal Ahmed | `feature/u7-01-config-port` | | `ConfigService` in `modules/trust/services/`, provided to every unit as `CONFIG_PORT` by the global `ConfigPortModule`; the interface stays in `kernel/config-port.ts`. Administrators' API: `/admin/config` (current set, versions, validate, publish, four-eyes proposals). The refresh on `staff.config.published` comes with the outbox dispatcher (K-04); until then the 60-second refresh applies. |
+| U7-01 | `ConfigPort` over `staff` parameter versions (needed early by every unit) | P0-05 | review | S. M. Nihal Ahmed | `feature/u7-01-config-port`, #93 | | `ConfigService` in `modules/trust/services/`, provided to every unit as `CONFIG_PORT` by the global `ConfigPortModule`; the interface stays in `kernel/config-port.ts`. Administrators' API: `/admin/config` (current set, versions, validate, publish, four-eyes proposals). The refresh on `staff.config.published` comes with the outbox dispatcher (K-04); until then the 60-second refresh applies. |
 | U7-02 | Entities over `disputes`, `trust`, `staff`; the SQL tests and concurrency script run in CI | P0-05 | todo | | | | |
 | U7-03 | Disputes: open, respond, case file, decide (four-eyes), withdraw, refund after return | U7-02, U2-04, U4-04, U5-04, U6-03 | todo | | | | |
 | U7-04 | Reports, signals, sanctions, strikes; `SanctionPort` | U7-02, U1-08 | todo | | | | |
