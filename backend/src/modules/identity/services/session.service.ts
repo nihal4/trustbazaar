@@ -10,6 +10,7 @@ import { signAccessToken } from '../security/access-token';
 import { csrfToken } from '../security/csrf';
 import { RateLimiter } from '../security/rate-limiter.service';
 import type { IssuedCookies } from '../http/session-cookies';
+import { SessionSocketCloser } from '../security/live-auth';
 import { AuditService } from './audit.service';
 import { publish } from './outbox';
 
@@ -52,6 +53,7 @@ export class SessionService {
     @Inject(TB_CONFIG) private readonly config: TbConfig,
     @Inject(CLOCK) private readonly clock: Clock,
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
+    private readonly sockets: SessionSocketCloser,
   ) {}
 
   /** CP-01 for the access token; CP-02 for user sessions, CP-03 for staff sessions (SEC-SES-06). */
@@ -214,6 +216,7 @@ export class SessionService {
       [sessionId, this.clock.now(), reason],
     );
     if (rowsOf(ended).length === 0) return false;
+    this.sockets.ended(m.queryRunner, sessionId); // SEC-SES-07: its live connections close after the commit
     await this.audit.record(m, {
       actorType, actorId, action: 'identity.session.ended', objectType: 'session', objectId: sessionId,
       reason, sourceIp: ctx.ip, correlationId: ctx.correlationId,
