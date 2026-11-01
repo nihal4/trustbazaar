@@ -1,40 +1,32 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
+import { NOTIFICATION_PORT, NotificationPort, SentMessage } from '../../chat/ports';
 
-// NotificationPort (Unit 1 section 4.5), implemented by the Notifications unit (Unit 6). Until it exists,
-// this test adapter writes each message to the log, labelled as simulated (AS-4), with the number or
-// address masked. It keeps the last messages in memory so the tests can see what would have been sent.
-export interface NotificationPort {
-  sendSms(phone: string, template: string, vars: Record<string, string>): Promise<void>;
-  sendEmail(address: string, template: string, vars: Record<string, string>): Promise<void>;
-}
+// NotificationPort (Unit 1 section 4.5) is implemented by the Notifications unit (Unit 6; I-36, U6-05). This unit
+// injects NOTIFICATIONS; the provider below forwards to Unit 6's port, found on first use, since Unit 6 is built on
+// top of this unit and cannot be imported by it. `sent` exposes Unit 6's record of recent messages to the tests.
+export type { NotificationPort, SentMessage } from '../../chat/ports';
 
 export const NOTIFICATIONS = Symbol('NOTIFICATIONS');
 
-export interface SentMessage {
-  channel: 'sms' | 'email';
-  to: string;
-  template: string;
-  vars: Record<string, string>;
-}
-
-const mask = (s: string) => (s.includes('@') ? s.replace(/^(.).*(@.*)$/, '$1***$2') : `***${s.slice(-3)}`);
-
 @Injectable()
-export class SimulatedNotifications implements NotificationPort {
-  private readonly log = new Logger('Notifications');
-  readonly sent: SentMessage[] = [];
+export class ForwardedNotifications implements NotificationPort {
+  constructor(private readonly modules: ModuleRef) {}
 
-  async sendSms(phone: string, template: string, vars: Record<string, string>): Promise<void> {
-    this.keep({ channel: 'sms', to: phone, template, vars });
+  private get port(): NotificationPort & { sent?: SentMessage[] } {
+    return this.modules.get(NOTIFICATION_PORT, { strict: false });
   }
 
-  async sendEmail(address: string, template: string, vars: Record<string, string>): Promise<void> {
-    this.keep({ channel: 'email', to: address, template, vars });
+  sendSms(phone: string, template: string, vars: Record<string, string>): Promise<void> {
+    return this.port.sendSms(phone, template, vars);
   }
 
-  private keep(m: SentMessage): void {
-    this.sent.push(m);
-    if (this.sent.length > 100) this.sent.shift();
-    this.log.log(`[simulated ${m.channel}] ${m.template} to ${mask(m.to)}`);
+  sendEmail(address: string, template: string, vars: Record<string, string>): Promise<void> {
+    return this.port.sendEmail(address, template, vars);
+  }
+
+  /** The tests read what would have been sent. */
+  get sent(): SentMessage[] {
+    return this.port.sent ?? [];
   }
 }

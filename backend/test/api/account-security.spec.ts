@@ -1,7 +1,7 @@
 import { randomInt, randomUUID } from 'crypto';
 import { authenticator } from 'otplib';
 import { loadConfig } from '../../src/kernel/config/config';
-import { NOTIFICATIONS, SimulatedNotifications } from '../../src/modules/identity/adapters/notifications';
+import { NOTIFICATIONS, ForwardedNotifications } from '../../src/modules/identity/adapters/notifications';
 import { startApp, TestApp } from '../support/app';
 import { Browser } from '../support/browser';
 import { IdentityFixtures } from '../support/identity';
@@ -19,14 +19,14 @@ describe('step-up, passwords and contact changes', () => {
   let t: TestApp;
   let fx: IdentityFixtures;
   let origin: string;
-  let notes: SimulatedNotifications;
+  let notes: ForwardedNotifications;
   const browser = () => new Browser(t, origin);
 
   beforeAll(async () => {
     t = await startApp();
     fx = await IdentityFixtures.open();
     origin = loadConfig(process.env).publicOrigin;
-    notes = t.app.get<SimulatedNotifications>(NOTIFICATIONS);
+    notes = t.app.get<ForwardedNotifications>(NOTIFICATIONS);
   });
   afterAll(async () => {
     await fx?.close();
