@@ -36,6 +36,15 @@ export class Browser {
     return res;
   }
 
+  /** A multipart POST (FormData): the browser sets the boundary itself, so no content-type here. */
+  async upload(path: string, form: FormData): Promise<Response> {
+    const headers: Record<string, string> = { origin: this.origin, 'x-forwarded-for': this.ip, 'user-agent': 'Mozilla/5.0 (Linux; Android 14) Chrome/130.0' };
+    if (this.cookies.size > 0) headers.cookie = [...this.cookies].map(([k, v]) => `${k}=${v}`).join('; ');
+    const csrf = this.cookies.get(this.csrfCookie);
+    if (csrf) headers['x-csrf-token'] = csrf;
+    return fetch(this.app.url(path), { method: 'POST', headers, body: form });
+  }
+
   get = (path: string) => this.request('GET', path);
   post = (path: string, body?: unknown, headers?: Record<string, string>) => this.request('POST', path, body ?? {}, headers);
   del = (path: string) => this.request('DELETE', path);
