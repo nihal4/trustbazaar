@@ -12,6 +12,7 @@ import { ListingPhoto } from './listing-photo.entity';
 import { Listing } from './listing.entity';
 import { ScreeningTerm } from './screening-term.entity';
 import { ListingStatusChange } from './listing-status-change.entity';
+import { StockMove } from './stock-move.entity';
 
 export { Auction } from './auction.entity';
 export { BidderAlias } from './bidder-alias.entity';
@@ -27,6 +28,7 @@ export { ListingPhoto } from './listing-photo.entity';
 export { Listing } from './listing.entity';
 export { ScreeningTerm } from './screening-term.entity';
 export { ListingStatusChange } from './listing-status-change.entity';
+export { StockMove } from './stock-move.entity';
 
 // Every table of the schemas listings, auctions, for TypeOrmModule.forFeature.
 export const ENTITIES = [
@@ -44,4 +46,5 @@ export const ENTITIES = [
   Listing,
   ScreeningTerm,
   ListingStatusChange,
+  StockMove,
 ];

@@ -6,6 +6,7 @@ import { GameAccounts1793491200005 } from './1793491200005-game-accounts';
 import { ChatNotifications1793491200006 } from './1793491200006-chat-notifications';
 import { DisputesTrustStaff1793491200007 } from './1793491200007-disputes-trust-staff';
 import { Integration1793491200008 } from './1793491200008-integration';
+import { ListingsCourierPhotosStock1793491200009 } from './1793491200009-listings-courier-photos-stock';
 
 // The migrations in the order they run: the seven units in unit order, then 09_integration (I-60).
 // Add a new migration at the end; never reorder or edit an applied one.
@@ -18,4 +19,5 @@ export const MIGRATIONS = [
   ChatNotifications1793491200006, // docs/design/sql/06_chat_notifications.sql
   DisputesTrustStaff1793491200007, // docs/design/sql/07_disputes_trust_staff.sql
   Integration1793491200008, // docs/design/sql/09_integration.sql
+  ListingsCourierPhotosStock1793491200009, // U3-02 changes to 03_listings_auctions.sql (Decisions log)
 ];
