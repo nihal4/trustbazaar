@@ -9,20 +9,30 @@ import { IdentityFixtures } from '../support/identity';
 
 // U7-01: ConfigPort over the versioned parameter set, and the administrators' changes (Unit 7 section
 // "Parameters and Feature Switches"; FR-OPS-03, FR-OPS-08, FR-OPS-09, SEC-IRM-04, DV-50).
-// Only parameters no unit reads yet are changed here, so the other test files are not affected.
+// The parameters changed here (CP-13, CP-45) are published back to their values from before this file in
+// afterAll, so the test files that read them (checkout reads CP-13 since U2-02) see the usual values.
+const CHANGED = ['CP-13', 'CP-45'];
+
 describe('parameters (ConfigPort)', () => {
   let t: TestApp;
   let fx: IdentityFixtures;
   let origin: string;
   let port: ConfigPort;
+  let original: Record<string, unknown>;
 
   beforeAll(async () => {
     t = await startApp();
     fx = await IdentityFixtures.open();
     origin = loadConfig(process.env).publicOrigin;
     port = t.app.get(CONFIG_PORT);
+    const now = await port.current();
+    original = Object.fromEntries(CHANGED.map((c) => [c, now.get(c)]));
   });
   afterAll(async () => {
+    if (t && original) {
+      const a = await admin();
+      expect((await a.b.post('/admin/config', { changes: original, reason: 'Restore the values from before the config tests' })).status).toBe(201);
+    }
     await fx?.close();
     await t?.close();
   });
