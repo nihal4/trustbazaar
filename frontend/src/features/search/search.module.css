@@ -1,0 +1,24 @@
+/* Home and search (section 7.3): one column on phones, cards in a grid from 40rem; every target at least 44 px. */
+.page { max-width: var(--tb-max-width); }
+.lead, .hint { color: var(--tb-muted); }
+.filters { margin: var(--tb-space-3) 0; }
+.words { display: flex; flex-wrap: wrap; align-items: end; gap: var(--tb-space-2); }
+.words label { flex-basis: 100%; font-weight: 700; }
+.words input { flex: 1 1 14rem; min-height: 44px; font: inherit; padding: 0 var(--tb-space-2); }
+.words button, .location button, .more { min-height: 44px; padding: 0 var(--tb-space-3); font: inherit; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); gap: var(--tb-space-2); border: 1px solid var(--tb-border); border-radius: var(--tb-radius); margin: var(--tb-space-3) 0; padding: var(--tb-space-2) var(--tb-space-3) var(--tb-space-3); }
+.field { display: flex; flex-direction: column; gap: var(--tb-space-1); }
+.field select, .field input { min-height: 44px; font: inherit; }
+.location { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tb-space-2); }
+.featured { border: 2px solid var(--tb-warning-border); background: var(--tb-warning-bg); border-radius: var(--tb-radius); padding: var(--tb-space-2) var(--tb-space-3); margin-bottom: var(--tb-space-3); }
+.cards { list-style: none; padding: 0; margin: var(--tb-space-2) 0; display: grid; gap: var(--tb-space-2); }
+@media (min-width: 40rem) { .cards { grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); } }
+.card { border: 1px solid var(--tb-border); border-radius: var(--tb-radius); background: var(--tb-surface); }
+.cardLink { display: flex; gap: var(--tb-space-2); padding: var(--tb-space-2); color: var(--tb-text); text-decoration: none; min-height: 44px; }
+.cardLink:focus-visible { outline: 3px solid var(--tb-focus); }
+.thumb, .noThumb { flex: none; width: 96px; height: 72px; object-fit: cover; border-radius: var(--tb-radius); background: var(--tb-border); }
+.cardBody { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cardTitle { font-weight: 700; overflow-wrap: anywhere; }
+.price { font-weight: 700; }
+.meta, .note { color: var(--tb-muted); font-size: 0.9rem; }
+.badge { align-self: flex-start; border: 1px solid var(--tb-warning-border); border-radius: var(--tb-radius); padding: 0 var(--tb-space-1); font-size: 0.85rem; font-weight: 700; }
