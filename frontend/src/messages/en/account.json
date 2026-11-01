@@ -109,7 +109,7 @@
   "kyc.status.pending_review": "Waiting for review",
   "kyc.status.verified": "Verified",
   "kyc.status.rejected": "Not accepted. You can try again.",
-  "kyc.status.revoked": "Withdrawn. Verify your identity again to trade.",
+  "kyc.status.revoked": "Withdrawn. Contact support.",
   "security.title": "Security",
   "security.link": "Security: sessions, password, contact details",
   "sessions.title": "Where you are signed in",
