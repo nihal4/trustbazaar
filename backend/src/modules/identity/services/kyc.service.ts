@@ -20,6 +20,7 @@ import { RequestContext } from './session.service';
 //    The fields are encrypted; blind indexes and routing flags are computed (flags only route a submission
 //    for closer review, they never decide it). One transaction then records the submission and its files,
 //    moves kyc_status to pending_review, writes the history row, the audit entry and identity.kyc.submitted.
+export const CP34_WINDOW_DAYS = 30;
 export const LIVENESS_SECONDS = 10 * 60; // DV-3
 export const LIVENESS_ACTIONS = ['turn_head_left', 'turn_head_right', 'look_up', 'smile', 'blink_twice'] as const;
 export type KycFileKind = 'doc_front' | 'doc_back' | 'passport_photo_page' | 'selfie_neutral' | 'selfie_action';
@@ -27,14 +28,6 @@ export const FILES_FOR: Record<DocType, KycFileKind[]> = {
   nid: ['doc_front', 'doc_back', 'selfie_neutral', 'selfie_action'],
   passport: ['passport_photo_page', 'selfie_neutral', 'selfie_action'],
 };
-
-interface CP34 {
-  submissions: number;
-  days: number;
-}
-interface CP44 {
-  reviewHours: number;
-}
 
 export interface KycInput {
   docType: DocType;
@@ -100,7 +93,7 @@ export class KycService {
       changedAt: u.kyc_status_changed_at,
       rejection: u.kyc_status === 'rejected' && last?.status === 'rejected' ? { reason: last.rejection_reason, note: last.rejection_note } : null,
       submissionsLeft: await this.submissionsLeft(userId),
-      expectedReviewHours: (await this.params.current()).get<CP44>('CP-44').reviewHours,
+      expectedReviewHours: (await this.params.current()).ms('CP-44') / 3_600_000,
     };
   }
 
@@ -160,7 +153,7 @@ export class KycService {
         });
         await publish(m, 'identity.kyc.submitted', userId, { userId, submissionId, flags });
       });
-      return { submissionId, status: 'pending_review', expectedReviewHours: (await this.params.current()).get<CP44>('CP-44').reviewHours };
+      return { submissionId, status: 'pending_review', expectedReviewHours: (await this.params.current()).ms('CP-44') / 3_600_000 };
     } catch (e) {
       await Promise.all(sealed.map((f) => this.vault.erase('kyc', f.storageKey)));
       if ((e as { code?: string }).code === '23505') throw new Problem('kyc-not-allowed'); // a second open submission
@@ -223,7 +216,8 @@ export class KycService {
   }
 
   private async submissionsLeft(userId: string): Promise<number> {
-    const cp34 = (await this.params.current()).get<CP34>('CP-34');
+    // CP-34: "3 per 30 days"; the parameter is the number, the 30 days are the SRS's fixed window.
+    const cp34 = { submissions: (await this.params.current()).get<number>('CP-34'), days: CP34_WINDOW_DAYS };
     const [{ n }] = await this.db.query(
       `SELECT count(*)::int AS n FROM identity.kyc_submissions WHERE user_id = $1 AND submitted_at > $2`,
       [userId, new Date(this.clock.now().getTime() - cp34.days * 86_400_000)],
