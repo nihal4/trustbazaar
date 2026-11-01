@@ -1,15 +1,15 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { createHash } from 'crypto';
 import type Redis from 'ioredis';
-import { Problem } from '../../../kernel/http/problems';
-import { REDIS } from '../../../kernel/redis.provider';
+import { REDIS } from '../redis.provider';
+import { Problem } from './problems';
 
-// Idempotency-Key on POST /listings (I-53; Unit 8 section "Sent once"). Kept in Redis for 24 hours, per
-// user (Decisions log, U3-02): the first request claims the key, and once it succeeds the key names the
+// Idempotency-Key on requests that create something (Unit 8 section "Sent once"): POST /listings (I-53) and
+// POST /orders (I-52). Kept in Redis for 24 hours, per scope and user (Decisions log, U3-02 and U2-02): the first request claims the key, and once it succeeds the key names the
 // listing it created, so a repeat answers with that listing instead of creating a second one. A repeat
 // while the first is still running is refused with request-in-progress; a failed request frees the key.
 // If Redis cannot be reached the request goes ahead without the key: a duplicate draft is harmless and
-// can be discarded, and Redis holds only reconstructible data (NFR-REL-01).
+// can be discarded (an order holds its units only for the checkout hold), and Redis holds only reconstructible data (NFR-REL-01).
 export const KEY_FORMAT = /^[A-Za-z0-9_-]{8,100}$/;
 const TTL_SECONDS = 24 * 60 * 60;
 const PENDING = 'pending';

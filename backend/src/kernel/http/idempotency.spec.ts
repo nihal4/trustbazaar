@@ -1,7 +1,6 @@
 import type Redis from 'ioredis';
-import { Problem } from '../../../kernel/http/problems';
 import { IdempotencyKeys } from './idempotency';
-import { normaliseForScreening, ScreeningService } from './screening.service';
+import { Problem } from './problems';
 
 /** Enough of Redis for SET NX EX, GET and DEL. */
 function fakeRedis(o: { down?: boolean } = {}) {
@@ -74,15 +73,5 @@ describe('IdempotencyKeys (I-53)', () => {
     await expect(keys.once('listing', 'u1', 'short', async () => 'x')).rejects.toBeInstanceOf(Problem);
     const down = new IdempotencyKeys(fakeRedis({ down: true }) as unknown as Redis);
     expect(await down.once('listing', 'u1', 'key-12345678', async () => 'anyway')).toEqual({ id: 'anyway', repeated: false });
-  });
-});
-
-describe('ScreeningService (FR-LST-11)', () => {
-  it('FR-LST-11 title and description are matched in one normalised, lower-case text', async () => {
-    const query = jest.fn().mockResolvedValue([{ term: 'password', severity: 'high_risk' }]);
-    const found = await new ScreeningService().matches({ query } as never, 'PUBG  Account', 'With\nPASSWORD পাসওয়ার্ড');
-    expect(found).toEqual([{ term: 'password', severity: 'high_risk' }]);
-    expect(query.mock.calls[0][1]).toEqual(['pubg account with password পাসওয়ার্ড']);
-    expect(normaliseForScreening('Aé  B')).toBe('aé b');
   });
 });
