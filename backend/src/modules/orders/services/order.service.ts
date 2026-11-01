@@ -164,7 +164,7 @@ export class OrderService implements OrdersPort {
       const reason = o.kind === 'fixed_price' ? 'checkout_expired' : 'payment_window_expired';
       await m.query(`UPDATE payments.attempts SET status = 'expired' WHERE order_id = $1 AND status IN ('created', 'redirected')`, [orderId]);
       await m.getRepository(Order).update({ id: orderId }, { status: 'cancelled', cancelledAt: now, cancelReason: reason });
-      const facts = { orderId, kind: o.kind, listingId: o.listingId, listingTitle: (o.listingSnapshot as { title?: string }).title ?? null, quantity: o.quantity, buyerId: o.buyerId, sellerId: o.sellerId, reason };
+      const facts = { orderId, kind: o.kind, listingId: o.listingId, listingTitle: (o.listingSnapshot as { title?: string } | null)?.title ?? null, quantity: o.quantity, buyerId: o.buyerId, sellerId: o.sellerId, reason };
       await m.getRepository(OrdersOutboxEvent).insert({ eventType: 'orders.order.cancelled', aggregateId: orderId, payload: facts });
       if (o.kind !== 'fixed_price') await m.getRepository(OrdersOutboxEvent).insert({ eventType: 'orders.order.payment_expired', aggregateId: orderId, payload: facts });
       await this.audit.record({ actorType: 'system', action: 'orders.order.cancelled', objectType: 'order', objectId: orderId, before: { status: 'awaiting_payment' }, after: { status: 'cancelled' }, reason }, m);
