@@ -76,8 +76,9 @@ describe('Auction concurrency (FR-AUC-01–FR-AUC-18, NFR-MNT-02)', () => {
    */
   async function expectConsistent(auctionId: string) {
     const bids = await fx.query<{ id: string; bidder_id: string; max_amount: string; outcome: string; price_after: string; leader_after: string }>(
-      `SELECT id::text, bidder_id, max_amount::text, outcome, price_after::text, leader_after FROM auctions.bids
-        WHERE auction_id = $1 AND voided_at IS NULL ORDER BY id`, [auctionId]);
+      // ordered by the numeric id (b.id), not the text column of the same name: as text, 67 sorts before 9
+      `SELECT b.id::text AS id, b.bidder_id, b.max_amount::text AS max_amount, b.outcome, b.price_after::text AS price_after, b.leader_after
+         FROM auctions.bids b WHERE b.auction_id = $1 AND b.voided_at IS NULL ORDER BY b.id`, [auctionId]);
     const replay = await fx.query<{ bid_id: string; leader: string; leader_max: string; price: string; is_leading: boolean; counted: boolean }>(
       `SELECT r.bid_id::text, r.leader, r.leader_max::text, r.price::text, r.is_leading, r.counted FROM auctions.replay($1) r ORDER BY r.bid_id`, [auctionId]);
     expect(replay.map((r) => [r.bid_id, r.counted, r.leader, r.price, r.is_leading]))
