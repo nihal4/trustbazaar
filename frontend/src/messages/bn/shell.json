@@ -1,0 +1,15 @@
+{
+  "shell.skip_to_content": "মূল অংশে যান",
+  "shell.home_link": "TrustBazaar হোম",
+  "shell.language.switch_label": "ভাষা ইংরেজিতে বদলান",
+  "shell.language.other": "English",
+  "shell.document.kyc": "পরিচয় যাচাই",
+  "shell.document.staff": "স্টাফ কনসোল",
+  "shell.loading": "লোড হচ্ছে…",
+  "shell.close": "বন্ধ করুন",
+  "shell.error.unexpected": "এই পৃষ্ঠায় একটি সমস্যা হয়েছে। আবার চেষ্টা করতে পৃষ্ঠাটি রিলোড করুন।",
+  "shell.home.title": "নিরাপদে কেনাবেচা করুন",
+  "shell.home.lead": "প্রত্যেক সদস্য যাচাই করা, আর আপনি জিনিস হাতে না পাওয়া পর্যন্ত আপনার টাকা জমা থাকে।",
+  "shell.not_found.title": "পৃষ্ঠাটি পাওয়া যায়নি",
+  "shell.not_found.home": "হোম পেজে যান"
+}

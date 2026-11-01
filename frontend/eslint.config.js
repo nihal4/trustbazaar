@@ -74,6 +74,12 @@ export default tseslint.config(
       ],
     },
   },
+  // The one module allowed to keep the guest's language choice in localStorage (section 8.2). The
+  // refresh time is kept by lib/api.js, which is outside these rules.
+  {
+    files: ['src/shared/language/storage.ts'],
+    rules: { 'no-restricted-globals': 'off', 'no-restricted-properties': 'off' },
+  },
   // Import boundaries. Flat config replaces a rule's options per matching block, so each block
   // repeats the patterns that also apply to it.
   {

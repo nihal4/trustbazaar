@@ -1,12 +1,15 @@
-import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { createDocument, DocumentRoot, signInHere } from '../shared/document';
+import '../shared/tokens.css';
 
 // index.html: the user app, every path not served by the other three documents
-// (docs/design/08_frontend.pdf, section 3.1). The shell, router and lib/ arrive with U8-01.
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <main>
-      <h1>TrustBazaar</h1>
-    </main>
-  </StrictMode>,
-);
+// (docs/design/08_frontend.pdf, sections 3.1 and 3.3). Each route is a lazy chunk (section 9); the
+// features add their routes here as they are built (U8-02 onwards).
+const doc = createDocument({
+  kind: 'user',
+  home: { path: '/', sameDocument: true },
+  signIn: signInHere,
+  routes: [{ index: true, lazy: () => import('../shared/HomePlaceholder') }],
+});
+
+createRoot(document.getElementById('root')!).render(<DocumentRoot doc={doc} />);
