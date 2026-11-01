@@ -1,0 +1,149 @@
+/* The KYC wizard: one column, the camera view as wide as the screen allows (NFR-USE-05). */
+.narrow {
+  max-width: 40rem;
+}
+
+.status {
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius);
+  background: var(--tb-surface);
+  padding: var(--tb-space-2) var(--tb-space-3);
+  margin-bottom: var(--tb-space-3);
+}
+
+.status h2,
+.sent h2 {
+  font-size: 1.125rem;
+  margin: 0 0 var(--tb-space-1);
+}
+
+.status p {
+  margin: 0 0 var(--tb-space-1);
+}
+
+.progress {
+  color: var(--tb-muted);
+  margin: 0;
+}
+
+.stepTitle {
+  margin-top: var(--tb-space-1);
+}
+
+.stepTitle:focus {
+  outline: none;
+}
+
+.capture h2 {
+  font-size: 1.125rem;
+}
+
+.video,
+.preview {
+  display: block;
+  width: 100%;
+  max-width: 32rem;
+  height: auto;
+  border-radius: var(--tb-radius);
+  background: #000;
+  margin-bottom: var(--tb-space-2);
+}
+
+.action {
+  font-size: 1.25rem;
+  font-weight: 700;
+  border-left: 4px solid var(--tb-accent);
+  padding-left: var(--tb-space-2);
+}
+
+.choice {
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--tb-space-3);
+}
+
+.choice legend {
+  font-weight: 700;
+  margin-bottom: var(--tb-space-1);
+}
+
+.choice div {
+  display: flex;
+  gap: var(--tb-space-2);
+  align-items: center;
+  min-height: 44px;
+}
+
+.choice input {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+}
+
+.file {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-1);
+  margin: var(--tb-space-2) 0;
+}
+
+.file label {
+  font-weight: 700;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-2);
+  margin-top: var(--tb-space-3);
+}
+
+.primary,
+.secondary {
+  min-height: 44px;
+  padding: var(--tb-space-1) var(--tb-space-4);
+  border-radius: var(--tb-radius);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.primary {
+  border: 0;
+  background: var(--tb-accent);
+  color: var(--tb-accent-text);
+}
+
+.primary:disabled {
+  background: var(--tb-muted);
+  cursor: not-allowed;
+}
+
+.secondary {
+  border: 1px solid var(--tb-border);
+  background: var(--tb-bg);
+  color: var(--tb-text);
+}
+
+.thumbs {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+  gap: var(--tb-space-2);
+}
+
+.thumbs .preview {
+  margin-bottom: var(--tb-space-1);
+}
+
+.facts dt {
+  font-weight: 700;
+}
+
+.facts dd {
+  margin: 0 0 var(--tb-space-2);
+}
+
+.sent {
+  margin-top: var(--tb-space-3);
+}

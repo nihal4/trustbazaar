@@ -161,3 +161,29 @@ test('the staff console uses its own CSRF cookie and refresh path', async () => 
 test('204 returns null', async () => {
   assert.equal(await make({ fetch: async () => new Response(null, { status: 204 }) }).post('/x', {}), null);
 });
+
+test('uploads: a FormData body is sent as multipart, unchanged, with CSRF; the retry after a refresh sends it again', async () => {
+  const s = server();
+  const api = make(s);
+  const form = new FormData();
+  form.append('docType', 'nid');
+  form.append('doc_front', new Blob([new Uint8Array([0xff, 0xd8, 0xff])], { type: 'image/jpeg' }), 'front.jpg');
+  const r = await api.post('/kyc/submissions', form, { idempotent: true });
+  assert.equal(r.ok, true);
+  const sends = s.calls.filter((c) => c.url.endsWith('/kyc/submissions'));
+  assert.equal(sends.length, 2);                                   // 401, refresh, retry
+  for (const c of sends) {
+    assert.equal(c.body, form);                                    // not stringified
+    assert.equal(c.headers['Content-Type'], undefined);            // the browser adds the boundary
+    assert.equal(c.headers['X-CSRF-Token'], 'tok/xyz');
+  }
+  assert.equal(sends[0].headers['Idempotency-Key'], sends[1].headers['Idempotency-Key']);
+  assert.equal(s.refreshes, 1);
+});
+
+test('a JSON body still gets its Content-Type and is stringified', async () => {
+  const s = server({ expired: false });
+  await make(s).post('/orders', { listingId: 'l1' });
+  assert.equal(s.calls[0].headers['Content-Type'], 'application/json');
+  assert.equal(s.calls[0].body, '{"listingId":"l1"}');
+});
