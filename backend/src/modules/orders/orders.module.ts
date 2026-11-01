@@ -5,9 +5,12 @@ import { ListingsModule } from '../listings/listings.module';
 import { ENTITIES } from './db/entities';
 import { OrderActionsController, OrdersController } from './http/orders.controller';
 import { MockPayController, PaymentsController, StripeWebhookController } from './http/payments.controller';
+import { MyPayoutsController, StaffPayoutsController } from './http/payouts.controller';
 import { ESCROW_COMMANDS, ESCROW_QUERY, ORDERS_PORT } from './ports';
 import { EscrowService } from './services/escrow.service';
 import { RefundService } from './services/refund.service';
+import { PayoutService } from './services/payout.service';
+import { PAYOUT_PROVIDER, SimulatedPayoutProvider } from './adapters/payout-provider';
 import { OrderService } from './services/order.service';
 import { PAYMENT_PROVIDERS, PaymentService } from './services/payment.service';
 import { buildProviders } from './adapters/providers';
@@ -23,7 +26,7 @@ import type Redis from 'ioredis';
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
 @Module({
   imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule, ListingsModule],
-  controllers: [OrdersController, OrderActionsController, PaymentsController, StripeWebhookController, MockPayController],
+  controllers: [OrdersController, OrderActionsController, PaymentsController, StripeWebhookController, MockPayController, MyPayoutsController, StaffPayoutsController],
   providers: [
     OrderService,
     PaymentService,
@@ -31,6 +34,8 @@ import type Redis from 'ioredis';
     { provide: ORDERS_PORT, useExisting: OrderService },
     EscrowService,
     RefundService,
+    PayoutService,
+    { provide: PAYOUT_PROVIDER, useClass: SimulatedPayoutProvider },
     { provide: ESCROW_COMMANDS, useExisting: EscrowService },
     { provide: ESCROW_QUERY, useExisting: EscrowService },
   ],
