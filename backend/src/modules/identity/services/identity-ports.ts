@@ -243,9 +243,12 @@ export class AuditPortAdapter implements AuditServicePort {
 
 @Injectable()
 export class RateLimiterPortAdapter implements RateLimiterPort {
-  private readonly rules = new Map<string, { limit: number; windowSeconds: number }[]>();
+  private readonly rules = new Map<string, { limit: number; windowSeconds: number; cp?: { code: string; field: string } }[]>();
 
-  constructor(private readonly limiter: RateLimiter) {}
+  constructor(
+    private readonly limiter: RateLimiter,
+    @Inject(CONFIG_PORT) private readonly params: ConfigPort,
+  ) {}
 
   define(rule: string, limit: number, windowSeconds: number): void {
     if (this.rules.has(rule) || rule in RATE_RULES) throw new Error(`rate-limit rule "${rule}" is already defined`);
@@ -256,7 +259,10 @@ export class RateLimiterPortAdapter implements RateLimiterPort {
     const limits = this.rules.get(rule) ?? RATE_RULES[rule];
     if (!limits) throw new Error(`unknown rate-limit rule "${rule}"`);
     for (const l of limits) {
-      const r = await this.limiter.hit(`rl:${rule}:${subject}`, l.limit, l.windowSeconds);
+      // a limit from a parameter (CP-35), as RateLimitGuard reads it; the rule's own limit if it is missing
+      const v = l.cp ? (await this.params.current()).get<Record<string, unknown>>(l.cp.code)?.[l.cp.field] : undefined;
+      const limit = typeof v === 'number' && v > 0 ? v : l.limit;
+      const r = await this.limiter.hit(`rl:${rule}:${subject}`, limit, l.windowSeconds);
       if (!r.allowed) throw new Problem('rate-limited', { retryAfter: r.retryAfterSeconds });
     }
   }
