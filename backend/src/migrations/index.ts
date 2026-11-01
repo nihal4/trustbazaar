@@ -7,6 +7,7 @@ import { ChatNotifications1793491200006 } from './1793491200006-chat-notificatio
 import { DisputesTrustStaff1793491200007 } from './1793491200007-disputes-trust-staff';
 import { Integration1793491200008 } from './1793491200008-integration';
 import { ListingsCourierPhotosStock1793491200009 } from './1793491200009-listings-courier-photos-stock';
+import { NotificationTemplates1793491200010 } from './1793491200010-notification-templates';
 
 // The migrations in the order they run: the seven units in unit order, then 09_integration (I-60).
 // Add a new migration at the end; never reorder or edit an applied one.
@@ -20,4 +21,5 @@ export const MIGRATIONS = [
   DisputesTrustStaff1793491200007, // docs/design/sql/07_disputes_trust_staff.sql
   Integration1793491200008, // docs/design/sql/09_integration.sql
   ListingsCourierPhotosStock1793491200009, // U3-02 changes to 03_listings_auctions.sql (Decisions log)
+  NotificationTemplates1793491200010, // U6-04: notification subject (I-55) and the first templates (Decisions log)
 ];
