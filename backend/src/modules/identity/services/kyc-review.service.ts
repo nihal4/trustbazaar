@@ -15,6 +15,7 @@ import { KycFileKind, KycService } from './kyc.service';
 import { publish } from './outbox';
 import { RequestContext } from './session.service';
 import { StaffService } from './staff.service';
+import { mimeOf, parseVaultKey } from './vault-key';
 
 // KYC review, protected files, revocation and the NID blacklist (Unit 1 sections 6.7 and "Protected files";
 // FR-KYC-04 to FR-KYC-06, FR-KYC-10, FR-KYC-12, FR-TNS-06, SEC-ACC-06, SEC-DAT-04).
@@ -220,7 +221,7 @@ export class KycReviewService implements OnModuleInit {
   }
 
   /** Serves a signed link: authentic, not expired, and used by the session it was issued to. */
-  async serve(token: string, cookies: Record<string, string | undefined>): Promise<Buffer> {
+  async serve(token: string, cookies: Record<string, string | undefined>): Promise<{ bytes: Buffer; mime: string }> {
     const now = this.clock.now();
     const c = verifyFileLink(this.config.secrets.linkKey.reveal(), token, now);
     if (!c) throw new Problem('link-invalid');
@@ -232,9 +233,16 @@ export class KycReviewService implements OnModuleInit {
       [c.s, now],
     );
     if (!live) throw new Problem('link-invalid');
+    // A vault key from another unit's file (FileVault port, U1-08), or a KYC file row of this unit.
+    const v = parseVaultKey(c.f);
+    if (v) {
+      const bytes = await this.vault.open(v.purpose, v.fileId, v.storageKey, v.wrappedDek).catch(() => null);
+      if (!bytes) throw new Problem('link-invalid');
+      return { bytes, mime: mimeOf(v.purpose) };
+    }
     const [f] = await this.db.query(`SELECT id, storage_key, wrapped_dek FROM identity.kyc_files WHERE id = $1 AND erased_at IS NULL`, [c.f]);
     if (!f) throw new Problem('link-invalid');
-    return this.vault.open('kyc', f.id, f.storage_key, f.wrapped_dek);
+    return { bytes: await this.vault.open('kyc', f.id, f.storage_key, f.wrapped_dek), mime: 'image/jpeg' };
   }
 
   /** FR-KYC-10: a revocation proposal; a second operator approves it. */
