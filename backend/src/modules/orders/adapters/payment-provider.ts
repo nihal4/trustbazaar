@@ -41,6 +41,8 @@ export interface PaymentProvider {
    * Throws ProviderUnavailable when the provider cannot be reached (retried by the worker).
    */
   refund(r: { attempt: AttemptRef; providerTxnId: string | null; amount: bigint; idempotencyKey: string }): Promise<{ status: 'succeeded' | 'pending' | 'unsupported'; providerRefundId?: string }>;
+  /** Reconciliation (section 5.12): the outcome of a refund the provider took for later; absent if it never does. */
+  queryRefund?(providerRefundId: string): Promise<'succeeded' | 'pending' | 'failed'>;
 }
 
 export class ProviderUnavailable extends Error {}
