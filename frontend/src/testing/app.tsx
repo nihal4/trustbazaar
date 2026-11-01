@@ -4,10 +4,11 @@ import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { createMemoryRouter, type RouteObject } from 'react-router-dom';
 import { accountRoutes } from '../features/account/routes';
+import { notificationRoutes } from '../features/notifications/routes';
 import { createDocument, DocumentRoot, signInHere } from '../shared/document';
 import type { Me } from '../shared/me';
 
-export interface Call { method: string; path: string; body: unknown; headers: Headers }
+export interface Call { method: string; path: string; query: URLSearchParams; body: unknown; headers: Headers }
 type Answer = (call: Call) => Response | Promise<Response>;
 
 export const json = (status: number, body?: unknown, headers: Record<string, string> = {}) => () =>
@@ -35,10 +36,11 @@ export function fakeBackend(answers: Record<string, Answer | Answer[]>) {
   const calls: Call[] = [];
   const used: Record<string, number> = {};
   const fetch = async (url: string | URL | Request, init: RequestInit = {}) => {
-    const path = new URL(String(url), 'https://tb.test').pathname.replace(/^\/api\/v1/, '');
+    const u = new URL(String(url), 'https://tb.test');
+    const path = u.pathname.replace(/^\/api\/v1/, '');
     const method = (init.method ?? 'GET').toUpperCase();
     const body = init.body instanceof FormData ? init.body : init.body ? JSON.parse(String(init.body)) : undefined;
-    const call: Call = { method, path, body, headers: new Headers(init.headers) };
+    const call: Call = { method, path, query: u.searchParams, body, headers: new Headers(init.headers) };
     calls.push(call);
     const key = `${method} ${path}`;
     const a = answers[key];
@@ -54,7 +56,7 @@ export function fakeBackend(answers: Record<string, Answer | Answer[]>) {
 export function renderApp(at: string, be: ReturnType<typeof fakeBackend>, lang: 'en' | 'bn' = 'en') {
   return renderDocument(at, be, lang, {
     home: { path: '/', sameDocument: true }, accountLinks: true,
-    routes: [{ index: true, element: <h1>Home</h1> }, ...accountRoutes],
+    routes: [{ index: true, element: <h1>Home</h1> }, ...accountRoutes, ...notificationRoutes],
   });
 }
 
