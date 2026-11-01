@@ -10,8 +10,9 @@ import { Problem } from '../../../kernel/http/problems';
 import { AUDIT_SERVICE, AuditServicePort } from '../../identity/ports';
 import type { ListingSnapshot } from '../../listings/ports';
 import { signState, stateValid } from '../adapters/callback-state';
+import { Line, post } from './ledger';
 import { AttemptRef, PaymentProvider, ProviderId, ProviderUnavailable, VerifiedResult } from '../adapters/payment-provider';
-import { Escrow, EscrowHistory, JournalEntry, JournalLine, Order, OrdersOutboxEvent, PaymentAttempt, ReconciliationIssue, Refund } from '../db/entities';
+import { Escrow, EscrowHistory, Order, OrdersOutboxEvent, PaymentAttempt, ReconciliationIssue, Refund } from '../db/entities';
 
 // Payment (docs/design/02_orders_payments.pdf sections 5.5 and 7.1; FR-PAY-01 to FR-PAY-05, SEC-PAY-03 to 07).
 //
@@ -225,11 +226,8 @@ export class PaymentService {
 
   // ---------------------------------------------------------------- helpers
 
-  private async journal(m: EntityManager, kind: 'payment_received', orderId: string, sourceId: string, memo: string, lines: [string, string | null, bigint][]) {
-    const { identifiers } = await m.getRepository(JournalEntry).insert({ kind, orderId, sourceId, memo });
-    for (const [accountCode, partyId, amount] of lines) {
-      await m.getRepository(JournalLine).insert({ entryId: identifiers[0].id as string, accountCode, partyId, amount: amount.toString() });
-    }
+  private journal(m: EntityManager, kind: 'payment_received', orderId: string, sourceId: string, memo: string, lines: Line[]) {
+    return post(m, kind, orderId, sourceId, memo, lines);
   }
 
   private raise(m: EntityManager, kind: string, orderId: string | null, attemptId: string | null, detail: Record<string, unknown>) {
