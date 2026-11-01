@@ -47,7 +47,7 @@ const snapshot = (o: Partial<ListingSnapshot> = {}): ListingSnapshot => ({
 
 function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; verifiedAt?: Date | null; switchOn?: boolean; rows?: { id: string; created_at: Date }[] } = {}) {
   const repos = new Map<unknown, Repo>([
-    [Order, new Repo(() => ({ status: 'awaiting_payment', createdAt: NOW, paidAt: null, fulfilmentStep: null, fulfilmentDueAt: null, deliveryEventAt: null, cancelledAt: null, cancelReason: null, closedAt: null }))],
+    [Order, new Repo(() => ({ status: 'awaiting_payment', createdAt: NOW, paidAt: null, fulfilmentStep: null, fulfilmentDueAt: null, fulfilmentDoneAt: null, deliveryEventAt: null, cancelledAt: null, cancelReason: null, closedAt: null }))],
     [Escrow, new Repo()],
     [OrdersOutboxEvent, new Repo()],
   ]);
@@ -161,6 +161,18 @@ describe('OrderService', () => {
     expect(s.manager.query.mock.calls[1][1]).toEqual(['B', NOW.toISOString(), rows[49].id]);
     expect(await problemOf(s.svc.list('B', 'buyer', 'eA'))).toEqual(['validation-failed', 'cursor:format']);
     expect((await setup().svc.list('B', 'buyer', undefined)).nextCursor).toBeNull();
+  });
+});
+
+describe('OrderService.lockForFulfilment (I-20)', () => {
+  it('I-20 the order is locked in the caller\'s transaction and its fulfilment facts returned', async () => {
+    const s = setup();
+    const { order } = await s.svc.checkout('B', { listingId: 'L1', quantity: 1, fulfilment: 'self_pickup' }, undefined);
+    const facts = await s.svc.lockForFulfilment(order.id, s.manager as never);
+    expect(facts).toMatchObject({ orderId: order.id, status: 'awaiting_payment', fulfilment: 'self_pickup', stepRecorded: false, deliveryEventRecorded: false, escrowState: null });
+    s.escrows.rows.push({ orderId: order.id, state: 'held' });
+    expect((await s.svc.lockForFulfilment(order.id, s.manager as never)).escrowState).toBe('held');
+    await expect(s.svc.lockForFulfilment(randomUUID(), s.manager as never)).rejects.toBeInstanceOf(Problem);
   });
 });
 
