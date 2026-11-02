@@ -152,12 +152,12 @@ describe('delivery areas, addresses and quotes', () => {
     const heavy = await buyer.call('POST', '/delivery/quotes', { listingId: await listing(seller.userId, { weight: 'up_to_5kg' }), quantity: 3, addressId: home.id });
     expect((await heavy.json()).errors).toEqual([{ field: 'quantity', reason: 'parcel_too_large' }]);
 
-    // checkout still refuses courier until shipments exist (U4-04); the claim is Unit 2's, in its transaction
-    expect((await (await buyer.call('POST', '/orders', { listingId: phone, quantity: 2, fulfilment: 'courier', quoteId: q.id })).json()).errors)
-      .toEqual([{ field: 'fulfilment', reason: 'courier-not-yet-available' }]);
+    // courier checkout is on since U4-04: Unit 2 claims the quote in its transaction, and the fee is the quote's
+    const courier = await buyer.json<{ id: string; deliveryFee: string }>('POST', '/orders', { listingId: phone, quantity: 1, fulfilment: 'courier', quoteId: (await buyer.json<{ id: string }>('POST', '/delivery/quotes', { listingId: phone, quantity: 1, addressId: home.id }, 201)).id }, 201);
+    expect(courier.deliveryFee).toBe('8000');
     const order = await buyer.json<{ id: string }>('POST', '/orders', { listingId: phone, quantity: 2, fulfilment: 'self_pickup' }, 201);
     const port = t.app.get<DeliveryPort>(DELIVERY_PORT);
-    expect(port.shipsCourier).toBe(false);
+    expect(port.shipsCourier).toBe(true);
     const ds = t.app.get(DataSource);
     const claim = (o: Partial<{ buyerId: string; quantity: number }> = {}) =>
       ds.transaction((m) => port.claimQuote({ quoteId: q.id, orderId: order.id, buyerId: o.buyerId ?? buyer.userId, listingId: phone, quantity: o.quantity ?? 2 }, m));

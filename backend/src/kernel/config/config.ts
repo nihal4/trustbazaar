@@ -64,6 +64,8 @@ export interface TbConfig {
   readonly redisUrl: Secret;
   readonly paymentMode: 'mock' | 'sandbox';
   readonly courierMode: 'mock' | 'sandbox';
+  /** COURIER_MODE=mock only: seconds between the mock courier's automatic steps; 0 (default) = the simulator only (U4-04). */
+  readonly mockCourierAutoAdvanceSeconds: number;
   readonly emailMode: 'log' | 'smtp';
   /** Validated by Unit 6's SMS adapter: the design names only "log" and a provider test mode. */
   readonly smsMode: string;
@@ -216,6 +218,11 @@ export function loadConfig(env: Env): TbConfig {
   // C-2 and C-3: payments and couriers are mock or sandbox only; the deliverable never moves real money.
   const paymentMode = oneOf('PAYMENT_MODE', ['mock', 'sandbox'] as const, 'mock');
   const courierMode = oneOf('COURIER_MODE', ['mock', 'sandbox'] as const, 'mock');
+  // C-3: no Pathao or Steadfast sandbox access yet, so no sandbox adapter exists to run (Decisions log, U4-04)
+  if (courierMode === 'sandbox') problems.push('COURIER_MODE: sandbox has no courier adapter yet (Pathao, Steadfast); use mock');
+  const autoText = get('MOCK_COURIER_AUTO_ADVANCE_SECONDS') ?? '0';
+  const mockCourierAutoAdvanceSeconds = Number(autoText);
+  if (!/^\d+$/.test(autoText) || mockCourierAutoAdvanceSeconds > 86_400) problems.push('MOCK_COURIER_AUTO_ADVANCE_SECONDS: whole seconds from 0 to 86400');
   const emailMode = oneOf('EMAIL_MODE', ['log', 'smtp'] as const, 'log');
   const smsMode = get('SMS_MODE') ?? 'log';
 
@@ -260,6 +267,7 @@ export function loadConfig(env: Env): TbConfig {
     redisUrl,
     paymentMode,
     courierMode,
+    mockCourierAutoAdvanceSeconds,
     emailMode,
     smsMode,
     secrets: Object.freeze(secrets),
