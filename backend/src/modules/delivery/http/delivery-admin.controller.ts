@@ -1,13 +1,14 @@
-import { Body, Controller, Get, HttpCode, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, ParseIntPipe, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { Staff } from '../../../kernel/http/policies';
 import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
 import { AreasService } from '../services/areas.service';
 import { FareTableService } from '../services/fare-table.service';
-import { AreaDto, AreaPatchDto, FareTableDto } from './delivery.dto';
+import { MeetupPointsService } from '../services/meetup-points.service';
+import { AreaDto, AreaPatchDto, FareTableDto, MeetupPointDto, MeetupPointPatchDto } from './delivery.dto';
 
 // Administrators maintain the drop-off areas and publish fare tables (section 3.1; CP-43, FR-OPS-08; U4-02).
-// Meetup points come with U4-03.
+// Meetup points (U4-03): an administrator adds places they have checked (Decisions log, U4-03).
 const staffOf = (p: Principal) => {
   if (p.type !== 'staff') throw new Problem('forbidden');
   return p;
@@ -18,6 +19,7 @@ export class DeliveryAdminController {
   constructor(
     private readonly areas: AreasService,
     private readonly fares: FareTableService,
+    private readonly points: MeetupPointsService,
   ) {}
 
   @Staff('administrator')
@@ -45,5 +47,24 @@ export class DeliveryAdminController {
   @HttpCode(201)
   publishFares(@Body() dto: FareTableDto, @CurrentPrincipal() p: Principal) {
     return this.fares.publish(staffOf(p).staffId, dto);
+  }
+
+  @Staff('administrator')
+  @Get('meetup-points')
+  listPoints() {
+    return this.points.list();
+  }
+
+  @Staff('administrator')
+  @Post('meetup-points')
+  @HttpCode(201)
+  addPoint(@Body() dto: MeetupPointDto, @CurrentPrincipal() p: Principal) {
+    return this.points.create(staffOf(p).staffId, dto);
+  }
+
+  @Staff('administrator')
+  @Patch('meetup-points/:id')
+  changePoint(@Param('id', new ParseUUIDPipe({ exceptionFactory: () => new Problem('not-found') })) id: string, @Body() dto: MeetupPointPatchDto, @CurrentPrincipal() p: Principal) {
+    return this.points.update(staffOf(p).staffId, id, dto);
   }
 }
