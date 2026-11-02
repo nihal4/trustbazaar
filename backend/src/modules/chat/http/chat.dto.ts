@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, IsUUID, MaxLength, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, IsUUID, MaxLength, Min } from 'class-validator';
 
 // Chat requests (docs/design/06_chat_notifications.pdf section 3.1; U6-02). Lengths are checked again by the
 // service after normalisation and by the database (DV-40).
@@ -51,4 +51,36 @@ export class MarksDto {
   @IsInt()
   @Min(0)
   read!: number;
+}
+
+/** FR-CHT-06: the thread, or one message by its sequence number; the category of FR-TNS-01. */
+export class ReportDto {
+  @IsIn(['fraudulent', 'counterfeit', 'prohibited', 'misrepresented', 'abusive'])
+  category!: 'fraudulent' | 'counterfeit' | 'prohibited' | 'misrepresented' | 'abusive';
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  messageSeq?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(4000) // 2000 after normalisation, checked by the service
+  text?: string;
+}
+
+/** Staff: a detection term and its flag (FR-CHT-07). */
+export class DetectionTermDto {
+  @IsString()
+  @MaxLength(200)
+  term!: string;
+
+  @IsIn(['payment_phrase', 'off_platform_app', 'credentials'])
+  flag!: 'payment_phrase' | 'off_platform_app' | 'credentials';
+}
+
+export class DetectionTermQuery {
+  @IsString()
+  @MaxLength(200)
+  term!: string;
 }
