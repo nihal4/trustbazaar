@@ -84,6 +84,7 @@ function AccountLink() {
   if (me.isSuccess) {
     return (
       <>
+        <Link className={styles.account} to="/messages">{t('shell.messages')}</Link>
         <NotificationsLink unread={unread} />
         <Link className={styles.account} to="/account">{t('shell.account')}</Link>
       </>
