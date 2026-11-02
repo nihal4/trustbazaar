@@ -3,7 +3,7 @@ import { DataSource, EntityManager } from 'typeorm';
 import { CONFIG_PORT, ConfigPort } from '../../../kernel/config-port';
 import { Problem } from '../../../kernel/http/problems';
 import { LISTINGS_QUERIES, ListingsQueries, type FulfilmentMethod } from '../../listings/ports';
-import type { DeliveryPort } from '../ports';
+import { CourierBreaker } from './courier-breaker';
 import { fromDeliveryDb, refusal } from './refusals';
 import type { Zone } from './areas.service';
 
@@ -47,12 +47,10 @@ export interface QuoteView {
 }
 
 @Injectable()
-export class QuoteService implements DeliveryPort {
-  /** Shipments and booking come with U4-04; until then a paid courier order could not ship (Decisions log, U4-02). */
-  readonly shipsCourier = false;
-
+export class QuoteService {
   constructor(
     private readonly db: DataSource,
+    private readonly breaker: CourierBreaker,
     @Inject(LISTINGS_QUERIES) private readonly listings: ListingsQueries,
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
   ) {}
@@ -94,6 +92,8 @@ export class QuoteService implements DeliveryPort {
     if (!addr) throw new Problem('validation-failed', { errors: [{ field: 'addressId', reason: 'not-a-dropoff-address-of-yours' }] });
     const facts = await this.facts(buyerId, q.listingId);
     if (!facts.options.includes('courier')) throw refusal('fulfilment', 'courier_not_offered');
+    // NFR-REL-04: while bookings keep failing, new courier checkouts are refused with a clear message (section 7.2)
+    if (await this.breaker.isOpen()) throw new Problem('courier-unavailable', { errors: [{ field: 'fulfilment', reason: 'courier_unavailable' }] });
     const [row] = (await this.db.query(
       `SELECT id, listing_id, quantity, dropoff_address_id, to_area_id, zone, billed_kg, distance_km::float AS distance_km, fee::text, fare_version, expires_at
          FROM delivery.make_quote('checkout', $1, $2, $3, $4::listings.fulfilment_options, $5::listings.weight_class, $6::listings.size_class,
@@ -110,7 +110,7 @@ export class QuoteService implements DeliveryPort {
     };
   }
 
-  /** DeliveryPort.claimQuote (I-21), inside Unit 2's order transaction (DC-13). */
+  /** DeliveryPort.claimQuote (I-21), inside Unit 2's order transaction (DC-13); answered through DeliveryPorts. */
   async claimQuote(q: { quoteId: string; orderId: string; buyerId: string; listingId: string; quantity: number }, tx: EntityManager): Promise<bigint> {
     const [r] = (await tx.query(
       `SELECT delivery.claim_quote($1, $2, $3, $4, $5)::text AS fee`, [q.quoteId, q.orderId, q.buyerId, q.listingId, q.quantity],

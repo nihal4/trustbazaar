@@ -171,15 +171,15 @@ describe('orders', () => {
     expect((await errorsOf(await settled.call('POST', '/orders', { listingId: huge, quantity: 1 }))).errors).toEqual(['total:above-per-order-limit']);
   });
 
-  it('FR-DLV-02 the buyer chooses self pickup before paying; courier and game accounts wait for their units', async () => {
+  it('FR-DLV-02 the buyer chooses the method before paying; courier needs a quote; game accounts wait for their unit', async () => {
     const seller = await member();
     const buyer = await member();
     const id = await listing(seller.userId, { quantity: 2 });
     const o = await (await buyer.call('POST', '/orders', { listingId: id, quantity: 1 })).json();
     expect(o.fulfilment).toBeNull();
-    const courier = await buyer.call('PUT', `/orders/${o.id}/fulfilment`, { fulfilment: 'courier' });
-    expect(courier.status).toBe(409);
-    expect(await errorsOf(courier)).toEqual({ type: '/problems/feature-off', errors: ['fulfilment:courier-not-yet-available'] });
+    const courier = await buyer.call('PUT', `/orders/${o.id}/fulfilment`, { fulfilment: 'courier' }); // on since U4-04, with a quote
+    expect(courier.status).toBe(400);
+    expect(await errorsOf(courier)).toEqual({ type: '/problems/validation-failed', errors: ['quoteId:required-for-courier'] });
     expect((await errorsOf(await buyer.call('PUT', `/orders/${o.id}/fulfilment`, { fulfilment: 'game_account' }))).errors).toEqual(['fulfilment:not-offered-by-listing']);
     expect((await seller.call('PUT', `/orders/${o.id}/fulfilment`, { fulfilment: 'self_pickup' })).status).toBe(403);
     const ok = await buyer.call('PUT', `/orders/${o.id}/fulfilment`, { fulfilment: 'self_pickup' });
