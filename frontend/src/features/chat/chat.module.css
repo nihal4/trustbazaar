@@ -1,0 +1,239 @@
+/* Chat (IF-UI-07): one column, designed for small screens first and checked at 320 CSS pixels (NFR-USE-05);
+   long words and addresses wrap; targets at least 44 pixels; warnings in words, not colour alone. */
+.page {
+  max-width: 44rem;
+}
+
+.threads,
+.messages {
+  list-style: none;
+  padding: 0;
+  margin: var(--tb-space-2) 0 var(--tb-space-3);
+}
+
+.threads li {
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius);
+  margin-bottom: var(--tb-space-2);
+}
+
+.unreadThread {
+  border-left: 4px solid var(--tb-accent) !important;
+}
+
+.threadLink {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-1);
+  min-height: 44px;
+  padding: var(--tb-space-2) var(--tb-space-3);
+  color: var(--tb-text);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.threadLink:hover .name {
+  text-decoration: underline;
+}
+
+.name {
+  font-weight: 700;
+}
+
+.badge {
+  margin-left: var(--tb-space-2);
+  padding: 0 var(--tb-space-1);
+  border: 1px solid var(--tb-success);
+  border-radius: var(--tb-radius);
+  color: var(--tb-success);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.about,
+.meta,
+.time,
+.hint,
+.muted {
+  color: var(--tb-muted);
+}
+
+.meta,
+.time {
+  font-size: 0.875rem;
+}
+
+.unread {
+  font-weight: 700;
+  color: var(--tb-accent);
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-1);
+  max-width: 90%;
+  margin-bottom: var(--tb-space-2);
+  padding: var(--tb-space-2) var(--tb-space-3);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius);
+  overflow-wrap: anywhere;
+}
+
+.mine {
+  margin-left: auto;
+  background: var(--tb-surface);
+}
+
+.theirs {
+  margin-right: auto;
+}
+
+.empty {
+  color: var(--tb-muted);
+}
+
+.sender {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.sender:empty {
+  display: none;
+}
+
+/* Plain text: line breaks as typed, nothing interpreted (SEC-INP-03, FR-CHT-09). */
+.text {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.image {
+  display: block;
+  max-width: 100%;
+  max-height: 20rem;
+  object-fit: contain;
+  border-radius: var(--tb-radius);
+}
+
+.flag,
+.linkWarning,
+.notice {
+  margin: 0;
+  padding: var(--tb-space-2);
+  border: 1px solid var(--tb-warning-border);
+  border-radius: var(--tb-radius);
+  background: var(--tb-warning-bg);
+  color: var(--tb-text);
+}
+
+.notice {
+  margin: var(--tb-space-3) 0;
+}
+
+.status {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--tb-muted);
+}
+
+.error {
+  color: var(--tb-error);
+  margin: 0 0 var(--tb-space-2);
+}
+
+.composer,
+.photo,
+.report {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-1);
+  margin: var(--tb-space-3) 0;
+}
+
+.composer label,
+.photo label {
+  font-weight: 700;
+}
+
+.composer textarea,
+.report textarea,
+.photo input[type='text'] {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  padding: var(--tb-space-2);
+}
+
+.composer button,
+.photo button[type='submit'],
+.report button[type='submit'] {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: var(--tb-space-1) var(--tb-space-4);
+}
+
+.report fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.report legend {
+  font-weight: 700;
+}
+
+.report fieldset div {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  min-height: 44px;
+}
+
+.report input[type='radio'] {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+}
+
+.actions {
+  margin: var(--tb-space-2) 0 var(--tb-space-3);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-2);
+}
+
+.secondary {
+  min-height: 44px;
+  padding: var(--tb-space-1) var(--tb-space-3);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius);
+  background: var(--tb-bg);
+  color: var(--tb-text);
+  cursor: pointer;
+}
+
+.linkButton {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tb-accent);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
