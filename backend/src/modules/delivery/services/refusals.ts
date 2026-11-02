@@ -20,6 +20,7 @@ const CODES: [RegExp, string, string][] = [
   [/code entry is locked/, 'code', 'code_locked'],
   [/deadline has passed/, 'code', 'deadline_passed'],
   [/not an active meetup point/, 'pointId', 'point_not_active'],
+  [/suggested point or a place|proposal_one_place|proposal_own_place|proposal_pin/, 'placeName', 'place_invalid'],
 ];
 
 export function refusal(field: string, code: string): Problem {

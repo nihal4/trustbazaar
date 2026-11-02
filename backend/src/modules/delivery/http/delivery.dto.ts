@@ -135,9 +135,24 @@ export class FareTableDto {
 
 // ---------------------------------------------------------------- meetups and the handover code (U4-03)
 
+/** A suggested point, or a place of the parties' own with an optional pin (U4-03): exactly one. */
 export class ProposalDto {
+  @IsOptional()
   @IsUUID()
-  pointId!: string;
+  pointId?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(400)
+  placeName?: string;
+
+  @IsOptional()
+  @IsNumber()
+  placeLat?: number;
+
+  @IsOptional()
+  @IsNumber()
+  placeLng?: number;
 
   @IsISO8601()
   meetAt!: string;
