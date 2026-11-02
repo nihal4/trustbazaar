@@ -5,7 +5,7 @@ import { CONFIG_PORT, ConfigPort, ParameterValues } from '../../../kernel/config
 import { cursorAt, decodeCursor, encodeCursor } from '../../../kernel/http/cursor';
 import { IdempotencyKeys } from '../../../kernel/http/idempotency';
 import { Problem } from '../../../kernel/http/problems';
-import { BLOCK_PORT, BlockPort } from '../../chat/ports';
+import { BLOCK_PORT, BlockPort, CHAT_COMMANDS, ChatCommands } from '../../chat/ports';
 import { AUDIT_SERVICE, AuditServicePort, IDENTITY_QUERY, IdentityQuery } from '../../identity/ports';
 import { LISTINGS_PORT, ListingSnapshot, ListingsPort } from '../../listings/ports';
 import { CancellationRequest, Escrow, Order, OrdersOutboxEvent } from '../db/entities';
@@ -58,6 +58,7 @@ export class OrderService implements OrdersPort {
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
     @Inject(CLOCK) private readonly clock: Clock,
     @Inject(BLOCK_PORT) private readonly blocks: BlockPort,
+    @Inject(CHAT_COMMANDS) private readonly chat: ChatCommands,
   ) {}
 
   // ---------------------------------------------------------------- fixed-price checkout (section 5.3)
@@ -150,6 +151,15 @@ export class OrderService implements OrdersPort {
 
   getOrderForParty(orderId: string, userId: string): Promise<OrderView> {
     return this.view(this.db.manager, orderId, userId);
+  }
+
+  /**
+   * GET /orders/{id}: the order, with the chat thread between its buyer and seller about the listing, so either party
+   * opens it from the order (Unit 6 ChatCommands.threadFor; null if they never wrote; Decisions log, U8-13).
+   */
+  async getOrderPage(orderId: string, userId: string): Promise<OrderView & { threadId: string | null }> {
+    const o = await this.getOrderForParty(orderId, userId);
+    return { ...o, threadId: await this.chat.threadFor(o.listing.id, o.buyerId) };
   }
 
   /** I-20, DC-14: the order row locked in the caller's transaction, with the facts a fulfilment action needs. */
