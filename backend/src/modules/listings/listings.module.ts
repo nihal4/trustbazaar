@@ -1,3 +1,6 @@
+import { AuctionsStaffController } from './http/auctions-staff.controller';
+import { AuctionStaffService } from './services/auction-staff.service';
+import { ShillDetector } from './services/shill-detector.service';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { IdentityModule } from '../identity/identity.module';
@@ -25,9 +28,10 @@ import { StockService } from './services/stock.service';
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
 @Module({
   imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule],
-  controllers: [CategoriesController, ListingsController, MyListingsController, ListingPhotosController, AuctionsController, SearchController],
+  controllers: [AuctionsStaffController, CategoriesController, ListingsController, MyListingsController, ListingPhotosController, AuctionsController, SearchController],
   providers: [
     AuctionCloser,
+    AuctionStaffService,
     AuctionsJobs,
     BidService,
     ListingService,
@@ -36,6 +40,7 @@ import { StockService } from './services/stock.service';
     ScreeningService,
     SearchService,
     SecondChanceService,
+    ShillDetector,
     StockService,
     { provide: AUCTION_ORDERS, useClass: ForwardedAuctionOrders },
     { provide: AUCTION_BLOCKS, useClass: ForwardedBlocks },
