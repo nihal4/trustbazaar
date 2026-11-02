@@ -42,6 +42,8 @@ export const PROBLEMS = {
   'not-available': { status: 409, title: 'This item is no longer available in that quantity.' },
   'bid-refused': { status: 422, title: 'This bid cannot be accepted.' },
   'offer-closed': { status: 409, title: 'This offer is no longer open.' },
+  'blocked': { status: 403, title: 'You cannot do this with this member.' },
+  'thread-closed': { status: 409, title: 'This conversation is closed.' },
   'auction-busy': { status: 409, title: 'Many bids are arriving at this moment. Please try again.' },
   'order-limit': { status: 409, title: 'This order is above the value your account can place right now.' },
   'order-state': { status: 409, title: 'This order cannot be changed in its current state.' },

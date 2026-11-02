@@ -70,6 +70,7 @@ function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; ve
   const svc = new OrderService(
     db as unknown as DataSource, idempotency as unknown as IdempotencyKeys, listings as unknown as ListingsPort,
     identity as unknown as IdentityQuery, audit as unknown as AuditServicePort, params, clock,
+    { assertNotBlocked: jest.fn(async () => undefined) } as never,
   );
   return { svc, manager, listings, audit, orders: repos.get(Order)!, outbox: repos.get(OrdersOutboxEvent)!, escrows: repos.get(Escrow)!, cancellations: repos.get(CancellationRequest)! };
 }

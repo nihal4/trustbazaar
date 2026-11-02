@@ -5,6 +5,7 @@ import { CONFIG_PORT, ConfigPort, ParameterValues } from '../../../kernel/config
 import { cursorAt, decodeCursor, encodeCursor } from '../../../kernel/http/cursor';
 import { IdempotencyKeys } from '../../../kernel/http/idempotency';
 import { Problem } from '../../../kernel/http/problems';
+import { BLOCK_PORT, BlockPort } from '../../chat/ports';
 import { AUDIT_SERVICE, AuditServicePort, IDENTITY_QUERY, IdentityQuery } from '../../identity/ports';
 import { LISTINGS_PORT, ListingSnapshot, ListingsPort } from '../../listings/ports';
 import { CancellationRequest, Escrow, Order, OrdersOutboxEvent } from '../db/entities';
@@ -56,6 +57,7 @@ export class OrderService implements OrdersPort {
     @Inject(AUDIT_SERVICE) private readonly audit: AuditServicePort,
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
     @Inject(CLOCK) private readonly clock: Clock,
+    @Inject(BLOCK_PORT) private readonly blocks: BlockPort,
   ) {}
 
   // ---------------------------------------------------------------- fixed-price checkout (section 5.3)
@@ -76,6 +78,7 @@ export class OrderService implements OrdersPort {
         if (!(await this.listings.reserve(c.listingId, c.quantity, m))) throw new Problem('not-available');
         const snap = await this.listings.snapshot(c.listingId, m);
         if (snap.sellerId === buyerId) throw new Problem('forbidden', { errors: [{ field: 'listingId', reason: 'own-listing' }] }); // FR-FIX-01
+        await this.blocks.assertNotBlocked(snap.sellerId, buyerId, m); // FR-CHT-08, I-37: a block in either direction
         if (snap.itemKind === 'game_account') {
           throw new Problem('feature-off', { errors: [{ field: 'listingId', reason: 'game-accounts-not-yet-available' }] });
         }

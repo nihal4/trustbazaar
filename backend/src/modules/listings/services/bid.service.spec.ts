@@ -72,9 +72,11 @@ function setup(o: { placed?: Record<string, unknown>; placeError?: Error; bids?:
       return { id, repeated: false };
     }),
   };
+  const blocks = { assertNotBlocked: jest.fn(async () => undefined) };
   const service = new BidService(
     db as never, listings as unknown as ListingService, idempotency as unknown as IdempotencyKeys,
     identity as unknown as IdentityQuery, limiter as unknown as RateLimiterPort, live as unknown as LivePort,
+    blocks as never,
   );
   return { service, calls, outbox, identity, limiter, listings, live };
 }
@@ -216,7 +218,7 @@ describe('BidService', () => {
     expect(s).not.toHaveProperty('reservePrice');
     expect(s).not.toHaveProperty('leaderMax');
     const empty = { query: async () => [] };
-    await expect(new BidService(empty as never, t.listings as never, {} as never, {} as never, {} as never, {} as never).getPublicState(AUCTION))
+    await expect(new BidService(empty as never, t.listings as never, {} as never, {} as never, {} as never, {} as never, {} as never).getPublicState(AUCTION))
       .rejects.toMatchObject({ problem: 'not-found' });
   });
 });

@@ -25,7 +25,7 @@ export class ChatMessage {
   @Column({ type: 'varchar', length: 2000, nullable: true })
   body!: string | null;
 
-  @Column({ type: 'varchar', name: 'image_key', length: 80, nullable: true })
+  @Column({ type: 'varchar', name: 'image_key', length: 300, nullable: true })
   imageKey!: string | null;
 
   @Column({ type: 'text', array: true })

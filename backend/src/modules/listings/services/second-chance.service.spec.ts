@@ -49,6 +49,7 @@ function setup(s: Script = {}) {
   const params = { current: async () => ({ ...values, version: 1 }) } as unknown as ConfigPort;
   const svc = new SecondChanceService(
     db as never, bus, orders as unknown as AuctionOrders, identity as unknown as IdentityQuery, audit as unknown as AuditServicePort, params,
+    { assertNotBlocked: jest.fn(async () => undefined) } as never,
   );
   svc.onModuleInit();
   return { svc, sql, inserted, bus, orders, identity, audit, ran: (part: string) => sql.some((x) => x.q.includes(part)) };

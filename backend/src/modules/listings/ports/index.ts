@@ -5,7 +5,7 @@ import type { EntityManager } from 'typeorm';
 // section 4), added by the unit's tasks:
 //   ListingsPort      (U3-02, below)
 //   ListingsCommands  (U3-08)
-//   ListingsQueries   (U3-06, I-61)
+//   ListingsQueries   (I-61: threadFacts with U6-02, below; fulfilmentFacts with U3-06)
 //   AuctionQuery      (U3-04: getPublicState, below; U3-06: getFlags)
 
 export type ItemKind = 'physical' | 'game_account';
@@ -85,3 +85,11 @@ export interface AuctionQuery {
 }
 
 export const AUCTION_QUERY = Symbol('AUCTION_QUERY');
+
+/** docs/design/09_integration.pdf section 4 (I-61). threadFacts is used by Unit 6; fulfilmentFacts comes with U3-06. */
+export interface ListingsQueries {
+  /** The listing a chat thread is about: its seller, title and status. Throws not-found for an unknown listing. */
+  threadFacts(listingId: string): Promise<{ sellerId: string; title: string; status: ListingStatus }>;
+}
+
+export const LISTINGS_QUERIES = Symbol('LISTINGS_QUERIES');
