@@ -52,7 +52,7 @@ export class OrdersController {
   @SignedIn()
   @Put(':id/fulfilment')
   fulfilment(@Id('id') id: string, @Body() dto: FulfilmentDto, @CurrentPrincipal() p: Principal) {
-    return this.orders.chooseFulfilment(userOf(p), id, dto.fulfilment);
+    return this.orders.chooseFulfilment(userOf(p), id, dto.fulfilment, dto.quoteId);
   }
 }
 
