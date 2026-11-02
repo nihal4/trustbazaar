@@ -11,7 +11,7 @@ const sharp = require('sharp') as typeof import('sharp').default;
 // U6-02: threads, messages, images, marks, the live messages, the recipient's notice and blocks, against PostgreSQL
 // and Redis (docs/design/06_chat_notifications.pdf sections 3.1, 3.2, 6 and 7.4).
 
-interface Msg { seq: number; fromMe: boolean; kind: string; text: string | null; caption: string | null; image: { url: string; expiresAt: string } | null; flags: string[] }
+interface Msg { clientId: string | null; seq: number; fromMe: boolean; kind: string; text: string | null; caption: string | null; image: { url: string; expiresAt: string } | null; flags: string[] }
 
 describe('chat', () => {
   let t: TestApp;
@@ -98,12 +98,17 @@ describe('chat', () => {
     const draft = await listing(seller.userId, 'draft');
     expect((await buyer.call('POST', `/listings/${draft}/threads`)).status).toBe(404);
     expect((await buyer.call('POST', `/listings/${randomUUID()}/threads`)).status).toBe(404);
+    // a sold listing's page is public: a buyer who never wrote before buying can still write to the seller
+    const sold = await listing(seller.userId);
+    await fx.query(`UPDATE listings.listings SET status = 'sold', quantity_available = 0, quantity_sold = 1 WHERE id = $1`, [sold]);
+    expect((await buyer.call('POST', `/listings/${sold}/threads`)).status).toBe(200);
 
     await buyer.send(thread, 'Is it still available?');
     const list = await seller.json<{ items: { id: string; role: string; unread: number; other: { displayName: string; verified: boolean }; listing: { title: string } }[] }>('GET', '/threads');
     const mine = list.items.find((i) => i.id === thread)!;
     expect(mine).toMatchObject({ role: 'seller', unread: 1, listing: { title: 'Phone for the chat tests' } });
-    expect(Object.keys(mine.other).sort()).toEqual(['displayName', 'verified']); // FR-ACC-10: no id, phone or e-mail
+    expect(Object.keys(mine.other).sort()).toEqual(['displayName', 'id', 'verified']); // FR-ACC-10: the public id, no phone or e-mail
+    expect((mine.other as unknown as { id: string }).id).toBe(buyer.userId); // what POST /blocks/{userId} needs
   });
 
   it('FR-CHT-02 messages get the next sequence number; a resend with the same client id is the same message; others get not-found', async () => {
@@ -116,7 +121,8 @@ describe('chat', () => {
     expect(await (await seller.send(thread, 'Hi, yes')).json()).toMatchObject({ seq: 2 });
 
     const page = await buyer.messages(thread);
-    expect(page.items.map((m) => [m.seq, m.fromMe, m.text])).toEqual([[1, true, 'Hello'], [2, false, 'Hi, yes']]);
+    expect(page.items.map((m) => [m.seq, m.fromMe, m.text, m.clientId])).toEqual([[1, true, 'Hello', clientId], [2, false, 'Hi, yes', null]]);
+    expect((await seller.messages(thread)).items[0].clientId).toBeNull(); // only the sender sees their own client id
     expect((await buyer.messages(thread, 1)).items.map((m) => m.seq)).toEqual([2]); // the resync after a gap
 
     const stranger = await member();
@@ -154,9 +160,11 @@ describe('chat', () => {
     const { seller, buyer, thread } = await pair();
     const [bs, ss] = [await buyer.connect(), await seller.connect()];
     const [toBuyer, toSeller] = [next<Record<string, unknown>>(bs, 'chat.message'), next<Record<string, unknown>>(ss, 'chat.message')];
-    await buyer.send(thread, 'Can we meet at noon?');
-    expect(await toBuyer).toMatchObject({ threadId: thread, seq: 1, fromMe: true, text: 'Can we meet at noon?' });
-    expect(await toSeller).toMatchObject({ threadId: thread, seq: 1, fromMe: false, text: 'Can we meet at noon?' });
+    const clientId = randomUUID();
+    await buyer.send(thread, 'Can we meet at noon?', clientId);
+    // the sender's copy carries its client id, so the sender's pending message is confirmed by it (Unit 8 ChatThread)
+    expect(await toBuyer).toMatchObject({ threadId: thread, clientId, seq: 1, fromMe: true, text: 'Can we meet at noon?' });
+    expect(await toSeller).toMatchObject({ threadId: thread, clientId: null, seq: 1, fromMe: false, text: 'Can we meet at noon?' });
 
     const marks = next<Record<string, unknown>>(bs, 'chat.marks');
     expect(await ss.emitWithAck('chat.ack', { threadId: thread, delivered: 1, read: 1 })).toEqual({ ok: true });
