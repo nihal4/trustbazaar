@@ -51,6 +51,8 @@ export const PROBLEMS = {
   'order-state': { status: 409, title: 'This order cannot be changed in its current state.' },
   'payout-state': { status: 409, title: 'This payout or payout account cannot be changed in its current state.' },
   'provider-unavailable': { status: 503, title: 'The payment service cannot be reached right now. Please try again shortly.' },
+  // Unit 4 (section 7.2, NFR-REL-04): the courier circuit breaker is open
+  'courier-unavailable': { status: 503, title: 'Courier delivery is not available right now. Please choose self pickup or try again later.' },
   'request-in-progress': { status: 409, title: 'This request is still being processed. Please wait a moment.' },
   forbidden: { status: 403, title: 'You are not allowed to do this.' },
   'csrf-failed': { status: 403, title: 'The request could not be verified. Reload the page and try again.' },
