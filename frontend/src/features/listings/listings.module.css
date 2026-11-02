@@ -18,6 +18,7 @@
 .bigPrice { font-size: 1.5rem; font-weight: 700; }
 .primary, .primaryLink { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 var(--tb-space-3); border-radius: var(--tb-radius); background: var(--tb-accent); color: var(--tb-accent-text); border: 0; font: inherit; font-weight: 700; text-decoration: none; }
 .primary:disabled { opacity: 0.6; }
+.secondaryButton { min-height: 44px; padding: 0 var(--tb-space-3); border: 1px solid var(--tb-border); border-radius: var(--tb-radius); background: var(--tb-bg); color: var(--tb-text); font: inherit; cursor: pointer; }
 .actions { display: flex; flex-wrap: wrap; gap: var(--tb-space-2); }
 .actions button { min-height: 44px; padding: 0 var(--tb-space-3); font: inherit; }
 .details { display: grid; grid-template-columns: max-content 1fr; gap: var(--tb-space-1) var(--tb-space-2); }

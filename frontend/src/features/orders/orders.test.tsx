@@ -28,7 +28,7 @@ afterEach(() => {
 
 const order = (o: Partial<OrderView> = {}): OrderView => ({
   id: 'o-1', kind: 'fixed_price', role: 'buyer', status: 'awaiting_payment',
-  listing: { id: 'l-1', title: 'Desk lamp', itemKind: 'physical', photoKey: null }, quantity: 1,
+  listing: { id: 'l-1', title: 'Desk lamp', itemKind: 'physical', photoKey: null }, threadId: null, quantity: 1,
   itemPrice: '150000', deliveryFee: '0', total: '150000', fulfilment: 'self_pickup', fulfilmentOptions: ['self_pickup', 'courier'],
   paymentDueAt: new Date(Date.now() + 15 * 60_000).toISOString(), paidAt: null, fulfilmentDueAt: null, deliveryEventAt: null, closedAt: null,
   escrow: null, ...o,

@@ -10,6 +10,7 @@ import { formatMoney } from '../../lib/money.js';
 import { describeMoney } from '../../lib/moneyState.js';
 import { formatCountdown, formatDateTime } from '../../lib/time.js';
 import { useApi } from '../../shared/api';
+import { useOpenThread } from '../../shared/chat';
 import { useServerNow } from '../../shared/clock';
 import { ConfirmDialog } from '../../shared/ConfirmDialog';
 import { signInPath } from '../../shared/document';
@@ -35,6 +36,8 @@ export interface OrderView {
   role: 'buyer' | 'seller';
   status: 'awaiting_payment' | 'paid' | 'cancelled' | 'closed';
   listing: { id: string; title: string; itemKind: 'physical' | 'game_account'; photoKey: string | null };
+  /** The chat thread of the order's buyer and seller, null until they have written (Decisions log, U8-13). */
+  threadId: string | null;
   quantity: number;
   itemPrice: string;
   deliveryFee: string;
@@ -95,7 +98,22 @@ export function Component() {
       {!awaiting && <p className={styles.money}>{moneyText(o, t, lang)}</p>}
       {awaiting && o.role === 'buyer' && <PayPanel o={o} t={t} lang={lang} />}
       {awaiting && o.role === 'seller' && <p className={styles.money}>{moneyText(o, t, lang)}</p>}
+      <OrderChat o={o} t={t} lang={lang} />
     </div>
+  );
+}
+
+/** Section 7.5 (5): the chat with the other party. The buyer may open it; the seller answers once the buyer wrote. */
+function OrderChat({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
+  const { open, busy, error } = useOpenThread();
+  const label = t(o.role === 'buyer' ? 'order.message_seller' : 'order.message_buyer');
+  if (o.threadId) return <p><Link to={`/messages/${encodeURIComponent(o.threadId)}`}>{label}</Link></p>;
+  if (o.role === 'seller') return <p className={styles.hint}>{t('order.chat_none')}</p>;
+  return (
+    <>
+      {error !== null && <FormMessage kind="error">{errorText(error, t, lang)}</FormMessage>}
+      <p><button type="button" className={styles.secondary} onClick={() => open(o.listing.id)} disabled={busy} aria-busy={busy}>{label}</button></p>
+    </>
   );
 }
 

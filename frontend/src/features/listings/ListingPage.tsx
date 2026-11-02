@@ -12,6 +12,7 @@ import { FormMessage } from '../../shared/form';
 import { useT } from '../../shared/language/Language';
 import type { Lang } from '../../shared/language/lang';
 import { useMe } from '../../shared/me';
+import { useOpenThread } from '../../shared/chat';
 import { isApiError } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { AuctionPanel } from './AuctionPanel';
@@ -80,6 +81,7 @@ export function Component() {
             <p><Link to={`/users/${encodeURIComponent(l.seller.id)}`}>{l.seller.displayName}</Link></p>
             {l.seller.verified && <p>{t('listing.seller_verified')}</p>}
             <p className={styles.muted}>{t('listing.seller_joined', { month: joinMonth(l.seller.joinMonth, lang) })}</p>
+            {!own && ['active', 'sold', 'ended_unsold'].includes(l.status) && <MessageSeller listingId={l.id} signedIn={signedIn} nextPath={pathname} t={t} lang={lang} />}
           </section>
         </aside>
       </div>
@@ -154,5 +156,19 @@ function Details({ l, t, lang }: { l: ListingView; t: T; lang: Lang }) {
         {l.district && (<><dt>{t('listing.district')}</dt><dd>{l.district}</dd></>)}
       </dl>
     </section>
+  );
+}
+
+/** FR-CHT-01: a conversation with the seller about this listing (U8-13); signed-out visitors sign in first. */
+function MessageSeller({ listingId, signedIn, nextPath, t, lang }: { listingId: string; signedIn: boolean; nextPath: string; t: T; lang: Lang }) {
+  const { open, busy, error } = useOpenThread();
+  if (!signedIn) return <p><Link to={`/signin?next=${encodeURIComponent(nextPath)}`}>{t('listing.message_seller_sign_in')}</Link></p>;
+  return (
+    <>
+      {error !== null && <FormMessage kind="error">{errorText(error, t, lang)}</FormMessage>}
+      <button type="button" className={styles.secondaryButton} onClick={() => open(listingId)} disabled={busy} aria-busy={busy}>
+        {t('listing.message_seller')}
+      </button>
+    </>
   );
 }

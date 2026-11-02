@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import { accountRoutes } from '../features/account/routes';
+import { chatRoutes } from '../features/chat/routes';
 import { checkoutRoutes } from '../features/checkout/routes';
 import { listingRoutes } from '../features/listings/routes';
 import { notificationRoutes } from '../features/notifications/routes';
@@ -23,6 +24,7 @@ const doc = createDocument({
     ...orderRoutes,
     ...accountRoutes,
     ...notificationRoutes,
+    ...chatRoutes,
   ],
 });
 

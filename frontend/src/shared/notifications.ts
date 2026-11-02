@@ -9,7 +9,7 @@ import type { Lang } from './language/lang';
 import { useMe } from './me';
 import { FRESHNESS } from './query';
 
-export interface Subject { type: 'order' | 'listing' | 'payout' | 'refund' | 'account'; id: string }
+export interface Subject { type: 'order' | 'listing' | 'payout' | 'refund' | 'account' | 'thread'; id: string }
 export interface NotificationView {
   id: string;
   code: string;
