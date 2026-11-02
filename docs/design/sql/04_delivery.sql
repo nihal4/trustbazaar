@@ -350,13 +350,19 @@ CREATE TABLE delivery.meetup_proposals (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   order_id      uuid NOT NULL REFERENCES delivery.handovers(order_id),
   proposed_by   uuid NOT NULL REFERENCES identity.users(id),
-  point_id      uuid NOT NULL REFERENCES delivery.meetup_points(id),
+  point_id      uuid REFERENCES delivery.meetup_points(id),      -- a suggested point (FR-DLV-03), or
+  place_name    varchar(120),                                     -- a place of the parties' own (FR-DLV-04; U4-03)
+  place_lat     numeric(8,5) CHECK (place_lat BETWEEN 20.0 AND 27.0),   -- its optional map pin
+  place_lng     numeric(8,5) CHECK (place_lng BETWEEN 88.0 AND 93.0),
   meet_at       timestamptz NOT NULL,
   note          varchar(200),
   status        delivery.proposal_status NOT NULL DEFAULT 'proposed',
   created_at    timestamptz NOT NULL DEFAULT now(),
   responded_at  timestamptz,
-  CONSTRAINT proposal_response_time CHECK ((status = 'proposed') = (responded_at IS NULL))
+  CONSTRAINT proposal_response_time CHECK ((status = 'proposed') = (responded_at IS NULL)),
+  CONSTRAINT proposal_one_place CHECK ((point_id IS NULL) <> (place_name IS NULL)),
+  CONSTRAINT proposal_own_place CHECK (place_name IS NULL OR (length(btrim(place_name)) >= 3 AND place_name !~ '[\x01-\x1F\x7F]')),
+  CONSTRAINT proposal_pin CHECK ((place_lat IS NULL) = (place_lng IS NULL) AND (place_name IS NOT NULL OR place_lat IS NULL))
 );
 CREATE UNIQUE INDEX proposal_one_open ON delivery.meetup_proposals (order_id) WHERE status = 'proposed';
 CREATE INDEX proposal_order ON delivery.meetup_proposals (order_id, created_at);
@@ -369,8 +375,8 @@ BEGIN
     IF NEW.status <> 'proposed' THEN RAISE EXCEPTION 'a proposal starts as proposed' USING ERRCODE = 'check_violation'; END IF;
     RETURN NEW;
   END IF;
-  IF (NEW.order_id, NEW.proposed_by, NEW.point_id, NEW.meet_at, NEW.note, NEW.created_at)
-     IS DISTINCT FROM (OLD.order_id, OLD.proposed_by, OLD.point_id, OLD.meet_at, OLD.note, OLD.created_at) THEN
+  IF (NEW.order_id, NEW.proposed_by, NEW.point_id, NEW.place_name, NEW.place_lat, NEW.place_lng, NEW.meet_at, NEW.note, NEW.created_at)
+     IS DISTINCT FROM (OLD.order_id, OLD.proposed_by, OLD.point_id, OLD.place_name, OLD.place_lat, OLD.place_lng, OLD.meet_at, OLD.note, OLD.created_at) THEN
     RAISE EXCEPTION 'a proposal cannot be edited; make a new one' USING ERRCODE = 'check_violation';
   END IF;
   IF NEW.status IS DISTINCT FROM OLD.status AND NOT ((OLD.status, NEW.status) IN (
@@ -578,9 +584,12 @@ CREATE INDEX delivery_outbox_pending ON delivery.outbox (next_attempt_at) WHERE 
 -- escrow, attempt - DC-14).
 -- =====================================================================
 
--- FR-DLV-04: propose a meetup point and time. A new proposal replaces an open one.
+-- FR-DLV-04: propose a meetup point and time. A new proposal replaces an open one. The place is a suggested
+-- point (p_point), or a place of the parties' own (p_place_name, with an optional pin; U4-03), never both.
 CREATE FUNCTION delivery.propose_meetup(p_order uuid, p_user uuid, p_point uuid, p_meet_at timestamptz,
-                                        p_note varchar, p_lead interval, p_buffer interval)
+                                        p_note varchar, p_lead interval, p_buffer interval,
+                                        p_place_name varchar DEFAULT NULL, p_place_lat numeric DEFAULT NULL,
+                                        p_place_lng numeric DEFAULT NULL)
 RETURNS uuid LANGUAGE plpgsql AS $$
 DECLARE h delivery.handovers; pid uuid;
 BEGIN
@@ -592,7 +601,10 @@ BEGIN
   IF h.status NOT IN ('arranging', 'agreed') THEN
     RAISE EXCEPTION 'a meetup cannot be arranged now (%)', h.status USING ERRCODE = 'check_violation';
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM delivery.meetup_points WHERE id = p_point AND active) THEN
+  IF p_point IS NULL AND p_place_name IS NULL THEN
+    RAISE EXCEPTION 'a meetup needs a suggested point or a place of your own' USING ERRCODE = 'check_violation';
+  END IF;
+  IF p_point IS NOT NULL AND NOT EXISTS (SELECT 1 FROM delivery.meetup_points WHERE id = p_point AND active) THEN
     RAISE EXCEPTION 'not an active meetup point' USING ERRCODE = 'check_violation';
   END IF;
   IF p_meet_at < now() + p_lead OR p_meet_at > h.due_at - p_buffer THEN
@@ -601,10 +613,10 @@ BEGIN
   END IF;
   UPDATE delivery.meetup_proposals SET status = 'superseded', responded_at = now()
    WHERE order_id = p_order AND status = 'proposed';
-  INSERT INTO delivery.meetup_proposals (order_id, proposed_by, point_id, meet_at, note)
-  VALUES (p_order, p_user, p_point, p_meet_at, p_note) RETURNING id INTO pid;
+  INSERT INTO delivery.meetup_proposals (order_id, proposed_by, point_id, place_name, place_lat, place_lng, meet_at, note)
+  VALUES (p_order, p_user, p_point, p_place_name, p_place_lat, p_place_lng, p_meet_at, p_note) RETURNING id INTO pid;
   INSERT INTO delivery.outbox (event_type, aggregate_id, payload)
-  VALUES ('delivery.meetup.proposed', p_order, jsonb_build_object('proposalId', pid, 'by', p_user, 'meetAt', p_meet_at));
+  VALUES ('delivery.meetup.proposed', p_order, jsonb_build_object('proposalId', pid, 'by', p_user, 'meetAt', p_meet_at, 'ownPlace', p_point IS NULL));
   RETURN pid;
 END $$;
 
@@ -637,7 +649,7 @@ BEGIN
   UPDATE delivery.meetup_proposals SET status = 'accepted', responded_at = now() WHERE id = p_proposal;
   UPDATE delivery.handovers SET status = 'agreed', agreed_proposal_id = p_proposal WHERE order_id = p.order_id;
   INSERT INTO delivery.outbox (event_type, aggregate_id, payload)
-  VALUES ('delivery.meetup.agreed', p.order_id, jsonb_build_object('proposalId', p_proposal, 'pointId', p.point_id, 'meetAt', p.meet_at));
+  VALUES ('delivery.meetup.agreed', p.order_id, jsonb_build_object('proposalId', p_proposal, 'pointId', p.point_id, 'ownPlace', p.point_id IS NULL, 'meetAt', p.meet_at));
   RETURN 'accepted';
 END $$;
 

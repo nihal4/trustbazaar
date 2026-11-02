@@ -93,7 +93,11 @@ describe('meetup handover', () => {
   }
   /** Other suites leave undelivered events behind (their dispatcher is off too): drain until nothing is left. */
   async function drainAll() {
-    for (let i = 0; i < 50 && (await dispatcher.drain()).dispatched > 0; i++);
+    // a batch of others' failing events delivers nothing but must not stop the drain (they wait for a retry)
+    for (let i = 0; i < 200; i++) {
+      const r = await dispatcher.drain();
+      if (r.dispatched + r.failed + r.givenUp === 0) break;
+    }
   }
   const handover = async (id: string) =>
     (await fx.query<{ status: string; wrong_entries: number; code_version: number }>(`SELECT status, wrong_entries, code_version FROM delivery.handovers WHERE order_id = $1`, [id]))[0];
@@ -155,6 +159,23 @@ describe('meetup handover', () => {
     expect((await adm.call('PATCH', `/admin/meetup-points/${points[3]}`, { active: false })).status).toBe(200);
     expect(await reason(await o.buyer.call('POST', `/orders/${o.id}/meetup-proposals`, { pointId: points[3], meetAt: inHours(6) }))).toEqual({ field: 'pointId', reason: 'point_not_active' });
     expect((await (await member()).call('POST', `/orders/${o.id}/meetup-proposals`, { pointId: points[0], meetAt: inHours(6) })).status).toBe(404);
+  });
+
+  it('FR-DLV-04 the parties may agree on a place of their own, with or without a map pin; the other must still accept', async () => {
+    const o = await paidOrder();
+    type P = { id: string; status: string; point: unknown; place: { name: string; lat: number | null; mapUrl: string | null } | null };
+    const v = await o.seller.json<{ proposals: P[] }>('POST', `/orders/${o.id}/meetup-proposals`,
+      { placeName: 'Coffee shop at the Zindabazar junction', placeLat: 24.8951234, placeLng: 91.8681234, meetAt: inHours(6) }, 201);
+    expect(v.proposals[0]).toMatchObject({ status: 'proposed', point: null, place: { name: 'Coffee shop at the Zindabazar junction', lat: 24.89512 } });
+    expect(v.proposals[0].place?.mapUrl).toMatch(/openstreetmap/);
+    const agreed = await o.buyer.json<{ status: string; agreed: { place: { name: string } | null; point: unknown } }>('POST', `/orders/${o.id}/meetup-proposals/${v.proposals[0].id}/accept`);
+    expect(agreed).toMatchObject({ status: 'agreed', agreed: { point: null, place: { name: 'Coffee shop at the Zindabazar junction' } } });
+
+    const noPin = await o.buyer.json<{ proposals: P[] }>('POST', `/orders/${o.id}/meetup-proposals`, { placeName: 'Main gate of the mosque', meetAt: inHours(7) }, 201);
+    expect(noPin.proposals[0].place).toEqual({ name: 'Main gate of the mosque', lat: null, lng: null, mapUrl: null });
+    expect((await o.buyer.call('POST', `/orders/${o.id}/meetup-proposals`, { pointId: points[0], placeName: 'Cafe', meetAt: inHours(7) })).status).toBe(400);
+    expect((await o.buyer.call('POST', `/orders/${o.id}/meetup-proposals`, { meetAt: inHours(7) })).status).toBe(400);
+    expect((await o.buyer.call('POST', `/orders/${o.id}/meetup-proposals`, { placeName: 'Abroad', placeLat: 40, placeLng: 91, meetAt: inHours(7) })).status).toBe(400);
   });
 
   it('FR-DLV-06 the seller\'s correct entry of the buyer\'s code completes the handover and is the delivery event, in one transaction', async () => {

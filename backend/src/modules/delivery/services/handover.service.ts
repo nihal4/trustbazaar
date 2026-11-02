@@ -9,7 +9,7 @@ import { AUDIT_SERVICE, AuditServicePort, IDENTITY_QUERY, IdentityQuery } from '
 import { FULFILMENT_ORDERS, FulfilmentOrders } from '../adapters/orders';
 import type { DeliveryCommands } from '../ports';
 import { codeMatches, deriveCode } from './handover-code';
-import { MeetupPointsService, pointView, type PointView } from './meetup-points.service';
+import { mapUrl, MeetupPointsService, pointView, type PointView } from './meetup-points.service';
 import { fromDeliveryDb, refusal } from './refusals';
 
 // Meetup handover (docs/design/04_delivery.pdf section 6; FR-DLV-03 to FR-DLV-06; DC-14; U4-03). The database decides:
@@ -27,8 +27,12 @@ interface HandoverRow {
   order_id: string; buyer_id: string; seller_id: string; status: HandoverStatus; due_at: Date; code_version: number; wrong_entries: number;
   agreed_proposal_id: string | null; locked_at: Date | null; completed_at: Date | null; cancelled_at: Date | null;
 }
+/** A place of the parties' own (FR-DLV-04; Decisions log, U4-03): shown with a safety notice by the client. */
+export interface OwnPlaceView { name: string; lat: number | null; lng: number | null; mapUrl: string | null }
 export interface ProposalView {
-  id: string; byMe: boolean; point: PointView; meetAt: string; note: string | null;
+  id: string; byMe: boolean; meetAt: string; note: string | null;
+  /** exactly one of the two: a suggested point (FR-DLV-03) or a place of the parties' own */
+  point: PointView | null; place: OwnPlaceView | null;
   status: 'proposed' | 'accepted' | 'declined' | 'withdrawn' | 'superseded' | 'lapsed'; createdAt: string;
 }
 export interface HandoverView {
@@ -38,7 +42,7 @@ export interface HandoverView {
   dueAt: string;
   /** the open proposal, if any, and the agreed one; then the history, newest first */
   proposals: ProposalView[];
-  agreed: { point: PointView; meetAt: string } | null;
+  agreed: { point: PointView | null; place: OwnPlaceView | null; meetAt: string } | null;
   suggestions: PointView[];
   /** buyer only, while the handover is open: the code and its instruction key (section 6.4) */
   code: string | null;
@@ -49,6 +53,12 @@ export interface HandoverView {
 }
 
 const ACTIVE: HandoverStatus[] = ['arranging', 'agreed'];
+
+const ownPlace = (name: string, lat: string | null, lng: string | null): OwnPlaceView => {
+  const la = lat === null ? null : Number(lat);
+  const lo = lng === null ? null : Number(lng);
+  return { name, lat: la, lng: lo, mapUrl: la !== null && lo !== null ? mapUrl(la, lo) : null };
+};
 
 @Injectable()
 export class HandoverService implements DeliveryCommands {
@@ -90,18 +100,22 @@ export class HandoverService implements DeliveryCommands {
     const h = await this.party(this.db.manager, orderId, userId);
     const buyer = h.buyer_id === userId;
     const proposals = (await this.db.query(
-      `SELECT p.id, p.proposed_by, p.meet_at, p.note, p.status, p.created_at,
+      `SELECT p.id, p.proposed_by, p.meet_at, p.note, p.status, p.created_at, p.place_name, p.place_lat::text, p.place_lng::text,
               m.id AS point_id, m.kind, m.name_en, m.name_bn, m.district, m.lat::text, m.lng::text, m.guidance, m.active
-         FROM delivery.meetup_proposals p JOIN delivery.meetup_points m ON m.id = p.point_id
+         FROM delivery.meetup_proposals p LEFT JOIN delivery.meetup_points m ON m.id = p.point_id
         WHERE p.order_id = $1 ORDER BY (p.status = 'proposed') DESC, p.created_at DESC, p.id`,
       [orderId],
     )) as {
       id: string; proposed_by: string; meet_at: Date; note: string | null; status: ProposalView['status']; created_at: Date;
-      point_id: string; kind: PointView['kind']; name_en: string; name_bn: string; district: string; lat: string; lng: string; guidance: string | null; active: boolean;
+      place_name: string | null; place_lat: string | null; place_lng: string | null;
+      point_id: string | null; kind: PointView['kind']; name_en: string; name_bn: string; district: string; lat: string; lng: string; guidance: string | null; active: boolean;
     }[];
     const items: ProposalView[] = proposals.map((p) => ({
       id: p.id, byMe: p.proposed_by === userId, meetAt: p.meet_at.toISOString(), note: p.note, status: p.status, createdAt: p.created_at.toISOString(),
-      point: pointView({ id: p.point_id, kind: p.kind, name_en: p.name_en, name_bn: p.name_bn, district: p.district, lat: p.lat, lng: p.lng, guidance: p.guidance, active: p.active }),
+      point: p.point_id
+        ? pointView({ id: p.point_id, kind: p.kind, name_en: p.name_en, name_bn: p.name_bn, district: p.district, lat: p.lat, lng: p.lng, guidance: p.guidance, active: p.active })
+        : null,
+      place: p.place_name ? ownPlace(p.place_name, p.place_lat, p.place_lng) : null,
     }));
     const agreed = items.find((p) => p.id === h.agreed_proposal_id && p.status === 'accepted') ?? null;
     const open = ACTIVE.includes(h.status);
@@ -112,7 +126,7 @@ export class HandoverService implements DeliveryCommands {
       status: h.status,
       dueAt: h.due_at.toISOString(),
       proposals: items,
-      agreed: agreed ? { point: agreed.point, meetAt: agreed.meetAt } : null,
+      agreed: agreed ? { point: agreed.point, place: agreed.place, meetAt: agreed.meetAt } : null,
       suggestions: open ? await this.suggestions(h) : [],
       code: buyer && open ? deriveCode(this.config.secrets.handoverKey.reveal(), orderId, h.code_version) : null,
       attemptsLeft: buyer ? null : Math.max(0, maxWrong - h.wrong_entries),
@@ -131,13 +145,26 @@ export class HandoverService implements DeliveryCommands {
 
   // ---------------------------------------------------------------- proposals (section 6.3; FR-DLV-04)
 
-  async propose(userId: string, orderId: string, p: { pointId: string; meetAt: string; note?: string }): Promise<HandoverView> {
+  /**
+   * A suggested point, or a place of the parties' own: its name (plain text, 3 to 120 characters) and an optional pin
+   * in Bangladesh (Decisions log, U4-03). Never both.
+   */
+  async propose(userId: string, orderId: string, p: { pointId?: string; placeName?: string; placeLat?: number; placeLng?: number; meetAt: string; note?: string }): Promise<HandoverView> {
     await this.party(this.db.manager, orderId, userId);
     const note = p.note?.normalize('NFC').trim() || null;
     if (note && note.length > 200) throw new Problem('validation-failed', { errors: [{ field: 'note', reason: 'too-long' }] });
+    const place = p.placeName?.normalize('NFC').trim().replace(/\s+/g, ' ') || null;
+    const errors: { field: string; reason: string }[] = [];
+    if (p.pointId && place) errors.push({ field: 'placeName', reason: 'point-or-own-place' });
+    if (!p.pointId && !place) errors.push({ field: 'pointId', reason: 'point-or-own-place' });
+    if (place && (place.length < 3 || place.length > 120)) errors.push({ field: 'placeName', reason: 'length' });
+    if ((p.placeLat === undefined) !== (p.placeLng === undefined)) errors.push({ field: 'placeLat', reason: 'pin-needs-both' });
+    if (p.pointId && p.placeLat !== undefined) errors.push({ field: 'placeLat', reason: 'pin-only-for-own-place' });
+    if (p.placeLat !== undefined && (p.placeLat < 20 || p.placeLat > 27 || p.placeLng! < 88 || p.placeLng! > 93)) errors.push({ field: 'placeLat', reason: 'outside-bangladesh' });
+    if (errors.length) throw new Problem('validation-failed', { errors });
     await this.db.query(
-      `SELECT delivery.propose_meetup($1, $2, $3, $4, $5, $6::interval, $7::interval)`,
-      [orderId, userId, p.pointId, p.meetAt, note, MEETUP_LEAD, MEETUP_BUFFER],
+      `SELECT delivery.propose_meetup($1, $2, $3, $4, $5, $6::interval, $7::interval, $8, round($9::numeric, 5), round($10::numeric, 5))`,
+      [orderId, userId, p.pointId ?? null, p.meetAt, note, MEETUP_LEAD, MEETUP_BUFFER, place, p.placeLat ?? null, p.placeLng ?? null],
     ).catch(fromDeliveryDb);
     return this.view(userId, orderId);
   }
