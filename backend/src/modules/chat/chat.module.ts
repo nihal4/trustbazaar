@@ -16,11 +16,15 @@ import { DirectMessages } from './services/direct-messages';
 import { NotificationConsumers } from './consumers/notification.consumers';
 import { ENTITIES } from './db/entities';
 import { NotificationsController } from './http/notifications.controller';
+import { ChatStaffController } from './http/chat-staff.controller';
 import { ChatController } from './http/chat.controller';
 import { ChatGateway } from './http/chat.gateway';
-import { BLOCK_PORT, NOTIFICATION_PORT, NOTIFIER, Notifier } from './ports';
+import { BLOCK_PORT, CHAT_COMMANDS, NOTIFICATION_PORT, NOTIFIER, Notifier } from './ports';
 import { BlockService } from './services/block.service';
 import { ChatService } from './services/chat.service';
+import { DetectionTermsService } from './services/detection-terms.service';
+import { HoldService } from './services/hold.service';
+import { ReportService } from './services/report.service';
 import { NotificationService } from './services/notification.service';
 
 // Unit 6 (docs/design/06_chat_notifications.pdf). Schemas: chat, notify.
@@ -30,7 +34,7 @@ import { NotificationService } from './services/notification.service';
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
 @Module({
   imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule, ListingsModule],
-  controllers: [ChatController, NotificationsController, DevMailboxController],
+  controllers: [ChatController, ChatStaffController, NotificationsController, DevMailboxController],
   providers: [
     // log mode only, so far (U6-05); another mode is refused at start until its adapter exists
     {
@@ -55,6 +59,10 @@ import { NotificationService } from './services/notification.service';
     { provide: BLOCK_PORT, useExisting: BlockService },
     ChatService,
     ChatGateway,
+    HoldService,
+    { provide: CHAT_COMMANDS, useExisting: HoldService },
+    ReportService,
+    DetectionTermsService,
     {
       provide: NOTIFIER,
       inject: [NotificationService],
@@ -66,6 +74,6 @@ import { NotificationService } from './services/notification.service';
       }),
     },
   ],
-  exports: [NOTIFIER, BLOCK_PORT],
+  exports: [NOTIFIER, BLOCK_PORT, CHAT_COMMANDS],
 })
 export class ChatModule {}
