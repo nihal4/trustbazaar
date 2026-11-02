@@ -45,7 +45,7 @@ export class OrdersController {
   @SignedIn()
   @Get(':id')
   view(@Id('id') id: string, @CurrentPrincipal() p: Principal) {
-    return this.orders.getOrderForParty(id, userOf(p));
+    return this.orders.getOrderPage(id, userOf(p));
   }
 
   /** FR-DLV-02: choose the method before paying. */
