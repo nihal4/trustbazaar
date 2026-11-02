@@ -3,6 +3,7 @@ import { DataSource } from 'typeorm';
 import { CLOCK, Clock } from '../../../kernel/clock';
 import { CONFIG_PORT, ConfigPort } from '../../../kernel/config-port';
 import { JobRunner } from '../../../kernel/jobs/job-runner';
+import { DELIVERY_PORT, DeliveryPort } from '../../delivery/ports';
 import { EscrowService } from '../services/escrow.service';
 import { OrderService } from '../services/order.service';
 import { PAYMENT_PROVIDERS, PaymentService, ProviderRegistry } from '../services/payment.service';
@@ -35,6 +36,7 @@ export class OrdersJobs implements OnModuleInit {
     @Inject(PAYMENT_PROVIDERS) private readonly providers: ProviderRegistry,
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
     @Inject(CLOCK) private readonly clock: Clock,
+    @Inject(DELIVERY_PORT) private readonly delivery: DeliveryPort,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -73,16 +75,23 @@ export class OrdersJobs implements OnModuleInit {
     return n;
   }
 
-  /** Fulfilment deadline (every minute, FR-PAY-08): refund paid orders whose step is overdue. */
+  /**
+   * Fulfilment deadline (every minute, FR-PAY-08): refund paid orders whose step is overdue. A courier order first asks
+   * the courier, outside any lock (I-22, FR-DLV-11): a pickup made in time but reported late is recorded, and the
+   * refund then finds the step done and does nothing.
+   */
   async missedDeadlines(): Promise<number> {
     const due = (await this.db.query(
-      `SELECT o.id FROM orders.orders o JOIN orders.escrows e ON e.order_id = o.id
+      `SELECT o.id, o.fulfilment FROM orders.orders o JOIN orders.escrows e ON e.order_id = o.id
         WHERE o.status = 'paid' AND o.fulfilment_done_at IS NULL AND o.fulfilment_due_at <= $1 AND e.state = 'held'
         ORDER BY o.fulfilment_due_at LIMIT ${BATCH}`,
       [this.clock.now()],
-    )) as Ids;
+    )) as { id: string; fulfilment: string | null }[];
     let n = 0;
-    for (const { id } of due) if (await this.escrow.refundMissedDeadline(id)) n++;
+    for (const { id, fulfilment } of due) {
+      if (fulfilment === 'courier') await this.delivery.syncPickup(id);
+      if (await this.escrow.refundMissedDeadline(id)) n++;
+    }
     return n;
   }
 
