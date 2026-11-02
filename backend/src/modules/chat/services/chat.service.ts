@@ -30,9 +30,11 @@ interface ThreadRow {
   buyer_delivered_seq: string; buyer_read_seq: string; seller_delivered_seq: string; seller_read_seq: string; purged_at: Date | null;
 }
 interface MessageRow {
-  id: string; seq: string; sender_id: string; kind: 'text' | 'image'; body: string | null; image_key: string | null; flags: string[]; created_at: Date; purged_at: Date | null;
+  id: string; seq: string; sender_id: string; client_msg_id: string; kind: 'text' | 'image'; body: string | null; image_key: string | null; flags: string[]; created_at: Date; purged_at: Date | null;
 }
 export interface MessageView {
+  /** The sender's own client id, on the sender's own messages only: the client confirms its pending copy by it. */
+  clientId: string | null;
   seq: number; fromMe: boolean; kind: 'text' | 'image'; text: string | null; caption: string | null;
   image: { url: string; expiresAt: string } | null; flags: string[]; at: string; removed: boolean;
 }
@@ -116,7 +118,7 @@ export class ChatService {
   async messages(viewer: Principal & { type: 'user' }, threadId: string, after = 0) {
     const t = await this.participant(this.db.manager, threadId, viewer.userId);
     const rows = (await this.db.query(
-      `SELECT id::text, seq::text, sender_id, kind, body, image_key, flags, created_at, purged_at FROM chat.messages
+      `SELECT id::text, seq::text, sender_id, client_msg_id, kind, body, image_key, flags, created_at, purged_at FROM chat.messages
         WHERE thread_id = $1 AND seq > $2 ORDER BY seq LIMIT ${SYNC_PAGE + 1}`,
       [threadId, after],
     )) as MessageRow[];
@@ -187,12 +189,13 @@ export class ChatService {
   /** chat.message to both participants (section 3.2), then the recipient's notice (section 7.4). */
   private async delivered(threadId: string, senderId: string, messageId: string): Promise<void> {
     const [m] = (await this.db.query(
-      `SELECT m.seq::text, m.kind, m.body, m.flags, m.created_at, t.buyer_id, t.seller_id, t.listing_id
+      `SELECT m.seq::text, m.client_msg_id, m.kind, m.body, m.flags, m.created_at, t.buyer_id, t.seller_id, t.listing_id
          FROM chat.messages m JOIN chat.threads t ON t.id = m.thread_id WHERE m.id = $1`, [messageId],
-    )) as { seq: string; kind: 'text' | 'image'; body: string | null; flags: string[]; created_at: Date; buyer_id: string; seller_id: string; listing_id: string }[];
+    )) as { seq: string; client_msg_id: string; kind: 'text' | 'image'; body: string | null; flags: string[]; created_at: Date; buyer_id: string; seller_id: string; listing_id: string }[];
     const recipient = m.buyer_id === senderId ? m.seller_id : m.buyer_id;
     const message = (fromMe: boolean) => ({
-      threadId, seq: Number(m.seq), fromMe, kind: m.kind,
+      // the sender's tabs confirm their pending copy by its client id (docs/design/08_frontend.pdf section 5; Decisions log)
+      threadId, clientId: fromMe ? m.client_msg_id : null, seq: Number(m.seq), fromMe, kind: m.kind,
       text: m.kind === 'text' ? m.body : null, caption: m.kind === 'image' ? m.body : null,
       // an image's link belongs to one session (CP-31): the client fetches it with the messages (Decisions log, U6-02)
       image: m.kind === 'image', flags: m.flags, at: m.created_at.toISOString(),
@@ -246,8 +249,9 @@ export class ChatService {
 
   private async view(m: MessageRow, viewer: Principal & { type: 'user' }): Promise<MessageView> {
     const removed = m.purged_at !== null;
+    const fromMe = m.sender_id === viewer.userId;
     return {
-      seq: Number(m.seq), fromMe: m.sender_id === viewer.userId, kind: m.kind,
+      clientId: fromMe ? m.client_msg_id : null, seq: Number(m.seq), fromMe, kind: m.kind,
       text: m.kind === 'text' ? m.body : null, caption: m.kind === 'image' ? m.body : null,
       image: m.kind === 'image' && m.image_key ? await this.vault.signedLink(m.image_key, viewer) : null,
       flags: m.flags, at: m.created_at.toISOString(), removed,
