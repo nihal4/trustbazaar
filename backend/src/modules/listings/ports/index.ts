@@ -78,16 +78,41 @@ export interface AuctionState {
   seq: number;
 }
 
-/** Used by Units 2 and 7. getFlags is added with the shill signals (U3-06). */
+/** A shill-bidding flag on an auction (FR-AUC-18; auctions.flags). The bidders are named by their alias. */
+export interface Flag {
+  id: string;
+  auctionId: string;
+  kind: 'new_account_cluster' | 'linked_to_seller' | 'last_second_pattern' | 'self_outbid_pattern';
+  /** 0 to 1 */
+  score: number;
+  detail: Record<string, unknown>;
+  createdAt: string;
+  reviewedAt: string | null;
+}
+
+/** Used by Units 2 and 7. */
 export interface AuctionQuery {
   /** Throws not-found for an unknown auction. */
   getPublicState(auctionId: string): Promise<AuctionState>;
+  /** The auction's flags, newest first (U3-06); empty for an unknown auction. */
+  getFlags(auctionId: string): Promise<Flag[]>;
 }
 
 export const AUCTION_QUERY = Symbol('AUCTION_QUERY');
 
-/** docs/design/09_integration.pdf section 4 (I-61). threadFacts is used by Unit 6; fulfilmentFacts comes with U3-06. */
+/** Unit 4's names for the ways an item can change hands (Unit 2 OrderView.fulfilmentOptions). */
+export type FulfilmentMethod = 'self_pickup' | 'courier';
+
+/** docs/design/09_integration.pdf section 4 (I-61, I-23). fulfilmentFacts is used by Unit 4, threadFacts by Unit 6. */
 export interface ListingsQueries {
+  /**
+   * What a delivery quote and a meetup need (I-23): the methods offered, the parcel classes (a superset of section 4:
+   * Unit 4 section 3.3 names the weight class too), the district and the rounded coordinates. Throws not-found for an
+   * unknown listing or a game account (no fulfilment).
+   */
+  fulfilmentFacts(listingId: string): Promise<{
+    options: FulfilmentMethod[]; weightClass: WeightClass | null; sizeClass: SizeClass | null; district: string; approxLat: number; approxLng: number;
+  }>;
   /** The listing a chat thread is about: its seller, title and status. Throws not-found for an unknown listing. */
   threadFacts(listingId: string): Promise<{ sellerId: string; title: string; status: ListingStatus }>;
 }
