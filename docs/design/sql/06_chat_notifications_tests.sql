@@ -247,6 +247,9 @@ SELECT pg_temp.expect_fail('application role cannot rewrite the staff access log
  $q$UPDATE chat.staff_access_log SET at = now()$q$, 'permission denied');
 SELECT pg_temp.expect_fail('application role cannot delete chat messages',
  $q$DELETE FROM chat.messages$q$, 'permission denied');
+DELETE FROM chat.detection_terms WHERE term = 'pay first';
+SELECT pg_temp.ok('FR-CHT-07 an operator can remove a detection term (U6-03)',
+  NOT EXISTS (SELECT 1 FROM chat.detection_terms WHERE term = 'pay first'));
 RESET ROLE;
 
 ROLLBACK;
