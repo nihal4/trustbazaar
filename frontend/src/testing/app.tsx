@@ -4,6 +4,7 @@ import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { createMemoryRouter, type RouteObject } from 'react-router-dom';
 import { accountRoutes } from '../features/account/routes';
+import { chatRoutes } from '../features/chat/routes';
 import { checkoutRoutes } from '../features/checkout/routes';
 import { listingRoutes } from '../features/listings/routes';
 import { notificationRoutes } from '../features/notifications/routes';
@@ -128,7 +129,7 @@ export class FakeSocket implements LiveSocket {
 export function renderApp(at: string, be: ReturnType<typeof fakeBackend>, lang: 'en' | 'bn' = 'en', socket?: FakeSocket) {
   return renderDocument(at, be, lang, {
     home: { path: '/', sameDocument: true }, accountLinks: true,
-    routes: [{ index: true, element: <h1>Home</h1> }, ...searchRoutes.filter((r) => !r.index), ...listingRoutes, ...checkoutRoutes, ...orderRoutes, ...accountRoutes, ...notificationRoutes],
+    routes: [{ index: true, element: <h1>Home</h1> }, ...searchRoutes.filter((r) => !r.index), ...listingRoutes, ...checkoutRoutes, ...orderRoutes, ...accountRoutes, ...notificationRoutes, ...chatRoutes],
   }, undefined, socket);
 }
 
