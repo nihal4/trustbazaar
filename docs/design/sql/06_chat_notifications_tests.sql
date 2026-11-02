@@ -73,6 +73,11 @@ SELECT pg_temp.expect_fail('FR-CHT-03 an image message needs a stored image',
  $q$SELECT * FROM chat.post('$q$ || :'t1' || $q$', 'c0000000-0000-4000-8000-000000000001', gen_random_uuid(), 'image', NULL, NULL)$q$, 'message_content');
 SELECT pg_temp.ok('FR-CHT-03 an image message with a caption is stored',
   (SELECT seq = 3 FROM chat.post(:'t1', 'c0000000-0000-4000-8000-000000000001', gen_random_uuid(), 'image', 'The scratch', 'chat-img-0001')));
+-- its own thread (the stranger asking about listing 1), so the sequence numbers checked below do not move
+SELECT chat.open_thread('e0000000-0000-4000-8000-000000000001', 'c0000000-0000-4000-8000-000000000003', 'c0000000-0000-4000-8000-000000000002') AS t9 \gset
+SELECT pg_temp.ok('FR-CHT-03 an image keeps Unit 1''s FileVault key, about 165 characters (U6-02)',
+  (SELECT seq = 1 FROM chat.post(:'t9', 'c0000000-0000-4000-8000-000000000003', gen_random_uuid(), 'image', NULL,
+     'v1.chat_image.' || gen_random_uuid() || '.' || repeat('a', 48) || '.' || repeat('k', 80))));
 
 -- delivered and read indicators (FR-CHT-05)
 SELECT chat.mark(:'t1', 'c0000000-0000-4000-8000-000000000002', 3, 1);

@@ -16,7 +16,11 @@ import { DirectMessages } from './services/direct-messages';
 import { NotificationConsumers } from './consumers/notification.consumers';
 import { ENTITIES } from './db/entities';
 import { NotificationsController } from './http/notifications.controller';
-import { NOTIFICATION_PORT, NOTIFIER, Notifier } from './ports';
+import { ChatController } from './http/chat.controller';
+import { ChatGateway } from './http/chat.gateway';
+import { BLOCK_PORT, NOTIFICATION_PORT, NOTIFIER, Notifier } from './ports';
+import { BlockService } from './services/block.service';
+import { ChatService } from './services/chat.service';
 import { NotificationService } from './services/notification.service';
 
 // Unit 6 (docs/design/06_chat_notifications.pdf). Schemas: chat, notify.
@@ -26,7 +30,7 @@ import { NotificationService } from './services/notification.service';
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
 @Module({
   imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule, ListingsModule],
-  controllers: [NotificationsController, DevMailboxController],
+  controllers: [ChatController, NotificationsController, DevMailboxController],
   providers: [
     // log mode only, so far (U6-05); another mode is refused at start until its adapter exists
     {
@@ -47,6 +51,10 @@ import { NotificationService } from './services/notification.service';
     NotifyJobs,
     NotificationService,
     NotificationConsumers,
+    BlockService,
+    { provide: BLOCK_PORT, useExisting: BlockService },
+    ChatService,
+    ChatGateway,
     {
       provide: NOTIFIER,
       inject: [NotificationService],
@@ -58,6 +66,6 @@ import { NotificationService } from './services/notification.service';
       }),
     },
   ],
-  exports: [NOTIFIER],
+  exports: [NOTIFIER, BLOCK_PORT],
 })
 export class ChatModule {}
