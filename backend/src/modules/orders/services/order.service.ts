@@ -6,6 +6,7 @@ import { cursorAt, decodeCursor, encodeCursor } from '../../../kernel/http/curso
 import { IdempotencyKeys } from '../../../kernel/http/idempotency';
 import { Problem } from '../../../kernel/http/problems';
 import { BLOCK_PORT, BlockPort, CHAT_COMMANDS, ChatCommands } from '../../chat/ports';
+import { DELIVERY_PORT, DeliveryPort } from '../../delivery/ports';
 import { AUDIT_SERVICE, AuditServicePort, IDENTITY_QUERY, IdentityQuery } from '../../identity/ports';
 import { LISTINGS_PORT, ListingSnapshot, ListingsPort } from '../../listings/ports';
 import { CancellationRequest, Escrow, Order, OrdersOutboxEvent } from '../db/entities';
@@ -40,9 +41,9 @@ interface Cp27 {
 }
 
 /** The fulfilment methods checkout can take today; the others wait for their units (Decisions log, U2-02). */
-export function fulfilmentRefusal(f: Fulfilment, options: Fulfilment[]): string | null {
+export function fulfilmentRefusal(f: Fulfilment, options: Fulfilment[], shipsCourier = false): string | null {
   if (!options.includes(f)) return 'not-offered-by-listing';
-  if (f === 'courier') return 'courier-not-yet-available'; // Unit 4 DeliveryPort.claimQuote (I-21)
+  if (f === 'courier' && !shipsCourier) return 'courier-not-yet-available'; // until Unit 4 ships them (U4-04; Decisions log, U4-02)
   if (f === 'game_account') return 'game-accounts-not-yet-available'; // Unit 5 GameAccountPort (I-29)
   return null;
 }
@@ -59,13 +60,14 @@ export class OrderService implements OrdersPort {
     @Inject(CLOCK) private readonly clock: Clock,
     @Inject(BLOCK_PORT) private readonly blocks: BlockPort,
     @Inject(CHAT_COMMANDS) private readonly chat: ChatCommands,
+    @Inject(DELIVERY_PORT) private readonly delivery: DeliveryPort,
   ) {}
 
   // ---------------------------------------------------------------- fixed-price checkout (section 5.3)
 
   async checkout(
     buyerId: string,
-    c: { listingId: string; quantity: number; fulfilment?: Fulfilment },
+    c: { listingId: string; quantity: number; fulfilment?: Fulfilment; quoteId?: string },
     idempotencyKey: string | undefined,
   ): Promise<{ order: OrderView; repeated: boolean }> {
     const { id, repeated } = await this.idempotency.once('order', buyerId, idempotencyKey, async () => {
@@ -84,15 +86,16 @@ export class OrderService implements OrdersPort {
           throw new Problem('feature-off', { errors: [{ field: 'listingId', reason: 'game-accounts-not-yet-available' }] });
         }
         if (c.fulfilment) {
-          const refusal = fulfilmentRefusal(c.fulfilment, optionsOf(snap));
+          const refusal = fulfilmentRefusal(c.fulfilment, optionsOf(snap), this.delivery.shipsCourier);
           if (refusal) throw new Problem(refusal === 'not-offered-by-listing' ? 'validation-failed' : 'feature-off', { errors: [{ field: 'fulfilment', reason: refusal }] });
+          if (c.fulfilment === 'courier' && !c.quoteId) throw new Problem('validation-failed', { errors: [{ field: 'quoteId', reason: 'required-for-courier' }] });
         }
         const unitPrice = BigInt(snap.price!);
         const itemPrice = unitPrice * BigInt(c.quantity);
         await this.assertWithinLimits(m, buyerId, verifiedAt, itemPrice, params);
         const now = this.clock.now();
         return this.insert(m, {
-          kind: 'fixed_price', snap, buyerId, quantity: c.quantity, unitPrice, fulfilment: c.fulfilment ?? null,
+          kind: 'fixed_price', snap, buyerId, quantity: c.quantity, unitPrice, fulfilment: c.fulfilment ?? null, quoteId: c.quoteId,
           paymentDueAt: new Date(now.getTime() + params.ms('CP-13')), params, version: params.version, actor: { type: 'user', id: buyerId },
         });
       });
@@ -118,14 +121,20 @@ export class OrderService implements OrdersPort {
   }
 
   /** FR-DLV-02: the buyer chooses the method before paying (needed for auction orders, which start without one). */
-  async chooseFulfilment(buyerId: string, orderId: string, fulfilment: Fulfilment): Promise<OrderView> {
+  async chooseFulfilment(buyerId: string, orderId: string, fulfilment: Fulfilment, quoteId?: string): Promise<OrderView> {
     await this.db.transaction(async (m) => {
       const o = await m.getRepository(Order).findOne({ where: { id: orderId }, lock: { mode: 'pessimistic_write' } });
       if (!o || (o.buyerId !== buyerId && o.sellerId !== buyerId)) throw new Problem('not-found');
       if (o.buyerId !== buyerId) throw new Problem('forbidden'); // the seller sees the order, the buyer chooses
       if (o.status !== 'awaiting_payment') throw new Problem('order-state');
-      const refusal = fulfilmentRefusal(fulfilment, optionsOf(o.listingSnapshot as ListingSnapshot));
+      const refusal = fulfilmentRefusal(fulfilment, optionsOf(o.listingSnapshot as ListingSnapshot), this.delivery.shipsCourier);
       if (refusal) throw new Problem(refusal === 'not-offered-by-listing' ? 'validation-failed' : 'feature-off', { errors: [{ field: 'fulfilment', reason: refusal }] });
+      if (fulfilment === 'courier') {
+        if (!quoteId) throw new Problem('validation-failed', { errors: [{ field: 'quoteId', reason: 'required-for-courier' }] });
+        if (o.fulfilment === 'courier') return; // already chosen: a quote is claimed once per order (quote_one_per_order)
+        await this.applyQuote(m, orderId, buyerId, o.listingId, o.quantity, quoteId, BigInt(o.itemPrice));
+        return;
+      }
       // self pickup has no fee, so the total is the item price (constraints fee_only_for_courier, total_matches)
       await m.getRepository(Order).update({ id: orderId }, { fulfilment, deliveryQuoteId: null, deliveryFee: '0', total: o.itemPrice });
     });
@@ -224,12 +233,15 @@ export class OrderService implements OrdersPort {
     o: {
       kind: 'fixed_price' | 'auction' | 'second_chance'; snap: ListingSnapshot; buyerId: string; quantity: number; unitPrice: bigint;
       fulfilment: Fulfilment | null; paymentDueAt: Date; params: ParameterValues; version: number; actor: { type: 'user' | 'system'; id: string | null };
+      quoteId?: string;
     },
   ): Promise<string> {
     const itemPrice = o.unitPrice * BigInt(o.quantity);
+    const courier = o.fulfilment === 'courier';
     const { identifiers } = await m.getRepository(Order).insert({
       kind: o.kind, listingId: o.snap.listingId, itemKind: o.snap.itemKind, buyerId: o.buyerId, sellerId: o.snap.sellerId,
-      quantity: o.quantity, unitPrice: o.unitPrice.toString(), itemPrice: itemPrice.toString(), fulfilment: o.fulfilment,
+      // a courier order is written first without its method: the quote is claimed by the order's id (courier_needs_quote)
+      quantity: o.quantity, unitPrice: o.unitPrice.toString(), itemPrice: itemPrice.toString(), fulfilment: courier ? null : o.fulfilment,
       deliveryFee: '0', total: itemPrice.toString(), listingSnapshot: o.snap,
       // FR-MON-10: the rates of the day are kept on the order; Pro Seller's rate arrives with ProStatusQuery (U2-06)
       commissionBps: o.params.get<{ standard_bps: number }>('CP-25').standard_bps,
@@ -237,16 +249,30 @@ export class OrderService implements OrdersPort {
       paramsVersion: o.version, paymentDueAt: o.paymentDueAt,
     });
     const orderId = identifiers[0].id as string;
+    let total = itemPrice;
+    if (courier) total = itemPrice + (await this.applyQuote(m, orderId, o.buyerId, o.snap.listingId, o.quantity, o.quoteId!, itemPrice));
     await m.getRepository(OrdersOutboxEvent).insert({
       eventType: 'orders.order.created', aggregateId: orderId,
-      payload: { orderId, kind: o.kind, listingId: o.snap.listingId, listingTitle: o.snap.title, buyerId: o.buyerId, sellerId: o.snap.sellerId, quantity: o.quantity, total: itemPrice.toString() },
+      payload: { orderId, kind: o.kind, listingId: o.snap.listingId, listingTitle: o.snap.title, buyerId: o.buyerId, sellerId: o.snap.sellerId, quantity: o.quantity, total: total.toString() },
     });
     await this.audit.record(
       { actorType: o.actor.type, actorId: o.actor.id, action: 'orders.order.created', objectType: 'order', objectId: orderId,
-        after: { kind: o.kind, listingId: o.snap.listingId, quantity: o.quantity, total: itemPrice.toString(), paramsVersion: o.version } },
+        after: { kind: o.kind, listingId: o.snap.listingId, quantity: o.quantity, total: total.toString(), paramsVersion: o.version } },
       m,
     );
     return orderId;
+  }
+
+  /**
+   * I-21, FR-DLV-09: Unit 4 claims the courier quote for this order in this transaction (DC-13); its fee becomes the
+   * order's delivery fee and part of the one total the buyer pays. Returns the fee.
+   */
+  private async applyQuote(m: EntityManager, orderId: string, buyerId: string, listingId: string, quantity: number, quoteId: string, itemPrice: bigint): Promise<bigint> {
+    const fee = await this.delivery.claimQuote({ quoteId, orderId, buyerId, listingId, quantity }, m);
+    await m.getRepository(Order).update({ id: orderId }, {
+      fulfilment: 'courier', deliveryQuoteId: quoteId, deliveryFee: fee.toString(), total: (itemPrice + fee).toString(),
+    });
+    return fee;
   }
 
   private async view(m: EntityManager, orderId: string, userId: string): Promise<OrderView> {
