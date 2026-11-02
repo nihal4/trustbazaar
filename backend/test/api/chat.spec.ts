@@ -103,7 +103,8 @@ describe('chat', () => {
     const list = await seller.json<{ items: { id: string; role: string; unread: number; other: { displayName: string; verified: boolean }; listing: { title: string } }[] }>('GET', '/threads');
     const mine = list.items.find((i) => i.id === thread)!;
     expect(mine).toMatchObject({ role: 'seller', unread: 1, listing: { title: 'Phone for the chat tests' } });
-    expect(Object.keys(mine.other).sort()).toEqual(['displayName', 'verified']); // FR-ACC-10: no id, phone or e-mail
+    expect(Object.keys(mine.other).sort()).toEqual(['displayName', 'id', 'verified']); // FR-ACC-10: the public id, no phone or e-mail
+    expect((mine.other as unknown as { id: string }).id).toBe(buyer.userId); // what POST /blocks/{userId} needs
   });
 
   it('FR-CHT-02 messages get the next sequence number; a resend with the same client id is the same message; others get not-found', async () => {

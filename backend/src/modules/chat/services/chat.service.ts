@@ -98,7 +98,8 @@ export class ChatService {
         id: t.id,
         listing: { id: t.listing_id, title: listing?.title ?? null },
         role: buyer ? 'buyer' : 'seller',
-        other: other ? { displayName: other.displayName, verified: other.verified } : null,
+        // the public id (as on a listing's seller and /users/{id}) is needed to block; never a phone or e-mail (FR-ACC-10)
+        other: other ? { id: other.id, displayName: other.displayName, verified: other.verified } : null,
         lastSeq: Number(t.last_seq),
         unread: Math.max(0, Number(t.last_seq) - myRead),
         lastMessageAt: t.last_message_at?.toISOString() ?? null,
