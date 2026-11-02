@@ -29,6 +29,8 @@ type Fields = Pick<
 
 /** What an editable active listing may still change (FR-LST-07); a draft may change everything. */
 const ACTIVE_EDITABLE = new Set(['title', 'description', 'price', 'quantity']);
+/** DV-22: the relisting similarity window (FR-TNS-02). */
+export const RELISTING = { window: '7 days', similarity: 0.6 } as const;
 const PUBLIC_STATUSES: ListingStatus[] = ['active', 'sold', 'ended_unsold'];
 const PAGE = 50;
 
@@ -284,9 +286,30 @@ export class ListingService {
           );
         }
         if (!held) await publish(m, 'listings.listing.published', id, { listingId: id, sellerId: userId, itemKind: l.itemKind, saleFormat: l.saleFormat });
+        await this.relistingCheck(m, l, userId);
       })
       .catch(fromDatabase);
     return this.view(id, { userId });
+  }
+
+  /**
+   * FR-TNS-02 (DV-22; U3-06): a seller who publishes an item similar to one they cancelled after publishing it within
+   * 7 days (same category, title trigram similarity of at least 0.6) is flagged for review; publication goes on. A
+   * discarded draft does not count. Disputed sales are Unit 7's and join this check with its signals (U7-04).
+   */
+  private async relistingCheck(m: EntityManager, l: Listing, userId: string): Promise<void> {
+    const [similar] = (await m.query(
+      `SELECT o.id, round(similarity(o.title, $2)::numeric, 3)::float AS sim
+         FROM listings.listings o
+         JOIN listings.status_history h ON h.listing_id = o.id AND h.to_status = 'cancelled' AND h.from_status <> 'draft'
+        WHERE o.seller_id = $1 AND o.id <> $3 AND o.category_id = $4 AND o.status = 'cancelled'
+          AND h.at > now() - $5::interval AND similarity(o.title, $2) >= $6
+        ORDER BY similarity(o.title, $2) DESC LIMIT 1`,
+      [userId, l.title, l.id, l.categoryId, RELISTING.window, RELISTING.similarity],
+    )) as { id: string; sim: number }[];
+    if (similar) {
+      await publish(m, 'listings.listing.relisting_flagged', l.id, { listingId: l.id, sellerId: userId, previousListingId: similar.id, similarity: similar.sim });
+    }
   }
 
   // ---------------------------------------------------------------- after publication (FR-LST-07, FR-LST-08)
