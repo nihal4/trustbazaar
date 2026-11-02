@@ -230,6 +230,26 @@ SELECT pg_temp.ok('rescheduling: accepting the new time supersedes the old agree
   :'r' = 'accepted'
   AND (SELECT status FROM delivery.meetup_proposals WHERE id = :'p2') = 'superseded'
   AND (SELECT agreed_proposal_id FROM delivery.handovers WHERE order_id = 'd0000000-0000-4000-8000-000000000001') = :'p3');
+-- FR-DLV-04 (U4-03): a place of the parties' own, instead of a suggested point
+SELECT pg_temp.expect_fail('FR-DLV-04 a meetup needs a suggested point or a place of the parties'' own',
+ $q$SELECT delivery.propose_meetup('d0000000-0000-4000-8000-000000000001', 'c0000000-0000-4000-8000-000000000001', NULL, now() + interval '1 day', NULL, interval '1 hour', interval '2 hours')$q$,
+ 'suggested point or a place');
+SELECT pg_temp.expect_fail('FR-DLV-04 a proposal is a suggested point or an own place, not both',
+ $q$SELECT delivery.propose_meetup('d0000000-0000-4000-8000-000000000001', 'c0000000-0000-4000-8000-000000000001', 'f0000000-0000-4000-8000-000000000001', now() + interval '1 day', NULL, interval '1 hour', interval '2 hours', 'Coffee shop')$q$,
+ 'proposal_one_place');
+SELECT pg_temp.expect_fail('FR-DLV-04 an own place''s pin is inside Bangladesh',
+ $q$SELECT delivery.propose_meetup('d0000000-0000-4000-8000-000000000001', 'c0000000-0000-4000-8000-000000000001', NULL, now() + interval '1 day', NULL, interval '1 hour', interval '2 hours', 'Somewhere', 40.0, 90.0)$q$,
+ 'place_lat');
+SELECT pg_temp.expect_fail('FR-DLV-04 an own place has a name of at least 3 characters',
+ $q$SELECT delivery.propose_meetup('d0000000-0000-4000-8000-000000000001', 'c0000000-0000-4000-8000-000000000001', NULL, now() + interval '1 day', NULL, interval '1 hour', interval '2 hours', ' x ')$q$,
+ 'proposal_own_place');
+SELECT delivery.propose_meetup('d0000000-0000-4000-8000-000000000001', 'c0000000-0000-4000-8000-000000000001', NULL,
+       now() + interval '4 days', NULL, interval '1 hour', interval '2 hours', 'Coffee shop at the Dhanmondi 27 junction', 23.75612, 90.37401) AS p4 \gset
+SELECT delivery.respond_meetup(:'p4', 'c0000000-0000-4000-8000-000000000002', true) AS r \gset
+SELECT pg_temp.ok('FR-DLV-04 the other party accepts a place of the parties'' own, and it is recorded',
+  :'r' = 'accepted'
+  AND (SELECT agreed_proposal_id FROM delivery.handovers WHERE order_id = 'd0000000-0000-4000-8000-000000000001') = :'p4'
+  AND (SELECT point_id IS NULL AND place_name = 'Coffee shop at the Dhanmondi 27 junction' FROM delivery.meetup_proposals WHERE id = :'p4'));
 SELECT pg_temp.expect_fail('an answered proposal cannot be answered again',
  $q$SELECT delivery.respond_meetup('$q$ || :'p3' || $q$', 'c0000000-0000-4000-8000-000000000001', false)$q$, 'no longer open');
 INSERT INTO delivery.meetup_proposals (id, order_id, proposed_by, point_id, meet_at)
@@ -237,7 +257,7 @@ VALUES ('a2000000-0000-4000-8000-000000000001', 'd0000000-0000-4000-8000-0000000
         'f0000000-0000-4000-8000-000000000001', now() - interval '1 hour');
 SELECT pg_temp.ok('a proposal whose time has passed lapses instead of being accepted',
   delivery.respond_meetup('a2000000-0000-4000-8000-000000000001', 'c0000000-0000-4000-8000-000000000001', true) = 'lapsed'
-  AND (SELECT agreed_proposal_id FROM delivery.handovers WHERE order_id = 'd0000000-0000-4000-8000-000000000001') = :'p3');
+  AND (SELECT agreed_proposal_id FROM delivery.handovers WHERE order_id = 'd0000000-0000-4000-8000-000000000001') = :'p4');
 
 SELECT pg_temp.expect_fail('FR-DLV-06 only the seller enters the handover code',
  $q$SELECT delivery.record_code_entry('d0000000-0000-4000-8000-000000000001', 'c0000000-0000-4000-8000-000000000001', true, 5)$q$, 'only the seller');

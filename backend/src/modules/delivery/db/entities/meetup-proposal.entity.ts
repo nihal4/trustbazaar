@@ -13,8 +13,17 @@ export class MeetupProposal {
   @Column({ type: 'uuid', name: 'proposed_by' })
   proposedBy!: string;
 
-  @Column({ type: 'uuid', name: 'point_id' })
-  pointId!: string;
+  @Column({ type: 'uuid', name: 'point_id', nullable: true })
+  pointId!: string | null;
+
+  @Column({ type: 'varchar', name: 'place_name', length: 120, nullable: true })
+  placeName!: string | null;
+
+  @Column({ type: 'numeric', name: 'place_lat', nullable: true })
+  placeLat!: string | null;
+
+  @Column({ type: 'numeric', name: 'place_lng', nullable: true })
+  placeLng!: string | null;
 
   @Column({ type: 'timestamptz', name: 'meet_at' })
   meetAt!: Date;

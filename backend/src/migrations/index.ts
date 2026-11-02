@@ -8,6 +8,7 @@ import { DisputesTrustStaff1793491200007 } from './1793491200007-disputes-trust-
 import { Integration1793491200008 } from './1793491200008-integration';
 import { ListingsCourierPhotosStock1793491200009 } from './1793491200009-listings-courier-photos-stock';
 import { NotificationTemplates1793491200010 } from './1793491200010-notification-templates';
+import { OwnMeetupPlaces1793491200013 } from './1793491200013-own-meetup-places';
 import { ChatDetectionTermDelete1793491200012 } from './1793491200012-chat-detection-term-delete';
 import { ChatImageKeyTemplate1793491200011 } from './1793491200011-chat-image-key-template';
 
@@ -26,4 +27,5 @@ export const MIGRATIONS = [
   NotificationTemplates1793491200010, // U6-04: notification subject (I-55) and the first templates (Decisions log)
   ChatImageKeyTemplate1793491200011, // U6-02: chat image keys of Unit 1's FileVault, and the chat notice (Decisions log)
   ChatDetectionTermDelete1793491200012, // U6-03: operators remove detection terms (Decisions log)
+  OwnMeetupPlaces1793491200013, // U4-03: a meetup at a place of the parties' own (Decisions log)
 ];
