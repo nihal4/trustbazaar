@@ -16,6 +16,9 @@ import { NotificationService } from './notification.service';
 // notice (section 7.4). Another user appears only by display name and badge (FR-ACC-10); a message's text never
 // leaves the thread (no text in notices, in events or in logs).
 
+/** The listing statuses whose page is public (Unit 3): a thread may be opened from them. */
+const OPENABLE = ['active', 'sold', 'ended_unsold'];
+
 /** DV-40 */
 export const MAX_TEXT = 2000;
 export const MAX_CAPTION = 300;
@@ -73,7 +76,8 @@ export class ChatService {
     if (l.sellerId === userId) throw new Problem('forbidden', { errors: [{ field: 'listingId', reason: 'own-listing' }] });
     const [existing] = (await this.db.query(`SELECT id FROM chat.threads WHERE listing_id = $1 AND buyer_id = $2`, [listingId, userId])) as { id: string }[];
     if (existing) return existing; // the conversation continues after a sale (section 6.1)
-    if (l.status !== 'active') throw new Problem('not-found');
+    // from a listing page (section 6.1): any listing whose page is public, so a buyer can write after a sale too
+    if (!OPENABLE.includes(l.status)) throw new Problem('not-found');
     const [{ id }] = (await this.db.query(`SELECT chat.open_thread($1, $2, $3) AS id`, [listingId, userId, l.sellerId]).catch(fromChatDb)) as { id: string }[];
     return { id };
   }
