@@ -521,5 +521,6 @@ INSERT INTO chat.detection_terms (term, flag) VALUES
 GRANT USAGE ON SCHEMA chat, notify TO tb_app;
 GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA chat, notify TO tb_app;
 GRANT DELETE ON chat.blocks, notify.watches TO tb_app;                         -- unblock, unwatch
+GRANT DELETE ON chat.detection_terms TO tb_app;                                -- operators remove a term (U6-03)
 GRANT DELETE ON notify.notifications, notify.deliveries, notify.sms_log TO tb_app;   -- retention jobs (DV-42)
 REVOKE UPDATE ON chat.staff_access_log, notify.sms_log FROM tb_app;
