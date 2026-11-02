@@ -29,12 +29,13 @@ const problemOf = async (p: Promise<unknown>) => {
   return null;
 };
 
-function setup(o: { handover?: HRow | null; recordResult?: string; recordError?: string; facts?: Record<string, unknown>; area?: { lat: number; lng: number } | null } = {}) {
+function setup(o: { proposals?: Record<string, unknown>[]; handover?: HRow | null; recordResult?: string; recordError?: string; facts?: Record<string, unknown>; area?: { lat: number; lng: number } | null } = {}) {
   const calls: string[] = [];
   const answer = (sql: string, p: unknown[]): unknown => {
     calls.push(sql.trim().split(/\s+/).slice(0, 3).join(' '));
     if (sql.includes('FROM delivery.handovers')) return o.handover === null ? [] : [{ ...H, ...o.handover }];
-    if (sql.includes('FROM delivery.meetup_proposals p JOIN')) return [{ proposed_by: 'B', meet_at: new Date('2026-11-03T10:00:00Z'), note: null, status: 'accepted', created_at: new Date(), point_id: 'P1', ...POINT, id: 'X1' }];
+    if (sql.includes('FROM delivery.meetup_proposals p') && o.proposals) return o.proposals;
+    if (sql.includes('FROM delivery.meetup_proposals p')) return [{ proposed_by: 'B', meet_at: new Date('2026-11-03T10:00:00Z'), note: null, status: 'accepted', created_at: new Date(), point_id: 'P1', ...POINT, id: 'X1' }];
     if (sql.includes('record_code_entry')) {
       if (o.recordError) throw dbError(o.recordError);
       return [{ r: o.recordResult ?? 'accepted' }];
@@ -82,7 +83,7 @@ describe('HandoverService', () => {
     const s = setup();
     const b = await s.svc.view('B', ORDER);
     expect(b).toMatchObject({ role: 'buyer', code: deriveCode(KEY, ORDER, 1), attemptsLeft: null, suggestions: [{ id: 'P1' }] });
-    expect(b.proposals[0].point.mapUrl).toBe(mapUrl(24.89123, 91.87123));
+    expect(b.proposals[0].point?.mapUrl).toBe(mapUrl(24.89123, 91.87123));
     expect(await s.svc.view('S', ORDER)).toMatchObject({ role: 'seller', code: null, attemptsLeft: 5 });
     expect(await problemOf(s.svc.view('X', ORDER))).toEqual(['not-found']);
     expect((await setup({ handover: { status: 'completed', completed_at: new Date() } }).svc.view('B', ORDER))).toMatchObject({ code: null, suggestions: [] });
@@ -113,13 +114,33 @@ describe('HandoverService', () => {
   it('FR-DLV-04 proposals: DV-26 to the database; the other party answers; the proposer withdraws', async () => {
     const s = setup();
     await s.svc.propose('B', ORDER, { pointId: 'P1', meetAt: '2026-11-03T10:00:00Z', note: '  Main gate ' });
-    expect(s.query.mock.calls.find(([sql]) => String(sql).includes('propose_meetup'))?.[1]).toEqual([ORDER, 'B', 'P1', '2026-11-03T10:00:00Z', 'Main gate', '1 hour', '2 hours']);
+    expect(s.query.mock.calls.find(([sql]) => String(sql).includes('propose_meetup'))?.[1]).toEqual([ORDER, 'B', 'P1', '2026-11-03T10:00:00Z', 'Main gate', '1 hour', '2 hours', null, null, null]);
     expect(await problemOf(s.svc.propose('B', ORDER, { pointId: 'P1', meetAt: 'x', note: 'n'.repeat(201) }))).toEqual(['validation-failed', 'note:too-long']);
     expect((await s.svc.respond('S', ORDER, 'X1', true)).outcome).toBe('accepted');
     expect((await s.svc.respond('S', ORDER, 'X1', false)).outcome).toBe('declined');
     expect(await problemOf(s.svc.respond('B', ORDER, 'X1', true))).toEqual(['forbidden', 'proposalId:own-proposal']);
     expect(await problemOf(s.svc.withdraw('S', ORDER, 'X1'))).toEqual(['forbidden', 'proposalId:not-your-proposal']);
     expect(await problemOf(s.svc.withdraw('B', ORDER, 'X1'))).toEqual(['delivery-refused', 'proposalId:proposal_closed']);
+  });
+
+  it('FR-DLV-04 a place of the parties\' own: a name and an optional pin, never with a point', async () => {
+    const s = setup({ proposals: [{
+      id: 'X2', proposed_by: 'S', meet_at: new Date('2026-11-03T10:00:00Z'), note: null, status: 'proposed', created_at: new Date(),
+      place_name: 'Coffee shop at Zindabazar', place_lat: '24.89512', place_lng: '91.86811', point_id: null,
+    }] });
+    const v = await s.svc.propose('B', ORDER, { placeName: '  Coffee shop   at Zindabazar ', placeLat: 24.895123, placeLng: 91.868111, meetAt: '2026-11-03T10:00:00Z' });
+    expect(s.query.mock.calls.find(([sql]) => String(sql).includes('propose_meetup'))?.[1])
+      .toEqual([ORDER, 'B', null, '2026-11-03T10:00:00Z', null, '1 hour', '2 hours', 'Coffee shop at Zindabazar', 24.895123, 91.868111]);
+    expect(v.proposals[0]).toMatchObject({ point: null, place: { name: 'Coffee shop at Zindabazar', lat: 24.89512, lng: 91.86811, mapUrl: mapUrl(24.89512, 91.86811) } });
+    const noPin = setup({ proposals: [{ id: 'X3', proposed_by: 'S', meet_at: new Date(), note: null, status: 'proposed', created_at: new Date(), place_name: 'The mosque gate', place_lat: null, place_lng: null, point_id: null }] });
+    expect((await noPin.svc.view('B', ORDER)).proposals[0].place).toEqual({ name: 'The mosque gate', lat: null, lng: null, mapUrl: null });
+    const at = '2026-11-03T10:00:00Z';
+    expect(await problemOf(s.svc.propose('B', ORDER, { meetAt: at }))).toEqual(['validation-failed', 'pointId:point-or-own-place']);
+    expect(await problemOf(s.svc.propose('B', ORDER, { pointId: 'P1', placeName: 'Cafe', meetAt: at }))).toEqual(['validation-failed', 'placeName:point-or-own-place']);
+    expect(await problemOf(s.svc.propose('B', ORDER, { placeName: 'ab', meetAt: at }))).toEqual(['validation-failed', 'placeName:length']);
+    expect(await problemOf(s.svc.propose('B', ORDER, { placeName: 'Cafe', placeLat: 24.9, meetAt: at }))).toEqual(['validation-failed', 'placeLat:pin-needs-both']);
+    expect(await problemOf(s.svc.propose('B', ORDER, { pointId: 'P1', placeLat: 24.9, placeLng: 91.8, meetAt: at }))).toEqual(['validation-failed', 'placeLat:pin-only-for-own-place']);
+    expect(await problemOf(s.svc.propose('B', ORDER, { placeName: 'Cafe', placeLat: 40, placeLng: 91.8, meetAt: at }))).toEqual(['validation-failed', 'placeLat:outside-bangladesh']);
   });
 
   it('FR-DLV-05 the handover opens and closes with Unit 2\'s events; an operator\'s unlock is audited and settles the lock\'s issue', async () => {
