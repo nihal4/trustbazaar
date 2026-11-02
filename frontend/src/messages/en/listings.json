@@ -105,5 +105,7 @@
   "auction.offer.declined": "You declined the offer.",
   "auction.announce.price": "The price is now {price}.",
   "auction.announce.five_minutes": "5 minutes left in this auction.",
-  "auction.announce.one_minute": "1 minute left in this auction."
+  "auction.announce.one_minute": "1 minute left in this auction.",
+  "listing.message_seller": "Message the seller",
+  "listing.message_seller_sign_in": "Sign in to message the seller"
 }
