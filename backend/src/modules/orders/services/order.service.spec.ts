@@ -71,6 +71,7 @@ function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; ve
     db as unknown as DataSource, idempotency as unknown as IdempotencyKeys, listings as unknown as ListingsPort,
     identity as unknown as IdentityQuery, audit as unknown as AuditServicePort, params, clock,
     { assertNotBlocked: jest.fn(async () => undefined) } as never,
+    { threadFor: jest.fn(async () => null) } as never,
   );
   return { svc, manager, listings, audit, orders: repos.get(Order)!, outbox: repos.get(OrdersOutboxEvent)!, escrows: repos.get(Escrow)!, cancellations: repos.get(CancellationRequest)! };
 }
@@ -208,7 +209,7 @@ describe('OrdersController', () => {
   const user = { type: 'user', userId: 'B', sessionId: 's', accountStatus: 'active', kycStatus: 'verified', emailVerified: true } as const;
   it('IF-UI-05 each route hands its caller and input to OrderService', async () => {
     const svc = {
-      checkout: jest.fn(async () => ({ order: { id: 'o' }, repeated: false })), list: jest.fn(), getOrderForParty: jest.fn(), chooseFulfilment: jest.fn(),
+      checkout: jest.fn(async () => ({ order: { id: 'o' }, repeated: false })), list: jest.fn(), getOrderForParty: jest.fn(), getOrderPage: jest.fn(), chooseFulfilment: jest.fn(),
     };
     const c = new OrdersController(svc as unknown as OrderService);
     const res = { status: jest.fn() };
@@ -218,6 +219,7 @@ describe('OrdersController', () => {
     await c.view('o', user);
     await c.fulfilment('o', { fulfilment: 'self_pickup' }, user);
     expect(svc.list).toHaveBeenCalledWith('B', 'buyer', undefined);
+    expect(svc.getOrderPage).toHaveBeenCalledWith('o', 'B');
     expect(svc.chooseFulfilment).toHaveBeenCalledWith('B', 'o', 'self_pickup');
     expect(() => c.view('o', { type: 'staff', staffId: 's', sessionId: 's', role: 'operator' })).toThrow(Problem);
   });
