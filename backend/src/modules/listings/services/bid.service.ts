@@ -8,7 +8,7 @@ import { IDENTITY_QUERY, IdentityQuery, RATE_LIMITER, RateLimiterPort } from '..
 import { AUCTION_BLOCKS } from '../adapters/blocks';
 import { Bid } from '../db/entities';
 import type { BidOutcome } from '../db/enums';
-import type { AuctionQuery, AuctionState } from '../ports';
+import type { AuctionQuery, AuctionState, Flag } from '../ports';
 import { readAuctionState } from './auction-state';
 import { ListingService } from './listing.service';
 import { publish } from './outbox';
@@ -145,6 +145,18 @@ export class BidService implements AuctionQuery {
   async state(auctionId: string, viewerId: string | undefined): Promise<AuctionState> {
     await this.listings.visible(auctionId, viewerId);
     return this.getPublicState(auctionId);
+  }
+
+  /** AuctionQuery.getFlags (Unit 7's queue; FR-AUC-18; U3-06): newest first. */
+  async getFlags(auctionId: string): Promise<Flag[]> {
+    const rows = (await this.db.query(
+      `SELECT id::text, auction_id, kind, score::float AS score, detail, created_at, reviewed_at FROM auctions.flags WHERE auction_id = $1 ORDER BY created_at DESC, id DESC`,
+      [auctionId],
+    )) as { id: string; auction_id: string; kind: Flag['kind']; score: number; detail: Record<string, unknown>; created_at: Date; reviewed_at: Date | null }[];
+    return rows.map((r) => ({
+      id: r.id, auctionId: r.auction_id, kind: r.kind, score: r.score, detail: r.detail,
+      createdAt: r.created_at.toISOString(), reviewedAt: r.reviewed_at?.toISOString() ?? null,
+    }));
   }
 
   /** AuctionQuery (Units 2 and 7). */
