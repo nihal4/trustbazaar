@@ -122,6 +122,13 @@ export class Live {
     };
   }
 
+  /** Sends a message to the server if connected (chat.ack, U8-13); false when not, so the caller can use HTTP. */
+  send(event: string, payload: Record<string, unknown>): boolean {
+    if (!this.socket?.connected) return false;
+    this.socket.emit(event, payload);
+    return true;
+  }
+
   /** Called on every connection, the first included: fetch whatever messages may have been missed. */
   onConnect(fn: () => void): () => void {
     this.reconnectHandlers.add(fn);

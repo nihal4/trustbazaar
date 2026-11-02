@@ -105,5 +105,7 @@
   "auction.offer.declined": "আপনি প্রস্তাবটি প্রত্যাখ্যান করেছেন।",
   "auction.announce.price": "দাম এখন {price}।",
   "auction.announce.five_minutes": "এই নিলামে আর ৫ মিনিট বাকি।",
-  "auction.announce.one_minute": "এই নিলামে আর ১ মিনিট বাকি।"
+  "auction.announce.one_minute": "এই নিলামে আর ১ মিনিট বাকি।",
+  "listing.message_seller": "বিক্রেতাকে বার্তা পাঠান",
+  "listing.message_seller_sign_in": "বিক্রেতাকে বার্তা পাঠাতে সাইন ইন করুন"
 }
