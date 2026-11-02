@@ -22,6 +22,7 @@ x-app-env: &app-env
   TZ: UTC
   PAYMENT_MODE: ${PAYMENT_MODE:-mock}               # mock | sandbox (C-2)
   COURIER_MODE: ${COURIER_MODE:-mock}               # mock | sandbox (C-3)
+  MOCK_COURIER_AUTO_ADVANCE_SECONDS: ${MOCK_COURIER_AUTO_ADVANCE_SECONDS:-0}  # mock courier: seconds per automatic step; 0 = simulator only (U4-04)
   SMS_MODE: ${SMS_MODE:-log}                        # log | provider test mode
   EMAIL_MODE: ${EMAIL_MODE:-log}                    # log | smtp
   PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:8080}

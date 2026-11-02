@@ -156,6 +156,13 @@ describe('configuration', () => {
     expect(problems({ ...dev(), COURIER_MODE: 'live' })).toEqual(['COURIER_MODE: must be one of mock, sandbox']);
   });
 
+  it('C-3 IF-SW-04 couriers run as the mock until a sandbox adapter exists; the mock may advance parcels by itself', () => {
+    expect(problems({ ...dev(), COURIER_MODE: 'sandbox' })).toEqual(['COURIER_MODE: sandbox has no courier adapter yet (Pathao, Steadfast); use mock']);
+    expect(loadConfig({ ...dev() }).mockCourierAutoAdvanceSeconds).toBe(0);
+    expect(loadConfig({ ...dev(), MOCK_COURIER_AUTO_ADVANCE_SECONDS: '30' }).mockCourierAutoAdvanceSeconds).toBe(30);
+    expect(problems({ ...dev(), MOCK_COURIER_AUTO_ADVANCE_SECONDS: '-1' })).toEqual(['MOCK_COURIER_AUTO_ADVANCE_SECONDS: whole seconds from 0 to 86400']);
+  });
+
   it('SEC-DAT-05 e-mail by SMTP needs SMTP_URL', () => {
     expect(problems({ ...dev(), EMAIL_MODE: 'smtp' })).toEqual(['SMTP_URL: missing (EMAIL_MODE is smtp)']);
   });

@@ -200,3 +200,39 @@ export class MeetupPointPatchDto {
   @IsOptional() @IsString() @MaxLength(300) guidance?: string;
   @IsOptional() @IsBoolean() active?: boolean;
 }
+
+// ---------------------------------------------------------------- courier (U4-04)
+
+export class PickupAddressDto {
+  @IsUUID()
+  addressId!: string;
+}
+
+export class IssuesQuery {
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  cursor?: string;
+}
+
+export class RecordQuery {
+  /** SEC-ACC-05: the full addresses are shown only with a reason (at least 10 characters), and the display is audited. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  reason?: string;
+}
+
+const MOCK_TARGETS = ['picked_up', 'in_transit', 'delivery_failed', 'delivered', 'returned_to_seller'] as const;
+
+/** The mock courier's simulator: the next status (omitted: along the happy path) and a return charge in poisha. */
+export class MockAdvanceDto {
+  @IsOptional()
+  @IsIn(MOCK_TARGETS)
+  status?: (typeof MOCK_TARGETS)[number];
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{1,9}$/)
+  returnCharge?: string;
+}

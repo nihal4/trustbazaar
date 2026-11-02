@@ -7,9 +7,9 @@ import { CONFIG_PORT, ConfigPort } from '../../../kernel/config-port';
 import { Problem } from '../../../kernel/http/problems';
 import { AUDIT_SERVICE, AuditServicePort, IDENTITY_QUERY, IdentityQuery } from '../../identity/ports';
 import { FULFILMENT_ORDERS, FulfilmentOrders } from '../adapters/orders';
-import type { DeliveryCommands } from '../ports';
 import { codeMatches, deriveCode } from './handover-code';
 import { mapUrl, MeetupPointsService, pointView, type PointView } from './meetup-points.service';
+import { announceNewIssues } from './outbox';
 import { fromDeliveryDb, refusal } from './refusals';
 
 // Meetup handover (docs/design/04_delivery.pdf section 6; FR-DLV-03 to FR-DLV-06; DC-14; U4-03). The database decides:
@@ -61,7 +61,7 @@ const ownPlace = (name: string, lat: string | null, lng: string | null): OwnPlac
 };
 
 @Injectable()
-export class HandoverService implements DeliveryCommands {
+export class HandoverService {
   constructor(
     private readonly db: DataSource,
     private readonly points: MeetupPointsService,
@@ -216,6 +216,7 @@ export class HandoverService implements DeliveryCommands {
       const correct = codeMatches(entered, deriveCode(this.config.secrets.handoverKey.reveal(), orderId, h.code_version));
       const [{ r }] = (await m.query(`SELECT delivery.record_code_entry($1, $2, $3, $4) AS r`, [orderId, userId, correct, maxWrong])
         .catch(fromDeliveryDb)) as { r: 'accepted' | 'wrong' | 'locked' }[];
+      if (r === 'locked') await announceNewIssues(m, orderId); // the code_locked issue (I-62; U4-04)
       if (r === 'accepted') {
         const at = this.clock.now();
         await this.orders.recordFulfilmentStep(orderId, 'meetup_handover', at, m);
@@ -230,7 +231,7 @@ export class HandoverService implements DeliveryCommands {
     return { status: 'completed', completedAt: result.at!.toISOString() };
   }
 
-  /** DeliveryCommands.unlockHandoverCode and POST /staff/orders/{id}/handover/unlock: a new code, audited. */
+  /** DeliveryCommands.unlockHandoverCode (through DeliveryPorts) and POST /staff/orders/{id}/handover/unlock: a new code, audited. */
   async unlockHandoverCode(orderId: string, staffId: string, reason: string): Promise<void> {
     const why = reason?.trim() ?? '';
     if (why.length < 10) throw new Problem('validation-failed', { errors: [{ field: 'reason', reason: 'too-short' }] });

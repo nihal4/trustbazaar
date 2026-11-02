@@ -163,47 +163,54 @@ describe('QuoteService', () => {
     fulfilmentFacts: jest.fn(async () => ({ ...facts, options: o.options ?? facts.options })),
   });
   const params = { current: async () => ({ get: () => 2 }) };
+  const closed = { isOpen: async () => false };
   const OPTIONS = { distance: 14.2, recommended: 'courier', kg: 1, version: 1, zone: 'dhaka_suburbs', fee: '8000' };
 
   it('FR-DLV-01 FR-DLV-02 options: whole km, the recommendation, and an indicative fee or why not', async () => {
     const db = fakeDb(() => [OPTIONS]);
-    const svc = new QuoteService(db as never, listings() as never, params as never);
-    expect(svc.shipsCourier).toBe(false);
+    const svc = new QuoteService(db as never, closed as never, listings() as never, params as never);
     expect(await svc.options('B', 'L1', 4, 1)).toEqual({
       listingId: 'L1', areaId: 4, quantity: 1, methods: ['self_pickup', 'courier'], distanceKm: 14, recommended: 'courier',
       courier: { available: true, fee: '8000', billedKg: 1, zone: 'dhaka_suburbs', fareVersion: 1 },
     });
     expect(db.query.mock.calls[0][1]).toEqual([4, 23.746, 90.376, 'pickup_or_courier', 'up_to_1kg', 'small', 1, 10, 2, 'Dhaka']);
-    const heavy = new QuoteService(fakeDb(() => [{ ...OPTIONS, kg: null, fee: null }]) as never, listings() as never, params as never);
+    const heavy = new QuoteService(fakeDb(() => [{ ...OPTIONS, kg: null, fee: null }]) as never, closed as never, listings() as never, params as never);
     expect(await heavy.options('B', 'L1', 4, 3)).toMatchObject({ recommended: 'self_pickup', courier: { available: false, reason: 'parcel_too_large' } });
-    const pickup = new QuoteService(fakeDb(() => [{ ...OPTIONS, recommended: 'self_pickup' }]) as never, listings({ options: ['self_pickup'] }) as never, params as never);
+    const pickup = new QuoteService(fakeDb(() => [{ ...OPTIONS, recommended: 'self_pickup' }]) as never, closed as never, listings({ options: ['self_pickup'] }) as never, params as never);
     expect(await pickup.options('B', 'L1', 4, 1)).toMatchObject({ courier: { available: false, reason: 'courier_not_offered' } });
-    const courierOnly = new QuoteService(fakeDb(() => [OPTIONS]) as never, listings({ options: ['courier'] }) as never, params as never);
+    const courierOnly = new QuoteService(fakeDb(() => [OPTIONS]) as never, closed as never, listings({ options: ['courier'] }) as never, params as never);
     await courierOnly.options('B', 'L1', 4, 1);
-    expect(await problemOf(new QuoteService(fakeDb(() => []) as never, listings() as never, params as never).options('B', 'L1', 99, 1))).toEqual(['validation-failed', 'areaId:unknown']);
+    expect(await problemOf(new QuoteService(fakeDb(() => []) as never, closed as never, listings() as never, params as never).options('B', 'L1', 99, 1))).toEqual(['validation-failed', 'areaId:unknown']);
     expect(await problemOf(svc.options('S', 'L1', 4, 1))).toEqual(['forbidden', 'listingId:own-listing']);
-    expect(await problemOf(new QuoteService(db as never, listings({ status: 'sold' }) as never, params as never).options('B', 'L1', 4, 1))).toEqual(['not-found']);
+    expect(await problemOf(new QuoteService(db as never, closed as never, listings({ status: 'sold' }) as never, params as never).options('B', 'L1', 4, 1))).toEqual(['not-found']);
   });
 
   it('FR-DLV-08 a quote is issued to the buyer\'s own drop-off address; DV-23 validity; refusals by code', async () => {
     const quoteRow = { id: 'Q1', listing_id: 'L1', quantity: 2, dropoff_address_id: 'A1', to_area_id: 4, zone: 'dhaka_suburbs', billed_kg: 2, distance_km: 14.2, fee: '9500', fare_version: 1, expires_at: new Date('2026-11-02T00:30:00Z') };
     const db = fakeDb((sql) => (sql.includes('saved_addresses') ? [{ area_id: 4 }] : sql.includes('make_quote') ? [quoteRow] : []));
-    const svc = new QuoteService(db as never, listings() as never, params as never);
+    const svc = new QuoteService(db as never, closed as never, listings() as never, params as never);
     expect(await svc.issue('B', { listingId: 'L1', quantity: 2, addressId: 'A1' })).toEqual({
       id: 'Q1', listingId: 'L1', quantity: 2, addressId: 'A1', areaId: 4, zone: 'dhaka_suburbs', billedKg: 2, distanceKm: 14, fee: '9500', fareVersion: 1,
       expiresAt: '2026-11-02T00:30:00.000Z',
     });
     expect(db.query.mock.calls.find(([sql]) => String(sql).includes('make_quote'))?.[1]).toContain('30 minutes');
-    expect(await problemOf(new QuoteService(fakeDb(() => []) as never, listings() as never, params as never).issue('B', { listingId: 'L1', quantity: 1, addressId: 'A9' })))
+    expect(await problemOf(new QuoteService(fakeDb(() => []) as never, closed as never, listings() as never, params as never).issue('B', { listingId: 'L1', quantity: 1, addressId: 'A9' })))
       .toEqual(['validation-failed', 'addressId:not-a-dropoff-address-of-yours']);
-    expect(await problemOf(new QuoteService(db as never, listings({ options: ['self_pickup'] }) as never, params as never).issue('B', { listingId: 'L1', quantity: 1, addressId: 'A1' })))
+    expect(await problemOf(new QuoteService(db as never, closed as never, listings({ options: ['self_pickup'] }) as never, params as never).issue('B', { listingId: 'L1', quantity: 1, addressId: 'A1' })))
       .toEqual(['delivery-refused', 'fulfilment:courier_not_offered']);
-    const tooBig = new QuoteService(fakeDb((sql) => { if (sql.includes('make_quote')) throw dbError('parcel too heavy or too large for courier'); return [{ area_id: 4 }]; }) as never, listings() as never, params as never);
+    const tooBig = new QuoteService(fakeDb((sql) => { if (sql.includes('make_quote')) throw dbError('parcel too heavy or too large for courier'); return [{ area_id: 4 }]; }) as never, closed as never, listings() as never, params as never);
     expect(await problemOf(tooBig.issue('B', { listingId: 'L1', quantity: 9, addressId: 'A1' }))).toEqual(['delivery-refused', 'quantity:parcel_too_large']);
   });
 
+  it('NFR-REL-04 while the courier circuit breaker is open, new courier quotes are refused 503 courier-unavailable', async () => {
+    const db = fakeDb((sql) => (sql.includes('saved_addresses') ? [{ area_id: 4 }] : []));
+    const svc = new QuoteService(db as never, { isOpen: async () => true } as never, listings() as never, params as never);
+    expect(await problemOf(svc.issue('B', { listingId: 'L1', quantity: 1, addressId: 'A1' }))).toEqual(['courier-unavailable', 'fulfilment:courier_unavailable']);
+    expect(db.query.mock.calls.some(([sql]) => String(sql).includes('make_quote'))).toBe(false);
+  });
+
   it('I-21 claimQuote runs in the caller\'s transaction and returns the fee', async () => {
-    const svc = new QuoteService(fakeDb(() => []) as never, listings() as never, params as never);
+    const svc = new QuoteService(fakeDb(() => []) as never, closed as never, listings() as never, params as never);
     const tx = { query: jest.fn(async () => [{ fee: '9500' }]) };
     expect(await svc.claimQuote({ quoteId: 'Q1', orderId: 'O1', buyerId: 'B', listingId: 'L1', quantity: 2 }, tx as never)).toBe(9500n);
     expect(tx.query).toHaveBeenCalledWith(expect.stringContaining('delivery.claim_quote'), ['Q1', 'O1', 'B', 'L1', 2]);

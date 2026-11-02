@@ -7,6 +7,7 @@ import type { OrderService } from '../services/order.service';
 import type { PaymentService, ProviderRegistry } from '../services/payment.service';
 import type { PayoutService } from '../services/payout.service';
 import type { RefundService } from '../services/refund.service';
+import type { DeliveryPort } from '../../delivery/ports';
 import { DV_15_MS, OrdersJobs } from './orders.jobs';
 
 // Unit tests of the job wiring over stand-ins; the jobs against PostgreSQL and the mock providers are in
@@ -20,7 +21,7 @@ function setup(o: { rows?: (sql: string, p: unknown[]) => unknown[]; params?: 'b
   const runner = { register: jest.fn((j) => registered.push(j)) };
   const orders = { expireUnpaid: jest.fn(async () => true) };
   const payments = { reconcile: o.reconcile ?? jest.fn(async () => 'no-change') };
-  const escrow = { refundMissedDeadline: jest.fn(async () => true), autoRelease: jest.fn(async () => false) };
+  const escrow = { refundMissedDeadline: jest.fn(async (_id?: string) => true), autoRelease: jest.fn(async () => false) };
   const refunds = { processDue: jest.fn(async () => ['succeeded']), confirmSent: jest.fn(async () => 2) };
   const payouts = { processDue: jest.fn(async () => ['sent', 'retry']) };
   const values = parameterValues({ 'CP-17': '7 days', 'CP-18': '3 days', 'CP-46': '20 minutes' });
@@ -29,11 +30,15 @@ function setup(o: { rows?: (sql: string, p: unknown[]) => unknown[]; params?: 'b
     atVersion: async () => values,
   } as unknown as ConfigPort;
   const clock: Clock = { now: () => NOW };
+  const order: string[] = [];
+  const delivery = { syncPickup: jest.fn(async (id: string) => { order.push(`sync ${id}`); }), claimQuote: jest.fn(), shipsCourier: true };
+  escrow.refundMissedDeadline.mockImplementation(async (id?: string) => { order.push(`refund ${id}`); return true; });
   const jobs = new OrdersJobs(
     runner as unknown as JobRunner, db as unknown as DataSource, orders as unknown as OrderService, payments as unknown as PaymentService,
     escrow as unknown as EscrowService, refunds as unknown as RefundService, payouts as unknown as PayoutService, o.providers ?? { bkash: {} as never }, params, clock,
+    delivery as unknown as DeliveryPort,
   );
-  return { jobs, registered, query, orders, payments, escrow, refunds, payouts };
+  return { jobs, registered, query, orders, payments, escrow, refunds, payouts, delivery, order };
 }
 
 describe('OrdersJobs', () => {
@@ -70,6 +75,12 @@ describe('OrdersJobs', () => {
     expect(await s.jobs.missedDeadlines()).toBe(2);
     expect(await s.jobs.autoRelease()).toBe(0);
     expect(s.escrow.autoRelease.mock.calls).toEqual([['O1'], ['O2']]);
+  });
+
+  it('FR-DLV-11 I-22 before a courier order is refunded for a missed pickup, the courier is asked first', async () => {
+    const s = setup({ rows: () => [{ id: 'O1', fulfilment: 'courier' }, { id: 'O2', fulfilment: 'self_pickup' }] });
+    expect(await s.jobs.missedDeadlines()).toBe(2);
+    expect(s.order).toEqual(['sync O1', 'refund O1', 'refund O2']);
   });
 
   it('FR-DLV-11 a stalled courier delivery is raised after CP-17 + CP-18 from pickup, once', async () => {
