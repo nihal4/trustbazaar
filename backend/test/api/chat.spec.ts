@@ -98,6 +98,10 @@ describe('chat', () => {
     const draft = await listing(seller.userId, 'draft');
     expect((await buyer.call('POST', `/listings/${draft}/threads`)).status).toBe(404);
     expect((await buyer.call('POST', `/listings/${randomUUID()}/threads`)).status).toBe(404);
+    // a sold listing's page is public: a buyer who never wrote before buying can still write to the seller
+    const sold = await listing(seller.userId);
+    await fx.query(`UPDATE listings.listings SET status = 'sold', quantity_available = 0, quantity_sold = 1 WHERE id = $1`, [sold]);
+    expect((await buyer.call('POST', `/listings/${sold}/threads`)).status).toBe(200);
 
     await buyer.send(thread, 'Is it still available?');
     const list = await seller.json<{ items: { id: string; role: string; unread: number; other: { displayName: string; verified: boolean }; listing: { title: string } }[] }>('GET', '/threads');
