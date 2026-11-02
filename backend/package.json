@@ -15,6 +15,7 @@
     "test:integration": "jest --config test/jest.integration.json --runInBand",
     "migrate": "node dist/migrate.js",
     "staff:bootstrap": "node dist/staff-bootstrap.js",
+    "areas:seed": "node dist/areas-seed.js",
     "dev:mailbox": "node dist/dev-mailbox.js"
   },
   "dependencies": {

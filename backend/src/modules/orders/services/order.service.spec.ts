@@ -48,7 +48,7 @@ const snapshot = (o: Partial<ListingSnapshot> = {}): ListingSnapshot => ({
   price: '1000000', clarifications: [], photoKeys: ['k1'], capturedAt: NOW.toISOString(), ...o,
 });
 
-function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; verifiedAt?: Date | null; switchOn?: boolean; rows?: { id: string; cursor_at: string }[] } = {}) {
+function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; verifiedAt?: Date | null; switchOn?: boolean; rows?: { id: string; cursor_at: string }[]; shipsCourier?: boolean } = {}) {
   const repos = new Map<unknown, Repo>([
     [Order, new Repo(() => ({ status: 'awaiting_payment', createdAt: NOW, paidAt: null, fulfilmentStep: null, fulfilmentDueAt: null, fulfilmentDoneAt: null, deliveryEventAt: null, cancelledAt: null, cancelReason: null, closedAt: null }))],
     [Escrow, new Repo()],
@@ -67,13 +67,16 @@ function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; ve
   const params = { current: async () => ({ ...values, version: 7 }), switchOn: async () => o.switchOn ?? true } as unknown as ConfigPort;
   const idempotency = { once: async (_s: string, _u: string, _k: string | undefined, fn: () => Promise<string>) => ({ id: await fn(), repeated: false }) };
   const clock: Clock = { now: () => NOW };
+  // Unit 4's DeliveryPort: shipsCourier stays false until U4-04 (Decisions log, U4-02)
+  const delivery = { shipsCourier: o.shipsCourier ?? false, claimQuote: jest.fn(async () => 8000n) };
   const svc = new OrderService(
     db as unknown as DataSource, idempotency as unknown as IdempotencyKeys, listings as unknown as ListingsPort,
     identity as unknown as IdentityQuery, audit as unknown as AuditServicePort, params, clock,
     { assertNotBlocked: jest.fn(async () => undefined) } as never,
     { threadFor: jest.fn(async () => null) } as never,
+    delivery as never,
   );
-  return { svc, manager, listings, audit, orders: repos.get(Order)!, outbox: repos.get(OrdersOutboxEvent)!, escrows: repos.get(Escrow)!, cancellations: repos.get(CancellationRequest)! };
+  return { svc, manager, listings, audit, delivery, orders: repos.get(Order)!, outbox: repos.get(OrdersOutboxEvent)!, escrows: repos.get(Escrow)!, cancellations: repos.get(CancellationRequest)! };
 }
 
 const problemOf = async (p: Promise<unknown>) => {
@@ -128,6 +131,21 @@ describe('OrderService', () => {
     s.orders.rows[0].status = 'paid';
     expect(await problemOf(s.svc.chooseFulfilment('B', order.id, 'self_pickup'))).toEqual(['order-state']);
     expect(await problemOf(s.svc.chooseFulfilment('B', randomUUID(), 'self_pickup'))).toEqual(['not-found']);
+  });
+
+  it('FR-DLV-09 once Unit 4 ships courier, the quote is claimed in the order\'s transaction and its fee joins the one total', async () => {
+    const s = setup({ shipsCourier: true });
+    expect(await problemOf(s.svc.checkout('B', { listingId: 'L1', quantity: 1, fulfilment: 'courier' }, undefined))).toEqual(['validation-failed', 'quoteId:required-for-courier']);
+    const { order } = await s.svc.checkout('B', { listingId: 'L1', quantity: 2, fulfilment: 'courier', quoteId: 'Q1' }, undefined);
+    expect(s.delivery.claimQuote).toHaveBeenCalledWith({ quoteId: 'Q1', orderId: order.id, buyerId: 'B', listingId: 'L1', quantity: 2 }, s.manager);
+    expect(order).toMatchObject({ fulfilment: 'courier', itemPrice: '2000000', deliveryFee: '8000', total: '2008000' });
+    expect(s.orders.rows[0].deliveryQuoteId).toBe('Q1');
+    expect(s.outbox.rows[0].payload).toMatchObject({ total: '2008000' });
+
+    const later = setup({ shipsCourier: true });
+    const { order: o2 } = await later.svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined);
+    expect((await later.svc.chooseFulfilment('B', o2.id, 'courier', 'Q2')).total).toBe('1008000');
+    expect(await problemOf(later.svc.chooseFulfilment('B', o2.id, 'courier'))).toEqual(['validation-failed', 'quoteId:required-for-courier']);
   });
 
   it('FR-GAM-06 a game account is fulfilled only by the handover, which Unit 5 brings', () => {
@@ -220,7 +238,7 @@ describe('OrdersController', () => {
     await c.fulfilment('o', { fulfilment: 'self_pickup' }, user);
     expect(svc.list).toHaveBeenCalledWith('B', 'buyer', undefined);
     expect(svc.getOrderPage).toHaveBeenCalledWith('o', 'B');
-    expect(svc.chooseFulfilment).toHaveBeenCalledWith('B', 'o', 'self_pickup');
+    expect(svc.chooseFulfilment).toHaveBeenCalledWith('B', 'o', 'self_pickup', undefined);
     expect(() => c.view('o', { type: 'staff', staffId: 's', sessionId: 's', role: 'operator' })).toThrow(Problem);
   });
 });
