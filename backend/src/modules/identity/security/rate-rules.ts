@@ -39,6 +39,8 @@ export const RATE_RULES: Record<string, Limit[]> = {
   chat: [{ per: 'principal', limit: 30, windowSeconds: 60, cp: { code: 'CP-35', field: 'chat_per_min' } }],
   // Unit 6 (FR-CHT-06, SEC-ABU-01): reports from chat per user per day from CP-35 (U6-03). 20 is the fallback.
   'chat-report': [{ per: 'principal', limit: 20, windowSeconds: 24 * 60 * 60, cp: { code: 'CP-35', field: 'reports_per_day' } }],
+  // Unit 4 (DV-23): binding delivery quotes per user per hour (U4-02).
+  'delivery-quote': [{ per: 'principal', limit: 30, windowSeconds: 60 * 60 }],
   // CP-35, read from ConfigPort; 60 is only a fallback should the parameter be missing.
   search: [{ per: 'ip', limit: 60, windowSeconds: 60, cp: { code: 'CP-35', field: 'search_per_min' } }],
 };

@@ -44,6 +44,8 @@ export const PROBLEMS = {
   'offer-closed': { status: 409, title: 'This offer is no longer open.' },
   'blocked': { status: 403, title: 'You cannot do this with this member.' },
   'thread-closed': { status: 409, title: 'This conversation is closed.' },
+  // Unit 4 (section 3.1): a delivery refusal, with the stable code in errors[0].reason
+  'delivery-refused': { status: 422, title: 'Delivery cannot be arranged this way.' },
   'auction-busy': { status: 409, title: 'Many bids are arriving at this moment. Please try again.' },
   'order-limit': { status: 409, title: 'This order is above the value your account can place right now.' },
   'order-state': { status: 409, title: 'This order cannot be changed in its current state.' },

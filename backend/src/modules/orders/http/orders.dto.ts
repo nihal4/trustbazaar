@@ -18,12 +18,21 @@ export class CheckoutDto {
   @IsOptional()
   @IsIn(FULFILMENT)
   fulfilment?: Fulfilment;
+
+  /** Courier only: the binding quote from POST /delivery/quotes (Unit 4, I-21). */
+  @IsOptional()
+  @IsUUID('4')
+  quoteId?: string;
 }
 
-/** FR-DLV-02: the method before payment (a delivery quote joins it when Unit 4 issues them, I-21). */
+/** FR-DLV-02: the method before payment; courier with its binding quote (Unit 4, I-21). */
 export class FulfilmentDto {
   @IsIn(FULFILMENT)
   fulfilment!: Fulfilment;
+
+  @IsOptional()
+  @IsUUID('4')
+  quoteId?: string;
 }
 
 export class OrdersQuery {
