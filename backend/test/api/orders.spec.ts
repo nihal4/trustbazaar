@@ -210,6 +210,17 @@ describe('orders', () => {
     expect((await buyer.call('GET', '/orders?cursor=nonsense')).status).toBe(400);
   });
 
+  it('FR-CHT-01 the order names its chat thread, the same for buyer and seller, once they have written', async () => {
+    const seller = await member();
+    const buyer = await member();
+    const id = await listing(seller.userId);
+    const o = await (await buyer.call('POST', '/orders', { listingId: id, quantity: 1 })).json();
+    expect((await (await buyer.call('GET', `/orders/${o.id}`)).json()).threadId).toBeNull();
+    const { id: thread } = await (await buyer.call('POST', `/listings/${id}/threads`)).json();
+    expect((await (await buyer.call('GET', `/orders/${o.id}`)).json()).threadId).toBe(thread);
+    expect((await (await seller.call('GET', `/orders/${o.id}`)).json()).threadId).toBe(thread);
+  });
+
   it('SEC-SDL-09 another user, a lower role, no session and an expired session are refused', async () => {
     const seller = await member();
     const buyer = await member();
