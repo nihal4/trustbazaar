@@ -20,3 +20,10 @@ export interface DeliveryPort {
   readonly shipsCourier: boolean;
 }
 export const DELIVERY_PORT = Symbol('DELIVERY_PORT');
+
+/** Used by Unit 7 (section 3.2). U4-03: unlockHandoverCode; the return and issue commands come with U4-04. */
+export interface DeliveryCommands {
+  /** After a lock (CP-45): a new code version, the count reset; audited with the reason. */
+  unlockHandoverCode(orderId: string, staffId: string, reason: string): Promise<void>;
+}
+export const DELIVERY_COMMANDS = Symbol('DELIVERY_COMMANDS');
