@@ -5,11 +5,11 @@ import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
 import { BlockService } from '../services/block.service';
 import { ChatService } from '../services/chat.service';
-import { MarksDto, MessagesQuery, PostImageDto, PostTextDto, ThreadsQuery } from './chat.dto';
+import { ReportService } from '../services/report.service';
+import { MarksDto, MessagesQuery, PostImageDto, PostTextDto, ReportDto, ThreadsQuery } from './chat.dto';
 
 // Chat (docs/design/06_chat_notifications.pdf section 3.1; FR-CHT-01 to FR-CHT-05, FR-CHT-08; U6-02). The
 // "Participant" policy is SignedIn here plus ChatService's check, which answers not-found to anyone else.
-// Reports (POST /threads/{id}/reports) come with U6-03.
 const userOf = (p: Principal) => {
   if (p.type !== 'user') throw new Problem('forbidden');
   return p;
@@ -20,7 +20,11 @@ const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 
 @Controller()
 export class ChatController {
-  constructor(private readonly chat: ChatService, private readonly blocks: BlockService) {}
+  constructor(
+    private readonly chat: ChatService,
+    private readonly blocks: BlockService,
+    private readonly reports: ReportService,
+  ) {}
 
   /** FR-CHT-01: opens, or finds, the caller's thread with the seller of an active listing. */
   @SignedIn()
@@ -65,6 +69,14 @@ export class ChatController {
   @HttpCode(204)
   async marks(@Id('id') id: string, @Body() dto: MarksDto, @CurrentPrincipal() p: Principal): Promise<void> {
     await this.chat.mark(userOf(p).userId, id, dto.delivered, dto.read);
+  }
+
+  /** FR-CHT-06: to Unit 7's report queue (U6-03); feature-off until Unit 7's ReportCommands exists (U7-04). */
+  @SignedIn()
+  @Post('threads/:id/reports')
+  @HttpCode(201)
+  report(@Id('id') id: string, @Body() dto: ReportDto, @CurrentPrincipal() p: Principal) {
+    return this.reports.report(userOf(p).userId, id, dto);
   }
 
   /** FR-CHT-08 */

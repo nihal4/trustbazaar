@@ -8,6 +8,7 @@ import { DisputesTrustStaff1793491200007 } from './1793491200007-disputes-trust-
 import { Integration1793491200008 } from './1793491200008-integration';
 import { ListingsCourierPhotosStock1793491200009 } from './1793491200009-listings-courier-photos-stock';
 import { NotificationTemplates1793491200010 } from './1793491200010-notification-templates';
+import { ChatDetectionTermDelete1793491200012 } from './1793491200012-chat-detection-term-delete';
 import { ChatImageKeyTemplate1793491200011 } from './1793491200011-chat-image-key-template';
 
 // The migrations in the order they run: the seven units in unit order, then 09_integration (I-60).
@@ -24,4 +25,5 @@ export const MIGRATIONS = [
   ListingsCourierPhotosStock1793491200009, // U3-02 changes to 03_listings_auctions.sql (Decisions log)
   NotificationTemplates1793491200010, // U6-04: notification subject (I-55) and the first templates (Decisions log)
   ChatImageKeyTemplate1793491200011, // U6-02: chat image keys of Unit 1's FileVault, and the chat notice (Decisions log)
+  ChatDetectionTermDelete1793491200012, // U6-03: operators remove detection terms (Decisions log)
 ];

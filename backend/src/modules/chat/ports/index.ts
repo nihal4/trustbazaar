@@ -37,3 +37,17 @@ export interface BlockPort {
   assertNotBlocked(sellerId: string, buyerId: string, tx?: EntityManager): Promise<void>;
 }
 export const BLOCK_PORT = Symbol('BLOCK_PORT');
+
+export type CaseType = 'dispute' | 'report';
+
+/**
+ * Used by Unit 7 (docs/design/06_chat_notifications.pdf section 3.3; I-40). A hold keeps a thread beyond retention
+ * and is the only ground on which an operator may read it (FR-CHT-04, FR-CHT-10). Both calls are idempotent.
+ */
+export interface ChatCommands {
+  hold(threadId: string, caseType: CaseType, caseId: string): Promise<void>;
+  release(threadId: string, caseType: CaseType, caseId: string): Promise<void>;
+  /** The thread of an order: the listing and its buyer; null if they never wrote. */
+  threadFor(listingId: string, buyerId: string): Promise<string | null>;
+}
+export const CHAT_COMMANDS = Symbol('CHAT_COMMANDS');
