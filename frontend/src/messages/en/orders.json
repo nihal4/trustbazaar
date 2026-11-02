@@ -36,5 +36,8 @@
   "return.paid": "Payment received. Your money is held by TrustBazaar until you have the item.",
   "return.failed": "The payment did not go through. Nothing was charged. You can try again.",
   "return.waiting": "We are still waiting for the payment provider. We will notify you.",
-  "return.try_again": "Pay again"
+  "return.try_again": "Pay again",
+  "order.message_seller": "Message the seller",
+  "order.message_buyer": "Message the buyer",
+  "order.chat_none": "The buyer has not written to you about this order yet."
 }
