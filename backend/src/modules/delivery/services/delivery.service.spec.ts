@@ -233,7 +233,7 @@ describe('Delivery controllers', () => {
     expect(addresses.remove).toHaveBeenCalledWith('U1', 'A1');
     expect(() => c.myAddresses(staff)).toThrow(Problem);
 
-    const a = new DeliveryAdminController(areas as never, fares as never);
+    const a = new DeliveryAdminController(areas as never, fares as never, { list: jest.fn(), create: jest.fn(), update: jest.fn() } as never);
     a.addArea({ district: 'Dhaka', nameEn: 'Savar', nameBn: 'সাভার', zone: 'dhaka_suburbs', lat: 23.858, lng: 90.267 }, staff);
     a.changeArea(4, { active: false }, staff);
     a.currentFares();

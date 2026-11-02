@@ -41,6 +41,8 @@ export const RATE_RULES: Record<string, Limit[]> = {
   'chat-report': [{ per: 'principal', limit: 20, windowSeconds: 24 * 60 * 60, cp: { code: 'CP-35', field: 'reports_per_day' } }],
   // Unit 4 (DV-23): binding delivery quotes per user per hour (U4-02).
   'delivery-quote': [{ per: 'principal', limit: 30, windowSeconds: 60 * 60 }],
+  // Unit 4 (DV-28): handover-code entries per seller per minute (U4-03); CP-45 also locks the code after 5 wrong ones.
+  'handover-code': [{ per: 'principal', limit: 10, windowSeconds: 60 }],
   // CP-35, read from ConfigPort; 60 is only a fallback should the parameter be missing.
   search: [{ per: 'ip', limit: 60, windowSeconds: 60, cp: { code: 'CP-35', field: 'search_per_min' } }],
 };

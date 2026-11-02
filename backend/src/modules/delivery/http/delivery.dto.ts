@@ -132,3 +132,56 @@ export class FareTableDto {
   @ArrayMaxSize(3)
   rows!: FareRowDto[];
 }
+
+// ---------------------------------------------------------------- meetups and the handover code (U4-03)
+
+export class ProposalDto {
+  @IsUUID()
+  pointId!: string;
+
+  @IsISO8601()
+  meetAt!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(400)
+  note?: string;
+}
+
+export class CodeDto {
+  @IsString()
+  @MaxLength(12)
+  code!: string;
+}
+
+export class ReasonDto {
+  @IsString()
+  @MaxLength(1000)
+  reason!: string;
+}
+
+const POINT_KINDS = ['police_station', 'shopping_mall', 'bank_branch', 'other_public'] as const;
+
+export class MeetupPointDto {
+  @IsIn(POINT_KINDS)
+  kind!: (typeof POINT_KINDS)[number];
+
+  @IsString() @MaxLength(120) nameEn!: string;
+  @IsString() @MaxLength(120) nameBn!: string;
+  @IsString() @MaxLength(40) district!: string;
+  @IsNumber() lat!: number;
+  @IsNumber() lng!: number;
+  @IsOptional() @IsString() @MaxLength(300) guidance?: string;
+  @IsOptional() @IsBoolean() active?: boolean;
+}
+
+export class MeetupPointPatchDto {
+  @IsOptional() @IsIn(POINT_KINDS) kind?: (typeof POINT_KINDS)[number];
+  @IsOptional() @IsString() @MaxLength(120) nameEn?: string;
+  @IsOptional() @IsString() @MaxLength(120) nameBn?: string;
+  @IsOptional() @IsString() @MaxLength(40) district?: string;
+  @IsOptional() @IsNumber() lat?: number;
+  @IsOptional() @IsNumber() lng?: number;
+  @IsOptional() @IsString() @MaxLength(300) guidance?: string;
+  @IsOptional() @IsBoolean() active?: boolean;
+}

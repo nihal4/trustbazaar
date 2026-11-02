@@ -13,6 +13,13 @@ const CODES: [RegExp, string, string][] = [
   [/unknown drop-off area/, 'areaId', 'unknown_area'],
   [/drop-off address must be/, 'addressId', 'address_not_yours'],
   [/no fare table in force/, 'fare', 'no_fare_table'],
+  // meetups and the handover code (U4-03)
+  [/meetup time must be between/, 'meetAt', 'meetup_time_out_of_range'],
+  [/proposal is no longer open/, 'proposalId', 'proposal_closed'],
+  [/cannot be arranged now|handover is closed/, 'handover', 'handover_closed'],
+  [/code entry is locked/, 'code', 'code_locked'],
+  [/deadline has passed/, 'code', 'deadline_passed'],
+  [/not an active meetup point/, 'pointId', 'point_not_active'],
 ];
 
 export function refusal(field: string, code: string): Problem {
