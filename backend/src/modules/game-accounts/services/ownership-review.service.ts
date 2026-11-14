@@ -5,7 +5,7 @@ import { Problem } from '../../../kernel/http/problems';
 import type { Principal } from '../../../kernel/http/principal';
 import { AUDIT_SERVICE, AuditServicePort, CallContext, FILE_VAULT, FileVaultPort, STAFF_QUERY, StaffQuery } from '../../identity/ports';
 import { LISTINGS_COMMANDS, ListingsCommands } from '../../listings/ports';
-import type { GameAccountCommands, GameAccountQueries, LiveCheck, ProofQueueItem } from '../ports';
+import type { LiveCheck, ProofQueueItem } from '../ports';
 
 // The operator's review of ownership proofs (docs/design/05_game_accounts.pdf section 5.2; FR-GAM-03, FR-GAM-04,
 // FR-OPS-01; U5-02, second part): OwnershipReviewService.
@@ -26,7 +26,7 @@ const REASONS: [string, string, string][] = [
 ];
 
 @Injectable()
-export class OwnershipReviewService implements GameAccountCommands, GameAccountQueries {
+export class OwnershipReviewService {
   constructor(
     private readonly db: DataSource,
     @Inject(LISTINGS_COMMANDS) private readonly listings: ListingsCommands,

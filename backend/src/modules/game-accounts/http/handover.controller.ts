@@ -1,10 +1,11 @@
 import { Body, Controller, Get, Header, HttpCode, Param, ParseUUIDPipe, Post, Req } from '@nestjs/common';
-import { IsInt, IsString, Length, Max, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Length, Max, Min } from 'class-validator';
 import type { Request } from 'express';
 import { SignedIn } from '../../../kernel/http/policies';
 import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
 import { HandoverService } from '../services/handover.service';
+import { STEPS, TakeoverService, TakeoverStep } from '../services/takeover.service';
 
 // The handover's checkout routes (docs/design/05_game_accounts.pdf section 3.1; U5-03). The buyer's role on the order is
 // checked in the service; binary values travel as base64url.
@@ -40,6 +41,20 @@ export class SealedDto {
   ciphertext!: string;
 }
 
+export class ReportInvalidDto {
+  /** What went wrong, for the dispute (20 characters or more); a default text otherwise. */
+  @IsOptional()
+  @IsString()
+  @Length(20, 2000)
+  description?: string;
+}
+
+/** One of the five checklist steps; anything else is not-found. */
+export function parseStep(v: string): TakeoverStep {
+  if (!(STEPS as readonly string[]).includes(v)) throw new Problem('not-found');
+  return v as TakeoverStep;
+}
+const Step = Param('step', { transform: parseStep });
 const Id = (name: string) => Param(name, new ParseUUIDPipe({ exceptionFactory: () => new Problem('not-found') }));
 const userOf = (p: Principal) => {
   if (p.type !== 'user') throw new Problem('forbidden');
@@ -48,7 +63,10 @@ const userOf = (p: Principal) => {
 
 @Controller('orders/:id/game')
 export class HandoverController {
-  constructor(private readonly handovers: HandoverService) {}
+  constructor(
+    private readonly handovers: HandoverService,
+    private readonly takeover: TakeoverService,
+  ) {}
 
   /** FR-GAM-05: the buyer accepts the publisher-risk disclosure, by version, before paying. */
   @SignedIn()
@@ -100,5 +118,32 @@ export class HandoverController {
   sealed(@Id('id') id: string, @CurrentPrincipal() p: Principal, @Req() req: Request) {
     const u = userOf(p);
     return this.handovers.retrieve(u.userId, id, u.sessionId, req.ip ?? null);
+  }
+
+  /** FR-GAM-13: one checklist step, confirmed once; the fifth completes the takeover. */
+  @SignedIn()
+  @Post('takeover-steps/:step')
+  @HttpCode(200)
+  confirmStep(@Id('id') id: string, @Step step: TakeoverStep, @CurrentPrincipal() p: Principal) {
+    const u = userOf(p);
+    return this.takeover.confirmStep(u.userId, id, step, u.sessionId);
+  }
+
+  /** FR-GAM-14: "the credentials do not work": opens a credentials_invalid dispute. */
+  @SignedIn()
+  @Post('report-invalid')
+  @HttpCode(201)
+  reportInvalid(@Id('id') id: string, @Body() dto: ReportInvalidDto, @CurrentPrincipal() p: Principal) {
+    return this.takeover.reportInvalid(userOf(p).userId, id, dto.description);
+  }
+
+  /** FR-GAM-12: the one re-key, with the new browser's public key. */
+  @SignedIn()
+  @Post('rekey')
+  @HttpCode(201)
+  @Header('Cache-Control', 'no-store')
+  rekey(@Id('id') id: string, @Body() dto: BuyerKeyDto, @CurrentPrincipal() p: Principal) {
+    const u = userOf(p);
+    return this.takeover.requestRekey(u.userId, id, u.sessionId, dto.publicKey);
   }
 }

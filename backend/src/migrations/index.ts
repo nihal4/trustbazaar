@@ -21,6 +21,7 @@ import { DisclosureNoticeTemplate1793491200020 } from './1793491200020-disclosur
 import { OwnershipScreenshotKey1793491200021 } from './1793491200021-ownership-screenshot-key';
 import { OwnershipRejectedTemplate1793491200022 } from './1793491200022-ownership-rejected-template';
 import { GameHandoverTemplates1793491200023 } from './1793491200023-game-handover-templates';
+import { GameTakeoverTemplates1793491200024 } from './1793491200024-game-takeover-templates';
 
 // The migrations in the order they run: the seven units in unit order, then 09_integration (I-60).
 // Add a new migration at the end; never reorder or edit an applied one.
@@ -48,4 +49,5 @@ export const MIGRATIONS = [
   OwnershipScreenshotKey1793491200021, // U5-02: ownership screenshots' FileVault keys (Decisions log)
   OwnershipRejectedTemplate1793491200022, // U5-02: the seller's notice of a rejected ownership proof (Decisions log)
   GameHandoverTemplates1793491200023, // U5-03: the notices of credentials requested and delivered (I-32; Decisions log)
+  GameTakeoverTemplates1793491200024, // U5-04: the notices of a re-key and of the completed takeover (I-32; Decisions log)
 ];
