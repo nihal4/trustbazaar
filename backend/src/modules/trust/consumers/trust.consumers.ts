@@ -1,5 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { EventBus, OutboxEvent } from '../../../kernel/events/event-bus';
+import { RatingService } from '../services/rating.service';
 import { SanctionService } from '../services/sanction.service';
 
 // Unit 7's consumers of U7-04 (docs/design/07_disputes_trust_staff.pdf section 3.3), each idempotent:
@@ -7,6 +8,7 @@ import { SanctionService } from '../services/sanction.service';
 //    a missed fulfilment deadline (Unit 2's refund event with reason fulfilment_deadline, I-44). A lost dispute is
 //    the third, recorded by the decision itself (U7-03).
 //  - identity.account.reinstated: the four-eyes reinstatement lifts the live account suspensions (CP-30).
+//  - rating eligibility (FR-REV-01; U7-05), keyed by the order: a terminal escrow event makes the order rateable.
 
 const str = (v: unknown) => (typeof v === 'string' ? v : '');
 
@@ -15,6 +17,7 @@ export class TrustConsumers implements OnModuleInit {
   constructor(
     private readonly bus: EventBus,
     private readonly sanctions: SanctionService,
+    private readonly ratings: RatingService,
   ) {}
 
   onModuleInit(): void {
@@ -22,6 +25,9 @@ export class TrustConsumers implements OnModuleInit {
     this.bus.on('orders.escrow.refunded', 'trust.strikes', async (e) => {
       if (e.payload.reason === 'fulfilment_deadline') await this.strike(e, 'missed_deadline');
     });
+    for (const type of ['orders.escrow.released', 'orders.escrow.refunded', 'orders.escrow.partially_refunded']) {
+      this.bus.on(type, 'trust.ratings', async (e) => void (await this.ratings.onEscrowClosed(e)));
+    }
     this.bus.on('identity.account.reinstated', 'trust.sanctions', async (e) => {
       await this.sanctions.onReinstated({
         userId: str(e.payload.userId) || e.aggregateId, approvalId: str(e.payload.approvalId), decidedBy: str(e.payload.decidedBy) || null, reason: str(e.payload.reason) || null,
