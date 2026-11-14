@@ -102,15 +102,17 @@ describe('OwnershipService', () => {
     await expect(broken.svc.issueCode('S', 'L')).rejects.toBeInstanceOf(QueryFailedError);
   });
 
-  it('FR-GAM-03 the proof: an image, for an unexpired code; a file refused meanwhile is erased', async () => {
+  it('FR-GAM-03 the proof: on a listing held for review, an image, for an unexpired code; a file refused meanwhile is erased', async () => {
     const img = { buffer: Buffer.from('x'), mimetype: 'image/png' };
-    expect(await reason(setup(() => []).svc.submitProof('S', 'L', { buffer: Buffer.from('x'), mimetype: 'application/pdf' }))).toBe('type');
-    expect(await reason(setup(() => []).svc.submitProof('S', 'L', img))).toBe('no-code');
-    expect(await reason(setup(() => [{ id: 'P', expires_at: new Date(NOW.getTime() - 1) }]).svc.submitProof('S', 'L', img))).toBe('code-expired');
-    const s = setup((q) => (q.startsWith('SELECT id, expires_at') ? [{ id: 'P', expires_at: new Date(NOW.getTime() + 1000) }] : [[{ submitted_at: NOW }], 1]));
+    const held = { listing: { sellerId: 'S', itemKind: 'game_account', status: 'pending_review' } };
+    expect(await reason(setup(() => []).svc.submitProof('S', 'L', img))).toBe('not-submitted-for-review'); // a draft
+    expect(await reason(setup(() => [], held).svc.submitProof('S', 'L', { buffer: Buffer.from('x'), mimetype: 'application/pdf' }))).toBe('type');
+    expect(await reason(setup(() => [], held).svc.submitProof('S', 'L', img))).toBe('no-code');
+    expect(await reason(setup(() => [{ id: 'P', expires_at: new Date(NOW.getTime() - 1) }], held).svc.submitProof('S', 'L', img))).toBe('code-expired');
+    const s = setup((q) => (q.startsWith('SELECT id, expires_at') ? [{ id: 'P', expires_at: new Date(NOW.getTime() + 1000) }] : [[{ submitted_at: NOW }], 1]), held);
     expect(await s.svc.submitProof('S', 'L', img)).toEqual({ status: 'submitted', submittedAt: NOW.toISOString() });
     expect(s.vault.store).toHaveBeenCalledWith({ purpose: 'ownership_proof', ownerId: 'S', bytes: expect.any(Uint8Array) });
-    const race = setup((q) => (q.startsWith('SELECT id, expires_at') ? [{ id: 'P', expires_at: new Date(NOW.getTime() + 1000) }] : [[], 0]));
+    const race = setup((q) => (q.startsWith('SELECT id, expires_at') ? [{ id: 'P', expires_at: new Date(NOW.getTime() + 1000) }] : [[], 0]), held);
     expect(await reason(race.svc.submitProof('S', 'L', img))).toBe('no-code');
     expect(race.vault.erase).toHaveBeenCalledWith('v1.ownership_proof.k');
   });
