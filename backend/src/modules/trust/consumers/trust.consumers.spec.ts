@@ -10,9 +10,10 @@ describe('TrustConsumers', () => {
     const handlers = new Map<string, (e: OutboxEvent) => Promise<void>>();
     const bus = { on: jest.fn((type: string, name: string, h: (e: OutboxEvent) => Promise<void>) => handlers.set(`${type}/${name}`, h)) };
     const sanctions = { strike: jest.fn(async () => false), onReinstated: jest.fn(async () => 1) };
-    new TrustConsumers(bus as never, sanctions as never).onModuleInit();
+    const ratings = { onEscrowClosed: jest.fn(async (_e: OutboxEvent) => true) };
+    new TrustConsumers(bus as never, sanctions as never, ratings as never).onModuleInit();
     const run = (key: string, e: OutboxEvent) => handlers.get(key)!(e);
-    return { run, sanctions, handlers };
+    return { run, sanctions, ratings, handlers };
   }
 
   it('FR-TNS-04 I-44 a cancellation after payment and a refund at a missed deadline are strikes; other refunds are not', async () => {
@@ -31,5 +32,11 @@ describe('TrustConsumers', () => {
     expect(s.sanctions.onReinstated.mock.calls).toEqual([
       [{ userId: 'U1', approvalId: 'A1', decidedBy: 'ST', reason: 'Checked again and fine.' }], [{ userId: 'U2', approvalId: 'A2', decidedBy: null, reason: null }],
     ]);
+  });
+
+  it('FR-REV-01 every terminal escrow event makes the order rateable', async () => {
+    const s = setup();
+    for (const t of ['released', 'refunded', 'partially_refunded']) await s.run(`orders.escrow.${t}/trust.ratings`, ev(`orders.escrow.${t}`, { orderId: 'O1' }));
+    expect(s.ratings.onEscrowClosed.mock.calls.map(([e]) => e.type)).toEqual(['orders.escrow.released', 'orders.escrow.refunded', 'orders.escrow.partially_refunded']);
   });
 });

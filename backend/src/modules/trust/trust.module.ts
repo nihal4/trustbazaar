@@ -8,9 +8,10 @@ import { TrustConsumers } from './consumers/trust.consumers';
 import { ENTITIES } from './db/entities';
 import { ConfigController } from './http/config.controller';
 import { TrustController } from './http/trust.controller';
-import { CASE_QUERY, REPORT_COMMANDS, SANCTION_PORT } from './ports';
+import { CASE_QUERY, REPORT_COMMANDS, SANCTION_PORT, TRUST_QUERY } from './ports';
 import { ConfigAdminService } from './services/config-admin.service';
 import { TrustReportService } from './services/report.service';
+import { RatingService } from './services/rating.service';
 import { SanctionService } from './services/sanction.service';
 
 // Unit 7 (docs/design/07_disputes_trust_staff.pdf). Schemas: disputes, trust, staff.
@@ -28,11 +29,13 @@ import { SanctionService } from './services/sanction.service';
     ConfigAdminService,
     TrustReportService,
     SanctionService,
+    RatingService,
     TrustConsumers,
+    { provide: TRUST_QUERY, useExisting: RatingService },
     { provide: REPORT_COMMANDS, useExisting: TrustReportService },
     { provide: CASE_QUERY, useExisting: TrustReportService },
     { provide: SANCTION_PORT, useExisting: SanctionService },
   ],
-  exports: [SANCTION_PORT],
+  exports: [SANCTION_PORT, TRUST_QUERY],
 })
 export class TrustModule {}

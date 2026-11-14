@@ -4,7 +4,7 @@
 //   ReportCommands    (U7-04)
 //   SanctionPort      (U7-04)
 //   CaseQuery         (U7-04: reports; U7-03: disputes)
-//   TrustQuery
+//   TrustQuery        (U7-05)
 //   ConfigPort: the interface and token are the kernel's (kernel/config-port.ts), provided by this unit's
 //   ConfigPortModule (U7-01), so that every unit reads parameters without importing Unit 7.
 
@@ -50,3 +50,16 @@ export interface CaseQuery {
   assignedOperator(type: StaffCaseType, caseId: string): Promise<string | null>;
 }
 export const CASE_QUERY = Symbol('CASE_QUERY');
+
+/** FR-REV-04: shown on profiles and listings. */
+export interface ProfileSummary {
+  averageRating: number | null;
+  ratingCount: number;
+  completedTransactions: number;
+}
+
+/** Used by Units 3 and 8. Implemented with U7-05. */
+export interface TrustQuery {
+  profileSummary(userId: string): Promise<ProfileSummary>;
+}
+export const TRUST_QUERY = Symbol('TRUST_QUERY');
