@@ -109,6 +109,30 @@ describe('EscrowService', () => {
     expect(await reason(s.svc.getEscrow(randomUUID()))).toBe('not-found');
   });
 
+  it('FR-NTF-07 the deadline query: each kind answers only while its step is still open, with the listing\'s title', async () => {
+    const s = setup();
+    const due = new Date(NOW.getTime() + DAY);
+    const title = { listingSnapshot: { title: 'Fridge' } };
+    const unpaid = s.order({ status: 'awaiting_payment', paymentDueAt: due, ...title });
+    expect(await s.svc.deadline(unpaid.o.id, 'payment_window')).toEqual({ dueAt: due, listingTitle: 'Fridge' });
+    expect(await s.svc.deadline(unpaid.o.id, 'meetup_handover')).toBeNull(); // not paid yet
+    const meetup = s.order({ fulfilmentDueAt: due, paymentDueAt: NOW, ...title });
+    expect(await s.svc.deadline(meetup.o.id, 'payment_window')).toBeNull(); // paid
+    expect(await s.svc.deadline(meetup.o.id, 'meetup_handover')).toEqual({ dueAt: due, listingTitle: 'Fridge' });
+    expect(await s.svc.deadline(meetup.o.id, 'courier_pickup')).toBeNull(); // not its step
+    (meetup.o as Row).fulfilmentDoneAt = NOW;
+    expect(await s.svc.deadline(meetup.o.id, 'meetup_handover')).toBeNull(); // done
+    const game = s.order({ itemKind: 'game_account', fulfilment: 'game_account', fulfilmentStep: 'credentials_delivered', fulfilmentDueAt: due, listingSnapshot: null });
+    expect(await s.svc.deadline(game.o.id, 'credential_delivery')).toEqual({ dueAt: due, listingTitle: null });
+    expect(await s.svc.deadline(game.o.id, 'dispute_window')).toBeNull(); // the protection period instead (Unit 5)
+    const delivered = s.order({}, { disputeWindowEndsAt: due });
+    expect(await s.svc.deadline(delivered.o.id, 'dispute_window')).toEqual({ dueAt: due, listingTitle: null });
+    await s.svc.freezeForDispute(delivered.o.id, 'd1', s.m);
+    expect(await s.svc.deadline(delivered.o.id, 'dispute_window')).toBeNull(); // frozen by the dispute
+    expect(await s.svc.deadline(s.order({}).o.id, 'dispute_window')).toBeNull(); // no delivery event yet
+    expect(await s.svc.deadline(randomUUID(), 'payment_window')).toBeNull();
+  });
+
   it('FR-DSP-06 outcomes: release, full (fee kept after a pickup), partial, after return, and refusals', async () => {
     const s = setup();
     const r = s.order();
