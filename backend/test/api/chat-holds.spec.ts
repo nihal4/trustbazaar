@@ -118,13 +118,20 @@ describe('chat holds, staff read, reports, detection terms and retention', () =>
     expect(await logged(thread)).toBe('1');
   });
 
-  it('FR-CHT-06 a participant reports a message; it waits for Unit 7 (feature-off), and others cannot report', async () => {
+  it('FR-CHT-06 FR-TNS-01 a participant reports a message into Unit 7\'s queue, which holds the thread; once per message; others cannot report', async () => {
     const { seller, buyer, thread } = await pair();
     await seller.send(thread, 'Pay me outside the app.');
     await buyer.send(thread, 'No thanks.');
-    const off = await buyer.call('POST', `/threads/${thread}/reports`, { category: 'fraudulent', messageSeq: 1, text: 'Asked to pay outside.' });
-    expect(off.status).toBe(409);
-    expect((await off.json()).errors).toEqual([{ field: 'report', reason: 'reports-not-yet-available' }]);
+    const sent = await buyer.call('POST', `/threads/${thread}/reports`, { category: 'fraudulent', messageSeq: 1, text: 'Asked to pay outside.' });
+    expect(sent.status).toBe(201);
+    const { reportId } = (await sent.json()) as { reportId: string };
+    const [report] = await fx.query<{ target_type: string; subject_user: string; status: string; message_id: string }>(
+      `SELECT target_type, subject_user, status, message_id::text FROM trust.reports WHERE id = $1`, [reportId]);
+    expect(report).toMatchObject({ target_type: 'message', subject_user: seller.userId, status: 'open' });
+    expect(await fx.query(`SELECT case_type FROM chat.thread_holds WHERE thread_id = $1 AND case_id = $2 AND released_at IS NULL`, [thread, reportId])).toEqual([{ case_type: 'report' }]);
+    const again = await buyer.call('POST', `/threads/${thread}/reports`, { category: 'abusive', messageSeq: 1 });
+    expect(again.status).toBe(400);
+    expect((await again.json()).errors).toEqual([{ field: 'target', reason: 'already-reported' }]);
 
     expect((await buyer.call('POST', `/threads/${thread}/reports`, { category: 'abusive', messageSeq: 2 })).status).toBe(400); // own message
     expect((await buyer.call('POST', `/threads/${thread}/reports`, { category: 'abusive', messageSeq: 9 })).status).toBe(404);

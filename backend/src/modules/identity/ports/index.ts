@@ -59,8 +59,11 @@ export interface IdentityQuery {
 }
 
 export interface IdentityCommands {
-  /** FR-TNS-05: ends every session; identity.account.suspended carries the fraud flag (I-8). Audited. */
-  suspendAccount(userId: string, reason: string, byStaffId: string, o?: { fraud?: boolean; ctx?: CallContext; tx?: EntityManager }): Promise<void>;
+  /**
+   * FR-TNS-05: ends every session; identity.account.suspended carries the fraud flag (I-8), and the sanction it
+   * comes from when Unit 7 suspends (U7-04: that sanction's own notice gives the reason). Audited.
+   */
+  suspendAccount(userId: string, reason: string, byStaffId: string, o?: { fraud?: boolean; ctx?: CallContext; tx?: EntityManager; sanctionId?: string }): Promise<void>;
   /** Only with an approved account.reinstate approval for this user (CP-30). */
   reinstateAccount(userId: string, approvalId: string, tx?: EntityManager): Promise<void>;
   endAllSessions(userId: string, reason: SessionEndReason, tx?: EntityManager): Promise<void>;

@@ -22,7 +22,7 @@ import { post } from './ledger';
 //  - The worker activates cooled-off accounts, makes their waiting payouts pending, and sends pending payouts
 //    through the payout adapter with each payout's idempotency key, posting "payout sent". A failure is
 //    retried on DV-14's schedule (6 attempts over 12 hours), then raised as payout_failed.
-//  - A fraud suspension (identity.account.suspended with fraud) holds the seller's unsent payouts until an
+//  - A fraud suspension (identity.account.suspended, or Unit 7's trust.sanction.applied, with fraud) holds the seller's unsent payouts until an
 //    operator lifts the hold with a reason.
 export const PAYOUT_RETRY_DELAYS_MS = [15 * 60_000, 45 * 60_000, 3_600_000, 4 * 3_600_000, 6 * 3_600_000]; // DV-14: 6 attempts, 12 hours
 export const MAX_PAYOUT_ATTEMPTS = PAYOUT_RETRY_DELAYS_MS.length + 1;
@@ -83,6 +83,8 @@ export class PayoutService implements OnModuleInit {
 
   onModuleInit(): void {
     this.bus.on('identity.account.suspended', 'orders.payout-hold', (e) => this.onSuspended(e));
+    // a sanction with the fraud flag (any suspension, FR-TNS-05; U7-04) holds them the same way
+    this.bus.on('trust.sanction.applied', 'orders.payout-hold', (e) => this.onSuspended(e));
   }
 
   // ------------------------------------------------------------------ the seller
