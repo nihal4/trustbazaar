@@ -41,7 +41,8 @@ describe('HandoverService (checkout)', () => {
     const s = setup((q) => (q.startsWith('SELECT * FROM game_accounts.handovers') ? [handoverRow] : []));
     expect(await s.svc.acknowledge('B', 'O', DISCLOSURE_VERSION)).toEqual({
       orderId: 'O', role: 'buyer', disclosure: { currentVersion: 1, acknowledgedVersion: 1, acknowledgedAt: T.toISOString() }, status: 'preparing', keyVersion: 0, rekeysUsed: 0,
-      credentialsDueAt: null, firstDeliveredAt: null, deliveredAt: null, takeoverDueAt: null, rekeyDueAt: null, takenOverAt: null,
+      credentialsDueAt: null, firstDeliveredAt: null, deliveredAt: null, takeoverDueAt: null, rekeyDueAt: null, takenOverAt: null, takeoverSource: null,
+      steps: { password: null, recovery_email: null, recovery_phone: null, social_logins: null, two_step: null }, protectionEndsAt: null,
     });
     expect(s.query.mock.calls[0][1]).toEqual(['O', 'L', 'B', 'S', 1]);
     expect(await setup().svc.view('S', 'O')).toMatchObject({ status: null, keyVersion: 0, disclosure: { acknowledgedVersion: null } });
