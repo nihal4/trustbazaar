@@ -152,6 +152,12 @@ export class PayoutService implements OnModuleInit {
   // ------------------------------------------------------------------ operators (section 7.5)
 
   /** Bank accounts awaiting the name check, each with the KYC legal name to compare (read is audited by Unit 1). */
+  /** PayoutChecksQuery (Unit 7's queue, U7-06): no legal names here; the check itself reads them (audited). */
+  async pendingAccountChecks(): Promise<{ id: string; userId: string; createdAt: Date }[]> {
+    const rows = await this.db.getRepository(PayoutAccount).find({ where: { status: 'pending_review' }, order: { createdAt: 'ASC' }, take: 200 });
+    return rows.map((a) => ({ id: a.id, userId: a.userId, createdAt: a.createdAt }));
+  }
+
   async pendingBankAccounts(staffId: string, ctx: CallContext = {}) {
     const rows = await this.db.getRepository(PayoutAccount).find({ where: { status: 'pending_review' }, order: { createdAt: 'ASC' }, take: 100 });
     const out: (PayoutAccountView & { userId: string; routingNumber: string | null; kycLegalName: string })[] = [];
