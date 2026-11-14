@@ -79,8 +79,8 @@ CREATE TABLE game_accounts.ownership_proofs (
   status             game_accounts.proof_status NOT NULL DEFAULT 'issued',
   issued_at          timestamptz NOT NULL DEFAULT now(),
   expires_at         timestamptz NOT NULL,
-  screenshot_key     varchar(80) UNIQUE,                 -- random name on the evidence volume
-  screenshot_dek     bytea,                              -- wrapped data key; NULL once erased
+  screenshot_key     varchar(300) UNIQUE,                -- Unit 1 FileVault key, ownership_proof purpose (it carries the wrapped data key; U5-02)
+  screenshot_dek     bytea,                              -- unused: the FileVault key carries the wrapped data key (U5-02)
   screenshot_sha256  bytea CHECK (octet_length(screenshot_sha256) = 32),
   submitted_at       timestamptz,
   reviewed_by        uuid REFERENCES identity.staff_accounts(id),
