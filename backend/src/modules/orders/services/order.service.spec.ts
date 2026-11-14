@@ -48,7 +48,7 @@ const snapshot = (o: Partial<ListingSnapshot> = {}): ListingSnapshot => ({
   price: '1000000', clarifications: [], photoKeys: ['k1'], capturedAt: NOW.toISOString(), ...o,
 });
 
-function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; verifiedAt?: Date | null; switchOn?: boolean; rows?: { id: string; cursor_at: string }[]; shipsCourier?: boolean } = {}) {
+function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; verifiedAt?: Date | null; switchOn?: boolean; rows?: { id: string; cursor_at: string }[]; shipsCourier?: boolean; cp36?: boolean } = {}) {
   const repos = new Map<unknown, Repo>([
     [Order, new Repo(() => ({ status: 'awaiting_payment', createdAt: NOW, paidAt: null, fulfilmentStep: null, fulfilmentDueAt: null, fulfilmentDoneAt: null, deliveryEventAt: null, cancelledAt: null, cancelReason: null, closedAt: null }))],
     [Escrow, new Repo()],
@@ -63,7 +63,7 @@ function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; ve
   const listings = { reserve: jest.fn(async () => o.reserve ?? true), snapshot: jest.fn(async () => o.snap ?? snapshot()) };
   const identity = { getPrincipal: jest.fn(async () => ({ verifiedAt: o.verifiedAt === undefined ? new Date('2026-01-01') : o.verifiedAt })) };
   const audit = { record: jest.fn(async () => undefined) };
-  const values = parameterValues(PARAMS);
+  const values = parameterValues({ ...PARAMS, 'CP-36': o.cp36 ?? true });
   const params = { current: async () => ({ ...values, version: 7 }), switchOn: async () => o.switchOn ?? true } as unknown as ConfigPort;
   const idempotency = { once: async (_s: string, _u: string, _k: string | undefined, fn: () => Promise<string>) => ({ id: await fn(), repeated: false }) };
   const clock: Clock = { now: () => NOW };
@@ -100,11 +100,11 @@ describe('OrderService', () => {
     expect(s.audit.record).toHaveBeenCalledWith(expect.objectContaining({ action: 'orders.order.created', actorId: 'B' }), s.manager);
   });
 
-  it('FR-FIX-05 not available, own listing, game accounts and the emergency switch are refused', async () => {
+  it('FR-FIX-05 FR-GAM-01 not available, own listing, game accounts while CP-36 is off and the emergency switch are refused', async () => {
     expect(await problemOf(setup({ reserve: false }).svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined))).toEqual(['not-available']);
     expect(await problemOf(setup().svc.checkout('S', { listingId: 'L1', quantity: 1 }, undefined))).toEqual(['forbidden', 'listingId:own-listing']);
-    expect(await problemOf(setup({ snap: snapshot({ itemKind: 'game_account', fulfilmentOptions: null }) }).svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined)))
-      .toEqual(['feature-off', 'listingId:game-accounts-not-yet-available']);
+    expect(await problemOf(setup({ cp36: false, snap: snapshot({ itemKind: 'game_account', fulfilmentOptions: null }) }).svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined)))
+      .toEqual(['feature-off']);
     expect(await problemOf(setup({ switchOn: false }).svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined))).toEqual(['feature-off']);
     expect(await problemOf(setup().svc.checkout('B', { listingId: 'L1', quantity: 1, fulfilment: 'courier' }, undefined))).toEqual(['feature-off', 'fulfilment:courier-not-yet-available']);
     expect(await problemOf(setup({ snap: snapshot({ fulfilmentOptions: 'courier_only' }) }).svc.checkout('B', { listingId: 'L1', quantity: 1, fulfilment: 'self_pickup' }, undefined)))
@@ -148,8 +148,14 @@ describe('OrderService', () => {
     expect(await problemOf(later.svc.chooseFulfilment('B', o2.id, 'courier'))).toEqual(['validation-failed', 'quoteId:required-for-courier']);
   });
 
-  it('FR-GAM-06 a game account is fulfilled only by the handover, which Unit 5 brings', () => {
-    expect(fulfilmentRefusal('game_account', ['game_account'])).toBe('game-accounts-not-yet-available');
+  it('FR-GAM-06 a game account is fulfilled only by the handover: checkout and an auction win choose it', async () => {
+    expect(fulfilmentRefusal('game_account', ['game_account'])).toBeNull();
+    const game = snapshot({ itemKind: 'game_account', fulfilmentOptions: null });
+    const s = setup({ snap: game });
+    expect((await s.svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined)).order).toMatchObject({ fulfilment: 'game_account', deliveryFee: '0' });
+    expect(await problemOf(s.svc.checkout('B', { listingId: 'L1', quantity: 1, fulfilment: 'self_pickup' }, undefined))).toEqual(['validation-failed', 'fulfilment:not-offered-by-listing']);
+    const won = setup({ snap: { ...game, saleFormat: 'auction' } });
+    expect(await won.svc.createAuctionOrder({ listingId: 'L1', winnerId: 'B', price: 500000n, kind: 'auction' })).toMatchObject({ fulfilment: 'game_account' });
     expect(fulfilmentRefusal('self_pickup', ['game_account'])).toBe('not-offered-by-listing');
     expect(fulfilmentRefusal('self_pickup', ['self_pickup'])).toBeNull();
   });

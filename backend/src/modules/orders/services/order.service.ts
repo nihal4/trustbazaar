@@ -44,7 +44,6 @@ interface Cp27 {
 export function fulfilmentRefusal(f: Fulfilment, options: Fulfilment[], shipsCourier = false): string | null {
   if (!options.includes(f)) return 'not-offered-by-listing';
   if (f === 'courier' && !shipsCourier) return 'courier-not-yet-available'; // until Unit 4 ships them (U4-04; Decisions log, U4-02)
-  if (f === 'game_account') return 'game-accounts-not-yet-available'; // Unit 5 GameAccountPort (I-29)
   return null;
 }
 
@@ -82,9 +81,9 @@ export class OrderService implements OrdersPort {
         const snap = await this.listings.snapshot(c.listingId, m);
         if (snap.sellerId === buyerId) throw new Problem('forbidden', { errors: [{ field: 'listingId', reason: 'own-listing' }] }); // FR-FIX-01
         await this.blocks.assertNotBlocked(snap.sellerId, buyerId, m); // FR-CHT-08, I-37: a block in either direction
-        if (snap.itemKind === 'game_account') {
-          throw new Problem('feature-off', { errors: [{ field: 'listingId', reason: 'game-accounts-not-yet-available' }] });
-        }
+        // FR-GAM-01, FR-GAM-06: a game account needs CP-36, and its only method is the sealed handover (U5-03)
+        if (snap.itemKind === 'game_account' && params.get<boolean>('CP-36') !== true) throw new Problem('feature-off');
+        if (snap.itemKind === 'game_account' && !c.fulfilment) c = { ...c, fulfilment: 'game_account' };
         if (c.fulfilment) {
           const refusal = fulfilmentRefusal(c.fulfilment, optionsOf(snap), this.delivery.shipsCourier);
           if (refusal) throw new Problem(refusal === 'not-offered-by-listing' ? 'validation-failed' : 'feature-off', { errors: [{ field: 'fulfilment', reason: refusal }] });
@@ -150,7 +149,7 @@ export class OrderService implements OrdersPort {
       if (snap.saleFormat !== 'auction') throw new Error(`listing ${a.listingId} is not an auction`);
       const window = params.ms(a.kind === 'auction' ? 'CP-10' : 'CP-11'); // FR-AUC-14, FR-AUC-15
       return this.insert(m, {
-        kind: a.kind, snap, buyerId: a.winnerId, quantity: 1, unitPrice: a.price, fulfilment: null,
+        kind: a.kind, snap, buyerId: a.winnerId, quantity: 1, unitPrice: a.price, fulfilment: snap.itemKind === 'game_account' ? 'game_account' : null,
         paymentDueAt: new Date(this.clock.now().getTime() + window), params, version: params.version, actor: { type: 'system', id: null },
       });
     };
