@@ -32,8 +32,8 @@ export interface Preferences {
 }
 
 const PAGE = 50;
-/** Parameters written by users, masked before use (section 7.3). */
-const USER_TEXT = new Set(['listing_title', 'device', 'sender_name']);
+/** Parameters written by people (users, or staff for a sanction's reason), masked before use (section 7.3). */
+const USER_TEXT = new Set(['listing_title', 'device', 'sender_name', 'reason']);
 const DEFAULTS: Preferences = { language: 'bn', emailTransactional: true };
 
 
