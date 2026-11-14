@@ -151,7 +151,7 @@ CREATE TABLE disputes.evidence (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   dispute_id   uuid NOT NULL REFERENCES disputes.disputes(id),
   party        disputes.party NOT NULL,
-  storage_key  varchar(80) NOT NULL UNIQUE,        -- Unit 1 FileVault, evidence purpose (encrypted)
+  storage_key  varchar(300) NOT NULL UNIQUE,       -- Unit 1 FileVault key, evidence purpose (encrypted; U7-03)
   sha256       bytea NOT NULL CHECK (octet_length(sha256) = 32),
   mime         varchar(30) NOT NULL CHECK (mime IN ('image/jpeg', 'image/png', 'image/webp', 'application/pdf')),
   byte_size    integer NOT NULL CHECK (byte_size BETWEEN 1 AND 10485760),     -- CP-33
