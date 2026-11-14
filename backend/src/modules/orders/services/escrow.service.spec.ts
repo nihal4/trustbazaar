@@ -54,7 +54,7 @@ function setup(o: { account?: { id: string; status: string; effective_at: Date }
     const game = x.itemKind === 'game_account';
     const row = {
       id, status: 'paid', itemKind: 'physical', buyerId: 'B', sellerId: 'S', fulfilment: 'self_pickup', fulfilmentStep: 'meetup_handover', fulfilmentDoneAt: null,
-      deliveryEventAt: null, itemPrice: '1000000', deliveryFee: '0', commissionBps: 500, deliveryMarginBps: 1000, paramsVersion: 1, ...x,
+      deliveryEventAt: null, closedAt: null, itemPrice: '1000000', deliveryFee: '0', commissionBps: 500, deliveryMarginBps: 1000, paramsVersion: 1, ...x,
     };
     repos.get(Order)!.rows.push(row);
     const total = (BigInt(row.itemPrice as string) + BigInt(row.deliveryFee as string)).toString();
@@ -105,7 +105,7 @@ describe('EscrowService', () => {
     await s.svc.freezeForDispute(before.o.id, 'd3', s.m);
     await s.svc.withdrawDispute(before.o.id, 'd3', s.m);
     expect(before.e.autoReleaseAt).toBeNull(); // no delivery event yet: nothing to release automatically
-    expect(await s.svc.getEscrow(o.id)).toMatchObject({ state: 'held', orderStatus: 'paid' });
+    expect(await s.svc.getEscrow(o.id)).toMatchObject({ state: 'held', orderStatus: 'paid', closedAt: null });
     expect(await reason(s.svc.getEscrow(randomUUID()))).toBe('not-found');
   });
 

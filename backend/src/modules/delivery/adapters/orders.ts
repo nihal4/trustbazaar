@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import type { EntityManager } from 'typeorm';
-import { ESCROW_COMMANDS, EscrowCommands, FulfilmentFacts, ORDERS_PORT, OrdersPort, type OrderView } from '../../orders/ports';
+import { ESCROW_COMMANDS, ESCROW_QUERY, EscrowCommands, EscrowQuery, FulfilmentFacts, ORDERS_PORT, OrdersPort, type EscrowView, type OrderView } from '../../orders/ports';
 
 // Unit 2's OrdersPort.lockForFulfilment and EscrowCommands for the handover (DC-14; I-20; U4-03). Unit 2 imports this
 // unit (DeliveryPort.claimQuote in its checkout), so this unit cannot import Unit 2's module: the provider below finds
@@ -17,6 +17,8 @@ export interface FulfilmentOrders {
   recordCourierCost: EscrowCommands['recordCourierCost'];
   /** U4-04: the shipments view checks the caller is the order's buyer or seller (not-found otherwise) */
   getOrderForParty(orderId: string, userId: string): Promise<OrderView>;
+  /** U4-05: the order's status, close time and open dispute, for address erasure (DV-30) */
+  getEscrow(orderId: string): Promise<EscrowView>;
 }
 
 @Injectable()
@@ -45,5 +47,9 @@ export class ForwardedFulfilmentOrders implements FulfilmentOrders {
 
   getOrderForParty(orderId: string, userId: string): Promise<OrderView> {
     return this.modules.get<OrdersPort>(ORDERS_PORT, { strict: false }).getOrderForParty(orderId, userId);
+  }
+
+  getEscrow(orderId: string): Promise<EscrowView> {
+    return this.modules.get<EscrowQuery>(ESCROW_QUERY, { strict: false }).getEscrow(orderId);
   }
 }

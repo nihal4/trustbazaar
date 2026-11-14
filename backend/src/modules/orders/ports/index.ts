@@ -108,6 +108,8 @@ export interface EscrowView {
   autoReleaseAt: Date | null;
   openDisputeId: string | null;
   deliveryEventAt: Date | null;
+  /** When the order closed (released, refunded or settled); null while open. Unit 4 counts DV-30 from it (U4-05). */
+  closedAt: Date | null;
 }
 
 /**

@@ -1,5 +1,12 @@
 import { randomInt, randomUUID } from 'crypto';
+import { DataSource } from 'typeorm';
+import { CLOCK } from '../../src/kernel/clock';
+import { CONFIG_PORT } from '../../src/kernel/config-port';
 import { OutboxDispatcher } from '../../src/kernel/events/outbox-dispatcher';
+import { REDIS } from '../../src/kernel/redis.provider';
+import { FULFILMENT_ORDERS } from '../../src/modules/delivery/adapters/orders';
+import { StatusService } from '../../src/modules/delivery/services/status.service';
+import { UpkeepService } from '../../src/modules/delivery/services/upkeep.service';
 import { startApp, TestApp } from '../support/app';
 import { IdentityFixtures } from '../support/identity';
 
@@ -253,5 +260,21 @@ describe('meetup handover', () => {
     const list = (await (await adm.call('GET', '/admin/meetup-points')).json()) as { items: { id: string }[] };
     expect(list.items.some((x) => x.id === p.id)).toBe(true);
     expect(await fx.query(`SELECT 1 FROM audit.events WHERE action LIKE 'delivery.meetup_point.%' AND object_id = $1`, [p.id])).toHaveLength(2);
+  });
+
+  it('FR-DLV-04 a proposal whose time has passed lapses (U4-05 job) and can no longer be accepted', async () => {
+    const o = await paidOrder();
+    type P = { id: string; status: string };
+    const v = await o.buyer.json<{ proposals: P[] }>('POST', `/orders/${o.id}/meetup-proposals`, { placeName: 'Tea stall by the lake', meetAt: inHours(2) }, 201);
+    const pid = v.proposals[0].id;
+    const upkeepAt = (aheadMs: number) => new UpkeepService(
+      t.app.get(DataSource), t.app.get(StatusService), t.app.get(FULFILMENT_ORDERS), t.app.get(CONFIG_PORT), t.app.get(REDIS),
+      { now: () => new Date(t.app.get<{ now(): Date }>(CLOCK).now().getTime() + aheadMs) },
+    );
+    await upkeepAt(0).lapseProposals();
+    expect((await o.seller.json<{ proposals: P[] }>('GET', `/orders/${o.id}/handover`)).proposals.find((p) => p.id === pid)?.status).toBe('proposed');
+    expect(await upkeepAt(3 * 3_600_000).lapseProposals()).toBeGreaterThanOrEqual(1);
+    expect((await o.seller.json<{ proposals: P[] }>('GET', `/orders/${o.id}/handover`)).proposals.find((p) => p.id === pid)?.status).toBe('lapsed');
+    expect(await reason(await o.seller.call('POST', `/orders/${o.id}/meetup-proposals/${pid}/accept`))).toEqual({ field: 'proposalId', reason: 'proposal_closed' });
   });
 });
