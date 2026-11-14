@@ -1,17 +1,18 @@
-import { Body, Controller, Delete, HttpCode, Param, ParseEnumPipe, ParseUUIDPipe, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseEnumPipe, ParseUUIDPipe, Patch, Post, Query, Req, Res } from '@nestjs/common';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsIn, IsOptional, IsString, IsUUID, Length, MaxLength, ValidateNested } from 'class-validator';
+import { IsBoolean, IsDate, IsIn, IsInt, IsOptional, IsString, IsUUID, Length, Max, MaxLength, Min, ValidateNested } from 'class-validator';
 import type { Request, Response } from 'express';
 import { correlationId } from '../../../kernel/http/correlation';
-import { SignedIn, Staff } from '../../../kernel/http/policies';
+import { Public, SignedIn, Staff } from '../../../kernel/http/policies';
 import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
 import { REPORT_CATEGORY, SANCTION_KIND, SanctionKind } from '../db/enums';
 import type { ReportCategory } from '../ports';
+import { RatingService } from '../services/rating.service';
 import { TrustReportService } from '../services/report.service';
 import { RelatedType, SanctionService } from '../services/sanction.service';
 
-// Unit 7's reports and sanctions API (docs/design/07_disputes_trust_staff.pdf section 3.1; U7-04). Ownership of a case
+// Unit 7's reports, sanctions and ratings API (docs/design/07_disputes_trust_staff.pdf section 3.1; U7-04, U7-05). Ownership of a case
 // ("Assigned operator") is checked in the services; the routes declare SignedIn or Staff.
 
 export class ReportDto {
@@ -81,6 +82,51 @@ export class LiftDto {
   reason!: string;
 }
 
+export class RatingDto {
+  @IsInt()
+  @Min(1)
+  @Max(5)
+  stars!: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  text?: string | null;
+}
+
+export class RatingEditDto {
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(5)
+  stars?: number;
+
+  /** null or empty removes the text. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  text?: string | null;
+}
+
+export class ReplyDto {
+  @IsString()
+  @Length(1, 1000)
+  text!: string;
+}
+
+export class RemovalDto {
+  @IsString()
+  @Length(10, 1000)
+  reason!: string;
+}
+
+export class ReviewsQuery {
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  cursor?: string;
+}
+
 const Id = (name: string) => Param(name, new ParseUUIDPipe({ exceptionFactory: () => new Problem('not-found') }));
 const userOf = (p: Principal) => {
   if (p.type !== 'user') throw new Problem('forbidden');
@@ -99,7 +145,53 @@ export class TrustController {
   constructor(
     private readonly reports: TrustReportService,
     private readonly sanctions: SanctionService,
+    private readonly ratings: RatingService,
   ) {}
+
+  /** FR-REV-01: the buyer or the seller rates the other, once; 201 with the rating. */
+  @SignedIn()
+  @Post('orders/:id/rating')
+  @HttpCode(201)
+  rate(@Id('id') orderId: string, @Body() dto: RatingDto, @CurrentPrincipal() p: Principal) {
+    return this.ratings.rate(userOf(p), orderId, dto);
+  }
+
+  /** FR-REV-03: within the edit period. */
+  @SignedIn()
+  @Patch('ratings/:id')
+  edit(@Id('id') id: string, @Body() dto: RatingEditDto, @CurrentPrincipal() p: Principal) {
+    return this.ratings.edit(userOf(p), id, dto);
+  }
+
+  /** FR-REV-06: one public reply by the rated user. */
+  @SignedIn()
+  @Post('ratings/:id/reply')
+  @HttpCode(200)
+  reply(@Id('id') id: string, @Body() dto: ReplyDto, @CurrentPrincipal() p: Principal) {
+    return this.ratings.reply(userOf(p), id, dto.text);
+  }
+
+  /** FR-REV-04, FR-REV-05: average, count, completed transactions, badges. */
+  @Public()
+  @Get('users/:id/trust')
+  trust(@Id('id') id: string) {
+    return this.ratings.trust(id);
+  }
+
+  /** The reviews a user received, newest first (added to the design's API; Decisions log, U7-05). */
+  @Public()
+  @Get('users/:id/ratings')
+  reviews(@Id('id') id: string, @Query() q: ReviewsQuery) {
+    return this.ratings.reviews(id, q.cursor);
+  }
+
+  /** FR-REV-07: remove a review that breaks the content policy, with a reason. */
+  @Staff('operator')
+  @Post('staff/ratings/:id/removal')
+  @HttpCode(200)
+  remove(@Id('id') id: string, @Body() dto: RemovalDto, @CurrentPrincipal() p: Principal, @Req() req: Request) {
+    return this.ratings.remove(staffOf(p), id, dto.reason, ctx(req));
+  }
 
   /** FR-TNS-01: report a listing or a user; 201 {reportId}. */
   @SignedIn()
