@@ -8,7 +8,7 @@ import { ENTITIES } from './db/entities';
 import { OrderActionsController, OrdersController } from './http/orders.controller';
 import { MockPayController, PaymentsController, StripeWebhookController } from './http/payments.controller';
 import { MyPayoutsController, StaffPayoutsController } from './http/payouts.controller';
-import { ESCROW_COMMANDS, ESCROW_QUERY, ORDERS_PORT } from './ports';
+import { ESCROW_COMMANDS, ESCROW_QUERY, ORDERS_PORT, PAYOUT_CHECKS } from './ports';
 import { EscrowService } from './services/escrow.service';
 import { RefundService } from './services/refund.service';
 import { OrdersJobs } from './jobs/orders.jobs';
@@ -42,7 +42,8 @@ import type Redis from 'ioredis';
     { provide: PAYOUT_PROVIDER, useClass: SimulatedPayoutProvider },
     { provide: ESCROW_COMMANDS, useExisting: EscrowService },
     { provide: ESCROW_QUERY, useExisting: EscrowService },
+    { provide: PAYOUT_CHECKS, useExisting: PayoutService },
   ],
-  exports: [ORDERS_PORT, ESCROW_COMMANDS, ESCROW_QUERY],
+  exports: [ORDERS_PORT, ESCROW_COMMANDS, ESCROW_QUERY, PAYOUT_CHECKS],
 })
 export class OrdersModule {}
