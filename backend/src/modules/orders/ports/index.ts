@@ -135,7 +135,16 @@ export interface EscrowQuery {
   getEscrow(orderId: string): Promise<EscrowView>;
   /** FR-DSP-01, FR-DSP-11: held, paid, and before the end of the dispute window (if the delivery event is recorded). */
   disputeAllowed(orderId: string, at: Date): Promise<boolean>;
+  /**
+   * The deadline query of Notifications' reminder job (FR-NTF-07; U6-06): does this order's deadline still apply,
+   * and when is it now? Null once the step happened, the order moved on, or a dispute froze it. The fulfilment
+   * deadlines (meetup handover, courier pickup, credential delivery) are the order's own (fulfilmentDueAt).
+   */
+  deadline(orderId: string, kind: DeadlineKind): Promise<{ dueAt: Date; listingTitle: string | null } | null>;
 }
+
+/** The order deadlines Notifications reminds people of (FR-NTF-07). Unit 5's takeover window and protection period come with Unit 5. */
+export type DeadlineKind = 'payment_window' | 'meetup_handover' | 'courier_pickup' | 'credential_delivery' | 'dispute_window';
 
 export const ESCROW_COMMANDS = Symbol('ESCROW_COMMANDS');
 export const ESCROW_QUERY = Symbol('ESCROW_QUERY');
