@@ -253,7 +253,8 @@ export class OrderService implements OrdersPort {
     if (courier) total = itemPrice + (await this.applyQuote(m, orderId, o.buyerId, o.snap.listingId, o.quantity, o.quoteId!, itemPrice));
     await m.getRepository(OrdersOutboxEvent).insert({
       eventType: 'orders.order.created', aggregateId: orderId,
-      payload: { orderId, kind: o.kind, listingId: o.snap.listingId, listingTitle: o.snap.title, buyerId: o.buyerId, sellerId: o.snap.sellerId, quantity: o.quantity, total: total.toString() },
+      // paymentDueAt: the payment window, which Notifications reminds the buyer of (FR-NTF-07, U6-06)
+      payload: { orderId, kind: o.kind, listingId: o.snap.listingId, listingTitle: o.snap.title, buyerId: o.buyerId, sellerId: o.snap.sellerId, quantity: o.quantity, total: total.toString(), paymentDueAt: o.paymentDueAt.toISOString() },
     });
     await this.audit.record(
       { actorType: o.actor.type, actorId: o.actor.id, action: 'orders.order.created', objectType: 'order', objectId: orderId,
