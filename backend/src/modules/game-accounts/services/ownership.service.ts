@@ -5,10 +5,10 @@ import { CLOCK, Clock } from '../../../kernel/clock';
 import { CONFIG_PORT, ConfigPort } from '../../../kernel/config-port';
 import { Problem } from '../../../kernel/http/problems';
 import { AUDIT_SERVICE, AuditServicePort, CallContext, FILE_VAULT, FileVaultPort } from '../../identity/ports';
-import { LISTINGS_PORT, ListingsPort } from '../../listings/ports';
+import { LISTINGS_PORT, ListingSnapshot, ListingsPort } from '../../listings/ports';
 
 // Listing a game account, the seller's side and the catalogue (docs/design/05_game_accounts.pdf section 5; FR-GAM-01 to
-// FR-GAM-03; U5-02, first part). The review, the player-ID claim and publication are the second part.
+// FR-GAM-03; U5-02). The review, the player-ID claim and publication are OwnershipReviewService's.
 //  - The catalogue: games with their platforms, where the ownership code goes and the publisher's note; administrators
 //    maintain it (audited), everyone reads the active games.
 //  - Game details (FR-GAM-02): game, platform, player ID and contents, on the seller's own game-account listing while it
@@ -16,7 +16,8 @@ import { LISTINGS_PORT, ListingsPort } from '../../listings/ports';
 //  - Ownership code (FR-GAM-03): `TB-XXXX-XXXX`, 40 random bits in Crockford base32 without I, L, O and U, valid DV-33
 //    (7 days). Asking again replaces an unused code. Not a secret: it proves control of the profile now.
 //  - Proof: the screenshot showing the code and the player ID, re-encoded without metadata and encrypted by Unit 1's
-//    FileVault (purpose ownership_proof); the proof is then submitted for review.
+//    FileVault (purpose ownership_proof); the proof is then submitted for review. The listing must be held for review
+//    (the seller asked to publish it), since the operator's approval publishes it (Decisions log, U5-02).
 //  - While CP-36 is off, all of this answers feature-off (FR-GAM-01).
 
 const CROCKFORD = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
@@ -145,7 +146,9 @@ export class OwnershipService {
 
   /** POST /listings/{id}/ownership-proof: the screenshot with the code and player ID; the proof goes to review. */
   async submitProof(sellerId: string, listingId: string, file: { buffer: Buffer; mimetype: string }): Promise<{ status: 'submitted'; submittedAt: string }> {
-    await this.ownGameListing(sellerId, listingId);
+    const listing = await this.ownGameListing(sellerId, listingId);
+    // the operator's approval publishes the listing, so the seller has asked to publish it first (Decisions log, U5-02)
+    if (listing.status !== 'pending_review') throw new Problem('validation-failed', { errors: [{ field: 'listing', reason: 'not-submitted-for-review' }] });
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) throw new Problem('validation-failed', { errors: [{ field: 'file', reason: 'type' }] });
     const [proof] = (await this.db.query(`SELECT id, expires_at FROM game_accounts.ownership_proofs WHERE listing_id = $1 AND status = 'issued'`, [listingId])) as { id: string; expires_at: Date }[];
     if (!proof) throw new Problem('validation-failed', { errors: [{ field: 'listing', reason: 'no-code' }] });
@@ -181,11 +184,12 @@ export class OwnershipService {
   }
 
   /** The seller's own game-account listing, still editable; CP-36 on (FR-GAM-01). Others get not-found. */
-  private async ownGameListing(sellerId: string, listingId: string, anyStatus = false): Promise<void> {
+  private async ownGameListing(sellerId: string, listingId: string, anyStatus = false): Promise<ListingSnapshot> {
     if ((await this.params.current()).get<boolean>('CP-36') !== true) throw new Problem('feature-off');
     const l = await this.listings.snapshot(listingId).catch(() => null);
     if (!l || l.sellerId !== sellerId || l.itemKind !== 'game_account') throw new Problem('not-found');
     if (!anyStatus && !EDITABLE.includes(l.status)) throw new Problem('validation-failed', { errors: [{ field: 'listing', reason: 'not-editable' }] });
+    return l;
   }
 
   private game(r: Record<string, unknown>): GameView {

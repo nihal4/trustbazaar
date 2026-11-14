@@ -1,11 +1,13 @@
 import { Body, Controller, Get, HttpCode, Param, ParseIntPipe, ParseUUIDPipe, Patch, Post, Put, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsOptional, IsString, Length, Matches, Max, Min } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsIn, IsInt, IsOptional, IsString, Length, Matches, Max, Min } from 'class-validator';
 import type { Request } from 'express';
 import { correlationId } from '../../../kernel/http/correlation';
 import { Public, SignedIn, Staff, Verified } from '../../../kernel/http/policies';
 import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
+import type { LiveCheck } from '../ports';
+import { OwnershipReviewService } from '../services/ownership-review.service';
 import { OwnershipService } from '../services/ownership.service';
 
 // Unit 5's listing API (docs/design/05_game_accounts.pdf section 3.1; U5-02). The seller's ownership of the listing is
@@ -64,6 +66,21 @@ export class GameDetailsDto {
   contents!: string;
 }
 
+export class ProofReviewDto {
+  @IsIn(['approve', 'reject'])
+  decision!: 'approve' | 'reject';
+
+  /** What the operator saw on the game's live profile. */
+  @IsIn(['matched', 'not_matched', 'not_available'])
+  liveCheck!: LiveCheck;
+
+  /** Required for a rejection (10 characters or more); the seller sees it. */
+  @IsOptional()
+  @IsString()
+  @Length(1, 1000)
+  reason?: string;
+}
+
 const Id = (name: string) => Param(name, new ParseUUIDPipe({ exceptionFactory: () => new Problem('not-found') }));
 const userOf = (p: Principal) => {
   if (p.type !== 'user') throw new Problem('forbidden');
@@ -77,7 +94,10 @@ const ctx = (req: Request) => ({ ip: req.ip ?? null, correlationId: correlationI
 
 @Controller()
 export class GameAccountsController {
-  constructor(private readonly ownership: OwnershipService) {}
+  constructor(
+    private readonly ownership: OwnershipService,
+    private readonly review: OwnershipReviewService,
+  ) {}
 
   /** The catalogue: games, platforms, where the code goes, the publisher's note. */
   @Public()
@@ -129,5 +149,29 @@ export class GameAccountsController {
   @Get('listings/:id/ownership')
   status(@Id('id') id: string, @CurrentPrincipal() p: Principal) {
     return this.ownership.status(userOf(p), id);
+  }
+
+  // ------------------------------------------------------------------ staff: the ownership review (FR-GAM-03, FR-OPS-01)
+
+  @Staff('operator')
+  @Get('staff/game/ownership-proofs')
+  proofs() {
+    return this.review.queue();
+  }
+
+  /** A signed link valid CP-31 for this session; each view is audited. */
+  @Staff('operator')
+  @Get('staff/game/ownership-proofs/:id/screenshot')
+  screenshot(@Id('id') id: string, @CurrentPrincipal() p: Principal, @Req() req: Request) {
+    if (p.type !== 'staff') throw new Problem('forbidden');
+    return this.review.screenshot(p, id, ctx(req));
+  }
+
+  /** Approve (takes the player-ID claim and publishes the listing), or reject with a reason (back to draft). */
+  @Staff('operator')
+  @Post('staff/game/ownership-proofs/:id/review')
+  @HttpCode(200)
+  decide(@Id('id') id: string, @Body() dto: ProofReviewDto, @CurrentPrincipal() p: Principal, @Req() req: Request) {
+    return this.review.review(staffOf(p), id, { approve: dto.decision === 'approve', liveCheck: dto.liveCheck, reason: dto.reason }, ctx(req));
   }
 }

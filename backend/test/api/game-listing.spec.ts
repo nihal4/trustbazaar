@@ -5,9 +5,10 @@ import { IdentityFixtures } from '../support/identity';
 // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const sharp = require('sharp') as typeof import('sharp').default;
 
-// U5-02, first part: the games catalogue, a game-account listing's details, the ownership code and the proof upload
+// U5-02: the games catalogue, a game-account listing's details, the ownership code and the proof upload
 // (docs/design/05_game_accounts.pdf section 5; FR-GAM-01 to FR-GAM-03) against PostgreSQL through the real security
-// pipeline. Listings are written directly as drafts of the seller's.
+// pipeline. Listings are written directly as drafts of the seller's, and held for review where a proof is uploaded. The
+// review is test/api/ownership-review.spec.ts.
 describe('listing a game account: catalogue, details, ownership code and proof', () => {
   let t: TestApp;
   let fx: IdentityFixtures;
@@ -68,6 +69,7 @@ describe('listing a game account: catalogue, details, ownership code and proof',
     );
     return id;
   }
+  const hold = (listingId: string) => fx.query(`UPDATE listings.listings SET status = 'pending_review' WHERE id = $1`, [listingId]); // as the seller's publication
   const details = (extra: Record<string, unknown> = {}) => ({ gameId: game.id, platform: 'android', playerId: '5123 4567', contents: 'Level 70, three mythic skins, no linked purchases.', ...extra });
   const errors = async (r: Response) => ((await r.json()) as { errors?: unknown[] }).errors;
   const png = () => sharp({ create: { width: 320, height: 200, channels: 3, background: '#357' } }).png().toBuffer();
@@ -107,6 +109,8 @@ describe('listing a game account: catalogue, details, ownership code and proof',
     const listingId = await gameListing(seller.userId);
     expect(await errors(await seller.call('POST', `/listings/${listingId}/ownership-code`))).toEqual([{ field: 'listing', reason: 'game-details-missing' }]);
     await seller.call('PUT', `/listings/${listingId}/game-details`, details());
+    expect(await errors(await seller.upload(`/listings/${listingId}/ownership-proof`, await png()))).toEqual([{ field: 'listing', reason: 'not-submitted-for-review' }]); // a draft
+    await hold(listingId);
     expect(await errors(await seller.upload(`/listings/${listingId}/ownership-proof`, await png()))).toEqual([{ field: 'listing', reason: 'no-code' }]);
     const first = (await (await seller.call('POST', `/listings/${listingId}/ownership-code`)).json()) as { code: string; expiresAt: string; placement: string };
     expect(first.code).toMatch(/^TB-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$/);
@@ -135,6 +139,7 @@ describe('listing a game account: catalogue, details, ownership code and proof',
     const seller = await member();
     const listingId = await gameListing(seller.userId);
     await seller.call('PUT', `/listings/${listingId}/game-details`, details({ playerId: `p${randomInt(1e6, 9e6)}` }));
+    await hold(listingId);
     await fx.query(`INSERT INTO game_accounts.ownership_proofs (listing_id, code, issued_at, expires_at) VALUES ($1, $2, now() - interval '8 days', now() - interval '1 day')`,
       [listingId, `TB-${randomInt(1000, 9999)}-${randomInt(1000, 9999)}`]);
     expect(await errors(await seller.upload(`/listings/${listingId}/ownership-proof`, await png()))).toEqual([{ field: 'code', reason: 'code-expired' }]);
