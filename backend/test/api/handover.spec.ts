@@ -20,8 +20,9 @@ describe('meetup handover', () => {
   let fx: IdentityFixtures;
   let dispatcher: OutboxDispatcher;
   let points: string[] = [];
-  // a spot in Sylhet division chosen per run, so earlier runs' points (deactivated after each run) cannot interfere
-  const BASE = { lat: 24.3 + randomInt(0, 600) / 1000, lng: 91.3 + randomInt(0, 600) / 1000 };
+  // a spot in Sylhet division chosen per run, so earlier runs' points (deactivated after each run) cannot interfere.
+  // Its latitude is a DV-27 grid centre (a multiple of 0.02), so the buyer's 300 m move below stays in one grid cell.
+  const BASE = { lat: Number((24.3 + randomInt(0, 30) * 0.02).toFixed(2)), lng: 91.3 + randomInt(0, 600) / 1000 };
 
   beforeAll(async () => {
     process.env.OUTBOX_DISPATCHER = 'off';
@@ -93,7 +94,7 @@ describe('meetup handover', () => {
     return { id, buyer, seller };
   }
   async function paidEvent(id: string, buyer: string, seller: string, fulfilment: string, due: Date) {
-    await fx.query(`INSERT INTO orders.outbox (event_type, aggregate_id, payload) VALUES ('orders.order.paid', $1, $2)`, [id, JSON.stringify({
+    await fx.query(`INSERT INTO orders.outbox (event_type, aggregate_id, payload, next_attempt_at) VALUES ('orders.order.paid', $1, $2, now() - interval '1 second')`, [id, JSON.stringify({
       orderId: id, kind: 'fixed_price', itemKind: 'physical', buyerId: buyer, sellerId: seller, fulfilment, fulfilmentDueAt: due.toISOString(), total: '1000000',
     })]);
     await drainAll();
@@ -239,7 +240,7 @@ describe('meetup handover', () => {
 
     const o = await paidOrder();
     await o.buyer.json('POST', `/orders/${o.id}/meetup-proposals`, { pointId: points[0], meetAt: inHours(5) }, 201);
-    await fx.query(`INSERT INTO orders.outbox (event_type, aggregate_id, payload) VALUES ('orders.escrow.refunded', $1, $2)`, [o.id, JSON.stringify({ orderId: o.id })]);
+    await fx.query(`INSERT INTO orders.outbox (event_type, aggregate_id, payload, next_attempt_at) VALUES ('orders.escrow.refunded', $1, $2, now() - interval '1 second')`, [o.id, JSON.stringify({ orderId: o.id })]);
     await drainAll();
     expect(await handover(o.id)).toMatchObject({ status: 'cancelled' });
     const v = await o.buyer.json<View>('GET', `/orders/${o.id}/handover`);

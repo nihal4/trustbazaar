@@ -13,8 +13,16 @@ function setup(answer: Answer, o: { escrow?: (id: string) => unknown; query?: (i
   const statuses = { query: jest.fn(o.query ?? (async () => ({ outcome: 'applied' }))) };
   const orders = { getEscrow: jest.fn(async (id: string) => { const e = o.escrow?.(id); if (e instanceof Error) throw e; return e; }) };
   const params = { current: async () => ({ ms: (k: string, sub: string) => (k === 'CP-32' && sub === 'retention' ? 30 * DAY : 0) }) };
-  const leased = new Set(o.leased ?? []);
-  const redis = { set: jest.fn(async (key: string) => { if (leased.has(key)) return null; leased.add(key); return 'OK'; }) };
+  const store = new Map<string, string>((o.leased ?? []).map((k) => [k, '1']));
+  const redis = {
+    get: jest.fn(async (key: string) => store.get(key) ?? null),
+    del: jest.fn(async (key: string) => (store.delete(key) ? 1 : 0)),
+    set: jest.fn(async (key: string, value: string, ...opts: unknown[]) => {
+      if (opts.includes('NX') && store.has(key)) return null;
+      store.set(key, value);
+      return 'OK';
+    }),
+  };
   const svc = new UpkeepService({ query } as never, statuses as never, orders as never, params as never, redis as never, { now: () => NOW });
   return { svc, query, statuses, orders, redis };
 }
@@ -28,8 +36,25 @@ describe('UpkeepService', () => {
     expect(await s.svc.reconcile()).toEqual({ done: 1, failed: 1 });
     expect(s.statuses.query.mock.calls).toEqual([['S1', 'C1'], ['S2', 'C2']]); // S3 is leased by another instance
     const [, params] = s.query.mock.calls[0];
-    expect(params).toEqual([['booked', 'picked_up', 'in_transit', 'delivery_failed'], ago(DV_31.silentMs)]);
+    expect(params).toEqual([['booked', 'picked_up', 'in_transit', 'delivery_failed'], ago(DV_31.silentMs), '00000000-0000-0000-0000-000000000000']);
     expect(s.redis.set).toHaveBeenCalledWith('delivery:reconcile:S1', '1', 'EX', DV_31.leaseSeconds, 'NX');
+  });
+
+  it('DV-31 a backlog larger than one batch is worked through in turn: each run carries on where the last stopped, then starts again', async () => {
+    const ids = Array.from({ length: 150 }, (_, i) => `00000000-0000-0000-0000-${String(i + 1).padStart(12, '0')}`);
+    const s = setup((sql, params) => {
+      if (!sql.includes('shipment_history')) return [];
+      return ids.filter((id) => id > (params[2] as string)).slice(0, 100).map((id) => ({ id, consignment_id: `C-${id}` }));
+    });
+    const asked = () => s.statuses.query.mock.calls.map(([id]) => id as string);
+    await s.svc.reconcile();
+    expect(asked()).toEqual(ids.slice(0, 100));
+    await s.svc.reconcile(); // the first 100 are still silent, yet the next run asks the other 50
+    expect(asked().slice(100)).toEqual(ids.slice(100));
+    expect(await s.redis.get('delivery:reconcile:cursor')).toBeNull(); // the end was reached
+    expect(s.query.mock.calls[2]?.[1]).toBeUndefined();
+    await s.svc.reconcile(); // and the next starts again from the beginning (their 25-minute leases still hold)
+    expect(s.query.mock.calls[2][1]).toEqual([expect.any(Array), ago(DV_31.silentMs), '00000000-0000-0000-0000-000000000000']);
   });
 
   it('FR-DLV-04 open proposals whose meeting time has passed lapse', async () => {

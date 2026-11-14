@@ -116,7 +116,7 @@ describe('courier delivery (mock courier)', () => {
     ).then((r) => (Array.isArray(r[0]) ? r[0] : r) as { due: Date }[]);
     await fx.query(`INSERT INTO payments.attempts (purpose, order_id, payer_id, provider, amount, status, expires_at, confirmed_at) VALUES ('order', $1, $2, 'bkash', $3, 'succeeded', now(), now())`, [order.id, buyer.userId, order.total]);
     await fx.query(`INSERT INTO orders.escrows (order_id, release_policy, amount_collected) VALUES ($1, 'standard', $2)`, [order.id, order.total]);
-    await fx.query(`INSERT INTO orders.outbox (event_type, aggregate_id, payload) VALUES ('orders.order.paid', $1, $2)`, [order.id, JSON.stringify({
+    await fx.query(`INSERT INTO orders.outbox (event_type, aggregate_id, payload, next_attempt_at) VALUES ('orders.order.paid', $1, $2, now() - interval '1 second')`, [order.id, JSON.stringify({
       orderId: order.id, kind: 'fixed_price', itemKind: 'physical', listingId, quantity: 1, buyerId: buyer.userId, sellerId: seller.userId,
       fulfilment: 'courier', fulfilmentStep: 'courier_pickup', fulfilmentDueAt: due.toISOString(), deliveryQuoteId: q.id, total: order.total,
     })]);
@@ -245,7 +245,7 @@ describe('courier delivery (mock courier)', () => {
     const after = await courierOrder();
     const booked = await courierOrder();
     const refund = async (orderId: string) => {
-      await fx.query(`INSERT INTO orders.outbox (event_type, aggregate_id, payload) VALUES ('orders.escrow.refunded', $1, $2)`, [orderId, JSON.stringify({ orderId, reason: 'cancelled_by_buyer' })]);
+      await fx.query(`INSERT INTO orders.outbox (event_type, aggregate_id, payload, next_attempt_at) VALUES ('orders.escrow.refunded', $1, $2, now() - interval '1 second')`, [orderId, JSON.stringify({ orderId, reason: 'cancelled_by_buyer' })]);
       await drainAll();
     };
     await refund(before.id); // still preparing: cancelled, and the addresses it never sent erased
@@ -324,7 +324,7 @@ describe('courier delivery (mock courier)', () => {
     const o = await courierOrder();
     const s = await shipment(o.id);
     await silently(() => mock.advance(s.consignment_id!));
-    await fx.query(`INSERT INTO orders.outbox (event_type, aggregate_id, payload) VALUES ('orders.escrow.refunded', $1, $2)`, [o.id, JSON.stringify({ orderId: o.id })]);
+    await fx.query(`INSERT INTO orders.outbox (event_type, aggregate_id, payload, next_attempt_at) VALUES ('orders.escrow.refunded', $1, $2, now() - interval '1 second')`, [o.id, JSON.stringify({ orderId: o.id })]);
     await drainAll();
     const op = await operator();
     let found: { id: string; kind: string } | undefined;
@@ -382,7 +382,8 @@ describe('courier delivery (mock courier)', () => {
     await silently(() => mock.advance(s.consignment_id!)); // picked up at the courier; the webhook never came
     await upkeepAt(0).reconcile();
     expect((await shipment(o.id)).status).toBe('booked'); // not silent for 6 hours yet
-    await upkeepAt(7 * HOUR).reconcile();
+    // other suites' shipments are in flight too and each run asks a batch of 100 in turn: run until this one is reached
+    for (let i = 0; i < 50 && (await shipment(o.id)).status === 'booked'; i++) await upkeepAt(7 * HOUR).reconcile();
     expect((await shipment(o.id)).status).toBe('picked_up');
     expect((await order(o.id)).fulfilment_done_at).not.toBeNull();
     const [last] = await fx.query<{ source: string }>(`SELECT source FROM delivery.shipment_history WHERE shipment_id = $1 ORDER BY id DESC LIMIT 1`, [s.id]);

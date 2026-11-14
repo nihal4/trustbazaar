@@ -16,6 +16,8 @@ export const DV_31 = { silentMs: 6 * 3_600_000, leaseSeconds: 25 * 60 } as const
 /** DV-30: shipment addresses are kept 30 days after the order closes (or after a cancelled shipment is final). */
 export const DV_30_MS = 30 * 86_400_000;
 const BATCH = 100;
+const RECONCILE_CURSOR = 'delivery:reconcile:cursor';
+const NIL_ID = '00000000-0000-0000-0000-000000000000';
 const IN_FLIGHT = ['booked', 'picked_up', 'in_transit', 'delivery_failed'] as const;
 
 export interface UpkeepRun { done: number; failed: number }
@@ -40,13 +42,20 @@ export class UpkeepService {
    */
   async reconcile(): Promise<UpkeepRun> {
     const silentSince = new Date(this.clock.now().getTime() - DV_31.silentMs);
+    // Round robin: each run carries on after the last shipment the previous run looked at, so a backlog of more than
+    // one batch (shipments the courier keeps reporting unchanged) cannot keep the newer ones from being asked.
+    const after = (await this.redis.get(RECONCILE_CURSOR)) ?? NIL_ID;
     const due = (await this.db.query(
       `SELECT s.id, s.consignment_id FROM delivery.shipments s
         WHERE s.status = ANY($1::delivery.shipment_status[]) AND s.consignment_id IS NOT NULL
           AND (SELECT max(h.at) FROM delivery.shipment_history h WHERE h.shipment_id = s.id) < $2
-        ORDER BY s.created_at LIMIT ${BATCH}`,
-      [IN_FLIGHT, silentSince],
+          AND s.id > $3::uuid
+        ORDER BY s.id LIMIT ${BATCH}`,
+      [IN_FLIGHT, silentSince, after],
     )) as { id: string; consignment_id: string }[];
+    // a short batch reached the end: the next run starts again from the beginning
+    if (due.length < BATCH) await this.redis.del(RECONCILE_CURSOR);
+    else await this.redis.set(RECONCILE_CURSOR, due[due.length - 1].id);
     const run: UpkeepRun = { done: 0, failed: 0 };
     for (const s of due) {
       if ((await this.redis.set(`delivery:reconcile:${s.id}`, '1', 'EX', DV_31.leaseSeconds, 'NX')) !== 'OK') continue;
