@@ -281,7 +281,11 @@ export class ListingService {
           await m.query(
             `INSERT INTO auctions.auctions (listing_id, seller_id, start_price, reserve_price, inc_bps, inc_min, snipe_window,
                                             snipe_extension, starts_at, original_end_at, end_at)
-             VALUES ($1, $2, $3, $4, $5, $6, $7::interval, $8::interval, now(), now() + $9::interval, now() + $9::interval)`,
+             VALUES ($1, $2, $3, $4, $5, $6, $7::interval, $8::interval, now(), now() + $9::interval, now() + $9::interval)
+             ON CONFLICT (listing_id) DO UPDATE SET start_price = EXCLUDED.start_price, reserve_price = EXCLUDED.reserve_price, inc_bps = EXCLUDED.inc_bps,
+                inc_min = EXCLUDED.inc_min, snipe_window = EXCLUDED.snipe_window, snipe_extension = EXCLUDED.snipe_extension, starts_at = EXCLUDED.starts_at,
+                original_end_at = EXCLUDED.original_end_at, end_at = EXCLUDED.end_at
+              WHERE auctions.auctions.bid_count = 0 AND auctions.auctions.status = 'open'`, // returned to draft from review (U5-02): its terms are given again
             [id, userId, dto.startPrice, dto.reservePrice ?? null, cp08.bps, cp08.min_poisha, cp09.window, cp09.extension, dto.duration],
           );
         }
