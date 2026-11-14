@@ -114,10 +114,14 @@ export class TrustReportService implements ReportCommands, CaseQuery {
     return { reportId, status: d.outcome };
   }
 
-  /** CaseQuery (Unit 6's staff thread read): reports here; disputes come with U7-03. */
+  /** CaseQuery (Unit 6's staff thread read): the operator who claimed a live report (U7-04) or dispute (U7-03). */
   async assignedOperator(type: StaffCaseType, caseId: string): Promise<string | null> {
-    if (type !== 'report') return null;
-    const [r] = (await this.db.query(`SELECT assigned_to FROM trust.reports WHERE id = $1 AND status IN ('open', 'under_review')`, [caseId])) as { assigned_to: string | null }[];
+    const [r] = (await this.db.query(
+      type === 'report'
+        ? `SELECT assigned_to FROM trust.reports WHERE id = $1 AND status IN ('open', 'under_review')`
+        : `SELECT assigned_to FROM disputes.disputes WHERE id = $1 AND status NOT IN ('decided', 'withdrawn')`,
+      [caseId],
+    )) as { assigned_to: string | null }[];
     return r?.assigned_to ?? null;
   }
 

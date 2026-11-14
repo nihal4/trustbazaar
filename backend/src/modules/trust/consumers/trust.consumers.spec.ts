@@ -12,9 +12,10 @@ describe('TrustConsumers', () => {
     const sanctions = { strike: jest.fn(async () => false), onReinstated: jest.fn(async () => 1) };
     const ratings = { onEscrowClosed: jest.fn(async (_e: OutboxEvent) => true) };
     const signals = { onEvent: jest.fn(async (_e: OutboxEvent) => true) };
-    new TrustConsumers(bus as never, sanctions as never, ratings as never, signals as never).onModuleInit();
+    const cases = { onDecided: jest.fn(async (_e: OutboxEvent) => undefined), onReturnDelivered: jest.fn(async (_e: OutboxEvent) => true) };
+    new TrustConsumers(bus as never, sanctions as never, ratings as never, signals as never, cases as never).onModuleInit();
     const run = (key: string, e: OutboxEvent) => handlers.get(key)!(e);
-    return { run, sanctions, ratings, signals, handlers };
+    return { run, sanctions, ratings, signals, cases, handlers };
   }
 
   it('FR-TNS-04 I-44 a cancellation after payment and a refund at a missed deadline are strikes; other refunds are not', async () => {
@@ -46,5 +47,12 @@ describe('TrustConsumers', () => {
     const types = ['auctions.flag.raised', 'listings.listing.relisting_flagged', 'delivery.issue.opened', 'chat.message.flagged'];
     for (const t of types) await s.run(`${t}/trust.signals`, ev(t, {}));
     expect(s.signals.onEvent.mock.calls.map(([e]) => e.type)).toEqual(types);
+  });
+
+  it('FR-DSP-07 a committed decision and a returned item reach the dispute cases', async () => {
+    const s = setup();
+    await s.run('disputes.dispute.decided/trust.disputes', ev('disputes.dispute.decided', { orderId: 'O1' }, 'D1'));
+    await s.run('delivery.return.delivered/trust.disputes', ev('delivery.return.delivered', { direction: 'return' }, 'O1'));
+    expect([s.cases.onDecided.mock.calls[0][0].aggregateId, s.cases.onReturnDelivered.mock.calls[0][0].aggregateId]).toEqual(['D1', 'O1']);
   });
 });

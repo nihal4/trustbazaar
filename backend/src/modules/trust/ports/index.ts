@@ -46,7 +46,7 @@ export type StaffCaseType = 'dispute' | 'report';
 
 /**
  * Used by Unit 6's staff thread read: the operator assigned to a case, or null if nobody has claimed it.
- * Reports with U7-04; disputes with U7-03 (until then null is answered for them, and Unit 6 keeps its hold check).
+ * Reports with U7-04; disputes with U7-03.
  */
 export interface CaseQuery {
   assignedOperator(type: StaffCaseType, caseId: string): Promise<string | null>;

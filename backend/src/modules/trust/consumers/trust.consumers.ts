@@ -1,5 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { EventBus, OutboxEvent } from '../../../kernel/events/event-bus';
+import { DisputeCaseService } from '../services/dispute-case.service';
 import { RatingService } from '../services/rating.service';
 import { SanctionService } from '../services/sanction.service';
 import { SignalService } from '../services/signal.service';
@@ -11,6 +12,8 @@ import { SignalService } from '../services/signal.service';
 //  - identity.account.reinstated: the four-eyes reinstatement lifts the live account suspensions (CP-30).
 //  - rating eligibility (FR-REV-01; U7-05), keyed by the order: a terminal escrow event makes the order rateable.
 //  - signals for the flagged-activity queue (U7-08), keyed by their source (SignalService).
+//  - disputes (U7-03): a decision's aftermath once committed (the chat hold released, the parties told), and the
+//    returned item of outcome (d) (return_completed refuses a dispute no longer awaiting it).
 
 const str = (v: unknown) => (typeof v === 'string' ? v : '');
 
@@ -21,6 +24,7 @@ export class TrustConsumers implements OnModuleInit {
     private readonly sanctions: SanctionService,
     private readonly ratings: RatingService,
     private readonly signals: SignalService,
+    private readonly cases: DisputeCaseService,
   ) {}
 
   onModuleInit(): void {
@@ -34,6 +38,8 @@ export class TrustConsumers implements OnModuleInit {
     for (const type of ['auctions.flag.raised', 'listings.listing.relisting_flagged', 'delivery.issue.opened', 'chat.message.flagged']) {
       this.bus.on(type, 'trust.signals', async (e) => void (await this.signals.onEvent(e)));
     }
+    this.bus.on('disputes.dispute.decided', 'trust.disputes', (e) => this.cases.onDecided(e));
+    this.bus.on('delivery.return.delivered', 'trust.disputes', async (e) => void (await this.cases.onReturnDelivered(e)));
     this.bus.on('identity.account.reinstated', 'trust.sanctions', async (e) => {
       await this.sanctions.onReinstated({
         userId: str(e.payload.userId) || e.aggregateId, approvalId: str(e.payload.approvalId), decidedBy: str(e.payload.decidedBy) || null, reason: str(e.payload.reason) || null,

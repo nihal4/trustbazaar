@@ -94,11 +94,14 @@ describe('chat holds, staff read, reports, detection terms and retention', () =>
     expect(await commands.threadFor(listingId, seller.userId)).toBeNull();
 
     const op = await operator();
-    const caseId = randomUUID();
-    const path = `/staff/cases/dispute/${caseId}/threads/${thread}`;
+    // a report on the thread, claimed by this operator (U7-04: only the case's operator reads through it)
+    const [{ id: caseId }] = await fx.query<{ id: string }>(
+      `INSERT INTO trust.reports (reporter_id, target_type, target_id, subject_user, category, status, assigned_to)
+       VALUES ($1, 'thread', $2, $3, 'abusive', 'under_review', $4) RETURNING id`, [buyer.userId, thread, seller.userId, op.staffId]);
+    const path = `/staff/cases/report/${caseId}/threads/${thread}`;
     expect((await op.call('GET', path)).status).toBe(404); // no hold yet
-    await commands.hold(thread, 'dispute', caseId);
-    await commands.hold(thread, 'dispute', caseId); // idempotent
+    await commands.hold(thread, 'report', caseId);
+    await commands.hold(thread, 'report', caseId); // idempotent
 
     const r = await op.call('GET', path);
     expect(r.status).toBe(200);
@@ -109,11 +112,12 @@ describe('chat holds, staff read, reports, detection terms and retention', () =>
     expect(await logged(thread)).toBe('1');
 
     // another case, the other case type, a user, and the case after release: refused
-    expect((await op.call('GET', `/staff/cases/dispute/${randomUUID()}/threads/${thread}`)).status).toBe(404);
-    expect((await op.call('GET', `/staff/cases/report/${caseId}/threads/${thread}`)).status).toBe(404);
+    expect((await op.call('GET', `/staff/cases/report/${randomUUID()}/threads/${thread}`)).status).toBe(404);
+    expect((await op.call('GET', `/staff/cases/dispute/${caseId}/threads/${thread}`)).status).toBe(404);
     expect((await op.call('GET', `/staff/cases/order/${caseId}/threads/${thread}`)).status).toBe(404);
+    expect((await (await operator()).call('GET', path)).status).toBe(404); // another operator, who has not claimed it
     expect((await buyer.call('GET', path)).status).toBe(401); // a user has no staff session
-    await commands.release(thread, 'dispute', caseId);
+    await commands.release(thread, 'report', caseId);
     expect((await op.call('GET', path)).status).toBe(404);
     expect(await logged(thread)).toBe('1');
   });
