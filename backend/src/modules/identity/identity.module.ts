@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NOTIFICATIONS, ForwardedNotifications } from './adapters/notifications';
 import { FileVault } from './crypto/file-vault';
@@ -16,7 +17,7 @@ import { RegistrationController } from './http/registration.controller';
 import { AdminController, StaffAuthController, StaffController } from './http/staff.controller';
 import { pipelineGuards } from './security/guards';
 import { RateLimiter } from './security/rate-limiter.service';
-import { noRestrictionsYet, RESTRICTIONS } from './security/restrictions';
+import { RESTRICTIONS, sanctionRestrictions } from './security/restrictions';
 import { ApprovalService } from './services/approval.service';
 import { AuditService } from './services/audit.service';
 import { StaffAuthService } from './services/staff-auth.service';
@@ -87,7 +88,8 @@ import { StepUpService } from './services/step-up.service';
     RegistrationService,
     // NotificationPort is Unit 6's (I-36); this forwards to it.
     { provide: NOTIFICATIONS, useClass: ForwardedNotifications },
-    { provide: RESTRICTIONS, useValue: noRestrictionsYet },
+    // I-43: Unit 7's SanctionPort, found on first use (U7-04)
+    { provide: RESTRICTIONS, inject: [ModuleRef], useFactory: (m: ModuleRef) => sanctionRestrictions(m) },
     ...pipelineGuards,
   ],
   exports: [IDENTITY_QUERY, IDENTITY_COMMANDS, STAFF_QUERY, APPROVAL_SERVICE, AUDIT_SERVICE, RATE_LIMITER, FILE_VAULT, IDENTITY_CRYPTO],
