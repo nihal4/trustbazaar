@@ -619,17 +619,20 @@ describe('Courier wiring', () => {
     const runner = { register: (j: (typeof registered)[number]) => registered.push(j) };
     const booking = { bookDue: jest.fn(async () => 2) };
     const statuses = { webhook: jest.fn(async () => ({ received: true })) };
+    const upkeep = { reconcile: jest.fn(async () => ({ done: 3, failed: 0 })), lapseProposals: jest.fn(async () => 1), eraseAddresses: jest.fn(async () => ({ done: 2, failed: 1 })), purgeProviderEvents: jest.fn(async () => 4) };
     const mock = new MockCourier(new FakeRedis() as never, 's', () => T0, 30);
-    new DeliveryJobs(runner as never, booking as never, statuses as never, mock).onModuleInit();
-    expect(registered.map((j) => [j.name, j.intervalMs])).toEqual([['delivery.booking', 60_000], ['delivery.mock_courier.advance', 30_000]]);
-    expect(await registered[0].run()).toBe(2);
-    expect(await registered[1].run()).toBe(0);
+    new DeliveryJobs(runner as never, booking as never, statuses as never, upkeep as never, mock).onModuleInit();
+    expect(registered.map((j) => [j.name, j.intervalMs])).toEqual([
+      ['delivery.booking', 60_000], ['delivery.reconciliation', 1_800_000], ['delivery.proposal_lapse', 900_000],
+      ['delivery.address_erasure', 86_400_000], ['delivery.provider_events', 86_400_000], ['delivery.mock_courier.advance', 30_000],
+    ]);
+    expect(await Promise.all(registered.map((j) => j.run()))).toEqual([2, 3, 1, 2, 4, 0]);
     const { consignmentId } = await mock.book({ shipmentId: 'S', pickup: ADDR, dropoff: ADDR, parcel: { billedKg: 1, sizeClass: 'small' }, cashToCollect: 0 });
     await mock.advance(consignmentId);
     expect(statuses.webhook).toHaveBeenCalledWith('mock', expect.any(Object), expect.any(Buffer));
     const plain: typeof registered = [];
-    new DeliveryJobs({ register: (j: (typeof registered)[number]) => plain.push(j) } as never, booking as never, statuses as never, { provider: 'pathao' } as never).onModuleInit();
-    expect(plain.map((j) => j.name)).toEqual(['delivery.booking']);
+    new DeliveryJobs({ register: (j: (typeof registered)[number]) => plain.push(j) } as never, booking as never, statuses as never, upkeep as never, { provider: 'pathao' } as never).onModuleInit();
+    expect(plain.map((j) => j.name)).toEqual(['delivery.booking', 'delivery.reconciliation', 'delivery.proposal_lapse', 'delivery.address_erasure', 'delivery.provider_events']);
   });
 
   it('I-19 FR-PAY-09 paid courier orders get a shipment; refunds cancel it; a closed account\'s saved addresses are erased', async () => {

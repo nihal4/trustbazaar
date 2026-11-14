@@ -1,12 +1,16 @@
 import { randomInt, randomUUID } from 'crypto';
 import { DataSource } from 'typeorm';
 import { seedAreas } from '../../src/areas-seed';
+import { CONFIG_PORT } from '../../src/kernel/config-port';
 import { OutboxDispatcher } from '../../src/kernel/events/outbox-dispatcher';
+import { REDIS } from '../../src/kernel/redis.provider';
 import { COURIER } from '../../src/modules/delivery/adapters/courier-port';
 import { MockCourier } from '../../src/modules/delivery/adapters/mock-courier';
+import { FULFILMENT_ORDERS } from '../../src/modules/delivery/adapters/orders';
 import { DELIVERY_COMMANDS, DELIVERY_QUERIES, DeliveryCommands, DeliveryQueries } from '../../src/modules/delivery/ports';
 import { BookingService } from '../../src/modules/delivery/services/booking.service';
 import { StatusService } from '../../src/modules/delivery/services/status.service';
+import { UpkeepService } from '../../src/modules/delivery/services/upkeep.service';
 import { OrdersJobs } from '../../src/modules/orders/jobs/orders.jobs';
 import { startApp, TestApp } from '../support/app';
 import { IdentityFixtures } from '../support/identity';
@@ -361,5 +365,57 @@ describe('courier delivery (mock courier)', () => {
     expect(html).toContain('Dhanmondi, Dhaka → Savar, Dhaka');
     expect(html).not.toMatch(/Road 5|Road 27|Rahim|Karim/);
     expect((await o.seller.call('GET', '/mock-courier')).status).toBe(401);
+  });
+
+  // U4-05: the upkeep jobs on the real database. The app's clock cannot be moved, so the service is built here with
+  // one that is ahead by the given time.
+  const HOUR = 3_600_000;
+  const DAY = 24 * HOUR;
+  const upkeepAt = (aheadMs: number) => new UpkeepService(
+    t.app.get(DataSource), t.app.get(StatusService), t.app.get(FULFILMENT_ORDERS), t.app.get(CONFIG_PORT), t.app.get(REDIS),
+    { now: () => new Date(Date.now() + aheadMs) },
+  );
+
+  it('DV-31 FR-DLV-10 a lost webhook is caught: a shipment silent for 6 hours is asked about and its pickup recorded', async () => {
+    const o = await courierOrder();
+    const s = await shipment(o.id);
+    await silently(() => mock.advance(s.consignment_id!)); // picked up at the courier; the webhook never came
+    await upkeepAt(0).reconcile();
+    expect((await shipment(o.id)).status).toBe('booked'); // not silent for 6 hours yet
+    await upkeepAt(7 * HOUR).reconcile();
+    expect((await shipment(o.id)).status).toBe('picked_up');
+    expect((await order(o.id)).fulfilment_done_at).not.toBeNull();
+    const [last] = await fx.query<{ source: string }>(`SELECT source FROM delivery.shipment_history WHERE shipment_id = $1 ORDER BY id DESC LIMIT 1`, [s.id]);
+    expect(last.source).toBe('provider_query');
+  });
+
+  it('DV-30 a shipment\'s addresses are erased 30 days after its order closed; an open order keeps them', async () => {
+    const closed = await courierOrder();
+    const c = await shipment(closed.id);
+    await mock.advance(c.consignment_id!);
+    await mock.advance(c.consignment_id!, 'returned_to_seller', 5000n); // the buyer is refunded and the order closes
+    expect(await order(closed.id)).toMatchObject({ status: 'closed' });
+    const open = await courierOrder();
+    const d = await shipment(open.id);
+    await mock.advance(d.consignment_id!);
+    await mock.advance(d.consignment_id!, 'delivered'); // final, but the order is still open (release pending)
+    const erased = async (id: string) =>
+      (await fx.query<{ erased: boolean; gone: boolean }>(
+        `SELECT addresses_erased_at IS NOT NULL AS erased, pickup_address_enc IS NULL AND dropoff_address_enc IS NULL AS gone FROM delivery.shipments WHERE order_id = $1`, [id]))[0];
+    await upkeepAt(29 * DAY).eraseAddresses();
+    expect(await erased(closed.id)).toEqual({ erased: false, gone: false });
+    await upkeepAt(31 * DAY).eraseAddresses();
+    expect(await erased(closed.id)).toEqual({ erased: true, gone: true });
+    expect(await erased(open.id)).toEqual({ erased: false, gone: false });
+    const view = await closed.buyer.json<{ items: Shipment[] }>('GET', `/orders/${closed.id}/shipments`);
+    expect(view.items[0]).toMatchObject({ status: 'returned_to_seller', myAddress: null, other: { district: 'Dhaka' } });
+  });
+
+  it('SEC-PAY-04 provider event ids older than CP-32 (30 days) are deleted; newer ones are kept against replays', async () => {
+    const [oldId, newId] = [`old-${randomUUID()}`, `new-${randomUUID()}`];
+    await fx.query(`INSERT INTO delivery.provider_events (provider, event_id, received_at) VALUES ('mock', $1, now() - interval '31 days'), ('mock', $2, now() - interval '29 days')`, [oldId, newId]);
+    expect(await upkeepAt(0).purgeProviderEvents()).toBeGreaterThanOrEqual(1);
+    const left = await fx.query<{ event_id: string }>(`SELECT event_id FROM delivery.provider_events WHERE event_id = ANY($1)`, [[oldId, newId]]);
+    expect(left.map((r) => r.event_id)).toEqual([newId]);
   });
 });
