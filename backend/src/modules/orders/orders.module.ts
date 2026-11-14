@@ -9,6 +9,7 @@ import { OrderActionsController, OrdersController } from './http/orders.controll
 import { MockPayController, PaymentsController, StripeWebhookController } from './http/payments.controller';
 import { MyPayoutsController, StaffPayoutsController } from './http/payouts.controller';
 import { ESCROW_COMMANDS, ESCROW_QUERY, ORDERS_PORT, PAYOUT_CHECKS } from './ports';
+import { ForwardedGameCheckout, GAME_CHECKOUT } from './adapters/game-accounts';
 import { EscrowService } from './services/escrow.service';
 import { RefundService } from './services/refund.service';
 import { OrdersJobs } from './jobs/orders.jobs';
@@ -43,6 +44,7 @@ import type Redis from 'ioredis';
     { provide: ESCROW_COMMANDS, useExisting: EscrowService },
     { provide: ESCROW_QUERY, useExisting: EscrowService },
     { provide: PAYOUT_CHECKS, useExisting: PayoutService },
+    { provide: GAME_CHECKOUT, useClass: ForwardedGameCheckout }, // Unit 5's GameAccountPort (I-29)
   ],
   exports: [ORDERS_PORT, ESCROW_COMMANDS, ESCROW_QUERY, PAYOUT_CHECKS],
 })
