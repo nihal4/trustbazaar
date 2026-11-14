@@ -141,7 +141,7 @@ export class IdentityCommandsService implements IdentityCommands, OnModuleInit {
     this.approvals.registerHandler('account.reinstate', (a, m) => this.reinstateAccount(a.targetId, a.id, m));
   }
 
-  async suspendAccount(userId: string, reason: string, byStaffId: string, o: { fraud?: boolean; ctx?: CallContext; tx?: EntityManager } = {}): Promise<void> {
+  async suspendAccount(userId: string, reason: string, byStaffId: string, o: { fraud?: boolean; ctx?: CallContext; tx?: EntityManager; sanctionId?: string } = {}): Promise<void> {
     const work = async (m: EntityManager) => {
       const [u] = await m.query(`SELECT account_status FROM identity.users WHERE id = $1 FOR UPDATE`, [userId]);
       if (!u) throw new Problem('not-found');
@@ -154,7 +154,7 @@ export class IdentityCommandsService implements IdentityCommands, OnModuleInit {
         sourceIp: o.ctx?.ip ?? null, correlationId: o.ctx?.correlationId ?? null,
       });
       // I-8: the fraud flag lets Unit 2 hold payouts.
-      await publish(m, 'identity.account.suspended', userId, { userId, fraud: o.fraud === true });
+      await publish(m, 'identity.account.suspended', userId, { userId, fraud: o.fraud === true, sanctionId: o.sanctionId ?? null });
     };
     await (o.tx ? work(o.tx) : this.db.transaction(work));
   }
@@ -162,7 +162,7 @@ export class IdentityCommandsService implements IdentityCommands, OnModuleInit {
   async reinstateAccount(userId: string, approvalId: string, tx?: EntityManager): Promise<void> {
     const work = async (m: EntityManager) => {
       const [a] = await m.query(
-        `SELECT decided_by FROM identity.approvals WHERE id = $1 AND action = 'account.reinstate' AND target_id = $2 AND decision = 'approved'`,
+        `SELECT decided_by, reason FROM identity.approvals WHERE id = $1 AND action = 'account.reinstate' AND target_id = $2 AND decision = 'approved'`,
         [approvalId, userId],
       );
       if (!a) throw new Problem('forbidden');
@@ -174,7 +174,8 @@ export class IdentityCommandsService implements IdentityCommands, OnModuleInit {
         actorType: 'staff', actorId: a.decided_by, action: 'identity.account.reinstated', objectType: 'user', objectId: userId,
         before: { accountStatus: 'suspended' }, after: { accountStatus: 'active' }, approvalId,
       });
-      await publish(m, 'identity.account.reinstated', userId, { userId, approvalId });
+      // U7-04: Unit 7 lifts the account suspension with this approval, its decider and its reason
+      await publish(m, 'identity.account.reinstated', userId, { userId, approvalId, decidedBy: a.decided_by, reason: a.reason });
     };
     await (tx ? work(tx) : this.db.transaction(work));
   }
