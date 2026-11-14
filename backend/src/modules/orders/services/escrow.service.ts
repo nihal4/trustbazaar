@@ -6,7 +6,7 @@ import { Problem } from '../../../kernel/http/problems';
 import { AUDIT_SERVICE, AuditServicePort, IDENTITY_QUERY, IdentityQuery } from '../../identity/ports';
 import { CancellationRequest, Escrow, EscrowHistory, Order, OrdersOutboxEvent, PaymentAttempt, Payout, Refund, Settlement } from '../db/entities';
 import type { RefundReason } from '../db/enums';
-import type { DeliverySource, DisputeOutcome, EscrowCommands, EscrowQuery, EscrowView, FulfilmentStep } from '../ports';
+import type { DeadlineKind, DeliverySource, DisputeOutcome, EscrowCommands, EscrowQuery, EscrowView, FulfilmentStep } from '../ports';
 import { post } from './ledger';
 import { split } from './split';
 
@@ -22,6 +22,8 @@ import { split } from './split';
 // refund for the buyer's part (sent by U2-05's worker), the seller's payout row (status by the payout account
 // and a fraud hold), the order's closing, the escrow event and the audit entry.
 const DAY = 86_400_000;
+/** The reminder kind of each fulfilment step (FR-NTF-07). */
+const STEP_OF: Record<string, FulfilmentStep> = { meetup_handover: 'meetup_handover', courier_pickup: 'courier_pickup', credential_delivery: 'credentials_delivered' };
 
 @Injectable()
 export class EscrowService implements EscrowCommands, EscrowQuery {
@@ -236,6 +238,18 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     const o = await this.db.getRepository(Order).findOneBy({ id: orderId });
     const e = await this.db.getRepository(Escrow).findOneBy({ orderId });
     return !!o && !!e && this.allowed(o, e, at);
+  }
+
+  async deadline(orderId: string, kind: DeadlineKind): Promise<{ dueAt: Date; listingTitle: string | null } | null> {
+    const o = await this.db.getRepository(Order).findOneBy({ id: orderId });
+    if (!o) return null;
+    const listingTitle = (o.listingSnapshot as { title?: string } | null)?.title ?? null;
+    const at = (d: Date | null) => (d ? { dueAt: d, listingTitle } : null);
+    if (kind === 'payment_window') return o.status === 'awaiting_payment' ? at(o.paymentDueAt) : null;
+    const e = await this.db.getRepository(Escrow).findOneBy({ orderId });
+    if (o.status !== 'paid' || !e || e.state !== 'held') return null;
+    if (kind === 'dispute_window') return e.releasePolicy === 'standard' && e.openDisputeId === null ? at(e.disputeWindowEndsAt) : null;
+    return o.fulfilmentStep === STEP_OF[kind] && o.fulfilmentDoneAt === null ? at(o.fulfilmentDueAt) : null;
   }
 
   /** Held, paid, and strictly before the end of the window once the delivery event set it (FR-DSP-11). */

@@ -14,6 +14,9 @@ import { NotifyJobs } from './jobs/notify.jobs';
 import { DeliveryService } from './services/delivery.service';
 import { DirectMessages } from './services/direct-messages';
 import { NotificationConsumers } from './consumers/notification.consumers';
+import { ReminderConsumers } from './consumers/reminder.consumers';
+import { ORDER_DEADLINES, OrderDeadlinesFromOrders } from './adapters/deadlines';
+import { ReminderService } from './services/reminder.service';
 import { ENTITIES } from './db/entities';
 import { NotificationsController } from './http/notifications.controller';
 import { ChatStaffController } from './http/chat-staff.controller';
@@ -55,6 +58,9 @@ import { NotificationService } from './services/notification.service';
     NotifyJobs,
     NotificationService,
     NotificationConsumers,
+    { provide: ORDER_DEADLINES, useClass: OrderDeadlinesFromOrders },
+    ReminderService,
+    ReminderConsumers,
     BlockService,
     { provide: BLOCK_PORT, useExisting: BlockService },
     ChatService,

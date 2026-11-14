@@ -11,6 +11,7 @@ import { NotificationTemplates1793491200010 } from './1793491200010-notification
 import { OwnMeetupPlaces1793491200013 } from './1793491200013-own-meetup-places';
 import { ChatDetectionTermDelete1793491200012 } from './1793491200012-chat-detection-term-delete';
 import { ChatImageKeyTemplate1793491200011 } from './1793491200011-chat-image-key-template';
+import { ReminderTemplates1793491200014 } from './1793491200014-reminder-templates';
 
 // The migrations in the order they run: the seven units in unit order, then 09_integration (I-60).
 // Add a new migration at the end; never reorder or edit an applied one.
@@ -28,4 +29,5 @@ export const MIGRATIONS = [
   ChatImageKeyTemplate1793491200011, // U6-02: chat image keys of Unit 1's FileVault, and the chat notice (Decisions log)
   ChatDetectionTermDelete1793491200012, // U6-03: operators remove detection terms (Decisions log)
   OwnMeetupPlaces1793491200013, // U4-03: a meetup at a place of the parties' own (Decisions log)
+  ReminderTemplates1793491200014, // U6-06: the deadline reminders' templates (Decisions log)
 ];
