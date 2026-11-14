@@ -33,6 +33,7 @@ import { QuoteService } from './services/quote.service';
 import { RecordsService } from './services/records.service';
 import { ShipmentService } from './services/shipment.service';
 import { StatusService } from './services/status.service';
+import { UpkeepService } from './services/upkeep.service';
 
 /**
  * The courier adapter chosen by COURIER_MODE (section 3.3). Only the mock exists until Pathao or Steadfast sandbox
@@ -55,7 +56,7 @@ export function buildCourier(config: TbConfig, redis: Redis, clock: Clock): Mock
   ],
   providers: [
     AreasService, FareTableService, AddressService, QuoteService, MeetupPointsService, HandoverService, HandoverConsumers,
-    CourierBreaker, StatusService, BookingService, ShipmentService, RecordsService, ShipmentConsumers, DeliveryJobs, DeliveryPorts,
+    CourierBreaker, StatusService, BookingService, ShipmentService, RecordsService, ShipmentConsumers, UpkeepService, DeliveryJobs, DeliveryPorts,
     { provide: COURIER, inject: [TB_CONFIG, REDIS, CLOCK], useFactory: buildCourier },
     { provide: FULFILMENT_ORDERS, useClass: ForwardedFulfilmentOrders },
     { provide: DELIVERY_PORT, useExisting: DeliveryPorts },
