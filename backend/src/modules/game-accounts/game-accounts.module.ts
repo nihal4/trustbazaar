@@ -9,7 +9,9 @@ import { GameAccountsController } from './http/game-accounts.controller';
 import { HandoverController } from './http/handover.controller';
 import { ClaimConsumers } from './consumers/claim.consumers';
 import { HandoverConsumers } from './consumers/handover.consumers';
-import { GAME_ACCOUNT_COMMANDS, GAME_ACCOUNT_PORT, GAME_ACCOUNT_QUERIES } from './ports';
+import { ForwardedDisputes, GAME_DISPUTES } from './adapters/disputes';
+import { GAME_ACCOUNT_COMMANDS, GAME_ACCOUNT_PORT, GAME_ACCOUNT_QUERIES, GameAccountCommands, GameAccountQueries } from './ports';
+import { TakeoverService } from './services/takeover.service';
 import { HandoverService } from './services/handover.service';
 import { OwnershipReviewService } from './services/ownership-review.service';
 import { OwnershipService } from './services/ownership.service';
@@ -18,7 +20,8 @@ import { OwnershipService } from './services/ownership.service';
 // Folder layout and rules: BUILDING.md section 3. This module exports only its ports (ports/),
 // and imports other units only through their ports (DC-1; enforced by .eslintrc.js).
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
-// Unit 2 does not import this module: it finds GAME_ACCOUNT_PORT on first use (ModuleRef), since this unit imports it.
+// Two ports cross the import order on first use (ModuleRef): Unit 2 finds GAME_ACCOUNT_PORT, since this unit imports
+// Unit 2; this unit finds Unit 7's DISPUTE_COMMANDS, since Unit 7 imports this unit.
 @Module({
   imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule, ListingsModule, OrdersModule, ChatModule],
   controllers: [GameAccountsController, HandoverController],
@@ -29,8 +32,24 @@ import { OwnershipService } from './services/ownership.service';
     HandoverService,
     HandoverConsumers,
     { provide: GAME_ACCOUNT_PORT, useExisting: HandoverService },
-    { provide: GAME_ACCOUNT_COMMANDS, useExisting: OwnershipReviewService },
-    { provide: GAME_ACCOUNT_QUERIES, useExisting: OwnershipReviewService },
+    TakeoverService,
+    { provide: GAME_DISPUTES, useClass: ForwardedDisputes }, // Unit 7's DisputeCommands
+    {
+      provide: GAME_ACCOUNT_COMMANDS,
+      inject: [OwnershipReviewService, TakeoverService],
+      useFactory: (r: OwnershipReviewService, t: TakeoverService): GameAccountCommands => ({
+        reviewProof: (...a) => r.reviewProof(...a),
+        disputeWithdrawn: (...a) => t.disputeWithdrawn(...a),
+      }),
+    },
+    {
+      provide: GAME_ACCOUNT_QUERIES,
+      inject: [OwnershipReviewService, TakeoverService],
+      useFactory: (r: OwnershipReviewService, t: TakeoverService): GameAccountQueries => ({
+        proofQueue: (...a) => r.proofQueue(...a),
+        credentialsInvalidAllowed: (...a) => t.credentialsInvalidAllowed(...a),
+      }),
+    },
   ],
   exports: [GAME_ACCOUNT_COMMANDS, GAME_ACCOUNT_QUERIES, GAME_ACCOUNT_PORT],
 })
