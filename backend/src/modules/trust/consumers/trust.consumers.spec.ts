@@ -11,9 +11,10 @@ describe('TrustConsumers', () => {
     const bus = { on: jest.fn((type: string, name: string, h: (e: OutboxEvent) => Promise<void>) => handlers.set(`${type}/${name}`, h)) };
     const sanctions = { strike: jest.fn(async () => false), onReinstated: jest.fn(async () => 1) };
     const ratings = { onEscrowClosed: jest.fn(async (_e: OutboxEvent) => true) };
-    new TrustConsumers(bus as never, sanctions as never, ratings as never).onModuleInit();
+    const signals = { onEvent: jest.fn(async (_e: OutboxEvent) => true) };
+    new TrustConsumers(bus as never, sanctions as never, ratings as never, signals as never).onModuleInit();
     const run = (key: string, e: OutboxEvent) => handlers.get(key)!(e);
-    return { run, sanctions, ratings, handlers };
+    return { run, sanctions, ratings, signals, handlers };
   }
 
   it('FR-TNS-04 I-44 a cancellation after payment and a refund at a missed deadline are strikes; other refunds are not', async () => {
@@ -38,5 +39,12 @@ describe('TrustConsumers', () => {
     const s = setup();
     for (const t of ['released', 'refunded', 'partially_refunded']) await s.run(`orders.escrow.${t}/trust.ratings`, ev(`orders.escrow.${t}`, { orderId: 'O1' }));
     expect(s.ratings.onEscrowClosed.mock.calls.map(([e]) => e.type)).toEqual(['orders.escrow.released', 'orders.escrow.refunded', 'orders.escrow.partially_refunded']);
+  });
+
+  it('FR-OPS-01 the events of Units 3, 4 and 6 become signals', async () => {
+    const s = setup();
+    const types = ['auctions.flag.raised', 'listings.listing.relisting_flagged', 'delivery.issue.opened', 'chat.message.flagged'];
+    for (const t of types) await s.run(`${t}/trust.signals`, ev(t, {}));
+    expect(s.signals.onEvent.mock.calls.map(([e]) => e.type)).toEqual(types);
   });
 });
