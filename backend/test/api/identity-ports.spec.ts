@@ -128,7 +128,7 @@ describe('identity ports', () => {
       expect((await u.b.get('/auth/sessions')).status).toBe(401);
       expect(await query.assertCanTransact(u.userId, 'payout').catch(reason)).toBe('suspended');
       const [ev] = await fx.query(`SELECT payload FROM identity.outbox WHERE aggregate_id = $1 AND event_type = 'identity.account.suspended'`, [u.userId]);
-      expect(ev.payload).toEqual({ userId: u.userId, fraud: true });
+      expect(ev.payload).toEqual({ userId: u.userId, fraud: true, sanctionId: null });
       // The user can still sign in to follow paid orders.
       expect((await new Browser(t, origin).post('/auth/signin', { login: u.phone, password: u.password })).status).toBe(204);
     });
