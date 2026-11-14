@@ -10,9 +10,10 @@ import { REPORT_CATEGORY, SANCTION_KIND, SanctionKind } from '../db/enums';
 import type { ReportCategory } from '../ports';
 import { RatingService } from '../services/rating.service';
 import { TrustReportService } from '../services/report.service';
+import { SignalService } from '../services/signal.service';
 import { RelatedType, SanctionService } from '../services/sanction.service';
 
-// Unit 7's reports, sanctions and ratings API (docs/design/07_disputes_trust_staff.pdf section 3.1; U7-04, U7-05). Ownership of a case
+// Unit 7's reports, sanctions and ratings API (docs/design/07_disputes_trust_staff.pdf section 3.1; U7-04, U7-05, U7-08). Ownership of a case
 // ("Assigned operator") is checked in the services; the routes declare SignedIn or Staff.
 
 export class ReportDto {
@@ -120,6 +121,15 @@ export class RemovalDto {
   reason!: string;
 }
 
+export class SignalReviewDto {
+  @IsIn(['dismissed', 'actioned'])
+  outcome!: 'dismissed' | 'actioned';
+
+  @IsString()
+  @Length(10, 2000)
+  note!: string;
+}
+
 export class ReviewsQuery {
   @IsOptional()
   @IsString()
@@ -146,7 +156,16 @@ export class TrustController {
     private readonly reports: TrustReportService,
     private readonly sanctions: SanctionService,
     private readonly ratings: RatingService,
+    private readonly signals: SignalService,
   ) {}
+
+  /** The flagged-activity queue (section 6.2): dismiss a signal or act on it, with a note. */
+  @Staff('operator')
+  @Post('staff/signals/:id/review')
+  @HttpCode(200)
+  reviewSignal(@Id('id') id: string, @Body() dto: SignalReviewDto, @CurrentPrincipal() p: Principal, @Req() req: Request) {
+    return this.signals.review(staffOf(p), id, dto, ctx(req));
+  }
 
   /** FR-REV-01: the buyer or the seller rates the other, once; 201 with the rating. */
   @SignedIn()
