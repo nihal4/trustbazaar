@@ -6,7 +6,7 @@ import { Problem } from '../../../kernel/http/problems';
 import { AUDIT_SERVICE, AuditServicePort, IDENTITY_QUERY, IdentityQuery } from '../../identity/ports';
 import { CancellationRequest, Escrow, EscrowHistory, Order, OrdersOutboxEvent, PaymentAttempt, Payout, Refund, Settlement } from '../db/entities';
 import type { RefundReason } from '../db/enums';
-import type { DeadlineKind, DeliverySource, DisputeOutcome, EscrowCommands, EscrowQuery, EscrowView, FulfilmentStep } from '../ports';
+import type { DeadlineKind, DeliverySource, DisputeOutcome, EscrowCommands, EscrowQuery, EscrowView, FulfilmentStep, OutcomePreview } from '../ports';
 import { post } from './ledger';
 import { split } from './split';
 
@@ -250,6 +250,18 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     if (o.status !== 'paid' || !e || e.state !== 'held') return null;
     if (kind === 'dispute_window') return e.releasePolicy === 'standard' && e.openDisputeId === null ? at(e.disputeWindowEndsAt) : null;
     return o.fulfilmentStep === STEP_OF[kind] && o.fulfilmentDoneAt === null ? at(o.fulfilmentDueAt) : null;
+  }
+
+  async previewOutcomes(orderId: string, itemRefund?: bigint): Promise<OutcomePreview> {
+    const o = await this.db.getRepository(Order).findOneBy({ id: orderId });
+    if (!o) throw new Problem('not-found');
+    const item = BigInt(o.itemPrice);
+    const at = (refund: bigint) => {
+      const p = split(item, BigInt(o.deliveryFee), refund, this.courierDone(o), o.commissionBps, o.deliveryMarginBps);
+      return { refunded: p.refundTotal.toString(), sellerPayout: p.sellerPayout.toString() };
+    };
+    const partial = itemRefund !== undefined && itemRefund > 0n && itemRefund < item ? { itemRefund: itemRefund.toString(), ...at(itemRefund) } : null;
+    return { itemPrice: o.itemPrice, deliveryFee: o.deliveryFee, release: at(0n), fullRefund: at(item), partialRefund: partial };
   }
 
   /** Held, paid, and strictly before the end of the window once the delivery event set it (FR-DSP-11). */
