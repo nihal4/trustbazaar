@@ -1,6 +1,8 @@
+import type { EntityManager } from 'typeorm';
+
 // The public surface of Unit 7: the only files other units may import (DC-1).
 // Ports this unit provides (docs/design/09_integration.pdf, section 2.1), added by the unit's tasks:
-//   DisputeCommands
+//   DisputeCommands   (U7-03: physical goods; U7-10: game accounts)
 //   ReportCommands    (U7-04)
 //   SanctionPort      (U7-04)
 //   CaseQuery         (U7-04: reports; U7-03: disputes)
@@ -63,3 +65,12 @@ export interface TrustQuery {
   profileSummary(userId: string): Promise<ProfileSummary>;
 }
 export const TRUST_QUERY = Symbol('TRUST_QUERY');
+
+/** docs/design/07_disputes_trust_staff.pdf section 5.2 (FR-DSP-01). */
+export type DisputeType = 'not_as_described' | 'damaged' | 'not_received' | 'credentials_invalid' | 'seller_recovery' | 'other';
+
+/** Used by Unit 5, in its own transaction (DC-13). Physical goods with U7-03; game accounts with U7-10. */
+export interface DisputeCommands {
+  open(o: { orderId: string; type: DisputeType; description: string; by: 'buyer' | 'system' }, tx: EntityManager): Promise<string>;
+}
+export const DISPUTE_COMMANDS = Symbol('DISPUTE_COMMANDS');

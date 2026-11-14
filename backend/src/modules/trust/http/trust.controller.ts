@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseEnumPipe, ParseUUIDPipe, Patch, Post, Query, Req, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseEnumPipe, ParseUUIDPipe, Patch, Post, Query, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsIn, IsInt, IsOptional, IsString, IsUUID, Length, Max, MaxLength, Min, ValidateNested } from 'class-validator';
 import type { Request, Response } from 'express';
@@ -7,13 +8,14 @@ import { Public, SignedIn, Staff } from '../../../kernel/http/policies';
 import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
 import { REPORT_CATEGORY, SANCTION_KIND, SanctionKind } from '../db/enums';
-import type { ReportCategory } from '../ports';
+import type { DisputeType, ReportCategory } from '../ports';
+import { DisputeService, MAX_EVIDENCE_BYTES } from '../services/dispute.service';
 import { RatingService } from '../services/rating.service';
 import { TrustReportService } from '../services/report.service';
 import { SignalService } from '../services/signal.service';
 import { RelatedType, SanctionService } from '../services/sanction.service';
 
-// Unit 7's reports, sanctions and ratings API (docs/design/07_disputes_trust_staff.pdf section 3.1; U7-04, U7-05, U7-08). Ownership of a case
+// Unit 7's reports, sanctions and ratings API (docs/design/07_disputes_trust_staff.pdf section 3.1; U7-03, U7-04, U7-05, U7-08). Ownership of a case
 // ("Assigned operator") is checked in the services; the routes declare SignedIn or Staff.
 
 export class ReportDto {
@@ -31,6 +33,22 @@ export class ReportDto {
   @IsString()
   @MaxLength(2000)
   text?: string;
+}
+
+export class OpenDisputeDto {
+  /** Physical goods (U7-03); the game-account types answer feature-off until U7-10. */
+  @IsIn(['not_as_described', 'damaged', 'not_received', 'credentials_invalid', 'seller_recovery', 'other'])
+  type!: DisputeType;
+
+  @IsString()
+  @Length(20, 4000)
+  description!: string;
+}
+
+export class StatementDto {
+  @IsString()
+  @Length(1, 4000)
+  text!: string;
 }
 
 export class ResolutionDto {
@@ -142,6 +160,10 @@ const userOf = (p: Principal) => {
   if (p.type !== 'user') throw new Problem('forbidden');
   return p.userId;
 };
+const asUser = (p: Principal) => {
+  if (p.type !== 'user') throw new Problem('forbidden');
+  return p;
+};
 const staffOf = (p: Principal) => {
   if (p.type !== 'staff') throw new Problem('forbidden');
   return p.staffId;
@@ -157,7 +179,56 @@ export class TrustController {
     private readonly sanctions: SanctionService,
     private readonly ratings: RatingService,
     private readonly signals: SignalService,
+    private readonly disputes: DisputeService,
   ) {}
+
+  /** I-56: the dispute types the buyer may open now. */
+  @SignedIn()
+  @Get('orders/:id/dispute-types')
+  disputeTypes(@Id('id') orderId: string, @CurrentPrincipal() p: Principal) {
+    return this.disputes.types(userOf(p), orderId);
+  }
+
+  /** FR-DSP-01: the buyer opens a dispute; the escrow is frozen (FR-DSP-02). 201 {disputeId}. */
+  @SignedIn()
+  @Post('orders/:id/disputes')
+  @HttpCode(201)
+  openDispute(@Id('id') orderId: string, @Body() dto: OpenDisputeDto, @CurrentPrincipal() p: Principal) {
+    return this.disputes.openByBuyer(userOf(p), orderId, dto);
+  }
+
+  /** The buyer's or the seller's view: status, deadlines, statements, own evidence, outcome. */
+  @SignedIn()
+  @Get('disputes/:id')
+  dispute(@Id('id') id: string, @CurrentPrincipal() p: Principal) {
+    return this.disputes.view(asUser(p), id);
+  }
+
+  /** FR-DSP-04: a statement; the seller's first while it is expected is the response. */
+  @SignedIn()
+  @Post('disputes/:id/statements')
+  @HttpCode(201)
+  statement(@Id('id') id: string, @Body() dto: StatementDto, @CurrentPrincipal() p: Principal) {
+    return this.disputes.statement(userOf(p), id, dto.text);
+  }
+
+  /** Evidence: one image (multipart field file); at most CP-33 per dispute. */
+  @SignedIn()
+  @Post('disputes/:id/evidence')
+  @HttpCode(201)
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_EVIDENCE_BYTES, files: 1, fields: 0, parts: 1 } }))
+  evidence(@Id('id') id: string, @UploadedFile() file: { buffer: Buffer; mimetype: string; size: number } | undefined, @CurrentPrincipal() p: Principal) {
+    if (!file) throw new Problem('validation-failed', { errors: [{ field: 'file', reason: 'required' }] });
+    return this.disputes.evidence(userOf(p), id, file);
+  }
+
+  /** FR-DSP-10: the buyer withdraws before the decision. */
+  @SignedIn()
+  @Post('disputes/:id/withdraw')
+  @HttpCode(200)
+  withdraw(@Id('id') id: string, @CurrentPrincipal() p: Principal) {
+    return this.disputes.withdraw(userOf(p), id);
+  }
 
   /** The flagged-activity queue (section 6.2): dismiss a signal or act on it, with a note. */
   @Staff('operator')

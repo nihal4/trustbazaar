@@ -13,7 +13,7 @@ export class DisputeEvidence {
   @Column({ type: 'enum', enum: PARTY, enumName: 'party' })
   party!: Party;
 
-  @Column({ type: 'varchar', name: 'storage_key', length: 80 })
+  @Column({ type: 'varchar', name: 'storage_key', length: 300 })
   storageKey!: string;
 
   @Column({ type: 'bytea' })
