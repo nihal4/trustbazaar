@@ -1,7 +1,7 @@
 {
   "name": "trustbazaar-backend",
   "version": "0.1.0",
-  "description": "TrustBazaar core API \u2014 auth, listings, auctions, orders, payments/escrow, delivery, chat, disputes",
+  "description": "TrustBazaar core API — auth, listings, auctions, orders, payments/escrow, delivery, chat, disputes",
   "private": true,
   "scripts": {
     "build": "nest build",
@@ -47,6 +47,7 @@
     "typeorm": "^0.3.20"
   },
   "devDependencies": {
+    "@hpke/core": "1.9.0",
     "@nestjs/cli": "^10.4.5",
     "@nestjs/schematics": "^10.1.4",
     "@nestjs/testing": "^10.4.0",
