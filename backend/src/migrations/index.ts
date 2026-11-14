@@ -13,6 +13,8 @@ import { ChatDetectionTermDelete1793491200012 } from './1793491200012-chat-detec
 import { ChatImageKeyTemplate1793491200011 } from './1793491200011-chat-image-key-template';
 import { ReminderTemplates1793491200014 } from './1793491200014-reminder-templates';
 import { TrustNoticeTemplates1793491200015 } from './1793491200015-trust-notice-templates';
+import { DisputeEvidenceKey1793491200016 } from './1793491200016-dispute-evidence-key';
+import { DisputeNoticeTemplates1793491200017 } from './1793491200017-dispute-notice-templates';
 
 // The migrations in the order they run: the seven units in unit order, then 09_integration (I-60).
 // Add a new migration at the end; never reorder or edit an applied one.
@@ -32,4 +34,6 @@ export const MIGRATIONS = [
   OwnMeetupPlaces1793491200013, // U4-03: a meetup at a place of the parties' own (Decisions log)
   ReminderTemplates1793491200014, // U6-06: the deadline reminders' templates (Decisions log)
   TrustNoticeTemplates1793491200015, // U7-04: the notices of sanctions and resolved reports (Decisions log)
+  DisputeEvidenceKey1793491200016, // U7-03: dispute evidence keys of Unit 1's FileVault (Decisions log)
+  DisputeNoticeTemplates1793491200017, // U7-03: the notices of a dispute's opening and withdrawal (Decisions log)
 ];
