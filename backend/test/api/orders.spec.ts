@@ -189,8 +189,8 @@ describe('orders', () => {
     const pickupOnly = await listing(seller.userId, { fulfilment: 'pickup_only' });
     expect((await errorsOf(await buyer.call('POST', '/orders', { listingId: pickupOnly, quantity: 1, fulfilment: 'courier' }))).errors).toEqual(['fulfilment:not-offered-by-listing']);
     const game = await listing(seller.userId, { kind: 'game_account' });
-    const g = await buyer.call('POST', '/orders', { listingId: game, quantity: 1 });
-    expect(await errorsOf(g)).toEqual({ type: '/problems/feature-off', errors: ['listingId:game-accounts-not-yet-available'] });
+    const g = await buyer.call('POST', '/orders', { listingId: game, quantity: 1, fulfilment: 'self_pickup' });
+    expect(await errorsOf(g)).toEqual({ type: '/problems/validation-failed', errors: ['fulfilment:not-offered-by-listing'] }); // only the sealed handover (U5-03)
     expect(await stock(game)).toEqual({ quantity_available: 1, quantity_reserved: 0 });
   });
 

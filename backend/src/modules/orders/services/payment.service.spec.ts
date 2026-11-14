@@ -78,13 +78,14 @@ function setup(o: { mode?: 'mock' | 'sandbox'; providers?: ProviderRegistry; see
   const config = { paymentMode: o.mode ?? 'mock', publicOrigin: 'https://tb', secrets: { callbackStateKey: new Secret('CALLBACK_STATE_KEY', KEY) }, providers: {} } as unknown as TbConfig;
   const idempotency = { once: async (_s: string, _u: string, _k: string | undefined, fn: () => Promise<string>) => ({ id: await fn(), repeated: false }) };
   const clock: Clock = { now: () => NOW };
-  const svc = new PaymentService(db as unknown as DataSource, idempotency as unknown as IdempotencyKeys, providers, audit as unknown as AuditServicePort, params, config, clock);
+  const games = { assertCheckoutReady: jest.fn(async (_orderId: string) => undefined) };
+  const svc = new PaymentService(db as unknown as DataSource, idempotency as unknown as IdempotencyKeys, providers, audit as unknown as AuditServicePort, params, config, clock, games);
   const order = (x: Row = {}) => {
     const row = { id: randomUUID(), buyerId: 'B', sellerId: 'S', status: 'awaiting_payment', fulfilment: 'self_pickup', total: '150000', paymentDueAt: new Date(NOW.getTime() + 5 * 60_000), listingSnapshot: { title: 'Phone' }, itemKind: 'physical', paramsVersion: 1, kind: 'fixed_price', listingId: 'L', quantity: 1, deliveryQuoteId: null, ...x };
     repos.get(Order)!.rows.push(row);
     return row;
   };
-  return { svc, repo: (e: unknown) => repos.get(e)!, providers: providers as Record<string, jest.Mocked<PaymentProvider>>, order, audit, config };
+  return { svc, repo: (e: unknown) => repos.get(e)!, providers: providers as Record<string, jest.Mocked<PaymentProvider>>, order, audit, config, games };
 }
 
 const problemOf = async (p: Promise<unknown>) => {
@@ -133,6 +134,19 @@ describe('PaymentService.start (FR-PAY-01)', () => {
     expect(s.repo(PaymentAttempt).rows[0]).toMatchObject({ status: 'failed', failureCode: 'provider_unavailable' });
     s.providers.bkash.createPayment.mockRejectedValueOnce(new Error('bug'));
     await expect(s.svc.start('B', o.id, 'bkash', undefined)).rejects.toThrow('bug');
+  });
+});
+
+describe('PaymentService.start for a game account (I-29)', () => {
+  it('FR-GAM-05 FR-GAM-07 a game account\'s payment starts only when Unit 5 says checkout is ready', async () => {
+    const s = setup();
+    const o = s.order({ itemKind: 'game_account', fulfilment: 'game_account' });
+    s.games.assertCheckoutReady.mockRejectedValueOnce(new Problem('order-state', { errors: [{ field: 'game', reason: 'checkout-not-ready' }] }));
+    expect(await problemOf(s.svc.start('B', o.id, 'bkash', undefined))).toEqual(['order-state', 'game:checkout-not-ready']);
+    expect((await s.svc.start('B', o.id, 'bkash', undefined)).amount).toBe('150000');
+    expect(s.games.assertCheckoutReady.mock.calls).toEqual([[o.id], [o.id]]);
+    await s.svc.start('B', s.order().id, 'bkash', undefined); // a physical item does not ask
+    expect(s.games.assertCheckoutReady).toHaveBeenCalledTimes(2);
   });
 });
 
