@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { EventBus, OutboxEvent } from '../../../kernel/events/event-bus';
 import { RatingService } from '../services/rating.service';
 import { SanctionService } from '../services/sanction.service';
+import { SignalService } from '../services/signal.service';
 
 // Unit 7's consumers of U7-04 (docs/design/07_disputes_trust_staff.pdf section 3.3), each idempotent:
 //  - seller strikes (FR-TNS-04), keyed by order and reason: a unilateral cancellation after payment, and a refund at
@@ -9,6 +10,7 @@ import { SanctionService } from '../services/sanction.service';
 //    the third, recorded by the decision itself (U7-03).
 //  - identity.account.reinstated: the four-eyes reinstatement lifts the live account suspensions (CP-30).
 //  - rating eligibility (FR-REV-01; U7-05), keyed by the order: a terminal escrow event makes the order rateable.
+//  - signals for the flagged-activity queue (U7-08), keyed by their source (SignalService).
 
 const str = (v: unknown) => (typeof v === 'string' ? v : '');
 
@@ -18,6 +20,7 @@ export class TrustConsumers implements OnModuleInit {
     private readonly bus: EventBus,
     private readonly sanctions: SanctionService,
     private readonly ratings: RatingService,
+    private readonly signals: SignalService,
   ) {}
 
   onModuleInit(): void {
@@ -27,6 +30,9 @@ export class TrustConsumers implements OnModuleInit {
     });
     for (const type of ['orders.escrow.released', 'orders.escrow.refunded', 'orders.escrow.partially_refunded']) {
       this.bus.on(type, 'trust.ratings', async (e) => void (await this.ratings.onEscrowClosed(e)));
+    }
+    for (const type of ['auctions.flag.raised', 'listings.listing.relisting_flagged', 'delivery.issue.opened', 'chat.message.flagged']) {
+      this.bus.on(type, 'trust.signals', async (e) => void (await this.signals.onEvent(e)));
     }
     this.bus.on('identity.account.reinstated', 'trust.sanctions', async (e) => {
       await this.sanctions.onReinstated({
