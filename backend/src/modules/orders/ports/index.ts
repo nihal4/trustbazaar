@@ -164,3 +164,9 @@ export const ESCROW_COMMANDS = Symbol('ESCROW_COMMANDS');
 export const ESCROW_QUERY = Symbol('ESCROW_QUERY');
 
 export const ORDERS_PORT = Symbol('ORDERS_PORT');
+
+/** FR-OPS-01: the bank payout accounts waiting for an operator's check, oldest first, for Unit 7's console (U7-06). */
+export interface PayoutChecksQuery {
+  pendingAccountChecks(): Promise<{ id: string; userId: string; createdAt: Date }[]>;
+}
+export const PAYOUT_CHECKS = Symbol('PAYOUT_CHECKS');

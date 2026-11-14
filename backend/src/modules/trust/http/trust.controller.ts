@@ -11,12 +11,13 @@ import { REPORT_CATEGORY, SANCTION_KIND, SanctionKind } from '../db/enums';
 import type { DisputeType, ReportCategory } from '../ports';
 import { DecisionOutcome, DisputeCaseService } from '../services/dispute-case.service';
 import { DisputeService, MAX_EVIDENCE_BYTES } from '../services/dispute.service';
+import { QueueName, QUEUES, QueueService } from '../services/queue.service';
 import { RatingService } from '../services/rating.service';
 import { TrustReportService } from '../services/report.service';
 import { SignalService } from '../services/signal.service';
 import { RelatedType, SanctionService } from '../services/sanction.service';
 
-// Unit 7's reports, sanctions and ratings API (docs/design/07_disputes_trust_staff.pdf section 3.1; U7-03, U7-04, U7-05, U7-08). Ownership of a case
+// Unit 7's reports, sanctions and ratings API (docs/design/07_disputes_trust_staff.pdf section 3.1; U7-03 to U7-06, U7-08). Ownership of a case
 // ("Assigned operator") is checked in the services; the routes declare SignedIn or Staff.
 
 export class ReportDto {
@@ -209,7 +210,15 @@ export class TrustController {
     private readonly signals: SignalService,
     private readonly disputes: DisputeService,
     private readonly cases: DisputeCaseService,
+    private readonly queues: QueueService,
   ) {}
+
+  /** FR-OPS-01: one of the eight queues, oldest first, with age; disputes overdue first (DV-52). */
+  @Staff('operator')
+  @Get('staff/queues/:queue')
+  queue(@Param('queue', new ParseEnumPipe(Object.fromEntries(QUEUES.map((q) => [q, q])), { exceptionFactory: () => new Problem('not-found') })) queue: QueueName) {
+    return this.queues.list(queue);
+  }
 
   /** I-56: the dispute types the buyer may open now. */
   @SignedIn()

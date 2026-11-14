@@ -80,6 +80,6 @@ import { NotificationService } from './services/notification.service';
       }),
     },
   ],
-  exports: [NOTIFIER, BLOCK_PORT, CHAT_COMMANDS],
+  exports: [NOTIFIER, BLOCK_PORT, CHAT_COMMANDS, NOTIFICATION_PORT],
 })
 export class ChatModule {}
