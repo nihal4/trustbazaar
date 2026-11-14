@@ -107,8 +107,8 @@ export class DisputeCaseService implements OnModuleInit {
       this.escrowQuery.previewOutcomes(d.order_id),
       this.deliveryQuery.fulfilmentRecord(d.order_id),
       this.db.query(`SELECT from_status, to_status, actor, reason, at FROM disputes.history WHERE dispute_id = $1 ORDER BY id`, [disputeId]) as Promise<{ from_status: string | null; to_status: string; actor: string; reason: string | null; at: Date }[]>,
-      this.db.query(`SELECT party, text, at FROM disputes.statements WHERE dispute_id = $1 ORDER BY id`, [disputeId]) as Promise<{ party: string; text: string; at: Date }[]>,
-      this.db.query(`SELECT id, party, storage_key, mime, byte_size, at FROM disputes.evidence WHERE dispute_id = $1 ORDER BY at`, [disputeId]) as Promise<{ id: string; party: string; storage_key: string; mime: string; byte_size: number; at: Date }[]>,
+      this.db.query(`SELECT party, text, at FROM disputes.statements WHERE dispute_id = $1 ORDER BY id`, [disputeId]) as Promise<{ party: string; text: string | null; at: Date }[]>,
+      this.db.query(`SELECT id, party, storage_key, mime, byte_size, at FROM disputes.evidence WHERE dispute_id = $1 ORDER BY at`, [disputeId]) as Promise<{ id: string; party: string; storage_key: string | null; mime: string; byte_size: number; at: Date }[]>,
       this.db.query(
         `SELECT id, order_id, type, status, outcome, buyer_id = $2 AS as_buyer, opened_at FROM disputes.disputes
           WHERE id <> $1 AND (buyer_id IN ($2, $3) OR seller_id IN ($2, $3)) ORDER BY opened_at DESC LIMIT 20`, [disputeId, d.buyer_id, d.seller_id],
@@ -140,7 +140,7 @@ export class DisputeCaseService implements OnModuleInit {
       history: history.map((h) => ({ from: h.from_status, to: h.to_status, actor: h.actor, reason: h.reason, at: h.at.toISOString() })),
       statements: statements.map((s) => ({ party: s.party, text: s.text, at: s.at.toISOString() })),
       evidence: await Promise.all(evidence.map(async (e) => ({
-        id: e.id, party: e.party, mime: e.mime, size: e.byte_size, at: e.at.toISOString(), link: await this.vault.signedLink(e.storage_key, staff, reason, ctx),
+        id: e.id, party: e.party, mime: e.mime, size: e.byte_size, at: e.at.toISOString(), link: e.storage_key ? await this.vault.signedLink(e.storage_key, staff, reason, ctx) : null,
       }))),
       context: {
         disputes: earlier.map((x) => ({ id: x.id, orderId: x.order_id, type: x.type, status: x.status, outcome: x.outcome, buyerHere: x.as_buyer ? 'buyer' : 'seller', openedAt: x.opened_at.toISOString() })),
