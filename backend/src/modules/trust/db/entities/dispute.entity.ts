@@ -85,6 +85,10 @@ export class Dispute {
   @Column({ type: 'timestamptz', name: 'withdrawn_at', nullable: true })
   withdrawnAt!: Date | null;
 
+  /** statements and evidence removed at the end of retention (I-63; U7-07) */
+  @Column({ type: 'timestamptz', name: 'purged_at', nullable: true })
+  purgedAt!: Date | null;
+
   @Column({ type: 'enum', name: 'last_actor', enum: ACTOR, enumName: 'actor' })
   lastActor!: Actor;
 

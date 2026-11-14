@@ -16,6 +16,8 @@ import { TrustNoticeTemplates1793491200015 } from './1793491200015-trust-notice-
 import { DisputeEvidenceKey1793491200016 } from './1793491200016-dispute-evidence-key';
 import { DisputeNoticeTemplates1793491200017 } from './1793491200017-dispute-notice-templates';
 import { DisputeDecisionTemplates1793491200018 } from './1793491200018-dispute-decision-templates';
+import { DisputePurge1793491200019 } from './1793491200019-dispute-purge';
+import { DisclosureNoticeTemplate1793491200020 } from './1793491200020-disclosure-notice-template';
 
 // The migrations in the order they run: the seven units in unit order, then 09_integration (I-60).
 // Add a new migration at the end; never reorder or edit an applied one.
@@ -38,4 +40,6 @@ export const MIGRATIONS = [
   DisputeEvidenceKey1793491200016, // U7-03: dispute evidence keys of Unit 1's FileVault (Decisions log)
   DisputeNoticeTemplates1793491200017, // U7-03: the notices of a dispute's opening and withdrawal (Decisions log)
   DisputeDecisionTemplates1793491200018, // U7-03: the notices of a dispute's decision and of a request for information (Decisions log)
+  DisputePurge1793491200019, // U7-07: dispute statements and evidence purged at the end of retention, I-63 (Decisions log)
+  DisclosureNoticeTemplate1793491200020, // U7-07: the user's notice of a lawful disclosure (Decisions log)
 ];

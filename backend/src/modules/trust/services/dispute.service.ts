@@ -116,10 +116,10 @@ export class DisputeService implements DisputeCommands {
   async view(viewer: Principal & { type: 'user' }, disputeId: string) {
     const d = await this.forParty(viewer.userId, disputeId);
     const role = d.buyer_id === viewer.userId ? 'buyer' : 'seller';
-    const statements = (await this.db.query(`SELECT party, text, at FROM disputes.statements WHERE dispute_id = $1 ORDER BY id`, [disputeId])) as { party: string; text: string; at: Date }[];
+    const statements = (await this.db.query(`SELECT party, text, at FROM disputes.statements WHERE dispute_id = $1 ORDER BY id`, [disputeId])) as { party: string; text: string | null; at: Date }[];
     const evidence = (await this.db.query(
       `SELECT id, storage_key, mime, byte_size, at FROM disputes.evidence WHERE dispute_id = $1 AND party = $2 ORDER BY at`, [disputeId, role],
-    )) as { id: string; storage_key: string; mime: string; byte_size: number; at: Date }[];
+    )) as { id: string; storage_key: string | null; mime: string; byte_size: number; at: Date }[];
     const iso = (x: Date | null) => (x ? x.toISOString() : null);
     return {
       id: d.id, orderId: d.order_id, role, type: d.type, status: d.status, description: d.description,
@@ -129,7 +129,8 @@ export class DisputeService implements DisputeCommands {
       withdrawnAt: iso(d.withdrawn_at),
       statements: statements.map((s) => ({ party: s.party, text: s.text, at: s.at.toISOString() })),
       evidence: await Promise.all(evidence.map(async (e) => ({
-        id: e.id, mime: e.mime, size: e.byte_size, at: e.at.toISOString(), link: await this.vault.signedLink(e.storage_key, viewer),
+        // a purged file (I-63) stays listed, without a link
+        id: e.id, mime: e.mime, size: e.byte_size, at: e.at.toISOString(), link: e.storage_key ? await this.vault.signedLink(e.storage_key, viewer) : null,
       }))),
     };
   }
