@@ -45,4 +45,7 @@ export class OwnershipProof {
 
   @Column({ type: 'text', name: 'review_reason', nullable: true })
   reviewReason!: string | null;
+
+  @Column({ type: 'timestamptz', name: 'screenshot_purged_at', nullable: true })
+  screenshotPurgedAt!: Date | null;
 }
