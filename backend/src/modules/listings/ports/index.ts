@@ -4,7 +4,7 @@ import type { EntityManager } from 'typeorm';
 // Ports this unit provides (docs/design/03_listings_auctions.pdf section 3.3; docs/design/09_integration.pdf
 // section 4), added by the unit's tasks:
 //   ListingsPort      (U3-02, below)
-//   ListingsCommands  (U3-08)
+//   ListingsCommands  (approveForPublication, returnToDraft: U5-02, below; remove: U3-08)
 //   ListingsQueries   (I-61: threadFacts with U6-02, below; fulfilmentFacts with U3-06)
 //   AuctionQuery      (U3-04: getPublicState, below; U3-06: getFlags)
 
@@ -54,6 +54,20 @@ export interface ListingsPort {
 }
 
 export const LISTINGS_PORT = Symbol('LISTINGS_PORT');
+
+/**
+ * Publication decisions on a listing held for review (section 3.3; used by Units 5 and 7). Each runs in the caller's
+ * transaction when one is given, so Unit 5's ownership approval, its player-ID claim and the publication commit
+ * together. remove() comes with U3-08.
+ */
+export interface ListingsCommands {
+  /** pending_review -> active; a held auction's clock restarts now. Throws listing-state if the listing is not held. */
+  approveForPublication(listingId: string, byStaffId: string, reason: string, tx?: EntityManager): Promise<void>;
+  /** pending_review -> draft, for the seller to correct. Returns false (and changes nothing) if the listing is not held. */
+  returnToDraft(listingId: string, byStaffId: string, reason: string, tx?: EntityManager): Promise<boolean>;
+}
+
+export const LISTINGS_COMMANDS = Symbol('LISTINGS_COMMANDS');
 
 /**
  * The public state of an auction (section 3.2, IF-COM-02): the body of GET /auctions/{id}/state and of the live
