@@ -1,5 +1,12 @@
 import { randomInt, randomUUID } from 'crypto';
+import { DataSource } from 'typeorm';
+import { CLOCK } from '../../src/kernel/clock';
+import { CONFIG_PORT } from '../../src/kernel/config-port';
 import { OutboxDispatcher } from '../../src/kernel/events/outbox-dispatcher';
+import { REDIS } from '../../src/kernel/redis.provider';
+import { FULFILMENT_ORDERS } from '../../src/modules/delivery/adapters/orders';
+import { StatusService } from '../../src/modules/delivery/services/status.service';
+import { UpkeepService } from '../../src/modules/delivery/services/upkeep.service';
 import { startApp, TestApp } from '../support/app';
 import { IdentityFixtures } from '../support/identity';
 
@@ -13,8 +20,9 @@ describe('meetup handover', () => {
   let fx: IdentityFixtures;
   let dispatcher: OutboxDispatcher;
   let points: string[] = [];
-  // a spot in Sylhet division chosen per run, so earlier runs' points (deactivated after each run) cannot interfere
-  const BASE = { lat: 24.3 + randomInt(0, 600) / 1000, lng: 91.3 + randomInt(0, 600) / 1000 };
+  // a spot in Sylhet division chosen per run, so earlier runs' points (deactivated after each run) cannot interfere.
+  // Its latitude is a DV-27 grid centre (a multiple of 0.02), so the buyer's 300 m move below stays in one grid cell.
+  const BASE = { lat: Number((24.3 + randomInt(0, 30) * 0.02).toFixed(2)), lng: 91.3 + randomInt(0, 600) / 1000 };
 
   beforeAll(async () => {
     process.env.OUTBOX_DISPATCHER = 'off';
@@ -86,7 +94,7 @@ describe('meetup handover', () => {
     return { id, buyer, seller };
   }
   async function paidEvent(id: string, buyer: string, seller: string, fulfilment: string, due: Date) {
-    await fx.query(`INSERT INTO orders.outbox (event_type, aggregate_id, payload) VALUES ('orders.order.paid', $1, $2)`, [id, JSON.stringify({
+    await fx.query(`INSERT INTO orders.outbox (event_type, aggregate_id, payload, next_attempt_at) VALUES ('orders.order.paid', $1, $2, now() - interval '1 second')`, [id, JSON.stringify({
       orderId: id, kind: 'fixed_price', itemKind: 'physical', buyerId: buyer, sellerId: seller, fulfilment, fulfilmentDueAt: due.toISOString(), total: '1000000',
     })]);
     await drainAll();
@@ -232,7 +240,7 @@ describe('meetup handover', () => {
 
     const o = await paidOrder();
     await o.buyer.json('POST', `/orders/${o.id}/meetup-proposals`, { pointId: points[0], meetAt: inHours(5) }, 201);
-    await fx.query(`INSERT INTO orders.outbox (event_type, aggregate_id, payload) VALUES ('orders.escrow.refunded', $1, $2)`, [o.id, JSON.stringify({ orderId: o.id })]);
+    await fx.query(`INSERT INTO orders.outbox (event_type, aggregate_id, payload, next_attempt_at) VALUES ('orders.escrow.refunded', $1, $2, now() - interval '1 second')`, [o.id, JSON.stringify({ orderId: o.id })]);
     await drainAll();
     expect(await handover(o.id)).toMatchObject({ status: 'cancelled' });
     const v = await o.buyer.json<View>('GET', `/orders/${o.id}/handover`);
@@ -253,5 +261,21 @@ describe('meetup handover', () => {
     const list = (await (await adm.call('GET', '/admin/meetup-points')).json()) as { items: { id: string }[] };
     expect(list.items.some((x) => x.id === p.id)).toBe(true);
     expect(await fx.query(`SELECT 1 FROM audit.events WHERE action LIKE 'delivery.meetup_point.%' AND object_id = $1`, [p.id])).toHaveLength(2);
+  });
+
+  it('FR-DLV-04 a proposal whose time has passed lapses (U4-05 job) and can no longer be accepted', async () => {
+    const o = await paidOrder();
+    type P = { id: string; status: string };
+    const v = await o.buyer.json<{ proposals: P[] }>('POST', `/orders/${o.id}/meetup-proposals`, { placeName: 'Tea stall by the lake', meetAt: inHours(2) }, 201);
+    const pid = v.proposals[0].id;
+    const upkeepAt = (aheadMs: number) => new UpkeepService(
+      t.app.get(DataSource), t.app.get(StatusService), t.app.get(FULFILMENT_ORDERS), t.app.get(CONFIG_PORT), t.app.get(REDIS),
+      { now: () => new Date(t.app.get<{ now(): Date }>(CLOCK).now().getTime() + aheadMs) },
+    );
+    await upkeepAt(0).lapseProposals();
+    expect((await o.seller.json<{ proposals: P[] }>('GET', `/orders/${o.id}/handover`)).proposals.find((p) => p.id === pid)?.status).toBe('proposed');
+    expect(await upkeepAt(3 * 3_600_000).lapseProposals()).toBeGreaterThanOrEqual(1);
+    expect((await o.seller.json<{ proposals: P[] }>('GET', `/orders/${o.id}/handover`)).proposals.find((p) => p.id === pid)?.status).toBe('lapsed');
+    expect(await reason(await o.seller.call('POST', `/orders/${o.id}/meetup-proposals/${pid}/accept`))).toEqual({ field: 'proposalId', reason: 'proposal_closed' });
   });
 });

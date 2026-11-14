@@ -228,6 +228,7 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     return {
       orderId, orderStatus: o.status, state: e.state, releasePolicy: e.releasePolicy, amountCollected: e.amountCollected, amountReleased: e.amountReleased,
       amountRefunded: e.amountRefunded, disputeWindowEndsAt: e.disputeWindowEndsAt, autoReleaseAt: e.autoReleaseAt, openDisputeId: e.openDisputeId, deliveryEventAt: o.deliveryEventAt,
+      closedAt: o.closedAt,
     };
   }
 
