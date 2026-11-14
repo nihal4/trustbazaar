@@ -9,6 +9,7 @@ import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
 import { REPORT_CATEGORY, SANCTION_KIND, SanctionKind } from '../db/enums';
 import type { DisputeType, ReportCategory } from '../ports';
+import { DecisionOutcome, DisputeCaseService } from '../services/dispute-case.service';
 import { DisputeService, MAX_EVIDENCE_BYTES } from '../services/dispute.service';
 import { RatingService } from '../services/rating.service';
 import { TrustReportService } from '../services/report.service';
@@ -49,6 +50,33 @@ export class StatementDto {
   @IsString()
   @Length(1, 4000)
   text!: string;
+}
+
+export class DecisionDto {
+  @IsIn(['release', 'full_refund', 'partial_refund', 'refund_after_return'])
+  outcome!: DecisionOutcome;
+
+  /** The parties see it (FR-DSP-07). */
+  @IsString()
+  @Length(20, 4000)
+  reason!: string;
+
+  /** Poisha, for a partial refund: above zero and below the item price. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(15)
+  itemRefund?: string;
+
+  /** Who pays the return, for refund after return. */
+  @IsOptional()
+  @IsIn(['buyer', 'seller'])
+  returnPayer?: 'buyer' | 'seller';
+}
+
+export class InfoRequestDto {
+  @IsString()
+  @Length(10, 2000)
+  note!: string;
 }
 
 export class ResolutionDto {
@@ -169,8 +197,8 @@ const staffOf = (p: Principal) => {
   return p.staffId;
 };
 const ctx = (req: Request) => ({ ip: req.ip ?? null, correlationId: correlationId(req) });
-/** Case types that can be claimed so far: reports (U7-04); disputes come with U7-03. */
-const CLAIMABLE = { report: 'report' } as const;
+/** The case types an operator claims (FR-OPS-06): disputes (U7-03) and reports (U7-04). */
+const CLAIMABLE = { dispute: 'dispute', report: 'report' } as const;
 
 @Controller()
 export class TrustController {
@@ -180,6 +208,7 @@ export class TrustController {
     private readonly ratings: RatingService,
     private readonly signals: SignalService,
     private readonly disputes: DisputeService,
+    private readonly cases: DisputeCaseService,
   ) {}
 
   /** I-56: the dispute types the buyer may open now. */
@@ -296,12 +325,46 @@ export class TrustController {
   @Post('staff/cases/:type/:id/claim')
   @HttpCode(200)
   claim(
-    @Param('type', new ParseEnumPipe(CLAIMABLE, { exceptionFactory: () => new Problem('not-found') })) _type: 'report',
+    @Param('type', new ParseEnumPipe(CLAIMABLE, { exceptionFactory: () => new Problem('not-found') })) type: 'dispute' | 'report',
     @Id('id') id: string,
     @CurrentPrincipal() p: Principal,
     @Req() req: Request,
   ) {
-    return this.reports.claim(staffOf(p), id, ctx(req));
+    return type === 'dispute' ? this.cases.claim(staffOf(p), id, ctx(req)) : this.reports.claim(staffOf(p), id, ctx(req));
+  }
+
+  /** FR-DSP-05: the case file, for the assigned operator; each view audited. */
+  @Staff('operator')
+  @Get('staff/disputes/:id/case-file')
+  caseFile(@Id('id') id: string, @CurrentPrincipal() p: Principal, @Req() req: Request) {
+    if (p.type !== 'staff') throw new Problem('forbidden');
+    return this.cases.caseFile(p, id, ctx(req));
+  }
+
+  /** FR-DSP-09: ask the seller for more; they have 24 hours (DV-47). */
+  @Staff('operator')
+  @Post('staff/disputes/:id/request-info')
+  @HttpCode(200)
+  requestInfo(@Id('id') id: string, @Body() dto: InfoRequestDto, @CurrentPrincipal() p: Principal) {
+    return this.cases.requestInfo(staffOf(p), id, dto.note);
+  }
+
+  /** FR-DSP-06: 200 decided (or awaiting the return), or 202 proposed for four-eyes approval (CP-30). */
+  @Staff('operator')
+  @Post('staff/disputes/:id/decision')
+  @HttpCode(200)
+  async decide(@Id('id') id: string, @Body() dto: DecisionDto, @CurrentPrincipal() p: Principal, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const r = await this.cases.decide(staffOf(p), id, dto, ctx(req));
+    if (r.status === 'proposed') res.status(202);
+    return r;
+  }
+
+  /** Outcome (d): the seller records that the returned item has arrived; the buyer's refund follows. */
+  @SignedIn()
+  @Post('disputes/:id/return-received')
+  @HttpCode(200)
+  returnReceived(@Id('id') id: string, @CurrentPrincipal() p: Principal) {
+    return this.cases.returnReceived(userOf(p), id);
   }
 
   /** The assigned operator dismisses or actions a report (FR-TNS-09). */

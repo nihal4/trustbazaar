@@ -141,6 +141,20 @@ export interface EscrowQuery {
    * deadlines (meetup handover, courier pickup, credential delivery) are the order's own (fulfilmentDueAt).
    */
   deadline(orderId: string, kind: DeadlineKind): Promise<{ dueAt: Date; listingTitle: string | null } | null>;
+  /**
+   * FR-DSP-05: the amounts each dispute outcome would move, from the split (payments.split), so the operator sees them
+   * before deciding (U7-03). itemRefund: the partial refund to preview, if any.
+   */
+  previewOutcomes(orderId: string, itemRefund?: bigint): Promise<OutcomePreview>;
+}
+
+/** Poisha as strings; refunded: to the buyer; sellerPayout: to the seller. */
+export interface OutcomePreview {
+  itemPrice: string;
+  deliveryFee: string;
+  release: { refunded: string; sellerPayout: string };
+  fullRefund: { refunded: string; sellerPayout: string };
+  partialRefund: { itemRefund: string; refunded: string; sellerPayout: string } | null;
 }
 
 /** The order deadlines Notifications reminds people of (FR-NTF-07). Unit 5's takeover window and protection period come with Unit 5. */
