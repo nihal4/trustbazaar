@@ -13,8 +13,9 @@ export class DisputeEvidence {
   @Column({ type: 'enum', enum: PARTY, enumName: 'party' })
   party!: Party;
 
-  @Column({ type: 'varchar', name: 'storage_key', length: 300 })
-  storageKey!: string;
+  /** null once purged at the end of retention (I-63; U7-07) */
+  @Column({ type: 'varchar', name: 'storage_key', length: 300, nullable: true })
+  storageKey!: string | null;
 
   @Column({ type: 'bytea' })
   sha256!: Buffer;
@@ -27,4 +28,7 @@ export class DisputeEvidence {
 
   @Column({ type: 'timestamptz' })
   at!: Date;
+
+  @Column({ type: 'timestamptz', name: 'purged_at', nullable: true })
+  purgedAt!: Date | null;
 }

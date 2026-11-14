@@ -52,6 +52,7 @@ CREATE TABLE disputes.disputes (
   approval_id         uuid REFERENCES identity.approvals(id),        -- four-eyes (CP-30)
   closed_at           timestamptz,
   withdrawn_at        timestamptz,
+  purged_at           timestamptz,                    -- statements and evidence removed at the end of retention (I-63; U7-07)
   last_actor          disputes.actor NOT NULL DEFAULT 'buyer',
   last_actor_id       uuid,
   last_reason         text,
@@ -91,7 +92,11 @@ BEGIN
      IS DISTINCT FROM (OLD.order_id, OLD.buyer_id, OLD.seller_id, OLD.item_kind, OLD.type, OLD.description, OLD.item_price, OLD.amount_collected, OLD.opened_at, OLD.opened_by) THEN
     RAISE EXCEPTION 'what a dispute is about is fixed' USING ERRCODE = 'check_violation';
   END IF;
-  IF OLD.status IN ('decided', 'withdrawn') THEN RAISE EXCEPTION 'dispute is closed' USING ERRCODE = 'check_violation'; END IF;
+  IF OLD.status IN ('decided', 'withdrawn') THEN
+    -- I-63 (U7-07): once, at the end of retention, the purge stamp is the only change a closed dispute takes
+    IF OLD.purged_at IS NULL AND NEW.purged_at IS NOT NULL AND to_jsonb(NEW) - 'purged_at' = to_jsonb(OLD) - 'purged_at' THEN RETURN NEW; END IF;
+    RAISE EXCEPTION 'dispute is closed' USING ERRCODE = 'check_violation';
+  END IF;
   IF OLD.outcome IS NOT NULL AND (NEW.outcome, NEW.item_refund, NEW.return_fare, NEW.return_fare_payer, NEW.decided_by, NEW.decided_at, NEW.decision_reason)
        IS DISTINCT FROM (OLD.outcome, OLD.item_refund, OLD.return_fare, OLD.return_fare_payer, OLD.decided_by, OLD.decided_at, OLD.decision_reason) THEN
     RAISE EXCEPTION 'a decision is final' USING ERRCODE = 'check_violation';
@@ -144,21 +149,36 @@ CREATE TABLE disputes.statements (
   id          bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   dispute_id  uuid NOT NULL REFERENCES disputes.disputes(id),
   party       disputes.party NOT NULL,
-  text        varchar(4000) NOT NULL CHECK (length(btrim(text)) >= 1),
-  at          timestamptz NOT NULL DEFAULT now()
+  text        varchar(4000) CHECK (length(btrim(text)) >= 1),          -- NULL once purged (I-63; U7-07)
+  at          timestamptz NOT NULL DEFAULT now(),
+  purged_at   timestamptz,
+  CONSTRAINT statement_purged CHECK ((purged_at IS NULL) = (text IS NOT NULL))
 );
 CREATE TABLE disputes.evidence (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   dispute_id   uuid NOT NULL REFERENCES disputes.disputes(id),
   party        disputes.party NOT NULL,
-  storage_key  varchar(300) NOT NULL UNIQUE,       -- Unit 1 FileVault key, evidence purpose (encrypted; U7-03)
+  storage_key  varchar(300) UNIQUE,                -- Unit 1 FileVault key, evidence purpose (encrypted; U7-03); NULL once purged (U7-07)
   sha256       bytea NOT NULL CHECK (octet_length(sha256) = 32),
   mime         varchar(30) NOT NULL CHECK (mime IN ('image/jpeg', 'image/png', 'image/webp', 'application/pdf')),
   byte_size    integer NOT NULL CHECK (byte_size BETWEEN 1 AND 10485760),     -- CP-33
-  at           timestamptz NOT NULL DEFAULT now()
+  at           timestamptz NOT NULL DEFAULT now(),
+  purged_at    timestamptz,
+  CONSTRAINT evidence_purged CHECK ((purged_at IS NULL) = (storage_key IS NOT NULL))
 );
-CREATE TRIGGER statements_append_only BEFORE UPDATE OR DELETE ON disputes.statements FOR EACH ROW EXECUTE FUNCTION identity.forbid_change();
-CREATE TRIGGER evidence_append_only BEFORE UPDATE OR DELETE ON disputes.evidence FOR EACH ROW EXECUTE FUNCTION identity.forbid_change();
+-- Append-only, except that the content (the column named by the trigger) is emptied once, at the end of retention
+-- (I-63; U7-07), as chat purges its messages: the row stays as the record that something was said or sent.
+CREATE FUNCTION disputes.content_purge_only() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE col text := TG_ARGV[0];
+BEGIN
+  IF TG_OP = 'UPDATE' AND OLD.purged_at IS NULL AND NEW.purged_at IS NOT NULL AND (to_jsonb(NEW) ->> col) IS NULL
+     AND to_jsonb(NEW) - col - 'purged_at' = to_jsonb(OLD) - col - 'purged_at' THEN
+    RETURN NEW;
+  END IF;
+  RAISE EXCEPTION 'table %.% is append-only', TG_TABLE_SCHEMA, TG_TABLE_NAME USING ERRCODE = 'insufficient_privilege';
+END $$;
+CREATE TRIGGER statements_append_only BEFORE UPDATE OR DELETE ON disputes.statements FOR EACH ROW EXECUTE FUNCTION disputes.content_purge_only('text');
+CREATE TRIGGER evidence_append_only BEFORE UPDATE OR DELETE ON disputes.evidence FOR EACH ROW EXECUTE FUNCTION disputes.content_purge_only('storage_key');
 
 CREATE FUNCTION disputes.evidence_limit() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE st disputes.status;
@@ -312,6 +332,25 @@ BEGIN
          last_actor = 'system', last_actor_id = NULL, last_reason = 'item returned to the seller'
    WHERE id = p_dispute AND status = 'awaiting_return';
   IF NOT FOUND THEN RAISE EXCEPTION 'dispute is not awaiting a return' USING ERRCODE = 'check_violation'; END IF;
+END $$;
+
+-- I-63 (U7-07): dispute case files are kept 2 years after the decision (or the withdrawal). Then the statements' text
+-- and the evidence files go; the dispute row, its history and its decision stay. Returns the evidence keys, which the
+-- caller erases from Unit 1's FileVault. A batch at a time; SKIP LOCKED lets several instances run it.
+-- SECURITY DEFINER: the application role may not update statements or evidence (REVOKE below); it purges them only
+-- through this function, which changes nothing but their content and only at the end of retention.
+CREATE FUNCTION disputes.purge_due(p_after interval) RETURNS SETOF varchar LANGUAGE plpgsql
+  SECURITY DEFINER SET search_path = pg_catalog, pg_temp AS $$
+DECLARE d record;
+BEGIN
+  FOR d IN SELECT id FROM disputes.disputes
+            WHERE purged_at IS NULL AND status IN ('decided', 'withdrawn') AND coalesce(decided_at, withdrawn_at) < now() - p_after
+            ORDER BY coalesce(decided_at, withdrawn_at) LIMIT 200 FOR UPDATE SKIP LOCKED LOOP
+    RETURN QUERY SELECT e.storage_key FROM disputes.evidence e WHERE e.dispute_id = d.id AND e.storage_key IS NOT NULL;
+    UPDATE disputes.evidence SET storage_key = NULL, purged_at = now() WHERE dispute_id = d.id AND purged_at IS NULL;
+    UPDATE disputes.statements SET text = NULL, purged_at = now() WHERE dispute_id = d.id AND purged_at IS NULL;
+    UPDATE disputes.disputes SET purged_at = now() WHERE id = d.id;
+  END LOOP;
 END $$;
 
 -- =====================================================================

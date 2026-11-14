@@ -11,13 +11,14 @@ import { REPORT_CATEGORY, SANCTION_KIND, SanctionKind } from '../db/enums';
 import type { DisputeType, ReportCategory } from '../ports';
 import { DecisionOutcome, DisputeCaseService } from '../services/dispute-case.service';
 import { DisputeService, MAX_EVIDENCE_BYTES } from '../services/dispute.service';
+import { PrivacyService } from '../services/privacy.service';
 import { QueueName, QUEUES, QueueService } from '../services/queue.service';
 import { RatingService } from '../services/rating.service';
 import { TrustReportService } from '../services/report.service';
 import { SignalService } from '../services/signal.service';
 import { RelatedType, SanctionService } from '../services/sanction.service';
 
-// Unit 7's reports, sanctions and ratings API (docs/design/07_disputes_trust_staff.pdf section 3.1; U7-03 to U7-06, U7-08). Ownership of a case
+// Unit 7's reports, sanctions and ratings API (docs/design/07_disputes_trust_staff.pdf section 3.1; U7-03 to U7-08). Ownership of a case
 // ("Assigned operator") is checked in the services; the routes declare SignedIn or Staff.
 
 export class ReportDto {
@@ -78,6 +79,33 @@ export class InfoRequestDto {
   @IsString()
   @Length(10, 2000)
   note!: string;
+}
+
+export class DisclosureDto {
+  @IsUUID()
+  userId!: string;
+
+  @IsString()
+  @Length(3, 200)
+  authority!: string;
+
+  /** The request's reference (case, GD or court order number). */
+  @IsString()
+  @Length(5, 300)
+  legalReference!: string;
+
+  @IsString()
+  @Length(10, 2000)
+  scope!: string;
+
+  /** false only where the law forbids telling the user; then withheldReason says why. */
+  @IsBoolean()
+  notifyUser!: boolean;
+
+  @IsOptional()
+  @IsString()
+  @Length(10, 1000)
+  withheldReason?: string;
 }
 
 export class ResolutionDto {
@@ -211,7 +239,23 @@ export class TrustController {
     private readonly disputes: DisputeService,
     private readonly cases: DisputeCaseService,
     private readonly queues: QueueService,
+    private readonly privacy: PrivacyService,
   ) {}
+
+  /** FR-PRV-06: record a lawful request; 202 with the four-eyes proposal. */
+  @Staff('operator')
+  @Post('staff/disclosures')
+  @HttpCode(202)
+  disclose(@Body() dto: DisclosureDto, @CurrentPrincipal() p: Principal, @Req() req: Request) {
+    return this.privacy.request(staffOf(p), dto, ctx(req));
+  }
+
+  /** The disclosure's record. */
+  @Staff('operator')
+  @Get('staff/disclosures/:id')
+  disclosure(@Id('id') id: string) {
+    return this.privacy.get(id);
+  }
 
   /** FR-OPS-01: one of the eight queues, oldest first, with age; disputes overdue first (DV-52). */
   @Staff('operator')

@@ -13,9 +13,13 @@ export class DisputeStatement {
   @Column({ type: 'enum', enum: PARTY, enumName: 'party' })
   party!: Party;
 
-  @Column({ type: 'varchar', length: 4000 })
-  text!: string;
+  /** null once purged at the end of retention (I-63; U7-07) */
+  @Column({ type: 'varchar', length: 4000, nullable: true })
+  text!: string | null;
 
   @Column({ type: 'timestamptz' })
   at!: Date;
+
+  @Column({ type: 'timestamptz', name: 'purged_at', nullable: true })
+  purgedAt!: Date | null;
 }
