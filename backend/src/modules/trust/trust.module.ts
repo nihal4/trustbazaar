@@ -13,6 +13,7 @@ import { ConfigAdminService } from './services/config-admin.service';
 import { TrustReportService } from './services/report.service';
 import { RatingService } from './services/rating.service';
 import { SanctionService } from './services/sanction.service';
+import { SignalService } from './services/signal.service';
 
 // Unit 7 (docs/design/07_disputes_trust_staff.pdf). Schemas: disputes, trust, staff.
 // Folder layout and rules: BUILDING.md section 3. This module exports only its ports (ports/),
@@ -30,6 +31,7 @@ import { SanctionService } from './services/sanction.service';
     TrustReportService,
     SanctionService,
     RatingService,
+    SignalService,
     TrustConsumers,
     { provide: TRUST_QUERY, useExisting: RatingService },
     { provide: REPORT_COMMANDS, useExisting: TrustReportService },
