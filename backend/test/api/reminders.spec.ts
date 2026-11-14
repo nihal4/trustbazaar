@@ -49,9 +49,11 @@ describe('deadline reminders', () => {
        paid ? (fulfilment === 'courier' ? 'courier_pickup' : 'meetup_handover') : null, paid ? due : null],
     );
     if (paid) {
-      await fx.query(`INSERT INTO payments.attempts (purpose, order_id, payer_id, provider, amount, status, expires_at, confirmed_at) VALUES ('order', $1, $2, 'bkash', 1000000, 'succeeded', now(), now())`, [id, buyerId]);
-      await fx.query(`INSERT INTO orders.escrows (order_id, release_policy, amount_collected, dispute_window_ends_at) VALUES ($1, 'standard', 1000000, $2)`,
-        [id, o.disputeIn ? new Date(Date.now() + o.disputeIn) : null]);
+      await fx.query(`INSERT INTO payments.attempts (purpose, order_id, payer_id, provider, amount, status, expires_at, confirmed_at) VALUES ('order', $1, $2, 'bkash', $3, 'succeeded', now(), now())`,
+        [id, buyerId, fulfilment === 'courier' ? 1015000 : 1000000]);
+      // the escrow holds what was paid: the item and, for a courier order, the delivery fee
+      await fx.query(`INSERT INTO orders.escrows (order_id, release_policy, amount_collected, dispute_window_ends_at) VALUES ($1, 'standard', $2, $3)`,
+        [id, fulfilment === 'courier' ? 1015000 : 1000000, o.disputeIn ? new Date(Date.now() + o.disputeIn) : null]);
     }
     return { id, buyerId, sellerId, due, fulfilment };
   }
