@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ChatModule } from '../chat/chat.module';
 import { IdentityModule } from '../identity/identity.module';
 import { ListingsModule } from '../listings/listings.module';
 import { OrdersModule } from '../orders/orders.module';
@@ -19,7 +20,7 @@ import { OwnershipService } from './services/ownership.service';
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
 // Unit 2 does not import this module: it finds GAME_ACCOUNT_PORT on first use (ModuleRef), since this unit imports it.
 @Module({
-  imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule, ListingsModule, OrdersModule],
+  imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule, ListingsModule, OrdersModule, ChatModule],
   controllers: [GameAccountsController, HandoverController],
   providers: [
     OwnershipService,

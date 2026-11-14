@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Header, HttpCode, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { Body, Controller, Get, Header, HttpCode, Param, ParseUUIDPipe, Post, Req } from '@nestjs/common';
 import { IsInt, IsString, Length, Max, Min } from 'class-validator';
+import type { Request } from 'express';
 import { SignedIn } from '../../../kernel/http/policies';
 import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
@@ -20,6 +21,23 @@ export class BuyerKeyDto {
   @IsString()
   @Length(87, 88)
   publicKey!: string;
+}
+
+export class SealedDto {
+  @IsInt()
+  @Min(1)
+  @Max(2)
+  keyVersion!: number;
+
+  /** The sender's encapsulated key: a 65-byte P-256 point, base64url. */
+  @IsString()
+  @Length(87, 88)
+  enc!: string;
+
+  /** 512 k + 16 bytes (DV-34), at most 4112: base64url. */
+  @IsString()
+  @Length(704, 5483)
+  ciphertext!: string;
 }
 
 const Id = (name: string) => Param(name, new ParseUUIDPipe({ exceptionFactory: () => new Problem('not-found') }));
@@ -56,5 +74,31 @@ export class HandoverController {
   @Header('Cache-Control', 'no-store')
   status(@Id('id') id: string, @CurrentPrincipal() p: Principal) {
     return this.handovers.view(userOf(p).userId, id);
+  }
+
+  /** The buyer's current public key and its version, for the seller's browser to seal for. */
+  @SignedIn()
+  @Get('buyer-key')
+  @Header('Cache-Control', 'no-store')
+  buyerKey(@Id('id') id: string, @CurrentPrincipal() p: Principal) {
+    return this.handovers.buyerKey(userOf(p).userId, id);
+  }
+
+  /** FR-GAM-09, FR-GAM-10: the seller delivers enc and the ciphertext sealed for that version. */
+  @SignedIn()
+  @Post('sealed')
+  @HttpCode(201)
+  @Header('Cache-Control', 'no-store')
+  deliver(@Id('id') id: string, @Body() dto: SealedDto, @CurrentPrincipal() p: Principal) {
+    return this.handovers.deliver(userOf(p).userId, id, dto);
+  }
+
+  /** FR-GAM-11: the buyer retrieves them; every call is logged. */
+  @SignedIn()
+  @Get('sealed')
+  @Header('Cache-Control', 'no-store')
+  sealed(@Id('id') id: string, @CurrentPrincipal() p: Principal, @Req() req: Request) {
+    const u = userOf(p);
+    return this.handovers.retrieve(u.userId, id, u.sessionId, req.ip ?? null);
   }
 }
