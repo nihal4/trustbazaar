@@ -1,4 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import type { GameAccountPort } from '../../game-accounts/ports';
+import { GAME_CHECKOUT } from '../adapters/game-accounts';
 import { createHash } from 'crypto';
 import { DataSource, EntityManager } from 'typeorm';
 import { CLOCK, Clock } from '../../../kernel/clock';
@@ -54,6 +56,7 @@ export class PaymentService {
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
     @Inject(TB_CONFIG) private readonly config: TbConfig,
     @Inject(CLOCK) private readonly clock: Clock,
+    @Inject(GAME_CHECKOUT) private readonly games: GameAccountPort,
   ) {}
 
   // ---------------------------------------------------------------- start (FR-PAY-01)
@@ -69,6 +72,8 @@ export class PaymentService {
         const now = this.clock.now();
         if (o.status !== 'awaiting_payment' || o.paymentDueAt <= now) throw new Problem('order-state');
         if (!o.fulfilment) throw new Problem('order-state', { errors: [{ field: 'fulfilment', reason: 'choose-before-paying' }] });
+        // FR-GAM-05, FR-GAM-07 (I-29): a game account is paid for only with the disclosure acknowledged and the key registered
+        if (o.itemKind === 'game_account') await this.games.assertCheckoutReady(orderId);
         const earlier = await m.getRepository(PaymentAttempt).countBy({ orderId });
         const expiresAt = new Date(now.getTime() + (provider === 'stripe' && adapter.confirmation === 'webhook' ? STRIPE_MIN_SESSION_MS : ATTEMPT_LIFETIME_MS));
         const { identifiers } = await m.getRepository(PaymentAttempt).insert({
