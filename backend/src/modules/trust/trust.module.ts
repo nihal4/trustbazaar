@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChatModule } from '../chat/chat.module';
 import { DeliveryModule } from '../delivery/delivery.module';
+import { GameAccountsModule } from '../game-accounts/game-accounts.module';
 import { IdentityModule } from '../identity/identity.module';
 import { ListingsModule } from '../listings/listings.module';
 import { OrdersModule } from '../orders/orders.module';
@@ -31,7 +32,7 @@ import { SignalService } from './services/signal.service';
 // providers: they find REPORT_COMMANDS, SANCTION_PORT and CASE_QUERY on first use (ModuleRef), since this unit
 // imports them.
 @Module({
-  imports: [TypeOrmModule.forFeature(ENTITIES), ConfigPortModule, IdentityModule, ChatModule, ListingsModule, OrdersModule, DeliveryModule],
+  imports: [TypeOrmModule.forFeature(ENTITIES), ConfigPortModule, IdentityModule, ChatModule, ListingsModule, OrdersModule, DeliveryModule, GameAccountsModule],
   controllers: [ConfigController, TrustController],
   providers: [
     ConfigAdminService,

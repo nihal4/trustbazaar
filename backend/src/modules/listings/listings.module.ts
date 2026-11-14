@@ -11,7 +11,8 @@ import { AuctionsController } from './http/auctions.controller';
 import { SearchController } from './http/search.controller';
 import { CategoriesController, ListingPhotosController, ListingsController, MyListingsController } from './http/listings.controller';
 import { AuctionsJobs } from './jobs/auctions.jobs';
-import { AUCTION_QUERY, LISTINGS_PORT, LISTINGS_QUERIES } from './ports';
+import { AUCTION_QUERY, LISTINGS_COMMANDS, LISTINGS_PORT, LISTINGS_QUERIES } from './ports';
+import { ListingCommandsService } from './services/listing-commands.service';
 import { ListingsQueriesService } from './services/listings-queries.service';
 import { AuctionCloser } from './services/auction-closer.service';
 import { BidService } from './services/bid.service';
@@ -35,6 +36,7 @@ import { StockService } from './services/stock.service';
     AuctionsJobs,
     BidService,
     ListingService,
+    ListingCommandsService,
     ListingsQueriesService,
     MediaPipeline,
     ScreeningService,
@@ -47,7 +49,8 @@ import { StockService } from './services/stock.service';
     { provide: LISTINGS_PORT, useExisting: StockService },
     { provide: AUCTION_QUERY, useExisting: BidService },
     { provide: LISTINGS_QUERIES, useExisting: ListingsQueriesService },
+    { provide: LISTINGS_COMMANDS, useExisting: ListingCommandsService },
   ],
-  exports: [LISTINGS_PORT, AUCTION_QUERY, LISTINGS_QUERIES],
+  exports: [LISTINGS_PORT, AUCTION_QUERY, LISTINGS_QUERIES, LISTINGS_COMMANDS],
 })
 export class ListingsModule {}
