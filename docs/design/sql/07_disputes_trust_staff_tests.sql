@@ -309,7 +309,25 @@ SELECT pg_temp.expect_fail('an unknown parameter is refused',
 SELECT pg_temp.expect_fail('parameter versions are append-only',
  $q$UPDATE staff.config_values SET value = '"1 minute"' WHERE version = 1 AND code = 'CP-13'$q$, 'append-only');
 
--- ---------------------------------------------------------------- privacy (FR-PRV-03, FR-PRV-06)
+-- ---------------------------------------------------------------- retention (I-63; U7-07)
+SELECT pg_temp.expect_fail('a statement cannot be deleted',
+ $q$DELETE FROM disputes.statements WHERE dispute_id = '$q$ || :'d1' || $q$'$q$, 'append-only');
+SELECT pg_temp.expect_fail('a statement''s text cannot be rewritten',
+ $q$UPDATE disputes.statements SET text = 'Something else.' WHERE dispute_id = '$q$ || :'d1' || $q$'$q$, 'append-only');
+SELECT pg_temp.expect_fail('a statement cannot be emptied without the purge stamp',
+ $q$UPDATE disputes.statements SET text = NULL WHERE dispute_id = '$q$ || :'d1' || $q$'$q$, 'append-only');
+SELECT pg_temp.ok('I-63 nothing is purged before the retention ends', NOT EXISTS (SELECT disputes.purge_due('2 years')));
+SELECT pg_temp.ok('I-63 at the end of retention the evidence keys are handed back for erasure',
+  (SELECT count(*) = 10 AND bool_and(k LIKE 'ev-%') FROM disputes.purge_due('-1 second') AS k));
+SELECT pg_temp.ok('I-63 the statements and evidence keep their rows but lose their content; the dispute and its decision stay',
+  NOT EXISTS (SELECT 1 FROM disputes.statements WHERE dispute_id = :'d1' AND (text IS NOT NULL OR purged_at IS NULL))
+  AND NOT EXISTS (SELECT 1 FROM disputes.evidence WHERE dispute_id = :'d1' AND (storage_key IS NOT NULL OR purged_at IS NULL))
+  AND (SELECT purged_at IS NOT NULL AND outcome = 'partial_refund' FROM disputes.disputes WHERE id = :'d1'));
+SELECT pg_temp.ok('I-63 a purged dispute is not purged again', NOT EXISTS (SELECT k FROM disputes.purge_due('-1 second') AS k WHERE k LIKE 'ev-%'));
+SELECT pg_temp.expect_fail('a closed dispute takes no change but the purge stamp',
+ $q$UPDATE disputes.disputes SET decision_reason = 'Changed later.' WHERE id = '$q$ || :'d1' || $q$'$q$, 'dispute is closed');
+
+
 INSERT INTO staff.disclosures (id, subject_user, authority, legal_reference, scope, requested_by) VALUES
  ('a7300000-0000-4000-8000-000000000001', 'c0000000-0000-4000-8000-000000000003', 'Police, Cyber Crime Unit', 'GD 1234/2026', 'Orders and chat with the complainant', 'b0000000-0000-4000-8000-000000000001');
 SELECT pg_temp.expect_fail('FR-PRV-06 nothing is disclosed without four-eyes approval',
@@ -324,6 +342,8 @@ SELECT pg_temp.expect_fail('FR-PRV-03 one data export in preparation per user',
 SET LOCAL ROLE tb_app;
 SELECT pg_temp.expect_fail('application role cannot rewrite dispute history',
  $q$UPDATE disputes.history SET reason = 'x'$q$, 'permission denied');
+SELECT pg_temp.expect_fail('application role cannot edit statements; it purges them only through disputes.purge_due',
+ $q$UPDATE disputes.statements SET text = NULL, purged_at = now()$q$, 'permission denied');
 SELECT pg_temp.expect_fail('application role cannot delete sanctions',
  $q$DELETE FROM trust.sanctions$q$, 'permission denied');
 SELECT pg_temp.expect_fail('application role cannot rewrite parameter versions',

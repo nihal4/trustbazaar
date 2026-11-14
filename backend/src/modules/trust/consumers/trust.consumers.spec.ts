@@ -13,9 +13,10 @@ describe('TrustConsumers', () => {
     const ratings = { onEscrowClosed: jest.fn(async (_e: OutboxEvent) => true) };
     const signals = { onEvent: jest.fn(async (_e: OutboxEvent) => true) };
     const cases = { onDecided: jest.fn(async (_e: OutboxEvent) => undefined), onReturnDelivered: jest.fn(async (_e: OutboxEvent) => true) };
-    new TrustConsumers(bus as never, sanctions as never, ratings as never, signals as never, cases as never).onModuleInit();
+    const privacy = { onDisclosed: jest.fn(async (_e: OutboxEvent) => undefined) };
+    new TrustConsumers(bus as never, sanctions as never, ratings as never, signals as never, cases as never, privacy as never).onModuleInit();
     const run = (key: string, e: OutboxEvent) => handlers.get(key)!(e);
-    return { run, sanctions, ratings, signals, cases, handlers };
+    return { run, sanctions, ratings, signals, cases, privacy, handlers };
   }
 
   it('FR-TNS-04 I-44 a cancellation after payment and a refund at a missed deadline are strikes; other refunds are not', async () => {
@@ -54,5 +55,11 @@ describe('TrustConsumers', () => {
     await s.run('disputes.dispute.decided/trust.disputes', ev('disputes.dispute.decided', { orderId: 'O1' }, 'D1'));
     await s.run('delivery.return.delivered/trust.disputes', ev('delivery.return.delivered', { direction: 'return' }, 'O1'));
     expect([s.cases.onDecided.mock.calls[0][0].aggregateId, s.cases.onReturnDelivered.mock.calls[0][0].aggregateId]).toEqual(['D1', 'O1']);
+  });
+
+  it('FR-PRV-06 an approved disclosure reaches the privacy service to tell the user', async () => {
+    const s = setup();
+    await s.run('staff.disclosure.made/trust.privacy', ev('staff.disclosure.made', { userId: 'U1', authority: 'Police' }, 'X1'));
+    expect(s.privacy.onDisclosed.mock.calls[0][0].aggregateId).toBe('X1');
   });
 });
