@@ -12,6 +12,7 @@ import { ConfigController } from './http/config.controller';
 import { TrustController } from './http/trust.controller';
 import { TrustJobs } from './jobs/trust.jobs';
 import { CASE_QUERY, DISPUTE_COMMANDS, REPORT_COMMANDS, SANCTION_PORT, TRUST_QUERY } from './ports';
+import { DisputeCaseService } from './services/dispute-case.service';
 import { DisputeService } from './services/dispute.service';
 import { ConfigAdminService } from './services/config-admin.service';
 import { TrustReportService } from './services/report.service';
@@ -38,6 +39,7 @@ import { SignalService } from './services/signal.service';
     SignalService,
     TrustConsumers,
     DisputeService,
+    DisputeCaseService,
     TrustJobs,
     { provide: DISPUTE_COMMANDS, useExisting: DisputeService },
     { provide: TRUST_QUERY, useExisting: RatingService },

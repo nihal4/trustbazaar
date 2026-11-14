@@ -133,6 +133,20 @@ describe('EscrowService', () => {
     expect(await s.svc.deadline(randomUUID(), 'payment_window')).toBeNull();
   });
 
+  it('FR-DSP-05 the outcome preview gives each outcome\'s amounts from the split, the fee kept once the courier picked up', async () => {
+    const s = setup();
+    const meetup = s.order();
+    expect(await s.svc.previewOutcomes(meetup.o.id, 400000n)).toEqual({
+      itemPrice: '1000000', deliveryFee: '0',
+      release: { refunded: '0', sellerPayout: '950000' }, fullRefund: { refunded: '1000000', sellerPayout: '0' },
+      partialRefund: { itemRefund: '400000', refunded: '400000', sellerPayout: '570000' },
+    });
+    const courier = s.order({ fulfilment: 'courier', fulfilmentStep: 'courier_pickup', fulfilmentDoneAt: NOW, deliveryFee: '15000' });
+    expect(await s.svc.previewOutcomes(courier.o.id)).toMatchObject({ fullRefund: { refunded: '1000000', sellerPayout: '0' }, partialRefund: null });
+    expect(await s.svc.previewOutcomes(courier.o.id, 1000000n)).toMatchObject({ partialRefund: null }); // not below the item price
+    await expect(s.svc.previewOutcomes(randomUUID())).rejects.toBeInstanceOf(Problem);
+  });
+
   it('FR-DSP-06 outcomes: release, full (fee kept after a pickup), partial, after return, and refusals', async () => {
     const s = setup();
     const r = s.order();
