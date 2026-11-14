@@ -1,15 +1,18 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { DataSource, QueryFailedError } from 'typeorm';
 import { Problem } from '../../../kernel/http/problems';
 import type { Principal } from '../../../kernel/http/principal';
 import { FILE_VAULT, FileVaultPort, IDENTITY_QUERY, IdentityQuery } from '../../identity/ports';
+import { CASE_QUERY, CaseQuery } from '../../trust/ports';
 import type { CaseType, ChatCommands } from '../ports';
 
 // HoldService and the retention job (docs/design/06_chat_notifications.pdf sections 3.3, 6.5 and 6.6; FR-CHT-04,
 // FR-CHT-10, SEC-LOG-01; U6-03). Unit 7 places a hold on a thread for each dispute or report that concerns it
 // (ChatCommands, I-40). A live hold keeps the thread past retention and is the only ground on which an operator reads
 // it: chat.staff_read checks the hold of that very case and logs the read. Whether the operator is the one working the
-// case is Unit 7's check, added with U7-03 and U7-04 (Decisions log, U6-03).
+// case is Unit 7's check (CaseQuery, found on first use since Unit 7 imports this unit): for reports since U7-04; for
+// disputes it comes with U7-03 (Decisions log, U6-03).
 
 /** The SRS retention schedule: a thread's content is kept 1 year after its last message. */
 export const CHAT_RETENTION = '1 year';
@@ -34,6 +37,7 @@ export class HoldService implements ChatCommands {
     private readonly db: DataSource,
     @Inject(IDENTITY_QUERY) private readonly identity: IdentityQuery,
     @Inject(FILE_VAULT) private readonly vault: FileVaultPort,
+    private readonly modules: ModuleRef,
   ) {}
 
   async hold(threadId: string, caseType: CaseType, caseId: string): Promise<void> {
@@ -66,6 +70,10 @@ export class HoldService implements ChatCommands {
    * with a link for the operator's session; Unit 1 records the file view with the case as its reason.
    */
   async staffRead(staff: Principal & { type: 'staff' }, caseType: CaseType, caseId: string, threadId: string) {
+    // only the operator who claimed the report reads through it (FR-OPS-06; U7-04)
+    if (caseType === 'report' && (await this.modules.get<CaseQuery>(CASE_QUERY, { strict: false }).assignedOperator('report', caseId)) !== staff.staffId) {
+      throw new Problem('not-found');
+    }
     const [t] = (await this.db.query(`SELECT listing_id, buyer_id, seller_id, purged_at FROM chat.threads WHERE id = $1`, [threadId])) as {
       listing_id: string; buyer_id: string; seller_id: string; purged_at: Date | null;
     }[];
