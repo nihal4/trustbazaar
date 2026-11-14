@@ -47,7 +47,8 @@ const str = (v: unknown) => (typeof v === 'string' ? v : '');
 interface HandoverRow {
   status: string; disclosure_version: number; disclosure_ack_at: Date; key_version: number; rekeys_used: number;
   credentials_due_at: Date | null; first_delivered_at: Date | null; delivered_at: Date | null; takeover_due_at: Date | null;
-  rekey_due_at: Date | null; taken_over_at: Date | null; cancelled_at: Date | null; closed_at: Date | null;
+  rekey_due_at: Date | null; taken_over_at: Date | null; cancelled_at: Date | null; closed_at: Date | null; takeover_source: string | null;
+  pw_changed_at: Date | null; recovery_email_at: Date | null; recovery_phone_at: Date | null; social_logins_at: Date | null; two_step_at: Date | null;
 }
 
 const iso = (d: Date | null) => d?.toISOString() ?? null;
@@ -104,6 +105,13 @@ export class HandoverService implements GameAccountPort {
       status: h?.status ?? null, keyVersion: h?.key_version ?? 0, rekeysUsed: h?.rekeys_used ?? 0,
       credentialsDueAt: iso(h?.credentials_due_at ?? null), firstDeliveredAt: iso(h?.first_delivered_at ?? null), deliveredAt: iso(h?.delivered_at ?? null),
       takeoverDueAt: iso(h?.takeover_due_at ?? null), rekeyDueAt: iso(h?.rekey_due_at ?? null), takenOverAt: iso(h?.taken_over_at ?? null),
+      takeoverSource: h?.takeover_source ?? null,
+      // FR-GAM-13: the confirmed checklist steps; FR-GAM-16: the protection period's end, Unit 2's release date
+      steps: {
+        password: iso(h?.pw_changed_at ?? null), recovery_email: iso(h?.recovery_email_at ?? null), recovery_phone: iso(h?.recovery_phone_at ?? null),
+        social_logins: iso(h?.social_logins_at ?? null), two_step: iso(h?.two_step_at ?? null),
+      },
+      protectionEndsAt: h?.taken_over_at ? o.escrow?.autoReleaseAt ?? null : null,
     };
   }
 
