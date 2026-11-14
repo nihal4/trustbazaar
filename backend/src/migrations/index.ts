@@ -18,6 +18,7 @@ import { DisputeNoticeTemplates1793491200017 } from './1793491200017-dispute-not
 import { DisputeDecisionTemplates1793491200018 } from './1793491200018-dispute-decision-templates';
 import { DisputePurge1793491200019 } from './1793491200019-dispute-purge';
 import { DisclosureNoticeTemplate1793491200020 } from './1793491200020-disclosure-notice-template';
+import { OwnershipScreenshotKey1793491200021 } from './1793491200021-ownership-screenshot-key';
 
 // The migrations in the order they run: the seven units in unit order, then 09_integration (I-60).
 // Add a new migration at the end; never reorder or edit an applied one.
@@ -42,4 +43,5 @@ export const MIGRATIONS = [
   DisputeDecisionTemplates1793491200018, // U7-03: the notices of a dispute's decision and of a request for information (Decisions log)
   DisputePurge1793491200019, // U7-07: dispute statements and evidence purged at the end of retention, I-63 (Decisions log)
   DisclosureNoticeTemplate1793491200020, // U7-07: the user's notice of a lawful disclosure (Decisions log)
+  OwnershipScreenshotKey1793491200021, // U5-02: ownership screenshots' FileVault keys (Decisions log)
 ];

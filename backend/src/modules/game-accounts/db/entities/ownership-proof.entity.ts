@@ -22,7 +22,7 @@ export class OwnershipProof {
   @Column({ type: 'timestamptz', name: 'expires_at' })
   expiresAt!: Date;
 
-  @Column({ type: 'varchar', name: 'screenshot_key', length: 80, nullable: true })
+  @Column({ type: 'varchar', name: 'screenshot_key', length: 300, nullable: true })
   screenshotKey!: string | null;
 
   @Column({ type: 'bytea', name: 'screenshot_dek', nullable: true })
