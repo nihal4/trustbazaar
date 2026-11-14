@@ -76,6 +76,22 @@ export interface IdentityCommands {
 export interface StaffQuery {
   /** FR-OPS-06, at every claim (Unit 7): throws conflict-of-interest (403). */
   assertNoConflict(staffId: string, userIds: string[]): Promise<void>;
+  /** FR-OPS-01: the KYC submissions waiting for review, oldest first, for Unit 7's console (U7-06). */
+  kycQueue(): Promise<KycQueueItem[]>;
+  /** FR-DSP-08: the active administrators, whom Unit 7 alerts about overdue disputes (U7-06). */
+  activeAdministrators(): Promise<{ staffId: string; email: string }[]>;
+}
+
+export interface KycQueueItem {
+  id: string;
+  userId: string;
+  docType: string;
+  flags: string[];
+  submittedAt: Date;
+  ageHours: number;
+  overdue: boolean;
+  claimedBy: string | null;
+  claimedUntil: Date | null;
 }
 
 export interface Approval {

@@ -13,6 +13,7 @@ import { reencodeImage } from '../crypto/images';
 import type {
   Approval, ApprovalServicePort, AuditEntry, AuditServicePort, BlacklistSource, CallContext, FileVaultPort, IdentityCommands,
   IdentityQuery, PrincipalInfo, PublicProfile, RateLimiterPort, SessionEndReason, StaffQuery, StaffRole, StoredFile, TransactAction,
+  KycQueueItem,
 } from '../ports';
 import { signFileLink } from '../security/file-links';
 import { RATE_RULES } from '../security/rate-rules';
@@ -200,10 +201,23 @@ export class IdentityCommandsService implements IdentityCommands, OnModuleInit {
 
 @Injectable()
 export class StaffQueryService implements StaffQuery {
-  constructor(private readonly staff: StaffService) {}
+  constructor(
+    private readonly staff: StaffService,
+    private readonly kyc: KycReviewService,
+    private readonly db: DataSource,
+  ) {}
 
   async assertNoConflict(staffId: string, userIds: string[]): Promise<void> {
     for (const userId of new Set(userIds)) if (await this.staff.hasConflict(staffId, userId)) throw new Problem('conflict-of-interest');
+  }
+
+  kycQueue(): Promise<KycQueueItem[]> {
+    return this.kyc.queue();
+  }
+
+  async activeAdministrators(): Promise<{ staffId: string; email: string }[]> {
+    const rows = (await this.db.query(`SELECT id, email FROM identity.staff_accounts WHERE role = 'administrator' AND status = 'active' ORDER BY created_at`)) as { id: string; email: string }[];
+    return rows.map((r) => ({ staffId: r.id, email: r.email }));
   }
 }
 

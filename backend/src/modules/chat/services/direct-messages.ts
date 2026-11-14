@@ -43,6 +43,11 @@ export const MESSAGES: Record<string, Texts> = {
     subject: BOTH('পাসওয়ার্ড রিসেট', 'Reset your password'),
     body: BOTH('পাসওয়ার্ড রিসেট করতে এই লিংকটি খুলুন ({minutes} মিনিট বৈধ): {link}। আপনি না চাইলে এটি উপেক্ষা করুন।', 'Open this link to reset your password (valid for {minutes} minutes): {link}. If you did not ask for it, ignore this e-mail.'),
   },
+  // to administrators (Unit 7, FR-DSP-08; U7-06): staff have no language setting, so both languages as for every message here
+  disputes_overdue: {
+    subject: BOTH('সময় পেরিয়ে যাওয়া অভিযোগ', 'Disputes past their decision target'),
+    body: BOTH('TrustBazaar: {count}টি অভিযোগের সিদ্ধান্তের লক্ষ্য সময় পেরিয়ে গেছে। সবচেয়ে পুরনোটি {oldest_days} দিন আগে খোলা হয়েছিল। স্টাফ কনসোলের অভিযোগের তালিকা দেখুন।', 'TrustBazaar: {count} disputes are past their decision target. The oldest was opened {oldest_days} days ago. See the disputes queue in the staff console.'),
+  },
   register_attempt_existing_email: {
     subject: BOTH('নিবন্ধনের চেষ্টা', 'A registration attempt'),
     body: BOTH('কেউ এই ই-মেইল দিয়ে নতুন TrustBazaar অ্যাকাউন্ট খোলার চেষ্টা করেছে। এটি আপনি হলে সাইন ইন করুন।', 'Someone tried to open a new TrustBazaar account with this e-mail address. If it was you, sign in instead.'),
