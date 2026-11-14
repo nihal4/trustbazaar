@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { EventBus, OutboxEvent } from '../../../kernel/events/event-bus';
 import { DisputeCaseService } from '../services/dispute-case.service';
+import { PrivacyService } from '../services/privacy.service';
 import { RatingService } from '../services/rating.service';
 import { SanctionService } from '../services/sanction.service';
 import { SignalService } from '../services/signal.service';
@@ -25,6 +26,7 @@ export class TrustConsumers implements OnModuleInit {
     private readonly ratings: RatingService,
     private readonly signals: SignalService,
     private readonly cases: DisputeCaseService,
+    private readonly privacy: PrivacyService,
   ) {}
 
   onModuleInit(): void {
@@ -40,6 +42,7 @@ export class TrustConsumers implements OnModuleInit {
     }
     this.bus.on('disputes.dispute.decided', 'trust.disputes', (e) => this.cases.onDecided(e));
     this.bus.on('delivery.return.delivered', 'trust.disputes', async (e) => void (await this.cases.onReturnDelivered(e)));
+    this.bus.on('staff.disclosure.made', 'trust.privacy', (e) => this.privacy.onDisclosed(e)); // FR-PRV-06, after the approval's commit
     this.bus.on('identity.account.reinstated', 'trust.sanctions', async (e) => {
       await this.sanctions.onReinstated({
         userId: str(e.payload.userId) || e.aggregateId, approvalId: str(e.payload.approvalId), decidedBy: str(e.payload.decidedBy) || null, reason: str(e.payload.reason) || null,
