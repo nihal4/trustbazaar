@@ -4,8 +4,8 @@ import type { EntityManager } from 'typeorm';
 // Ports this unit provides (docs/design/05_game_accounts.pdf section 3.2; docs/design/09_integration.pdf, section 2.1),
 // added by the unit's tasks:
 //   GameAccountPort      (assertCheckoutReady: U5-03, below)
-//   GameAccountCommands  (reviewProof: U5-02, below; disputeWithdrawn: U5-04)
-//   GameAccountQueries   (proofQueue: U5-02, below; evidence, credentialsInvalidAllowed, deadlines: U5-04, U7-10)
+//   GameAccountCommands  (reviewProof: U5-02; disputeWithdrawn: U5-04; below)
+//   GameAccountQueries   (proofQueue: U5-02; credentialsInvalidAllowed: U5-04; below. evidence, deadlines: U7-10)
 
 export type LiveCheck = 'matched' | 'not_matched' | 'not_available';
 
@@ -19,6 +19,8 @@ export interface GameAccountCommands {
    * CP-36 is off).
    */
   reviewProof(proofId: string, staffId: string, approve: boolean, liveCheck: LiveCheck, reason?: string, tx?: EntityManager): Promise<void>;
+  /** FR-DSP-10: a withdrawn credentials_invalid dispute; the takeover resumes (its window, if over, ends at the next job run). */
+  disputeWithdrawn(orderId: string, tx: EntityManager): Promise<void>;
 }
 export const GAME_ACCOUNT_COMMANDS = Symbol('GAME_ACCOUNT_COMMANDS');
 
@@ -38,6 +40,8 @@ export interface ProofQueueItem {
 export interface GameAccountQueries {
   /** The proofs awaiting review, oldest first. */
   proofQueue(limit?: number): Promise<ProofQueueItem[]>;
+  /** FR-GAM-14: during the takeover window and before the recovery e-mail step is confirmed. */
+  credentialsInvalidAllowed(orderId: string): Promise<boolean>;
 }
 export const GAME_ACCOUNT_QUERIES = Symbol('GAME_ACCOUNT_QUERIES');
 
