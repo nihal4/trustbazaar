@@ -7,6 +7,7 @@ import { NOTIFIER, Notifier } from '../../chat/ports';
 import { ESCROW_COMMANDS, EscrowCommands, ORDERS_PORT, OrdersPort } from '../../orders/ports';
 import type { DisputeCommands } from '../../trust/ports';
 import { GAME_DISPUTES } from '../adapters/disputes';
+import type { GameEvidence } from '../ports';
 
 // The takeover (docs/design/05_game_accounts.pdf sections 6.6 and 7; FR-GAM-12 to FR-GAM-17; U5-04): TakeoverService.
 //  - The checklist (FR-GAM-13): the buyer confirms each of the five steps once (game_accounts.confirm_step, in the
@@ -106,6 +107,38 @@ export class TakeoverService {
       [orderId],
     )) as { allowed: boolean }[];
     return h?.allowed === true;
+  }
+
+  /** GameAccountQueries.evidence (Unit 7: the case file and the FR-GAM-18 pack). Never a key or the credentials. */
+  async evidence(orderId: string): Promise<GameEvidence | null> {
+    const [h] = (await this.db.query(`SELECT * FROM game_accounts.handovers WHERE order_id = $1`, [orderId])) as Record<string, never>[];
+    if (!h) return null;
+    const [details, proofs, confirmations, log] = await Promise.all([
+      this.db.query(`SELECT g.name, d.platform, d.player_id, d.contents FROM game_accounts.details d JOIN game_accounts.games g ON g.id = d.game_id WHERE d.listing_id = $1`, [h.listing_id]),
+      this.db.query(
+        `SELECT code, status, submitted_at, reviewed_at, reviewed_by, live_check, review_reason, screenshot_key, encode(screenshot_sha256, 'hex') AS sha256
+           FROM game_accounts.ownership_proofs WHERE listing_id = $1 ORDER BY (status = 'approved') DESC, issued_at DESC LIMIT 1`,
+        [h.listing_id],
+      ),
+      this.db.query(`SELECT step, at, session_id FROM game_accounts.confirmations WHERE order_id = $1 ORDER BY at`, [orderId]),
+      this.db.query(`SELECT at, user_id, session_id, key_version, host(source_ip) AS ip FROM game_accounts.access_log WHERE order_id = $1 ORDER BY at, id`, [orderId]),
+    ]) as [Record<string, never>[], Record<string, never>[], Record<string, never>[], Record<string, never>[]];
+    const d = details[0];
+    const p = proofs[0];
+    return {
+      details: d ? { game: d.name, platform: d.platform, playerId: d.player_id, contents: d.contents } : null,
+      proof: p ? {
+        code: p.code, status: p.status, submittedAt: p.submitted_at, reviewedAt: p.reviewed_at, reviewedBy: p.reviewed_by, liveCheck: p.live_check, reason: p.review_reason,
+        screenshotKey: p.screenshot_key, screenshotSha256: p.sha256,
+      } : null,
+      handover: {
+        status: h.status, disclosureVersion: h.disclosure_version, disclosureAckAt: h.disclosure_ack_at, keyVersion: h.key_version, rekeysUsed: h.rekeys_used,
+        credentialsDueAt: h.credentials_due_at, firstDeliveredAt: h.first_delivered_at, deliveredAt: h.delivered_at, takeoverDueAt: h.takeover_due_at,
+        takenOverAt: h.taken_over_at, takeoverSource: h.takeover_source, disputedAt: h.disputed_at,
+      },
+      confirmations: confirmations.map((c) => ({ step: c.step, at: c.at, sessionId: c.session_id })),
+      accessLog: log.map((a) => ({ at: a.at, userId: a.user_id, sessionId: a.session_id, keyVersion: a.key_version, sourceIp: a.ip })),
+    };
   }
 
   /** The buyer and the seller are told the account is the buyer's, and how long the protection lasts (CP-24). */
