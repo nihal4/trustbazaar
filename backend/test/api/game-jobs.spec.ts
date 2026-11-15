@@ -105,14 +105,7 @@ describe('game-account jobs: window end, overdue re-key, code expiry, retention'
     for (const u of [buyer, seller]) expect(await notices(u.userId, 'game.takeover_completed')).toHaveLength(1);
   });
 
-  it('DV-37 an unanswered re-key waits for Unit 7\'s game-account disputes (U7-10): the job leaves it and tries again', async () => {
-    const { buyer, orderId } = await delivered();
-    expect((await buyer.call('POST', `/orders/${orderId}/game/rekey`, { publicKey: b64((await generateBuyerKey()).publicRaw) })).status).toBe(201);
-    await fx.query(`UPDATE game_accounts.handovers SET rekey_due_at = now() - interval '1 minute' WHERE order_id = $1`, [orderId]);
-    expect(await jobs().disputeOverdueRekeys()).toBe(0);
-    expect(await fx.query(`SELECT status FROM game_accounts.handovers WHERE order_id = $1`, [orderId])).toEqual([{ status: 'rekey_requested' }]); // rolled back with the dispute
-    expect(await fx.query(`SELECT 1 FROM game_accounts.outbox WHERE aggregate_id = $1 AND event_type = 'game_accounts.rekey.overdue'`, [orderId])).toEqual([]);
-  });
+  // DV-37, the overdue re-key: test/api/game-disputes.spec.ts (it opens Unit 7's dispute)
 
   it('DV-33 issued ownership codes past their validity are marked expired', async () => {
     const { listingId } = await paidOrder();

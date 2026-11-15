@@ -108,17 +108,15 @@ describe('the takeover: checklist, completion and protection, re-key, report', (
     for (const u of [buyer, seller]) expect(await notices(u.userId, 'game.takeover_completed')).toEqual([{ params: { listing_title: 'eFootball account, division 1', days: 7 } }]);
   });
 
-  it('FR-GAM-14 the report waits for Unit 7\'s game-account disputes (U7-10) and changes nothing; after the recovery e-mail step it is refused', async () => {
+  it('FR-GAM-14 the report is accepted during the window and refused after the recovery e-mail step', async () => {
     const { buyer, orderId } = await delivered();
-    const r = await buyer.call('POST', `/orders/${orderId}/game/report-invalid`, {});
-    expect([r.status, await errors(r)]).toEqual([409, [{ field: 'type', reason: 'game-account-disputes-not-yet-available' }]]);
-    expect(await fx.query(`SELECT status FROM game_accounts.handovers WHERE order_id = $1`, [orderId])).toEqual([{ status: 'delivered' }]); // rolled back with the dispute
     const queries = t.app.get<GameAccountQueries>(GAME_ACCOUNT_QUERIES);
     expect(await queries.credentialsInvalidAllowed(orderId)).toBe(true);
     await step(buyer, orderId, 'recovery_email');
     expect(await queries.credentialsInvalidAllowed(orderId)).toBe(false);
     expect(await errors(await buyer.call('POST', `/orders/${orderId}/game/report-invalid`, {}))).toEqual([{ field: 'handover', reason: 'recovery-email-confirmed' }]);
     expect((await buyer.call('POST', `/orders/${orderId}/game/report-invalid`, { description: 'short' })).status).toBe(400);
+    // the dispute it opens: test/api/game-disputes.spec.ts
   });
 
   it('FR-GAM-12 one re-key: the window stops, the seller seals again for the new key, the old ciphertext goes and a new window starts; a second re-key is refused', async () => {
