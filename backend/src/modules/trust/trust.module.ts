@@ -14,6 +14,7 @@ import { TrustController } from './http/trust.controller';
 import { TrustJobs } from './jobs/trust.jobs';
 import { CASE_QUERY, DISPUTE_COMMANDS, REPORT_COMMANDS, SANCTION_PORT, TRUST_QUERY } from './ports';
 import { DisputeCaseService } from './services/dispute-case.service';
+import { EvidencePackService } from './services/evidence-pack.service';
 import { DisputeService } from './services/dispute.service';
 import { PrivacyService } from './services/privacy.service';
 import { QueueService } from './services/queue.service';
@@ -43,6 +44,7 @@ import { SignalService } from './services/signal.service';
     TrustConsumers,
     DisputeService,
     DisputeCaseService,
+    EvidencePackService,
     QueueService,
     PrivacyService,
     TrustJobs,
