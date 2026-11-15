@@ -91,4 +91,23 @@ describe('TakeoverService', () => {
     expect(await setup(() => [{ allowed: false }]).svc.credentialsInvalidAllowed('O')).toBe(false);
     expect(await setup(() => []).svc.credentialsInvalidAllowed('O')).toBe(false);
   });
+
+  it('FR-DSP-05 FR-GAM-18 the evidence for Unit 7: details, the listing\'s proof, the handover, confirmations and the access log; never a key', async () => {
+    const s = setup((q) => {
+      if (q.startsWith('SELECT * FROM game_accounts.handovers')) return [{ listing_id: 'L', status: 'taken_over', disclosure_version: 1, disclosure_ack_at: T, key_version: 1, rekeys_used: 0, credentials_due_at: T, first_delivered_at: T, delivered_at: T, takeover_due_at: T, taken_over_at: T, takeover_source: 'checklist', disputed_at: null }];
+      if (q.includes('FROM game_accounts.details')) return [{ name: 'CODM', platform: 'android', player_id: 'p1', contents: 'Legendary.' }];
+      if (q.includes('FROM game_accounts.ownership_proofs')) return [{ code: 'TB-0000-0000', status: 'approved', submitted_at: T, reviewed_at: T, reviewed_by: 'st', live_check: 'matched', review_reason: null, screenshot_key: 'k', sha256: 'ab' }];
+      if (q.includes('FROM game_accounts.confirmations')) return [{ step: 'password', at: T, session_id: 'sess' }];
+      return [{ at: T, user_id: 'B', session_id: 'sess', key_version: 1, ip: '203.0.113.9' }];
+    });
+    const e = await s.svc.evidence('O');
+    expect(e).toMatchObject({
+      details: { game: 'CODM', playerId: 'p1' }, proof: { code: 'TB-0000-0000', screenshotKey: 'k', screenshotSha256: 'ab' }, handover: { status: 'taken_over', takeoverSource: 'checklist' },
+      confirmations: [{ step: 'password', at: T, sessionId: 'sess' }], accessLog: [{ userId: 'B', keyVersion: 1, sourceIp: '203.0.113.9' }],
+    });
+    expect(JSON.stringify(e)).not.toMatch(/public_key|ciphertext/);
+    expect(await setup(() => []).svc.evidence('O')).toBeNull();
+    const bare = await setup((q) => (q.startsWith('SELECT * FROM game_accounts.handovers') ? [{ listing_id: 'L', status: 'delivered' }] : [])).svc.evidence('O');
+    expect(bare).toMatchObject({ details: null, proof: null, confirmations: [], accessLog: [] });
+  });
 });
