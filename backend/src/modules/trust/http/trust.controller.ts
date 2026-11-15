@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseEnumPipe, ParseUUIDPipe, Patch, Post, Query, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, HttpCode, Param, ParseEnumPipe, ParseUUIDPipe, Patch, Post, Query, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsIn, IsInt, IsOptional, IsString, IsUUID, Length, Max, MaxLength, Min, ValidateNested } from 'class-validator';
@@ -12,6 +12,7 @@ import type { DisputeType, ReportCategory } from '../ports';
 import { DecisionOutcome, DisputeCaseService } from '../services/dispute-case.service';
 import { DisputeService, MAX_EVIDENCE_BYTES } from '../services/dispute.service';
 import { PrivacyService } from '../services/privacy.service';
+import { EvidencePackService } from '../services/evidence-pack.service';
 import { QueueName, QUEUES, QueueService } from '../services/queue.service';
 import { RatingService } from '../services/rating.service';
 import { TrustReportService } from '../services/report.service';
@@ -240,6 +241,7 @@ export class TrustController {
     private readonly cases: DisputeCaseService,
     private readonly queues: QueueService,
     private readonly privacy: PrivacyService,
+    private readonly packs: EvidencePackService,
   ) {}
 
   /** FR-PRV-06: record a lawful request; 202 with the four-eyes proposal. */
@@ -392,6 +394,15 @@ export class TrustController {
   caseFile(@Id('id') id: string, @CurrentPrincipal() p: Principal, @Req() req: Request) {
     if (p.type !== 'staff') throw new Problem('forbidden');
     return this.cases.caseFile(p, id, ctx(req));
+  }
+
+  /** FR-GAM-18: the evidence pack for law enforcement, one PDF with a hash list, for the assigned operator; audited. */
+  @Staff('operator')
+  @Get('staff/disputes/:id/evidence-pack')
+  @Header('Cache-Control', 'no-store')
+  evidencePack(@Id('id') id: string, @CurrentPrincipal() p: Principal, @Req() req: Request) {
+    if (p.type !== 'staff') throw new Problem('forbidden');
+    return this.packs.create(p, id, ctx(req));
   }
 
   /** FR-DSP-09: ask the seller for more; they have 24 hours (DV-47). */
