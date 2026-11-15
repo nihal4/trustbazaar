@@ -87,9 +87,11 @@ CREATE TABLE game_accounts.ownership_proofs (
   reviewed_at        timestamptz,
   live_check         game_accounts.live_check,
   review_reason      text,
+  screenshot_purged_at timestamptz,                      -- DV-39 retention ended: the file is erased, the key cleared (U5-05)
   CONSTRAINT proof_expiry CHECK (expires_at > issued_at),
   CONSTRAINT proof_submitted_fields CHECK ((status IN ('submitted', 'approved', 'rejected'))
-         = (submitted_at IS NOT NULL AND screenshot_key IS NOT NULL AND screenshot_sha256 IS NOT NULL) OR status = 'expired'),
+         = (submitted_at IS NOT NULL AND (screenshot_key IS NOT NULL OR screenshot_purged_at IS NOT NULL) AND screenshot_sha256 IS NOT NULL) OR status = 'expired'),
+  CONSTRAINT proof_screenshot_purged CHECK (screenshot_purged_at IS NULL OR screenshot_key IS NULL),
   CONSTRAINT proof_review_fields CHECK ((status IN ('approved', 'rejected'))
          = (reviewed_by IS NOT NULL AND reviewed_at IS NOT NULL AND live_check IS NOT NULL)),
   CONSTRAINT proof_reject_reason CHECK (status <> 'rejected' OR length(btrim(coalesce(review_reason, ''))) >= 10),
@@ -115,8 +117,16 @@ BEGIN
        ('submitted', 'approved'), ('submitted', 'rejected'))) THEN
     RAISE EXCEPTION 'proof % -> % is not permitted', OLD.status, NEW.status USING ERRCODE = 'check_violation';
   END IF;
-  IF OLD.status IN ('approved', 'rejected') AND (NEW.reviewed_by, NEW.reviewed_at, NEW.live_check, NEW.review_reason, NEW.screenshot_key, NEW.screenshot_sha256)
-       IS DISTINCT FROM (OLD.reviewed_by, OLD.reviewed_at, OLD.live_check, OLD.review_reason, OLD.screenshot_key, OLD.screenshot_sha256) THEN
+  -- the end of the screenshot's retention (DV-39, I-63) is the one change after the review: only the table's owner
+  -- clears the key, through game_accounts.purge_due, and only once
+  IF NEW.screenshot_purged_at IS DISTINCT FROM OLD.screenshot_purged_at AND (OLD.screenshot_purged_at IS NOT NULL OR NEW.screenshot_key IS NOT NULL
+       OR current_user <> (SELECT pg_get_userbyid(relowner) FROM pg_class WHERE oid = TG_RELID)) THEN
+    RAISE EXCEPTION 'a screenshot is purged once, by game_accounts.purge_due' USING ERRCODE = 'insufficient_privilege';
+  END IF;
+  IF OLD.status IN ('approved', 'rejected') AND (NEW.reviewed_by, NEW.reviewed_at, NEW.live_check, NEW.review_reason, NEW.screenshot_sha256)
+       IS DISTINCT FROM (OLD.reviewed_by, OLD.reviewed_at, OLD.live_check, OLD.review_reason, OLD.screenshot_sha256)
+     OR (OLD.status IN ('approved', 'rejected') AND NEW.screenshot_key IS DISTINCT FROM OLD.screenshot_key
+         AND NOT (NEW.screenshot_key IS NULL AND OLD.screenshot_purged_at IS NULL AND NEW.screenshot_purged_at IS NOT NULL)) THEN
     RAISE EXCEPTION 'a reviewed proof is final' USING ERRCODE = 'check_violation';
   END IF;
   RETURN NEW;
@@ -282,8 +292,17 @@ CREATE TABLE game_accounts.access_log (
   at           timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX access_log_order ON game_accounts.access_log (order_id, id);
+-- append-only; rows are deleted only at the end of retention (2 years after the order closes, I-63), inside
+-- game_accounts.purge_due, which marks its transaction (U5-05). The application role has no DELETE privilege at all.
+CREATE FUNCTION game_accounts.access_log_guard() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF TG_OP = 'DELETE' AND current_setting('game_accounts.purging', true) = 'on' THEN
+    RETURN OLD;
+  END IF;
+  RAISE EXCEPTION 'table %.% is append-only', TG_TABLE_SCHEMA, TG_TABLE_NAME USING ERRCODE = 'insufficient_privilege';
+END $$;
 CREATE TRIGGER access_log_append_only BEFORE UPDATE OR DELETE ON game_accounts.access_log
-  FOR EACH ROW EXECUTE FUNCTION identity.forbid_change();
+  FOR EACH ROW EXECUTE FUNCTION game_accounts.access_log_guard();
 
 -- takeover confirmations (DR-07): append-only, one per step
 CREATE TABLE game_accounts.confirmations (
@@ -578,6 +597,34 @@ BEGIN
   END IF;
 END $$;
 
+-- I-63, DV-39 (U5-05): retention. The credential-access log of an order is kept 2 years after its handover ended
+-- (closed or cancelled); an ownership screenshot 2 years after the sale's escrow ended (the claim released at the
+-- escrow's end), or 30 days after a rejection or after the listing ended without a sale. Returns the screenshots'
+-- FileVault keys, which the caller erases. A batch at a time; SKIP LOCKED lets several instances run it.
+-- SECURITY DEFINER: the application role can neither delete log rows nor clear a reviewed proof's key.
+CREATE FUNCTION game_accounts.purge_due(p_log interval, p_sold interval, p_unsold interval) RETURNS SETOF varchar LANGUAGE plpgsql
+  SECURITY DEFINER SET search_path = pg_catalog, pg_temp AS $$
+DECLARE p record;
+BEGIN
+  PERFORM set_config('game_accounts.purging', 'on', true);
+  DELETE FROM game_accounts.access_log WHERE id IN (
+    SELECT a.id FROM game_accounts.access_log a JOIN game_accounts.handovers h ON h.order_id = a.order_id
+     WHERE h.status IN ('closed', 'cancelled') AND coalesce(h.closed_at, h.cancelled_at) < now() - p_log
+     LIMIT 5000 FOR UPDATE OF a SKIP LOCKED);
+  PERFORM set_config('game_accounts.purging', 'off', true);
+  FOR p IN SELECT o.id, o.screenshot_key FROM game_accounts.ownership_proofs o
+            WHERE o.screenshot_key IS NOT NULL AND o.status IN ('approved', 'rejected')
+              AND ((o.status = 'rejected' AND o.reviewed_at < now() - p_unsold)
+                OR EXISTS (SELECT 1 FROM game_accounts.claims c WHERE c.listing_id = o.listing_id AND c.released_at IS NOT NULL
+                             AND NOT EXISTS (SELECT 1 FROM game_accounts.claims l WHERE l.listing_id = o.listing_id AND l.released_at IS NULL)
+                             AND c.released_at < now() - CASE WHEN c.release_reason = 'escrow_terminal' THEN p_sold ELSE p_unsold END))
+            LIMIT 200 FOR UPDATE OF o SKIP LOCKED LOOP
+    UPDATE game_accounts.ownership_proofs SET screenshot_key = NULL, screenshot_purged_at = now() WHERE id = p.id;
+    RETURN NEXT p.screenshot_key;
+  END LOOP;
+END $$;
+REVOKE EXECUTE ON FUNCTION game_accounts.purge_due(interval, interval, interval) FROM PUBLIC;
+
 CREATE FUNCTION game_accounts.closed_without_ciphertext() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
   IF NEW.status IN ('cancelled', 'closed') AND EXISTS (SELECT 1 FROM game_accounts.sealed_credentials
@@ -595,3 +642,4 @@ CREATE TRIGGER handover_ciphertext_deleted AFTER UPDATE OF status ON game_accoun
 GRANT USAGE ON SCHEMA game_accounts TO tb_app;
 GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA game_accounts TO tb_app;
 REVOKE UPDATE ON game_accounts.access_log, game_accounts.confirmations, game_accounts.buyer_keys FROM tb_app;
+GRANT EXECUTE ON FUNCTION game_accounts.purge_due(interval, interval, interval) TO tb_app;
