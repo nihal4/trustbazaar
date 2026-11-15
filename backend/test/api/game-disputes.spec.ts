@@ -2,9 +2,13 @@ import { randomInt, randomUUID } from 'crypto';
 import { EventBus, OutboxEvent } from '../../src/kernel/events/event-bus';
 import { DISCLOSURE_VERSION } from '../../src/modules/game-accounts/ports';
 import { GameJobsService } from '../../src/modules/game-accounts/services/game-jobs.service';
+import { createHash } from 'crypto';
 import { startApp, TestApp } from '../support/app';
 import { IdentityFixtures } from '../support/identity';
 import { b64, BuyerKey, generateBuyerKey, seal } from '../support/sealed';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+const sharp = require('sharp') as typeof import('sharp').default;
 
 // U7-10: game-account disputes (docs/design/07_disputes_trust_staff.pdf sections 5.1 to 5.4 and 5.7; FR-DSP-01,
 // FR-DSP-05, FR-DSP-10, FR-GAM-14, FR-GAM-16, DV-37), against PostgreSQL through the real security pipeline, with the
@@ -42,7 +46,12 @@ describe('game-account disputes: the report, the overdue re-key, the protection 
     const call = (method: string, path: string, body?: unknown, extra: Record<string, string> = {}) => fetch(t.url(path), {
       method, headers: { ...headers, ...extra, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) }, body: body === undefined ? undefined : JSON.stringify(body),
     });
-    return { userId, sessionId, call };
+    const upload = (path: string, bytes: Buffer) => {
+      const form = new FormData();
+      form.set('file', new Blob([new Uint8Array(bytes)], { type: 'image/png' }), 'evidence');
+      return fetch(t.url(path), { method: 'POST', headers, body: form });
+    };
+    return { userId, sessionId, call, upload };
   }
   type Member = Awaited<ReturnType<typeof member>>;
   const consume = (e: OutboxEvent) => bus.consumersOf(e.type).find((c) => c.name === 'game_accounts.handover')!.handler(e);
@@ -160,5 +169,39 @@ describe('game-account disputes: the report, the overdue re-key, the protection 
     await consume({ outbox: 'orders', id: e.id, type: 'orders.escrow.refunded', aggregateId: orderId, payload: e.payload, createdAt: new Date(), attempt: 1 });
     expect(await handover(orderId)).toBe('closed');
     expect(await fx.query(`SELECT release_reason FROM game_accounts.claims WHERE listing_id = $1`, [listingId])).toEqual([{ release_reason: 'escrow_terminal' }]);
+  });
+
+  it('FR-GAM-18 the assigned operator exports the evidence pack: one audited PDF, by a signed link, with Unit 5\'s evidence and the hash list, never the credentials', async () => {
+    const { seller, buyer, orderId } = await delivered();
+    await buyer.call('GET', `/orders/${orderId}/game/sealed`);
+    for (const s of ['password', 'recovery_email', 'recovery_phone', 'social_logins', 'two_step']) await step(buyer, orderId, s);
+    const { disputeId } = (await (await buyer.call('POST', `/orders/${orderId}/disputes`, { type: 'seller_recovery', description: reason })).json()) as { disputeId: string };
+    const png = await sharp({ create: { width: 120, height: 80, channels: 3, background: '#a33' } }).png().toBuffer();
+    expect((await buyer.upload(`/disputes/${disputeId}/evidence`, png)).status).toBe(201);
+    await seller.call('POST', `/disputes/${disputeId}/statements`, { text: 'I did not touch the account after the sale.' });
+    const [op, other] = [await operator(), await operator()];
+    expect((await op.call('GET', `/staff/disputes/${disputeId}/evidence-pack`)).status).toBe(409); // not claimed
+    await op.call('POST', `/staff/cases/dispute/${disputeId}/claim`);
+    expect((await other.call('GET', `/staff/disputes/${disputeId}/evidence-pack`)).status).toBe(409);
+    expect((await buyer.call('GET', `/staff/disputes/${disputeId}/evidence-pack`)).status).toBe(401);
+
+    const r = await op.call('GET', `/staff/disputes/${disputeId}/evidence-pack`);
+    expect([r.status, r.headers.get('cache-control')]).toEqual([200, 'no-store']);
+    const pack = (await r.json()) as { url: string; expiresAt: string; sha256: string; files: number };
+    expect(pack).toMatchObject({ url: expect.stringMatching(/^\/api\/v1\/files\/v\//), files: 1 });
+    const file = await op.call('GET', pack.url.replace(/^\/api\/v1/, ''));
+    expect(file.status).toBe(200);
+    const pdf = Buffer.from(await file.arrayBuffer());
+    expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
+    expect(createHash('sha256').update(pdf).digest('hex')).toBe(pack.sha256);
+    expect((await other.call('GET', pack.url.replace(/^\/api\/v1/, ''))).status).not.toBe(200); // the link is the operator's session's
+    // the uncompressed PDF writes each line as hex-encoded strings in TJ arrays: read them back as text
+    const text = [...pdf.toString('latin1').matchAll(/\[([^\]]*)\] TJ/g)]
+      .map((m) => [...m[1].matchAll(/<([0-9a-f]+)>/g)].map((h) => Buffer.from(h[1], 'hex').toString('latin1')).join('')).join('\n');
+    const [{ sha }] = await fx.query<{ sha: string }>(`SELECT encode(sha256, 'hex') AS sha FROM disputes.evidence WHERE dispute_id = $1`, [disputeId]);
+    for (const part of ['TrustBazaar evidence pack', 'seller_recovery', 'Credential-access log', 'two_step', sha, 'eFootball']) expect(text).toContain(part);
+    expect(text).not.toMatch(/Correct-Horse|player@example\.com/); // never the credentials
+    expect((await fx.query<{ action: string }>(`SELECT action FROM audit.events WHERE actor_id = $1 AND action IN ('disputes.evidence_pack.created', 'files.file.viewed') ORDER BY id`, [op.staffId])).map((a) => a.action))
+      .toEqual(['disputes.evidence_pack.created', 'files.file.viewed']);
   });
 });
