@@ -12,6 +12,8 @@ import { HandoverConsumers } from './consumers/handover.consumers';
 import { ForwardedDisputes, GAME_DISPUTES } from './adapters/disputes';
 import { GAME_ACCOUNT_COMMANDS, GAME_ACCOUNT_PORT, GAME_ACCOUNT_QUERIES, GameAccountCommands, GameAccountQueries } from './ports';
 import { TakeoverService } from './services/takeover.service';
+import { GameJobsService } from './services/game-jobs.service';
+import { GameJobs } from './jobs/game.jobs';
 import { HandoverService } from './services/handover.service';
 import { OwnershipReviewService } from './services/ownership-review.service';
 import { OwnershipService } from './services/ownership.service';
@@ -33,6 +35,8 @@ import { OwnershipService } from './services/ownership.service';
     HandoverConsumers,
     { provide: GAME_ACCOUNT_PORT, useExisting: HandoverService },
     TakeoverService,
+    GameJobsService,
+    GameJobs,
     { provide: GAME_DISPUTES, useClass: ForwardedDisputes }, // Unit 7's DisputeCommands
     {
       provide: GAME_ACCOUNT_COMMANDS,
