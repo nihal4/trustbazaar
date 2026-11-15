@@ -282,6 +282,25 @@ SELECT game_accounts.finish('d0000000-0000-4000-8000-000000000002', true);
 SELECT pg_temp.ok('an order refunded before the takeover cancels the handover',
   (SELECT status = 'cancelled' FROM game_accounts.handovers WHERE order_id = 'd0000000-0000-4000-8000-000000000002'));
 
+-- ---------------------------------------------------------------- retention (I-63, DV-39; U5-05)
+SELECT pg_temp.ok('I-63 nothing is purged before its retention ends',
+  NOT EXISTS (SELECT game_accounts.purge_due('2 years', '2 years', '30 days'))
+  AND (SELECT count(*) = 2 FROM game_accounts.access_log WHERE order_id = 'd0000000-0000-4000-8000-000000000001'));
+SELECT game_accounts.review_proof('f0000000-0000-4000-8000-000000000004', 'b0000000-0000-4000-8000-000000000001', false, 'not_matched', 'The code is not on the live profile.');
+SELECT pg_temp.ok('I-63 DV-39 at the end of retention the log of a finished handover and the screenshots of sold and rejected listings go',
+  (SELECT array_agg(k ORDER BY k) = '{ev-1,ev-4}' FROM game_accounts.purge_due('-1 second', '-1 second', '-1 second') k));
+SELECT pg_temp.ok('... the log rows of the finished handover are deleted; the proofs stay, marked as purged',
+  NOT EXISTS (SELECT 1 FROM game_accounts.access_log WHERE order_id = 'd0000000-0000-4000-8000-000000000001')
+  AND (SELECT bool_and(screenshot_key IS NULL AND screenshot_purged_at IS NOT NULL AND status IN ('approved', 'rejected'))
+         FROM game_accounts.ownership_proofs WHERE id IN ('f0000000-0000-4000-8000-000000000001', 'f0000000-0000-4000-8000-000000000004')));
+SELECT pg_temp.ok('I-63 a purged screenshot is not purged again', NOT EXISTS (SELECT game_accounts.purge_due('-1 second', '-1 second', '-1 second')));
+SET LOCAL ROLE tb_app;
+SELECT pg_temp.expect_fail('application role cannot delete the access log; only purge_due does, at the end of retention',
+ $q$DELETE FROM game_accounts.access_log$q$, 'permission denied');
+SELECT pg_temp.expect_fail('application role cannot clear a screenshot key itself',
+ $q$UPDATE game_accounts.ownership_proofs SET screenshot_key = NULL, screenshot_purged_at = now() WHERE id = 'f0000000-0000-4000-8000-000000000005'$q$, 'purged once');
+RESET ROLE;
+
 -- ---------------------------------------------------------------- events, grants
 SELECT pg_temp.expect_fail('DC-6 outbox events are named game_accounts.<entity>.<past>',
  $q$INSERT INTO game_accounts.outbox (event_type, aggregate_id, payload) VALUES ('orders.order.paid', gen_random_uuid(), '{}')$q$, 'outbox_event_type_check');
