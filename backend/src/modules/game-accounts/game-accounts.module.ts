@@ -52,6 +52,7 @@ import { OwnershipService } from './services/ownership.service';
       useFactory: (r: OwnershipReviewService, t: TakeoverService): GameAccountQueries => ({
         proofQueue: (...a) => r.proofQueue(...a),
         credentialsInvalidAllowed: (...a) => t.credentialsInvalidAllowed(...a),
+        evidence: (...a) => t.evidence(...a),
       }),
     },
   ],
