@@ -5,7 +5,7 @@ import type { EntityManager } from 'typeorm';
 // added by the unit's tasks:
 //   GameAccountPort      (assertCheckoutReady: U5-03, below)
 //   GameAccountCommands  (reviewProof: U5-02; disputeWithdrawn: U5-04; below)
-//   GameAccountQueries   (proofQueue: U5-02; credentialsInvalidAllowed: U5-04; below. evidence, deadlines: U7-10)
+//   GameAccountQueries   (proofQueue: U5-02; credentialsInvalidAllowed: U5-04; evidence: U7-10; below)
 
 export type LiveCheck = 'matched' | 'not_matched' | 'not_available';
 
@@ -42,6 +42,24 @@ export interface GameAccountQueries {
   proofQueue(limit?: number): Promise<ProofQueueItem[]>;
   /** FR-GAM-14: during the takeover window and before the recovery e-mail step is confirmed. */
   credentialsInvalidAllowed(orderId: string): Promise<boolean>;
+  /**
+   * FR-DSP-05, FR-GAM-18: what Unit 5 holds about a game-account order, for the dispute case file and the evidence
+   * pack: the listing's ownership proof, the handover, the takeover confirmations and the credential-access log. Never
+   * a key or the credentials. Null for an order that has no handover.
+   */
+  evidence(orderId: string): Promise<GameEvidence | null>;
+}
+
+export interface GameEvidence {
+  details: { game: string; platform: string; playerId: string; contents: string } | null;
+  /** The latest proof of the listing; the screenshot's FileVault key for a signed link (null once purged, DV-39). */
+  proof: { code: string; status: string; submittedAt: Date | null; reviewedAt: Date | null; reviewedBy: string | null; liveCheck: string | null; reason: string | null; screenshotKey: string | null; screenshotSha256: string | null } | null;
+  handover: {
+    status: string; disclosureVersion: number; disclosureAckAt: Date; keyVersion: number; rekeysUsed: number; credentialsDueAt: Date | null; firstDeliveredAt: Date | null;
+    deliveredAt: Date | null; takeoverDueAt: Date | null; takenOverAt: Date | null; takeoverSource: string | null; disputedAt: Date | null;
+  };
+  confirmations: { step: string; at: Date; sessionId: string }[];
+  accessLog: { at: Date; userId: string; sessionId: string; keyVersion: number; sourceIp: string | null }[];
 }
 export const GAME_ACCOUNT_QUERIES = Symbol('GAME_ACCOUNT_QUERIES');
 
