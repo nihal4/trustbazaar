@@ -6,6 +6,7 @@ import { Problem } from '../../../kernel/http/problems';
 import { REDIS } from '../../../kernel/redis.provider';
 import { NOTIFICATION_PORT, NotificationPort } from '../../chat/ports';
 import { GAME_ACCOUNT_QUERIES, GameAccountQueries } from '../../game-accounts/ports';
+import { LISTINGS_QUERIES, ListingsQueries } from '../../listings/ports';
 import { STAFF_QUERY, StaffQuery } from '../../identity/ports';
 import { PAYOUT_CHECKS, PayoutChecksQuery } from '../../orders/ports';
 
@@ -13,15 +14,14 @@ import { PAYOUT_CHECKS, PayoutChecksQuery } from '../../orders/ports';
 // FR-OPS-01 allows exactly eight queues. Each lists its open items oldest first with their age; the disputes queue puts
 // the overdue ones (past CP-21's decision target) first (DV-52). The data stays with the unit that owns it: Unit 7
 // reads its own three, and asks Unit 1 (KYC) and Unit 2 (bank payout-account checks) through their ports. Listings in
-// review (U3-08) and payment discrepancies (Unit 2's reconciliation) answer feature-off until their owners build them
-// (Decisions log, U7-06); ownership proofs come from Unit 5's GameAccountQueries (U5-02). Each item names the endpoint that acts on it.
+// payment discrepancies (Unit 2's reconciliation) answer feature-off until their owner builds them (Decisions log,
+// U7-06); ownership proofs come from Unit 5's GameAccountQueries (U5-02), listings in review from Unit 3 (U3-08). Each item names the endpoint that acts on it.
 // The decision-target job (hourly) e-mails the active administrators once a day, in Dhaka's calendar, when disputes
 // are overdue (FR-DSP-08).
 
 export const QUEUES = ['kyc', 'ownership_proofs', 'listings_review', 'reports', 'flagged_activity', 'disputes', 'payout_accounts', 'payment_discrepancies'] as const;
 export type QueueName = (typeof QUEUES)[number];
 const NOT_YET: Partial<Record<QueueName, string>> = {
-  listings_review: 'listing-review-not-yet-available', // U3-08
   payment_discrepancies: 'payment-discrepancies-not-yet-available', // Unit 2's reconciliation
 };
 const LIMIT = 200;
@@ -49,6 +49,7 @@ export class QueueService {
     @Inject(STAFF_QUERY) private readonly staff: StaffQuery,
     @Inject(PAYOUT_CHECKS) private readonly payouts: PayoutChecksQuery,
     @Inject(GAME_ACCOUNT_QUERIES) private readonly games: GameAccountQueries,
+    @Inject(LISTINGS_QUERIES) private readonly listings: ListingsQueries,
     @Inject(NOTIFICATION_PORT) private readonly mail: NotificationPort,
     @Inject(REDIS) private readonly redis: Redis,
     @Inject(CLOCK) private readonly clock: Clock,
@@ -107,6 +108,11 @@ export class QueueService {
         return (await this.payouts.pendingAccountChecks()).map((a) => ({
           id: a.id, ageHours: age(a.createdAt), since: a.createdAt.toISOString(), status: 'pending_review', assignedTo: null,
           userId: a.userId, path: `/staff/payout-accounts/${a.id}/decision`,
+        }));
+      case 'listings_review':
+        return (await this.listings.reviewQueue(LIMIT)).map((l) => ({
+          id: l.listingId, ageHours: age(l.heldAt), since: l.heldAt.toISOString(), status: 'pending_review', assignedTo: null,
+          sellerId: l.sellerId, title: l.title, reason: l.reason, path: `/staff/listings/${l.listingId}/review`,
         }));
       case 'ownership_proofs':
         return (await this.games.proofQueue(LIMIT)).map((p) => ({
