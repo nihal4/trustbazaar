@@ -10,6 +10,7 @@ import {
   Approval, APPROVAL_SERVICE, ApprovalServicePort, AUDIT_SERVICE, AuditServicePort, CallContext, FILE_VAULT, FileVaultPort, IDENTITY_QUERY, IdentityQuery,
   STAFF_QUERY, StaffQuery,
 } from '../../identity/ports';
+import { GAME_ACCOUNT_QUERIES, GameAccountQueries } from '../../game-accounts/ports';
 import { ESCROW_COMMANDS, ESCROW_QUERY, EscrowCommands, EscrowQuery, ORDERS_PORT, OrdersPort } from '../../orders/ports';
 
 // Disputes on physical goods, the operator's side (docs/design/07_disputes_trust_staff.pdf sections 5.4 to 5.6; FR-DSP-05
@@ -32,7 +33,7 @@ const FOUR_EYES_POISHA = 2_000_000n; // CP-30: BDT 20,000, on the amount collect
 const LIVE = ['open', 'under_review', 'awaiting_seller', 'awaiting_return'];
 
 interface CaseRow {
-  id: string; order_id: string; buyer_id: string; seller_id: string; type: string; description: string; status: string; amount_collected: string;
+  id: string; order_id: string; buyer_id: string; seller_id: string; item_kind: string; type: string; description: string; status: string; amount_collected: string;
   item_price: string; assigned_to: string | null; opened_at: Date; seller_due_at: Date; info_due_at: Date | null; review_started_at: Date | null;
   decision_target_at: Date | null; outcome: string | null; item_refund: string | null; return_fare: string | null; return_fare_payer: string | null;
   decision_reason: string | null; decided_at: Date | null;
@@ -70,6 +71,7 @@ export class DisputeCaseService implements OnModuleInit {
     @Inject(APPROVAL_SERVICE) private readonly approvals: ApprovalServicePort,
     @Inject(AUDIT_SERVICE) private readonly audit: AuditServicePort,
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
+    @Inject(GAME_ACCOUNT_QUERIES) private readonly games: GameAccountQueries,
   ) {}
 
   onModuleInit(): void {
@@ -121,6 +123,7 @@ export class DisputeCaseService implements OnModuleInit {
     const who = (id: string) => (id === d.buyer_id ? 'buyer' : 'seller');
     const iso = (x: Date | null) => (x ? x.toISOString() : null);
     const thread = await this.chat.threadFor(order.listing.id, d.buyer_id);
+    const game = d.item_kind === 'game_account' ? await this.gameEvidence(d.order_id, staff, reason, ctx, who) : null;
     return {
       dispute: {
         id: d.id, type: d.type, status: d.status, description: d.description, openedAt: d.opened_at.toISOString(), sellerDueAt: d.seller_due_at.toISOString(),
@@ -136,6 +139,7 @@ export class DisputeCaseService implements OnModuleInit {
       escrow: { state: escrow.state, amountCollected: escrow.amountCollected, disputeWindowEndsAt: iso(escrow.disputeWindowEndsAt), autoReleaseAt: iso(escrow.autoReleaseAt) },
       outcomes: preview,
       fulfilment,
+      game, // FR-DSP-05: Unit 5's evidence for a game account; never the credentials
       chat: thread ? { threadId: thread, path: `/staff/cases/dispute/${disputeId}/threads/${thread}` } : null,
       history: history.map((h) => ({ from: h.from_status, to: h.to_status, actor: h.actor, reason: h.reason, at: h.at.toISOString() })),
       statements: statements.map((s) => ({ party: s.party, text: s.text, at: s.at.toISOString() })),
@@ -147,6 +151,24 @@ export class DisputeCaseService implements OnModuleInit {
         strikes: strikes.map((x) => ({ party: who(x.user_id), reason: x.reason, orderId: x.order_id, at: x.at.toISOString() })),
         sanctions: sanctions.map((x) => ({ party: who(x.user_id), kind: x.kind, reason: x.reason, startsAt: x.starts_at.toISOString(), endsAt: iso(x.ends_at), liftedAt: iso(x.lifted_at) })),
       },
+    };
+  }
+
+  /** Unit 5's evidence for the case file: the screenshot by a signed link, the addresses masked to their network (SEC-ACC-05). */
+  private async gameEvidence(orderId: string, staff: Principal & { type: 'staff' }, reason: string, ctx: CallContext, who: (id: string) => string) {
+    const g = await this.games.evidence(orderId);
+    if (!g) return null;
+    const iso = (x: Date | null) => (x ? x.toISOString() : null);
+    const { screenshotKey, ...proof } = g.proof ?? { screenshotKey: null };
+    return {
+      details: g.details,
+      proof: g.proof ? {
+        ...proof, submittedAt: iso(g.proof.submittedAt), reviewedAt: iso(g.proof.reviewedAt),
+        screenshot: screenshotKey ? await this.vault.signedLink(screenshotKey, staff, reason, ctx) : null, // null once purged (DV-39)
+      } : null,
+      handover: Object.fromEntries(Object.entries(g.handover).map(([k, v]) => [k, v instanceof Date ? v.toISOString() : v])),
+      confirmations: g.confirmations.map((c) => ({ step: c.step, at: c.at.toISOString(), sessionId: c.sessionId })),
+      accessLog: g.accessLog.map((a) => ({ at: a.at.toISOString(), party: who(a.userId), sessionId: a.sessionId, keyVersion: a.keyVersion, network: maskIp(a.sourceIp) })),
     };
   }
 
@@ -228,6 +250,7 @@ export class DisputeCaseService implements OnModuleInit {
     } else if (dec.itemRefund !== undefined && dec.itemRefund !== null) {
       throw new Problem('validation-failed', { errors: [{ field: 'itemRefund', reason: 'partial-refund-only' }] });
     }
+    if (dec.outcome === 'refund_after_return' && d.item_kind === 'game_account') throw new Problem('validation-failed', { errors: [{ field: 'outcome', reason: 'not-for-this-item' }] });
     if (dec.outcome === 'refund_after_return' && !dec.returnPayer) throw new Problem('validation-failed', { errors: [{ field: 'returnPayer', reason: 'required' }] });
   }
 
@@ -304,4 +327,11 @@ export class DisputeCaseService implements OnModuleInit {
   private async tell(userId: string, template: string, params: Record<string, string | number>, key: string): Promise<void> {
     await this.notifier.notify(userId, template, params, key).catch((err: Error) => this.log.warn(`notice ${template} to ${userId}: ${err.message}`));
   }
+}
+
+/** SEC-ACC-05: an address shown as its network (IPv4 /24, IPv6 /48). */
+export function maskIp(ip: string | null): string | null {
+  if (!ip) return null;
+  if (ip.includes(':')) return `${ip.split(':').slice(0, 3).join(':')}::/48`;
+  return `${ip.split('.').slice(0, 3).join('.')}.0/24`;
 }

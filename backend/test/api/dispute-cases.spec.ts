@@ -89,7 +89,8 @@ describe('dispute cases: claim, case file, request for information, decision, re
     const r = await a.call('GET', `/staff/disputes/${c.disputeId}/case-file`);
     expect(r.status).toBe(200);
     const file = (await r.json()) as Record<string, unknown> & { outcomes: Record<string, unknown>; history: { to: string }[]; statements: unknown[]; chat: { path: string } };
-    expect(Object.keys(file).sort()).toEqual(['chat', 'context', 'dispute', 'escrow', 'evidence', 'fulfilment', 'history', 'order', 'outcomes', 'parties', 'statements']);
+    expect(Object.keys(file).sort()).toEqual(['chat', 'context', 'dispute', 'escrow', 'evidence', 'fulfilment', 'game', 'history', 'order', 'outcomes', 'parties', 'statements']);
+    expect(file.game).toBeNull(); // a physical item
     expect(file.outcomes).toMatchObject({ release: { refunded: '0', sellerPayout: '1425000' }, fullRefund: { refunded: '1500000', sellerPayout: '0' } });
     expect(file.history.map((h) => h.to)).toEqual(['open', 'under_review']);
     expect(file.statements).toHaveLength(1);

@@ -6,22 +6,30 @@ import { Problem } from '../../../kernel/http/problems';
 import type { Principal } from '../../../kernel/http/principal';
 import { CHAT_COMMANDS, ChatCommands, NOTIFIER, Notifier } from '../../chat/ports';
 import { DELIVERY_QUERIES, DeliveryQueries } from '../../delivery/ports';
+import { GAME_ACCOUNT_COMMANDS, GameAccountCommands } from '../../game-accounts/ports';
 import { FILE_VAULT, FileVaultPort } from '../../identity/ports';
 import { ESCROW_COMMANDS, ESCROW_QUERY, EscrowCommands, EscrowQuery, ORDERS_PORT, OrdersPort, OrderView } from '../../orders/ports';
 import type { DisputeCommands, DisputeType } from '../ports';
 
-// Disputes on physical goods, the parties' side (docs/design/07_disputes_trust_staff.pdf sections 5.1 to 5.3 and 5.7;
-// FR-DSP-01 to FR-DSP-04, FR-DSP-09 to FR-DSP-11; U7-03, first part). The operator's side (claim, case file, request
-// for information, decision and outcomes) is the second part of U7-03; game-account disputes are U7-10's.
+// Disputes, the parties' side (docs/design/07_disputes_trust_staff.pdf sections 5.1 to 5.3 and 5.7; FR-DSP-01 to
+// FR-DSP-04, FR-DSP-09 to FR-DSP-11; U7-03 for physical goods, U7-10 for game accounts). The operator's side is
+// DisputeCaseService.
+//  - The type fits the item (FR-DSP-01). For a game account: credentials_invalid is opened only by Unit 5 (the buyer's
+//    report, FR-GAM-14, or the overdue re-key, DV-37), which checked its own window; seller_recovery and other only
+//    in the protection period CP-24, after the takeover (FR-GAM-16), as Unit 2 answers.
 //  - Opening is one transaction in the lock order of DC-14: the order (OrdersPort.lockForFulfilment), the owning unit's
 //    window check, disputes.open (refused while one is open, or for a type withdrawn before), and
 //    EscrowCommands.freezeForDispute. After the commit the order's chat thread is held (I-40) and the parties told.
 //  - The seller's first statement while the dispute is open (or awaiting them) is the response: the review starts.
 //    Without a response in CP-20 (48 hours), the job starts the review on the evidence available.
 //  - Evidence: up to CP-33 (10) images per dispute, re-encoded without metadata and encrypted by Unit 1's FileVault.
-//  - The buyer withdraws before the decision: the escrow is held again (FR-DSP-10) and that type cannot be reopened.
+//  - The buyer withdraws before the decision: the escrow is held again (FR-DSP-10) and that type cannot be reopened; a
+//    withdrawn credentials_invalid dispute resumes the takeover (GameAccountCommands.disputeWithdrawn), together.
 
 const PHYSICAL: readonly DisputeType[] = ['not_as_described', 'damaged', 'not_received', 'other'];
+/** The game-account types (FR-DSP-01); credentials_invalid is opened only by Unit 5. */
+const GAME: readonly DisputeType[] = ['credentials_invalid', 'seller_recovery', 'other'];
+const GAME_BY_BUYER: readonly DisputeType[] = ['seller_recovery', 'other'];
 const LIVE = ['open', 'under_review', 'awaiting_seller'];
 /** Images only: Unit 1's FileVault re-encodes evidence as an image without metadata, so a PDF is refused (Decisions log, U7-03). */
 export const EVIDENCE_MIME = ['image/jpeg', 'image/png', 'image/webp'] as const;
@@ -63,6 +71,7 @@ export class DisputeService implements DisputeCommands {
     @Inject(FILE_VAULT) private readonly vault: FileVaultPort,
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
     @Inject(CLOCK) private readonly clock: Clock,
+    @Inject(GAME_ACCOUNT_COMMANDS) private readonly games: GameAccountCommands,
   ) {}
 
   /** I-56: GET /orders/{id}/dispute-types: what the buyer may open now, from the owning units' checks. */
@@ -71,10 +80,10 @@ export class DisputeService implements DisputeCommands {
     if (o.role !== 'buyer') throw new Problem('not-found');
     const [open] = (await this.db.query(`SELECT id FROM disputes.disputes WHERE order_id = $1 AND status NOT IN ('decided', 'withdrawn')`, [orderId])) as { id: string }[];
     if (open) return { types: [], openDisputeId: open.id };
-    if (o.listing.itemKind !== 'physical') return { types: [], openDisputeId: null }; // game accounts: U7-10
     const withdrawn = new Set(((await this.db.query(`SELECT type FROM disputes.disputes WHERE order_id = $1 AND status = 'withdrawn'`, [orderId])) as { type: DisputeType }[]).map((r) => r.type));
     const allowed: DisputeType[] = [];
-    for (const type of PHYSICAL) if (!withdrawn.has(type) && (await this.windowOk(orderId, type))) allowed.push(type);
+    const game = o.listing.itemKind === 'game_account';
+    for (const type of game ? GAME_BY_BUYER : PHYSICAL) if (!withdrawn.has(type) && (await this.windowOk(orderId, type, game))) allowed.push(type);
     return { types: allowed, openDisputeId: null };
   }
 
@@ -82,23 +91,25 @@ export class DisputeService implements DisputeCommands {
   async openByBuyer(buyerId: string, orderId: string, d: { type: DisputeType; description: string }): Promise<{ disputeId: string }> {
     const view = await this.orders.getOrderForParty(orderId, buyerId);
     if (view.role !== 'buyer') throw new Problem('not-found');
+    // FR-GAM-14: "the credentials do not work" is the handover's own report (Unit 5), which also stops the takeover
+    if (d.type === 'credentials_invalid' && view.listing.itemKind === 'game_account') throw new Problem('validation-failed', { errors: [{ field: 'type', reason: 'use-the-handover-report' }] });
     const disputeId = await this.db.transaction((m) => this.open({ orderId, type: d.type, description: d.description, by: 'buyer' }, m, view));
     await this.afterOpen(disputeId, view);
     return { disputeId };
   }
 
-  /** DisputeCommands (Unit 5, in its own transaction, DC-13). Game-account disputes come with U7-10. */
+  /** DisputeCommands (Unit 5, in its own transaction, DC-13), and the buyer's opening. */
   async open(o: { orderId: string; type: DisputeType; description: string; by: 'buyer' | 'system' }, tx: EntityManager, known?: OrderView): Promise<string> {
     const description = o.description.normalize('NFC').trim();
     if (description.length < 20) throw new Problem('validation-failed', { errors: [{ field: 'description', reason: 'too-short' }] });
     const facts = await this.orders.lockForFulfilment(o.orderId, tx); // DC-14: the order first
-    if (facts.itemKind !== 'physical') throw new Problem('feature-off', { errors: [{ field: 'type', reason: 'game-account-disputes-not-yet-available' }] });
-    if (!PHYSICAL.includes(o.type)) throw new Problem('validation-failed', { errors: [{ field: 'type', reason: 'not-for-this-item' }] });
+    const game = facts.itemKind === 'game_account';
+    if (!(game ? GAME : PHYSICAL).includes(o.type)) throw new Problem('validation-failed', { errors: [{ field: 'type', reason: 'not-for-this-item' }] });
     // FR-DSP-11: one at a time (also refused by disputes_one_open); said before the window check, which the frozen escrow fails
     const [open] = (await tx.query(`SELECT 1 FROM disputes.disputes WHERE order_id = $1 AND status NOT IN ('decided', 'withdrawn')`, [o.orderId])) as unknown[];
     if (open) throw new Problem('validation-failed', { errors: [{ field: 'order', reason: 'dispute-open' }] });
     const view = known ?? (await this.orders.getOrderForParty(o.orderId, facts.buyerId));
-    const windowOk = facts.escrowState === 'held' && (await this.windowOk(o.orderId, o.type));
+    const windowOk = facts.escrowState === 'held' && (await this.windowOk(o.orderId, o.type, game));
     const sellerWindow = (await this.params.current()).get<string>('CP-20');
     try {
       const [{ id }] = (await tx.query(
@@ -184,6 +195,7 @@ export class DisputeService implements DisputeCommands {
         await this.orders.lockForFulfilment(d.order_id, m); // DC-14
         await m.query(`SELECT disputes.withdraw($1, $2)`, [disputeId, buyerId]);
         await this.escrow.withdrawDispute(d.order_id, disputeId, m);
+        if (d.type === 'credentials_invalid') await this.games.disputeWithdrawn(d.order_id, m); // the takeover resumes (Unit 5)
       });
     } catch (err) {
       if (err instanceof QueryFailedError && (err.driverError as { message?: string }).message?.includes('cannot be withdrawn')) {
@@ -212,9 +224,15 @@ export class DisputeService implements DisputeCommands {
     return n;
   }
 
-  private async windowOk(orderId: string, type: DisputeType): Promise<boolean> {
+  private async windowOk(orderId: string, type: DisputeType, game = false): Promise<boolean> {
+    if (type === 'credentials_invalid') return true; // Unit 5 checked its window (credentialsInvalidAllowed); held is checked by the caller
     if (type === 'not_received') return this.delivery.notReceivedAllowed(orderId); // Unit 4 (FR-DLV-11); held is checked by the caller
-    return this.escrowQuery.disputeAllowed(orderId, this.clock.now()); // Unit 2: held, and inside CP-18 once delivered
+    if (game) {
+      // FR-GAM-16: in the protection period, which starts at the takeover (the delivery event sets its end)
+      const e = await this.escrowQuery.getEscrow(orderId);
+      if (!e.disputeWindowEndsAt) return false;
+    }
+    return this.escrowQuery.disputeAllowed(orderId, this.clock.now()); // Unit 2: held, and inside CP-18 (or CP-24) once delivered
   }
 
   /** After the opening's commit: the thread is held (I-40) and both parties told (FR-DSP-03). */
