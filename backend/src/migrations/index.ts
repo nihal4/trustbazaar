@@ -23,6 +23,8 @@ import { OwnershipRejectedTemplate1793491200022 } from './1793491200022-ownershi
 import { GameHandoverTemplates1793491200023 } from './1793491200023-game-handover-templates';
 import { GameTakeoverTemplates1793491200024 } from './1793491200024-game-takeover-templates';
 import { GameRetention1793491200025 } from './1793491200025-game-retention';
+import { ListingReviewTemplates1793491200026 } from './1793491200026-listing-review-templates';
+import { ScreeningTermDelete1793491200027 } from './1793491200027-screening-term-delete';
 
 // The migrations in the order they run: the seven units in unit order, then 09_integration (I-60).
 // Add a new migration at the end; never reorder or edit an applied one.
@@ -52,4 +54,6 @@ export const MIGRATIONS = [
   GameHandoverTemplates1793491200023, // U5-03: the notices of credentials requested and delivered (I-32; Decisions log)
   GameTakeoverTemplates1793491200024, // U5-04: the notices of a re-key and of the completed takeover (I-32; Decisions log)
   GameRetention1793491200025, // U5-05: access-log and ownership-screenshot retention, I-63 and DV-39 (Decisions log)
+  ListingReviewTemplates1793491200026, // U3-08: the notices of a returned and a removed listing (Decisions log)
+  ScreeningTermDelete1793491200027, // U3-08: operators may delete screening terms (Decisions log)
 ];
