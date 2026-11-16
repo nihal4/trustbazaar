@@ -6,7 +6,7 @@ import type { EntityManager } from 'typeorm';
 //   OrdersPort      (U2-02, below; lockForFulfilment with U2-04, I-20)
 //   EscrowCommands  (U2-04, below)
 //   EscrowQuery     (U2-04, below)
-//   ProStatusQuery  (U2-06)
+//   ProStatusQuery  (U2-06, below)
 
 export type OrderKind = 'fixed_price' | 'auction' | 'second_chance';
 export type OrderStatus = 'awaiting_payment' | 'cancelled' | 'paid' | 'closed';
@@ -170,3 +170,14 @@ export interface PayoutChecksQuery {
   pendingAccountChecks(): Promise<{ id: string; userId: string; createdAt: Date }[]>;
 }
 export const PAYOUT_CHECKS = Symbol('PAYOUT_CHECKS');
+
+/**
+ * ProStatusQuery (docs/design/02_orders_payments.pdf section 3.3; FR-MON-02, FR-MON-06, FR-MON-08; U2-06): whether a
+ * user has Pro Seller status now: an active subscription, or a cancelled one whose paid month has not ended. Read by
+ * Unit 2 when an order is created (CP-25 Pro commission), by Listings at publication (CP-28 Pro limit) and by
+ * Trust & Safety for the Pro badge.
+ */
+export interface ProStatusQuery {
+  isPro(userId: string, tx?: EntityManager): Promise<boolean>;
+}
+export const PRO_STATUS = Symbol('PRO_STATUS');

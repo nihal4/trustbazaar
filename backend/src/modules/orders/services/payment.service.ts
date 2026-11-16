@@ -49,11 +49,14 @@ export type Outcome = 'paid' | 'failed' | 'pending' | 'rejected' | 'duplicate' |
 export type SubjectHandler = (m: EntityManager, attempt: PaymentAttempt, now: Date) => Promise<
   { accepted: true; account: 'revenue_featured' | 'revenue_subscription'; memo: string } | { accepted: false; reason: string }
 >;
+/** What a failed featured-listing or subscription payment does, in the confirming transaction. */
+export type FailureHandler = (m: EntityManager, attempt: PaymentAttempt, now: Date) => Promise<void>;
 
 @Injectable()
 export class PaymentService {
   private readonly log = new Logger('PaymentService');
   private readonly subjects = new Map<Exclude<Purpose, 'order'>, SubjectHandler>();
+  private readonly failures = new Map<Exclude<Purpose, 'order'>, FailureHandler>();
 
   constructor(
     private readonly db: DataSource,
@@ -123,8 +126,9 @@ export class PaymentService {
   }
 
   /** Monetization registers what a confirmed featured-listing or subscription payment does (section 5.14). */
-  registerSubject(purpose: Exclude<Purpose, 'order'>, handler: SubjectHandler): void {
+  registerSubject(purpose: Exclude<Purpose, 'order'>, handler: SubjectHandler, onFailed?: FailureHandler): void {
     this.subjects.set(purpose, handler);
+    if (onFailed) this.failures.set(purpose, onFailed);
   }
 
   // ---------------------------------------------------------------- the routes into confirm
@@ -267,7 +271,10 @@ export class PaymentService {
     if (r.status === 'pending') return 'pending';
     const now = this.clock.now();
     if (r.status === 'failed') {
-      if (a.status === 'created' || a.status === 'redirected') await m.getRepository(PaymentAttempt).update({ id: a.id }, { status: 'failed', failureCode: r.eventType.slice(0, 60) });
+      if (a.status === 'created' || a.status === 'redirected') {
+        await m.getRepository(PaymentAttempt).update({ id: a.id }, { status: 'failed', failureCode: r.eventType.slice(0, 60) });
+        await this.failures.get(a.purpose as Exclude<Purpose, 'order'>)?.(m, a, now); // a failed renewal counts (FR-MON-08)
+      }
       return 'failed';
     }
     const ids = { providerPaymentId: r.providerPaymentId, providerTxnId: r.providerTxnId ?? null };
