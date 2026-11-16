@@ -55,8 +55,8 @@ export class PaymentsController {
   @Credential('signed-state')
   @Get('callbacks/:provider/:attemptId')
   async callback(@Param('provider') provider: string, @Id('attemptId') attemptId: string, @Query('state') state: string | undefined, @Res() res: Response) {
-    const { orderId, outcome } = await this.payments.callback(providerOf(provider), attemptId, state);
-    res.redirect(303, `${this.config.publicOrigin}/orders/${orderId}?payment=${attemptId}&result=${outcome}`);
+    const { returnUrl, outcome } = await this.payments.callback(providerOf(provider), attemptId, state);
+    res.redirect(303, `${returnUrl}&result=${outcome}`);
   }
 }
 
