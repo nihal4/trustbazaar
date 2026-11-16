@@ -1,25 +1,26 @@
 import { parameterValues } from '../../../kernel/config-port';
 import { Problem } from '../../../kernel/http/problems';
-import { FeaturedPurchase, OrdersOutboxEvent } from '../db/entities';
-import { MonetizationService } from './monetization.service';
+import { FeaturedPurchase, OrdersOutboxEvent, Subscription } from '../db/entities';
+import { addMonth, MonetizationService } from './monetization.service';
 
 // MonetizationService (U2-06), featured listings, with its collaborators faked. The flows against PostgreSQL,
 // the mock provider and Listings' consumer are in test/api/featured.spec.ts.
 describe('MonetizationService (featured listings)', () => {
   const NOW = new Date('2026-11-17T10:00:00Z');
-  function setup(o: { fee?: number | null; providers?: Record<string, unknown> } = {}) {
-    const values = parameterValues({ 'CP-37': { periods: ['24 hours', '48 hours'], fee_poisha: o.fee === undefined ? 10_000 : o.fee } });
+  function setup(o: { fee?: number | null; price?: number | null; providers?: Record<string, unknown> } = {}) {
+    const values = parameterValues({ 'CP-37': { periods: ['24 hours', '48 hours'], fee_poisha: o.fee === undefined ? 10_000 : o.fee }, 'CP-48': { monthly_poisha: o.price === undefined ? 50_000 : o.price } });
     const params = { current: async () => values };
     const payments = { registerSubject: jest.fn(), reconcile: jest.fn(async () => 'pending'), openAttempt: jest.fn(), startView: jest.fn() };
     const jobs = { register: jest.fn() };
     const listings = { snapshot: jest.fn() };
     const audit = { record: jest.fn() };
-    const repos = new Map<unknown, { findOne: jest.Mock; update: jest.Mock; insert: jest.Mock }>([
+    const repos = new Map<unknown, { findOne: jest.Mock; update: jest.Mock; insert: jest.Mock; findOneByOrFail?: jest.Mock; countBy?: jest.Mock }>([
       [FeaturedPurchase, { findOne: jest.fn(), update: jest.fn(), insert: jest.fn() }],
       [OrdersOutboxEvent, { findOne: jest.fn(), update: jest.fn(), insert: jest.fn() }],
+      [Subscription, { findOne: jest.fn(), update: jest.fn(), insert: jest.fn(), findOneByOrFail: jest.fn(), countBy: jest.fn() } as never],
     ]);
     const m = { getRepository: (e: unknown) => repos.get(e)!, query: jest.fn(async () => [{ last: null }]) };
-    const db = { query: jest.fn(async () => [] as unknown[]), transaction: async (cb: (x: typeof m) => unknown) => cb(m) };
+    const db = { query: jest.fn(async () => [] as unknown[]), transaction: async (cb: (x: typeof m) => unknown) => cb(m), manager: m, getRepository: (e: unknown) => repos.get(e)! };
     const svc = new MonetizationService(
       db as never, payments as never, { once: jest.fn() } as never, (o.providers ?? { bkash: { confirmation: 'callback' } }) as never, listings as never,
       audit as never, params as never, { now: () => NOW }, jobs as never,
@@ -32,6 +33,7 @@ describe('MonetizationService (featured listings)', () => {
     const s = setup();
     s.svc.onModuleInit();
     expect(s.payments.registerSubject).toHaveBeenCalledWith('featured_listing', s.svc.startFeatured);
+    expect(s.payments.registerSubject).toHaveBeenCalledWith('subscription', s.svc.paySubscription, s.svc.renewalFailed);
     expect(s.jobs.register).toHaveBeenCalledWith(expect.objectContaining({ name: 'payments.monetization', intervalMs: 300_000 }));
     expect(await s.jobs.register.mock.calls[0][0].run()).toBe(0);
   });
@@ -85,5 +87,81 @@ describe('MonetizationService (featured listings)', () => {
     expect(await s.svc.expireAttempts()).toBe(0);
     expect(s.payments.reconcile).toHaveBeenCalledTimes(1);
     expect(s.payments.reconcile).toHaveBeenCalledWith('B');
+  });
+
+  // ---------------------------------------------------------------- Pro Seller
+  const sub = (x: Record<string, unknown> = {}) => ({ id: 'SUB', userId: 'U', status: 'active', provider: 'bkash', currentPeriodEnd: new Date('2026-12-01T00:00:00Z'), cancelledAt: null, failedRenewals: 0, createdAt: NOW, ...x });
+
+  it('FR-MON-06 a month is the same day of the next month', () => {
+    expect(addMonth(new Date('2026-11-17T10:00:00Z')).toISOString()).toBe('2026-12-17T10:00:00.000Z');
+  });
+
+  it('FR-MON-06 isPro reads active or cancelled subscriptions whose month runs; the view shows the price', async () => {
+    const s = setup({ price: null });
+    s.m.query.mockResolvedValueOnce([{}] as never);
+    expect(await s.svc.isPro('U')).toBe(true);
+    expect(s.m.query).toHaveBeenLastCalledWith(expect.stringContaining("status IN ('active', 'cancelled')"), ['U', NOW]);
+    s.m.query.mockResolvedValueOnce([] as never);
+    expect(await s.svc.isPro('U', s.m as never)).toBe(false);
+    s.repos.get(Subscription)!.findOne.mockResolvedValueOnce(null);
+    s.m.query.mockResolvedValueOnce([] as never);
+    expect(await s.svc.mySubscription('U')).toEqual({ subscription: null, pro: false, monthlyPrice: null });
+  });
+
+  it('FR-MON-06 subscribing needs a provider in this mode and a CP-48 price; cancelling needs a live subscription', async () => {
+    expect(await problem(setup().svc.subscribe('U', 'nagad', undefined))).toBe('feature-off');
+    const unset = setup({ price: null });
+    unset.repos.get(Subscription)!.findOne.mockResolvedValue(null);
+    expect(await problem(unset.svc.subscribe('U', 'bkash', undefined))).toBe('feature-off');
+    const s = setup();
+    s.repos.get(Subscription)!.findOne.mockResolvedValue(null);
+    expect(await problem(s.svc.cancel('U'))).toBe('not-found');
+  });
+
+  it('FR-MON-06 a cancelled subscription within its month resumes without a payment', async () => {
+    const s = setup();
+    s.repos.get(Subscription)!.findOne.mockResolvedValue(sub({ status: 'cancelled', cancelledAt: NOW }));
+    expect(await s.svc.subscribe('U', 'bkash', undefined)).toEqual({ resumed: true, subscription: expect.objectContaining({ status: 'active', cancelledAt: null }) });
+    expect(s.repos.get(Subscription)!.update).toHaveBeenCalledWith({ id: 'SUB' }, { status: 'active', cancelledAt: null });
+    expect(s.repos.get(OrdersOutboxEvent)!.insert).toHaveBeenCalledWith(expect.objectContaining({ payload: expect.objectContaining({ change: 'resumed' }) }));
+    expect(s.audit.record).toHaveBeenCalledWith(expect.objectContaining({ action: 'payments.subscription.resumed', actorType: 'user', actorId: 'U' }), s.m);
+  });
+
+  it('FR-MON-07 a payment adds a month to the end or to now; another live subscription refuses it', async () => {
+    const s = setup();
+    const subs = s.repos.get(Subscription)!;
+    const attempt = { payerId: 'U', subjectId: 'SUB', provider: 'nagad' } as never;
+    s.m.query.mockResolvedValueOnce([] as never).mockResolvedValueOnce([{}] as never);
+    expect(await s.svc.paySubscription(s.m as never, attempt, NOW)).toEqual({ accepted: false, reason: 'another-subscription-live' });
+    subs.findOne.mockResolvedValueOnce(sub());
+    s.m.query.mockResolvedValueOnce([] as never).mockResolvedValueOnce([] as never);
+    expect(await s.svc.paySubscription(s.m as never, attempt, NOW)).toMatchObject({ accepted: true, account: 'revenue_subscription' });
+    expect(subs.update).toHaveBeenLastCalledWith({ id: 'SUB' }, expect.objectContaining({ status: 'active', currentPeriodEnd: new Date('2027-01-01T00:00:00Z'), provider: 'nagad' }));
+    subs.findOne.mockResolvedValueOnce(sub({ status: 'past_due', currentPeriodEnd: new Date('2026-11-01T00:00:00Z') }));
+    s.m.query.mockResolvedValueOnce([] as never).mockResolvedValueOnce([] as never);
+    await s.svc.paySubscription(s.m as never, attempt, NOW);
+    expect(subs.update).toHaveBeenLastCalledWith({ id: 'SUB' }, expect.objectContaining({ currentPeriodEnd: new Date('2026-12-17T10:00:00Z'), failedRenewals: 0 }));
+    subs.findOne.mockResolvedValueOnce(null);
+    subs.findOneByOrFail!.mockResolvedValueOnce(sub({ currentPeriodEnd: new Date('2026-12-17T10:00:00Z') }));
+    s.m.query.mockResolvedValueOnce([] as never).mockResolvedValueOnce([] as never);
+    expect(await s.svc.paySubscription(s.m as never, attempt, NOW)).toMatchObject({ memo: 'Pro Seller month to 2026-12-17' });
+    expect(subs.insert).toHaveBeenCalledWith({ id: 'SUB', userId: 'U', status: 'active', currentPeriodEnd: new Date('2026-12-17T10:00:00Z'), provider: 'nagad' });
+    await s.svc.renewalFailed(s.m as never, attempt, NOW);
+    expect(s.m.query).toHaveBeenLastCalledWith(expect.stringContaining('failed_renewals + 1'), ['SUB']);
+  });
+
+  it('FR-MON-08 the job: past due at the end of an unpaid month, lapsed after a second miss; others are left', async () => {
+    const s = setup();
+    const subs = s.repos.get(Subscription)!;
+    s.db.query.mockResolvedValueOnce([{ id: 'A' }, { id: 'B' }, { id: 'C' }, { id: 'D' }]);
+    subs.findOne
+      .mockResolvedValueOnce(sub({ id: 'A', currentPeriodEnd: new Date('2026-11-17T09:00:00Z') }))
+      .mockResolvedValueOnce(sub({ id: 'B', status: 'past_due', failedRenewals: 2, currentPeriodEnd: new Date('2026-11-10T00:00:00Z') }))
+      .mockResolvedValueOnce(sub({ id: 'C', status: 'past_due', failedRenewals: 1, currentPeriodEnd: new Date('2026-11-10T00:00:00Z') }))
+      .mockResolvedValueOnce(null);
+    expect(await s.svc.processSubscriptions()).toBe(2);
+    expect(subs.update.mock.calls).toEqual([[{ id: 'A' }, { status: 'past_due', failedRenewals: 1 }], [{ id: 'B' }, { status: 'lapsed' }]]);
+    expect(s.repos.get(OrdersOutboxEvent)!.insert.mock.calls[0][0]).toMatchObject({ payload: { change: 'renewal_due', amount: '50000' } });
+    expect(s.audit.record).toHaveBeenCalledWith(expect.objectContaining({ action: 'payments.subscription.lapsed', actorType: 'system' }), s.m);
   });
 });
