@@ -5,6 +5,7 @@ import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
 import { EscrowService } from '../services/escrow.service';
 import { OrderService } from '../services/order.service';
+import { StatementService } from '../services/statement.service';
 import { CancellationDecisionDto, CancellationDto, CheckoutDto, FulfilmentDto, OrdersQuery } from './orders.dto';
 
 // The buyer's side of the orders API (docs/design/02_orders_payments.pdf section 3.1), U2-02. "Party to
@@ -18,7 +19,10 @@ const Id = (name: string) => Param(name, new ParseUUIDPipe({ version: '4', excep
 
 @Controller('orders')
 export class OrdersController {
-  constructor(private readonly orders: OrderService) {}
+  constructor(
+    private readonly orders: OrderService,
+    private readonly statements: StatementService,
+  ) {}
 
   /** FR-FIX-01, 02, 05: reserve and create the order; a repeat with the same Idempotency-Key answers 200 (I-52). */
   @Verified('buy')
@@ -46,6 +50,13 @@ export class OrdersController {
   @Get(':id')
   view(@Id('id') id: string, @CurrentPrincipal() p: Principal) {
     return this.orders.getOrderPage(id, userOf(p));
+  }
+
+  /** FR-PAY-21: the buyer's receipt of payments and refunds, or the seller's settlement statement and payout. */
+  @SignedIn()
+  @Get(':id/receipt')
+  receipt(@Id('id') id: string, @CurrentPrincipal() p: Principal) {
+    return this.statements.receipt(id, userOf(p));
   }
 
   /** FR-DLV-02: choose the method before paying. */
