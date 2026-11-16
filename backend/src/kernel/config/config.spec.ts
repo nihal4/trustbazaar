@@ -123,6 +123,16 @@ describe('configuration', () => {
     expect(problems({ ...dev(), LOG_LEVEL: 'debug' })).toEqual([]);
   });
 
+  it('NFR-OBS-03 the metrics port is 9464 by default, 0 for any free port, off for none, never the API port', () => {
+    expect(loadConfig(dev()).metricsPort).toBe(9464);
+    expect(loadConfig({ ...dev(), METRICS_PORT: '0' }).metricsPort).toBe(0);
+    expect(loadConfig({ ...dev(), METRICS_PORT: 'off' }).metricsPort).toBeNull();
+    const bad = ['METRICS_PORT: a port number other than PORT, 0 or off'];
+    expect(problems({ ...dev(), METRICS_PORT: 'x' })).toEqual(bad);
+    expect(problems({ ...dev(), METRICS_PORT: '70000' })).toEqual(bad);
+    expect(problems({ ...dev(), PORT: '9000', METRICS_PORT: '9000' })).toEqual(bad);
+  });
+
   it('SEC-DAT-01 the public origin is https in production', () => {
     expect(problems({ ...prod(), PUBLIC_ORIGIN: 'http://trustbazaar.example' })).toEqual([
       'PUBLIC_ORIGIN: must be https in production',

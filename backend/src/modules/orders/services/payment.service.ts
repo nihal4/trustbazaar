@@ -16,6 +16,7 @@ import { Line, post } from './ledger';
 import { AttemptRef, PaymentProvider, ProviderId, ProviderUnavailable, VerifiedResult } from '../adapters/payment-provider';
 import { Escrow, EscrowHistory, Order, OrdersOutboxEvent, PaymentAttempt, ReconciliationIssue, Refund } from '../db/entities';
 import type { Purpose } from '../db/enums';
+import { providerErrors } from '../../../kernel/metrics/metrics';
 
 // Payment (docs/design/02_orders_payments.pdf sections 5.5 and 7.1; FR-PAY-01 to FR-PAY-05, SEC-PAY-03 to 07).
 //
@@ -112,6 +113,7 @@ export class PaymentService {
       await this.db.getRepository(PaymentAttempt).update({ id: attempt.id }, { providerPaymentId: r.providerPaymentId, status: 'redirected' });
     } catch (err) {
       if (!(err instanceof ProviderUnavailable)) throw err;
+      providerErrors.inc({ provider: attempt.provider, operation: 'payment' });
       this.log.warn(`payment attempt ${attempt.id}: ${err.message}`);
       await this.db.getRepository(PaymentAttempt).update({ id: attempt.id }, { status: 'failed', failureCode: 'provider_unavailable' });
       throw new Problem('provider-unavailable', { retryAfter: 30 });
