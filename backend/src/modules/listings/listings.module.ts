@@ -14,6 +14,8 @@ import { CategoriesController, ListingPhotosController, ListingsController, MyLi
 import { AuctionsJobs } from './jobs/auctions.jobs';
 import { AUCTION_QUERY, LISTINGS_COMMANDS, LISTINGS_PORT, LISTINGS_QUERIES } from './ports';
 import { ListingCommandsService } from './services/listing-commands.service';
+import { ListingReviewService } from './services/listing-review.service';
+import { ListingsStaffController } from './http/listings-staff.controller';
 import { ListingsQueriesService } from './services/listings-queries.service';
 import { AuctionCloser } from './services/auction-closer.service';
 import { BidService } from './services/bid.service';
@@ -31,7 +33,7 @@ import { FeaturedConsumers } from './services/featured.consumers';
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
 @Module({
   imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule],
-  controllers: [AuctionsStaffController, CategoriesController, ListingsController, MyListingsController, ListingPhotosController, AuctionsController, SearchController],
+  controllers: [AuctionsStaffController, CategoriesController, ListingsController, MyListingsController, ListingPhotosController, AuctionsController, SearchController, ListingsStaffController],
   providers: [
     AuctionCloser,
     AuctionStaffService,
@@ -40,6 +42,7 @@ import { FeaturedConsumers } from './services/featured.consumers';
     FeaturedConsumers,
     ListingService,
     ListingCommandsService,
+    ListingReviewService,
     ListingsQueriesService,
     MediaPipeline,
     ScreeningService,
