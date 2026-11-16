@@ -8,10 +8,14 @@ import { ENTITIES } from './db/entities';
 import { OrderActionsController, OrdersController } from './http/orders.controller';
 import { MockPayController, PaymentsController, StripeWebhookController } from './http/payments.controller';
 import { MyPayoutsController, StaffPayoutsController } from './http/payouts.controller';
-import { ESCROW_COMMANDS, ESCROW_QUERY, ORDERS_PORT, PAYOUT_CHECKS } from './ports';
+import { MonetizationController } from './http/monetization.controller';
+import { MonetizationService } from './services/monetization.service';
+import { ESCROW_COMMANDS, ESCROW_QUERY, ORDERS_PORT, PAYOUT_CHECKS, PRO_STATUS } from './ports';
 import { ForwardedGameCheckout, GAME_CHECKOUT } from './adapters/game-accounts';
 import { EscrowService } from './services/escrow.service';
 import { RefundService } from './services/refund.service';
+import { LedgerService } from './services/ledger.service';
+import { StatementService } from './services/statement.service';
 import { OrdersJobs } from './jobs/orders.jobs';
 import { PayoutService } from './services/payout.service';
 import { PAYOUT_PROVIDER, SimulatedPayoutProvider } from './adapters/payout-provider';
@@ -30,7 +34,7 @@ import type Redis from 'ioredis';
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
 @Module({
   imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule, ListingsModule, ChatModule, DeliveryModule],
-  controllers: [OrdersController, OrderActionsController, PaymentsController, StripeWebhookController, MockPayController, MyPayoutsController, StaffPayoutsController],
+  controllers: [OrdersController, OrderActionsController, PaymentsController, StripeWebhookController, MockPayController, MyPayoutsController, StaffPayoutsController, MonetizationController],
   providers: [
     OrderService,
     PaymentService,
@@ -38,6 +42,10 @@ import type Redis from 'ioredis';
     { provide: ORDERS_PORT, useExisting: OrderService },
     EscrowService,
     RefundService,
+    LedgerService,
+    StatementService,
+    MonetizationService,
+    { provide: PRO_STATUS, useExisting: MonetizationService },
     PayoutService,
     OrdersJobs,
     { provide: PAYOUT_PROVIDER, useClass: SimulatedPayoutProvider },
@@ -46,6 +54,6 @@ import type Redis from 'ioredis';
     { provide: PAYOUT_CHECKS, useExisting: PayoutService },
     { provide: GAME_CHECKOUT, useClass: ForwardedGameCheckout }, // Unit 5's GameAccountPort (I-29)
   ],
-  exports: [ORDERS_PORT, ESCROW_COMMANDS, ESCROW_QUERY, PAYOUT_CHECKS],
+  exports: [ORDERS_PORT, ESCROW_COMMANDS, ESCROW_QUERY, PAYOUT_CHECKS, PRO_STATUS],
 })
 export class OrdersModule {}

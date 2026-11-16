@@ -74,6 +74,10 @@ export class NotificationConsumers implements OnModuleInit {
     'payments.refund.manual_required': (e) => [{ to: e.payload.buyerId, code: 'payment.refund_delayed', params: { amount_bdt: taka(e.payload.amount) }, subject: this.subjectOf(e) }],
     'payments.payout.sent': (e) => [{ to: e.payload.sellerId, code: 'payment.payout_sent', params: { amount_bdt: taka(e.payload.amount) }, subject: this.subjectOf(e) }],
     'payments.payout.failed': (e) => [{ to: e.payload.sellerId, code: 'payment.payout_failed', params: { amount_bdt: taka(e.payload.amount) }, subject: this.subjectOf(e) }],
+    // Pro Seller (FR-MON-06, FR-MON-08; U2-06): the month ended unpaid, and the lapse after a second miss
+    'payments.subscription.changed': (e) =>
+      e.payload.change === 'renewal_due' ? [{ to: e.payload.userId, code: 'payment.pro_renewal_due', params: { amount_bdt: taka(e.payload.amount) } }]
+        : e.payload.change === 'lapsed' ? [{ to: e.payload.userId, code: 'payment.pro_lapsed' }] : [],
     // trust and safety (FR-TNS-03, FR-TNS-09; U7-04): the sanction's reason, never the details of a report's outcome
     'trust.sanction.applied': (e) => {
       const code = e.payload.kind === 'selling_suspended' && e.payload.automatic ? 'trust.selling_suspended_strikes' : SANCTION_NOTICE[str(e.payload.kind)];

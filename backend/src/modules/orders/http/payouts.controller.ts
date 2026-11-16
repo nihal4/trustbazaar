@@ -4,10 +4,13 @@ import { correlationId } from '../../../kernel/http/correlation';
 import { Staff, StepUp, Verified } from '../../../kernel/http/policies';
 import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
+import { LedgerService } from '../services/ledger.service';
 import { AccountInput, PayoutService } from '../services/payout.service';
-import { BankAccountDecisionDto, PayoutAccountDto, PayoutsQuery, StaffReasonDto } from './orders.dto';
+import { StatementService } from '../services/statement.service';
+import { BankAccountDecisionDto, PayoutAccountDto, PayoutsQuery, RevenueLogQuery, StaffReasonDto } from './orders.dto';
 
-// Payout accounts, payouts and their staff endpoints (docs/design/02_orders_payments.pdf section 4; U2-10).
+// Payout accounts, payouts and their staff endpoints (docs/design/02_orders_payments.pdf section 4; U2-10);
+// settlement statements and the revenue log (U2-06).
 const userOf = (p: Principal) => {
   if (p.type !== 'user') throw new Problem('forbidden');
   return p;
@@ -21,7 +24,10 @@ const Id = (name: string) => Param(name, new ParseUUIDPipe({ version: '4', excep
 
 @Controller('me')
 export class MyPayoutsController {
-  constructor(private readonly payouts: PayoutService) {}
+  constructor(
+    private readonly payouts: PayoutService,
+    private readonly statementsOf: StatementService,
+  ) {}
 
   /** The current (latest) payout account and its status, or null. */
   @Verified('payout')
@@ -45,11 +51,28 @@ export class MyPayoutsController {
   list(@CurrentPrincipal() p: Principal, @Query() q: PayoutsQuery) {
     return this.payouts.listPayouts(userOf(p).userId, q.cursor);
   }
+
+  /** FR-PAY-21, IF-UI-08: settlement statements, each with its payout, and what the platform still owes. */
+  @Verified()
+  @Get('statements')
+  statements(@CurrentPrincipal() p: Principal, @Query() q: PayoutsQuery) {
+    return this.statementsOf.statements(userOf(p).userId, q.cursor);
+  }
 }
 
 @Controller('staff')
 export class StaffPayoutsController {
-  constructor(private readonly payouts: PayoutService) {}
+  constructor(
+    private readonly payouts: PayoutService,
+    private readonly ledger: LedgerService,
+  ) {}
+
+  /** FR-MON-09: the revenue log (payments.revenue_log), with each revenue account's total over the range. */
+  @Staff('administrator')
+  @Get('payments/revenue-log')
+  revenueLog(@Query() q: RevenueLogQuery) {
+    return this.ledger.revenueLog(new Date(q.from), new Date(q.to), q.cursor);
+  }
 
   /** Bank accounts awaiting the name check, with the KYC name to compare (the read is audited). */
   @Staff('operator')
