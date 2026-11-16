@@ -10,7 +10,8 @@ import { DELIVERY_PORT, DeliveryPort } from '../../delivery/ports';
 import { AUDIT_SERVICE, AuditServicePort, IDENTITY_QUERY, IdentityQuery } from '../../identity/ports';
 import { LISTINGS_PORT, ListingSnapshot, ListingsPort } from '../../listings/ports';
 import { CancellationRequest, Escrow, Order, OrdersOutboxEvent } from '../db/entities';
-import type { Fulfilment, FulfilmentFacts, OrderView, OrdersPort } from '../ports';
+import { PRO_STATUS } from '../ports';
+import type { Fulfilment, FulfilmentFacts, OrderView, OrdersPort, ProStatusQuery } from '../ports';
 
 // Orders (docs/design/02_orders_payments.pdf sections 5.3 and 5.4; FR-FIX-01, 02, 05, FR-TNS-07; I-52).
 //
@@ -60,6 +61,7 @@ export class OrderService implements OrdersPort {
     @Inject(BLOCK_PORT) private readonly blocks: BlockPort,
     @Inject(CHAT_COMMANDS) private readonly chat: ChatCommands,
     @Inject(DELIVERY_PORT) private readonly delivery: DeliveryPort,
+    @Inject(PRO_STATUS) private readonly pro: ProStatusQuery,
   ) {}
 
   // ---------------------------------------------------------------- fixed-price checkout (section 5.3)
@@ -242,8 +244,8 @@ export class OrderService implements OrdersPort {
       // a courier order is written first without its method: the quote is claimed by the order's id (courier_needs_quote)
       quantity: o.quantity, unitPrice: o.unitPrice.toString(), itemPrice: itemPrice.toString(), fulfilment: courier ? null : o.fulfilment,
       deliveryFee: '0', total: itemPrice.toString(), listingSnapshot: o.snap,
-      // FR-MON-10: the rates of the day are kept on the order; Pro Seller's rate arrives with ProStatusQuery (U2-06)
-      commissionBps: o.params.get<{ standard_bps: number }>('CP-25').standard_bps,
+      // FR-MON-02, FR-MON-10: the rates of the day are kept on the order; a Pro Seller's when the seller is Pro now
+      commissionBps: o.params.get<{ standard_bps: number; pro_bps: number }>('CP-25')[(await this.pro.isPro(o.snap.sellerId, m)) ? 'pro_bps' : 'standard_bps'],
       deliveryMarginBps: o.params.get<number>('CP-26'),
       paramsVersion: o.version, paymentDueAt: o.paymentDueAt,
     });
