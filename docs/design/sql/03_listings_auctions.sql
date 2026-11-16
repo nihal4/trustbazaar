@@ -635,6 +635,7 @@ CREATE VIEW listings.searchable AS
 -- =====================================================================
 GRANT USAGE ON SCHEMA listings, auctions TO tb_app;
 GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA listings, auctions TO tb_app;
+GRANT DELETE ON listings.screening_terms TO tb_app;   -- operators delete terms (FR-LST-11; U3-08), each deletion audited
 REVOKE UPDATE ON listings.clarifications, listings.status_history, listings.stock_moves FROM tb_app;
 GRANT SELECT ON listings.searchable TO tb_app;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA listings, auctions TO tb_app;

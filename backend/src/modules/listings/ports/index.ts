@@ -58,13 +58,18 @@ export const LISTINGS_PORT = Symbol('LISTINGS_PORT');
 /**
  * Publication decisions on a listing held for review (section 3.3; used by Units 5 and 7). Each runs in the caller's
  * transaction when one is given, so Unit 5's ownership approval, its player-ID claim and the publication commit
- * together. remove() comes with U3-08.
+ * together. remove() came with U3-08.
  */
 export interface ListingsCommands {
   /** pending_review -> active; a held auction's clock restarts now. Throws listing-state if the listing is not held. */
   approveForPublication(listingId: string, byStaffId: string, reason: string, tx?: EntityManager): Promise<void>;
   /** pending_review -> draft, for the seller to correct. Returns false (and changes nothing) if the listing is not held. */
   returnToDraft(listingId: string, byStaffId: string, reason: string, tx?: EntityManager): Promise<boolean>;
+  /**
+   * FR-LST-12: an active or held listing is removed for a policy breach, with the reason; an open auction on it is
+   * cancelled (its bidders are told). Throws listing-state otherwise.
+   */
+  remove(listingId: string, byStaffId: string, reason: string, tx?: EntityManager): Promise<void>;
 }
 
 export const LISTINGS_COMMANDS = Symbol('LISTINGS_COMMANDS');
@@ -129,6 +134,17 @@ export interface ListingsQueries {
   }>;
   /** The listing a chat thread is about: its seller, title and status. Throws not-found for an unknown listing. */
   threadFacts(listingId: string): Promise<{ sellerId: string; title: string; status: ListingStatus }>;
+  /** FR-LST-11, FR-OPS-01: listings held for review by the screening terms, oldest first (game accounts are Unit 5's queue). */
+  reviewQueue(limit?: number): Promise<ReviewItem[]>;
+}
+
+export interface ReviewItem {
+  listingId: string;
+  sellerId: string;
+  title: string;
+  heldAt: Date;
+  /** The screening terms that held it, as recorded at publication. */
+  reason: string | null;
 }
 
 export const LISTINGS_QUERIES = Symbol('LISTINGS_QUERIES');
