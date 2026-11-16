@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { JobRunner } from '../../../kernel/jobs/job-runner';
 import { ApprovalService } from '../services/approval.service';
 import { AuditService } from '../services/audit.service';
+import { securityEvents } from '../../../kernel/metrics/metrics';
 
 // Unit 1's scheduled jobs (docs/design/09_integration.pdf "Scheduled jobs": Unit 1 runs daily).
 // The erasure after closure and the removal of rejected KYC images come with U1-09.
@@ -28,6 +29,7 @@ export class IdentityJobs implements OnModuleInit {
       run: async () => {
         const r = await this.audit.verifyChain();
         if (!r.intact) {
+          securityEvents.auditChainBreaks.inc(); // SEC-LOG-05
           this.log.error(`audit hash chain broken at entry ${r.firstBadId} (SEC-LOG-02)`);
           throw new Error(`audit hash chain broken at entry ${r.firstBadId}`);
         }

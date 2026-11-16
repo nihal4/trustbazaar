@@ -7,6 +7,7 @@ import { FULFILMENT_ORDERS, FulfilmentOrders } from '../adapters/orders';
 import { CourierBreaker } from './courier-breaker';
 import { announceNewIssues, publish } from './outbox';
 import { openShipment } from './shipment-address';
+import { providerErrors } from '../../../kernel/metrics/metrics';
 
 // BookingWorker (docs/design/04_delivery.pdf section 7.2; SEC-PAY-07; NFR-REL-04; U4-04). A shipment in `preparing`
 // with both addresses is booked with the courier, the shipment id as the merchant reference and no cash to collect.
@@ -80,6 +81,7 @@ export class BookingService {
       const request = await this.request(s);
       consignmentId = (await this.courier.book(request)).consignmentId;
     } catch (err) {
+      providerErrors.inc({ provider: 'courier', operation: 'booking' });
       this.log.warn(`booking shipment ${s.id} failed: ${(err as Error).message}`);
       await this.breaker.failure();
       return this.failed(s);

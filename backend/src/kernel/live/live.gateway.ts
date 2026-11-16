@@ -51,8 +51,20 @@ export class LiveGateway implements OnGatewayInit, LivePort, OnApplicationShutdo
     this.timer.unref();
   }
 
+  /** NFR-OBS-03: open connections on this instance. */
+  connections(): number {
+    return (this.server as unknown as { engine?: { clientsCount?: number } } | undefined)?.engine?.clientsCount ?? 0;
+  }
+
+  /** DV-66: on shutdown every live connection is closed; clients reconnect to another instance or after the restart, then resync. */
+  disconnectAll(): void {
+    // this instance's sockets only: a broadcast through the Redis adapter would outlive the Redis connection being closed
+    this.server?.local.disconnectSockets(true);
+  }
+
   onApplicationShutdown(): void {
     if (this.timer) clearInterval(this.timer);
+    this.disconnectAll();
   }
 
   /** The client joins an auction room while an auction page is open (Unit 3 section 3.3); any signed-in user may. */
