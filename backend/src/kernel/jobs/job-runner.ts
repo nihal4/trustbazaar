@@ -1,6 +1,8 @@
 import { Inject, Injectable, Logger, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
+import { randomUUID } from 'crypto';
 import { CLOCK, Clock } from '../clock';
+import { withCorrelation } from '../logging/context';
 
 // The job runner (NFR-REL-03, DV-67; docs/design/09_integration.pdf section "Scheduled jobs"). Every unit's
 // jobs run in every backend instance. The runner starts each job at its interval plus up to 10% random
@@ -85,7 +87,8 @@ export class JobRunner implements OnApplicationBootstrap, OnApplicationShutdown 
     stats.lastStartedAt = started;
     stats.runs++;
     try {
-      const n = await job.run();
+      // each run has its own correlation id, so the lines it writes can be told apart (K-02)
+      const n = await withCorrelation(randomUUID(), () => job.run());
       stats.handled += typeof n === 'number' ? n : 0;
       stats.lastError = null;
     } catch (e) {
