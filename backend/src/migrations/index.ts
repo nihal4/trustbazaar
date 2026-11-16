@@ -25,6 +25,9 @@ import { GameTakeoverTemplates1793491200024 } from './1793491200024-game-takeove
 import { GameRetention1793491200025 } from './1793491200025-game-retention';
 import { ListingReviewTemplates1793491200026 } from './1793491200026-listing-review-templates';
 import { ScreeningTermDelete1793491200027 } from './1793491200027-screening-term-delete';
+import { FeaturedEnded1793491200028 } from './1793491200028-featured-ended';
+import { ProSellerPrice1793491200029 } from './1793491200029-pro-seller-price';
+import { ProSellerTemplates1793491200030 } from './1793491200030-pro-seller-templates';
 
 // The migrations in the order they run: the seven units in unit order, then 09_integration (I-60).
 // Add a new migration at the end; never reorder or edit an applied one.
@@ -56,4 +59,7 @@ export const MIGRATIONS = [
   GameRetention1793491200025, // U5-05: access-log and ownership-screenshot retention, I-63 and DV-39 (Decisions log)
   ListingReviewTemplates1793491200026, // U3-08: the notices of a returned and a removed listing (Decisions log)
   ScreeningTermDelete1793491200027, // U3-08: operators may delete screening terms (Decisions log)
+  FeaturedEnded1793491200028, // U2-06: featured_purchases.ended_at, set with payments.featured.ended (Decisions log)
+  ProSellerPrice1793491200029, // U2-06: CP-48, the Pro Seller monthly price (Decisions log)
+  ProSellerTemplates1793491200030, // U2-06: the Pro Seller's renewal-due and lapse notices (Decisions log)
 ];

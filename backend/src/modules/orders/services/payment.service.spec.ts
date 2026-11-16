@@ -243,12 +243,62 @@ describe('PaymentService.confirm (FR-PAY-02 to FR-PAY-05)', () => {
   });
 });
 
+describe('PaymentService for a featured listing or subscription (section 5.14)', () => {
+  /** A featured_listing attempt as Monetization commits it, opened at the provider. */
+  async function subject(s: ReturnType<typeof setup>) {
+    const { identifiers } = await s.repo(PaymentAttempt).insert({ purpose: 'featured_listing', orderId: null, subjectId: 'P', payerId: 'S', provider: 'bkash', amount: '10000', expiresAt: NOW });
+    const a = s.repo(PaymentAttempt).rows.find((r) => r.id === identifiers[0].id)!;
+    await s.svc.openAttempt(a as unknown as PaymentAttempt, 'Featured');
+    return a;
+  }
+
+  it('FR-MON-07 a confirmed payment goes to the handler and is posted as revenue; it returns to its payment page', async () => {
+    const s = setup();
+    const handler = jest.fn(async () => ({ accepted: true as const, account: 'revenue_featured' as const, memo: 'featured' }));
+    s.svc.registerSubject('featured_listing', handler);
+    const a = await subject(s);
+    expect(s.providers.bkash.createPayment).toHaveBeenCalledWith(expect.objectContaining({ orderId: null }), expect.objectContaining({ returnUrl: `https://tb/payments/${a.id}?payment=${a.id}` }));
+    expect(await s.svc.startView(a.id as string)).toMatchObject({ attemptId: a.id, amount: '10000' });
+    expect(await s.svc.confirm('bkash', result(a.id as string, { amount: 10000n }))).toBe('paid');
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(a).toMatchObject({ status: 'succeeded', confirmedAt: NOW });
+    expect(s.repo(JournalEntry).rows[0]).toMatchObject({ kind: 'fee_received', orderId: null, sourceId: a.id });
+    expect(s.repo(JournalLine).rows.map((l) => [l.accountCode, l.partyId, l.amount])).toEqual([['provider_clearing', null, '10000'], ['revenue_featured', 'S', '-10000']]);
+    expect(s.audit.record).toHaveBeenCalledWith(expect.objectContaining({ action: 'payments.featured_listing.paid' }), expect.anything());
+    expect(await s.svc.confirm('bkash', result(a.id as string, { amount: 10000n }))).toBe('no-change');
+    const state = signState(KEY, a.id as string);
+    s.providers.bkash.query.mockResolvedValueOnce(result(a.id as string, { amount: 10000n }));
+    expect(await s.svc.callback('bkash', a.id as string, state)).toEqual({ returnUrl: `https://tb/payments/${a.id}?payment=${a.id}`, outcome: 'no-change' });
+  });
+
+  it('FR-MON-07 a refused or mismatched payment is owed back; pending and failed results change nothing more', async () => {
+    const s = setup();
+    s.svc.registerSubject('featured_listing', async () => ({ accepted: false, reason: 'listing-not-active' }));
+    const refused = await subject(s);
+    expect(await s.svc.confirm('bkash', result(refused.id as string, { amount: 10000n }))).toBe('late');
+    const wrong = await subject(s);
+    expect(await s.svc.confirm('bkash', result(wrong.id as string, { amount: 9000n }))).toBe('rejected');
+    expect(s.repo(Refund).rows.map((r) => [r.reason, r.amount, r.orderId])).toEqual([['fee_refund', '10000', null], ['amount_mismatch', '9000', null]]);
+    expect(s.repo(ReconciliationIssue).rows.map((i) => i.kind)).toEqual(['amount_mismatch']);
+    expect([refused.status, wrong.status]).toEqual(['succeeded_rejected', 'succeeded_rejected']);
+    const zero = await subject(s);
+    expect(await s.svc.confirm('bkash', result(zero.id as string, { amount: 0n }))).toBe('rejected');
+    const other = await subject(s);
+    expect(await s.svc.confirm('bkash', result(other.id as string, { status: 'pending', amount: 10000n }))).toBe('pending');
+    expect(await s.svc.confirm('bkash', result(other.id as string, { status: 'failed', eventType: 'mock.payment.failed', amount: 10000n }))).toBe('failed');
+    expect(other).toMatchObject({ status: 'failed', failureCode: 'mock.payment.failed' });
+    const noHandler = setup();
+    const lost = await subject(noHandler);
+    await expect(noHandler.svc.confirm('bkash', result(lost.id as string, { amount: 10000n }))).rejects.toThrow('no handler');
+  });
+});
+
 describe('payment controllers', () => {
   const user = { type: 'user', userId: 'B', sessionId: 's', accountStatus: 'active', kycStatus: 'verified', emailVerified: true } as const;
   const res = () => ({ redirect: jest.fn(), status: jest.fn().mockReturnThis(), set: jest.fn().mockReturnThis(), send: jest.fn() });
 
   it('FR-PAY-01 and FR-PAY-02 start, return and callback hand on to PaymentService', async () => {
-    const svc = { start: jest.fn(), status: jest.fn(), callback: jest.fn(async () => ({ orderId: 'o', outcome: 'paid' })) };
+    const svc = { start: jest.fn(), status: jest.fn(), callback: jest.fn(async () => ({ returnUrl: 'https://tb/orders/o?payment=a', outcome: 'paid' })) };
     const c = new PaymentsController(svc as unknown as PaymentService, { publicOrigin: 'https://tb' } as TbConfig);
     await c.start('o', { provider: 'bkash' }, 'k', user);
     expect(svc.start).toHaveBeenCalledWith('B', 'o', 'bkash', 'k');

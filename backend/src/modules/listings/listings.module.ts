@@ -5,6 +5,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { IdentityModule } from '../identity/identity.module';
 import { AUCTION_BLOCKS, ForwardedBlocks } from './adapters/blocks';
+import { ForwardedProStatus, LISTING_PRO_STATUS } from './adapters/pro-status';
 import { AUCTION_ORDERS, ForwardedAuctionOrders } from './adapters/orders';
 import { ENTITIES } from './db/entities';
 import { AuctionsController } from './http/auctions.controller';
@@ -24,6 +25,7 @@ import { ScreeningService } from './services/screening.service';
 import { SearchService } from './services/search.service';
 import { SecondChanceService } from './services/second-chance.service';
 import { StockService } from './services/stock.service';
+import { FeaturedConsumers } from './services/featured.consumers';
 
 // Unit 3 (docs/design/03_listings_auctions.pdf). Schemas: listings, auctions.
 // Folder layout and rules: BUILDING.md section 3. This module exports only its ports (ports/),
@@ -37,6 +39,7 @@ import { StockService } from './services/stock.service';
     AuctionStaffService,
     AuctionsJobs,
     BidService,
+    FeaturedConsumers,
     ListingService,
     ListingCommandsService,
     ListingReviewService,
@@ -49,6 +52,7 @@ import { StockService } from './services/stock.service';
     StockService,
     { provide: AUCTION_ORDERS, useClass: ForwardedAuctionOrders },
     { provide: AUCTION_BLOCKS, useClass: ForwardedBlocks },
+    { provide: LISTING_PRO_STATUS, useClass: ForwardedProStatus },
     { provide: LISTINGS_PORT, useExisting: StockService },
     { provide: AUCTION_QUERY, useExisting: BidService },
     { provide: LISTINGS_QUERIES, useExisting: ListingsQueriesService },

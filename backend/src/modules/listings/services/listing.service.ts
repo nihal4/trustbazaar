@@ -13,6 +13,8 @@ import { MediaPipeline, PhotoRejected, PhotoSize, STORAGE_KEY } from './media';
 import { readAuctionState } from './auction-state';
 import { publish } from './outbox';
 import { ScreeningService } from './screening.service';
+import type { ProStatusQuery } from '../../orders/ports';
+import { LISTING_PRO_STATUS } from '../adapters/pro-status';
 
 // ListingService (docs/design/03_listings_auctions.pdf section 6.1; FR-LST-01 to FR-LST-12, FR-LST-07 to 08).
 // Every change locks the listing row first (DC-14), checks that the caller is its seller and that its status
@@ -92,6 +94,7 @@ export class ListingService {
     private readonly idempotency: IdempotencyKeys,
     @Inject(IDENTITY_QUERY) private readonly identity: IdentityQuery,
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
+    @Inject(LISTING_PRO_STATUS) private readonly pro: ProStatusQuery,
   ) {}
 
   // ---------------------------------------------------------------- categories (FR-LST-10)
@@ -259,9 +262,11 @@ export class ListingService {
         }
         if (errors.length) throw new Problem('listing-not-publishable', { errors });
 
-        // FR-LST-09: the seller's active listings against CP-28 (Pro status from Unit 2 arrives with ProStatusQuery)
+        // FR-LST-09, FR-MON-08: the seller's active listings against CP-28, the Pro limit while the seller is Pro (Unit 2's
+        // ProStatusQuery). After a lapse, listings above the standard limit stay active, but none is added while over it.
         const [{ n }] = await m.query(`SELECT count(*)::int AS n FROM listings.listings WHERE seller_id = $1 AND status = 'active'`, [userId]);
-        if (n >= params.get<{ standard: number }>('CP-28').standard) throw new Problem('listing-limit');
+        const cp28 = params.get<{ standard: number; pro: number }>('CP-28');
+        if (n >= ((await this.pro.isPro(userId, m)) ? cp28.pro : cp28.standard)) throw new Problem('listing-limit');
 
         const matches = await this.screening.matches(m, l.title, l.description);
         const held = matches.length > 0 || l.itemKind === 'game_account';

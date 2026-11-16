@@ -93,7 +93,7 @@ const PARAMS = {
   'CP-28': { standard: 2, pro: 5 }, 'CP-33': { image_bytes: 1000, photos: 3 }, 'CP-36': true,
 };
 
-function setup(o: { query?: (sql: string, params: unknown[]) => unknown[]; params?: Row; matches?: { term: string; severity: string }[] } = {}) {
+function setup(o: { query?: (sql: string, params: unknown[]) => unknown[]; params?: Row; matches?: { term: string; severity: string }[]; pro?: boolean } = {}) {
   const f = fakeDb(o.query);
   const media = {
     store: jest.fn(async () => ({ key: 'a'.repeat(32), width: 800, height: 600 })),
@@ -111,6 +111,7 @@ function setup(o: { query?: (sql: string, params: unknown[]) => unknown[]; param
   const svc = new ListingService(
     f.db as unknown as DataSource, media as unknown as MediaPipeline, screening as unknown as ScreeningService,
     idempotency as unknown as IdempotencyKeys, identity as unknown as IdentityQuery, params,
+    { isPro: jest.fn(async () => o.pro === true) } as never,
   );
   const cat = (id: number, itemKind = 'physical', prohibited = false) =>
     f.repo(Category).rows.push({ id, slug: `c${id}`, nameEn: 'Phones', nameBn: 'ফোন', itemKind, prohibited, parentId: null, sortOrder: id });
@@ -298,6 +299,11 @@ describe('ListingService', () => {
     expect((await s.svc.publish(SELLER, id, {})).status).toBe('pending_review');
     expect(s.repo(ListingStatusChange).rows[1].reason).toBe('held for review: screening terms "replica" (prohibited)');
     expect(s.repo(AuctionsOutboxEvent).rows).toEqual([]);
+    // FR-MON-06: a Pro Seller has the higher limit (CP-28 pro: 5)
+    const pro = setup({ pro: true, query: (sql) => (sql.includes('count(*)') ? [{ n: 4 }] : []) });
+    expect((await pro.svc.publish(SELLER, await withPhotos(pro), {})).status).toBe('active');
+    const full = setup({ pro: true, query: (sql) => (sql.includes('count(*)') ? [{ n: 5 }] : []) });
+    expect((await problemOf(full.svc.publish(SELLER, await withPhotos(full), {}))).problem).toBe('listing-limit');
   });
 
   it('I-30 game accounts wait for review, and are refused while CP-36 is off', async () => {
