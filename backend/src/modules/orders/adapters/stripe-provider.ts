@@ -95,7 +95,7 @@ export class StripeProvider implements PaymentProvider {
         mode: 'payment',
         client_reference_id: a.id,
         'metadata[attempt_id]': a.id,
-        'metadata[order_id]': a.orderId,
+        ...(a.orderId ? { 'metadata[order_id]': a.orderId } : {}),
         'line_items[0][quantity]': 1,
         'line_items[0][price_data][currency]': 'bdt',
         'line_items[0][price_data][unit_amount]': a.amount.toString(), // poisha: BDT has two decimals
