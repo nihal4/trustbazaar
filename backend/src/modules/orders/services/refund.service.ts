@@ -59,7 +59,7 @@ export class RefundService {
     let result;
     try {
       result = await adapter.refund({
-        attempt: { id: a.id, provider: a.provider, orderId: a.orderId ?? '', amount: BigInt(a.amount), idempotencyKey: a.idempotencyKey, providerPaymentId: a.providerPaymentId, expiresAt: a.expiresAt },
+        attempt: { id: a.id, provider: a.provider, orderId: a.orderId, amount: BigInt(a.amount), idempotencyKey: a.idempotencyKey, providerPaymentId: a.providerPaymentId, expiresAt: a.expiresAt },
         providerTxnId: a.providerTxnId, amount: BigInt(r.amount), idempotencyKey: r.idempotencyKey,
       });
     } catch (err) {

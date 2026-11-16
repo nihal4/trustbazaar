@@ -27,6 +27,9 @@ export class FeaturedPurchase {
   @Column({ type: 'timestamptz', name: 'ends_at', nullable: true })
   endsAt!: Date | null;
 
+  @Column({ type: 'timestamptz', name: 'ended_at', nullable: true })
+  endedAt!: Date | null;
+
   @Column({ type: 'timestamptz', name: 'created_at' })
   createdAt!: Date;
 }
