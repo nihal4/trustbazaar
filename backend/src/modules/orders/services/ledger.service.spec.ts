@@ -35,17 +35,19 @@ describe('LedgerService', () => {
   });
 
   it('FR-MON-09 a page holds whole entries; the cursor is the last whole entry of the page', async () => {
-    const rows = [line(60, 'revenue_commission', '50000'), line(60, 'revenue_delivery_margin', '1500')];
-    for (let e = 59; e >= 11; e--) rows.push(line(e, 'revenue_commission', '100'));
-    rows.push(line(9, 'revenue_commission', '100'), line(9, 'revenue_delivery_margin', '10')); // the 51st entry: not on this page
+    // ids that cross a digit boundary, and rows not in order: the page and the cursor go by the numeric id
+    const rows = [line(100, 'revenue_commission', '50000'), line(100, 'revenue_delivery_margin', '1500')];
+    for (let e = 99; e >= 51; e--) rows.push(line(e, 'revenue_commission', '100'));
+    rows.unshift(line(9, 'revenue_commission', '100'));
+    rows.push(line(9, 'revenue_delivery_margin', '10')); // the 51st entry: not on this page
     const query = jest.fn().mockResolvedValueOnce(rows).mockResolvedValueOnce([{ account_code: 'revenue_commission', total: '55000' }]);
     const l = new LedgerService({ query } as never);
-    const page = await l.revenueLog(from, to, '61');
-    expect(query.mock.calls[0][1]).toEqual([from, to, '61', 51]);
+    const page = await l.revenueLog(from, to, '101');
+    expect(query.mock.calls[0][1]).toEqual([from, to, '101', 51]);
     expect(page.items).toHaveLength(51);
     expect(page.items.some((i) => i.entryId === '9')).toBe(false);
-    expect(page.items[0]).toEqual({ entryId: '60', createdAt: '2026-11-01T10:00:00.000Z', kind: 'escrow_release', orderId: 'o', account: 'revenue_commission', revenue: '50000' });
-    expect(page.nextCursor).toBe('11');
+    expect(page.items[0]).toEqual({ entryId: '100', createdAt: '2026-11-01T10:00:00.000Z', kind: 'escrow_release', orderId: 'o', account: 'revenue_commission', revenue: '50000' });
+    expect(page.nextCursor).toBe('51');
     expect(page.totals).toEqual({ revenue_commission: '55000' });
   });
 });
