@@ -13,6 +13,7 @@ import { EventBus } from './events/event-bus';
 import { OutboxDispatcher } from './events/outbox-dispatcher';
 import { JobRunner } from './jobs/job-runner';
 import { REDIS, redisProvider } from './redis.provider';
+import { MetricsService } from './metrics/metrics.service';
 
 // The shared kernel (docs/design/09_integration.pdf, section 2): configuration and secrets (K-01),
 // logging (K-02), health (K-03), the outbox dispatcher (K-04), the job runner (K-05), metrics and
@@ -36,7 +37,7 @@ import { REDIS, redisProvider } from './redis.provider';
     }),
   ],
   controllers: [HealthController],
-  providers: [configProvider, redisProvider, clockProvider, HealthService, EventBus, OutboxDispatcher, JobRunner, IdempotencyKeys, LiveGateway, { provide: LIVE, useExisting: LiveGateway }],
+  providers: [configProvider, redisProvider, clockProvider, HealthService, EventBus, OutboxDispatcher, JobRunner, IdempotencyKeys, LiveGateway, { provide: LIVE, useExisting: LiveGateway }, MetricsService],
   exports: [TB_CONFIG, REDIS, CLOCK, EventBus, JobRunner, IdempotencyKeys, LIVE], // CONFIG_PORT is provided by Unit 7 (U7-01)
 })
 export class KernelModule implements OnModuleDestroy {

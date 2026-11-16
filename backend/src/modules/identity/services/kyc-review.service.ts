@@ -16,6 +16,7 @@ import { publish } from './outbox';
 import { RequestContext } from './session.service';
 import { StaffService } from './staff.service';
 import { mimeOf, parseVaultKey } from './vault-key';
+import { securityEvents } from '../../../kernel/metrics/metrics';
 
 // KYC review, protected files, revocation and the NID blacklist (Unit 1 sections 6.7 and "Protected files";
 // FR-KYC-04 to FR-KYC-06, FR-KYC-10, FR-KYC-12, FR-TNS-06, SEC-ACC-06, SEC-DAT-04).
@@ -197,6 +198,7 @@ export class KycReviewService implements OnModuleInit {
     const s = await this.claimed(staffId, submissionId);
     const file = await this.file(s.id, kind);
     const link = await this.link(file.id, sessionId, 'staff');
+    securityEvents.kycViews.inc({ staff: staffId }); // SEC-LOG-05: many views by one staff member
     await this.db.transaction((m) =>
       this.audit.record(m, {
         actorType: 'staff', actorId: staffId, action: 'kyc.file.viewed', objectType: 'kyc_file', objectId: file.id,
