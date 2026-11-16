@@ -12,6 +12,8 @@ import { ESCROW_COMMANDS, ESCROW_QUERY, ORDERS_PORT, PAYOUT_CHECKS } from './por
 import { ForwardedGameCheckout, GAME_CHECKOUT } from './adapters/game-accounts';
 import { EscrowService } from './services/escrow.service';
 import { RefundService } from './services/refund.service';
+import { LedgerService } from './services/ledger.service';
+import { StatementService } from './services/statement.service';
 import { OrdersJobs } from './jobs/orders.jobs';
 import { PayoutService } from './services/payout.service';
 import { PAYOUT_PROVIDER, SimulatedPayoutProvider } from './adapters/payout-provider';
@@ -38,6 +40,8 @@ import type Redis from 'ioredis';
     { provide: ORDERS_PORT, useExisting: OrderService },
     EscrowService,
     RefundService,
+    LedgerService,
+    StatementService,
     PayoutService,
     OrdersJobs,
     { provide: PAYOUT_PROVIDER, useClass: SimulatedPayoutProvider },
