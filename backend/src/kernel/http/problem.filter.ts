@@ -42,7 +42,8 @@ export class ProblemFilter implements ExceptionFilter {
         body = { type: 'about:blank', title: 'The request could not be completed.', status };
       }
     } else {
-      this.log.error(`${cid} ${error instanceof Error ? (error.stack ?? error.message) : String(error)}`);
+      // the request's correlation id is on the line (K-02); the error's message and stack go through the redaction list
+      this.log.error({ msg: 'unexpected error', error: error instanceof Error ? error : String(error) });
       body = { type: problemType('internal'), title: PROBLEMS.internal.title, status: 500 };
     }
 
