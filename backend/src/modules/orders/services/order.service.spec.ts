@@ -48,7 +48,7 @@ const snapshot = (o: Partial<ListingSnapshot> = {}): ListingSnapshot => ({
   price: '1000000', clarifications: [], photoKeys: ['k1'], capturedAt: NOW.toISOString(), ...o,
 });
 
-function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; verifiedAt?: Date | null; switchOn?: boolean; rows?: { id: string; cursor_at: string }[]; shipsCourier?: boolean; cp36?: boolean } = {}) {
+function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; verifiedAt?: Date | null; switchOn?: boolean; rows?: { id: string; cursor_at: string }[]; shipsCourier?: boolean; cp36?: boolean; proSeller?: string } = {}) {
   const repos = new Map<unknown, Repo>([
     [Order, new Repo(() => ({ status: 'awaiting_payment', createdAt: NOW, paidAt: null, fulfilmentStep: null, fulfilmentDueAt: null, fulfilmentDoneAt: null, deliveryEventAt: null, cancelledAt: null, cancelReason: null, closedAt: null }))],
     [Escrow, new Repo()],
@@ -75,6 +75,7 @@ function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; ve
     { assertNotBlocked: jest.fn(async () => undefined) } as never,
     { threadFor: jest.fn(async () => null) } as never,
     delivery as never,
+    { isPro: jest.fn(async (id: string) => id === o.proSeller) } as never,
   );
   return { svc, manager, listings, audit, delivery, orders: repos.get(Order)!, outbox: repos.get(OrdersOutboxEvent)!, escrows: repos.get(Escrow)!, cancellations: repos.get(CancellationRequest)! };
 }
@@ -90,6 +91,12 @@ const problemOf = async (p: Promise<unknown>) => {
 };
 
 describe('OrderService', () => {
+  it('FR-MON-02 a Pro Seller\'s order keeps the Pro commission rate of the day', async () => {
+    const s = setup({ proSeller: 'S' });
+    await s.svc.checkout('B', { listingId: 'L1', quantity: 1, fulfilment: 'self_pickup' }, undefined);
+    expect(s.orders.rows[0]).toMatchObject({ commissionBps: 300 });
+  });
+
   it('FR-FIX-02 checkout reserves first, then records the order with the rates and window of the day', async () => {
     const s = setup();
     const { order } = await s.svc.checkout('B', { listingId: 'L1', quantity: 2, fulfilment: 'self_pickup' }, undefined);
@@ -235,13 +242,16 @@ describe('OrdersController', () => {
     const svc = {
       checkout: jest.fn(async () => ({ order: { id: 'o' }, repeated: false })), list: jest.fn(), getOrderForParty: jest.fn(), getOrderPage: jest.fn(), chooseFulfilment: jest.fn(),
     };
-    const c = new OrdersController(svc as unknown as OrderService);
+    const statements = { receipt: jest.fn() };
+    const c = new OrdersController(svc as unknown as OrderService, statements as never);
     const res = { status: jest.fn() };
     expect(await c.checkout({ listingId: 'L', quantity: 1 }, 'k', user, res as never)).toEqual({ id: 'o' });
     expect(res.status).toHaveBeenCalledWith(201);
     await c.list({}, user);
     await c.view('o', user);
     await c.fulfilment('o', { fulfilment: 'self_pickup' }, user);
+    await c.receipt('o', user);
+    expect(statements.receipt).toHaveBeenCalledWith('o', 'B');
     expect(svc.list).toHaveBeenCalledWith('B', 'buyer', undefined);
     expect(svc.getOrderPage).toHaveBeenCalledWith('o', 'B');
     expect(svc.chooseFulfilment).toHaveBeenCalledWith('B', 'o', 'self_pickup', undefined);

@@ -13,7 +13,8 @@ import { RefundService } from '../services/refund.service';
 // Unit 2's scheduled jobs (docs/design/02_orders_payments.pdf section 5.13; NFR-REL-03; U2-07). Each job
 // finds its due rows, and the service it calls locks each row, re-checks its state and acts on the recorded
 // deadline, so several instances can run a job at once and a missed run is caught up without acting twice.
-// The monetization job (featured periods, renewals) comes with U2-06; the outbox is the kernel's (K-04).
+// The monetization job (payments.monetization, every 5 minutes) is MonetizationService's (U2-06); the outbox is
+// the kernel's (K-04).
 export const MINUTE_MS = 60_000;
 export const HOUR_MS = 3_600_000;
 export const DV_15_MS = 2 * MINUTE_MS; // in-flight attempt age before reconciliation queries it
