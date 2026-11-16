@@ -60,14 +60,14 @@ export class LedgerService {
       throw new Problem('validation-failed', { errors: [{ field: 'cursor', reason: 'format' }] });
     }
     const rows = (await this.db.query(
-      `SELECT entry_id::text, created_at, kind, order_id, account_code, revenue::text FROM payments.revenue_log
-        WHERE entry_id IN (SELECT DISTINCT entry_id FROM payments.revenue_log
+      `SELECT r.entry_id::text AS entry_id, r.created_at, r.kind, r.order_id, r.account_code, r.revenue::text AS revenue FROM payments.revenue_log r
+        WHERE r.entry_id IN (SELECT DISTINCT entry_id FROM payments.revenue_log
                             WHERE created_at >= $1 AND created_at < $2 AND ($3::bigint IS NULL OR entry_id < $3::bigint)
                             ORDER BY entry_id DESC LIMIT $4)
-        ORDER BY entry_id DESC, account_code`,
+        ORDER BY r.entry_id DESC, r.account_code`, // by the column, not the text output, where '99' sorts above '100'
       [from, to, cursor || null, PAGE_ENTRIES + 1],
     )) as { entry_id: string; created_at: Date; kind: EntryKind; order_id: string | null; account_code: string; revenue: string }[];
-    const entries = [...new Set(rows.map((r) => r.entry_id))];
+    const entries = [...new Set(rows.map((r) => r.entry_id))].sort((a, b) => (BigInt(b) > BigInt(a) ? 1 : -1)); // newest first, as numbers
     const more = entries.length > PAGE_ENTRIES;
     const page = more ? rows.filter((r) => r.entry_id !== entries[PAGE_ENTRIES]) : rows;
     const totals = (await this.db.query(
