@@ -52,6 +52,15 @@ export class StartPaymentDto {
   provider!: 'bkash' | 'nagad' | 'stripe';
 }
 
+/** POST /listings/{id}/feature (FR-MON-05): a CP-37 period and the provider to pay with. */
+export class FeatureDto {
+  @IsIn([24, 48])
+  hours!: 24 | 48;
+
+  @IsIn(['bkash', 'nagad', 'stripe'])
+  provider!: 'bkash' | 'nagad' | 'stripe';
+}
+
 /** The mock provider's page: the outcome the buyer chose (form field). */
 export class MockPayDto {
   @IsIn(['succeeded', 'failed'])

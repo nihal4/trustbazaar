@@ -213,6 +213,17 @@ SELECT pg_temp.expect_fail('one payout per order',
 SELECT pg_temp.expect_fail('FR-TNS-05 a held payout records why',
  $q$UPDATE payments.payouts SET status='held' WHERE order_id='d0000000-0000-4000-8000-000000000001'$q$, 'payout_hold_reason');
 
+-- ---------------------------------------------------------------- featured purchases (FR-MON-05, U2-06)
+INSERT INTO payments.featured_purchases (id, listing_id, seller_id, hours, fee, starts_at, ends_at)
+VALUES ('f1000000-0000-4000-8000-000000000001', gen_random_uuid(), 'c0000000-0000-4000-8000-000000000002', 24, 10000, now() - interval '25 hours', now() - interval '1 hour');
+SELECT pg_temp.expect_fail('FR-MON-05 a featured period is not marked ended before its end',
+ $q$UPDATE payments.featured_purchases SET ended_at = ends_at - interval '1 minute' WHERE id = 'f1000000-0000-4000-8000-000000000001'$q$, 'featured_ended_after_end');
+UPDATE payments.featured_purchases SET ended_at = now() WHERE id = 'f1000000-0000-4000-8000-000000000001';
+SELECT pg_temp.ok('FR-MON-05 an ended featured period is marked once its end has passed',
+ (SELECT ended_at IS NOT NULL FROM payments.featured_purchases WHERE id = 'f1000000-0000-4000-8000-000000000001'));
+SELECT pg_temp.expect_fail('FR-MON-05 a featured period lasts its hours exactly',
+ $q$INSERT INTO payments.featured_purchases (listing_id, seller_id, hours, fee, starts_at, ends_at) VALUES (gen_random_uuid(), 'c0000000-0000-4000-8000-000000000002', 48, 10000, now(), now() + interval '24 hours')$q$, 'check');
+
 -- ---------------------------------------------------------------- outbox and grants
 SELECT pg_temp.expect_fail('outbox events belong to this unit',
  $q$INSERT INTO orders.outbox (event_type, aggregate_id, payload) VALUES ('identity.kyc.verified', gen_random_uuid(), '{}')$q$, 'outbox_event_type_check');
