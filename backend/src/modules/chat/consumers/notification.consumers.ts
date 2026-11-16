@@ -93,6 +93,15 @@ export class NotificationConsumers implements OnModuleInit {
       const title = (await this.listings.snapshot(listingId)).title;
       return [{ to: e.payload.sellerId, code: 'listing.published', params: { listing_title: title }, subject: { type: 'listing', id: listingId } }];
     },
+    // U3-08: an operator returned a held listing to its seller, or removed a listing; the operator's reason is given
+    'listings.listing.returned': async (e) => {
+      const l = await this.listings.snapshot(e.aggregateId);
+      return [{ to: l.sellerId, code: 'listing.returned', params: { listing_title: l.title, reason: str(e.payload.reason).slice(0, 500) || '—' }, subject: { type: 'listing', id: e.aggregateId } }];
+    },
+    'listings.listing.removed': async (e) => {
+      const l = await this.listings.snapshot(e.aggregateId);
+      return [{ to: l.sellerId, code: 'listing.removed', params: { listing_title: l.title, reason: str(e.payload.reason).slice(0, 500) || '—' }, subject: { type: 'listing', id: e.aggregateId } }];
+    },
     // game accounts (U5-02): an approval is told by listing.published; a rejection gives the operator's reason
     'game_accounts.ownership.rejected': async (e) => {
       const l = await this.listings.snapshot(e.aggregateId);

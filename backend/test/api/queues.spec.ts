@@ -62,13 +62,13 @@ describe('staff queues', () => {
   }
   type Page = { queue: string; items: { id: string; ageHours: number; overdue?: boolean; path: string; status: string; [k: string]: unknown }[] };
 
-  it('FR-OPS-01 exactly eight queues: six list their items, two wait for their owners (feature-off); nothing else exists', async () => {
+  it('FR-OPS-01 exactly eight queues: seven list their items, one waits for its owner (feature-off); nothing else exists', async () => {
     const op = await operator();
-    for (const q of ['kyc', 'ownership_proofs', 'reports', 'flagged_activity', 'disputes', 'payout_accounts']) {
+    for (const q of ['kyc', 'ownership_proofs', 'listings_review', 'reports', 'flagged_activity', 'disputes', 'payout_accounts']) {
       const r = await op.call('GET', `/staff/queues/${q}`);
       expect([q, r.status, ((await r.json()) as Page).queue]).toEqual([q, 200, q]);
     }
-    for (const [q, reason] of [['listings_review', 'listing-review-not-yet-available'], ['payment_discrepancies', 'payment-discrepancies-not-yet-available']]) {
+    for (const [q, reason] of [['payment_discrepancies', 'payment-discrepancies-not-yet-available']]) {
       const r = await op.call('GET', `/staff/queues/${q}`);
       expect([r.status, ((await r.json()) as { errors: unknown[] }).errors]).toEqual([409, [{ field: 'queue', reason }]]);
     }

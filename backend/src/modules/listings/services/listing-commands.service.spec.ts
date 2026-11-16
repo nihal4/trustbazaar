@@ -37,4 +37,26 @@ describe('ListingCommandsService', () => {
     expect(await active.svc.returnToDraft('L', 'st', 'rejected')).toBe(false);
     expect(active.insert).not.toHaveBeenCalled();
   });
+
+  it('FR-LST-12 FR-LST-08 remove: active or held to removed with the history and the event; an open auction is cancelled and its bidders named', async () => {
+    const q = jest.fn(async (sql: string, _p?: unknown[]) => {
+      if (sql.includes('FOR UPDATE')) return [{ seller_id: 'S', item_kind: 'physical', sale_format: 'auction', status: 'active' }];
+      if (sql.startsWith('UPDATE auctions.auctions')) return [[], 1];
+      if (sql.includes('DISTINCT bidder_id')) return [{ bidder_id: 'B1' }, { bidder_id: 'B2' }];
+      return [];
+    });
+    const insert = jest.fn(async (_r: unknown) => undefined);
+    const m = { query: q, getRepository: () => ({ insert }) };
+    const svc = new ListingCommandsService({ transaction: async <R>(fn: (x: unknown) => Promise<R>) => fn(m) } as never);
+    await svc.remove('L', 'st', 'Counterfeit.');
+    expect(insert.mock.calls.map(([r]) => (r as { eventType?: string; toStatus?: string }).eventType ?? (r as { toStatus: string }).toStatus)).toEqual([
+      'auctions.auction.cancelled', 'removed', 'listings.listing.removed',
+    ]);
+    expect(insert.mock.calls[0][0]).toMatchObject({ payload: { bidderIds: ['B1', 'B2'], by: 'operator' } });
+    const quiet = setup({ ...held(), status: 'active' });
+    await quiet.svc.remove('L', 'st', 'Breach.');
+    expect(quiet.insert.mock.calls.map(([r]) => (r as { eventType?: string }).eventType ?? 'history')).toEqual(['history', 'listings.listing.removed']);
+    await expect(setup({ ...held(), status: 'sold' }).svc.remove('L', 'st', 'x')).rejects.toMatchObject({ problem: 'listing-state' });
+    await expect(setup(undefined).svc.remove('L', 'st', 'x')).rejects.toMatchObject({ problem: 'listing-state' });
+  });
 });
