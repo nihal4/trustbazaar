@@ -5,6 +5,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { IdentityModule } from '../identity/identity.module';
 import { AUCTION_BLOCKS, ForwardedBlocks } from './adapters/blocks';
+import { ForwardedProStatus, LISTING_PRO_STATUS } from './adapters/pro-status';
 import { AUCTION_ORDERS, ForwardedAuctionOrders } from './adapters/orders';
 import { ENTITIES } from './db/entities';
 import { AuctionsController } from './http/auctions.controller';
@@ -48,6 +49,7 @@ import { FeaturedConsumers } from './services/featured.consumers';
     StockService,
     { provide: AUCTION_ORDERS, useClass: ForwardedAuctionOrders },
     { provide: AUCTION_BLOCKS, useClass: ForwardedBlocks },
+    { provide: LISTING_PRO_STATUS, useClass: ForwardedProStatus },
     { provide: LISTINGS_PORT, useExisting: StockService },
     { provide: AUCTION_QUERY, useExisting: BidService },
     { provide: LISTINGS_QUERIES, useExisting: ListingsQueriesService },
