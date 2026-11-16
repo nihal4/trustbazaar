@@ -23,6 +23,7 @@ import { OwnershipRejectedTemplate1793491200022 } from './1793491200022-ownershi
 import { GameHandoverTemplates1793491200023 } from './1793491200023-game-handover-templates';
 import { GameTakeoverTemplates1793491200024 } from './1793491200024-game-takeover-templates';
 import { GameRetention1793491200025 } from './1793491200025-game-retention';
+import { FeaturedEnded1793491200028 } from './1793491200028-featured-ended';
 
 // The migrations in the order they run: the seven units in unit order, then 09_integration (I-60).
 // Add a new migration at the end; never reorder or edit an applied one.
@@ -52,4 +53,5 @@ export const MIGRATIONS = [
   GameHandoverTemplates1793491200023, // U5-03: the notices of credentials requested and delivered (I-32; Decisions log)
   GameTakeoverTemplates1793491200024, // U5-04: the notices of a re-key and of the completed takeover (I-32; Decisions log)
   GameRetention1793491200025, // U5-05: access-log and ownership-screenshot retention, I-63 and DV-39 (Decisions log)
+  FeaturedEnded1793491200028, // U2-06: featured_purchases.ended_at, set with payments.featured.ended (Decisions log)
 ];
