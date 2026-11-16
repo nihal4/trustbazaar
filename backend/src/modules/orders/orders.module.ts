@@ -10,7 +10,7 @@ import { MockPayController, PaymentsController, StripeWebhookController } from '
 import { MyPayoutsController, StaffPayoutsController } from './http/payouts.controller';
 import { MonetizationController } from './http/monetization.controller';
 import { MonetizationService } from './services/monetization.service';
-import { ESCROW_COMMANDS, ESCROW_QUERY, ORDERS_PORT, PAYOUT_CHECKS } from './ports';
+import { ESCROW_COMMANDS, ESCROW_QUERY, ORDERS_PORT, PAYOUT_CHECKS, PRO_STATUS } from './ports';
 import { ForwardedGameCheckout, GAME_CHECKOUT } from './adapters/game-accounts';
 import { EscrowService } from './services/escrow.service';
 import { RefundService } from './services/refund.service';
@@ -45,6 +45,7 @@ import type Redis from 'ioredis';
     LedgerService,
     StatementService,
     MonetizationService,
+    { provide: PRO_STATUS, useExisting: MonetizationService },
     PayoutService,
     OrdersJobs,
     { provide: PAYOUT_PROVIDER, useClass: SimulatedPayoutProvider },
@@ -53,6 +54,6 @@ import type Redis from 'ioredis';
     { provide: PAYOUT_CHECKS, useExisting: PayoutService },
     { provide: GAME_CHECKOUT, useClass: ForwardedGameCheckout }, // Unit 5's GameAccountPort (I-29)
   ],
-  exports: [ORDERS_PORT, ESCROW_COMMANDS, ESCROW_QUERY, PAYOUT_CHECKS],
+  exports: [ORDERS_PORT, ESCROW_COMMANDS, ESCROW_QUERY, PAYOUT_CHECKS, PRO_STATUS],
 })
 export class OrdersModule {}
