@@ -6,6 +6,7 @@ import type { OutboxEvent } from '../../../kernel/events/event-bus';
 import { Problem } from '../../../kernel/http/problems';
 import { AUDIT_SERVICE, AuditServicePort, CallContext, IDENTITY_QUERY, IdentityQuery } from '../../identity/ports';
 import type { ProfileSummary, TrustQuery } from '../ports';
+import { PRO_STATUS, ProStatusQuery } from '../../orders/ports';
 
 // Ratings and the profile summary (docs/design/07_disputes_trust_staff.pdf section 7; FR-REV-01 to FR-REV-07; U7-05).
 //  - An order whose escrow reaches a terminal state (released, refunded, partially refunded; Unit 2's events) becomes
@@ -50,6 +51,7 @@ export class RatingService implements TrustQuery {
     @Inject(AUDIT_SERVICE) private readonly audit: AuditServicePort,
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
     @Inject(CLOCK) private readonly clock: Clock,
+    @Inject(PRO_STATUS) private readonly pro: ProStatusQuery,
   ) {}
 
   /** orders.escrow.released, .refunded, .partially_refunded: the order can be rated (once per order, DC-6). */
@@ -149,10 +151,10 @@ export class RatingService implements TrustQuery {
     return { averageRating: s?.average ?? null, ratingCount: s?.n ?? 0, completedTransactions: s?.done ?? 0 };
   }
 
-  /** GET /users/{id}/trust (FR-REV-04, FR-REV-05). The Pro badge comes with Unit 2's Pro subscription (U2-06). */
+  /** GET /users/{id}/trust (FR-REV-04, FR-REV-05); the Pro badge is Unit 2's ProStatusQuery (FR-MON-06, U2-06). */
   async trust(userId: string) {
     const profile = await this.identity.getPublicProfile(userId); // not-found for an unknown user
-    return { userId, ...(await this.profileSummary(userId)), badges: { verified: profile.verified, pro: false } };
+    return { userId, ...(await this.profileSummary(userId)), badges: { verified: profile.verified, pro: await this.pro.isPro(userId) } };
   }
 
   /** GET /users/{id}/ratings: the reviews a user received, newest first, without removed ones. */
