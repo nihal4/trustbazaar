@@ -8,6 +8,8 @@ import { ENTITIES } from './db/entities';
 import { OrderActionsController, OrdersController } from './http/orders.controller';
 import { MockPayController, PaymentsController, StripeWebhookController } from './http/payments.controller';
 import { MyPayoutsController, StaffPayoutsController } from './http/payouts.controller';
+import { MonetizationController } from './http/monetization.controller';
+import { MonetizationService } from './services/monetization.service';
 import { ESCROW_COMMANDS, ESCROW_QUERY, ORDERS_PORT, PAYOUT_CHECKS } from './ports';
 import { ForwardedGameCheckout, GAME_CHECKOUT } from './adapters/game-accounts';
 import { EscrowService } from './services/escrow.service';
@@ -32,7 +34,7 @@ import type Redis from 'ioredis';
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
 @Module({
   imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule, ListingsModule, ChatModule, DeliveryModule],
-  controllers: [OrdersController, OrderActionsController, PaymentsController, StripeWebhookController, MockPayController, MyPayoutsController, StaffPayoutsController],
+  controllers: [OrdersController, OrderActionsController, PaymentsController, StripeWebhookController, MockPayController, MyPayoutsController, StaffPayoutsController, MonetizationController],
   providers: [
     OrderService,
     PaymentService,
@@ -42,6 +44,7 @@ import type Redis from 'ioredis';
     RefundService,
     LedgerService,
     StatementService,
+    MonetizationService,
     PayoutService,
     OrdersJobs,
     { provide: PAYOUT_PROVIDER, useClass: SimulatedPayoutProvider },

@@ -6,7 +6,7 @@ export type ProviderId = 'bkash' | 'nagad' | 'stripe';
 export interface AttemptRef {
   id: string; // also the merchant reference sent to the provider
   provider: ProviderId;
-  orderId: string;
+  orderId: string | null; // null for a featured listing or a subscription
   amount: bigint; // poisha, computed on the server (SEC-PAY-06)
   idempotencyKey: string;
   providerPaymentId: string | null;

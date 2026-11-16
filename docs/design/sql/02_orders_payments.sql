@@ -509,10 +509,14 @@ CREATE TABLE payments.featured_purchases (                                   -- 
   attempt_id   uuid REFERENCES payments.attempts(id),
   starts_at    timestamptz,
   ends_at      timestamptz,
+  ended_at     timestamptz,                         -- set by the monetization job with payments.featured.ended (U2-06)
   created_at   timestamptz NOT NULL DEFAULT now(),
   CHECK ((starts_at IS NULL) = (ends_at IS NULL)),
-  CHECK (ends_at IS NULL OR ends_at = starts_at + make_interval(hours => hours))
+  CHECK (ends_at IS NULL OR ends_at = starts_at + make_interval(hours => hours)),
+  CONSTRAINT featured_ended_after_end CHECK (ended_at IS NULL OR ended_at >= ends_at)
 );
+CREATE INDEX featured_to_end ON payments.featured_purchases (ends_at) WHERE ends_at IS NOT NULL AND ended_at IS NULL;
+CREATE INDEX featured_by_listing ON payments.featured_purchases (listing_id, ends_at);
 
 CREATE TABLE payments.subscriptions (                                         -- FR-MON-06..08
   id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
