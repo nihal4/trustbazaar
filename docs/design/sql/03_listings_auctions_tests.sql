@@ -290,6 +290,10 @@ SELECT pg_temp.expect_fail('application role cannot delete bids',
  $q$DELETE FROM auctions.bids$q$, 'permission denied');
 SELECT pg_temp.expect_fail('application role cannot rewrite stock moves',
  $q$UPDATE listings.stock_moves SET quantity = 2$q$, 'permission denied');
+SELECT pg_temp.expect_fail('application role cannot delete listings (only screening terms, U3-08)',
+ $q$DELETE FROM listings.listings$q$, 'permission denied');
 RESET ROLE;
+SELECT pg_temp.ok('FR-LST-11 operators delete screening terms through the application role (U3-08)',
+  has_table_privilege('tb_app', 'listings.screening_terms', 'DELETE'));
 
 ROLLBACK;

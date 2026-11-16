@@ -123,9 +123,9 @@ describe('notifications', () => {
     const u = randomUUID();
     const p = { userId: u, buyerId: u, sellerId: u, orderId: u, kind: 'auction', reason: 'checkout_expired', decision: 'approve', total: '1', amount: '1', refunded: '1', sellerPayout: '1', listingTitle: 't', listingId: u };
     for (const [type, map] of Object.entries(consumers.map)) {
-      if (type === 'listings.listing.published' || type === 'game_accounts.ownership.rejected') continue; // read the listing through ListingsPort
+      if (['listings.listing.published', 'listings.listing.returned', 'listings.listing.removed', 'game_accounts.ownership.rejected'].includes(type)) continue; // read the listing through ListingsPort
       for (const n of await map(event(type, p))) expect([type, codes.has(n.code)]).toEqual([type, true]);
     }
-    expect([codes.has('listing.published'), codes.has('listing.ownership_rejected')]).toEqual([true, true]);
+    expect(['listing.published', 'listing.ownership_rejected', 'listing.returned', 'listing.removed'].map((c) => codes.has(c))).toEqual([true, true, true, true]);
   });
 });
