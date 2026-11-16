@@ -5,6 +5,7 @@ import { config } from './kernel/config/config';
 import { correlationMiddleware } from './kernel/http/correlation';
 import { RedisIoAdapter } from './kernel/live/redis-io.adapter';
 import { ProblemFilter } from './kernel/http/problem.filter';
+import { enableCors, securityHeaders } from './kernel/http/security-headers';
 
 // What every running backend gets on top of AppModule. Shared by main.ts and the API tests
 // (test/support/app.ts), so the tests exercise the same pipeline as production.
@@ -20,6 +21,10 @@ export function configureApp(app: INestApplication): INestApplication {
 
   // A correlation id on every request and response (SEC-INP-06).
   app.use(correlationMiddleware);
+
+  // Security headers on every API response and the CORS allow-list (DC-11, SEC-WEB-01 to SEC-WEB-03).
+  app.use(securityHeaders(config().environment === 'production'));
+  enableCors(app, config().publicOrigin);
 
   // Cookies carry the session (Unit 1 section 7.1); no token is read from anywhere else (SEC-SES-03).
   app.use(cookieParser());
