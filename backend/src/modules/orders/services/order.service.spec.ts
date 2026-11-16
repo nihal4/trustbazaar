@@ -235,13 +235,16 @@ describe('OrdersController', () => {
     const svc = {
       checkout: jest.fn(async () => ({ order: { id: 'o' }, repeated: false })), list: jest.fn(), getOrderForParty: jest.fn(), getOrderPage: jest.fn(), chooseFulfilment: jest.fn(),
     };
-    const c = new OrdersController(svc as unknown as OrderService);
+    const statements = { receipt: jest.fn() };
+    const c = new OrdersController(svc as unknown as OrderService, statements as never);
     const res = { status: jest.fn() };
     expect(await c.checkout({ listingId: 'L', quantity: 1 }, 'k', user, res as never)).toEqual({ id: 'o' });
     expect(res.status).toHaveBeenCalledWith(201);
     await c.list({}, user);
     await c.view('o', user);
     await c.fulfilment('o', { fulfilment: 'self_pickup' }, user);
+    await c.receipt('o', user);
+    expect(statements.receipt).toHaveBeenCalledWith('o', 'B');
     expect(svc.list).toHaveBeenCalledWith('B', 'buyer', undefined);
     expect(svc.getOrderPage).toHaveBeenCalledWith('o', 'B');
     expect(svc.chooseFulfilment).toHaveBeenCalledWith('B', 'o', 'self_pickup', undefined);
