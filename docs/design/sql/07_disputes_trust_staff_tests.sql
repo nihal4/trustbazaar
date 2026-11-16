@@ -289,9 +289,11 @@ SELECT staff.publish_config('{"CP-13":"20 minutes"}', 'a0000000-0000-4000-8000-0
 SELECT pg_temp.ok('FR-OPS-08 a change is a new version; the old one is kept unchanged',
   :v2 = 2 AND staff.current_config_version() = 2
   AND staff.config_as_json(1) ->> 'CP-13' = '15 minutes' AND staff.config_as_json(2) ->> 'CP-13' = '20 minutes'
-  AND (SELECT count(*) FROM staff.config_values WHERE version = 2) = 49);
+  AND (SELECT count(*) FROM staff.config_values WHERE version = 2) = 50);
 SELECT pg_temp.expect_fail('FR-OPS-09 CP-19 not longer than CP-18 is refused',
  $q$SELECT staff.publish_config('{"CP-19":"2 days"}', 'a0000000-0000-4000-8000-000000000001', 'Shorter release for faster payouts')$q$, 'must be longer than the CP-18');
+SELECT pg_temp.expect_fail('FR-MON-06 the Pro Seller price (CP-48) is positive or unset',
+ $q$SELECT staff.publish_config('{"CP-48":{"monthly_poisha":0}}', 'a0000000-0000-4000-8000-000000000001', 'Free Pro Seller for a promotion')$q$, 'CP-48 Pro Seller price');
 SELECT pg_temp.expect_fail('FR-OPS-09 CP-45 outside 3 to 10 is refused',
  $q$SELECT staff.publish_config('{"CP-45":11}', 'a0000000-0000-4000-8000-000000000001', 'More attempts at the handover code')$q$, 'CP-45 must be 3-10');
 SELECT pg_temp.expect_fail('FR-OPS-09 the four-eyes list may only grow',

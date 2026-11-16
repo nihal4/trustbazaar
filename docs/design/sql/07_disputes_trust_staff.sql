@@ -627,6 +627,7 @@ BEGIN
   IF (c #>> '{CP-45}')::int NOT BETWEEN 3 AND 10 THEN v := v || 'CP-45 must be 3-10'::text; END IF;
   IF (c #>> '{CP-46}')::interval > interval '60 minutes' THEN v := v || 'CP-46 reconciliation at most 60 minutes'::text; END IF;
   IF (c #>> '{CP-47,strikes}')::int < 1 THEN v := v || 'CP-47 must be at least 1'::text; END IF;
+  IF (c #>> '{CP-48,monthly_poisha}')::bigint <= 0 THEN v := v || 'CP-48 Pro Seller price must be positive or unset'::text; END IF;
   RETURN v;
 END $$;
 
@@ -693,7 +694,8 @@ CREATE TABLE staff.export_requests (
 CREATE UNIQUE INDEX export_one_pending ON staff.export_requests (user_id) WHERE ready_at IS NULL;
 
 -- =====================================================================
--- Seed: configuration version 1 = the SRS defaults (CP-01..CP-47) and the emergency switches
+-- Seed: configuration version 1 = the SRS defaults (CP-01..CP-47), CP-48 (the Pro Seller price, added with U2-06)
+-- and the emergency switches
 -- =====================================================================
 INSERT INTO staff.config_versions (version, reason) VALUES (1, 'SRS v2.0 default values (Table of configurable parameters)');
 INSERT INTO staff.config_values (version, code, value) VALUES
@@ -720,6 +722,7 @@ INSERT INTO staff.config_values (version, code, value) VALUES
  (1, 'CP-39', '{"window":"14 days","edit":"48 hours"}'), (1, 'CP-40', '"1 year"'), (1, 'CP-41', '"30 days"'),
  (1, 'CP-42', '{"critical":"7 days","high":"30 days"}'), (1, 'CP-43', '"see delivery.fare_tables"'), (1, 'CP-44', '"48 hours"'),
  (1, 'CP-45', '5'), (1, 'CP-46', '"15 minutes"'), (1, 'CP-47', '{"strikes":3,"window":"90 days"}'),
+ (1, 'CP-48', '{"monthly_poisha":50000}'),
  (1, 'SW-new_orders', 'true'), (1, 'SW-payouts', 'true');
 
 -- =====================================================================

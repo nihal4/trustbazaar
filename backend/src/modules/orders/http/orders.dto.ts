@@ -1,4 +1,4 @@
-import { IsIn, IsInt, IsOptional, IsString, IsUUID, Matches, Max, MaxLength, Min, ValidateIf } from 'class-validator';
+import { IsIn, IsInt, IsISO8601, IsOptional, IsString, IsUUID, Matches, Max, MaxLength, Min, ValidateIf } from 'class-validator';
 import { FULFILMENT } from '../db/enums';
 import type { Fulfilment } from '../ports';
 
@@ -48,6 +48,15 @@ export class OrdersQuery {
 
 /** FR-PAY-01: which provider's page to pay on. */
 export class StartPaymentDto {
+  @IsIn(['bkash', 'nagad', 'stripe'])
+  provider!: 'bkash' | 'nagad' | 'stripe';
+}
+
+/** POST /listings/{id}/feature (FR-MON-05): a CP-37 period and the provider to pay with. */
+export class FeatureDto {
+  @IsIn([24, 48])
+  hours!: 24 | 48;
+
   @IsIn(['bkash', 'nagad', 'stripe'])
   provider!: 'bkash' | 'nagad' | 'stripe';
 }
@@ -111,6 +120,20 @@ export class PayoutsQuery {
   @IsOptional()
   @IsString()
   @MaxLength(200)
+  cursor?: string;
+}
+
+/** GET /staff/payments/revenue-log (FR-MON-09): a range of at most 366 days, `to` exclusive. */
+export class RevenueLogQuery {
+  @IsISO8601({ strict: true })
+  from!: string;
+
+  @IsISO8601({ strict: true })
+  to!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
   cursor?: string;
 }
 
