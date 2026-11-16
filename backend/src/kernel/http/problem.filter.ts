@@ -2,6 +2,7 @@ import { ArgumentsHost, Catch, ExceptionFilter, HttpException, Logger } from '@n
 import type { Request, Response } from 'express';
 import { correlationId } from './correlation';
 import { Problem, ProblemName, PROBLEMS, problemType } from './problems';
+import { noteDatabaseError } from '../metrics/metrics';
 
 const BY_STATUS: Record<number, ProblemName> = {
   401: 'session-ended',
@@ -43,6 +44,7 @@ export class ProblemFilter implements ExceptionFilter {
       }
     } else {
       // the request's correlation id is on the line (K-02); the error's message and stack go through the redaction list
+      noteDatabaseError(error); // SEC-LOG-05: a refused escrow change
       this.log.error({ msg: 'unexpected error', error: error instanceof Error ? error : String(error) });
       body = { type: problemType('internal'), title: PROBLEMS.internal.title, status: 500 };
     }

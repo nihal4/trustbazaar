@@ -7,6 +7,7 @@ import { COURIER, CourierPort, CourierSignatureError, type CourierStatusReport }
 import { FULFILMENT_ORDERS, FulfilmentOrders } from '../adapters/orders';
 import type { ShipmentStatus, StatusSource } from '../db/enums';
 import { announceNewIssues } from './outbox';
+import { securityEvents } from '../../../kernel/metrics/metrics';
 
 // StatusIngestor (docs/design/04_delivery.pdf section 7.4; FR-DLV-10 to FR-DLV-12; SEC-PAY-03, SEC-PAY-04; U4-04).
 // Reports come by webhook, by a status query (syncPickup, cancellation, and U4-05's reconciliation) and can arrive
@@ -47,6 +48,7 @@ export class StatusService {
       event = this.courier.verifyWebhook(headers, rawBody, this.clock.now(), tolerance);
     } catch (err) {
       if (err instanceof CourierSignatureError || err instanceof SyntaxError) {
+        securityEvents.webhookSignatureFailures.inc({ provider: 'courier' }); // SEC-LOG-05
         throw new Problem('validation-failed', { errors: [{ field: 'signature', reason: 'invalid' }] });
       }
       throw err;

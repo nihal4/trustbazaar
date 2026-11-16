@@ -6,6 +6,7 @@ import { ProviderUnavailable } from '../adapters/payment-provider';
 import { Order, OrdersOutboxEvent, PaymentAttempt, ReconciliationIssue, Refund } from '../db/entities';
 import { post } from './ledger';
 import { PAYMENT_PROVIDERS, ProviderRegistry } from './payment.service';
+import { providerErrors } from '../../../kernel/metrics/metrics';
 
 // The refund worker (docs/design/02_orders_payments.pdf sections 5.9 and 5.12; FR-PAY-12, FR-PAY-16, SEC-PAY-07).
 // A refund row is created, with its own idempotency key and ledger entry, by the decision that causes it
@@ -64,6 +65,7 @@ export class RefundService {
       });
     } catch (err) {
       if (!(err instanceof ProviderUnavailable)) throw err;
+      providerErrors.inc({ provider: a.provider, operation: 'refund' });
       const made = r.attemptsMade + 1;
       if (made >= MAX_REFUND_ATTEMPTS) return this.manual(m, r, 'refund_failed', err.message, made);
       await m.getRepository(Refund).update({ id: r.id }, { status: 'failed', attemptsMade: made, nextAttemptAt: new Date(now.getTime() + RETRY_DELAYS_MS[made - 1]) });

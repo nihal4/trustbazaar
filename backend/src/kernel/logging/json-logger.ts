@@ -74,7 +74,8 @@ export class JsonLogger implements LoggerService {
       else if (a !== undefined) fields.detail = a;
     }
     const correlationId = currentCorrelationId();
-    const { time: _t, level: _l, module: _m, correlationId: _c, ...safe } = redact(fields) as Record<string, unknown>;
+    const safe = redact(fields) as Record<string, unknown>;
+    for (const k of ['time', 'level', 'module', 'correlationId']) delete safe[k]; // the line's own fields cannot be forged
     const line: LogLine = {
       time: this.now().toISOString(), level: LEVEL[level], module, msg: redact(msg) as string,
       ...(correlationId ? { correlationId } : {}), ...safe,

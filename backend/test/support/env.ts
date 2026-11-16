@@ -15,6 +15,8 @@ export function requireEnv(name: 'DATABASE_URL' | 'REDIS_URL'): string {
 // credentials, separate from development and production ones (SEC-INF-04).
 export function useTestSecrets(): void {
   process.env.TB_ENV ??= 'test';
+  // Metrics on any free port, so test apps started one after another never compete for 9464 (K-06).
+  process.env.METRICS_PORT ??= '0';
   // The protected-file volumes (FileVault): a fresh temporary folder per test run.
   process.env.FILES_ROOT ??= mkdtempSync(join(tmpdir(), 'tb-files-'));
   const names = [...Object.values(SECRETS), ...Object.values(KEYRINGS).map((k) => `${k}_V1`)];

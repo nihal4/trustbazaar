@@ -14,6 +14,7 @@ import { AuditService } from './audit.service';
 import { SecondFactorService } from './second-factor.service';
 import { SignInThrottle } from './signin-throttle.service';
 import { RequestContext, SessionService } from './session.service';
+import { securityEvents } from '../../../kernel/metrics/metrics';
 
 // Sign-in (Unit 1 section 6.2; FR-ACC-05, FR-ACC-06, SEC-AUTH-03 to SEC-AUTH-05, SEC-LOG-01).
 // 1. The number or e-mail and the password. Unknown, closed and wrong all get the same 401 after the same
@@ -112,6 +113,7 @@ export class SignInService {
       if (t.attempts + 1 < MFA_ATTEMPTS && remainingMs > 0) {
         await this.redis.set(key, JSON.stringify({ ...t, attempts: t.attempts + 1 }), 'PX', remainingMs);
       }
+      securityEvents.signinFailed.inc({ kind: 'user_mfa' });
       throw new Problem('mfa-failed');
     }
     const [live] = await this.db.query(`SELECT 1 FROM identity.users WHERE id = $1 AND account_status <> 'closed'`, [t.userId]);
@@ -131,6 +133,7 @@ export class SignInService {
   }
 
   private async failed(failKey: string, user: UserRow | undefined, ctx: RequestContext): Promise<void> {
+    securityEvents.signinFailed.inc({ kind: 'user' }); // SEC-LOG-05
     if ((await this.throttle.failed(failKey)) && user?.phone_e164) {
       await this.notify.sendSms(user.phone_e164, 'signin_throttled', {});
       if (user.email) await this.notify.sendEmail(user.email, 'signin_throttled', {});

@@ -3,10 +3,12 @@ import { AppModule } from './app.module';
 import { configureApp } from './app.setup';
 import { config, ConfigError } from './kernel/config/config';
 import { JsonLogger } from './kernel/logging/json-logger';
+import { onShutdownSignals } from './kernel/shutdown';
 
 // Bootstrap: the configuration is checked first, before anything connects (K-01, I-59); then the kernel
 // and the unit modules (AppModule). Every log line, Nest's own included, is JSON (K-02, kernel/logging); lines
-// written while the application starts are held until the logger is installed.
+// written while the application starts are held until the logger is installed. Metrics are served on METRICS_PORT
+// and a SIGTERM shuts down gracefully (K-06).
 async function bootstrap() {
   let port: number;
   let logger: JsonLogger;
@@ -24,6 +26,8 @@ async function bootstrap() {
   app.useLogger(logger);
   configureApp(app);
   await app.listen(port);
+  // DV-66: SIGTERM drains requests, jobs and live connections before closing (kernel/shutdown.ts)
+  onShutdownSignals(app);
 }
 
 void bootstrap();
