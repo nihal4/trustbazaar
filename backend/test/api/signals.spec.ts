@@ -53,7 +53,7 @@ describe('signals', () => {
     ];
     for (const e of [...events, ...events]) await consume(e);
     expect(await signals(`auctions.flag:${flagId}`)).toEqual([expect.objectContaining({ kind: 'shill_bidding', subject_user: null, detail: { auctionId, flag: 'shill_score', score: 0.82 }, status: 'open' })]);
-    expect(await signals(`listing:${listingId}`)).toEqual([expect.objectContaining({ kind: 'relisting', subject_user: seller, detail: { listingId, previousListingId: previous, similarity: 0.91 } })]);
+    expect(await signals(`listing:${listingId}`)).toEqual([expect.objectContaining({ kind: 'relisting', subject_user: seller, detail: { listingId, previousListingId: previous, similarity: 0.91, reason: 'cancelled' } })]);
     expect(await signals(`delivery.issue:${issueId}`)).toEqual([expect.objectContaining({ kind: 'delivery_issue', detail: { issueId, orderId, issue: 'code_locked' } })]);
   });
 

@@ -204,6 +204,8 @@ INSERT INTO payments.payout_accounts (id, user_id, kind, wallet_e164, status, ef
 VALUES ('a2000000-0000-4000-8000-000000000001', 'c0000000-0000-4000-8000-000000000002', 'bkash_wallet', '+8801811000002', 'cooling_off', now() + interval '24 hours');
 SELECT pg_temp.expect_fail('FR-PAY-17 one current payout account per seller',
  $q$INSERT INTO payments.payout_accounts (user_id, kind, wallet_e164, status, effective_at) VALUES ('c0000000-0000-4000-8000-000000000002','nagad_wallet','+8801811000002','cooling_off',now())$q$, 'payout_account_one_current');
+SELECT pg_temp.expect_fail('FR-TNS-08 only a bank account has a blind index, of 32 bytes',
+ $q$UPDATE payments.payout_accounts SET account_number_bidx = '\x01' WHERE id = 'a2000000-0000-4000-8000-000000000001'$q$, 'bidx_bank_only');
 SELECT pg_temp.expect_fail('FR-PAY-17 a bank account becomes usable only after an operator check',
  $q$INSERT INTO payments.payout_accounts (user_id, kind, bank_name, routing_number, account_name, account_number_enc, status, effective_at) VALUES ('c0000000-0000-4000-8000-000000000001','bank','Bank','123456789','Buyer','\x01','active',now())$q$, 'bank_reviewed');
 INSERT INTO payments.payouts (order_id, seller_id, payout_account_id, amount, status, simulated)

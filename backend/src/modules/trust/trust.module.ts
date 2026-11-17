@@ -12,7 +12,7 @@ import { ENTITIES } from './db/entities';
 import { ConfigController } from './http/config.controller';
 import { TrustController } from './http/trust.controller';
 import { TrustJobs } from './jobs/trust.jobs';
-import { CASE_QUERY, DISPUTE_COMMANDS, REPORT_COMMANDS, SANCTION_PORT, TRUST_QUERY } from './ports';
+import { CASE_QUERY, DISPUTE_COMMANDS, DISPUTE_QUERIES, REPORT_COMMANDS, SANCTION_PORT, TRUST_QUERY } from './ports';
 import { DisputeCaseService } from './services/dispute-case.service';
 import { EvidencePackService } from './services/evidence-pack.service';
 import { DisputeService } from './services/dispute.service';
@@ -22,6 +22,7 @@ import { ConfigAdminService } from './services/config-admin.service';
 import { TrustReportService } from './services/report.service';
 import { RatingService } from './services/rating.service';
 import { SanctionService } from './services/sanction.service';
+import { LinkedAccountsService } from './services/linked-accounts.service';
 import { SignalService } from './services/signal.service';
 import { DisputesClosureCheck } from './services/closure.check';
 import { TrustDataExport } from './services/data-export';
@@ -47,6 +48,8 @@ import { DataExportService } from './services/data-export.service';
     SanctionService,
     RatingService,
     SignalService,
+    LinkedAccountsService,
+    { provide: DISPUTE_QUERIES, useExisting: LinkedAccountsService },
     TrustConsumers,
     DisputeService,
     DisputeCaseService,
@@ -60,6 +63,6 @@ import { DataExportService } from './services/data-export.service';
     { provide: CASE_QUERY, useExisting: TrustReportService },
     { provide: SANCTION_PORT, useExisting: SanctionService },
   ],
-  exports: [SANCTION_PORT, TRUST_QUERY, DISPUTE_COMMANDS],
+  exports: [SANCTION_PORT, TRUST_QUERY, DISPUTE_COMMANDS, DISPUTE_QUERIES],
 })
 export class TrustModule {}
