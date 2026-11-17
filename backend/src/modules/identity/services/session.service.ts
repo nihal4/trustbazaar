@@ -29,6 +29,8 @@ export interface RequestContext {
   ip: string | null;
   userAgent: string | null;
   correlationId: string | null;
+  /** X-Human-Proof, the solved challenge of SEC-ABU-02 (U1-09), when the client sent one. */
+  humanProof?: string;
 }
 
 export interface SessionSummary {
