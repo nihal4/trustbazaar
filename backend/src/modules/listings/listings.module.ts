@@ -12,7 +12,7 @@ import { AuctionsController } from './http/auctions.controller';
 import { SearchController } from './http/search.controller';
 import { CategoriesController, ListingPhotosController, ListingsController, MyListingsController } from './http/listings.controller';
 import { AuctionsJobs } from './jobs/auctions.jobs';
-import { AUCTION_QUERY, LISTINGS_COMMANDS, LISTINGS_PORT, LISTINGS_QUERIES } from './ports';
+import { LISTINGS_DATA_EXPORT, AUCTION_QUERY, LISTINGS_COMMANDS, LISTINGS_PORT, LISTINGS_QUERIES } from './ports';
 import { ListingCommandsService } from './services/listing-commands.service';
 import { ListingReviewService } from './services/listing-review.service';
 import { ListingsStaffController } from './http/listings-staff.controller';
@@ -27,6 +27,7 @@ import { SecondChanceService } from './services/second-chance.service';
 import { StockService } from './services/stock.service';
 import { FeaturedConsumers } from './services/featured.consumers';
 import { ListingsClosure } from './services/closure.consumers';
+import { ListingsDataExport } from './services/data-export';
 
 // Unit 3 (docs/design/03_listings_auctions.pdf). Schemas: listings, auctions.
 // Folder layout and rules: BUILDING.md section 3. This module exports only its ports (ports/),
@@ -36,6 +37,8 @@ import { ListingsClosure } from './services/closure.consumers';
   imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule],
   controllers: [AuctionsStaffController, CategoriesController, ListingsController, MyListingsController, ListingPhotosController, AuctionsController, SearchController, ListingsStaffController],
   providers: [
+    ListingsDataExport,
+    { provide: LISTINGS_DATA_EXPORT, useExisting: ListingsDataExport },
     AuctionCloser,
     AuctionStaffService,
     AuctionsJobs,
@@ -60,6 +63,6 @@ import { ListingsClosure } from './services/closure.consumers';
     { provide: LISTINGS_QUERIES, useExisting: ListingsQueriesService },
     { provide: LISTINGS_COMMANDS, useExisting: ListingCommandsService },
   ],
-  exports: [LISTINGS_PORT, AUCTION_QUERY, LISTINGS_QUERIES, LISTINGS_COMMANDS],
+  exports: [LISTINGS_DATA_EXPORT, LISTINGS_PORT, AUCTION_QUERY, LISTINGS_QUERIES, LISTINGS_COMMANDS],
 })
 export class ListingsModule {}

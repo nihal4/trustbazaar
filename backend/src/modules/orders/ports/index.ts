@@ -181,3 +181,6 @@ export interface ProStatusQuery {
   isPro(userId: string, tx?: EntityManager): Promise<boolean>;
 }
 export const PRO_STATUS = Symbol('PRO_STATUS');
+
+/** This unit's part of the data export (FR-PRV-03; U7-11): a DataExportSource (kernel/privacy/data-export.ts). */
+export const ORDERS_DATA_EXPORT = Symbol('ORDERS_DATA_EXPORT');

@@ -24,6 +24,8 @@ import { RatingService } from './services/rating.service';
 import { SanctionService } from './services/sanction.service';
 import { SignalService } from './services/signal.service';
 import { DisputesClosureCheck } from './services/closure.check';
+import { TrustDataExport } from './services/data-export';
+import { DataExportService } from './services/data-export.service';
 
 // Unit 7 (docs/design/07_disputes_trust_staff.pdf). Schemas: disputes, trust, staff.
 // Folder layout and rules: BUILDING.md section 3. This module exports only its ports (ports/),
@@ -38,6 +40,8 @@ import { DisputesClosureCheck } from './services/closure.check';
   controllers: [ConfigController, TrustController],
   providers: [
     DisputesClosureCheck,
+    TrustDataExport,
+    DataExportService,
     ConfigAdminService,
     TrustReportService,
     SanctionService,
