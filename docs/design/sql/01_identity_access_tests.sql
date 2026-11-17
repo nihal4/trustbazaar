@@ -208,7 +208,8 @@ INSERT INTO identity.totp_factors (id, principal_type, user_id, secret_enc, key_
 INSERT INTO identity.recovery_codes (totp_factor_id, code_hash) VALUES ('f1000000-0000-4000-8000-000000000001', decode(repeat('cc',32),'hex'));
 
 SET LOCAL ROLE tb_app;
-CREATE TEMP TABLE erased_keys AS SELECT storage_key FROM identity.erase_user('e0000000-0000-4000-8000-000000000001');
+SELECT pg_temp.ok('FR-PRV-04 erasure returns the storage keys of the files whose data keys it destroyed',
+ (SELECT array_agg(storage_key::text) FROM identity.erase_user('e0000000-0000-4000-8000-000000000001')) = ARRAY['erase-k-1']);
 SELECT pg_temp.ok('FR-PRV-04 erasure empties the personal fields and keeps the user row',
  (SELECT display_name = 'Deleted user' AND phone_e164 IS NULL AND email IS NULL AND password_hash IS NULL AND area_district IS NULL
          AND approx_lat IS NULL AND NOT mfa_enabled AND erased_at IS NOT NULL FROM identity.users WHERE id = 'e0000000-0000-4000-8000-000000000001'));
@@ -216,22 +217,21 @@ SELECT pg_temp.ok('FR-PRV-04 erasure removes MFA factors, recovery codes and the
  NOT EXISTS (SELECT 1 FROM identity.totp_factors WHERE user_id = 'e0000000-0000-4000-8000-000000000001')
  AND NOT EXISTS (SELECT 1 FROM identity.recovery_codes WHERE totp_factor_id = 'f1000000-0000-4000-8000-000000000001')
  AND NOT EXISTS (SELECT 1 FROM identity.identity_claims WHERE user_id = 'e0000000-0000-4000-8000-000000000001'));
-SELECT pg_temp.ok('FR-PRV-04 erasure crypto-shreds KYC: fields and indexes cleared, data keys destroyed, file keys returned',
+SELECT pg_temp.ok('FR-PRV-04 erasure crypto-shreds KYC: fields and indexes cleared, data keys destroyed',
  (SELECT doc_number_enc IS NULL AND doc_number_bidx IS NULL AND person_bidx IS NULL AND erased_at IS NOT NULL FROM identity.kyc_submissions WHERE id = 'f0000000-0000-4000-8000-000000000001')
- AND (SELECT wrapped_dek IS NULL AND erased_at IS NOT NULL FROM identity.kyc_files WHERE storage_key = 'erase-k-1')
- AND (SELECT array_agg(storage_key::text) FROM erased_keys) = ARRAY['erase-k-1']);
+ AND (SELECT wrapped_dek IS NULL AND erased_at IS NOT NULL FROM identity.kyc_files WHERE storage_key = 'erase-k-1'));
 SELECT pg_temp.ok('FR-PRV-04 erasing an erased account does nothing',
  NOT EXISTS (SELECT 1 FROM identity.erase_user('e0000000-0000-4000-8000-000000000001')));
 SELECT pg_temp.expect_fail('FR-PRV-04 an account is not erased before erase_after',
  $q$SELECT * FROM identity.erase_user('e0000000-0000-4000-8000-000000000002')$q$);
 SELECT pg_temp.expect_fail('FR-PRV-04 an open account is never erased',
  $q$SELECT * FROM identity.erase_user('e0000000-0000-4000-8000-000000000003')$q$);
-CREATE TEMP TABLE rejected_keys AS SELECT storage_key FROM identity.erase_rejected_kyc();
+SELECT pg_temp.ok('FR-PRV-04 the rejected-KYC erasure returns only the keys of the files it erased',
+ (SELECT 'erase-k-3' = ANY(array_agg(storage_key::text)) AND NOT 'erase-k-4' = ANY(array_agg(storage_key::text)) FROM identity.erase_rejected_kyc()));
 SELECT pg_temp.ok('FR-PRV-04 KYC rejected over 30 days ago without a resubmission is erased; a resubmitted user''s is kept',
  (SELECT erased_at IS NOT NULL AND doc_number_enc IS NULL FROM identity.kyc_submissions WHERE id = 'f0000000-0000-4000-8000-000000000003')
  AND (SELECT erased_at IS NULL FROM identity.kyc_submissions WHERE id = 'f0000000-0000-4000-8000-000000000004')
- AND (SELECT erased_at IS NULL FROM identity.kyc_submissions WHERE id = 'f0000000-0000-4000-8000-000000000005')
- AND EXISTS (SELECT 1 FROM rejected_keys WHERE storage_key = 'erase-k-3') AND NOT EXISTS (SELECT 1 FROM rejected_keys WHERE storage_key = 'erase-k-4'));
+ AND (SELECT erased_at IS NULL FROM identity.kyc_submissions WHERE id = 'f0000000-0000-4000-8000-000000000005'));
 SELECT pg_temp.expect_fail('FR-PRV-04 the application role cannot delete MFA factors itself',
  $q$DELETE FROM identity.totp_factors$q$);
 RESET ROLE;
