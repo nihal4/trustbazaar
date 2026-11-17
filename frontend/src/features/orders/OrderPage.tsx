@@ -1,7 +1,8 @@
 // The order view (docs/design/08_frontend.pdf sections 7.4 and 7.5; IF-UI-04, IF-UI-05; FR-PAY-01, FR-PAY-02;
 // NFR-USE-07, NFR-USE-08; U8-05, U8-06). One screen for buyer and seller, from top to bottom: where the money is, in
 // one sentence; every deadline that applies, as a time and a countdown; what can be done now; the fulfilment (the
-// meetup handover or the shipments, Unit 4); the chat with the other party. While the order awaits payment the
+// meetup handover or the shipments, Unit 4); the dispute (Unit 7); the chat with the other party; after the order
+// closes, the ratings (U8-09). While the order awaits payment the
 // buyer chooses how to get the item (self pickup, or courier with a binding quote) and pays here. The provider sends
 // the buyer back here (/orders/{id}?payment={attempt}&result=...; Decisions log, U2-03 and U8-05): the page never
 // treats that return as payment, and checks the order every 2 s for up to 30 s.
@@ -26,10 +27,12 @@ import { SimulatedBanner } from '../../shared/SimulatedBanner';
 import { Actions } from './Actions';
 import { CourierChoice } from './Courier';
 import { Deadlines } from './Deadlines';
+import { Disputes, useOrderDisputes } from './Disputes';
 import { Handover, useHandover } from './Handover';
 import { orderKey, type OrderView } from './model';
 import { moneyText } from './moneyText';
 import { away, PROVIDERS, providerPage, RETURN_POLL_MS, RETURN_WAIT_MS, type Provider } from './payment';
+import { Ratings, useOrderRatings } from './Ratings';
 import { Shipments, useShipments } from './Shipments';
 import en from '../../messages/en/orders.json';
 import bn from '../../messages/bn/orders.json';
@@ -76,6 +79,8 @@ export function Component() {
 function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; attempt: string | null; failed: boolean; waited: boolean; t: T; lang: Lang }) {
   const handover = useHandover(o);
   const shipments = useShipments(o);
+  const disputes = useOrderDisputes(o);
+  const ratings = useOrderRatings(o);
   const awaiting = o.status === 'awaiting_payment';
   return (
     <div className={styles.page}>
@@ -92,12 +97,14 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
       {awaiting && o.role === 'buyer' && <PayPanel o={o} t={t} lang={lang} />}
       {o.cancelledAt && o.cancelReason && <p className={styles.hint}>{t('order.cancel_reason', { reason: o.cancelReason })}</p>}
       <Actions o={o} t={t} lang={lang} />
+      {disputes.data && <Disputes o={o} items={disputes.data.items} t={t} lang={lang} />}
       {handover.data && <Handover o={o} h={handover.data} t={t} lang={lang} />}
       {handover.isError && <FormMessage kind="error">{errorText(handover.error, t, lang)}</FormMessage>}
       {shipments.data && <Shipments o={o} items={shipments.data.items} t={t} lang={lang} />}
       {shipments.isError && <FormMessage kind="error">{errorText(shipments.error, t, lang)}</FormMessage>}
       {o.fulfilment === 'game_account' && o.status !== 'awaiting_payment' && <p className={styles.hint}>{t('order.game_screens')}</p>}
       <OrderChat o={o} t={t} lang={lang} />
+      {ratings.data && <Ratings o={o} r={ratings.data} t={t} lang={lang} />}
     </div>
   );
 }

@@ -6,7 +6,7 @@ import type { OutboxEvent } from '../../../kernel/events/event-bus';
 import { Problem } from '../../../kernel/http/problems';
 import { AUDIT_SERVICE, AuditServicePort, CallContext, IDENTITY_QUERY, IdentityQuery } from '../../identity/ports';
 import type { ProfileSummary, TrustQuery } from '../ports';
-import { PRO_STATUS, ProStatusQuery } from '../../orders/ports';
+import { ORDERS_PORT, OrdersPort, PRO_STATUS, ProStatusQuery } from '../../orders/ports';
 
 // Ratings and the profile summary (docs/design/07_disputes_trust_staff.pdf section 7; FR-REV-01 to FR-REV-07; U7-05).
 //  - An order whose escrow reaches a terminal state (released, refunded, partially refunded; Unit 2's events) becomes
@@ -52,6 +52,7 @@ export class RatingService implements TrustQuery {
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
     @Inject(CLOCK) private readonly clock: Clock,
     @Inject(PRO_STATUS) private readonly pro: ProStatusQuery,
+    @Inject(ORDERS_PORT) private readonly orders: OrdersPort,
   ) {}
 
   /** orders.escrow.released, .refunded, .partially_refunded: the order can be rated (once per order, DC-6). */
@@ -178,6 +179,30 @@ export class RatingService implements TrustQuery {
     }));
     const last = page[page.length - 1];
     return { items, nextCursor: rows.length > PAGE && last ? encodeCursor(last.at_text, last.id) : null };
+  }
+
+  /**
+   * GET /orders/{id}/ratings (U8-09; Decisions log): for either party, whether the order can still be rated and until
+   * when (CP-39), the caller's own rating (editable until its edit period ends) and the one received (to reply to).
+   * Before the order's escrow is terminal nothing can be rated. Removed ratings are not shown.
+   */
+  async forOrder(userId: string, orderId: string): Promise<{ canRate: boolean; rateUntil: string | null; mine: RatingView | null; received: RatingView | null }> {
+    const [e] = (await this.db.query(`SELECT buyer_id, seller_id, rate_until FROM trust.rating_eligibility WHERE order_id = $1`, [orderId])) as
+      { buyer_id: string; seller_id: string; rate_until: Date }[];
+    if (!e) {
+      await this.orders.getOrderForParty(orderId, userId); // not-found for anyone else (SEC-SDL-09)
+      return { canRate: false, rateUntil: null, mine: null, received: null };
+    }
+    if (e.buyer_id !== userId && e.seller_id !== userId) throw new Problem('not-found');
+    const rows = (await this.db.query(`SELECT * FROM trust.ratings WHERE order_id = $1 AND removed_at IS NULL`, [orderId])) as RatingRow[];
+    const mine = rows.find((r) => r.rater_id === userId) ?? null;
+    const received = rows.find((r) => r.ratee_id === userId) ?? null;
+    return {
+      canRate: !mine && this.clock.now() <= e.rate_until,
+      rateUntil: e.rate_until.toISOString(),
+      mine: mine ? this.view(mine) : null,
+      received: received ? this.view(received) : null,
+    };
   }
 
   private async find(id: string): Promise<RatingRow> {
