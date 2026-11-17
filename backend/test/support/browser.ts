@@ -1,14 +1,19 @@
-import { randomInt } from 'crypto';
+import { randomBytes, randomInt } from 'crypto';
+import { solvePow } from '../../src/modules/identity/security/human-check';
 import type { TestApp } from './app';
 
 // A browser for API tests: keeps the cookies the backend sets, sends Origin and, on state-changing
 // requests, X-CSRF-Token copied from the CSRF cookie, as the web client does (docs/design/web/src/api.js).
 // Each browser has its own client address (X-Forwarded-For through the one trusted proxy hop), so the
 // per-address rate limits of one test do not affect another.
+// Like the web client (Unit 8), it solves a human-verification challenge (428, SEC-ABU-02) and repeats the request
+// with X-Human-Proof; `solveChallenges = false` shows the 428 instead.
 export class Browser {
+  solveChallenges = true;
   readonly cookies = new Map<string, string>();
   readonly setCookieLines: string[] = [];
-  readonly ip = `203.0.113.${randomInt(1, 255)}, 198.51.100.${randomInt(1, 255)}`;
+  // the trusted hop's address is random IPv6, so browsers of different tests (and runs) practically never share counters
+  readonly ip = `203.0.113.${randomInt(1, 255)}, 2001:db8::${randomBytes(2).toString('hex')}:${randomBytes(2).toString('hex')}:${randomBytes(2).toString('hex')}`;
 
   constructor(
     private readonly app: TestApp,
@@ -17,6 +22,13 @@ export class Browser {
   ) {}
 
   async request(method: string, path: string, body?: unknown, extra: Record<string, string> = {}): Promise<Response> {
+    const res = await this.send(method, path, body, extra);
+    if (res.status !== 428 || !this.solveChallenges) return res;
+    const { challenge } = (await res.clone().json()) as { challenge: { id: string; prefix: string; difficulty: number } };
+    return this.send(method, path, body, { ...extra, 'x-human-proof': `${challenge.id}:${solvePow(challenge.prefix, challenge.difficulty)}` });
+  }
+
+  private async send(method: string, path: string, body: unknown, extra: Record<string, string>): Promise<Response> {
     const headers: Record<string, string> = { origin: this.origin, 'x-forwarded-for': this.ip, 'user-agent': 'Mozilla/5.0 (Linux; Android 14) Chrome/130.0', ...extra };
     if (this.cookies.size > 0) headers.cookie = [...this.cookies].map(([k, v]) => `${k}=${v}`).join('; ');
     const csrf = this.cookies.get(this.csrfCookie);

@@ -61,6 +61,7 @@ export const PROBLEMS = {
   'not-found': { status: 404, title: 'Not found.' },
   'refresh-retry': { status: 409, title: 'Your session was just renewed in another tab. Please try again.' },
   'rate-limited': { status: 429, title: 'Too many requests. Please try again later.' },
+  'human-verification-required': { status: 428, title: 'Please wait a moment while we check this request.' },
   internal: { status: 500, title: 'Something went wrong. Please try again.' },
 } as const;
 export type ProblemName = keyof typeof PROBLEMS;
@@ -68,7 +69,7 @@ export type ProblemName = keyof typeof PROBLEMS;
 export class Problem extends HttpException {
   constructor(
     readonly problem: ProblemName,
-    readonly extra: { retryAfter?: number; errors?: unknown } = {},
+    readonly extra: { retryAfter?: number; errors?: unknown; challenge?: unknown } = {},
   ) {
     super(PROBLEMS[problem].title, PROBLEMS[problem].status);
   }
