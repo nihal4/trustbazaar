@@ -117,6 +117,13 @@ export class ListingsController {
 export class MyListingsController {
   constructor(private readonly listings: ListingService) {}
 
+  /** The commission, auction durations, photo and listing limits that apply to this seller now (U8-14). */
+  @Verified('list')
+  @Get('selling-terms')
+  sellingTerms(@CurrentPrincipal() p: Principal) {
+    return this.listings.sellingTerms(userOf(p));
+  }
+
   @Verified()
   @Get('listings')
   mine(@Query() q: MyListingsQuery, @CurrentPrincipal() p: Principal) {
