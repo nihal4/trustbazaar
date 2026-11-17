@@ -49,6 +49,7 @@ export function Component() {
   return (
     <div className={styles.page}>
       <h1>{t('seller.title')}</h1>
+      <p><Link to="/sell/new">{t('seller.new_listing')}</Link></p>
       <ActionNeeded orders={orders.data?.items ?? null} error={orders.error} t={t} lang={lang} />
       <Listings t={t} lang={lang} />
       <Payouts t={t} lang={lang} />
@@ -105,7 +106,7 @@ function Listings({ t, lang }: { t: T; lang: Lang }) {
       <ul className={styles.list}>
         {items.map((l) => (
           <li key={l.id} className={styles.row}>
-            {l.status === 'draft' || l.status === 'pending_review' ? <strong>{l.title}</strong> : <Link to={`/listings/${encodeURIComponent(l.id)}`}><strong>{l.title}</strong></Link>}
+            <Link to={l.status === 'draft' || l.status === 'pending_review' ? `/sell/${encodeURIComponent(l.id)}` : `/listings/${encodeURIComponent(l.id)}`}><strong>{l.title}</strong></Link>
             <p>
               {t(`seller.format.${l.saleFormat}`)}
               {l.price ? ` · ${formatMoney(BigInt(l.price), lang)}` : ''}
