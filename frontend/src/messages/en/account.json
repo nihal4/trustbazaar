@@ -193,5 +193,8 @@
   "mfa.turn_off": "Turn off",
   "mfa.off": "The authenticator app is off.",
   "mfa.off_with_password": "The authenticator app is off and your password has been changed. Your other devices were signed out.",
-  "mfa.state_changed": "This setting changed elsewhere. The page now shows the current state."
+  "mfa.state_changed": "This setting changed elsewhere. The page now shows the current state.",
+  "account.seller_link": "Your sales (seller dashboard)",
+  "account.payout_link": "Payout account",
+  "account.privacy_link": "Your data and closing your account"
 }
