@@ -12,12 +12,15 @@ export interface Limit {
   windowSeconds: number;
   /** Read the limit from a parameter instead (ConfigPort, U7-01): get(code)[field]. */
   cp?: { code: string; field: string };
+  /** SEC-ABU-02 (U1-09): above this many requests in the window, each needs a solved challenge (HumanCheck). */
+  challengeAfter?: number;
 }
 
 export const RATE_RULES: Record<string, Limit[]> = {
-  signin: [{ per: 'ip', limit: 50, windowSeconds: 15 * 60 }],
-  register: [{ per: 'ip', limit: 5, windowSeconds: 60 * 60 }],
-  'otp-send': [{ per: 'ip', limit: 10, windowSeconds: 60 * 60 }],
+  // SEC-ABU-02: an unusual rate from one address meets the challenge before the limit (U1-09)
+  signin: [{ per: 'ip', limit: 50, windowSeconds: 15 * 60, challengeAfter: 10 }],
+  register: [{ per: 'ip', limit: 5, windowSeconds: 60 * 60, challengeAfter: 2 }],
+  'otp-send': [{ per: 'ip', limit: 10, windowSeconds: 60 * 60, challengeAfter: 4 }],
   'otp-verify': [],
   reset: [{ per: 'ip', limit: 10, windowSeconds: 60 * 60 }],
   token: [{ per: 'ip', limit: 20, windowSeconds: 60 * 60 }],
