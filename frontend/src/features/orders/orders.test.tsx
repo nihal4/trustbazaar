@@ -103,7 +103,7 @@ describe('paying for an order', () => {
     expect(await screen.findByText('The payment service cannot be reached right now. Please try again shortly.')).toBeTruthy();
   });
 
-  it('FR-AUC-14 an auction win chooses self pickup first; a courier-only item says it cannot be chosen yet', async () => {
+  it('FR-AUC-14 FR-DLV-02 an auction win chooses self pickup first; a courier-only item offers courier delivery only', async () => {
     let current = order({ kind: 'auction', fulfilment: null });
     const be = backend({ order: () => current, fulfil: () => { current = order({ kind: 'auction' }); return json(200, current)(); } });
     renderApp('/orders/o-1', be);
@@ -114,8 +114,8 @@ describe('paying for an order', () => {
     expect(be.called('PUT /orders/o-1/fulfilment')[0].body).toEqual({ fulfilment: 'self_pickup' });
     cleanup();
     renderApp('/orders/o-1', backend({ order: order({ kind: 'auction', fulfilment: null, fulfilmentOptions: ['courier'] }) }));
-    expect(await screen.findByText(/Courier delivery cannot be booked yet, and this item can only be sent by courier/)).toBeTruthy();
-    expect((screen.getByRole('button', { name: 'Pick it up from the seller (no delivery fee)' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(await screen.findByRole('heading', { name: 'Courier delivery' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Pick it up from the seller (no delivery fee)' })).toBeNull();
   });
 
   it('FR-PAY-01 after the window has passed nothing can be paid', async () => {
