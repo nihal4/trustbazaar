@@ -18,7 +18,7 @@ export type StaffRoleName = (typeof STAFF_ROLES)[number];
 // The fixed list of section 6.3 (Unit 1, step-up authentication).
 export const STEP_UP_ACTIONS = [
   'password.change', 'phone.change', 'email.change', 'mfa.disable', 'recovery.regenerate',
-  'payout.change', 'game.release_early', 'account.close',
+  'payout.change', 'game.release_early', 'account.close', 'data.export',
 ] as const;
 export type StepUpAction = (typeof STEP_UP_ACTIONS)[number];
 

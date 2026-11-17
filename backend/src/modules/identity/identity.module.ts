@@ -9,6 +9,7 @@ import { ENTITIES } from './db/entities';
 import { IdentityJobs } from './jobs/identity.jobs';
 import { ClosureService } from './services/closure.service';
 import {
+  IDENTITY_DATA_EXPORT,
   ACCOUNT_CLOSURE_CHECKS,
   APPROVAL_SERVICE, AUDIT_SERVICE, FILE_VAULT, IDENTITY_COMMANDS, IDENTITY_CRYPTO, IDENTITY_QUERY, RATE_LIMITER, STAFF_QUERY,
 } from './ports';
@@ -44,6 +45,7 @@ import { SessionService } from './services/session.service';
 import { SignInService } from './services/signin.service';
 import { SignInThrottle } from './services/signin-throttle.service';
 import { StepUpService } from './services/step-up.service';
+import { IdentityDataExport } from './services/data-export';
 
 // Unit 1 (docs/design/01_identity_access.pdf). Schemas: identity, audit.
 // Also the security pipeline that every request passes (section 4.1): RateLimitGuard, AuthGuard, CsrfGuard,
@@ -56,6 +58,8 @@ import { StepUpService } from './services/step-up.service';
   imports: [TypeOrmModule.forFeature(ENTITIES)],
   controllers: [AuthController, RegistrationController, AccountController, StaffAuthController, StaffController, AdminController, KycController, StaffKycController, FilesController],
   providers: [
+    IdentityDataExport,
+    { provide: IDENTITY_DATA_EXPORT, useExisting: IdentityDataExport },
     RateLimiter,
     HumanCheck,
     PasswordHasher,
@@ -98,6 +102,6 @@ import { StepUpService } from './services/step-up.service';
     { provide: RESTRICTIONS, inject: [ModuleRef], useFactory: (m: ModuleRef) => sanctionRestrictions(m) },
     ...pipelineGuards,
   ],
-  exports: [IDENTITY_QUERY, IDENTITY_COMMANDS, STAFF_QUERY, APPROVAL_SERVICE, AUDIT_SERVICE, RATE_LIMITER, FILE_VAULT, IDENTITY_CRYPTO, ACCOUNT_CLOSURE_CHECKS],
+  exports: [IDENTITY_DATA_EXPORT, IDENTITY_QUERY, IDENTITY_COMMANDS, STAFF_QUERY, APPROVAL_SERVICE, AUDIT_SERVICE, RATE_LIMITER, FILE_VAULT, IDENTITY_CRYPTO, ACCOUNT_CLOSURE_CHECKS],
 })
 export class IdentityModule {}

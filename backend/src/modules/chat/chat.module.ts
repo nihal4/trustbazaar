@@ -22,13 +22,14 @@ import { NotificationsController } from './http/notifications.controller';
 import { ChatStaffController } from './http/chat-staff.controller';
 import { ChatController } from './http/chat.controller';
 import { ChatGateway } from './http/chat.gateway';
-import { BLOCK_PORT, CHAT_COMMANDS, NOTIFICATION_PORT, NOTIFIER, Notifier } from './ports';
+import { CHAT_DATA_EXPORT, BLOCK_PORT, CHAT_COMMANDS, NOTIFICATION_PORT, NOTIFIER, Notifier } from './ports';
 import { BlockService } from './services/block.service';
 import { ChatService } from './services/chat.service';
 import { DetectionTermsService } from './services/detection-terms.service';
 import { HoldService } from './services/hold.service';
 import { ReportService } from './services/report.service';
 import { NotificationService } from './services/notification.service';
+import { ChatDataExport } from './services/data-export';
 
 // Unit 6 (docs/design/06_chat_notifications.pdf). Schemas: chat, notify.
 // E-mail and SMS adapters live in adapters/.
@@ -39,6 +40,8 @@ import { NotificationService } from './services/notification.service';
   imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule, ListingsModule],
   controllers: [ChatController, ChatStaffController, NotificationsController, DevMailboxController],
   providers: [
+    ChatDataExport,
+    { provide: CHAT_DATA_EXPORT, useExisting: ChatDataExport },
     // log mode only, so far (U6-05); another mode is refused at start until its adapter exists
     {
       provide: DEV_MAILBOX,
@@ -80,6 +83,6 @@ import { NotificationService } from './services/notification.service';
       }),
     },
   ],
-  exports: [NOTIFIER, BLOCK_PORT, CHAT_COMMANDS, NOTIFICATION_PORT],
+  exports: [CHAT_DATA_EXPORT, NOTIFIER, BLOCK_PORT, CHAT_COMMANDS, NOTIFICATION_PORT],
 })
 export class ChatModule {}
