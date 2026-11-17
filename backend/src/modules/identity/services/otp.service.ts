@@ -7,6 +7,7 @@ import { CONFIG_PORT, ConfigPort } from '../../../kernel/config-port';
 import { Problem } from '../../../kernel/http/problems';
 import { hashOtp, otpMatches } from '../crypto/otp';
 import { RateLimiter } from '../security/rate-limiter.service';
+import { securityEvents } from '../../../kernel/metrics/metrics';
 
 // SMS one-time codes for registration, step-up, password reset and a phone change (SEC-AUTH-09, CP-05;
 // Unit 1 sections 5.4 and 6). Challenges live in identity.otp_challenges with the HMAC of the code; the
@@ -83,6 +84,7 @@ export class OtpService {
   /** Stores a new challenge for the code; returns when it expires. */
   async issue(m: EntityManager, spec: ChallengeSpec, code: string): Promise<Date> {
     const cp05 = await this.cp05();
+    securityEvents.otpSent.inc({ purpose: spec.purpose }); // SEC-LOG-05: the volume of codes sent
     const now = this.clock.now();
     const expiresAt = new Date(now.getTime() + cp05.otpValidityMinutes * 60_000);
     await m.query(

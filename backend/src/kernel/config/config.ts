@@ -54,6 +54,8 @@ export type LogLevel = 'error' | 'warn' | 'info' | 'debug';
 export interface TbConfig {
   readonly environment: Environment;
   readonly port: number;
+  /** DV-63: the metrics port (9464); 0 = any free port; null = no metrics server. */
+  readonly metricsPort: number | null;
   readonly logLevel: LogLevel;
   readonly publicOrigin: string;
   /** The current terms of use and privacy notice; registration must accept exactly these (FR-ACC-04). */
@@ -191,6 +193,10 @@ export function loadConfig(env: Env): TbConfig {
   const portText = get('PORT') ?? '3000';
   const port = Number(portText);
   if (!/^\d+$/.test(portText) || port < 1 || port > 65535) problems.push('PORT: must be a port number');
+  // DV-63: Prometheus metrics on an internal port nginx does not forward; 0 = any free port (tests), off = none
+  const metricsText = get('METRICS_PORT') ?? '9464';
+  const metricsPort = metricsText === 'off' ? null : Number(metricsText);
+  if (metricsPort !== null && (!/^\d+$/.test(metricsText) || metricsPort > 65535 || metricsPort === port)) problems.push('METRICS_PORT: a port number other than PORT, 0 or off');
 
   const logLevel = oneOf<LogLevel>('LOG_LEVEL', ['error', 'warn', 'info', 'debug'], 'info');
   if (production && logLevel === 'debug') problems.push('LOG_LEVEL: debug output is off in production (SEC-INF-05)');
@@ -265,6 +271,7 @@ export function loadConfig(env: Env): TbConfig {
     filesRoot,
     databaseUrl,
     redisUrl,
+    metricsPort,
     paymentMode,
     courierMode,
     mockCourierAutoAdvanceSeconds,

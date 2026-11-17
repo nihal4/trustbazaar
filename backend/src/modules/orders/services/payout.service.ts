@@ -12,6 +12,7 @@ import {
 import { PAYOUT_PROVIDER, PayoutProvider } from '../adapters/payout-provider';
 import { OrdersOutboxEvent, Payout, PayoutAccount, ReconciliationIssue } from '../db/entities';
 import { post } from './ledger';
+import { providerErrors } from '../../../kernel/metrics/metrics';
 
 // Payout accounts and payouts (docs/design/02_orders_payments.pdf sections 5.11, 7.4 and 7.5; FR-PAY-17 to
 // FR-PAY-19, FR-TNS-05, SEC-PAY-07). U2-10.
@@ -268,6 +269,7 @@ export class PayoutService implements OnModuleInit {
         destination: { kind: a.kind, walletE164: a.walletE164, bankName: a.bankName, routingNumber: a.routingNumber, accountLast4: a.accountLast4 },
       });
     } catch (err) {
+      providerErrors.inc({ provider: 'payout', operation: 'payout' });
       this.log.warn(`payout ${p.id} attempt ${made}: ${(err as Error).message}`);
       r = { status: 'failed' };
     }

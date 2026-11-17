@@ -29,6 +29,7 @@ export async function probe(check: () => Promise<unknown>, timeoutMs = HEALTH_TI
 
 export interface Readiness {
   ready: boolean;
+  draining?: true;
   postgres: ProbeResult;
   redis: ProbeResult;
 }
@@ -44,7 +45,15 @@ export class HealthService {
     @Inject(REDIS) private readonly redis: Pick<Redis, 'ping'>,
   ) {}
 
+  private draining = false;
+
+  /** DV-66: from the start of a shutdown the instance answers not ready, so the proxy sends no new requests to it. */
+  drain(): void {
+    this.draining = true;
+  }
+
   async readiness(): Promise<Readiness> {
+    if (this.draining) return { ready: false, draining: true, postgres: 'up', redis: 'up' };
     const [postgres, redis] = await Promise.all([
       probe(() => this.db.query('SELECT 1')),
       probe(() => this.redis.ping()),
