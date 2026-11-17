@@ -67,6 +67,15 @@ export function walletE164(input: string): string | null {
   return WALLET.test(e) ? e : null;
 }
 
+/** FR-TNS-08 (U7-09): the blind-index context of a bank account number. */
+export const BANK_ACCOUNT_INDEX = 'payments.bank_account';
+/**
+ * A bank account is its bank (the first three digits of the routing number) and its number: the same account entered
+ * with another branch's routing number is still found.
+ */
+export const bankAccountKey = (routingNumber: string, accountNumber: string): string =>
+  `${routingNumber.slice(0, 3)}|${accountNumber}`;
+
 @Injectable()
 export class PayoutService implements OnModuleInit {
   private readonly log = new Logger('PayoutService');
@@ -120,7 +129,8 @@ export class PayoutService implements OnModuleInit {
       if (old) await repo.update({ id: old.id }, { status: 'replaced', replacedAt: now });
       const id = randomUUID(); // known before the insert: the encryption context names the row (the table needs the number with the bank fields)
       const sealed = input.kind === 'bank' ? Buffer.from(await this.crypto.encrypt(input.accountNumber, `payments.payout_accounts.account_number:${id}`)) : null;
-      await repo.insert({ id, userId, ...fields, accountNumberEnc: sealed });
+      const bidx = input.kind === 'bank' ? Buffer.from(await this.crypto.blindIndex(bankAccountKey(input.routingNumber, input.accountNumber), BANK_ACCOUNT_INDEX)) : null;
+      await repo.insert({ id, userId, ...fields, accountNumberEnc: sealed, accountNumberBidx: bidx });
       const account = await repo.findOneByOrFail({ id });
       await this.attachWaiting(m, userId, account);
       await this.event(m, 'payments.payout_account.changed', userId, { userId, accountId: id, kind: account.kind, status: account.status, replaced: old !== null });

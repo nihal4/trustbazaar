@@ -83,6 +83,14 @@ describe('KYC encryption (SEC-DAT-02, SEC-DAT-03)', () => {
     expect(crypto.docNumberIndex('nid', '1234567890')).toHaveLength(32);
   });
 
+  it('FR-TNS-08 the blind index of other units: 32 bytes, equal for equal values, separated by context', async () => {
+    const a = Buffer.from(await crypto.blindIndex('090|1234567890', 'payments.bank_account'));
+    expect(a).toHaveLength(32);
+    expect(a.equals(Buffer.from(await crypto.blindIndex('090|1234567890', 'payments.bank_account')))).toBe(true);
+    expect(a.equals(Buffer.from(await crypto.blindIndex('090|1234567890', 'other.context')))).toBe(false);
+    expect(a.equals(crypto.docNumberIndex('nid', '1234567890'))).toBe(false);
+  });
+
   it('SEC-DAT-03 an encrypted field opens only in its own row and column', () => {
     const ctx = { table: 'kyc_submissions', column: 'full_name_enc', rowId: 'a' };
     const sealed = crypto.sealField('Rahim Uddin', ctx);
