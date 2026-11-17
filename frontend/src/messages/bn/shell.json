@@ -25,5 +25,6 @@
   "stepup.expired": "এই কোডের মেয়াদ শেষ হয়ে গেছে। নতুন কোড চেয়ে নিন।",
   "shell.notifications": "নোটিফিকেশন",
   "shell.notifications_unread": "নোটিফিকেশন, {count}টি পড়া হয়নি",
-  "shell.messages": "বার্তা"
+  "shell.messages": "বার্তা",
+  "shell.orders": "অর্ডার"
 }

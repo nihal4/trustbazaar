@@ -1,13 +1,14 @@
-// The order page, first part (docs/design/08_frontend.pdf section 7.4; IF-UI-04; FR-PAY-01, FR-PAY-02; U8-05).
-// The provider sends the buyer back here (/orders/{id}?payment={attempt}&result=...; Decisions log, U2-03 and
-// U8-05). The page never treats that return as payment: it shows the order's status, checking every 2 s for up
-// to 30 s, then says it is still waiting. While the order awaits payment the buyer pays here, the same for a
-// fixed-price checkout and an auction win. The full order view (tabs, deadlines, actions) is U8-06.
+// The order view (docs/design/08_frontend.pdf sections 7.4 and 7.5; IF-UI-04, IF-UI-05; FR-PAY-01, FR-PAY-02;
+// NFR-USE-07, NFR-USE-08; U8-05, U8-06). One screen for buyer and seller, from top to bottom: where the money is, in
+// one sentence; every deadline that applies, as a time and a countdown; what can be done now; the fulfilment (the
+// meetup handover or the shipments, Unit 4); the chat with the other party. While the order awaits payment the
+// buyer chooses how to get the item (self pickup, or courier with a binding quote) and pays here. The provider sends
+// the buyer back here (/orders/{id}?payment={attempt}&result=...; Decisions log, U2-03 and U8-05): the page never
+// treats that return as payment, and checks the order every 2 s for up to 30 s.
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { formatMoney } from '../../lib/money.js';
-import { describeMoney } from '../../lib/moneyState.js';
 import { formatCountdown, formatDateTime } from '../../lib/time.js';
 import { useApi } from '../../shared/api';
 import { useOpenThread } from '../../shared/chat';
@@ -22,37 +23,22 @@ import type { Lang } from '../../shared/language/lang';
 import { isApiError, problemName } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { SimulatedBanner } from '../../shared/SimulatedBanner';
+import { Actions } from './Actions';
+import { CourierChoice } from './Courier';
+import { Deadlines } from './Deadlines';
+import { Handover, useHandover } from './Handover';
+import { orderKey, type OrderView } from './model';
+import { moneyText } from './moneyText';
 import { away, PROVIDERS, providerPage, RETURN_POLL_MS, RETURN_WAIT_MS, type Provider } from './payment';
+import { Shipments, useShipments } from './Shipments';
 import en from '../../messages/en/orders.json';
 import bn from '../../messages/bn/orders.json';
 import styles from './orders.module.css';
 
 const CATALOGUES = { en, bn };
 
-/** The fields of GET /orders/{id} (Unit 2 section 3.1) that this page reads. Money in poisha, as strings. */
-export interface OrderView {
-  id: string;
-  kind: 'fixed_price' | 'auction' | 'second_chance';
-  role: 'buyer' | 'seller';
-  status: 'awaiting_payment' | 'paid' | 'cancelled' | 'closed';
-  listing: { id: string; title: string; itemKind: 'physical' | 'game_account'; photoKey: string | null };
-  /** The chat thread of the order's buyer and seller, null until they have written (Decisions log, U8-13). */
-  threadId: string | null;
-  quantity: number;
-  itemPrice: string;
-  deliveryFee: string;
-  total: string;
-  fulfilment: 'self_pickup' | 'courier' | 'game_account' | null;
-  fulfilmentOptions: ('self_pickup' | 'courier' | 'game_account')[];
-  paymentDueAt: string;
-  paidAt: string | null;
-  fulfilmentDueAt: string | null;
-  deliveryEventAt: string | null;
-  closedAt: string | null;
-  escrow: null | { state: 'held' | 'frozen_disputed' | 'released' | 'refunded' | 'partially_refunded'; releasePolicy: 'standard' | 'game_protection'; amountCollected: string; amountRefunded: string; autoReleaseAt: string | null };
-}
-
-export const orderKey = (id: string) => ['orders', id] as const;
+export type { OrderView } from './model';
+export { orderKey } from './model';
 
 export function Component() {
   const { id = '' } = useParams();
@@ -84,7 +70,12 @@ export function Component() {
     }
     return isApiError(order.error, 404) ? <h1>{t('order.not_found')}</h1> : <FormMessage kind="error">{errorText(order.error, t, lang)}</FormMessage>;
   }
-  const o = order.data;
+  return <OrderBody o={order.data} attempt={attempt} failed={failed} waited={waited} t={t} lang={lang} />;
+}
+
+function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; attempt: string | null; failed: boolean; waited: boolean; t: T; lang: Lang }) {
+  const handover = useHandover(o);
+  const shipments = useShipments(o);
   const awaiting = o.status === 'awaiting_payment';
   return (
     <div className={styles.page}>
@@ -92,12 +83,20 @@ export function Component() {
       <h1>{t('order.title', { title: o.listing.title })}</h1>
       <p>
         <strong>{t(`order.status.${o.status}`)}</strong>
+        {' · '}{t(`order.role.${o.role}`)}
         {' · '}<Link to={`/listings/${encodeURIComponent(o.listing.id)}`}>{t('order.listing_link')}</Link>
       </p>
       {attempt && <Return o={o} failed={failed} waited={waited} t={t} />}
-      {!awaiting && <p className={styles.money}>{moneyText(o, t, lang)}</p>}
+      {!(awaiting && o.role === 'buyer') && <p className={styles.money}>{moneyText(o, t, lang)}</p>}
+      <Deadlines o={o} h={handover.data ?? null} t={t} lang={lang} />
       {awaiting && o.role === 'buyer' && <PayPanel o={o} t={t} lang={lang} />}
-      {awaiting && o.role === 'seller' && <p className={styles.money}>{moneyText(o, t, lang)}</p>}
+      {o.cancelledAt && o.cancelReason && <p className={styles.hint}>{t('order.cancel_reason', { reason: o.cancelReason })}</p>}
+      <Actions o={o} t={t} lang={lang} />
+      {handover.data && <Handover o={o} h={handover.data} t={t} lang={lang} />}
+      {handover.isError && <FormMessage kind="error">{errorText(handover.error, t, lang)}</FormMessage>}
+      {shipments.data && <Shipments o={o} items={shipments.data.items} t={t} lang={lang} />}
+      {shipments.isError && <FormMessage kind="error">{errorText(shipments.error, t, lang)}</FormMessage>}
+      {o.fulfilment === 'game_account' && o.status !== 'awaiting_payment' && <p className={styles.hint}>{t('order.game_screens')}</p>}
       <OrderChat o={o} t={t} lang={lang} />
     </div>
   );
@@ -115,19 +114,6 @@ function OrderChat({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
       <p><button type="button" className={styles.secondary} onClick={() => open(o.listing.id)} disabled={busy} aria-busy={busy}>{label}</button></p>
     </>
   );
-}
-
-/** NFR-USE-07: where the money is, in one sentence (lib/moneyState.js and the reference catalogue). */
-function moneyText(o: OrderView, t: T, lang: Lang): string {
-  const ms = (s: string | null) => (s ? Date.parse(s) : null);
-  const d = describeMoney({
-    status: o.status, escrowState: o.escrow?.state ?? null, releasePolicy: o.escrow?.releasePolicy ?? 'standard',
-    total: Number(o.total), refunded: Number(o.escrow?.amountRefunded ?? 0), paymentDueAt: ms(o.paymentDueAt) ?? 0,
-    fulfilmentDueAt: ms(o.fulfilmentDueAt) ?? 0, deliveryEventAt: ms(o.deliveryEventAt), autoReleaseAt: ms(o.escrow?.autoReleaseAt ?? null), closedAt: ms(o.closedAt),
-  }, o.role);
-  const vars: Record<string, string> = {};
-  for (const [k, v] of Object.entries(d.vars)) vars[k] = 'money' in v ? formatMoney(BigInt(v.money), lang) : formatDateTime(v.time, lang);
-  return t(d.key, vars);
 }
 
 /** FR-PAY-02: after the provider, only the order's status; the return itself proves nothing. */
@@ -200,13 +186,17 @@ function PayPanel({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
         <fieldset className={styles.choice}>
           <legend>{t('pay.fulfilment')}</legend>
           <p>{t('pay.choose_fulfilment')}</p>
-          {!o.fulfilmentOptions.includes('self_pickup') && (
-            <FormMessage kind="info">{o.listing.itemKind === 'game_account' ? t('pay.game_not_yet') : t('pay.courier_not_yet')}</FormMessage>
+          {o.listing.itemKind === 'game_account' && !o.fulfilmentOptions.includes('game_account') && <FormMessage kind="info">{t('pay.game_not_yet')}</FormMessage>}
+          {o.fulfilmentOptions.includes('self_pickup') && (
+            <button type="button" disabled={choose.isPending || over} onClick={() => choose.mutate()}>
+              {t('pay.self_pickup')}
+            </button>
           )}
-          <button type="button" disabled={choose.isPending || over || !o.fulfilmentOptions.includes('self_pickup')} onClick={() => choose.mutate()}>
-            {t('pay.self_pickup')}
-          </button>
+          {o.fulfilmentOptions.includes('courier') && <CourierChoice o={o} t={t} lang={lang} disabled={over} />}
         </fieldset>
+      )}
+      {o.fulfilment && (
+        <p>{t(`pay.chosen.${o.fulfilment}`)}</p>
       )}
       {o.fulfilment && !over && (
         <>
