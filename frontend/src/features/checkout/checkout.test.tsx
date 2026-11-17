@@ -37,7 +37,7 @@ describe('checkout', () => {
     const doc = renderApp(`/checkout/${ID}`, be);
     expect(await screen.findByText(libEn['sim.payment'])).toBeTruthy();
     expect(screen.getByText('Price for one: ৳1,500')).toBeTruthy();
-    expect(screen.getByText('Courier delivery cannot be booked yet; you can pick the item up from the seller.')).toBeTruthy();
+    expect((screen.getByLabelText('Pick it up from the seller (no delivery fee)') as HTMLInputElement).checked).toBe(true);
     fireEvent.change(screen.getByLabelText('Quantity'), { target: { value: '২' } });
     expect(screen.getByText('Total to pay: ৳3,000')).toBeTruthy();
     const button = screen.getByRole('button', { name: 'Continue to payment' });
@@ -72,9 +72,20 @@ describe('checkout', () => {
     expect(await screen.findByText('Only members with a verified identity and e-mail can buy.')).toBeTruthy();
   });
 
-  it('FR-DLV-02 a courier-only item, a game account, an auction and one\'s own listing cannot be checked out yet, and say why', async () => {
+  it('FR-DLV-02 courier delivery is chosen here; the order is created without a method and the order page takes the address and the fee', async () => {
+    const be = backend({ l: { fulfilmentOptions: 'courier_only', quantity: { total: 1, available: 1 } } });
+    const doc = renderApp(`/checkout/${ID}`, be);
+    expect((await screen.findByLabelText('Courier delivery') as HTMLInputElement).checked).toBe(true);
+    expect(screen.queryByLabelText('Pick it up from the seller (no delivery fee)')).toBeNull();
+    expect(screen.getByText('You give the delivery address and see the delivery fee on the next page, before you pay.')).toBeTruthy();
+    expect(screen.getByText('Item total: ৳1,500, plus the delivery fee')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Continue to payment' }));
+    await waitFor(() => expect(doc.router.state.location.pathname).toBe('/orders/o-1'));
+    expect(be.called('POST /orders')[0].body).toEqual({ listingId: ID, quantity: 1 });
+  });
+
+  it('FR-DLV-02 a game account, an auction and one\'s own listing cannot be checked out yet, and say why', async () => {
     const cases: [Record<string, unknown>, string][] = [
-      [{ fulfilmentOptions: 'courier_only' }, 'Courier delivery cannot be booked yet. This item can only be sent by courier, so it cannot be bought for now.'],
       [{ itemKind: 'game_account', fulfilmentOptions: null }, 'Game accounts cannot be bought yet. This will be possible soon.'],
       [{ saleFormat: 'auction', price: null }, 'This item cannot be bought now.'],
       [{ seller: { id: standInMe.id } }, 'This is your own listing.'],
