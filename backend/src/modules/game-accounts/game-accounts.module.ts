@@ -10,13 +10,14 @@ import { HandoverController } from './http/handover.controller';
 import { ClaimConsumers } from './consumers/claim.consumers';
 import { HandoverConsumers } from './consumers/handover.consumers';
 import { ForwardedDisputes, GAME_DISPUTES } from './adapters/disputes';
-import { GAME_ACCOUNT_COMMANDS, GAME_ACCOUNT_PORT, GAME_ACCOUNT_QUERIES, GameAccountCommands, GameAccountQueries } from './ports';
+import { GAME_DATA_EXPORT, GAME_ACCOUNT_COMMANDS, GAME_ACCOUNT_PORT, GAME_ACCOUNT_QUERIES, GameAccountCommands, GameAccountQueries } from './ports';
 import { TakeoverService } from './services/takeover.service';
 import { GameJobsService } from './services/game-jobs.service';
 import { GameJobs } from './jobs/game.jobs';
 import { HandoverService } from './services/handover.service';
 import { OwnershipReviewService } from './services/ownership-review.service';
 import { OwnershipService } from './services/ownership.service';
+import { GameAccountsDataExport } from './services/data-export';
 
 // Unit 5 (docs/design/05_game_accounts.pdf). Schemas: game_accounts.
 // Folder layout and rules: BUILDING.md section 3. This module exports only its ports (ports/),
@@ -28,6 +29,8 @@ import { OwnershipService } from './services/ownership.service';
   imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule, ListingsModule, OrdersModule, ChatModule],
   controllers: [GameAccountsController, HandoverController],
   providers: [
+    GameAccountsDataExport,
+    { provide: GAME_DATA_EXPORT, useExisting: GameAccountsDataExport },
     OwnershipService,
     OwnershipReviewService,
     ClaimConsumers,
@@ -56,6 +59,6 @@ import { OwnershipService } from './services/ownership.service';
       }),
     },
   ],
-  exports: [GAME_ACCOUNT_COMMANDS, GAME_ACCOUNT_QUERIES, GAME_ACCOUNT_PORT],
+  exports: [GAME_DATA_EXPORT, GAME_ACCOUNT_COMMANDS, GAME_ACCOUNT_QUERIES, GAME_ACCOUNT_PORT],
 })
 export class GameAccountsModule {}

@@ -20,7 +20,7 @@ import { HandoverController } from './http/handover.controller';
 import { MockCourierController } from './http/mock-courier.controller';
 import { CourierWebhookController, ShipmentController } from './http/shipment.controller';
 import { DeliveryJobs } from './jobs/delivery.jobs';
-import { DELIVERY_COMMANDS, DELIVERY_PORT, DELIVERY_QUERIES } from './ports';
+import { DELIVERY_DATA_EXPORT, DELIVERY_COMMANDS, DELIVERY_PORT, DELIVERY_QUERIES } from './ports';
 import { AddressService } from './services/address.service';
 import { AreasService } from './services/areas.service';
 import { BookingService } from './services/booking.service';
@@ -34,6 +34,7 @@ import { RecordsService } from './services/records.service';
 import { ShipmentService } from './services/shipment.service';
 import { StatusService } from './services/status.service';
 import { UpkeepService } from './services/upkeep.service';
+import { DeliveryDataExport } from './services/data-export';
 
 /**
  * The courier adapter chosen by COURIER_MODE (section 3.3). Only the mock exists until Pathao or Steadfast sandbox
@@ -55,6 +56,8 @@ export function buildCourier(config: TbConfig, redis: Redis, clock: Clock): Mock
     DeliveryController, DeliveryAdminController, HandoverController, ShipmentController, CourierWebhookController, DeliveryStaffController, MockCourierController,
   ],
   providers: [
+    DeliveryDataExport,
+    { provide: DELIVERY_DATA_EXPORT, useExisting: DeliveryDataExport },
     AreasService, FareTableService, AddressService, QuoteService, MeetupPointsService, HandoverService, HandoverConsumers,
     CourierBreaker, StatusService, BookingService, ShipmentService, RecordsService, ShipmentConsumers, UpkeepService, DeliveryJobs, DeliveryPorts,
     { provide: COURIER, inject: [TB_CONFIG, REDIS, CLOCK], useFactory: buildCourier },
@@ -63,6 +66,6 @@ export function buildCourier(config: TbConfig, redis: Redis, clock: Clock): Mock
     { provide: DELIVERY_COMMANDS, useExisting: DeliveryPorts },
     { provide: DELIVERY_QUERIES, useExisting: DeliveryPorts },
   ],
-  exports: [DELIVERY_PORT, DELIVERY_COMMANDS, DELIVERY_QUERIES],
+  exports: [DELIVERY_DATA_EXPORT, DELIVERY_PORT, DELIVERY_COMMANDS, DELIVERY_QUERIES],
 })
 export class DeliveryModule {}

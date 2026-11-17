@@ -113,3 +113,6 @@ export interface DeliveryQueries {
   openIssues(cursor?: string): Promise<Page<DeliveryIssue>>;
 }
 export const DELIVERY_QUERIES = Symbol('DELIVERY_QUERIES');
+
+/** This unit's part of the data export (FR-PRV-03; U7-11): a DataExportSource (kernel/privacy/data-export.ts). */
+export const DELIVERY_DATA_EXPORT = Symbol('DELIVERY_DATA_EXPORT');
