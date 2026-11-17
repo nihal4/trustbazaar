@@ -9,7 +9,9 @@ import { checkoutRoutes } from '../features/checkout/routes';
 import { listingRoutes } from '../features/listings/routes';
 import { notificationRoutes } from '../features/notifications/routes';
 import { orderRoutes } from '../features/orders/routes';
+import { privacyRoutes } from '../features/privacy/routes';
 import { searchRoutes } from '../features/search/routes';
+import { sellerRoutes } from '../features/seller/routes';
 import { createDocument, DocumentRoot, signInHere } from '../shared/document';
 import type { LiveSocket } from '../shared/live';
 import type { Me } from '../shared/me';
@@ -129,7 +131,7 @@ export class FakeSocket implements LiveSocket {
 export function renderApp(at: string, be: ReturnType<typeof fakeBackend>, lang: 'en' | 'bn' = 'en', socket?: FakeSocket) {
   return renderDocument(at, be, lang, {
     home: { path: '/', sameDocument: true }, accountLinks: true,
-    routes: [{ index: true, element: <h1>Home</h1> }, ...searchRoutes.filter((r) => !r.index), ...listingRoutes, ...checkoutRoutes, ...orderRoutes, ...accountRoutes, ...notificationRoutes, ...chatRoutes],
+    routes: [{ index: true, element: <h1>Home</h1> }, ...searchRoutes.filter((r) => !r.index), ...listingRoutes, ...checkoutRoutes, ...orderRoutes, ...sellerRoutes, ...privacyRoutes, ...accountRoutes, ...notificationRoutes, ...chatRoutes],
   }, undefined, socket);
 }
 

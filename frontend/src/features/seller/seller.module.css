@@ -1,0 +1,20 @@
+/* The seller dashboard and the payout account (section 7.8; U8-09): one column; 44 px targets; tables become lists. */
+.page { max-width: 48rem; }
+.page section, .page form { margin-block: var(--tb-space-3); }
+.panel { border: 1px solid var(--tb-border); border-radius: var(--tb-radius); background: var(--tb-surface); padding: var(--tb-space-2) var(--tb-space-3); }
+.hint { color: var(--tb-muted); }
+.list { list-style: none; padding: 0; }
+.row { border-bottom: 1px solid var(--tb-border); padding-block: var(--tb-space-2); overflow-wrap: anywhere; }
+.row p { margin: var(--tb-space-1) 0 0; }
+.select, .form input { min-height: 44px; font: inherit; max-width: 100%; }
+.form { display: grid; gap: var(--tb-space-1); }
+.choice { border: 0; padding: 0; margin: var(--tb-space-2) 0; }
+.choice div { display: flex; align-items: center; gap: var(--tb-space-2); min-height: 44px; }
+.buttons { display: flex; flex-wrap: wrap; gap: var(--tb-space-2); margin-block: var(--tb-space-2); }
+.primary { min-height: 44px; padding: 0 var(--tb-space-3); border-radius: var(--tb-radius); background: var(--tb-accent); color: var(--tb-accent-text); border: 0; font: inherit; font-weight: 700; }
+.primary:disabled { opacity: 0.6; }
+.secondary { min-height: 44px; padding: 0 var(--tb-space-3); border: 1px solid var(--tb-border); border-radius: var(--tb-radius); background: var(--tb-bg); color: var(--tb-text); font: inherit; cursor: pointer; }
+.statement { border-top: 1px solid var(--tb-border); padding-top: var(--tb-space-2); margin-top: var(--tb-space-2); }
+.breakdown { display: grid; grid-template-columns: minmax(0, 1fr) max-content; gap: var(--tb-space-1) var(--tb-space-3); max-width: 26rem; }
+.breakdown dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.total { font-weight: 700; border-top: 1px solid var(--tb-border); padding-top: var(--tb-space-1); }
