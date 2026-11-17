@@ -145,6 +145,15 @@ async function withPhotos(s: ReturnType<typeof setup>, o: Row = {}, n = 2) {
 }
 
 describe('ListingService', () => {
+  it('FR-MON-01 CP-07 CP-28 CP-33 the selling terms: the commission for this seller, durations, photo and listing limits', async () => {
+    const s = setup({ query: (sql) => (sql.includes('count(*)') ? [{ n: 1 }] : []), params: { 'CP-25': { standard_bps: 500, pro_bps: 300 } } });
+    expect(await s.svc.sellingTerms(SELLER)).toEqual({
+      pro: false, commissionBps: 500, auctionDurations: ['1 hour', '24 hours'], photos: { max: 3, maxBytes: 1000, min: 2 }, activeListings: { count: 1, limit: 2 },
+    });
+    const pro = setup({ query: (sql) => (sql.includes('count(*)') ? [{ n: 4 }] : []), params: { 'CP-25': { standard_bps: 500, pro_bps: 300 } }, pro: true });
+    expect(await pro.svc.sellingTerms(SELLER)).toMatchObject({ pro: true, commissionBps: 300, activeListings: { count: 4, limit: 5 } });
+  });
+
   it('FR-LST-10 categories: prohibited ones are listed but not selectable', async () => {
     const s = setup();
     expect((await s.svc.categories()).map((c) => [c.id, c.selectable])).toEqual([[1, true], [2, true], [3, false]]);
