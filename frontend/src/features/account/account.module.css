@@ -124,3 +124,5 @@
 .steps {
   padding-left: 1.5rem;
 }
+.links { list-style: none; padding: 0; display: grid; gap: var(--tb-space-1); }
+.links a { display: inline-flex; align-items: center; min-height: 44px; }
