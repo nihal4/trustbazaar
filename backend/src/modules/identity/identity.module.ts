@@ -19,6 +19,7 @@ import { RegistrationController } from './http/registration.controller';
 import { AdminController, StaffAuthController, StaffController } from './http/staff.controller';
 import { pipelineGuards } from './security/guards';
 import { RateLimiter } from './security/rate-limiter.service';
+import { HumanCheck } from './security/human-check';
 import { RESTRICTIONS, sanctionRestrictions } from './security/restrictions';
 import { ApprovalService } from './services/approval.service';
 import { AuditService } from './services/audit.service';
@@ -56,6 +57,7 @@ import { StepUpService } from './services/step-up.service';
   controllers: [AuthController, RegistrationController, AccountController, StaffAuthController, StaffController, AdminController, KycController, StaffKycController, FilesController],
   providers: [
     RateLimiter,
+    HumanCheck,
     PasswordHasher,
     AuditService,
     SessionService,
