@@ -172,4 +172,20 @@ describe('ratings and the profile summary', () => {
     expect([second.items.map((i) => i.text), second.nextCursor]).toEqual([['Review 0'], null]);
     expect((await anonymous('GET', `/users/${buyer.userId}/ratings?cursor=bm9wZQ`)).status).toBe(400);
   });
+
+  it('FR-REV-01 FR-REV-03 FR-REV-06 SEC-SDL-09 each party reads the rating window, its own rating and the one received; no one else', async () => {
+    const [buyer, seller, stranger] = [await member(), await member(), await member()];
+    const open = await order(buyer.userId, seller.userId);
+    expect(await (await buyer.call('GET', `/orders/${open}/ratings`)).json()).toEqual({ canRate: false, rateUntil: null, mine: null, received: null });
+    const id = await deal(buyer, seller);
+    const before = (await (await seller.call('GET', `/orders/${id}/ratings`)).json()) as { canRate: boolean; rateUntil: string };
+    expect(before).toEqual({ canRate: true, rateUntil: expect.any(String), mine: null, received: null });
+    const r = (await (await buyer.call('POST', `/orders/${id}/rating`, { stars: 4, text: 'Good item, as described.' })).json()) as { id: string };
+    expect(await (await buyer.call('GET', `/orders/${id}/ratings`)).json())
+      .toEqual({ canRate: false, rateUntil: before.rateUntil, mine: expect.objectContaining({ id: r.id, stars: 4, editableUntil: expect.any(String) }), received: null });
+    expect(await (await seller.call('GET', `/orders/${id}/ratings`)).json())
+      .toEqual({ canRate: true, rateUntil: before.rateUntil, mine: null, received: expect.objectContaining({ id: r.id, stars: 4, reply: null }) });
+    expect((await stranger.call('GET', `/orders/${id}/ratings`)).status).toBe(404);
+    expect((await stranger.call('GET', `/orders/${open}/ratings`)).status).toBe(404);
+  });
 });
