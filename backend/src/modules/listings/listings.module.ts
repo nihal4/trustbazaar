@@ -26,6 +26,7 @@ import { SearchService } from './services/search.service';
 import { SecondChanceService } from './services/second-chance.service';
 import { StockService } from './services/stock.service';
 import { FeaturedConsumers } from './services/featured.consumers';
+import { ListingsClosure } from './services/closure.consumers';
 
 // Unit 3 (docs/design/03_listings_auctions.pdf). Schemas: listings, auctions.
 // Folder layout and rules: BUILDING.md section 3. This module exports only its ports (ports/),
@@ -40,6 +41,7 @@ import { FeaturedConsumers } from './services/featured.consumers';
     AuctionsJobs,
     BidService,
     FeaturedConsumers,
+    ListingsClosure,
     ListingService,
     ListingCommandsService,
     ListingReviewService,

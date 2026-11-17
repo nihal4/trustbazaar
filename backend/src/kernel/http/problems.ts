@@ -25,6 +25,7 @@ export const PROBLEMS = {
   'not-claimed': { status: 409, title: 'Claim this submission before reviewing it.' },
   'kyc-cannot-approve': { status: 409, title: 'This submission cannot be approved; reject it with the reason shown.' },
   'transaction-not-allowed': { status: 403, title: 'Your account cannot do this right now.' },
+  'account-not-closable': { status: 409, title: 'Your account cannot be closed yet. Please finish the items listed first.' },
   'config-invalid': { status: 422, title: 'These parameter values break the rules; nothing was changed.' },
   'four-eyes-required': { status: 409, title: 'This change needs a second administrator; propose it instead.' },
   'password-rejected': { status: 422, title: 'Please choose a different password.' },
