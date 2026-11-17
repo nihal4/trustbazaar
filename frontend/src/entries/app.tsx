@@ -5,7 +5,9 @@ import { checkoutRoutes } from '../features/checkout/routes';
 import { listingRoutes } from '../features/listings/routes';
 import { notificationRoutes } from '../features/notifications/routes';
 import { orderRoutes } from '../features/orders/routes';
+import { privacyRoutes } from '../features/privacy/routes';
 import { searchRoutes } from '../features/search/routes';
+import { sellerRoutes } from '../features/seller/routes';
 import { createDocument, DocumentRoot, signInHere } from '../shared/document';
 import '../shared/tokens.css';
 
@@ -22,6 +24,8 @@ const doc = createDocument({
     ...listingRoutes,
     ...checkoutRoutes,
     ...orderRoutes,
+    ...sellerRoutes,
+    ...privacyRoutes,
     ...accountRoutes,
     ...notificationRoutes,
     ...chatRoutes,
