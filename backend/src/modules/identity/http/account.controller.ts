@@ -1,14 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, Post, Req } from '@nestjs/common';
-import type { Request } from 'express';
+import { Body, Controller, Delete, Get, HttpCode, Post, Req, Res } from '@nestjs/common';
+import type { Request, Response } from 'express';
 import { Public, RateLimit, SignedIn, StepUp } from '../../../kernel/http/policies';
 import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
+import { ClosureService } from '../services/closure.service';
 import { ContactService, Me } from '../services/contact.service';
 import { MfaService } from '../services/mfa.service';
 import { PasswordService } from '../services/password.service';
 import { StepUpService, StepUpStart } from '../services/step-up.service';
 import { CodeDto, EmailChangeDto, MfaDisableDto, PasswordChangeDto, PasswordForgotDto, PasswordResetDto, PhoneChangeDto, StepUpStartDto, StepUpVerifyDto } from './auth.dto';
 import { ctxOf } from './request';
+import { clearSessionCookies } from './session-cookies';
 
 // Step-up, password reset and change, contact changes (Unit 1 sections 4.2, 6.3 to 6.5; U1-05).
 const userOf = (p: Principal) => {
@@ -23,6 +25,7 @@ export class AccountController {
     private readonly passwords: PasswordService,
     private readonly contacts: ContactService,
     private readonly mfa: MfaService,
+    private readonly closure: ClosureService,
   ) {}
 
   /** I-51 (c): who is signed in; also the web client's refresh probe, so it has no rate-limit rule (U1-13). */
@@ -146,5 +149,18 @@ export class AccountController {
   @HttpCode(200)
   regenerateCodes(@CurrentPrincipal() p: Principal, @Req() req: Request) {
     return this.mfa.regenerate(userOf(p).userId, ctxOf(req));
+  }
+
+  /**
+   * FR-ACC-11: close the account (step-up 'account.close'). Refused with the reasons while an order, a win or leading
+   * bid, a dispute or a balance is open (account-not-closable); otherwise every session ends and the cookies go.
+   */
+  @SignedIn()
+  @StepUp('account.close')
+  @Post('me/close')
+  @HttpCode(204)
+  async close(@CurrentPrincipal() p: Principal, @Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<void> {
+    await this.closure.close(userOf(p).userId, ctxOf(req));
+    clearSessionCookies(res);
   }
 }

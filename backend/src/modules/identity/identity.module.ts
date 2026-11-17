@@ -7,7 +7,9 @@ import { IdentityCrypto } from './crypto/identity-crypto';
 import { PasswordHasher } from './crypto/password';
 import { ENTITIES } from './db/entities';
 import { IdentityJobs } from './jobs/identity.jobs';
+import { ClosureService } from './services/closure.service';
 import {
+  ACCOUNT_CLOSURE_CHECKS,
   APPROVAL_SERVICE, AUDIT_SERVICE, FILE_VAULT, IDENTITY_COMMANDS, IDENTITY_CRYPTO, IDENTITY_QUERY, RATE_LIMITER, STAFF_QUERY,
 } from './ports';
 import { AccountController } from './http/account.controller';
@@ -76,8 +78,10 @@ import { StepUpService } from './services/step-up.service';
     KycService,
     KycReviewService,
     IdentityJobs,
+    ClosureService,
     // The ports (ports/index.ts): the only things other units may use (DC-1).
     { provide: IDENTITY_QUERY, useClass: IdentityQueryService },
+    { provide: ACCOUNT_CLOSURE_CHECKS, useExisting: ClosureService },
     { provide: IDENTITY_COMMANDS, useClass: IdentityCommandsService },
     { provide: STAFF_QUERY, useClass: StaffQueryService },
     { provide: APPROVAL_SERVICE, useClass: ApprovalPortAdapter },
@@ -92,6 +96,6 @@ import { StepUpService } from './services/step-up.service';
     { provide: RESTRICTIONS, inject: [ModuleRef], useFactory: (m: ModuleRef) => sanctionRestrictions(m) },
     ...pipelineGuards,
   ],
-  exports: [IDENTITY_QUERY, IDENTITY_COMMANDS, STAFF_QUERY, APPROVAL_SERVICE, AUDIT_SERVICE, RATE_LIMITER, FILE_VAULT, IDENTITY_CRYPTO],
+  exports: [IDENTITY_QUERY, IDENTITY_COMMANDS, STAFF_QUERY, APPROVAL_SERVICE, AUDIT_SERVICE, RATE_LIMITER, FILE_VAULT, IDENTITY_CRYPTO, ACCOUNT_CLOSURE_CHECKS],
 })
 export class IdentityModule {}

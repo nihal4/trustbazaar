@@ -187,6 +187,55 @@ VALUES ('identity.kyc.verified', 'c0000000-0000-4000-8000-000000000001', '{"user
 SELECT pg_temp.expect_fail('outbox event names belong to this unit',
  $q$INSERT INTO identity.outbox (event_type, aggregate_id, payload) VALUES ('orders.order.paid','c0000000-0000-4000-8000-000000000001','{}')$q$);
 
+-- ---------------------------------------------------------------- erasure (FR-PRV-04, U1-09)
+INSERT INTO identity.users (id, display_name, phone_e164, phone_verified_at, email, password_hash, password_single_factor_ok, adult_confirmed_at,
+                            mfa_enabled, area_district, approx_lat, approx_lng, account_status, closed_at, erase_after) VALUES
+ ('e0000000-0000-4000-8000-000000000001', 'Erased', '+8801711000091', now(), 'erase1@tb.test', '$argon2id$v=19$x', false, now(), true, 'Dhaka', 23.8, 90.4, 'closed', now() - interval '31 days', now() - interval '1 day'),
+ ('e0000000-0000-4000-8000-000000000002', 'NotDue', '+8801711000092', now(), 'erase2@tb.test', '$argon2id$v=19$x', true, now(), false, NULL, NULL, NULL, 'closed', now(), now() + interval '29 days'),
+ ('e0000000-0000-4000-8000-000000000003', 'Rejected', '+8801711000093', now(), 'erase3@tb.test', '$argon2id$v=19$x', true, now(), false, NULL, NULL, NULL, 'active', NULL, NULL),
+ ('e0000000-0000-4000-8000-000000000004', 'Resubmit', '+8801711000094', now(), 'erase4@tb.test', '$argon2id$v=19$x', true, now(), false, NULL, NULL, NULL, 'active', NULL, NULL);
+INSERT INTO identity.kyc_submissions (id, user_id, doc_type, doc_number_enc, doc_number_bidx, full_name_enc, dob_enc, person_bidx, key_version, is_adult, liveness_action, status, decided_by, decided_at, rejection_reason, submitted_at) VALUES
+ ('f0000000-0000-4000-8000-000000000001', 'e0000000-0000-4000-8000-000000000001', 'nid', '\x01', decode(repeat('e1',32),'hex'), '\x01', '\x01', decode(repeat('e1',32),'hex'), 1, true, 'blink', 'approved', 'b0000000-0000-4000-8000-000000000001', now() - interval '60 days', NULL, now() - interval '61 days'),
+ ('f0000000-0000-4000-8000-000000000003', 'e0000000-0000-4000-8000-000000000003', 'nid', '\x01', decode(repeat('e3',32),'hex'), '\x01', '\x01', NULL, 1, true, 'blink', 'rejected', 'b0000000-0000-4000-8000-000000000001', now() - interval '31 days', 'image_unreadable', now() - interval '32 days'),
+ ('f0000000-0000-4000-8000-000000000004', 'e0000000-0000-4000-8000-000000000004', 'nid', '\x01', decode(repeat('e4',32),'hex'), '\x01', '\x01', NULL, 1, true, 'blink', 'rejected', 'b0000000-0000-4000-8000-000000000001', now() - interval '31 days', 'image_unreadable', now() - interval '32 days'),
+ ('f0000000-0000-4000-8000-000000000005', 'e0000000-0000-4000-8000-000000000004', 'nid', '\x01', decode(repeat('e5',32),'hex'), '\x01', '\x01', NULL, 1, true, 'blink', 'rejected', 'b0000000-0000-4000-8000-000000000001', now() - interval '5 days', 'image_unreadable', now() - interval '6 days');
+INSERT INTO identity.kyc_files (submission_id, kind, storage_key, wrapped_dek, key_version, sha256, mime, byte_size) VALUES
+ ('f0000000-0000-4000-8000-000000000001', 'doc_front', 'erase-k-1', '\x01', 1, decode(repeat('bb',32),'hex'), 'image/jpeg', 1000),
+ ('f0000000-0000-4000-8000-000000000003', 'doc_front', 'erase-k-3', '\x01', 1, decode(repeat('bb',32),'hex'), 'image/jpeg', 1000),
+ ('f0000000-0000-4000-8000-000000000004', 'doc_front', 'erase-k-4', '\x01', 1, decode(repeat('bb',32),'hex'), 'image/jpeg', 1000);
+INSERT INTO identity.identity_claims (doc_number_bidx, user_id, submission_id) VALUES (decode(repeat('e1',32),'hex'), 'e0000000-0000-4000-8000-000000000001', 'f0000000-0000-4000-8000-000000000001');
+INSERT INTO identity.totp_factors (id, principal_type, user_id, secret_enc, key_version, confirmed_at) VALUES ('f1000000-0000-4000-8000-000000000001', 'user', 'e0000000-0000-4000-8000-000000000001', '\x01', 1, now());
+INSERT INTO identity.recovery_codes (totp_factor_id, code_hash) VALUES ('f1000000-0000-4000-8000-000000000001', decode(repeat('cc',32),'hex'));
+
+SET LOCAL ROLE tb_app;
+SELECT pg_temp.ok('FR-PRV-04 erasure returns the storage keys of the files whose data keys it destroyed',
+ (SELECT array_agg(storage_key::text) FROM identity.erase_user('e0000000-0000-4000-8000-000000000001')) = ARRAY['erase-k-1']);
+SELECT pg_temp.ok('FR-PRV-04 erasure empties the personal fields and keeps the user row',
+ (SELECT display_name = 'Deleted user' AND phone_e164 IS NULL AND email IS NULL AND password_hash IS NULL AND area_district IS NULL
+         AND approx_lat IS NULL AND NOT mfa_enabled AND erased_at IS NOT NULL FROM identity.users WHERE id = 'e0000000-0000-4000-8000-000000000001'));
+SELECT pg_temp.ok('FR-PRV-04 erasure removes MFA factors, recovery codes and the identity claim',
+ NOT EXISTS (SELECT 1 FROM identity.totp_factors WHERE user_id = 'e0000000-0000-4000-8000-000000000001')
+ AND NOT EXISTS (SELECT 1 FROM identity.recovery_codes WHERE totp_factor_id = 'f1000000-0000-4000-8000-000000000001')
+ AND NOT EXISTS (SELECT 1 FROM identity.identity_claims WHERE user_id = 'e0000000-0000-4000-8000-000000000001'));
+SELECT pg_temp.ok('FR-PRV-04 erasure crypto-shreds KYC: fields and indexes cleared, data keys destroyed',
+ (SELECT doc_number_enc IS NULL AND doc_number_bidx IS NULL AND person_bidx IS NULL AND erased_at IS NOT NULL FROM identity.kyc_submissions WHERE id = 'f0000000-0000-4000-8000-000000000001')
+ AND (SELECT wrapped_dek IS NULL AND erased_at IS NOT NULL FROM identity.kyc_files WHERE storage_key = 'erase-k-1'));
+SELECT pg_temp.ok('FR-PRV-04 erasing an erased account does nothing',
+ NOT EXISTS (SELECT 1 FROM identity.erase_user('e0000000-0000-4000-8000-000000000001')));
+SELECT pg_temp.expect_fail('FR-PRV-04 an account is not erased before erase_after',
+ $q$SELECT * FROM identity.erase_user('e0000000-0000-4000-8000-000000000002')$q$);
+SELECT pg_temp.expect_fail('FR-PRV-04 an open account is never erased',
+ $q$SELECT * FROM identity.erase_user('e0000000-0000-4000-8000-000000000003')$q$);
+SELECT pg_temp.ok('FR-PRV-04 the rejected-KYC erasure returns only the keys of the files it erased',
+ (SELECT 'erase-k-3' = ANY(array_agg(storage_key::text)) AND NOT 'erase-k-4' = ANY(array_agg(storage_key::text)) FROM identity.erase_rejected_kyc()));
+SELECT pg_temp.ok('FR-PRV-04 KYC rejected over 30 days ago without a resubmission is erased; a resubmitted user''s is kept',
+ (SELECT erased_at IS NOT NULL AND doc_number_enc IS NULL FROM identity.kyc_submissions WHERE id = 'f0000000-0000-4000-8000-000000000003')
+ AND (SELECT erased_at IS NULL FROM identity.kyc_submissions WHERE id = 'f0000000-0000-4000-8000-000000000004')
+ AND (SELECT erased_at IS NULL FROM identity.kyc_submissions WHERE id = 'f0000000-0000-4000-8000-000000000005'));
+SELECT pg_temp.expect_fail('FR-PRV-04 the application role cannot delete MFA factors itself',
+ $q$DELETE FROM identity.totp_factors$q$);
+RESET ROLE;
+
 -- ---------------------------------------------------------------- application role permissions
 SET LOCAL ROLE tb_app;
 SELECT pg_temp.expect_fail('SEC-INF-03 application role cannot change the schema',
