@@ -12,7 +12,11 @@ import type { IssuedCookies } from '../http/session-cookies';
 import { RateLimiter } from '../security/rate-limiter.service';
 import { AuditService } from './audit.service';
 import { SecondFactorService } from './second-factor.service';
+import { HumanCheck } from '../security/human-check';
 import { SignInThrottle } from './signin-throttle.service';
+
+/** SEC-ABU-02: failures of one login before a sign-in needs a solved challenge (CP-04 delays from the fifth). */
+export const HUMAN_CHECK_AFTER_FAILURES = 3;
 import { RequestContext, SessionService } from './session.service';
 import { securityEvents } from '../../../kernel/metrics/metrics';
 
@@ -61,6 +65,7 @@ export class SignInService {
     @Inject(REDIS) private readonly redis: Redis,
     @Inject(NOTIFICATIONS) private readonly notify: NotificationPort,
     @Inject(CLOCK) private readonly clock: Clock,
+    private readonly human: HumanCheck,
   ) {}
 
   async signIn(login: string, password: string, deviceKey: string | undefined, ctx: RequestContext): Promise<SignInResult> {
@@ -69,6 +74,8 @@ export class SignInService {
     const failKey = account ? Object.values(account)[0] : login.trim().toLowerCase();
     const now = this.clock.now();
     await this.throttle.check(failKey);
+    // SEC-ABU-02: after repeated failures for this login the next attempt needs a solved challenge (428 otherwise)
+    if ((await this.throttle.failures(failKey)) >= HUMAN_CHECK_AFTER_FAILURES) await this.human.require('signin', ctx.ip ?? '', ctx.humanProof);
 
     let user: UserRow | undefined;
     if (account) {

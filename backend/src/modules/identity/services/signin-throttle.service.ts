@@ -36,6 +36,11 @@ export class SignInThrottle {
     if (until > now) throw new Problem('rate-limited', { retryAfter: Math.ceil((until - now) / 1000) });
   }
 
+  /** The login's recent failures (SEC-ABU-02: from the third on, a sign-in needs a solved challenge). */
+  async failures(login: string): Promise<number> {
+    return Number(await this.redis.hget(signInThrottleKey(login), 'count').catch(() => 0)) || 0;
+  }
+
   /** Counts a failure; true when this failure starts the delay (the owner is told once). */
   async failed(login: string): Promise<boolean> {
     const key = signInThrottleKey(login);

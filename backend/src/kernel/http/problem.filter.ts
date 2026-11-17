@@ -29,6 +29,7 @@ export class ProblemFilter implements ExceptionFilter {
       status = PROBLEMS[error.problem].status;
       body = { type: problemType(error.problem), title: PROBLEMS[error.problem].title, status };
       if (error.extra.errors !== undefined) body.errors = error.extra.errors;
+      if (error.extra.challenge !== undefined) body.challenge = error.extra.challenge; // SEC-ABU-02: the proof-of-work to solve
       if (error.extra.retryAfter !== undefined) res.setHeader('Retry-After', String(error.extra.retryAfter));
     } else if (error instanceof HttpException && error.getStatus() < 500) {
       status = error.getStatus();
