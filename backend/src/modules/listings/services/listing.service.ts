@@ -335,11 +335,19 @@ export class ListingService {
     });
   }
 
-  /** A draft is discarded; an active listing is cancelled while no order holds a unit, an auction while it has no bids. */
-  async cancel(userId: string, id: string) {
+  /**
+   * A draft is discarded; an active listing is cancelled while no order holds a unit, an auction while it has no bids.
+   * At account closure (FR-ACC-11, U1-09) a listing awaiting review is cancelled too.
+   */
+  async cancel(userId: string, id: string, closing = false) {
     await this.db.transaction(async (m) => {
       const l = await this.lockOwn(m, id, userId);
       const from = l.status;
+      if (closing && from === 'pending_review') {
+        await m.getRepository(Listing).update({ id }, { status: 'cancelled' });
+        await this.history(m, id, from, 'cancelled', userId, 'account closed');
+        return;
+      }
       if (from === 'active') {
         if (l.saleFormat === 'fixed_price' && l.quantityReserved > 0) throw new Problem('listing-state', { errors: [{ field: 'listing', reason: 'order-in-progress' }] });
         if (l.saleFormat === 'auction') {
@@ -351,7 +359,7 @@ export class ListingService {
         throw new Problem('listing-state');
       }
       await m.getRepository(Listing).update({ id }, { status: 'cancelled' });
-      await this.history(m, id, from, 'cancelled', userId, from === 'draft' ? 'discarded by the seller' : 'cancelled by the seller');
+      await this.history(m, id, from, 'cancelled', userId, closing ? 'account closed' : from === 'draft' ? 'discarded by the seller' : 'cancelled by the seller');
       if (from === 'active') await publish(m, 'listings.listing.cancelled', id, { listingId: id, sellerId: userId, itemKind: l.itemKind }); // I-30
     });
     return this.view(id, { userId });
