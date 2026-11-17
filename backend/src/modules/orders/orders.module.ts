@@ -11,7 +11,7 @@ import { MyPayoutsController, StaffPayoutsController } from './http/payouts.cont
 import { MonetizationController } from './http/monetization.controller';
 import { MonetizationService } from './services/monetization.service';
 import { OrdersClosureCheck } from './services/closure.check';
-import { ESCROW_COMMANDS, ESCROW_QUERY, ORDERS_PORT, PAYOUT_CHECKS, PRO_STATUS } from './ports';
+import { ORDERS_DATA_EXPORT, ESCROW_COMMANDS, ESCROW_QUERY, ORDERS_PORT, PAYOUT_CHECKS, PRO_STATUS } from './ports';
 import { ForwardedGameCheckout, GAME_CHECKOUT } from './adapters/game-accounts';
 import { EscrowService } from './services/escrow.service';
 import { RefundService } from './services/refund.service';
@@ -27,6 +27,7 @@ import { TB_CONFIG } from '../../kernel/config/config.provider';
 import { REDIS } from '../../kernel/redis.provider';
 import type { TbConfig } from '../../kernel/config/config';
 import type Redis from 'ioredis';
+import { OrdersDataExport } from './services/data-export';
 
 // Unit 2 (docs/design/02_orders_payments.pdf). Schemas: orders, payments.
 // Payment provider adapters live in adapters/.
@@ -37,6 +38,8 @@ import type Redis from 'ioredis';
   imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule, ListingsModule, ChatModule, DeliveryModule],
   controllers: [OrdersController, OrderActionsController, PaymentsController, StripeWebhookController, MockPayController, MyPayoutsController, StaffPayoutsController, MonetizationController],
   providers: [
+    OrdersDataExport,
+    { provide: ORDERS_DATA_EXPORT, useExisting: OrdersDataExport },
     OrderService,
     PaymentService,
     { provide: PAYMENT_PROVIDERS, inject: [TB_CONFIG, REDIS], useFactory: (c: TbConfig, r: Redis) => buildProviders(c, r) },
@@ -56,6 +59,6 @@ import type Redis from 'ioredis';
     { provide: PAYOUT_CHECKS, useExisting: PayoutService },
     { provide: GAME_CHECKOUT, useClass: ForwardedGameCheckout }, // Unit 5's GameAccountPort (I-29)
   ],
-  exports: [ORDERS_PORT, ESCROW_COMMANDS, ESCROW_QUERY, PAYOUT_CHECKS, PRO_STATUS],
+  exports: [ORDERS_DATA_EXPORT, ORDERS_PORT, ESCROW_COMMANDS, ESCROW_QUERY, PAYOUT_CHECKS, PRO_STATUS],
 })
 export class OrdersModule {}
