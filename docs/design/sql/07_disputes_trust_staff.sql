@@ -687,7 +687,7 @@ CREATE TABLE staff.export_requests (
   user_id       uuid NOT NULL REFERENCES identity.users(id),
   requested_at  timestamptz NOT NULL DEFAULT now(),
   ready_at      timestamptz,
-  file_key      varchar(80),
+  file_key      varchar(400),                -- a FileVault key (Unit 1), 'erased' once the file is deleted (U7-11)
   expires_at    timestamptz,
   CONSTRAINT export_ready_fields CHECK ((ready_at IS NULL) = (file_key IS NULL) AND (ready_at IS NULL) = (expires_at IS NULL))
 );

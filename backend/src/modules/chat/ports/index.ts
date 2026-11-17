@@ -51,3 +51,6 @@ export interface ChatCommands {
   threadFor(listingId: string, buyerId: string): Promise<string | null>;
 }
 export const CHAT_COMMANDS = Symbol('CHAT_COMMANDS');
+
+/** This unit's part of the data export (FR-PRV-03; U7-11): a DataExportSource (kernel/privacy/data-export.ts). */
+export const CHAT_DATA_EXPORT = Symbol('CHAT_DATA_EXPORT');
