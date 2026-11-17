@@ -14,6 +14,7 @@ import type { ProviderId } from '../adapters/payment-provider';
 import { StripeProvider, StripeSignatureError, verifyStripeSignature } from '../adapters/stripe-provider';
 import { PaymentService } from '../services/payment.service';
 import { MockPayDto, StartPaymentDto } from './orders.dto';
+import { securityEvents } from '../../../kernel/metrics/metrics';
 
 // Payments (docs/design/02_orders_payments.pdf sections 3.1, 5.5 and 7.1), U2-03.
 const userOf = (p: Principal) => {
@@ -81,6 +82,7 @@ export class StripeWebhookController {
     try {
       verifyStripeSignature(raw, signature, secret.reveal(), tolerance, Math.floor(this.clock.now().getTime() / 1000));
     } catch (err) {
+      if (err instanceof StripeSignatureError) securityEvents.webhookSignatureFailures.inc({ provider: 'stripe' }); // SEC-LOG-05
       if (err instanceof StripeSignatureError) throw new Problem('validation-failed', { errors: [{ field: 'Stripe-Signature', reason: 'invalid' }] });
       throw err;
     }

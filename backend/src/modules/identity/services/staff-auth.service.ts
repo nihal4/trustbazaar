@@ -16,6 +16,7 @@ import { AuditService } from './audit.service';
 import { SecondFactorService } from './second-factor.service';
 import { RequestContext, SessionService } from './session.service';
 import { SignInThrottle } from './signin-throttle.service';
+import { securityEvents } from '../../../kernel/metrics/metrics';
 
 // Staff sign-in (Unit 1 sections 6.2 and 6.8; SEC-AUTH-07, SEC-SES-06, FR-OPS-04). A staff session exists only
 // after a TOTP code: SMS is never a staff factor and staff have no recovery codes. The password step answers
@@ -62,6 +63,7 @@ export class StaffAuthService {
     );
     const ok = await this.passwords.verifyOrDummy(staff?.password_hash, password);
     if (!ok || !staff) {
+      securityEvents.signinFailed.inc({ kind: 'staff' }); // SEC-LOG-05
       await this.throttle.failed(login);
       await this.db.transaction((m) =>
         this.audit.record(m, {
@@ -97,6 +99,7 @@ export class StaffAuthService {
       if (t.attempts + 1 < MFA_ATTEMPTS && remainingMs > 0) {
         await this.redis.set(mfaKey(ticket), JSON.stringify({ ...t, attempts: t.attempts + 1 }), 'PX', remainingMs);
       }
+      securityEvents.signinFailed.inc({ kind: 'staff_mfa' });
       throw new Problem('mfa-failed');
     }
     return this.startSession(t.staffId, 'totp', ctx);

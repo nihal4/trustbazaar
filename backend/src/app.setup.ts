@@ -6,6 +6,7 @@ import { correlationMiddleware } from './kernel/http/correlation';
 import { RedisIoAdapter } from './kernel/live/redis-io.adapter';
 import { ProblemFilter } from './kernel/http/problem.filter';
 import { enableCors, securityHeaders } from './kernel/http/security-headers';
+import { httpMetrics } from './kernel/metrics/metrics';
 
 // What every running backend gets on top of AppModule. Shared by main.ts and the API tests
 // (test/support/app.ts), so the tests exercise the same pipeline as production.
@@ -21,6 +22,9 @@ export function configureApp(app: INestApplication): INestApplication {
 
   // A correlation id on every request and response (SEC-INP-06).
   app.use(correlationMiddleware);
+
+  // Request rate, errors and latency by route (NFR-OBS-03, K-06).
+  app.use(httpMetrics);
 
   // Security headers on every API response and the CORS allow-list (DC-11, SEC-WEB-01 to SEC-WEB-03).
   app.use(securityHeaders(config().environment === 'production'));
