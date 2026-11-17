@@ -1,0 +1,12 @@
+{
+  "comment": "SEC-SDL-04: high or critical advisories accepted for a time, each with its reason and a review date (scripts/audit-check.mjs). Add one only when no fixed version exists and the package is not shipped; record it in the Decisions log of PROGRESS.md.",
+  "exceptions": [
+    {
+      "advisory": "GHSA-fc5q-39xc-vjpf",
+      "package": "picomatch",
+      "reason": "ReDoS through repeated extglobs; every published version (<=4.0.7) is affected and no fix exists yet. Reached only through development tools (Jest, ts-jest, Nest CLI, Vite, Vitest, typescript-eslint) on trusted glob patterns; nothing shipped uses it.",
+      "added": "2026-11-18",
+      "until": "2026-12-18"
+    }
+  ]
+}
