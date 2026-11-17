@@ -25,5 +25,6 @@
   "stepup.expired": "This code has expired. Ask for a new one.",
   "shell.notifications": "Notifications",
   "shell.notifications_unread": "Notifications, {count} unread",
-  "shell.messages": "Messages"
+  "shell.messages": "Messages",
+  "shell.orders": "Orders"
 }
