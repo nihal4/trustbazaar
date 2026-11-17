@@ -200,3 +200,6 @@ export const RATE_LIMITER = Symbol('RATE_LIMITER');
 export const FILE_VAULT = Symbol('FILE_VAULT');
 export const IDENTITY_CRYPTO = Symbol('IDENTITY_CRYPTO');
 export const ACCOUNT_CLOSURE_CHECKS = Symbol('ACCOUNT_CLOSURE_CHECKS');
+
+/** This unit's part of the data export (FR-PRV-03; U7-11): a DataExportSource (kernel/privacy/data-export.ts). */
+export const IDENTITY_DATA_EXPORT = Symbol('IDENTITY_DATA_EXPORT');

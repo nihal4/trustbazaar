@@ -4,7 +4,7 @@ import { Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsIn, IsInt, IsOptional, IsString, IsUUID, Length, Max, MaxLength, Min, ValidateNested } from 'class-validator';
 import type { Request, Response } from 'express';
 import { correlationId } from '../../../kernel/http/correlation';
-import { Public, SignedIn, Staff } from '../../../kernel/http/policies';
+import { Public, SignedIn, Staff, StepUp } from '../../../kernel/http/policies';
 import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
 import { REPORT_CATEGORY, SANCTION_KIND, SanctionKind } from '../db/enums';
@@ -18,6 +18,7 @@ import { RatingService } from '../services/rating.service';
 import { TrustReportService } from '../services/report.service';
 import { SignalService } from '../services/signal.service';
 import { RelatedType, SanctionService } from '../services/sanction.service';
+import { DataExportService } from '../services/data-export.service';
 
 // Unit 7's reports, sanctions and ratings API (docs/design/07_disputes_trust_staff.pdf section 3.1; U7-03 to U7-08). Ownership of a case
 // ("Assigned operator") is checked in the services; the routes declare SignedIn or Staff.
@@ -242,7 +243,26 @@ export class TrustController {
     private readonly queues: QueueService,
     private readonly privacy: PrivacyService,
     private readonly packs: EvidencePackService,
+    private readonly exports: DataExportService,
   ) {}
+
+  /** FR-PRV-03: ask for a copy of one's data (step-up); one in preparation, one every 7 days (DV-49). 202. */
+  @SignedIn()
+  @StepUp('data.export')
+  @Post('me/data-export')
+  @HttpCode(202)
+  requestExport(@CurrentPrincipal() p: Principal) {
+    return this.exports.request(userOf(p));
+  }
+
+  /** FR-PRV-03: the latest export: preparing, ready (with a signed link for this session) or expired; 204 if none. */
+  @SignedIn()
+  @Get('me/data-export')
+  async exportStatus(@CurrentPrincipal() p: Principal, @Res({ passthrough: true }) res: Response) {
+    const s = await this.exports.status(userOf(p), p);
+    if (!s) res.status(204);
+    return s ?? undefined;
+  }
 
   /** FR-PRV-06: record a lawful request; 202 with the four-eyes proposal. */
   @Staff('operator')
