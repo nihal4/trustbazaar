@@ -39,3 +39,9 @@
 .list { list-style: none; padding: 0; }
 .row { border-bottom: 1px solid var(--tb-border); padding-block: var(--tb-space-2); overflow-wrap: anywhere; }
 .row p { margin: var(--tb-space-1) 0 0; }
+/* Disputes and ratings (U8-09) */
+.statements { padding-left: var(--tb-space-3); }
+.statements li { margin-bottom: var(--tb-space-2); }
+.stars { display: flex; flex-wrap: wrap; gap: var(--tb-space-2); }
+.stars span { display: flex; align-items: center; gap: var(--tb-space-1); min-height: 44px; }
+.reply { border-left: 3px solid var(--tb-border); padding-left: var(--tb-space-2); }

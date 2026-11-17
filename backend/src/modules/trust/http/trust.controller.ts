@@ -293,6 +293,13 @@ export class TrustController {
     return this.disputes.types(userOf(p), orderId);
   }
 
+  /** The order's disputes for either party, newest first (U8-09). */
+  @SignedIn()
+  @Get('orders/:id/disputes')
+  orderDisputes(@Id('id') orderId: string, @CurrentPrincipal() p: Principal) {
+    return this.disputes.forOrder(userOf(p), orderId);
+  }
+
   /** FR-DSP-01: the buyer opens a dispute; the escrow is frozen (FR-DSP-02). 201 {disputeId}. */
   @SignedIn()
   @Post('orders/:id/disputes')
@@ -340,6 +347,13 @@ export class TrustController {
   @HttpCode(200)
   reviewSignal(@Id('id') id: string, @Body() dto: SignalReviewDto, @CurrentPrincipal() p: Principal, @Req() req: Request) {
     return this.signals.review(staffOf(p), id, dto, ctx(req));
+  }
+
+  /** FR-REV-01 to FR-REV-03, FR-REV-06: the rating window, one's own rating and the one received, for either party (U8-09). */
+  @SignedIn()
+  @Get('orders/:id/ratings')
+  orderRatings(@Id('id') orderId: string, @CurrentPrincipal() p: Principal) {
+    return this.ratings.forOrder(userOf(p), orderId);
   }
 
   /** FR-REV-01: the buyer or the seller rates the other, once; 201 with the rating. */
