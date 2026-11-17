@@ -78,3 +78,6 @@ export interface GameAccountPort {
   assertCheckoutReady(orderId: string): Promise<void>;
 }
 export const GAME_ACCOUNT_PORT = Symbol('GAME_ACCOUNT_PORT');
+
+/** This unit's part of the data export (FR-PRV-03; U7-11): a DataExportSource (kernel/privacy/data-export.ts). */
+export const GAME_DATA_EXPORT = Symbol('GAME_DATA_EXPORT');

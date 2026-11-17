@@ -166,7 +166,8 @@ export class FilesController {
       'Cache-Control': 'no-store',
       'X-Content-Type-Options': 'nosniff',
       'Content-Security-Policy': "sandbox; default-src 'none'",
-      'Content-Disposition': mime.startsWith('image/') ? 'inline' : 'attachment',
+      // the only non-image file is a data export (U7-11), a ZIP
+      'Content-Disposition': mime.startsWith('image/') ? 'inline' : 'attachment; filename="trustbazaar-data.zip"',
     });
     res.status(200).end(bytes);
   }

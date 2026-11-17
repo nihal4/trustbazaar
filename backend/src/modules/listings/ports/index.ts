@@ -148,3 +148,6 @@ export interface ReviewItem {
 }
 
 export const LISTINGS_QUERIES = Symbol('LISTINGS_QUERIES');
+
+/** This unit's part of the data export (FR-PRV-03; U7-11): a DataExportSource (kernel/privacy/data-export.ts). */
+export const LISTINGS_DATA_EXPORT = Symbol('LISTINGS_DATA_EXPORT');
