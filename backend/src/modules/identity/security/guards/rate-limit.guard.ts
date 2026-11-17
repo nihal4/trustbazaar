@@ -10,9 +10,11 @@ import { cookiesFor } from '../cookies';
 import { CONFIG_PORT, ConfigPort } from '../../../../kernel/config-port';
 import { RATE_RULES } from '../rate-rules';
 import { RateLimiter } from '../rate-limiter.service';
+import { HUMAN_PROOF_HEADER, HumanCheck, HumanScope } from '../human-check';
 import { policyOf, requestOf } from './policy-of';
 
 // 1. RateLimitGuard (Unit 1 section 4.1): the route's rule, before any database work; 429 with Retry-After.
+// Above a rule's challenge mark the request also needs a solved challenge (SEC-ABU-02, human-check.ts).
 // A per-principal limit takes the subject from the access token's signature alone (no database read);
 // without a valid token it counts against the source address.
 @Injectable()
@@ -23,6 +25,7 @@ export class RateLimitGuard implements CanActivate {
     @Inject(TB_CONFIG) private readonly config: TbConfig,
     @Inject(CLOCK) private readonly clock: Clock,
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
+    private readonly human: HumanCheck,
   ) {}
 
   private async fromConfig(cp: { code: string; field: string }, fallback: number): Promise<number> {
@@ -46,6 +49,8 @@ export class RateLimitGuard implements CanActivate {
       const limit = l.cp ? await this.fromConfig(l.cp, l.limit) : l.limit;
       const r = await this.limiter.hit(`rl:${rule}:${subject}`, limit, l.windowSeconds);
       if (!r.allowed) throw new Problem('rate-limited', { retryAfter: r.retryAfterSeconds });
+      // SEC-ABU-02: above the challenge mark, the request needs a solved proof-of-work (428 with a new one otherwise)
+      if (l.challengeAfter !== undefined && r.count > l.challengeAfter) await this.human.require(rule as HumanScope, req.ip ?? '', req.header(HUMAN_PROOF_HEADER));
     }
     return true;
   }
