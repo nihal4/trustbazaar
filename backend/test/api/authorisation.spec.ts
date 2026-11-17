@@ -1,6 +1,8 @@
 import { randomInt, randomUUID } from 'crypto';
 // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const sharp = require('sharp') as typeof import('sharp').default;
+import { DataSource } from 'typeorm';
+import { seedAreas } from '../../src/areas-seed';
 import { CONFIG_PORT } from '../../src/kernel/config-port';
 import { startApp, TestApp } from '../support/app';
 import { openAuction } from '../support/auctions';
@@ -185,6 +187,7 @@ describe('negative authorisation (SEC-SDL-09)', () => {
     const [{ id: rating }] = await fx.query<{ id: string }>(
       `INSERT INTO trust.ratings (order_id, rater_id, ratee_id, stars, text, edit_until) VALUES ($1, $2, $3, 5, 'Fine', now() + interval '1 day') RETURNING id`,
       [closedOrder, buyer.userId, seller.userId]);
+    await seedAreas(t.app.get(DataSource)); // idempotent; a fresh database has none
     const [{ id: area }] = await fx.query<{ id: number }>(`SELECT id FROM delivery.areas WHERE active ORDER BY id LIMIT 1`, []);
     const address = await (await call(seller, 'POST', '/me/addresses', { kind: 'pickup', label: 'Shop', areaId: area, line1: 'House 12, Road 5', contactName: 'Karim Seller' })).json();
     expect(address.id).toEqual(expect.any(String));
