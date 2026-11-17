@@ -46,7 +46,9 @@ export class SecondChanceService implements OnModuleInit {
     const { kind, listingId, buyerId } = e.payload as { kind?: string; listingId?: string; buyerId?: string };
     if (kind !== 'auction' && kind !== 'second_chance') return;
     if (typeof listingId !== 'string' || typeof buyerId !== 'string') throw new Error(`payment_expired ${e.aggregateId} lacks listingId or buyerId`);
-    const cp12 = (await this.params.current()).get<{ strikes: number; window: string; suspension: string }>('CP-12');
+    const params = await this.params.current();
+    const cp12 = params.get<{ strikes: number; window: string; suspension: string }>('CP-12');
+    const window = params.ms('CP-11');
     await this.db.transaction(async (m) => {
       const locked = await m.query(`SELECT 1 FROM auctions.auctions WHERE listing_id = $1 FOR UPDATE`, [listingId]);
       if (locked.length === 0) throw new Error(`payment_expired ${e.aggregateId}: no auction ${listingId}`);
@@ -63,12 +65,17 @@ export class SecondChanceService implements OnModuleInit {
         actorType: 'system', action: 'auctions.strike.recorded', objectType: 'user', objectId: buyerId,
         after: { auctionId: listingId, orderId: e.aggregateId, restricted },
       }, m);
-      await this.offerNext(m, listingId);
+      await this.offerNext(m, listingId, window);
     });
   }
 
-  /** The next eligible bidder at their highest bid for CP-11, or the end: unit released, listing ended unsold. */
-  private async offerNext(m: EntityManager, auctionId: string): Promise<void> {
+  /**
+   * The next eligible bidder at their highest bid for CP-11 (`windowMs`), or the end: unit released, listing ended
+   * unsold. The callers read the parameters before their transaction: a read on a cold cache inside it would wait for a
+   * second pool connection while holding the auction's lock, and under load every connection can be waiting for that
+   * lock (U1-10, Decisions log).
+   */
+  private async offerNext(m: EntityManager, auctionId: string, windowMs: number): Promise<void> {
     const [next] = (await m.query(`SELECT bidder, price::text AS price FROM auctions.next_second_chance($1)`, [auctionId])) as {
       bidder: string | null; price: string | null;
     }[];
@@ -77,11 +84,10 @@ export class SecondChanceService implements OnModuleInit {
       await endUnsold(m, auctionId, 'no second-chance bidder left');
       return;
     }
-    const window = (await this.params.current()).ms('CP-11');
     const [offer] = (await m.query(
       `INSERT INTO auctions.second_chance_offers (auction_id, bidder_id, price, expires_at)
        VALUES ($1, $2, $3, now() + $4 * interval '1 millisecond') RETURNING id, expires_at`,
-      [auctionId, next.bidder, next.price, window],
+      [auctionId, next.bidder, next.price, windowMs],
     )) as { id: string; expires_at: Date }[];
     await publish(m, 'auctions.offer.made', auctionId, {
       offerId: offer.id, auctionId, userId: next.bidder, price: next.price, expiresAt: offer.expires_at.toISOString(),
@@ -91,6 +97,8 @@ export class SecondChanceService implements OnModuleInit {
   /** POST /auctions/{id}/second-chance/{oid}/decision: only the offered bidder, only while the offer is open. */
   async decide(userId: string, auctionId: string, offerId: string, decision: Decision) {
     if (decision === 'accept') await this.identity.assertCanTransact(userId, 'buy'); // checked again on acceptance
+    // read before the transaction, also for Unit 2's order on acceptance, which then finds them cached (see offerNext)
+    const window = (await this.params.current()).ms('CP-11');
     return this.db.transaction(async (m) => {
       await m.query(`SELECT 1 FROM auctions.auctions WHERE listing_id = $1 FOR UPDATE`, [auctionId]);
       const o = await this.lockOffer(m, offerId, auctionId);
@@ -98,7 +106,7 @@ export class SecondChanceService implements OnModuleInit {
       if (o.status !== 'offered' || o.expired) throw new Problem('offer-closed');
       if (decision === 'decline') {
         await m.query(`UPDATE auctions.second_chance_offers SET status = 'declined', decided_at = now() WHERE id = $1`, [offerId]);
-        await this.offerNext(m, auctionId);
+        await this.offerNext(m, auctionId, window);
         return { offerId, status: 'declined' as const, orderId: null };
       }
       // FR-CHT-08, I-37: no purchase while a block exists between the bidder and the seller, either way
@@ -130,14 +138,15 @@ export class SecondChanceService implements OnModuleInit {
     return n;
   }
 
-  private expireOne(offerId: string, auctionId: string): Promise<boolean> {
+  private async expireOne(offerId: string, auctionId: string): Promise<boolean> {
+    const window = (await this.params.current()).ms('CP-11');
     return this.db.transaction(async (m) => {
       if ((await m.query(`SELECT 1 FROM auctions.auctions WHERE listing_id = $1 FOR UPDATE SKIP LOCKED`, [auctionId])).length === 0) return false;
       const o = await this.lockOffer(m, offerId, auctionId);
       if (!o || o.status !== 'offered' || !o.expired) return false; // decided meanwhile
       await m.query(`UPDATE auctions.second_chance_offers SET status = 'expired', decided_at = now() WHERE id = $1`, [offerId]);
       await publish(m, 'auctions.offer.expired', auctionId, { offerId, auctionId, userId: o.bidder_id });
-      await this.offerNext(m, auctionId);
+      await this.offerNext(m, auctionId, window);
       return true;
     });
   }
