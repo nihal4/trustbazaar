@@ -1,14 +1,16 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { IDENTITY_QUERY, IdentityQuery } from '../../identity/ports';
+import type { AccountLinkSource, LinkVia } from '../../../kernel/links/account-links';
+import { IDENTITY_ACCOUNT_LINKS, IDENTITY_QUERY, IdentityQuery } from '../../identity/ports';
+import { SHILL_PAYOUT_LINKS } from '../adapters/links';
 import { publish } from './outbox';
 
 // ShillDetector (docs/design/03_listings_auctions.pdf section 5.8; FR-AUC-18; U3-06). It never blocks a bid: it raises
 // flags with a score for the operators' queue (auctions.flags, auctions.flag.raised). It runs every few minutes on open
 // auctions with many bids and on auctions that have just closed. A kind is raised at most once per auction, so a flag
 // an operator has reviewed is not raised again. The design gives no thresholds; these are the team's starting values
-// (Decisions log, U3-06), kept together here so they can become parameters. The linked-to-seller check (FR-TNS-08)
-// needs Unit 1 and Unit 2 queries that do not exist yet and comes with U7-04.
+// (Decisions log, U3-06), kept together here so they can become parameters. The linked-to-seller check (FR-TNS-08;
+// U7-09) asks Unit 1 (a shared browser) and Unit 2 (a shared payout wallet or bank account).
 export const SHILL = {
   /** open auctions are scanned from this many bids */
   minBids: 10,
@@ -27,9 +29,11 @@ export const SHILL = {
   /** self_outbid_pattern: raised the price on this many of one seller's closed auctions within the window, won none */
   selfOutbidAuctions: 3,
   selfOutbidWindow: '90 days',
+  /** linked_to_seller: any bidder linked to the seller is flagged; the score starts here */
+  linkedBase: 0.7,
 } as const;
 
-type Kind = 'new_account_cluster' | 'last_second_pattern' | 'self_outbid_pattern';
+type Kind = 'new_account_cluster' | 'linked_to_seller' | 'last_second_pattern' | 'self_outbid_pattern';
 interface Raised { kind: Kind; score: number; detail: Record<string, unknown> }
 
 /** 0 to 1, rising by `step` for each unit past the threshold; three decimals (numeric(4,3)). */
@@ -42,6 +46,8 @@ export class ShillDetector {
   constructor(
     private readonly db: DataSource,
     @Inject(IDENTITY_QUERY) private readonly identity: IdentityQuery,
+    @Inject(IDENTITY_ACCOUNT_LINKS) private readonly deviceLinks: AccountLinkSource,
+    @Inject(SHILL_PAYOUT_LINKS) private readonly payoutLinks: AccountLinkSource,
   ) {}
 
   /** The job: open auctions with many bids, and auctions closed in the last few minutes. Returns the flags raised. */
@@ -65,7 +71,7 @@ export class ShillDetector {
 
   /** One auction: each pattern found and not yet flagged on it becomes a flag and an event. */
   async scan(auctionId: string): Promise<number> {
-    const found = [await this.newAccountCluster(auctionId), await this.lastSecond(auctionId), await this.selfOutbid(auctionId)]
+    const found = [await this.newAccountCluster(auctionId), await this.linkedToSeller(auctionId), await this.lastSecond(auctionId), await this.selfOutbid(auctionId)]
       .filter((r): r is Raised => r !== null);
     let raised = 0;
     for (const r of found) {
@@ -111,6 +117,32 @@ export class ShillDetector {
       kind: 'new_account_cluster',
       score: scoreOf(0.5, (fresh.length - SHILL.newBidders) * 1.5 + (small - SHILL.smallRaises), 0.1),
       detail: { bidders: await this.aliases(auctionId, fresh.map((f) => f.bidderId)), smallRaises: small, newAccountDays: SHILL.newAccountDays },
+    };
+  }
+
+  /** FR-TNS-08: bidders who share a browser, a payout wallet or a bank account with the seller. */
+  private async linkedToSeller(auctionId: string): Promise<Raised | null> {
+    const [a] = (await this.db.query(
+      `SELECT a.seller_id, array_agg(DISTINCT b.bidder_id::text ORDER BY b.bidder_id::text) AS bidders
+         FROM auctions.auctions a JOIN auctions.bids b ON b.auction_id = a.listing_id AND b.voided_at IS NULL AND b.bidder_id <> a.seller_id
+        WHERE a.listing_id = $1 GROUP BY a.seller_id`,
+      [auctionId],
+    )) as { seller_id: string; bidders: string[] }[];
+    if (!a) return null;
+    const via = new Map<string, Set<LinkVia>>();
+    for (const source of [this.deviceLinks, this.payoutLinks]) {
+      for (const l of await source.linkedTo(a.seller_id, a.bidders)) {
+        if (!via.has(l.userId)) via.set(l.userId, new Set());
+        via.get(l.userId)?.add(l.via);
+      }
+    }
+    if (via.size === 0) return null;
+    const ids = [...via.keys()].sort();
+    const ways = ids.reduce((n, id) => n + (via.get(id)?.size ?? 0), 0);
+    return {
+      kind: 'linked_to_seller',
+      score: scoreOf(SHILL.linkedBase, ways - 1, 0.1),
+      detail: { bidders: await this.aliases(auctionId, ids), via: Object.fromEntries(ids.map((id) => [id, [...(via.get(id) ?? [])].sort()])) },
     };
   }
 

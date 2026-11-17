@@ -30,6 +30,7 @@ import { ProSellerPrice1793491200029 } from './1793491200029-pro-seller-price';
 import { ProSellerTemplates1793491200030 } from './1793491200030-pro-seller-templates';
 import { IdentityErasure1793491200031 } from './1793491200031-identity-erasure';
 import { DataExport1793491200032 } from './1793491200032-data-export';
+import { LinkedAccounts1793491200033 } from './1793491200033-linked-accounts';
 
 // The migrations in the order they run: the seven units in unit order, then 09_integration (I-60).
 // Add a new migration at the end; never reorder or edit an applied one.
@@ -66,4 +67,5 @@ export const MIGRATIONS = [
   ProSellerTemplates1793491200030, // U2-06: the Pro Seller's renewal-due and lapse notices (Decisions log)
   IdentityErasure1793491200031, // U1-09: identity.erase_user and identity.erase_rejected_kyc (Decisions log)
   DataExport1793491200032, // U7-11: export_requests.file_key widened; the privacy.export_ready notice (Decisions log)
+  LinkedAccounts1793491200033, // U7-09: the device-key and payout lookups of the linked-account check (Decisions log)
 ];

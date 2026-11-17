@@ -57,7 +57,10 @@ function setup(o: { provider?: PayoutProvider; due?: () => Row[] } = {}) {
   const db = { ...manager, manager, transaction: (cb: (m: typeof manager) => unknown) => cb(manager) };
   const bus = { on: jest.fn() };
   const identity = { getVerifiedPhone: jest.fn(async () => PHONE), getKycLegalName: jest.fn(async () => 'Rahim Uddin') };
-  const crypto = { encrypt: jest.fn(async (p: string) => new TextEncoder().encode(`sealed:${p}`)) };
+  const crypto = {
+    encrypt: jest.fn(async (p: string) => new TextEncoder().encode(`sealed:${p}`)),
+    blindIndex: jest.fn(async (v: string, c: string) => new TextEncoder().encode(`bidx:${c}:${v}`)),
+  };
   const audit = { record: jest.fn(async () => undefined) };
   const values = parameterValues({ 'CP-29': '24 hours' });
   const params = { current: async () => values } as unknown as ConfigPort;
@@ -97,6 +100,8 @@ describe('PayoutService', () => {
     expect(a).toMatchObject({ status: 'pending_review', bankName: 'DBBL', branchName: null, accountLast4: '0123', effectiveAt: null });
     const row = s.repo(PayoutAccount).rows[0];
     expect(Buffer.from(row.accountNumberEnc as Buffer).toString()).toBe('sealed:1234567890123');
+    // FR-TNS-08: the blind index names the bank (the routing number's first three digits) and the number
+    expect(Buffer.from(row.accountNumberBidx as Buffer).toString()).toBe('bidx:payments.bank_account:090|1234567890123');
     expect(s.query.mock.calls.some(([sql]) => String(sql).includes("SET status = 'waiting_account', payout_account_id = NULL"))).toBe(true);
     expect(await s.svc.pendingBankAccounts('OP')).toEqual([expect.objectContaining({ id: a.id, kycLegalName: 'Rahim Uddin', routingNumber: '090271234' })]);
     expect(await reason(s.svc.decideBankAccount('OP', randomUUID(), 'approve', 'r'))).toBe('not-found');

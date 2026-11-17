@@ -74,3 +74,12 @@ export interface DisputeCommands {
   open(o: { orderId: string; type: DisputeType; description: string; by: 'buyer' | 'system' }, tx: EntityManager): Promise<string>;
 }
 export const DISPUTE_COMMANDS = Symbol('DISPUTE_COMMANDS');
+
+/**
+ * Used by Unit 3's relisting flag (FR-TNS-02, DV-22; U7-09): the listings of the seller's sales disputed in the last
+ * `withinDays` days, newest dispute first.
+ */
+export interface DisputeQueries {
+  disputedListings(sellerId: string, withinDays: number): Promise<string[]>;
+}
+export const DISPUTE_QUERIES = Symbol('DISPUTE_QUERIES');
