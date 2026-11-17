@@ -31,6 +31,10 @@ export class PayoutAccount {
   @Column({ type: 'bytea', name: 'account_number_enc', nullable: true })
   accountNumberEnc!: Buffer | null;
 
+  /** FR-TNS-08 (U7-09): HMAC blind index of the bank account number (Unit 1's key), for the linked-account check. */
+  @Column({ type: 'bytea', name: 'account_number_bidx', nullable: true })
+  accountNumberBidx!: Buffer | null;
+
   @Column({ type: 'char', name: 'account_last4', length: 4, nullable: true })
   accountLast4!: string | null;
 

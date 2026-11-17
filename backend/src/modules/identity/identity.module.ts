@@ -9,6 +9,7 @@ import { ENTITIES } from './db/entities';
 import { IdentityJobs } from './jobs/identity.jobs';
 import { ClosureService } from './services/closure.service';
 import {
+  IDENTITY_ACCOUNT_LINKS,
   IDENTITY_DATA_EXPORT,
   ACCOUNT_CLOSURE_CHECKS,
   APPROVAL_SERVICE, AUDIT_SERVICE, FILE_VAULT, IDENTITY_COMMANDS, IDENTITY_CRYPTO, IDENTITY_QUERY, RATE_LIMITER, STAFF_QUERY,
@@ -45,6 +46,7 @@ import { SessionService } from './services/session.service';
 import { SignInService } from './services/signin.service';
 import { SignInThrottle } from './services/signin-throttle.service';
 import { StepUpService } from './services/step-up.service';
+import { DeviceLinks } from './services/account-links';
 import { IdentityDataExport } from './services/data-export';
 
 // Unit 1 (docs/design/01_identity_access.pdf). Schemas: identity, audit.
@@ -60,6 +62,8 @@ import { IdentityDataExport } from './services/data-export';
   providers: [
     IdentityDataExport,
     { provide: IDENTITY_DATA_EXPORT, useExisting: IdentityDataExport },
+    DeviceLinks,
+    { provide: IDENTITY_ACCOUNT_LINKS, useExisting: DeviceLinks },
     RateLimiter,
     HumanCheck,
     PasswordHasher,
@@ -102,6 +106,6 @@ import { IdentityDataExport } from './services/data-export';
     { provide: RESTRICTIONS, inject: [ModuleRef], useFactory: (m: ModuleRef) => sanctionRestrictions(m) },
     ...pipelineGuards,
   ],
-  exports: [IDENTITY_DATA_EXPORT, IDENTITY_QUERY, IDENTITY_COMMANDS, STAFF_QUERY, APPROVAL_SERVICE, AUDIT_SERVICE, RATE_LIMITER, FILE_VAULT, IDENTITY_CRYPTO, ACCOUNT_CLOSURE_CHECKS],
+  exports: [IDENTITY_ACCOUNT_LINKS, IDENTITY_DATA_EXPORT, IDENTITY_QUERY, IDENTITY_COMMANDS, STAFF_QUERY, APPROVAL_SERVICE, AUDIT_SERVICE, RATE_LIMITER, FILE_VAULT, IDENTITY_CRYPTO, ACCOUNT_CLOSURE_CHECKS],
 })
 export class IdentityModule {}

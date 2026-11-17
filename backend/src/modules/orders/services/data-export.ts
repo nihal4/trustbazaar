@@ -13,7 +13,7 @@ const Q = {
              WHERE a.payer_id = $1 ORDER BY f.created_at, f.id`,
   settlements: `SELECT to_jsonb(s) AS r FROM payments.settlements s JOIN orders.orders o ON o.id = s.order_id WHERE o.seller_id = $1 ORDER BY s.created_at`,
   payouts: `SELECT to_jsonb(p) - '{idempotency_key,seller_id}'::text[] AS r FROM payments.payouts p WHERE seller_id = $1 ORDER BY created_at, id`,
-  payoutAccounts: `SELECT to_jsonb(a) - '{account_number_enc,reviewed_by,user_id}'::text[] AS r FROM payments.payout_accounts a WHERE user_id = $1 ORDER BY created_at, id`,
+  payoutAccounts: `SELECT to_jsonb(a) - '{account_number_enc,account_number_bidx,reviewed_by,user_id}'::text[] AS r FROM payments.payout_accounts a WHERE user_id = $1 ORDER BY created_at, id`,
   subscriptions: `SELECT to_jsonb(s) - 'user_id' AS r FROM payments.subscriptions s WHERE user_id = $1 ORDER BY created_at, id`,
   featuredPurchases: `SELECT to_jsonb(f) - 'seller_id' AS r FROM payments.featured_purchases f WHERE seller_id = $1 ORDER BY created_at, id`,
 };

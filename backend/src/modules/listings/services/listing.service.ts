@@ -14,6 +14,8 @@ import { readAuctionState } from './auction-state';
 import { publish } from './outbox';
 import { ScreeningService } from './screening.service';
 import type { ProStatusQuery } from '../../orders/ports';
+import type { DisputeQueries } from '../../trust/ports';
+import { RELISTING_DISPUTES } from '../adapters/links';
 import { LISTING_PRO_STATUS } from '../adapters/pro-status';
 
 // ListingService (docs/design/03_listings_auctions.pdf section 6.1; FR-LST-01 to FR-LST-12, FR-LST-07 to 08).
@@ -32,7 +34,7 @@ type Fields = Pick<
 /** What an editable active listing may still change (FR-LST-07); a draft may change everything. */
 const ACTIVE_EDITABLE = new Set(['title', 'description', 'price', 'quantity']);
 /** DV-22: the relisting similarity window (FR-TNS-02). */
-export const RELISTING = { window: '7 days', similarity: 0.6 } as const;
+export const RELISTING = { window: '7 days', days: 7, similarity: 0.6 } as const;
 const PUBLIC_STATUSES: ListingStatus[] = ['active', 'sold', 'ended_unsold'];
 const PAGE = 50;
 
@@ -95,6 +97,7 @@ export class ListingService {
     @Inject(IDENTITY_QUERY) private readonly identity: IdentityQuery,
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
     @Inject(LISTING_PRO_STATUS) private readonly pro: ProStatusQuery,
+    @Inject(RELISTING_DISPUTES) private readonly disputes: DisputeQueries,
   ) {}
 
   // ---------------------------------------------------------------- categories (FR-LST-10)
@@ -302,22 +305,28 @@ export class ListingService {
   }
 
   /**
-   * FR-TNS-02 (DV-22; U3-06): a seller who publishes an item similar to one they cancelled after publishing it within
-   * 7 days (same category, title trigram similarity of at least 0.6) is flagged for review; publication goes on. A
-   * discarded draft does not count. Disputed sales are Unit 7's and join this check with its signals (U7-04).
+   * FR-TNS-02 (DV-22; U3-06, U7-09): a seller who publishes an item similar to one whose sale went wrong within 7 days
+   * is flagged for review; publication goes on. Similar means the same category and a title trigram similarity of at
+   * least 0.6. Went wrong means cancelled after publication (a discarded draft does not count), or sold and then
+   * disputed (a dispute opened in the window; Unit 7's DisputeQueries). The closest such listing is named.
    */
   private async relistingCheck(m: EntityManager, l: Listing, userId: string): Promise<void> {
+    const disputed = await this.disputes.disputedListings(userId, RELISTING.days);
     const [similar] = (await m.query(
-      `SELECT o.id, round(similarity(o.title, $2)::numeric, 3)::float AS sim
-         FROM listings.listings o
-         JOIN listings.status_history h ON h.listing_id = o.id AND h.to_status = 'cancelled' AND h.from_status <> 'draft'
-        WHERE o.seller_id = $1 AND o.id <> $3 AND o.category_id = $4 AND o.status = 'cancelled'
-          AND h.at > now() - $5::interval AND similarity(o.title, $2) >= $6
-        ORDER BY similarity(o.title, $2) DESC LIMIT 1`,
-      [userId, l.title, l.id, l.categoryId, RELISTING.window, RELISTING.similarity],
-    )) as { id: string; sim: number }[];
+      `SELECT id, reason, round(sim::numeric, 3)::float AS sim FROM (
+         SELECT o.id, 'cancelled' AS reason, similarity(o.title, $2) AS sim
+           FROM listings.listings o
+           JOIN listings.status_history h ON h.listing_id = o.id AND h.to_status = 'cancelled' AND h.from_status <> 'draft'
+          WHERE o.seller_id = $1 AND o.id <> $3 AND o.category_id = $4 AND o.status = 'cancelled' AND h.at > now() - $5::interval
+         UNION ALL
+         SELECT o.id, 'disputed', similarity(o.title, $2)
+           FROM listings.listings o
+          WHERE o.seller_id = $1 AND o.id <> $3 AND o.category_id = $4 AND o.id = ANY($7::uuid[])) c
+        WHERE sim >= $6 ORDER BY sim DESC, reason LIMIT 1`,
+      [userId, l.title, l.id, l.categoryId, RELISTING.window, RELISTING.similarity, disputed],
+    )) as { id: string; reason: 'cancelled' | 'disputed'; sim: number }[];
     if (similar) {
-      await publish(m, 'listings.listing.relisting_flagged', l.id, { listingId: l.id, sellerId: userId, previousListingId: similar.id, similarity: similar.sim });
+      await publish(m, 'listings.listing.relisting_flagged', l.id, { listingId: l.id, sellerId: userId, previousListingId: similar.id, similarity: similar.sim, reason: similar.reason });
     }
   }
 
