@@ -50,6 +50,10 @@ export class IdentityCrypto {
     return this.openField(Buffer.from(sealed), { table: 'external', column: context, rowId: '' });
   }
 
+  async blindIndex(value: string, context: string): Promise<Uint8Array> {
+    return this.hmac(`external|${context}|${value}`);
+  }
+
   docNumberIndex(type: DocType, number: string): Buffer {
     return this.hmac(`doc|${type}|${normaliseDocNumber(type, number)}`);
   }

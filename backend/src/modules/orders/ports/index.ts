@@ -184,3 +184,9 @@ export const PRO_STATUS = Symbol('PRO_STATUS');
 
 /** This unit's part of the data export (FR-PRV-03; U7-11): a DataExportSource (kernel/privacy/data-export.ts). */
 export const ORDERS_DATA_EXPORT = Symbol('ORDERS_DATA_EXPORT');
+
+/**
+ * Accounts paid out to the same wallet or bank account (FR-TNS-08; U7-09): an AccountLinkSource
+ * (kernel/links/account-links.ts). Payment instruments join with the real providers (U2-09).
+ */
+export const ORDERS_ACCOUNT_LINKS = Symbol('ORDERS_ACCOUNT_LINKS');
