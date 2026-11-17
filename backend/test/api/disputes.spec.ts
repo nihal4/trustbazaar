@@ -155,4 +155,16 @@ describe('disputes: opening, statements, evidence, withdrawal', () => {
     expect(await (await o.buyer.call('GET', `/orders/${o.id}/dispute-types`)).json()).toEqual({ types: ['not_as_described', 'other'], openDisputeId: null });
     expect((await o.buyer.call('POST', `/orders/${o.id}/disputes`, { type: 'other', description: describeIt })).status).toBe(201);
   });
+
+  it('FR-DSP-07 SEC-SDL-09 either party finds the order\'s disputes, newest first, also after a withdrawal; no one else does', async () => {
+    const o = await deliveredOrder();
+    expect(await (await o.seller.call('GET', `/orders/${o.id}/disputes`)).json()).toEqual({ items: [] });
+    const { disputeId: first } = (await (await o.buyer.call('POST', `/orders/${o.id}/disputes`, { type: 'damaged', description: describeIt })).json()) as { disputeId: string };
+    await o.buyer.call('POST', `/disputes/${first}/withdraw`);
+    const { disputeId: second } = (await (await o.buyer.call('POST', `/orders/${o.id}/disputes`, { type: 'other', description: describeIt })).json()) as { disputeId: string };
+    const seen = (await (await o.seller.call('GET', `/orders/${o.id}/disputes`)).json()) as { items: { id: string; type: string; status: string; withdrawnAt: string | null }[] };
+    expect(seen.items.map((d) => [d.id, d.type, d.status, d.withdrawnAt !== null])).toEqual([[second, 'other', 'open', false], [first, 'damaged', 'withdrawn', true]]);
+    expect(await (await o.buyer.call('GET', `/orders/${o.id}/disputes`)).json()).toEqual(seen);
+    expect((await (await member()).call('GET', `/orders/${o.id}/disputes`)).status).toBe(404);
+  });
 });
