@@ -47,6 +47,14 @@ describe('linked accounts', () => {
     (await fx.query(`SELECT 1 FROM identity.outbox WHERE event_type = 'identity.signin.new_device' AND aggregate_id = $1`, [userId])).length;
   const bank = (routingNumber: string, accountNumber: string) =>
     ({ kind: 'bank' as const, bankName: 'Dutch-Bangla Bank', routingNumber, accountName: 'Rahim Uddin', accountNumber });
+  /**
+   * A bank payout account, then retired: these users have no KYC submission, and a bank account waiting for review
+   * would stop the operators' list of pending accounts in other tests. A replaced account still links.
+   */
+  const bankAccount = async (userId: string, routingNumber: string, accountNumber: string) => {
+    await t.app.get(PayoutService).setAccount(userId, bank(routingNumber, accountNumber));
+    await fx.query(`UPDATE payments.payout_accounts SET status = 'replaced', replaced_at = now() WHERE user_id = $1 AND status = 'pending_review'`, [userId]);
+  };
   const linkSignals = async (userId: string) =>
     fx.query<{ source_ref: string; subject_user: string; detail: Record<string, unknown> }>(
       `SELECT source_ref, subject_user, detail FROM trust.signals WHERE kind = 'linked_accounts' AND source_ref LIKE '%' || $1 || '%' ORDER BY source_ref`, [userId]);
@@ -91,10 +99,9 @@ describe('linked accounts', () => {
   it('FR-TNS-08 accounts paid out to the same bank account (blind index) or wallet number are linked', async () => {
     const [a, b, c] = [await fx.user({ kyc: 'verified' }), await fx.user({ kyc: 'verified' }), await fx.user({ kyc: 'verified' })];
     const number = String(randomInt(1e9, 1e10));
-    const svc = t.app.get(PayoutService);
-    await svc.setAccount(a, bank('090271234', number));
-    await svc.setAccount(b, bank('090275555', number)); // the same bank, another branch's routing number
-    await svc.setAccount(c, bank('125271234', number)); // the same number at another bank
+    await bankAccount(a, '090271234', number);
+    await bankAccount(b, '090275555', number); // the same bank, another branch's routing number
+    await bankAccount(c, '125271234', number); // the same number at another bank
     const rows = await fx.query<{ user_id: string; bidx: Buffer }>(
       `SELECT user_id, account_number_bidx AS bidx FROM payments.payout_accounts WHERE user_id = ANY($1)`, [[a, b, c]]);
     expect(rows.every((r) => r.bidx.length === 32 && !r.bidx.toString('latin1').includes(number))).toBe(true);
@@ -114,8 +121,8 @@ describe('linked accounts', () => {
   it('FR-TNS-08 the daily check raises one signal per linked pair and kind, about the later account, once', async () => {
     const [a, b] = [await fx.user({ kyc: 'verified' }), await fx.user({ kyc: 'verified' })];
     const number = String(randomInt(1e9, 1e10));
-    await t.app.get(PayoutService).setAccount(a, bank('090271234', number));
-    await t.app.get(PayoutService).setAccount(b, bank('090271234', number));
+    await bankAccount(a, '090271234', number);
+    await bankAccount(b, '090271234', number);
     const check = t.app.get(LinkedAccountsService);
     expect(await check.check()).toBeGreaterThanOrEqual(1);
     const [lo, hi] = [a, b].sort();
@@ -130,8 +137,8 @@ describe('linked accounts', () => {
   it('FR-TNS-08 FR-AUC-18 a bidder linked to the seller is flagged on the auction (linked_to_seller)', async () => {
     const [seller, linked, plain] = [await member(), await member(), await member()];
     const number = String(randomInt(1e9, 1e10));
-    await t.app.get(PayoutService).setAccount(seller.userId, bank('090271234', number));
-    await t.app.get(PayoutService).setAccount(linked.userId, bank('090271234', number));
+    await bankAccount(seller.userId, '090271234', number);
+    await bankAccount(linked.userId, '090271234', number);
     const id = await openAuction(fx, seller.userId, category);
     for (const [m, max] of [[plain, '120000'], [linked, '150000']] as const) {
       expect((await m.call('POST', `/auctions/${id}/bids`, { maximum: max })).status).toBe(201);
