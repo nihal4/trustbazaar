@@ -173,6 +173,11 @@ export interface IdentityCryptoPort {
   /** AES-256-GCM under FIELD_KEY_V{n}; the context is the associated data (for example 'delivery.addresses.line1:<id>'). */
   encrypt(plain: string, context: string): Promise<Uint8Array>;
   decrypt(sealed: Uint8Array, context: string): Promise<string>;
+  /**
+   * An HMAC-SHA-256 blind index (32 bytes) under BIDX_KEY, for finding equal values without decrypting them (FR-TNS-08,
+   * U7-09). The context separates uses (for example 'payments.bank_account'); the caller normalises the value.
+   */
+  blindIndex(value: string, context: string): Promise<Uint8Array>;
 }
 
 /**
@@ -203,3 +208,6 @@ export const ACCOUNT_CLOSURE_CHECKS = Symbol('ACCOUNT_CLOSURE_CHECKS');
 
 /** This unit's part of the data export (FR-PRV-03; U7-11): a DataExportSource (kernel/privacy/data-export.ts). */
 export const IDENTITY_DATA_EXPORT = Symbol('IDENTITY_DATA_EXPORT');
+
+/** Accounts signed in from the same browser (FR-TNS-08; U7-09): an AccountLinkSource (kernel/links/account-links.ts). */
+export const IDENTITY_ACCOUNT_LINKS = Symbol('IDENTITY_ACCOUNT_LINKS');

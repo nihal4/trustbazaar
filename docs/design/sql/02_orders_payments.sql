@@ -309,6 +309,7 @@ CREATE TABLE payments.payout_accounts (
   routing_number     varchar(9)  CHECK (routing_number ~ '^[0-9]{9}$'),
   account_name       varchar(120),
   account_number_enc bytea,                                  -- AES-256-GCM (Unit 1 field key)
+  account_number_bidx bytea,                                 -- HMAC blind index (Unit 1), FR-TNS-08 (U7-09)
   account_last4      char(4),
   status             payments.payout_account_status NOT NULL,
   effective_at       timestamptz,                            -- end of cooling-off CP-29
@@ -319,6 +320,7 @@ CREATE TABLE payments.payout_accounts (
   CONSTRAINT bank_fields CHECK ((kind = 'bank') = (bank_name IS NOT NULL AND routing_number IS NOT NULL
                             AND account_name IS NOT NULL AND account_number_enc IS NOT NULL)),
   CONSTRAINT wallet_fields CHECK ((kind <> 'bank') = (wallet_e164 IS NOT NULL)),
+  CONSTRAINT bidx_bank_only CHECK (account_number_bidx IS NULL OR (kind = 'bank' AND octet_length(account_number_bidx) = 32)),
   CONSTRAINT review_only_bank CHECK (status <> 'pending_review' OR kind = 'bank'),        -- only bank accounts need the name check
   CONSTRAINT usable_has_effective CHECK (status NOT IN ('cooling_off', 'active') OR effective_at IS NOT NULL),
   CONSTRAINT bank_reviewed CHECK (kind <> 'bank' OR status NOT IN ('cooling_off', 'active') OR reviewed_by IS NOT NULL)
@@ -326,6 +328,9 @@ CREATE TABLE payments.payout_accounts (
 -- one usable (or pending) payout account per seller
 CREATE UNIQUE INDEX payout_account_one_current ON payments.payout_accounts (user_id)
   WHERE status IN ('pending_review', 'cooling_off', 'active');
+-- FR-TNS-08 (U7-09): accounts paid out to the same wallet or bank account are linked
+CREATE INDEX payout_account_wallet ON payments.payout_accounts (wallet_e164) WHERE wallet_e164 IS NOT NULL;
+CREATE INDEX payout_account_bidx ON payments.payout_accounts (account_number_bidx) WHERE account_number_bidx IS NOT NULL;
 
 CREATE TABLE payments.payouts (
   id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
