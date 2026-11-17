@@ -2,10 +2,11 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { JobRunner } from '../../../kernel/jobs/job-runner';
 import { ApprovalService } from '../services/approval.service';
 import { AuditService } from '../services/audit.service';
+import { ClosureService } from '../services/closure.service';
 import { securityEvents } from '../../../kernel/metrics/metrics';
 
 // Unit 1's scheduled jobs (docs/design/09_integration.pdf "Scheduled jobs": Unit 1 runs daily).
-// The erasure after closure and the removal of rejected KYC images come with U1-09.
+// The erasure after closure and of rejected KYC data (U1-09, FR-PRV-04) runs daily too.
 export const DAY_MS = 24 * 3_600_000;
 
 @Injectable()
@@ -16,12 +17,22 @@ export class IdentityJobs implements OnModuleInit {
     private readonly jobs: JobRunner,
     private readonly approvals: ApprovalService,
     private readonly audit: AuditService,
+    private readonly closure: ClosureService,
   ) {}
 
   onModuleInit(): void {
     // DV-5: open proposals past their 72 hours become 'expired'. A decision on an expired one is refused
     // at once anyway; this job closes the ones nobody looks at.
     this.jobs.register({ name: 'identity.approvals.expire', intervalMs: DAY_MS, run: () => this.approvals.expireStale() });
+    // FR-PRV-04: closed accounts past CP-41 that no unit holds are erased; KYC data rejected 30 days ago goes too.
+    this.jobs.register({
+      name: 'identity.erasure',
+      intervalMs: DAY_MS,
+      run: async () => {
+        const r = await this.closure.eraseDue();
+        return r.erased + r.rejectedKyc;
+      },
+    });
     // SEC-LOG-02: the whole hash chain is recomputed; a break is reported to the operators (SEC-LOG-05).
     this.jobs.register({
       name: 'identity.audit.verify',

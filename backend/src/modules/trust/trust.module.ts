@@ -23,6 +23,7 @@ import { TrustReportService } from './services/report.service';
 import { RatingService } from './services/rating.service';
 import { SanctionService } from './services/sanction.service';
 import { SignalService } from './services/signal.service';
+import { DisputesClosureCheck } from './services/closure.check';
 
 // Unit 7 (docs/design/07_disputes_trust_staff.pdf). Schemas: disputes, trust, staff.
 // Folder layout and rules: BUILDING.md section 3. This module exports only its ports (ports/),
@@ -36,6 +37,7 @@ import { SignalService } from './services/signal.service';
   imports: [TypeOrmModule.forFeature(ENTITIES), ConfigPortModule, IdentityModule, ChatModule, ListingsModule, OrdersModule, DeliveryModule, GameAccountsModule],
   controllers: [ConfigController, TrustController],
   providers: [
+    DisputesClosureCheck,
     ConfigAdminService,
     TrustReportService,
     SanctionService,
