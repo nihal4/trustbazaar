@@ -62,7 +62,12 @@ export function Component() {
         <div><dt>{t('account.mfa')}</dt><dd>{t(u.mfaEnabled ? 'account.mfa_on' : 'account.mfa_off')}</dd></div>
       </dl>
       {u.accountStatus === 'suspended' && <FormMessage kind="info">{t('account.suspended')}</FormMessage>}
-      <p><Link to="/account/security">{t('security.link')}</Link></p>
+      <ul className={styles.links}>
+        <li><Link to="/account/security">{t('security.link')}</Link></li>
+        <li><Link to="/seller">{t('account.seller_link')}</Link></li>
+        <li><Link to="/account/payout">{t('account.payout_link')}</Link></li>
+        <li><Link to="/account/privacy">{t('account.privacy_link')}</Link></li>
+      </ul>
       <button type="button" className={styles.secondary} onClick={() => void signOut()} disabled={busy}>
         {t('account.sign_out')}
       </button>
