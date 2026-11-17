@@ -7,6 +7,7 @@ export const ctxOf = (req: Request): RequestContext => ({
   ip: req.ip ?? null,
   userAgent: req.header('user-agent') ?? null,
   correlationId: correlationId(req),
+  humanProof: req.header('x-human-proof') ?? undefined,
 });
 
 /** A cookie's value, or undefined when absent or empty. */
