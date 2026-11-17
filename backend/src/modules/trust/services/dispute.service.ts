@@ -87,6 +87,23 @@ export class DisputeService implements DisputeCommands {
     return { types: allowed, openDisputeId: null };
   }
 
+  /**
+   * GET /orders/{id}/disputes (U8-09; Decisions log): for either party, the order's disputes, newest first, so the
+   * order view finds the live one and, after a decision or a withdrawal, the outcome.
+   */
+  async forOrder(userId: string, orderId: string) {
+    await this.orders.getOrderForParty(orderId, userId); // not-found for anyone else (SEC-SDL-09)
+    const rows = (await this.db.query(
+      `SELECT id, type, status, opened_at, outcome, decided_at, withdrawn_at FROM disputes.disputes WHERE order_id = $1 ORDER BY opened_at DESC, id`, [orderId],
+    )) as { id: string; type: DisputeType; status: string; opened_at: Date; outcome: string | null; decided_at: Date | null; withdrawn_at: Date | null }[];
+    return {
+      items: rows.map((r) => ({
+        id: r.id, type: r.type, status: r.status, openedAt: r.opened_at.toISOString(), outcome: r.outcome,
+        decidedAt: r.decided_at?.toISOString() ?? null, withdrawnAt: r.withdrawn_at?.toISOString() ?? null,
+      })),
+    };
+  }
+
   /** POST /orders/{id}/disputes (FR-DSP-01): the buyer opens one, with a type and a description. */
   async openByBuyer(buyerId: string, orderId: string, d: { type: DisputeType; description: string }): Promise<{ disputeId: string }> {
     const view = await this.orders.getOrderForParty(orderId, buyerId);
