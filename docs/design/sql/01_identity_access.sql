@@ -245,6 +245,8 @@ CREATE TABLE identity.known_devices (
   last_seen_at    timestamptz NOT NULL DEFAULT now(),
   UNIQUE (user_id, device_key_hash)
 );
+-- FR-TNS-08 (U7-09): accounts signed in from the same browser share its key; the linked-account check looks them up
+CREATE INDEX known_devices_key ON identity.known_devices (device_key_hash);
 
 CREATE TABLE identity.sessions (
   id                   uuid PRIMARY KEY DEFAULT gen_random_uuid(),   -- "sid" claim of the access token

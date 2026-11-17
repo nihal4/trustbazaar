@@ -21,6 +21,8 @@ import { publish } from './outbox';
 export const REUSE_GRACE_MS = 10_000; // DV-4
 const sha256 = (s: string) => createHash('sha256').update(s).digest();
 const randomToken = () => randomBytes(32).toString('base64url');
+/** The device key this service issues: 32 random bytes, base64url. */
+const DEVICE_KEY = /^[A-Za-z0-9_-]{43}$/;
 // TypeORM's PostgreSQL driver answers UPDATE/DELETE ... RETURNING with [rows, count], INSERT with rows.
 const rowsOf = <T>(result: unknown): T[] =>
   (Array.isArray(result) && Array.isArray(result[0]) && typeof result[1] === 'number' ? result[0] : result) as T[];
@@ -82,25 +84,29 @@ export class SessionService {
     const now = this.clock.now();
     const { accessMs, idleMs, absoluteMs } = await this.limits();
 
-    // A known device carries its key in a cookie; anything else is a new device, announced (FR-NTF-06).
+    // A known device carries its key in a cookie; anything else is a new device, announced (FR-NTF-06). A browser keeps
+    // one key for every account signed in on it, so accounts sharing a browser can be linked (FR-TNS-08; U7-09): a
+    // well-formed key the browser already has is kept, and only a browser without one gets a new key.
     let deviceId: string | undefined;
     let newDeviceKey: string | undefined;
-    if (deviceKey) {
+    const presented = deviceKey && DEVICE_KEY.test(deviceKey) ? deviceKey : undefined;
+    if (presented) {
       const [d] = rowsOf<{ id: string }>(
         await m.query(
           `UPDATE identity.known_devices SET last_seen_at = $3 WHERE user_id = $1 AND device_key_hash = $2 RETURNING id`,
-          [userId, sha256(deviceKey), now],
+          [userId, sha256(presented), now],
         ),
       );
       deviceId = d?.id;
     }
     if (!deviceId) {
-      newDeviceKey = randomToken();
+      const key = presented ?? randomToken();
+      if (!presented) newDeviceKey = key;
       const label = deviceLabel(ctx.userAgent);
       const [d] = await m.query(
         `INSERT INTO identity.known_devices (user_id, device_key_hash, label, first_seen_at, last_seen_at)
          VALUES ($1, $2, $3, $4, $4) RETURNING id`,
-        [userId, sha256(newDeviceKey), label, now],
+        [userId, sha256(key), label, now],
       );
       deviceId = d.id;
       await publish(m, 'identity.signin.new_device', userId, { userId, device: label, at: now.toISOString() });
