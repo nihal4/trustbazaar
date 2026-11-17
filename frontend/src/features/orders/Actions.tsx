@@ -2,7 +2,7 @@
 // U8-06). Each action states its consequence first; only actions the order's state allows are offered, and the server
 // checks again (an `order-state` answer refreshes the order). Buyer: confirm receipt after the delivery event, or ask
 // to cancel before it. Seller: answer a cancellation request, or cancel (a full refund and a strike). Opening a dispute
-// and early release are on the dispute and game-account screens (U8-09, U8-07).
+// is the dispute part of the order view (Disputes.tsx, U8-09); early release is the game-account screens' (U8-07).
 import { useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatMoney } from '../../lib/money.js';
