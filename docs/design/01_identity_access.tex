@@ -627,7 +627,7 @@ Further rules:
 \subsection{Step-up authentication}
 \label{sec:flow-stepup}
 \begin{enumerate}[nosep]
-  \item \texttt{POST /auth/step-up/start} names one action from a fixed list. The actions are: \texttt{password.change}, \texttt{phone.change}, \texttt{email.change}, \texttt{mfa.disable}, \texttt{recovery.regenerate}, \texttt{payout.change} (used by the Payment unit), \texttt{game.release\_early} (used by the Game-Account unit) and \texttt{account.close}.
+  \item \texttt{POST /auth/step-up/start} names one action from a fixed list. The actions are: \texttt{password.change}, \texttt{phone.change}, \texttt{email.change}, \texttt{mfa.disable}, \texttt{recovery.regenerate}, \texttt{payout.change} (used by the Payment unit), \texttt{game.release\_early} (used by the Game-Account unit), \texttt{account.close} and \texttt{data.export} (used by the Trust \& Safety unit, U7-11).
   \item If the user has TOTP, no message is sent and the TOTP code is the challenge. Otherwise an OTP with purpose \texttt{step\_up} is sent to the verified number, bound to the session id and the action.
   \item \texttt{POST /auth/step-up/verify} checks the code and returns a single-use grant. Only its hash is kept in Redis, under \texttt{stepup:\{sid\}:\{action\}}, for DV-2.
   \item The sensitive request carries the grant in the \texttt{X-Step-Up} header. StepUpGuard reads and deletes the key atomically (\texttt{GETDEL}) and compares the hash, so a grant works once, for one action, in one session (SEC-AUTH-08).

@@ -15,7 +15,7 @@ export class DataExportRequest {
   @Column({ type: 'timestamptz', name: 'ready_at', nullable: true })
   readyAt!: Date | null;
 
-  @Column({ type: 'varchar', name: 'file_key', length: 80, nullable: true })
+  @Column({ type: 'varchar', name: 'file_key', length: 400, nullable: true })
   fileKey!: string | null;
 
   @Column({ type: 'timestamptz', name: 'expires_at', nullable: true })
