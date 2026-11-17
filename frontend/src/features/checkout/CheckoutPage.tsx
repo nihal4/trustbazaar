@@ -1,8 +1,9 @@
 // Checkout of a fixed-price item (docs/design/08_frontend.pdf section 7.4; IF-UI-04; FR-FIX-01, FR-FIX-05; U8-05).
 // The buyer chooses the quantity and how they get the item; "Continue to payment" calls POST /orders with an
 // Idempotency-Key, which reserves the units (Unit 2), and the order page takes the payment, the same as for an
-// auction win. Until Unit 4 issues delivery quotes only self pickup can be chosen, and game accounts wait for the
-// disclosure and the browser check of U8-07 (Decisions log, U8-05). A guest is sent to sign in.
+// auction win. Courier delivery (U8-06) is chosen here and completed on the order page, where the buyer gives the
+// address and gets the binding quote (Unit 4, DV-23) before paying; game accounts wait for the disclosure and the
+// browser check of U8-07 (Decisions log, U8-05). A guest is sent to sign in.
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -43,6 +44,7 @@ export function Component() {
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState('1');
   const [error, setError] = useState<string | null>(null);
+  const [method, setMethod] = useState<'self_pickup' | 'courier' | null>(null);
 
   // a guest is sent to sign in, returning here (section 3.3)
   useEffect(() => {
@@ -57,7 +59,9 @@ export function Component() {
     enabled: me.isSuccess,
   });
   const create = useMutation({
-    mutationFn: (q: number) => api.post('/orders', { listingId, quantity: q, fulfilment: 'self_pickup' }, { idempotent: true }) as Promise<{ id: string }>,
+    // courier is chosen on the order page with its quote; the order is created without a method (Unit 2, FR-DLV-02)
+    mutationFn: ({ q, f }: { q: number; f: 'self_pickup' | 'courier' }) =>
+      api.post('/orders', { listingId, quantity: q, ...(f === 'self_pickup' ? { fulfilment: 'self_pickup' } : {}) }, { idempotent: true }) as Promise<{ id: string }>,
     onSuccess: (o) => void navigate(`/orders/${encodeURIComponent(o.id)}`),
     onError: (e) => {
       const name = problemName(e);
@@ -80,13 +84,15 @@ export function Component() {
   const blocked = own ? t('checkout.own')
     : l.saleFormat !== 'fixed_price' || l.status !== 'active' || !l.price ? t('checkout.not_active')
     : l.itemKind === 'game_account' ? t('checkout.game_not_yet')
-    : l.fulfilmentOptions === 'courier_only' ? t('checkout.courier_not_yet')
     : l.quantity.available < 1 ? t('checkout.unavailable')
     : null;
   const max = l.quantity.available;
   const n = Number(toAsciiDigits(quantity).trim());
   const valid = Number.isInteger(n) && n >= 1 && n <= max;
   const total = l.price && valid ? formatMoney(BigInt(l.price) * BigInt(n), lang) : null;
+  const pickup = l.fulfilmentOptions !== 'courier_only';
+  const courier = l.fulfilmentOptions === 'courier_only' || l.fulfilmentOptions === 'pickup_or_courier';
+  const chosen: 'self_pickup' | 'courier' = method ?? (pickup ? 'self_pickup' : 'courier');
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -94,7 +100,7 @@ export function Component() {
     if (sending.current) return;
     sending.current = true;
     setError(null);
-    create.mutate(n, { onSettled: () => { sending.current = false; } });
+    create.mutate({ q: n, f: chosen }, { onSettled: () => { sending.current = false; } });
   };
 
   return (
@@ -121,13 +127,21 @@ export function Component() {
             )}
             <fieldset className={styles.field}>
               <legend>{t('checkout.fulfilment')}</legend>
-              <div className={styles.option}>
-                <input id="checkout-pickup" type="radio" name="fulfilment" value="self_pickup" checked readOnly />
-                <label htmlFor="checkout-pickup">{t('checkout.fulfilment.self_pickup')}</label>
-              </div>
-              {l.fulfilmentOptions === 'pickup_or_courier' && <p className={styles.hint}>{t('checkout.courier_also')}</p>}
+              {pickup && (
+                <div className={styles.option}>
+                  <input id="checkout-pickup" type="radio" name="fulfilment" value="self_pickup" checked={chosen === 'self_pickup'} onChange={() => setMethod('self_pickup')} />
+                  <label htmlFor="checkout-pickup">{t('checkout.fulfilment.self_pickup')}</label>
+                </div>
+              )}
+              {courier && (
+                <div className={styles.option}>
+                  <input id="checkout-courier" type="radio" name="fulfilment" value="courier" checked={chosen === 'courier'} onChange={() => setMethod('courier')} />
+                  <label htmlFor="checkout-courier">{t('checkout.fulfilment.courier')}</label>
+                </div>
+              )}
+              {chosen === 'courier' && <p className={styles.hint}>{t('checkout.courier_note')}</p>}
             </fieldset>
-            {total && <p className={styles.total}>{t('checkout.total', { total })}</p>}
+            {total && <p className={styles.total}>{t(chosen === 'courier' ? 'checkout.total_plus_delivery' : 'checkout.total', { total })}</p>}
             <p className={styles.hint}>{t('checkout.reserve_note')}</p>
             <button type="submit" className={styles.primary} disabled={create.isPending}>{t('checkout.continue')}</button>
           </form>
