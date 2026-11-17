@@ -32,9 +32,12 @@ export class SignalService {
       return p.flagId === undefined ? null : { kind: 'shill_bidding', source: `auctions.flag:${p.flagId}`, subject: null, detail: { auctionId: p.auctionId ?? e.aggregateId, flag: p.kind ?? null, score: p.score ?? null } };
     },
     'listings.listing.relisting_flagged': (e) => {
-      const p = e.payload as { listingId?: string; sellerId?: string; previousListingId?: string; similarity?: number };
+      const p = e.payload as { listingId?: string; sellerId?: string; previousListingId?: string; similarity?: number; reason?: string };
       const listingId = p.listingId ?? e.aggregateId;
-      return { kind: 'relisting', source: `listing:${listingId}`, subject: p.sellerId ?? null, detail: { listingId, previousListingId: p.previousListingId ?? null, similarity: p.similarity ?? null } };
+      return {
+        kind: 'relisting', source: `listing:${listingId}`, subject: p.sellerId ?? null,
+        detail: { listingId, previousListingId: p.previousListingId ?? null, similarity: p.similarity ?? null, reason: p.reason ?? 'cancelled' },
+      };
     },
     'delivery.issue.opened': (e) => {
       const p = e.payload as { issueId?: string; orderId?: string; kind?: string };

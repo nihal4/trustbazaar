@@ -83,7 +83,7 @@ describe('data export', () => {
     for (const section of ['account', 'orders', 'listings', 'delivery', 'gameAccounts', 'chat', 'trust']) expect(data[section]).toBeDefined();
     expect(data.account.profile).toEqual([expect.objectContaining({ id: u.userId, phone_e164: expect.any(String), email: expect.any(String) })]);
     expect(data.orders.orders).toEqual([expect.objectContaining({ id: orderId, listing_snapshot: { title: 'Exported lamp' } })]);
-    for (const secret of ['password_hash', 'device_key_hash', 'doc_number_enc', 'idempotency_key', 'account_number_enc', 'ciphertext', 'code_hash']) expect(text).not.toContain(secret);
+    for (const secret of ['password_hash', 'device_key_hash', 'doc_number_enc', 'idempotency_key', 'account_number_enc', 'account_number_bidx', 'ciphertext', 'code_hash']) expect(text).not.toContain(secret);
 
     const stored = await row<{ file_key: string }>(`SELECT file_key FROM staff.export_requests WHERE user_id = $1`, [u.userId]);
     expect(stored.file_key.startsWith('v1.data_export.')).toBe(true);
