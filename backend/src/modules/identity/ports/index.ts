@@ -175,6 +175,22 @@ export interface IdentityCryptoPort {
   decrypt(sealed: Uint8Array, context: string): Promise<string>;
 }
 
+/**
+ * AccountClosureCheck (docs/design/01_identity_access.pdf section 4.4; FR-ACC-11, FR-PRV-04; U1-09). Orders,
+ * Auctions, Payments and Disputes each register one at start-up. At closure ('closure') a check returns why the user
+ * cannot close yet (an open order, an unpaid win or leading bid, an open dispute, a balance owed); before erasure
+ * ('erasure') it returns the holds that keep the data (a payout not yet sent, a dispute still open). Each reason is a
+ * short code shown to the user, such as 'open-order'.
+ */
+export type ClosureStage = 'closure' | 'erasure';
+export interface AccountClosureCheck {
+  readonly name: string;
+  blockers(userId: string, stage: ClosureStage, tx?: EntityManager): Promise<string[]>;
+}
+export interface AccountClosureChecks {
+  register(check: AccountClosureCheck): void;
+}
+
 export const IDENTITY_QUERY = Symbol('IDENTITY_QUERY');
 export const IDENTITY_COMMANDS = Symbol('IDENTITY_COMMANDS');
 export const STAFF_QUERY = Symbol('STAFF_QUERY');
@@ -183,3 +199,4 @@ export const AUDIT_SERVICE = Symbol('AUDIT_SERVICE');
 export const RATE_LIMITER = Symbol('RATE_LIMITER');
 export const FILE_VAULT = Symbol('FILE_VAULT');
 export const IDENTITY_CRYPTO = Symbol('IDENTITY_CRYPTO');
+export const ACCOUNT_CLOSURE_CHECKS = Symbol('ACCOUNT_CLOSURE_CHECKS');

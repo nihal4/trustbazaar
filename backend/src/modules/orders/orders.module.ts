@@ -10,6 +10,7 @@ import { MockPayController, PaymentsController, StripeWebhookController } from '
 import { MyPayoutsController, StaffPayoutsController } from './http/payouts.controller';
 import { MonetizationController } from './http/monetization.controller';
 import { MonetizationService } from './services/monetization.service';
+import { OrdersClosureCheck } from './services/closure.check';
 import { ESCROW_COMMANDS, ESCROW_QUERY, ORDERS_PORT, PAYOUT_CHECKS, PRO_STATUS } from './ports';
 import { ForwardedGameCheckout, GAME_CHECKOUT } from './adapters/game-accounts';
 import { EscrowService } from './services/escrow.service';
@@ -45,6 +46,7 @@ import type Redis from 'ioredis';
     LedgerService,
     StatementService,
     MonetizationService,
+    OrdersClosureCheck,
     { provide: PRO_STATUS, useExisting: MonetizationService },
     PayoutService,
     OrdersJobs,
