@@ -28,6 +28,7 @@ import { Actions } from './Actions';
 import { CourierChoice } from './Courier';
 import { Deadlines } from './Deadlines';
 import { Disputes, useOrderDisputes } from './Disputes';
+import { GamePrepare, gameReady, GameTab, useGame } from './Game';
 import { Handover, useHandover } from './Handover';
 import { orderKey, type OrderView } from './model';
 import { moneyText } from './moneyText';
@@ -80,6 +81,7 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
   const handover = useHandover(o);
   const shipments = useShipments(o);
   const disputes = useOrderDisputes(o);
+  const game = useGame(o);
   const ratings = useOrderRatings(o);
   const awaiting = o.status === 'awaiting_payment';
   return (
@@ -102,7 +104,8 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
       {handover.isError && <FormMessage kind="error">{errorText(handover.error, t, lang)}</FormMessage>}
       {shipments.data && <Shipments o={o} items={shipments.data.items} t={t} lang={lang} />}
       {shipments.isError && <FormMessage kind="error">{errorText(shipments.error, t, lang)}</FormMessage>}
-      {o.fulfilment === 'game_account' && o.status !== 'awaiting_payment' && <p className={styles.hint}>{t('order.game_screens')}</p>}
+      {game.data && o.status !== 'awaiting_payment' && <GameTab o={o} g={game.data} t={t} lang={lang} />}
+      {game.isError && o.status !== 'awaiting_payment' && <FormMessage kind="error">{errorText(game.error, t, lang)}</FormMessage>}
       <OrderChat o={o} t={t} lang={lang} />
       {ratings.data && <Ratings o={o} r={ratings.data} t={t} lang={lang} />}
     </div>
@@ -142,6 +145,10 @@ function PayPanel({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
   const [leaving, setLeaving] = useState(false);
   const due = Date.parse(o.paymentDueAt);
   const over = due <= now;
+  // a game account is paid only once the disclosure is acknowledged and the key exists (Unit 5, checkout_ready)
+  const game = useGame(o);
+  const isGame = o.fulfilment === 'game_account';
+  const blockedByGame = isGame && !gameReady(game.data);
   const line = (p: string) => formatMoney(BigInt(p), lang, { decimals: 'always' });
 
   const choose = useMutation({
@@ -193,7 +200,6 @@ function PayPanel({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
         <fieldset className={styles.choice}>
           <legend>{t('pay.fulfilment')}</legend>
           <p>{t('pay.choose_fulfilment')}</p>
-          {o.listing.itemKind === 'game_account' && !o.fulfilmentOptions.includes('game_account') && <FormMessage kind="info">{t('pay.game_not_yet')}</FormMessage>}
           {o.fulfilmentOptions.includes('self_pickup') && (
             <button type="button" disabled={choose.isPending || over} onClick={() => choose.mutate()}>
               {t('pay.self_pickup')}
@@ -205,7 +211,9 @@ function PayPanel({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
       {o.fulfilment && (
         <p>{t(`pay.chosen.${o.fulfilment}`)}</p>
       )}
-      {o.fulfilment && !over && (
+      {isGame && game.data && <GamePrepare o={o} g={game.data} t={t} lang={lang} disabled={over} />}
+      {isGame && game.isError && <FormMessage kind="error">{errorText(game.error, t, lang)}</FormMessage>}
+      {o.fulfilment && !over && !blockedByGame && (
         <>
           <fieldset className={styles.choice}>
             <legend>{t('pay.method')}</legend>

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, configure, fireEvent, screen, waitFor } from '@testing-library/react';
 import { placeholders } from '../../lib/i18n.js';
 import { fakeBackend, json, problem, renderApp, standInMe, type Call } from '../../testing/app';
@@ -11,7 +11,7 @@ import libEn from '../../lib/messages/en.json';
 // Idempotency-Key and the order page takes the payment; refusals in words; a guest is sent to sign in.
 
 configure({ asyncUtilTimeout: 3000 });
-afterEach(cleanup);
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 const ID = '7e1c2a3e-1111-4a5b-8c9d-000000000001';
 const listing = (o: Record<string, unknown> = {}) => ({
@@ -84,9 +84,8 @@ describe('checkout', () => {
     expect(be.called('POST /orders')[0].body).toEqual({ listingId: ID, quantity: 1 });
   });
 
-  it('FR-DLV-02 a game account, an auction and one\'s own listing cannot be checked out yet, and say why', async () => {
+  it('FR-DLV-02 an auction and one\'s own listing cannot be checked out, and say why', async () => {
     const cases: [Record<string, unknown>, string][] = [
-      [{ itemKind: 'game_account', fulfilmentOptions: null }, 'Game accounts cannot be bought yet. This will be possible soon.'],
       [{ saleFormat: 'auction', price: null }, 'This item cannot be bought now.'],
       [{ seller: { id: standInMe.id } }, 'This is your own listing.'],
     ];
@@ -96,6 +95,24 @@ describe('checkout', () => {
       expect(screen.queryByRole('button', { name: 'Continue to payment' })).toBeNull();
       cleanup();
     }
+  });
+
+  it('FR-GAM-05 NFR-USE-03 a game account: refused in words in a browser without Web Crypto and IndexedDB; else one order with no delivery, after the same-browser warning', async () => {
+    const game = { itemKind: 'game_account', fulfilmentOptions: null, quantity: { total: 1, available: 1 } };
+    vi.stubGlobal('indexedDB', undefined);
+    renderApp(`/checkout/${ID}`, backend({ l: game }));
+    expect(await screen.findByText(/^Buying a game account needs a browser that supports Web Crypto and IndexedDB/)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Continue to payment' })).toBeNull();
+    cleanup();
+    vi.stubGlobal('indexedDB', { open: () => ({}) });
+    const be = backend({ l: game });
+    const doc = renderApp(`/checkout/${ID}`, be);
+    expect(await screen.findByText(/^Use this same browser on this device to open the credentials\./)).toBeTruthy();
+    expect(screen.queryByLabelText('Pick it up from the seller (no delivery fee)')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Continue to payment' }));
+    await waitFor(() => expect(doc.router.state.location.pathname).toBe('/orders/o-1'));
+    expect(be.called('POST /orders')[0].body).toEqual({ listingId: ID, quantity: 1 });
+    vi.unstubAllGlobals();
   });
 
   it('SEC-ACC-01 a guest who opens checkout is sent to sign in, returning here', async () => {

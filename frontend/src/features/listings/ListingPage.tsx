@@ -49,6 +49,12 @@ export function Component() {
     <article className={styles.page}>
       <h1 className={styles.title}>{l.title}</h1>
       {l.itemKind === 'game_account' && <p className={styles.kind}>{t('listing.game_account')}</p>}
+      {l.itemKind === 'game_account' && (
+        <section aria-labelledby="game-risk-title" className={styles.notice}>
+          <h2 id="game-risk-title">{t('listing.game_risk_title')}</h2>
+          {[1, 2, 3].map((n) => <p key={n}>{t(`listing.game_risk.${n}`)}</p>)}
+        </section>
+      )}
       <Status l={l} own={own} t={t} />
       <div className={styles.layout}>
         <div>
