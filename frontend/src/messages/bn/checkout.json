@@ -7,7 +7,6 @@
   "checkout.fulfilment": "কীভাবে পাবেন",
   "checkout.fulfilment.self_pickup": "বিক্রেতার কাছ থেকে নিজে নিন (ডেলিভারি চার্জ নেই)",
   "checkout.fulfilment.courier": "কুরিয়ারে ডেলিভারি",
-  "checkout.game_not_yet": "গেম অ্যাকাউন্ট এখনো কেনা যায় না। শিগগিরই যাবে।",
   "checkout.total": "মোট দিতে হবে: {total}",
   "checkout.reserve_note": "এগিয়ে গেলে আপনি দাম দেওয়া পর্যন্ত জিনিসটি আপনার জন্য সংরক্ষিত থাকবে।",
   "checkout.continue": "পেমেন্টে যান",
@@ -19,5 +18,9 @@
   "checkout.verify": "পরিচয় ও ই-মেইল যাচাই করা সদস্যরাই কিনতে পারেন।",
   "checkout.quantity_invalid": "১ থেকে {max}-এর মধ্যে পরিমাণ লিখুন।",
   "checkout.courier_note": "পরের পাতায়, পরিশোধের আগে, আপনি ডেলিভারির ঠিকানা দেবেন এবং ডেলিভারি ফি দেখবেন।",
-  "checkout.total_plus_delivery": "জিনিসের মোট দাম: {total}, সঙ্গে ডেলিভারি ফি"
+  "checkout.total_plus_delivery": "জিনিসের মোট দাম: {total}, সঙ্গে ডেলিভারি ফি",
+  "checkout.game_browser": "গেম অ্যাকাউন্ট কিনতে Web Crypto ও IndexedDB সমর্থন করে এমন ব্রাউজার লাগে, এটি তা করে না। অনুগ্রহ করে হালনাগাদ Chrome, Firefox, Edge বা Safari ব্যবহার করুন।",
+  "checkout.game_title": "গেম অ্যাকাউন্ট",
+  "checkout.game_same_browser": "তথ্য খুলতে এই ডিভাইসের এই ব্রাউজারটিই ব্যবহার করুন। এর ডেটা মুছে ফেললে বা ডিভাইস বদলালে বিক্রেতাকে একবার আবার পাঠাতে বলতে পারবেন।",
+  "checkout.game_next": "এরপর প্রকাশকের ঝুঁকির নোটিশ পড়বেন এবং এই ব্রাউজারে একটি কী তৈরি করবেন, তারপর পরিশোধ করবেন।"
 }

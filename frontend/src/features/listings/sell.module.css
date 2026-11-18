@@ -16,3 +16,4 @@
 .photos li { display: grid; gap: var(--tb-space-1); justify-items: start; }
 .photos img { object-fit: cover; border-radius: var(--tb-radius); max-width: 100%; height: auto; }
 .tag { border: 1px solid var(--tb-border); border-radius: var(--tb-radius); padding: 0 var(--tb-space-1); }
+.code { font-family: var(--tb-font-mono, monospace); font-size: 1.25rem; letter-spacing: 0.1em; }

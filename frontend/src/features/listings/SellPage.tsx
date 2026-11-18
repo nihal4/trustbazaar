@@ -4,8 +4,8 @@
 // after a button press with the list as the fallback. Before publishing the screen shows the commission that will
 // be deducted from the payout (CP-25, from GET /me/selling-terms) and FR-LST-07's limit; an auction's terms are
 // given at publication and never change. A listing sent to review says so. After publication only the fields the
-// server still allows are offered, and clarifications can always be added. Game accounts are listed from their own
-// screens (U8-07).
+// server still allows are offered, and clarifications can always be added. A game account (U8-07; Unit 5 section 3)
+// has no condition, delivery or area and sells one; its game details and the ownership proof are on GameListing.
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -21,6 +21,7 @@ import type { Lang } from '../../shared/language/lang';
 import { useMe } from '../../shared/me';
 import { fieldErrors, isApiError, problemName } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
+import { GameListing, useOwnership } from './GameListing';
 import { commissionOf, durationLabel, nearestArea, reasonTexts, type Area, type Category, type EditableListing, type SellingTerms } from './sell';
 import en from '../../messages/en/sell.json';
 import bn from '../../messages/bn/sell.json';
@@ -80,9 +81,10 @@ export function Component() {
       {(!l || l.status === 'draft' || (l.status === 'active' && !l.locked && l.saleFormat === 'fixed_price')) && (
         <DetailsForm key={l?.own?.updatedAt ?? 'new'} l={l} terms={terms.data} t={t} lang={lang} />
       )}
-      {l && l.status === 'draft' && <Photos l={l} terms={terms.data} t={t} lang={lang} />}
+      {l && l.itemKind === 'physical' && l.status === 'draft' && <Photos l={l} terms={terms.data} t={t} lang={lang} />}
+      {l && l.itemKind === 'game_account' && (l.status === 'draft' || l.status === 'pending_review') && <GameListing l={l} t={t} lang={lang} />}
       {l && l.status === 'draft' && <Publish l={l} terms={terms.data} t={t} lang={lang} />}
-      {l && l.status === 'pending_review' && <FormMessage kind="info">{t('sell.in_review')}</FormMessage>}
+      {l && l.status === 'pending_review' && <FormMessage kind="info">{t(l.itemKind === 'game_account' ? 'sell.game.in_review' : 'sell.in_review')}</FormMessage>}
       {l && l.status === 'active' && (l.locked || l.saleFormat === 'auction') && <p>{t('sell.locked_note')}</p>}
       {l && l.status === 'active' && <Clarifications l={l} t={t} lang={lang} />}
     </div>
@@ -109,6 +111,8 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
   });
   const areas = useAreas();
   const draft = !l || l.status === 'draft';
+  const [itemKind, setItemKind] = useState<'physical' | 'game_account'>(l?.itemKind ?? 'physical');
+  const game = itemKind === 'game_account';
   const [saleFormat, setSaleFormat] = useState<'fixed_price' | 'auction'>(l?.saleFormat ?? 'fixed_price');
   const [categoryId, setCategoryId] = useState(l ? String(l.category.id) : '');
   const [title, setTitle] = useState(l?.title ?? '');
@@ -128,7 +132,7 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
   const sending = useRef(false);
 
   const area = useMemo(() => (areas.data?.items ?? []).find((a) => String(a.id) === areaId) ?? null, [areas.data, areaId]);
-  const courier = fulfilment !== 'pickup_only';
+  const courier = !game && fulfilment !== 'pickup_only';
 
   const locate = () => {
     if (!('geolocation' in navigator)) return setMessage(t('sell.location_unavailable'));
@@ -170,7 +174,7 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
     if (draft && !categoryId) problems.push(t('sell.need.category'));
     if (title.trim().length < 5) problems.push(t('sell.need.title'));
     if (description.trim().length < 20) problems.push(t('sell.need.description'));
-    if (!condition) problems.push(t('sell.need.condition'));
+    if (!game && !condition) problems.push(t('sell.need.condition'));
     if (courier && (!weight || !size)) problems.push(t('sell.need.parcel'));
     let poisha: bigint | null = null;
     if (saleFormat === 'fixed_price') {
@@ -179,23 +183,26 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
       else poisha = p.poisha;
     }
     const q = Number(quantity);
-    if (saleFormat === 'fixed_price' && !(Number.isInteger(q) && q >= 1 && q <= 9999)) problems.push(t('sell.need.quantity'));
-    if (!l && !area) problems.push(t('sell.need.area'));
+    if (saleFormat === 'fixed_price' && !game && !(Number.isInteger(q) && q >= 1 && q <= 9999)) problems.push(t('sell.need.quantity'));
+    if (!l && !game && !area) problems.push(t('sell.need.area'));
     setErrors(problems);
     if (problems.length || sending.current) return;
     const body: Record<string, unknown> = {
       ...(draft ? { categoryId: Number(categoryId) } : {}),
-      title: title.trim(), description: description.trim(), condition, noVisibleDefects: noDefects,
-      fulfilmentOptions: fulfilment, weightClass: courier ? weight : null, sizeClass: courier ? size : null,
-      ...(saleFormat === 'fixed_price' ? { price: String(poisha), quantity: q } : {}),
-      ...(area ? { area: { district: area.district, lat: located?.lat ?? area.lat, lng: located?.lng ?? area.lng } } : {}),
-      ...(!l ? { itemKind: 'physical', saleFormat } : {}),
+      title: title.trim(), description: description.trim(),
+      ...(game ? {} : {
+        condition, noVisibleDefects: noDefects,
+        fulfilmentOptions: fulfilment, weightClass: courier ? weight : null, sizeClass: courier ? size : null,
+      }),
+      ...(saleFormat === 'fixed_price' ? { price: String(poisha), quantity: game ? 1 : q } : {}),
+      ...(area && !game ? { area: { district: area.district, lat: located?.lat ?? area.lat, lng: located?.lng ?? area.lng } } : {}),
+      ...(!l ? { itemKind, saleFormat } : {}),
     };
     sending.current = true;
     save.mutate(body, { onSettled: () => { sending.current = false; } });
   };
 
-  const options = (categories.data ?? []).filter((c) => c.itemKind === 'physical');
+  const options = (categories.data ?? []).filter((c) => c.itemKind === itemKind);
   const commission = saleFormat === 'fixed_price' ? commissionOf(price, terms.commissionBps) : null;
   return (
     <form onSubmit={submit} noValidate className={`${styles.panel} ${styles.form}`} aria-labelledby="details-title">
@@ -209,6 +216,18 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
       {message && <FormMessage kind="error">{message}</FormMessage>}
       {!l && (
         <fieldset className={styles.choice}>
+          <legend>{t('sell.kind')}</legend>
+          {(['physical', 'game_account'] as const).map((k) => (
+            <div key={k}>
+              <input id={`kind-${k}`} type="radio" name="kind" checked={itemKind === k} onChange={() => { setItemKind(k); setCategoryId(''); }} />
+              <label htmlFor={`kind-${k}`}>{t(`sell.kind.${k}`)}</label>
+            </div>
+          ))}
+          {game && <p className={styles.hint}>{t('sell.game.kind_hint')}</p>}
+        </fieldset>
+      )}
+      {!l && (
+        <fieldset className={styles.choice}>
           <legend>{t('sell.format')}</legend>
           {(['fixed_price', 'auction'] as const).map((f) => (
             <div key={f}>
@@ -216,7 +235,6 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
               <label htmlFor={`format-${f}`}>{t(`sell.format.${f}`)}</label>
             </div>
           ))}
-          <p className={styles.hint}>{t('sell.game_elsewhere')}</p>
         </fieldset>
       )}
       {draft && (
@@ -238,32 +256,36 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
       <label htmlFor="description">{t('sell.field.description')}</label>
       <textarea id="description" value={description} rows={6} maxLength={5000} onChange={(e) => setDescription(e.target.value)} aria-describedby="description-hint" />
       <p id="description-hint" className={styles.hint}>{t('sell.description_hint')}</p>
-      <label htmlFor="condition">{t('sell.field.condition')}</label>
-      <select id="condition" value={condition} onChange={(e) => setCondition(e.target.value)}>
-        <option value="">{t('sell.choose')}</option>
-        {CONDITIONS.map((c) => <option key={c} value={c}>{t(`sell.condition.${c}`)}</option>)}
-      </select>
-      <div className={styles.check}>
-        <input id="no-defects" type="checkbox" checked={noDefects} onChange={(e) => setNoDefects(e.target.checked)} />
-        <label htmlFor="no-defects">{t('sell.no_defects')}</label>
-      </div>
-      {!noDefects && <p className={styles.hint}>{t('sell.defects_hint')}</p>}
-      <label htmlFor="fulfilment">{t('sell.field.fulfilmentOptions')}</label>
-      <select id="fulfilment" value={fulfilment} onChange={(e) => setFulfilment(e.target.value)}>
-        {FULFILMENT.map((f) => <option key={f} value={f}>{t(`sell.fulfilment.${f}`)}</option>)}
-      </select>
-      {courier && (
+      {!game && (
         <>
-          <label htmlFor="weight">{t('sell.field.weightClass')}</label>
-          <select id="weight" value={weight} onChange={(e) => setWeight(e.target.value)}>
+          <label htmlFor="condition">{t('sell.field.condition')}</label>
+          <select id="condition" value={condition} onChange={(e) => setCondition(e.target.value)}>
             <option value="">{t('sell.choose')}</option>
-            {WEIGHTS.map((w) => <option key={w} value={w}>{t(`sell.weight.${w}`)}</option>)}
+            {CONDITIONS.map((c) => <option key={c} value={c}>{t(`sell.condition.${c}`)}</option>)}
           </select>
-          <label htmlFor="size">{t('sell.field.sizeClass')}</label>
-          <select id="size" value={size} onChange={(e) => setSize(e.target.value)}>
-            <option value="">{t('sell.choose')}</option>
-            {SIZES.map((s) => <option key={s} value={s}>{t(`sell.size.${s}`)}</option>)}
+          <div className={styles.check}>
+            <input id="no-defects" type="checkbox" checked={noDefects} onChange={(e) => setNoDefects(e.target.checked)} />
+            <label htmlFor="no-defects">{t('sell.no_defects')}</label>
+          </div>
+          {!noDefects && <p className={styles.hint}>{t('sell.defects_hint')}</p>}
+          <label htmlFor="fulfilment">{t('sell.field.fulfilmentOptions')}</label>
+          <select id="fulfilment" value={fulfilment} onChange={(e) => setFulfilment(e.target.value)}>
+            {FULFILMENT.map((f) => <option key={f} value={f}>{t(`sell.fulfilment.${f}`)}</option>)}
           </select>
+          {courier && (
+            <>
+              <label htmlFor="weight">{t('sell.field.weightClass')}</label>
+              <select id="weight" value={weight} onChange={(e) => setWeight(e.target.value)}>
+                <option value="">{t('sell.choose')}</option>
+                {WEIGHTS.map((w) => <option key={w} value={w}>{t(`sell.weight.${w}`)}</option>)}
+              </select>
+              <label htmlFor="size">{t('sell.field.sizeClass')}</label>
+              <select id="size" value={size} onChange={(e) => setSize(e.target.value)}>
+                <option value="">{t('sell.choose')}</option>
+                {SIZES.map((s) => <option key={s} value={s}>{t(`sell.size.${s}`)}</option>)}
+              </select>
+            </>
+          )}
         </>
       )}
       {saleFormat === 'fixed_price' && (
@@ -275,19 +297,27 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
               ? t('sell.commission_fixed', { percent: percentOf(terms.commissionBps, lang), amount: formatMoney(commission, lang) })
               : t('sell.commission', { percent: percentOf(terms.commissionBps, lang) })}
           </p>
-          <label htmlFor="quantity">{t('sell.field.quantity')}</label>
-          <input id="quantity" inputMode="numeric" value={quantity} maxLength={4} onChange={(e) => setQuantity(e.target.value)} />
+          {!game && (
+            <>
+              <label htmlFor="quantity">{t('sell.field.quantity')}</label>
+              <input id="quantity" inputMode="numeric" value={quantity} maxLength={4} onChange={(e) => setQuantity(e.target.value)} />
+            </>
+          )}
         </>
       )}
       {saleFormat === 'auction' && <p className={styles.hint}>{t('sell.commission', { percent: percentOf(terms.commissionBps, lang) })}</p>}
-      <label htmlFor="area">{t('sell.field.area')}</label>
-      <select id="area" value={areaId} onChange={(e) => { setAreaId(e.target.value); setLocated(null); }} aria-describedby="area-hint">
-        <option value="">{l?.own?.area ? t('sell.area_keep', { district: l.own.area.district }) : t('sell.area_choose')}</option>
-        {(areas.data?.items ?? []).map((a) => <option key={a.id} value={String(a.id)}>{`${lang === 'bn' ? a.nameBn : a.nameEn}, ${a.district}`}</option>)}
-      </select>
-      <p id="area-hint" className={styles.hint}>{t('sell.area_hint')}</p>
-      <p><button type="button" className={styles.secondary} onClick={locate} disabled={locating || !areas.data} aria-busy={locating}>{t('sell.use_location')}</button></p>
-      {located && area && <p className={styles.hint}>{t('sell.located', { area: `${lang === 'bn' ? area.nameBn : area.nameEn}, ${area.district}` })}</p>}
+      {!game && (
+        <>
+          <label htmlFor="area">{t('sell.field.area')}</label>
+          <select id="area" value={areaId} onChange={(e) => { setAreaId(e.target.value); setLocated(null); }} aria-describedby="area-hint">
+            <option value="">{l?.own?.area ? t('sell.area_keep', { district: l.own.area.district }) : t('sell.area_choose')}</option>
+            {(areas.data?.items ?? []).map((a) => <option key={a.id} value={String(a.id)}>{`${lang === 'bn' ? a.nameBn : a.nameEn}, ${a.district}`}</option>)}
+          </select>
+          <p id="area-hint" className={styles.hint}>{t('sell.area_hint')}</p>
+          <p><button type="button" className={styles.secondary} onClick={locate} disabled={locating || !areas.data} aria-busy={locating}>{t('sell.use_location')}</button></p>
+          {located && area && <p className={styles.hint}>{t('sell.located', { area: `${lang === 'bn' ? area.nameBn : area.nameEn}, ${area.district}` })}</p>}
+        </>
+      )}
       <div className={styles.buttons}>
         <button type="submit" className={styles.primary} disabled={save.isPending}>{t(l ? 'sell.save' : 'sell.create')}</button>
       </div>
@@ -376,6 +406,9 @@ function Publish({ l, terms, t, lang }: { l: EditableListing; terms: SellingTerm
   const [duration, setDuration] = useState(terms.auctionDurations[0] ?? '');
   const [errors, setErrors] = useState<string[]>([]);
   const [done, setDone] = useState<string | null>(null);
+  const ownership = useOwnership(l);
+  const game = l.itemKind === 'game_account';
+  const blocked = game && !ownership.data?.details;
   const publish = useMutation({
     mutationFn: (body: Record<string, string>) => api.post(`/listings/${encodeURIComponent(l.id)}/publish`, body) as Promise<EditableListing>,
     onSuccess: (r) => {
@@ -421,10 +454,11 @@ function Publish({ l, terms, t, lang }: { l: EditableListing; terms: SellingTerm
           </select>
         </>
       )}
+      {game && <p>{t(blocked ? 'sell.game.details_first' : 'sell.game.review_first')}</p>}
       <p>{t('sell.commission_payout', { percent: percentOf(terms.commissionBps, lang) })}</p>
       <p>{t(auction ? 'sell.fixed_after_publish_auction' : 'sell.fixed_after_publish')}</p>
       <div className={styles.buttons}>
-        <button type="submit" className={styles.primary} disabled={publish.isPending}>{t('sell.publish')}</button>
+        <button type="submit" className={styles.primary} disabled={publish.isPending || blocked}>{t('sell.publish')}</button>
       </div>
     </form>
   );
