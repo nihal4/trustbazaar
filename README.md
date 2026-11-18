@@ -4,6 +4,12 @@ A verified peer-to-peer auction and marketplace platform for used goods and game
 
 This repository is the implementation scaffold for the Software Requirements Specification (SRS v2.0), Project Proposal and Supplementary Market Analysis in `docs/`. It is a capstone project at Daffodil International University (DIU), Department of Software Engineering.
 
+## AI disclosure
+
+This project was built with substantial help from AI. The design documents in `docs/design/`, the backend, the frontend and their tests were written with Anthropic's Claude, through Claude Code, working under the direction of the team. Every commit Claude wrote or co-wrote says so in its message with a `Co-Authored-By: Claude` line, so the history shows exactly which changes involved AI.
+
+The team decided what to build and how, answered every design question, and reviewed and merged every pull request. Automated checks (tests, coverage, linting, security scans) run on every change. AI-written work can still contain mistakes; please report any you find.
+
 ## Team.
 
 | Name | ID |
