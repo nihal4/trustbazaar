@@ -92,7 +92,7 @@ export default tseslint.config(
     rules: { 'no-restricted-imports': restrict(staffOnly, notOtherFeatures(feature)) },
   })),
   {
-    files: ['src/entries/secure.tsx'],
+    files: ['src/entries/secure.tsx', 'src/secure/**/*.ts'],
     rules: { 'no-restricted-imports': restrict(staffOnly, secureMinimal) },
   },
   {

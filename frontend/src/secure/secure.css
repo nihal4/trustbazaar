@@ -1,0 +1,32 @@
+/* The credential document's own styles (SEC-GAM-03: it loads no shared code). The colours are the app's tokens
+   (src/shared/tokens.css), repeated here: text contrast of at least 4.5:1, a 2px focus ring. */
+:root {
+  --bg: #ffffff; --surface: #f4f6f8; --text: #1b1f24; --muted: #4a5360; --border: #c9d0d8; --accent: #0b5cad;
+  --accent-text: #ffffff; --error: #b3261e; --success: #1e6b34; --radius: 6px;
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+:root:lang(bn) { --font: 'Noto Sans Bengali', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 1rem/1.5 var(--font); }
+#root { max-width: 40rem; margin: 0 auto; padding: 1rem; }
+h1 { font-size: 1.5rem; }
+h1:focus { outline: none; }
+h2 { font-size: 1.15rem; margin-top: 0; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.panel { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 1rem; margin: 1rem 0; }
+.hint { color: var(--muted); }
+.error { color: var(--error); border-left: 4px solid var(--error); padding-left: 0.5rem; }
+.success { color: var(--success); border-left: 4px solid var(--success); padding-left: 0.5rem; }
+.fingerprint, .secret { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 1.1rem; overflow-wrap: anywhere; }
+.field { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 0.75rem; }
+.check { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; }
+input[type='text'], input[type='password'], textarea { font: inherit; padding: 0.5rem; border: 1px solid var(--border); border-radius: var(--radius); width: 100%; }
+button { font: inherit; min-height: 44px; padding: 0 1rem; border-radius: var(--radius); cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: 0.6; }
+.primary { background: var(--accent); color: var(--accent-text); border: 0; font-weight: 700; }
+.secondary { background: var(--bg); color: var(--accent); border: 1px solid var(--accent); }
+.details dt { font-weight: 700; }
+.details dd { margin: 0 0 0.5rem; }
+.checklist li { margin-bottom: 0.5rem; }
+.checklist li span { margin-right: 0.5rem; }
