@@ -107,5 +107,9 @@
   "auction.announce.five_minutes": "5 minutes left in this auction.",
   "auction.announce.one_minute": "1 minute left in this auction.",
   "listing.message_seller": "Message the seller",
-  "listing.message_seller_sign_in": "Sign in to message the seller"
+  "listing.message_seller_sign_in": "Sign in to message the seller",
+  "listing.game_risk_title": "The publisher's rules",
+  "listing.game_risk.1": "The game's publisher may forbid transferring accounts, and may suspend or ban an account that has changed hands.",
+  "listing.game_risk.2": "TrustBazaar's protection covers the handover of the login details, your takeover of the account, and the seller taking the account back during the protection period.",
+  "listing.game_risk.3": "It does not cover any action by the publisher. If the publisher suspends or bans the account, you are not refunded."
 }

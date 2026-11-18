@@ -7,7 +7,6 @@
   "checkout.fulfilment": "How you get it",
   "checkout.fulfilment.self_pickup": "Pick it up from the seller (no delivery fee)",
   "checkout.fulfilment.courier": "Courier delivery",
-  "checkout.game_not_yet": "Game accounts cannot be bought yet. This will be possible soon.",
   "checkout.total": "Total to pay: {total}",
   "checkout.reserve_note": "Continuing reserves the item for you while you pay.",
   "checkout.continue": "Continue to payment",
@@ -19,5 +18,9 @@
   "checkout.verify": "Only members with a verified identity and e-mail can buy.",
   "checkout.quantity_invalid": "Enter a quantity from 1 to {max}.",
   "checkout.courier_note": "You give the delivery address and see the delivery fee on the next page, before you pay.",
-  "checkout.total_plus_delivery": "Item total: {total}, plus the delivery fee"
+  "checkout.total_plus_delivery": "Item total: {total}, plus the delivery fee",
+  "checkout.game_browser": "Buying a game account needs a browser that supports Web Crypto and IndexedDB, and this one does not. Please use an up-to-date Chrome, Firefox, Edge or Safari.",
+  "checkout.game_title": "Game account",
+  "checkout.game_same_browser": "Use this same browser on this device to open the credentials. If you clear its data or change device, you can ask the seller to send them again once.",
+  "checkout.game_next": "Next you read the publisher-risk notice and create a key in this browser, then pay."
 }
