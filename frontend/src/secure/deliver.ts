@@ -61,8 +61,9 @@ export async function deliverScreen(ctx: Ctx, notice: string | null = null): Pro
     let sealed: { enc: Uint8Array; ciphertext: Uint8Array };
     try {
       sealed = await seal(publicRaw, orderId, key.keyVersion, credentials);
-    } catch {
-      return fail(t('secure.deliver.too_long'));
+    } catch (err) {
+      // sealed.js refuses more than 4 KB (DV-34); anything else is this browser's Web Crypto failing
+      return fail(t(err instanceof Error && err.message === 'credentials too long' ? 'secure.deliver.too_long' : 'secure.deliver.seal_failed'));
     }
     try {
       await api.post(gamePath(orderId, '/sealed'), { keyVersion: key.keyVersion, enc: b64u(sealed.enc), ciphertext: b64u(sealed.ciphertext) });

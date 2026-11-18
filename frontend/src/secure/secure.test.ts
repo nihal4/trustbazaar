@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { configure, fireEvent, screen, waitFor, within } from '@testing-library/dom';
 import { placeholders } from '../lib/i18n.js';
 import { fingerprint, generateBuyerKey } from '../lib/sealed.js';
@@ -14,6 +14,15 @@ import { start } from './main';
 // opening the details with the takeover checklist, the report and the one re-key. Real HPKE through sealed.js; the
 // key store is in memory instead of IndexedDB.
 
+// jsdom's TextEncoder returns a Uint8Array of jsdom's realm, which Node 20's Web Crypto refuses (Node 22 and the
+// browsers accept it); sealed.js encodes its HPKE info and AAD with it, so the test copies them into Node's realm.
+// Hoisted, because sealed.js encodes its info when it is loaded.
+vi.hoisted(() => {
+  const Base = globalThis.TextEncoder;
+  globalThis.TextEncoder = class extends Base {
+    encode(input?: string) { return new Uint8Array(super.encode(input)); }
+  } as typeof TextEncoder;
+});
 configure({ asyncUtilTimeout: 3000 });
 const ID = '7e1c2a3e-1111-4a5b-8c9d-0000000000aa';
 const HOUR = 3_600_000;
@@ -121,6 +130,14 @@ describe('sealing and opening', () => {
     }
     fireEvent.click(screen.getByRole('button', { name: 'Lock and send' }));
     expect(screen.getByText('Enter the login and the password.')).toBeTruthy();
+    fireEvent.input(screen.getByLabelText(/^Login/), { target: { value: 'x' } });
+    fireEvent.input(password, { target: { value: 'p' } });
+    fireEvent.input(screen.getByLabelText('A note for the buyer'), { target: { value: 'ক'.repeat(1000) } });
+    fireEvent.input(screen.getByLabelText('Recovery or backup codes'), { target: { value: 'c'.repeat(2000) } });
+    fireEvent.click(screen.getByRole('button', { name: 'Lock and send' }));
+    expect(await screen.findByText('The details are too long. Shorten the note or the codes.')).toBeTruthy(); // DV-34: at most 4 KB
+    expect(seller.called(`POST ${G}/sealed`)).toHaveLength(0);
+    fireEvent.input(screen.getByLabelText('A note for the buyer'), { target: { value: '' } });
     fireEvent.input(screen.getByLabelText(/^Login/), { target: { value: ' player@example.com ' } });
     fireEvent.input(password, { target: { value: 'Correct-Horse-Battery-9' } });
     fireEvent.input(screen.getByLabelText('Recovery or backup codes'), { target: { value: '8F2K-11QX\n\n9Z3M-22RW' } });
