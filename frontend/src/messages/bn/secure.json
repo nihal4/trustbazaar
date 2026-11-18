@@ -32,6 +32,7 @@
   "secure.deliver.send": "লক করে পাঠান",
   "secure.deliver.need": "লগইন ও পাসওয়ার্ড লিখুন।",
   "secure.deliver.too_long": "তথ্য খুব দীর্ঘ। নোট বা কোড ছোট করুন।",
+  "secure.deliver.seal_failed": "এই ব্রাউজারে তথ্য লক করা যায়নি। অনুগ্রহ করে হালনাগাদ Chrome, Firefox, Edge বা Safari চেষ্টা করুন।",
   "secure.deliver.done": "লগইন তথ্য পাঠানো হয়েছে। আপনি যা লিখেছেন তার কিছুই এই পাতায় রাখা হয়নি।",
   "secure.deliver.sent": "ক্রেতা লগইন তথ্য পেয়েছেন।",
   "secure.deliver.takeover_by": "তিনি অ্যাকাউন্টের নিয়ন্ত্রণ নেবেন",
