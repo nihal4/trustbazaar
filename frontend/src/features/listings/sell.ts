@@ -64,8 +64,11 @@ export const REASONS = new Set([
   'required', 'item-kind', 'prohibited', 'unknown', 'one-of-cp-07', 'auction-has-bids', 'order-in-progress', 'defect-photo-needed',
   'defect-photo-or-declaration', 'two-needed', 'auction-sets-start-price-at-publication', 'single-unit', 'below-start-price',
   'no-courier-oversize', 'required-for-courier', 'no-courier-over-10kg',
+  // game accounts (Unit 5)
+  'not-offered', 'fixed-after-proof', 'game-details-missing', 'proof-under-review', 'not-submitted-for-review', 'type', 'no-code',
+  'code-expired', 'not-editable', 'not-for-game-accounts', 'use-the-ownership-review',
 ]);
 export function reasonTexts(errors: FieldError[], t: T): string[] {
   return errors.map((f) => `${t(FIELDS.has(f.field) ? `sell.field.${f.field}` : 'sell.field.listing')}: ${t(REASONS.has(f.reason) ? `sell.error.${f.reason}` : 'sell.error.invalid')}`);
 }
-const FIELDS = new Set(['area', 'categoryId', 'condition', 'duration', 'fulfilmentOptions', 'listing', 'noVisibleDefects', 'photo', 'photos', 'price', 'quantity', 'reservePrice', 'sizeClass', 'startPrice', 'weightClass', 'title', 'description']);
+const FIELDS = new Set(['area', 'categoryId', 'condition', 'duration', 'fulfilmentOptions', 'listing', 'noVisibleDefects', 'photo', 'photos', 'price', 'quantity', 'reservePrice', 'sizeClass', 'startPrice', 'weightClass', 'title', 'description', 'gameId', 'platform', 'playerId', 'contents', 'file', 'code']);

@@ -45,3 +45,8 @@
 .stars { display: flex; flex-wrap: wrap; gap: var(--tb-space-2); }
 .stars span { display: flex; align-items: center; gap: var(--tb-space-1); min-height: 44px; }
 .reply { border-left: 3px solid var(--tb-border); padding-left: var(--tb-space-2); }
+/* Game accounts (U8-07) */
+.game { border-top: 1px solid var(--tb-border); padding-top: var(--tb-space-2); margin-top: var(--tb-space-2); }
+.disclosure { border-left: 4px solid var(--tb-error); padding-left: var(--tb-space-2); }
+.check { display: flex; align-items: center; gap: var(--tb-space-2); min-height: 44px; }
+.primaryLink { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--tb-space-3); border-radius: var(--tb-radius); background: var(--tb-accent); color: var(--tb-accent-text); font-weight: 700; text-decoration: none; }
