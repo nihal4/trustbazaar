@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { configure, fireEvent, screen, waitFor, within } from '@testing-library/dom';
 import { placeholders } from '../lib/i18n.js';
-import { fingerprint, generateBuyerKey } from '../lib/sealed.js';
+import { fingerprint, generateBuyerKey, open as openSealed, seal } from '../lib/sealed.js';
 import en from '../messages/en/secure.json';
 import bn from '../messages/bn/secure.json';
 import { b64u, unb64u } from './dom';
@@ -107,6 +107,9 @@ describe('the buyer\'s key', () => {
 describe('sealing and opening', () => {
   it('FR-GAM-08 FR-GAM-09 FR-GAM-11 FR-GAM-13 the seller sees the buyer\'s fingerprint and seals in the page; the buyer opens the same details beside the checklist', async () => {
     const buyer = await generateBuyerKey();
+    // sealed.js itself first, so a failure of Web Crypto in this environment shows its own error
+    const probe = await seal(unb64u(b64u(buyer.publicRaw)), ID, 1, { loginId: 'a', password: 'b', recovery: [], note: '' });
+    expect(await openSealed(buyer.pair, ID, 1, probe.enc, probe.ciphertext)).toEqual({ loginId: 'a', password: 'b', recovery: [], note: '' });
     const keys = memoryKeys();
     await keys.store(ID, 1, buyer.pair);
     let sealed: { keyVersion: number; enc: string; ciphertext: string } | null = null;
