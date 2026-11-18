@@ -452,6 +452,27 @@ export class ListingService {
     };
   }
 
+  /**
+   * GET /me/selling-terms (U8-14; Decisions log): what the listing editor shows a seller from the current parameters:
+   * the commission that applies to them (CP-25, Pro or standard, FR-MON-01), the auction durations (CP-07), the photo
+   * limits (CP-33) and their active-listing limit (CP-28) with the current count.
+   */
+  async sellingTerms(userId: string) {
+    const params = await this.params.current();
+    const pro = await this.pro.isPro(userId);
+    const cp25 = params.get<{ standard_bps: number; pro_bps: number }>('CP-25');
+    const cp28 = params.get<{ standard: number; pro: number }>('CP-28');
+    const cp33 = params.get<{ image_bytes: number; photos: number }>('CP-33');
+    const [{ n }] = (await this.db.query(`SELECT count(*)::int AS n FROM listings.listings WHERE seller_id = $1 AND status = 'active'`, [userId])) as { n: number }[];
+    return {
+      pro,
+      commissionBps: pro ? cp25.pro_bps : cp25.standard_bps,
+      auctionDurations: params.get<string[]>('CP-07'),
+      photos: { max: Math.min(cp33.photos, 10), maxBytes: cp33.image_bytes, min: 2 },
+      activeListings: { count: n, limit: pro ? cp28.pro : cp28.standard },
+    };
+  }
+
   /** The seller's own listings, newest first, in pages of 50 (cursor = the last item's creation time and id). */
   async mine(userId: string, status: ListingStatus | undefined, cursor: string | undefined) {
     const after = decodeCursor(cursor);
