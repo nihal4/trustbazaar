@@ -95,11 +95,11 @@ describe('staff queues', () => {
   it('FR-OPS-01 reports and flagged activity list their open items, oldest first, linked to their actions', async () => {
     const op = await operator();
     const [reporter, subject] = [await member(), await member()];
-    const { reportId } = (await (await reporter.call('POST', '/reports', { targetType: 'user', targetId: subject.userId, category: 'abusive' })).json()) as { reportId: string };
+    const { reportId } = (await (await reporter.call('POST', '/reports', { targetType: 'user', targetId: subject.userId, category: 'abusive', text: 'Insulted me in the chat twice.' })).json()) as { reportId: string };
     const listingId = randomUUID();
     await fx.query(`INSERT INTO trust.signals (kind, source_ref, subject_user, detail) VALUES ('relisting', $1, $2, '{}')`, [`listing:${listingId}`, subject.userId]);
     const reports = (await (await op.call('GET', '/staff/queues/reports')).json()) as Page;
-    expect(reports.items.find((i) => i.id === reportId)).toMatchObject({ status: 'open', assignedTo: null, subjectUser: subject.userId, path: `/staff/reports/${reportId}/resolution` });
+    expect(reports.items.find((i) => i.id === reportId)).toMatchObject({ status: 'open', assignedTo: null, subjectUser: subject.userId, text: 'Insulted me in the chat twice.', path: `/staff/reports/${reportId}/resolution` });
     const since = reports.items.map((i) => i.since as string);
     expect([...since].sort()).toEqual(since);
     const flagged = (await (await op.call('GET', '/staff/queues/flagged_activity')).json()) as Page;

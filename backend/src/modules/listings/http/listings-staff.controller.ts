@@ -55,6 +55,12 @@ export class ListingsStaffController {
     return { items: (await this.queries.reviewQueue()).map((i) => ({ ...i, heldAt: i.heldAt.toISOString() })) };
   }
 
+  /** FR-LST-11: the listing itself, for the operator deciding (Decisions log, U8-10); audited. Declared after the queue. */
+  @Staff('operator')
+  @Get('listings/:id')
+  view(@Id('id') id: string, @CurrentPrincipal() p: Principal, @Req() req: Request) {
+    return this.review.staffView(staffOf(p).staffId, id, ctx(req));
+  }
   /** FR-LST-11: approve (publish) or return to the seller with a reason. */
   @Staff('operator')
   @Post('listings/:id/review')

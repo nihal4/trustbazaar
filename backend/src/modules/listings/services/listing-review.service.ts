@@ -5,6 +5,7 @@ import { Problem } from '../../../kernel/http/problems';
 import { AUDIT_SERVICE, AuditServicePort, CallContext, IDENTITY_QUERY, IdentityQuery } from '../../identity/ports';
 import { publish } from './outbox';
 import { ListingCommandsService } from './listing-commands.service';
+import { ListingService } from './listing.service';
 
 // The operators' side of listings (docs/design/03_listings_auctions.pdf sections 3.1 and 5; FR-LST-11, FR-LST-12,
 // FR-SRC-04, FR-TNS-05, I-45; U3-08): ListingReviewService.
@@ -33,6 +34,7 @@ export class ListingReviewService implements OnModuleInit {
     private readonly bus: EventBus,
     @Inject(IDENTITY_QUERY) private readonly identity: IdentityQuery,
     @Inject(AUDIT_SERVICE) private readonly audit: AuditServicePort,
+    private readonly listings?: ListingService,
   ) {}
 
   onModuleInit(): void {
@@ -57,6 +59,24 @@ export class ListingReviewService implements OnModuleInit {
       }, m);
       return { status: decision === 'approve' ? 'active' : 'draft' };
     });
+  }
+
+  /**
+   * GET /staff/listings/{id} (FR-LST-11, FR-LST-12; Decisions log, U8-10): the listing as its seller sees it, in any
+   * state, for the operator deciding a review or a removal; without the seller's own area and the reserve price
+   * (SEC-ACC-05). Each read is audited.
+   */
+  async staffView(staffId: string, listingId: string, ctx: CallContext = {}) {
+    const [l] = (await this.db.query(`SELECT seller_id FROM listings.listings WHERE id = $1`, [listingId])) as { seller_id: string }[];
+    if (!l || !this.listings) throw new Problem('not-found');
+    const view = (await this.listings.view(listingId, { userId: l.seller_id })) as Record<string, unknown> & { auction: Record<string, unknown> | null };
+    await this.db.transaction((m) => this.audit.record({
+      actorType: 'staff', actorId: staffId, action: 'listings.listing.staff_viewed', objectType: 'listing', objectId: listingId,
+      sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null,
+    }, m));
+    const { own: _own, auction, ...rest } = view;
+    void _own;
+    return { ...rest, auction: auction && Object.fromEntries(Object.entries(auction).filter(([k]) => k !== 'reservePrice')) };
   }
 
   /** POST /staff/listings/{id}/remove (FR-LST-12): for a policy breach, with the reason. */
