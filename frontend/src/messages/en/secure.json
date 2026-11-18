@@ -32,6 +32,7 @@
   "secure.deliver.send": "Lock and send",
   "secure.deliver.need": "Enter the login and the password.",
   "secure.deliver.too_long": "The details are too long. Shorten the note or the codes.",
+  "secure.deliver.seal_failed": "The details could not be locked in this browser. Please try an up-to-date Chrome, Firefox, Edge or Safari.",
   "secure.deliver.done": "The login details are sent. Nothing you typed is kept in this page.",
   "secure.deliver.sent": "The buyer has the login details.",
   "secure.deliver.takeover_by": "They take over the account by",
