@@ -11,7 +11,7 @@ import type { Lang } from './language/lang';
 import { NotFound, RouteError } from './pages';
 import { createQueryClient } from './query';
 import { Live, LiveContext, openSocket as defaultOpenSocket, type OpenSocket } from './live';
-import { ME_KEY } from './me';
+import { ME_KEY, STAFF_ME_KEY } from './me';
 import { createSessionNotice, SessionContext, type SessionNotice } from './session';
 import { createStepUpBroker, StepUpContext, type StepUpBroker } from './stepUp';
 import { Shell, type ShellProps } from './Shell';
@@ -53,10 +53,15 @@ export function createDocument(setup: DocumentSetup, { createRouter = createBrow
   const api = createDocumentApi(setup.kind, () => {
     // A guest's request answered 401 ended no session: nothing to clear, nothing to say (Decisions
     // log, U8-02). Someone was signed in when their account is in the cache.
-    if (setup.kind === 'user' && queryClient.getQueryData(ME_KEY) === undefined) return;
-    queryClient.clear();
-    live?.stop();
-    session.signedOut();
+    // In the console nobody browses as a guest: a first visit without a session goes to the staff sign-in, without
+    // the notice (Decisions log, U8-10).
+    const known = queryClient.getQueryData(setup.kind === 'user' ? ME_KEY : STAFF_ME_KEY) !== undefined;
+    if (!known && setup.kind === 'user') return;
+    if (known) {
+      queryClient.clear();
+      live?.stop();
+      session.signedOut();
+    }
     if (setup.signIn) {
       const { pathname, search } = router.state.location;
       setup.signIn(pathname + search, router);

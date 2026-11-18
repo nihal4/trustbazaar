@@ -37,6 +37,8 @@ export interface StaffMe {
   email: string;
   displayName: string;
   role: string;
+  /** The console's session limits (CP-03, SEC-SES-06): the idle end moves with each refresh (Decisions log, U8-10). */
+  session: { idleExpiresAt: string; absoluteExpiresAt: string } | null;
 }
 
 @Injectable()
@@ -143,9 +145,17 @@ export class StaffAuthService {
     return this.startSession(staffId, 'enrolment', ctx, true);
   }
 
-  async me(staffId: string): Promise<StaffMe> {
+  async me(staffId: string, sessionId?: string): Promise<StaffMe> {
     const [s] = await this.db.query(`SELECT id, email, display_name, role FROM identity.staff_accounts WHERE id = $1`, [staffId]);
-    return { id: s.id, email: s.email, displayName: s.display_name, role: s.role };
+    const [ses] = sessionId
+      ? ((await this.db.query(
+        `SELECT idle_expires_at, absolute_expires_at FROM identity.sessions WHERE id = $1 AND staff_id = $2 AND ended_at IS NULL`, [sessionId, staffId],
+      )) as { idle_expires_at: Date; absolute_expires_at: Date }[])
+      : [];
+    return {
+      id: s.id, email: s.email, displayName: s.display_name, role: s.role,
+      session: ses ? { idleExpiresAt: ses.idle_expires_at.toISOString(), absoluteExpiresAt: ses.absolute_expires_at.toISOString() } : null,
+    };
   }
 
   private async enrolling(ticket: string | undefined): Promise<string> {

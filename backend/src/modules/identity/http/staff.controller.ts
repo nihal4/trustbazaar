@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Query, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, Header, HttpCode, Param, ParseUUIDPipe, Post, Query, Req, Res } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { Credential, Public, RateLimit, Staff } from '../../../kernel/http/policies';
 import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
@@ -94,11 +94,13 @@ export class StaffAuthController {
     clearStaffSessionCookies(res);
   }
 
-  /** I-51: who is signed in to the console (also the console's refresh probe). */
+  /** I-51: who is signed in to the console (also the console's refresh probe), with the session's CP-03 limits. */
   @Staff()
   @Get('me')
+  @Header('Cache-Control', 'no-store')
   me(@CurrentPrincipal() p: Principal) {
-    return this.auth.me(staffOf(p).staffId);
+    const s = staffOf(p);
+    return this.auth.me(s.staffId, s.sessionId);
   }
 }
 
