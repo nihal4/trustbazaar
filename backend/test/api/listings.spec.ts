@@ -461,4 +461,15 @@ describe('listings', () => {
     expect(snap.photoKeys).toHaveLength(2);
     await expect(t.app.get<ListingsPort>(LISTINGS_PORT).snapshot(randomUUID())).rejects.toThrow();
   });
+
+  it('FR-MON-01 CP-07 CP-28 a verified seller reads the commission, auction durations and limits that apply now; others cannot', async () => {
+    const seller = await member({ kyc: 'verified' });
+    const terms = await (await seller.call('GET', '/me/selling-terms')).json();
+    expect(terms).toEqual({
+      pro: false, commissionBps: expect.any(Number), auctionDurations: expect.arrayContaining(['24 hours']),
+      photos: { max: expect.any(Number), maxBytes: expect.any(Number), min: 2 }, activeListings: { count: 0, limit: expect.any(Number) },
+    });
+    expect(terms.photos.max).toBeLessThanOrEqual(10);
+    expect((await (await member({ kyc: 'unsubmitted' })).call('GET', '/me/selling-terms')).status).toBe(403);
+  });
 });
