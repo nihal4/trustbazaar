@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Header, HttpCode, Param, ParseEnumPipe, ParseUUIDPipe, Patch, Post, Query, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsIn, IsInt, IsOptional, IsString, IsUUID, Length, Max, MaxLength, Min, ValidateNested } from 'class-validator';
+import { IsBoolean, IsDate, IsIn, IsInt, IsOptional, IsString, IsUUID, Length, Matches, Max, MaxLength, Min, ValidateNested } from 'class-validator';
 import type { Request, Response } from 'express';
 import { correlationId } from '../../../kernel/http/correlation';
 import { Public, SignedIn, Staff, StepUp } from '../../../kernel/http/policies';
@@ -75,6 +75,11 @@ export class DecisionDto {
   @IsOptional()
   @IsIn(['buyer', 'seller'])
   returnPayer?: 'buyer' | 'seller';
+}
+
+export class OutcomePreviewQuery {
+  @Matches(/^[1-9]\d{0,14}$/)
+  itemRefund!: string;
 }
 
 export class InfoRequestDto {
@@ -428,6 +433,15 @@ export class TrustController {
   caseFile(@Id('id') id: string, @CurrentPrincipal() p: Principal, @Req() req: Request) {
     if (p.type !== 'staff') throw new Problem('forbidden');
     return this.cases.caseFile(p, id, ctx(req));
+  }
+
+  /** FR-DSP-06: Unit 2's exact split of a partial refund, before the decision (Decisions log, U8-10). */
+  @Staff('operator')
+  @Get('staff/disputes/:id/outcome-preview')
+  @Header('Cache-Control', 'no-store')
+  outcomePreview(@Id('id') id: string, @Query() q: OutcomePreviewQuery, @CurrentPrincipal() p: Principal) {
+    if (p.type !== 'staff') throw new Problem('forbidden');
+    return this.cases.outcomePreview(p.staffId, id, q.itemRefund);
   }
 
   /** FR-GAM-18: the evidence pack for law enforcement, one PDF with a hash list, for the assigned operator; audited. */

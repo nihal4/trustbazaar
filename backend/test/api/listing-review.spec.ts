@@ -59,7 +59,7 @@ describe('listing review, removal, screening terms and seller visibility', () =>
   const events = (id: string, type: string) => fx.query<{ payload: Record<string, unknown> }>(`SELECT payload FROM auctions.outbox WHERE aggregate_id = $1 AND event_type = $2`, [id, type]);
   const errors = async (r: Response) => ((await r.json()) as { errors?: unknown[] }).errors;
 
-  it('FR-LST-11 operators maintain the terms; a matching listing waits in the queue; returned with a reason, then approved and published', async () => {
+  it('FR-LST-11 operators maintain the terms; a matching listing waits in the queue, readable by the operator; returned with a reason, then approved and published', async () => {
     const [op, seller] = [await operator(), await member()];
     const word = `replica${randomInt(10_000, 99_999)}`;
     const added = await op.call('POST', '/staff/screening-terms', { term: `  ${word.toUpperCase()} `, severity: 'high_risk' });
@@ -74,6 +74,13 @@ describe('listing review, removal, screening terms and seller visibility', () =>
     expect(queue.items.find((i) => i.listingId === id)).toMatchObject({ sellerId: seller.userId, reason: expect.stringContaining(word) });
     const console = (await (await op.call('GET', '/staff/queues/listings_review')).json()) as { items: { id: string; path: string }[] };
     expect(console.items.find((i) => i.id === id)).toMatchObject({ status: 'pending_review', path: `/staff/listings/${id}/review` });
+    // Decisions log, U8-10: the operator reads the listing itself, without the seller's own area or a reserve; audited
+    const seen = (await (await op.call('GET', `/staff/listings/${id}`)).json()) as Record<string, unknown>;
+    expect(seen).toMatchObject({ id, status: 'pending_review', title: `Gold watch ${word} edition`, description: expect.any(String) });
+    expect(Array.isArray(seen.photos)).toBe(true);
+    expect(seen).not.toHaveProperty('own');
+    expect((await seller.call('GET', `/staff/listings/${id}`)).status).toBe(401);
+    expect((await op.call('GET', `/staff/listings/${randomUUID()}`)).status).toBe(404);
 
     expect(await errors(await op.call('POST', `/staff/listings/${id}/review`, { decision: 'return', reason: 'short' }))).toEqual([{ field: 'reason', reason: 'too-short' }]);
     const back = await op.call('POST', `/staff/listings/${id}/review`, { decision: 'return', reason: 'Replica watches may not be sold; describe the original.' });
@@ -86,7 +93,7 @@ describe('listing review, removal, screening terms and seller visibility', () =>
     expect(await status(id)).toBe('active');
     expect(await events(id, 'listings.listing.published')).toHaveLength(1);
     expect((await fx.query<{ action: string }>(`SELECT action FROM audit.events WHERE object_id = $1 AND action LIKE 'listings.listing.%' ORDER BY id`, [id])).map((a) => a.action))
-      .toEqual(['listings.listing.returned', 'listings.listing.approved']);
+      .toEqual(['listings.listing.staff_viewed', 'listings.listing.returned', 'listings.listing.approved']);
 
     expect((await op.call('DELETE', `/staff/screening-terms/${termId}`)).status).toBe(204);
     expect((await op.call('DELETE', `/staff/screening-terms/${termId}`)).status).toBe(404);
