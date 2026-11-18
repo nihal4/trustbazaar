@@ -154,6 +154,18 @@ export class DisputeCaseService implements OnModuleInit {
     };
   }
 
+  /**
+   * GET /staff/disputes/{id}/outcome-preview?itemRefund= (FR-DSP-06; Decisions log, U8-10): Unit 2's exact split for a
+   * partial refund of that amount, for the assigned operator, so the decision form shows it before deciding. Only an
+   * amount strictly between 0 and the item price is a partial refund.
+   */
+  async outcomePreview(staffId: string, disputeId: string, itemRefund: string) {
+    const d = await this.assigned(staffId, disputeId);
+    const preview = await this.escrowQuery.previewOutcomes(d.order_id, BigInt(itemRefund));
+    if (!preview.partialRefund) throw new Problem('validation-failed', { errors: [{ field: 'itemRefund', reason: 'out-of-range' }] });
+    return preview;
+  }
+
   /** Unit 5's evidence for the case file: the screenshot by a signed link, the addresses masked to their network (SEC-ACC-05). */
   private async gameEvidence(orderId: string, staff: Principal & { type: 'staff' }, reason: string, ctx: CallContext, who: (id: string) => string) {
     const g = await this.games.evidence(orderId);

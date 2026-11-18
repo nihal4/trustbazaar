@@ -81,12 +81,14 @@ export class QueueService {
       }
       case 'reports': {
         const rows = (await this.db.query(
-          `SELECT id, target_type, target_id, category, subject_user, status, assigned_to, created_at FROM trust.reports
+          `SELECT id, target_type, target_id, category, subject_user, text, status, assigned_to, created_at FROM trust.reports
             WHERE status IN ('open', 'under_review') ORDER BY created_at LIMIT ${LIMIT}`,
-        )) as { id: string; target_type: string; target_id: string; category: string; subject_user: string; status: string; assigned_to: string | null; created_at: Date }[];
+        )) as { id: string; target_type: string; target_id: string; category: string; subject_user: string; text: string | null; status: string; assigned_to: string | null; created_at: Date }[];
         return rows.map((r) => ({
           id: r.id, ageHours: age(r.created_at), since: r.created_at.toISOString(), status: r.status, assignedTo: r.assigned_to,
-          targetType: r.target_type, targetId: r.target_id, category: r.category, subjectUser: r.subject_user, path: `/staff/reports/${r.id}/resolution`,
+          targetType: r.target_type, targetId: r.target_id, category: r.category, subjectUser: r.subject_user,
+          text: r.text, // what the reporter wrote, to resolve it by (Decisions log, U8-10)
+          path: `/staff/reports/${r.id}/resolution`,
         }));
       }
       case 'flagged_activity': {

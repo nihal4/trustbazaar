@@ -115,10 +115,17 @@ describe('dispute cases: claim, case file, request for information, decision, re
     expect(await (await c.seller.call('POST', `/disputes/${c.disputeId}/statements`, { text: 'Photos attached, taken last month.' })).json()).toEqual({ status: 'under_review' });
   });
 
-  it('FR-DSP-06 FR-DSP-07 FR-TNS-04 a partial refund is decided at once below BDT 20,000: the escrow settles, the seller gets a strike, the chat is released, both are told', async () => {
+  it('FR-DSP-06 FR-DSP-07 FR-TNS-04 a partial refund shows its exact split first and is decided at once below BDT 20,000: the escrow settles, the seller gets a strike, the chat is released, both are told', async () => {
     const c = await disputeUnderReview(1500000);
     const op = await operator();
+    // Decisions log, U8-10: Unit 2's exact split of a partial refund, for the assigned operator only, before deciding
+    expect((await (await operator()).call('GET', `/staff/disputes/${c.disputeId}/outcome-preview?itemRefund=500000`)).status).toBe(409); // not-claimed
     await op.call('POST', `/staff/cases/dispute/${c.disputeId}/claim`);
+    const preview = await op.call('GET', `/staff/disputes/${c.disputeId}/outcome-preview?itemRefund=500000`);
+    expect(preview.headers.get('cache-control')).toBe('no-store');
+    expect((await preview.json()).partialRefund).toEqual({ itemRefund: '500000', refunded: '500000', sellerPayout: expect.stringMatching(/^\d+$/) });
+    expect(await errors(await op.call('GET', `/staff/disputes/${c.disputeId}/outcome-preview?itemRefund=1500000`))).toEqual([{ field: 'itemRefund', reason: 'out-of-range' }]);
+    expect((await op.call('GET', `/staff/disputes/${c.disputeId}/outcome-preview?itemRefund=-5`)).status).toBe(400);
     expect(await errors(await op.call('POST', `/staff/disputes/${c.disputeId}/decision`, { outcome: 'partial_refund', reason, itemRefund: '1500000' }))).toEqual([{ field: 'itemRefund', reason: 'between-zero-and-item-price' }]);
     expect(await errors(await op.call('POST', `/staff/disputes/${c.disputeId}/decision`, { outcome: 'release', reason, itemRefund: '100' }))).toEqual([{ field: 'itemRefund', reason: 'partial-refund-only' }]);
     expect((await op.call('POST', `/staff/disputes/${c.disputeId}/decision`, { outcome: 'release', reason: 'Too short.' })).status).toBe(400);

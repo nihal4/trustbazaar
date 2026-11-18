@@ -24,6 +24,8 @@ export function useStaffMe() {
 export const QUEUES = ['disputes', 'reports', 'flagged_activity', 'kyc', 'listings_review', 'ownership_proofs', 'payout_accounts', 'payment_discrepancies'] as const;
 export type QueueName = (typeof QUEUES)[number];
 
+export const queueKey = (q: QueueName) => ['staff', 'queues', q] as const;
+
 /** GET /staff/queues/{queue}: oldest first, the overdue on top; each item names where it is acted on. */
 export interface QueueItem {
   id: string; ageHours: number; since: string; status: string; assignedTo: string | null; overdue?: boolean; path: string;
@@ -51,4 +53,19 @@ export const APPROVAL_ACTIONS = new Set(['account.reinstate', 'blacklist.add', '
 export function ageParts(hours: number): { days: number; hours: number } {
   const whole = Math.max(0, Math.floor(hours));
   return { days: Math.floor(whole / 24), hours: whole % 24 };
+}
+
+/** Where an item is opened in the console (U8-10, second part). */
+export function casePath(queue: QueueName, id: string): string | null {
+  const e = encodeURIComponent(id);
+  switch (queue) {
+    case 'disputes': return `/staff/disputes/${e}`;
+    case 'reports': return `/staff/reports/${e}`;
+    case 'flagged_activity': return `/staff/signals/${e}`;
+    case 'kyc': return `/staff/kyc/${e}`;
+    case 'listings_review': return `/staff/listings/${e}`;
+    case 'ownership_proofs': return `/staff/ownership-proofs/${e}`;
+    case 'payout_accounts': return `/staff/payout-accounts/${e}`;
+    default: return null;
+  }
 }
