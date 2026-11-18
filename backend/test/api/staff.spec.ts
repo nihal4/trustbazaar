@@ -44,7 +44,7 @@ describe('staff, approvals and the audit log', () => {
   }
 
   describe('sign-in (SEC-AUTH-07, I-51)', () => {
-    it('SEC-AUTH-07 a staff session needs the password and a TOTP code, and uses the staff cookies', async () => {
+    it('SEC-AUTH-07 SEC-SES-06 a staff session needs the password and a TOTP code, uses the staff cookies, and tells its limits', async () => {
       const s = await fx.staffAccount('operator');
       const b = staffBrowser();
       expect(await (await b.post('/staff/auth/signin', { email: s.email.toUpperCase(), password: s.password })).json()).toEqual({ mfaRequired: true });
@@ -54,7 +54,15 @@ describe('staff, approvals and the audit log', () => {
       for (const c of ['__Host-tb_sat', '__Host-tb_scsrf', '__Secure-tb_srt']) expect(b.cookies.has(c)).toBe(true);
       expect(b.cookies.has('__Host-tb_at')).toBe(false);
       expect(b.attributes('__Secure-tb_srt')).toMatchObject({ httponly: true, secure: true, path: '/api/v1/staff/auth/refresh' });
-      expect(await (await b.get('/staff/me')).json()).toEqual({ id: s.staffId, email: s.email, displayName: 'Staff member', role: 'operator' });
+      const me = await (await b.get('/staff/me')).json();
+      expect(me).toMatchObject({ id: s.staffId, email: s.email, displayName: 'Staff member', role: 'operator' });
+      // CP-03 (SEC-SES-06): the console is told when the session ends, idle and absolute (Decisions log, U8-10)
+      const idle = Date.parse(me.session.idleExpiresAt) - Date.now();
+      const absolute = Date.parse(me.session.absoluteExpiresAt) - Date.now();
+      expect(idle).toBeGreaterThan(14 * 60_000);
+      expect(idle).toBeLessThanOrEqual(15 * 60_000);
+      expect(absolute).toBeGreaterThan(7.9 * 3_600_000);
+      expect(absolute).toBeLessThanOrEqual(8 * 3_600_000);
     });
 
     it('SEC-AUTH-05 a wrong password, an unknown e-mail and a disabled account get the same answer', async () => {
