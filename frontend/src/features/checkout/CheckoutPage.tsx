@@ -2,8 +2,9 @@
 // The buyer chooses the quantity and how they get the item; "Continue to payment" calls POST /orders with an
 // Idempotency-Key, which reserves the units (Unit 2), and the order page takes the payment, the same as for an
 // auction win. Courier delivery (U8-06) is chosen here and completed on the order page, where the buyer gives the
-// address and gets the binding quote (Unit 4, DV-23) before paying; game accounts wait for the disclosure and the
-// browser check of U8-07 (Decisions log, U8-05). A guest is sent to sign in.
+// address and gets the binding quote (Unit 4, DV-23) before paying. A game account first needs a browser with Web
+// Crypto and IndexedDB (Unit 5, AS-5) and is told to stay in this browser; its disclosure and key come on the order
+// page before payment (U8-07). A guest is sent to sign in.
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -36,6 +37,11 @@ interface Listing {
   seller: { id: string };
 }
 
+/** Unit 5, AS-5: a game account needs a browser that keeps a non-extractable key (Web Crypto) in IndexedDB. */
+function browserKeepsKeys(): boolean {
+  return typeof globalThis.crypto?.subtle?.generateKey === 'function' && typeof globalThis.indexedDB?.open === 'function';
+}
+
 export function Component() {
   const { listingId = '' } = useParams();
   const { t, lang } = useT(CATALOGUES);
@@ -60,7 +66,7 @@ export function Component() {
   });
   const create = useMutation({
     // courier is chosen on the order page with its quote; the order is created without a method (Unit 2, FR-DLV-02)
-    mutationFn: ({ q, f }: { q: number; f: 'self_pickup' | 'courier' }) =>
+    mutationFn: ({ q, f }: { q: number; f: 'self_pickup' | 'courier' | 'game_account' }) =>
       api.post('/orders', { listingId, quantity: q, ...(f === 'self_pickup' ? { fulfilment: 'self_pickup' } : {}) }, { idempotent: true }) as Promise<{ id: string }>,
     onSuccess: (o) => void navigate(`/orders/${encodeURIComponent(o.id)}`),
     onError: (e) => {
@@ -83,7 +89,7 @@ export function Component() {
   const own = me.data.id === l.seller.id;
   const blocked = own ? t('checkout.own')
     : l.saleFormat !== 'fixed_price' || l.status !== 'active' || !l.price ? t('checkout.not_active')
-    : l.itemKind === 'game_account' ? t('checkout.game_not_yet')
+    : l.itemKind === 'game_account' && !browserKeepsKeys() ? t('checkout.game_browser')
     : l.quantity.available < 1 ? t('checkout.unavailable')
     : null;
   const max = l.quantity.available;
@@ -92,7 +98,8 @@ export function Component() {
   const total = l.price && valid ? formatMoney(BigInt(l.price) * BigInt(n), lang) : null;
   const pickup = l.fulfilmentOptions !== 'courier_only';
   const courier = l.fulfilmentOptions === 'courier_only' || l.fulfilmentOptions === 'pickup_or_courier';
-  const chosen: 'self_pickup' | 'courier' = method ?? (pickup ? 'self_pickup' : 'courier');
+  const game = l.itemKind === 'game_account';
+  const chosen: 'self_pickup' | 'courier' | 'game_account' = game ? 'game_account' : method ?? (pickup ? 'self_pickup' : 'courier');
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -125,22 +132,32 @@ export function Component() {
                 <p id="checkout-available" className={styles.hint}>{t('checkout.available', { count: toLocalDigits(String(max), lang) })}</p>
               </div>
             )}
-            <fieldset className={styles.field}>
-              <legend>{t('checkout.fulfilment')}</legend>
-              {pickup && (
-                <div className={styles.option}>
-                  <input id="checkout-pickup" type="radio" name="fulfilment" value="self_pickup" checked={chosen === 'self_pickup'} onChange={() => setMethod('self_pickup')} />
-                  <label htmlFor="checkout-pickup">{t('checkout.fulfilment.self_pickup')}</label>
+            {game
+              ? (
+                <div className={styles.field}>
+                  <p><strong>{t('checkout.game_title')}</strong></p>
+                  <p>{t('checkout.game_same_browser')}</p>
+                  <p className={styles.hint}>{t('checkout.game_next')}</p>
                 </div>
+              )
+              : (
+              <fieldset className={styles.field}>
+                <legend>{t('checkout.fulfilment')}</legend>
+                {pickup && (
+                  <div className={styles.option}>
+                    <input id="checkout-pickup" type="radio" name="fulfilment" value="self_pickup" checked={chosen === 'self_pickup'} onChange={() => setMethod('self_pickup')} />
+                    <label htmlFor="checkout-pickup">{t('checkout.fulfilment.self_pickup')}</label>
+                  </div>
+                )}
+                {courier && (
+                  <div className={styles.option}>
+                    <input id="checkout-courier" type="radio" name="fulfilment" value="courier" checked={chosen === 'courier'} onChange={() => setMethod('courier')} />
+                    <label htmlFor="checkout-courier">{t('checkout.fulfilment.courier')}</label>
+                  </div>
+                )}
+                {chosen === 'courier' && <p className={styles.hint}>{t('checkout.courier_note')}</p>}
+              </fieldset>
               )}
-              {courier && (
-                <div className={styles.option}>
-                  <input id="checkout-courier" type="radio" name="fulfilment" value="courier" checked={chosen === 'courier'} onChange={() => setMethod('courier')} />
-                  <label htmlFor="checkout-courier">{t('checkout.fulfilment.courier')}</label>
-                </div>
-              )}
-              {chosen === 'courier' && <p className={styles.hint}>{t('checkout.courier_note')}</p>}
-            </fieldset>
             {total && <p className={styles.total}>{t(chosen === 'courier' ? 'checkout.total_plus_delivery' : 'checkout.total', { total })}</p>}
             <p className={styles.hint}>{t('checkout.reserve_note')}</p>
             <button type="submit" className={styles.primary} disabled={create.isPending}>{t('checkout.continue')}</button>
