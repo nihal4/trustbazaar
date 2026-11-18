@@ -1,7 +1,7 @@
 // The eight queues, /staff/queues/:queue (FR-OPS-01; section 7.9; Unit 7 section 2.3; U8-10): each oldest first, the
 // overdue on top, each item with its age. A dispute, a report or a KYC submission is claimed before it is acted on;
 // the claim runs the server's conflict check (FR-OPS-06), and a refusal is shown as its message. The case files and
-// their actions are the second part of U8-10.
+// item opens its case: a claimed case only for the operator who claimed it.
 import { useState } from 'react';
 import { Link, Navigate, NavLink, useOutletContext, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -14,12 +14,11 @@ import { FormMessage } from '../shared/form';
 import type { T } from '../shared/language/catalogue';
 import type { Lang } from '../shared/language/lang';
 import { isApiError, problemName } from '../shared/problems';
-import { ageParts, claimPath, QUEUES, type QueueItem, type QueueName, type StaffMe } from './model';
+import { ageParts, casePath, claimPath, queueKey, QUEUES, type QueueItem, type QueueName, type StaffMe } from './model';
 import { useStaffT } from './text';
 import styles from './staff.module.css';
 
 const CLAIM_PROBLEMS = new Set(['conflict-of-interest', 'already-claimed']);
-export const queueKey = (q: QueueName) => ['staff', 'queues', q] as const;
 
 export function Component() {
   const { queue } = useParams();
@@ -88,6 +87,9 @@ function Queue({ queue, me, t, lang }: { queue: QueueName; me: StaffMe; t: T; la
                   {' · '}
                   {item.assignedTo === me.id ? t('staff.claim.yours') : item.assignedTo ? t('staff.claim.other') : path ? t('staff.claim.open') : t('staff.claim.none_needed')}
                 </p>
+                {casePath(queue, item.id) && (!path || item.assignedTo === me.id) && (
+                  <p><Link to={casePath(queue, item.id)!}>{t('staff.queue.open', { ref: short(item.id) })}</Link></p>
+                )}
                 {path && !item.assignedTo && (
                   <button type="button" className={styles.secondary} disabled={claim.isPending} onClick={() => { setMessage(null); claim.mutate(path); }}>
                     {t('staff.claim.button', { ref: short(item.id) })}
