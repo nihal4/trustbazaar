@@ -188,6 +188,93 @@ describe('the listing editor', () => {
     expect(await screen.findByRole('heading', { name: 'This listing was not found, or it is not yours.' })).toBeTruthy();
   });
 
+  it('FR-GAM-02 FR-GAM-06 a game account: no condition, delivery or area, one unit; its game details before publishing, never a login', async () => {
+    const gameDraft = draft({
+      itemKind: 'game_account', category: { id: 7, nameEn: 'Game accounts', nameBn: 'গেম অ্যাকাউন্ট' }, title: 'PUBG level 70 account',
+      condition: null, noVisibleDefects: false, fulfilmentOptions: null, own: { area: null, updatedAt: '2026-11-18T00:00:00Z' },
+    });
+    let ownership: { details: unknown; proof: null } = { details: null, proof: null };
+    const be = backend({
+      'POST /listings': json(201, gameDraft),
+      [`GET /listings/${ID}`]: json(200, gameDraft),
+      [`GET /listings/${ID}/ownership`]: () => json(200, ownership)(),
+      'GET /games': json(200, { items: [{ id: 3, slug: 'pubg', name: 'PUBG Mobile', platforms: ['android', 'ios'], codePlacement: 'Put it in your bio', publisherNote: 'The publisher forbids selling accounts.' }] }),
+      [`PUT /listings/${ID}/game-details`]: (c) => { ownership = { details: c.body, proof: null }; return json(200, c.body)(); },
+      [`POST /listings/${ID}/publish`]: json(200, { ...gameDraft, status: 'pending_review' }),
+    });
+    const doc = renderApp('/sell/new', be);
+    fireEvent.click(await screen.findByLabelText('A game account'));
+    const category = screen.getByLabelText('Category') as HTMLSelectElement;
+    await waitFor(() => expect(Array.from(category.options).map((o) => o.textContent)).toEqual(['Choose a category', 'Game accounts']));
+    expect(screen.queryByLabelText('Condition')).toBeNull();
+    expect(screen.queryByLabelText('How the buyer gets it')).toBeNull();
+    expect(screen.queryByLabelText('Area')).toBeNull();
+    expect(screen.queryByLabelText('Quantity')).toBeNull();
+    fireEvent.change(category, { target: { value: '7' } });
+    type('Title', 'PUBG level 70 account');
+    type('Description', 'Level 70, many skins, two seasons of passes.');
+    type('Price (taka)', '5000');
+    fireEvent.click(screen.getByRole('button', { name: 'Save as a draft' }));
+    await waitFor(() => expect(doc.router.state.location.pathname).toBe(`/sell/${ID}`));
+    expect(be.called('POST /listings')[0].body).toEqual({
+      categoryId: 7, title: 'PUBG level 70 account', description: 'Level 70, many skins, two seasons of passes.', price: '500000', quantity: 1,
+      itemKind: 'game_account', saleFormat: 'fixed_price',
+    });
+
+    expect(await screen.findByText('Never write the password, recovery e-mail or any login detail in the listing.')).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Photos' })).toBeNull();
+    expect((screen.getByRole('button', { name: 'Publish' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByText('Save the game details before publishing.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Save the game details' }));
+    expect(within(await screen.findByRole('alert')).getAllByRole('listitem').map((li) => li.textContent)).toEqual([
+      'Choose the game.', 'Choose the platform.', 'Give the player ID (at least 2 characters).', 'Describe what the account holds (at least 10 characters).',
+    ]);
+    const gameSelect = screen.getByLabelText('Game') as HTMLSelectElement;
+    await waitFor(() => expect(gameSelect.options.length).toBe(2));
+    fireEvent.change(gameSelect, { target: { value: '3' } });
+    expect(screen.getByText('The publisher forbids selling accounts.')).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('Platform'), { target: { value: 'android' } });
+    type('Player ID', ' 5123456789 ');
+    type('What the account holds', 'Level 70, 40 skins, Royale Pass season 3.');
+    fireEvent.click(screen.getByRole('button', { name: 'Save the game details' }));
+    expect(await screen.findByText('The game details are saved.')).toBeTruthy();
+    expect(be.called(`PUT /listings/${ID}/game-details`)[0].body).toEqual({ gameId: 3, platform: 'android', playerId: '5123456789', contents: 'Level 70, 40 skins, Royale Pass season 3.' });
+    await waitFor(() => expect((screen.getByRole('button', { name: 'Publish' }) as HTMLButtonElement).disabled).toBe(false));
+    expect(screen.getByText(/^A game account is held for review when published/)).toBeTruthy();
+  });
+
+  it('FR-GAM-03 after publication the seller gets a one-time code with where to put it and its expiry, uploads the screenshot, and sees the review', async () => {
+    const pending = draft({
+      itemKind: 'game_account', status: 'pending_review', category: { id: 7, nameEn: 'Game accounts', nameBn: 'গেম অ্যাকাউন্ট' },
+      condition: null, fulfilmentOptions: null, own: { area: null, updatedAt: '2026-11-18T00:00:00Z' },
+    });
+    const details = { gameId: 3, platform: 'android', playerId: '5123456789', contents: 'Level 70, 40 skins, Royale Pass season 3.' };
+    const expiresAt = new Date(Date.now() + 2 * 3_600_000).toISOString();
+    let proof: Record<string, unknown> | null = { code: 'OLD111', status: 'rejected', expiresAt, submittedAt: expiresAt, reviewedAt: expiresAt, reason: 'The code is not visible.' };
+    const be = backend({
+      [`GET /listings/${ID}`]: json(200, pending),
+      [`GET /listings/${ID}/ownership`]: () => json(200, { details, proof })(),
+      'GET /games': json(200, { items: [{ id: 3, slug: 'pubg', name: 'PUBG Mobile', platforms: ['android'], codePlacement: 'Put it in your bio', publisherNote: 'The publisher forbids selling accounts.' }] }),
+      [`POST /listings/${ID}/ownership-code`]: () => { proof = { code: 'TB7Q2X', status: 'issued', expiresAt, submittedAt: null, reviewedAt: null, reason: null }; return json(201, { code: 'TB7Q2X', expiresAt, placement: 'Put it in your bio' })(); },
+      [`POST /listings/${ID}/ownership-proof`]: () => { proof = { ...proof, status: 'submitted', submittedAt: expiresAt }; return json(201, { status: 'submitted', submittedAt: expiresAt })(); },
+    });
+    renderApp(`/sell/${ID}`, be);
+    expect(await screen.findByText('Your proof was not accepted.')).toBeTruthy();
+    expect(screen.getByText('Reason: The code is not visible.')).toBeTruthy();
+    expect(screen.getByText(/^Your listing is waiting for review\./)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Get a new code' }));
+    expect(await screen.findByText('TB7Q2X')).toBeTruthy();
+    expect(screen.getByText('Where to put it: Put it in your bio')).toBeTruthy();
+    expect(screen.getByText(/^The code expires .+\(in (2|1) h/)).toBeTruthy();
+    const file = new File(['png'], 'proof.png', { type: 'image/png' });
+    fireEvent.change(screen.getByLabelText('Upload the screenshot (JPEG, PNG or WebP)'), { target: { files: [file] } });
+    expect(await screen.findByText('Your proof is being reviewed.')).toBeTruthy();
+    const sent = be.called(`POST /listings/${ID}/ownership-proof`)[0].body as FormData;
+    expect((sent.get('file') as File).name).toBe('proof.png');
+    expect(screen.queryByRole('button', { name: /code/ })).toBeNull();
+    expect((screen.getByLabelText('Player ID') as HTMLInputElement).disabled).toBe(true);
+  });
+
   it('FR-KYC-07 FR-MON-01 an unverified member is told why; the commission is whole poisha, rounded down; both languages match', async () => {
     renderApp('/sell/new', backend({ 'GET /me/selling-terms': problem(403, 'forbidden') }));
     expect(await screen.findByText('Only members with a verified identity and e-mail can sell.')).toBeTruthy();
