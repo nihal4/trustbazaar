@@ -83,5 +83,6 @@
   "payout.save": "Save the payout account",
   "payout.save_replace": "Replace the payout account",
   "payout.saved": "Saved. The account's status is shown above.",
-  "payout.to_dashboard": "Back to your sales"
+  "payout.to_dashboard": "Back to your sales",
+  "seller.new_listing": "Sell an item"
 }
