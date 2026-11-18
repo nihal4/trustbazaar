@@ -14,14 +14,25 @@ import { start } from './main';
 // opening the details with the takeover checklist, the report and the one re-key. Real HPKE through sealed.js; the
 // key store is in memory instead of IndexedDB.
 
-// jsdom's TextEncoder returns a Uint8Array of jsdom's realm, which Node 20's Web Crypto refuses (Node 22 and the
-// browsers accept it); sealed.js encodes its HPKE info and AAD with it, so the test copies them into Node's realm.
-// Hoisted, because sealed.js encodes its info when it is loaded.
+// Under jsdom on Node 20 the typed arrays sealed.js and @hpke/core make can belong to jsdom's realm, and Node 20's
+// Web Crypto refuses them ("not instance of ArrayBuffer"); Node 22 and the browsers accept them. The test therefore
+// hands Web Crypto copies in Node's realm: every byte argument, including those inside algorithm parameters (the
+// HKDF salt and info, the AES-GCM nonce and additional data). Hoisted, so it is in place before sealed.js loads.
 vi.hoisted(() => {
-  const Base = globalThis.TextEncoder;
-  globalThis.TextEncoder = class extends Base {
-    encode(input?: string) { return new Uint8Array(super.encode(input)); }
-  } as typeof TextEncoder;
+  const NodeBuffer = (globalThis as unknown as { Buffer: typeof import('node:buffer').Buffer }).Buffer; // Node's own global
+  const bytes = (v: unknown): unknown => {
+    if (ArrayBuffer.isView(v)) return NodeBuffer.from(new Uint8Array(v.buffer, v.byteOffset, v.byteLength));
+    if (Object.prototype.toString.call(v) === '[object ArrayBuffer]') return NodeBuffer.from(new Uint8Array(v as ArrayBuffer));
+    if (v && typeof v === 'object' && !('type' in v && 'algorithm' in v) && Object.getPrototypeOf(v) === Object.prototype) {
+      return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, bytes(x)]));
+    }
+    return v;
+  };
+  const subtle = globalThis.crypto.subtle;
+  for (const name of ['importKey', 'encrypt', 'decrypt', 'digest', 'deriveBits', 'deriveKey', 'sign', 'verify'] as const) {
+    const original = (subtle[name] as (...a: unknown[]) => Promise<unknown>).bind(subtle);
+    Object.defineProperty(subtle, name, { configurable: true, value: (...args: unknown[]) => original(...args.map(bytes)) });
+  }
 });
 configure({ asyncUtilTimeout: 3000 });
 const ID = '7e1c2a3e-1111-4a5b-8c9d-0000000000aa';
