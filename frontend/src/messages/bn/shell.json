@@ -1,7 +1,7 @@
 {
   "shell.skip_to_content": "মূল অংশে যান",
   "shell.home_link": "TrustBazaar হোম",
-  "shell.language.switch_label": "ভাষা ইংরেজিতে বদলান",
+  "shell.language.switch_label": "– ভাষা ইংরেজিতে বদলান",
   "shell.language.other": "English",
   "shell.document.kyc": "পরিচয় যাচাই",
   "shell.document.staff": "স্টাফ কনসোল",
@@ -24,7 +24,7 @@
   "stepup.wrong_code": "কোডটি সঠিক নয়। দেখে আবার চেষ্টা করুন।",
   "stepup.expired": "এই কোডের মেয়াদ শেষ হয়ে গেছে। নতুন কোড চেয়ে নিন।",
   "shell.notifications": "নোটিফিকেশন",
-  "shell.notifications_unread": "নোটিফিকেশন, {count}টি পড়া হয়নি",
+  "shell.notifications_unread": "টি পড়া হয়নি",
   "shell.messages": "বার্তা",
   "shell.orders": "অর্ডার"
 }

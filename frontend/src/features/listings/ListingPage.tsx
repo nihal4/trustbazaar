@@ -4,6 +4,7 @@
 // an auction shows its panel. Others see only public listings; the seller sees their own in every state.
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { takeEarly } from '../../shared/early';
 import { formatMoney, toLocalDigits } from '../../lib/money.js';
 import { formatDateTime } from '../../lib/time.js';
 import { useApi } from '../../shared/api';
@@ -31,7 +32,7 @@ export function Component() {
   const { pathname } = useLocation();
   const listing = useQuery({
     queryKey: listingKey(id),
-    queryFn: ({ signal }) => api.get(`/listings/${encodeURIComponent(id)}`, { signal }) as Promise<ListingView>,
+    queryFn: async ({ signal }) => (await takeEarly<ListingView>(`/listings/${id}`)) ?? (api.get(`/listings/${encodeURIComponent(id)}`, { signal }) as Promise<ListingView>),
     staleTime: FRESHNESS.search,
     retry: false,
   });

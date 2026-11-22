@@ -71,3 +71,8 @@ button {
     scroll-behavior: auto !important;
   }
 }
+
+/* Forms never push the page sideways (NFR-USE-05, checked at 320 px by the end-to-end sweep, U8-11): a fieldset
+   otherwise refuses to shrink below its content, and inputs keep their default character width. */
+fieldset { min-width: 0; }
+input, select, textarea { max-width: 100%; box-sizing: border-box; }
