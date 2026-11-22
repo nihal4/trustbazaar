@@ -8,9 +8,10 @@ export function LanguageSwitch() {
   const { lang, setLang, t } = useLanguage();
   const other = otherLang(lang);
   return (
-    <button type="button" className={styles.langSwitch} aria-label={t('shell.language.switch_label')}
-      onClick={() => setLang(other)}>
+    // The name starts with the visible word, so speech input can say what it sees (WCAG 2.5.3, Label in Name).
+    <button type="button" className={styles.langSwitch} onClick={() => setLang(other)}>
       <span lang={other}>{t('shell.language.other')}</span>
+      <span className={styles.visuallyHidden}>{t('shell.language.switch_label')}</span>
     </button>
   );
 }
