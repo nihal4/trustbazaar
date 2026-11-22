@@ -62,11 +62,11 @@ describe('language switch', () => {
     expect(await screen.findByRole('heading', { name: 'Page not found' })).toBeTruthy();
     expect(document.documentElement.lang).toBe('en');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Change the language to Bangla' }));
+    fireEvent.click(screen.getByRole('button', { name: 'বাংলা – change the language to Bangla' }));
 
     expect(await screen.findByRole('heading', { name: 'পৃষ্ঠাটি পাওয়া যায়নি' })).toBeTruthy();
     expect(document.documentElement.lang).toBe('bn');
-    expect(screen.getByRole('button', { name: 'ভাষা ইংরেজিতে বদলান' }).textContent).toBe('English');
+    expect(screen.getByRole('button', { name: 'English – ভাষা ইংরেজিতে বদলান' }).firstChild?.textContent).toBe('English');
     expect(readStoredLang()).toBe('bn');
   });
 
@@ -78,7 +78,7 @@ describe('language switch', () => {
 
   it('NFR-USE-04 the kept choice is used on the next visit', async () => {
     mount({}, { lang: 'en' });
-    fireEvent.click(await screen.findByRole('button', { name: 'Change the language to Bangla' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'বাংলা – change the language to Bangla' }));
     cleanup();
     mount({});
     expect(await screen.findByRole('link', { name: 'TrustBazaar হোম' })).toBeTruthy();

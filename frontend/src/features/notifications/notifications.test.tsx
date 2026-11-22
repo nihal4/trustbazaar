@@ -83,7 +83,7 @@ describe('the notification centre', () => {
   it('FR-NTF-04 the header shows the unread count, in words for screen readers, and re-reads it every 60 seconds', async () => {
     const { be } = backend();
     const doc = renderApp('/account', be);
-    const link = await screen.findByRole('link', { name: 'Notifications, 1 unread' });
+    const link = await screen.findByRole('link', { name: 'Notifications 1 unread' });
     expect(link.getAttribute('href')).toBe('/notifications');
     expect(UNREAD_POLL_MS).toBe(60_000);
     const q = doc.queryClient.getQueryCache().find({ queryKey: ['notifications', 'first'] });
@@ -126,7 +126,7 @@ describe('preferences', () => {
     await waitFor(() => expect(be.called('PUT /me/notification-preferences').map((c) => c.body)).toEqual([{ language: 'en' }]));
     expect(state.prefs.language).toBe('en');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Change the language to Bangla' }));
+    fireEvent.click(screen.getByRole('button', { name: 'বাংলা – change the language to Bangla' }));
     await waitFor(() => expect(be.called('PUT /me/notification-preferences').map((c) => c.body)).toEqual([{ language: 'en' }, { language: 'bn' }]));
   });
 

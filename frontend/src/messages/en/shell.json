@@ -1,7 +1,7 @@
 {
   "shell.skip_to_content": "Skip to main content",
   "shell.home_link": "TrustBazaar home",
-  "shell.language.switch_label": "Change the language to Bangla",
+  "shell.language.switch_label": "– change the language to Bangla",
   "shell.language.other": "বাংলা",
   "shell.document.kyc": "Identity verification",
   "shell.document.staff": "Staff console",
@@ -24,7 +24,7 @@
   "stepup.wrong_code": "The code is not correct. Check it and try again.",
   "stepup.expired": "This code has expired. Ask for a new one.",
   "shell.notifications": "Notifications",
-  "shell.notifications_unread": "Notifications, {count} unread",
+  "shell.notifications_unread": " unread",
   "shell.messages": "Messages",
   "shell.orders": "Orders"
 }

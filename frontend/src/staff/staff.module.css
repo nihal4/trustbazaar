@@ -31,13 +31,13 @@
 .choice { border: 0; padding: 0; margin: var(--tb-space-2) 0; }
 .choice div { display: flex; align-items: center; gap: var(--tb-space-2); min-height: 44px; }
 .field { display: grid; gap: var(--tb-space-1); margin-block: var(--tb-space-2); }
-.field input, .field select { min-height: 44px; font: inherit; max-width: 100%; }
+.field input, .field select { min-height: 44px; font: inherit; width: 100%; }
 .split { font-variant-numeric: tabular-nums; }
 .thumbs { display: flex; flex-wrap: wrap; gap: var(--tb-space-2); list-style: none; padding: 0; }
 .thumbs img { max-width: 10rem; height: auto; border: 1px solid var(--tb-border); border-radius: var(--tb-radius); }
 .message { border-left: 3px solid var(--tb-border); padding-left: var(--tb-space-2); margin-block: var(--tb-space-1); }
 .proof { max-width: 100%; height: auto; border: 1px solid var(--tb-border); border-radius: var(--tb-radius); }
-.fields { display: grid; gap: 0 var(--tb-space-3); grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); }
+.fields { display: grid; gap: 0 var(--tb-space-3); grid-template-columns: repeat(auto-fill, minmax(min(12rem, 100%), 1fr)); }
 .changed { border-left: 4px solid var(--tb-accent); padding-left: var(--tb-space-2); }
 .check { display: flex; align-items: center; gap: var(--tb-space-2); min-height: 44px; }
 .fieldError { color: var(--tb-error); margin: 0; }
