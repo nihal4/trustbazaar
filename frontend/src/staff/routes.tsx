@@ -1,5 +1,5 @@
 // The console's routes (section 3.3; U8-10): the sign-in outside the console's frame, everything else inside it.
-// /admin/* is the administrators' part (U8-10, third part).
+// /admin/* is the administrators' part.
 import type { RouteObject } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import type { DocumentSetup } from '../shared/document';
@@ -27,6 +27,12 @@ export const staffRoutes: RouteObject[] = [
       { path: '/staff/listings/:id', lazy: () => import('./cases/ListingPage') },
       { path: '/staff/ownership-proofs/:id', lazy: () => import('./cases/ProofPage') },
       { path: '/staff/payout-accounts/:id', lazy: () => import('./cases/PayoutPage') },
+      { path: '/staff/terms', lazy: () => import('./TermsPage') },
+      { path: '/admin', element: <Navigate to="/admin/config" replace /> },
+      { path: '/admin/staff', lazy: () => import('./admin/StaffPage') },
+      { path: '/admin/config', lazy: () => import('./admin/ConfigPage') },
+      { path: '/admin/reference', lazy: () => import('./admin/ReferencePage') },
+      { path: '/admin/audit', lazy: () => import('./admin/AuditPage') },
       { path: '/admin/*', element: <DocumentTitle titleKey="shell.document.staff" /> },
     ],
   },

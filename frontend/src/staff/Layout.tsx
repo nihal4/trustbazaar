@@ -1,6 +1,6 @@
 // The console around every signed-in page (section 7.9; FR-OPS-04; U8-10): who is signed in and their role, the
 // pages that role may use, sign-out, and the session's CP-03 limits. The operator's pages are the eight queues and
-// the approvals; an administrator's are the approvals and the administration (U8-10, third part). The server
+// the approvals and the terms; an administrator's are the approvals and the administration. The server
 // authorises every request; the navigation only leaves out what the role cannot do.
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -34,7 +34,12 @@ export function Component() {
         <nav aria-label={t('staff.nav')}>
           <ul className={styles.nav}>
             {operator && <li><NavLink to="/staff/queues">{t('staff.nav.queues')}</NavLink></li>}
+            {operator && <li><NavLink to="/staff/terms">{t('staff.nav.terms')}</NavLink></li>}
             <li><NavLink to="/staff/approvals">{t('staff.nav.approvals')}</NavLink></li>
+            {!operator && <li><NavLink to="/admin/config">{t('staff.nav.config')}</NavLink></li>}
+            {!operator && <li><NavLink to="/admin/staff">{t('staff.nav.staff')}</NavLink></li>}
+            {!operator && <li><NavLink to="/admin/reference">{t('staff.nav.reference')}</NavLink></li>}
+            {!operator && <li><NavLink to="/admin/audit">{t('staff.nav.audit')}</NavLink></li>}
           </ul>
         </nav>
         <button type="button" className={styles.secondary} disabled={signOut.isPending} onClick={() => signOut.mutate()}>{t('staff.sign_out')}</button>
