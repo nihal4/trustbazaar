@@ -8,6 +8,7 @@
   "shell.loading": "লোড হচ্ছে…",
   "shell.close": "বন্ধ করুন",
   "shell.error.unexpected": "এই পৃষ্ঠায় একটি সমস্যা হয়েছে। আবার চেষ্টা করতে পৃষ্ঠাটি রিলোড করুন।",
+  "shell.error.human_check": "এই অনুরোধটি যাচাই করা যায়নি। কয়েক মিনিট পরে আবার চেষ্টা করুন।",
   "shell.not_found.title": "পৃষ্ঠাটি পাওয়া যায়নি",
   "shell.not_found.home": "হোম পেজে যান",
   "shell.account": "অ্যাকাউন্ট",
