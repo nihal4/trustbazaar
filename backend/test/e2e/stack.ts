@@ -73,7 +73,11 @@ async function main() {
     body: JSON.stringify({ listingId, quantity: 1, fulfilment: 'self_pickup' }),
   });
   if (!res.ok) throw new Error(`the seed order was refused: ${res.status} ${await res.text()}`);
-  const { id: orderId } = (await res.json()) as { id: string };
+  const { id: orderId } = (await res.json()) as { id: unknown };
+  // only a well-formed id goes into the file the runs read (an answer from the network is not trusted as is)
+  if (typeof orderId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(orderId)) {
+    throw new Error('the seed order came back without a valid id');
+  }
 
   const fixtures = {
     web: process.env.PUBLIC_ORIGIN,
