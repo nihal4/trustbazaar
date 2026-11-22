@@ -4,6 +4,7 @@
 // session in one browser never overwrite each other (I-51 a; FR-OPS-04).
 import { createContext, useContext } from 'react';
 import { createApi } from '../lib/api.js';
+import { withHumanCheck } from './humanCheck';
 
 export type DocumentKind = 'user' | 'staff';
 export type Api = ReturnType<typeof createApi>;
@@ -21,7 +22,9 @@ const STAFF: ApiOptions = {
  */
 export function createDocumentApi(kind: DocumentKind, onSignedOut: () => void, overrides: ApiOptions = {},
   stepUp?: (action: string) => Promise<string>): Api {
-  return createApi({ ...(kind === 'staff' ? STAFF : {}), stepUp, ...overrides, onSignedOut });
+  // Every request may meet the human check (SEC-ABU-02, I-64); the wrapper answers it and sends the request again.
+  const fetch = withHumanCheck(overrides.fetch ?? globalThis.fetch.bind(globalThis));
+  return createApi({ ...(kind === 'staff' ? STAFF : {}), stepUp, ...overrides, fetch, onSignedOut });
 }
 
 export const ApiContext = createContext<Api | null>(null);

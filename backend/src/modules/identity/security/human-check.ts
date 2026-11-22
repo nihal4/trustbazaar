@@ -49,6 +49,13 @@ export function solvePow(prefix: string, difficulty: number): string {
 
 const key = (id: string) => `pow:${id}`;
 
+// A request whose proof one check accepted counts as checked for the rest of its handling: a proof works once, so a
+// second check on the same request (the address mark in the rate-limit guard, then the login's failures in the
+// sign-in service) would otherwise ask again on every attempt (I-64, Decisions log 2026-11-23).
+const checked = new WeakSet<object>();
+export const markHumanChecked = (req: object) => { checked.add(req); };
+export const wasHumanChecked = (req: object) => checked.has(req);
+
 @Injectable()
 export class HumanCheck {
   private readonly log = new Logger('HumanCheck');

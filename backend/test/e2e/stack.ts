@@ -11,7 +11,6 @@ import { resolve } from 'path';
 import { randomUUID } from 'crypto';
 import { NestFactory } from '@nestjs/core';
 import { DataSource } from 'typeorm';
-import Redis from 'ioredis';
 import { AppModule } from '../../src/app.module';
 import { configureApp } from '../../src/app.setup';
 import { seedAreas } from '../../src/areas-seed';
@@ -34,14 +33,6 @@ async function main() {
   const app = configureApp(await NestFactory.create(AppModule, { rawBody: true, logger: ['error'] }));
   await app.listen(port, '127.0.0.1');
 
-  // Repeated runs from one address would reach the sign-in challenge mark (SEC-ABU-02: more than 10 in 15 minutes),
-  // which the web client cannot solve yet (I-64): a fresh stack starts its address counters again. Test data only.
-  const redis = new Redis(requireEnv('REDIS_URL'));
-  for (const pattern of ['rl:signin:*', 'rl:register:*', 'rl:otp-send:*']) {
-    const keys = await redis.keys(pattern);
-    if (keys.length) await redis.del(...keys);
-  }
-  redis.disconnect();
   const ds = await new DataSource({ type: 'postgres', url: requireEnv('DATABASE_URL') }).initialize();
   await seedAreas(ds);
   const fx = await IdentityFixtures.open();
