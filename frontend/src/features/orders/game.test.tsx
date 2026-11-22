@@ -117,6 +117,18 @@ describe('after payment', () => {
     expect(screen.queryByRole('button', { name: 'Release the payment early' })).toBeNull();
   });
 
+  it('FR-GAM-10 right after payment the handover may still be preparing: the page asks again until the seller is asked for the details', async () => {
+    let n = 0;
+    const be = backend({}, {
+      order: () => order({ role: 'seller', status: 'paid', paidAt: iso(0), escrow: held() }),
+      game: () => (++n < 3 ? game({ role: 'seller', keyVersion: 1, disclosure: { currentVersion: 1, acknowledgedVersion: 1, acknowledgedAt: iso(0) } })
+        : game({ role: 'seller', status: 'awaiting_credentials', keyVersion: 1, credentialsDueAt: iso(24 * HOUR) })),
+    });
+    renderApp('/orders/o-1', be);
+    expect(await screen.findByRole('link', { name: 'Send the login details' }, { timeout: 7000 })).toBeTruthy();
+    expect(be.called('GET /orders/o-1/game').length).toBeGreaterThanOrEqual(3);
+  }, 10_000);
+
   it('FR-GAM-17 after the takeover the buyer may release the payment early, with its consequence and step-up', async () => {
     let current = order({ status: 'paid', paidAt: iso(-HOUR), deliveryEventAt: iso(-HOUR), escrow: held() });
     const be = backend({

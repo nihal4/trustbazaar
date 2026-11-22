@@ -15,6 +15,7 @@ import { AppModule } from '../../src/app.module';
 import { configureApp } from '../../src/app.setup';
 import { seedAreas } from '../../src/areas-seed';
 import { requireEnv, useTestSecrets } from '../support/env';
+import { openAuction } from '../support/auctions';
 import { IdentityFixtures } from '../support/identity';
 
 async function main() {
@@ -38,10 +39,13 @@ async function main() {
   const fx = await IdentityFixtures.open();
   const buyer = await fx.account({ kyc: 'verified' });
   const seller = await fx.account({ kyc: 'verified' });
+  const bidder = await fx.account({ kyc: 'verified' });
   const operator = await fx.staffAccount('operator');
+  const operator2 = await fx.staffAccount('operator');
   const administrator = await fx.staffAccount('administrator');
   await fx.query(`UPDATE identity.users SET display_name = $2 WHERE id = $1`, [buyer.userId, 'Rahim Buyer']);
   await fx.query(`UPDATE identity.users SET display_name = $2 WHERE id = $1`, [seller.userId, 'Karim Seller']);
+  await fx.query(`UPDATE identity.users SET display_name = $2 WHERE id = $1`, [bidder.userId, 'Shapla Bidder']);
 
   const [{ id: categoryId }] = await fx.query<{ id: number }>(`SELECT id FROM listings.categories WHERE item_kind = 'physical' ORDER BY id LIMIT 1`);
   const [{ id: listingId }] = await fx.query<{ id: string }>(
@@ -55,6 +59,42 @@ async function main() {
     await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [listingId, n, randomUUID().replace(/-/g, '')]);
   }
   await fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [listingId]);
+
+  // a camera at ৳25,000 for the dispute run: a decision on BDT 20,000 or more needs a second operator (CP-30)
+  const [{ id: disputeListingId }] = await fx.query<{ id: string }>(
+    `INSERT INTO listings.listings (seller_id, item_kind, sale_format, category_id, title, description, condition, no_visible_defects,
+        fulfilment_options, weight_class, size_class, area_district, approx_lat, approx_lng, price, quantity_total, quantity_available)
+     VALUES ($1, 'physical', 'fixed_price', $2, 'Canon EOS 200D camera with 18-55 lens', 'Bought last year, shutter count low, with bag and charger.',
+        'used', true, 'pickup_only', 'up_to_1kg', 'small', 'Dhaka', 23.81, 90.41, 2500000, 1, 1) RETURNING id`,
+    [seller.userId, categoryId],
+  );
+  for (const n of [1, 2]) {
+    await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [disputeListingId, n, randomUUID().replace(/-/g, '')]);
+  }
+  await fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [disputeListingId]);
+
+  // a game account at ৳2,500 for the sealed handover run: its game, details and player-ID claim, as Unit 5 leaves an
+  // approved listing (FR-GAM-01 to FR-GAM-04)
+  const tag = randomUUID().slice(0, 8);
+  const [{ id: gameCategory }] = await fx.query<{ id: number }>(
+    `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'Game accounts', 'গেম অ্যাকাউন্ট', 'game_account') RETURNING id`, [`games-${tag}`],
+  );
+  const [{ id: gameId }] = await fx.query<{ id: number }>(
+    `INSERT INTO game_accounts.games (slug, name, platforms, code_placement, publisher_note) VALUES ($1, 'eFootball', '{android,ios}', 'the bio', 'The publisher may forbid transfers.') RETURNING id`,
+    [`efootball-${tag}`],
+  );
+  const [{ id: gameListingId }] = await fx.query<{ id: string }>(
+    `INSERT INTO listings.listings (seller_id, item_kind, sale_format, category_id, title, description, price, quantity_total, quantity_available)
+     VALUES ($1, 'game_account', 'fixed_price', $2, 'eFootball account, division 1', 'A division-1 account with three epic players.', 250000, 1, 1) RETURNING id`,
+    [seller.userId, gameCategory],
+  );
+  const player = String(10_000_000 + Math.floor(Math.random() * 89_999_999));
+  await fx.query(`INSERT INTO game_accounts.details (listing_id, seller_id, game_id, platform, player_id, contents) VALUES ($1, $2, $3, 'android', $4, 'Division 1, three epic players.')`, [gameListingId, seller.userId, gameId, player]);
+  await fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [gameListingId]);
+  await fx.query(`INSERT INTO game_accounts.claims (game_id, player_id_norm, listing_id) VALUES ($1, $2, $3)`, [gameId, player, gameListingId]);
+
+  // an auction running for a day from ৳1,000, for the live bidding run
+  const auctionId = await openAuction(fx, seller.userId, categoryId, { start: '100000', endsIn: '1 day' });
 
   // the buyer's order, made through the API as the web client makes it
   const sid = await fx.session({ userId: buyer.userId });
@@ -74,9 +114,11 @@ async function main() {
     web: process.env.PUBLIC_ORIGIN,
     buyer: { local: buyer.local, password: buyer.password, userId: buyer.userId },
     seller: { local: seller.local, password: seller.password, userId: seller.userId },
+    bidder: { local: bidder.local, password: bidder.password, userId: bidder.userId },
     operator: { email: operator.email, password: operator.password, totpSecret: operator.totpSecret },
+    operator2: { email: operator2.email, password: operator2.password, totpSecret: operator2.totpSecret },
     administrator: { email: administrator.email, password: administrator.password, totpSecret: administrator.totpSecret },
-    listingId, orderId,
+    listingId, orderId, auctionId, disputeListingId, gameListingId,
   };
   writeFileSync(out, JSON.stringify(fixtures, null, 2));
   await ds.destroy();

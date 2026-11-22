@@ -242,6 +242,11 @@ function BidForm({ id, state, mine, t, lang, onPlaced, onRefused }: {
   const [result, setResult] = useState<{ kind: 'success' | 'info' | 'error'; text: string } | null>(null);
   const [confirming, setConfirming] = useState<bigint | null>(null);
   const leading = mine?.leading === true;
+  // "You are leading at ..." was true when the bid was placed: once another bid overtakes it, it is removed, so the panel
+  // never says both that and "You have been outbid" (U8-11)
+  useEffect(() => {
+    if (!leading) setResult((r) => (r?.kind === 'success' ? null : r));
+  }, [leading]);
   // sent once (section 4.2): a second click before the button shows as disabled sends nothing
   const sending = useRef(false);
   const send = (maximum: bigint) => {

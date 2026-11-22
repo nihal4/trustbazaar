@@ -29,6 +29,8 @@ export function Capture({ id, title, labelledBy, hint, facing, allowFile, value,
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [problem, setProblem] = useState<CameraProblem | null>(null);
   const [busy, setBusy] = useState(false);
+  // the first frame has arrived: before it the video has no size, and a photo taken then would fail (U8-11)
+  const [ready, setReady] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,6 +40,7 @@ export function Capture({ id, title, labelledBy, hint, facing, allowFile, value,
 
   const start = async () => {
     setProblem(null);
+    setReady(false);
     setBusy(true);
     try {
       setStream(await camera.open(facing));
@@ -88,8 +91,8 @@ export function Capture({ id, title, labelledBy, hint, facing, allowFile, value,
         : stream
           ? (
             <>
-              <video ref={video} className={styles.video} autoPlay playsInline muted aria-label={t('capture.camera_view')} />
-              <button type="button" className={styles.primary} onClick={() => void take()} disabled={busy}>{t('capture.take')}</button>
+              <video ref={video} className={styles.video} autoPlay playsInline muted aria-label={t('capture.camera_view')} onLoadedData={() => setReady(true)} />
+              <button type="button" className={styles.primary} onClick={() => void take()} disabled={busy || !ready}>{t('capture.take')}</button>
             </>
           )
           : <button type="button" className={styles.primary} onClick={() => void start()} disabled={busy}>{t('capture.start')}</button>}

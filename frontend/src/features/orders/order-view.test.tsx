@@ -282,6 +282,14 @@ describe('the meetup handover (Unit 4)', () => {
     expect(screen.queryByRole('button', { name: 'Propose a place and time' })).toBeNull();
   });
 
+  it('FR-DLV-06 right after payment the handover may not exist yet: the page asks again instead of showing an error', async () => {
+    const be = backend({ 'GET /orders/o-1/handover': [problem(404, 'not-found'), problem(404, 'not-found'), json(200, handover())] });
+    renderApp('/orders/o-1', be);
+    expect(await screen.findByRole('button', { name: 'Show code' }, { timeout: 6000 })).toBeTruthy();
+    expect(be.called('GET /orders/o-1/handover')).toHaveLength(3);
+    expect(screen.queryByText('This page or item no longer exists.')).toBeNull();
+  });
+
   it('FR-DLV-04 a time typed as Dhaka time is that instant, whatever the device\'s zone', () => {
     expect(dhakaInput('2026-11-20T00:15')).toBe('2026-11-19T18:15:00.000Z');
     expect(dhakaInput('')).toBeNull();
