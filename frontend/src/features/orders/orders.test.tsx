@@ -141,6 +141,12 @@ describe('the return from the provider', () => {
     expect(screen.getByRole('button', { name: 'Pay ৳1,500' })).toBeTruthy();
   });
 
+  it('NFR-USE-07 coming back to the return address after the order has closed shows no "money is held" notice', async () => {
+    renderApp('/orders/o-1?payment=a-1&result=paid', backend({ order: order({ ...paid(), status: 'closed', closedAt: new Date().toISOString(), escrow: { ...paid().escrow!, state: 'released' } }) }));
+    expect(await screen.findByText('Completed')).toBeTruthy();
+    expect(screen.queryByText('Payment received. Your money is held by TrustBazaar until you have the item.')).toBeNull();
+  });
+
   it('NFR-PERF-06 after 30 s without an answer the page says it is still waiting', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'], shouldAdvanceTime: true });
     renderApp('/orders/o-1?payment=a-1', backend());

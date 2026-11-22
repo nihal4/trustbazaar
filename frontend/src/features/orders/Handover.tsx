@@ -25,10 +25,16 @@ export function useHandover(o: OrderView) {
     queryKey: handoverKey(o.id),
     queryFn: ({ signal }) => api.get(`/orders/${encodeURIComponent(o.id)}/handover`, { signal }) as Promise<HandoverView>,
     staleTime: FRESHNESS.money,
-    retry: false,
+    // Unit 4 creates the handover from the order's paid event, a moment after the payment (outbox): right after paying it
+    // may not exist yet (the outbox is read every 5 seconds, DV-67), so a 404 is asked again for about 15 seconds instead of
+    // being shown as an error (U8-11).
+    retry: (count, e) => problemName(e) === 'not-found' && count < HANDOVER_RETRIES,
+    retryDelay: 1500,
     enabled,
   });
 }
+
+export const HANDOVER_RETRIES = 10;
 
 /** 'YYYY-MM-DDTHH:mm' typed as Dhaka time (UTC+6, no daylight saving) to an ISO instant; null when not a time. */
 export function dhakaInput(value: string): string | null {

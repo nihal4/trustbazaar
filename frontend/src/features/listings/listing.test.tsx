@@ -233,6 +233,26 @@ describe('the auction panel', () => {
     expect(await screen.findByText(/Your maximum: ৳1,500 You have been outbid\./)).toBeTruthy();
   });
 
+  it('FR-AUC-12 after being outbid, the panel no longer says "You are leading" from the bid placed earlier', async () => {
+    const socket = new FakeSocket();
+    let mine: MyStatus = none;
+    const be = backend({ l: auctionListing(), mine: () => mine, bid: () => {
+      mine = { ...none, hasBid: true, yourMaximum: '150000', leading: true, yourAlias: 1 };
+      return json(201, { bidId: '9', outcome: 'leading', yourMaximum: '150000', state: auctionState({ price: '100000', seq: 2, bidCount: 1, leaderAlias: 1 }) })();
+    } });
+    renderApp(`/listings/${ID}`, be, 'en', socket);
+    fireEvent.change(await screen.findByLabelText('Your maximum bid (taka)'), { target: { value: '1,500' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Place bid' }));
+    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Bid ৳1,500' }));
+    expect(await screen.findByText('You are leading at ৳1,000.')).toBeTruthy();
+    await waitFor(() => expect(socket.opened).toBe(1));
+    act(() => socket.accept());
+    mine = { ...mine, leading: false };
+    act(() => socket.push('auction.outbid', { auctionId: ID, price: '155000', seq: 3 }));
+    expect(await screen.findByText(/Your maximum: ৳1,500 You have been outbid\./)).toBeTruthy();
+    expect(screen.queryByText('You are leading at ৳1,000.')).toBeNull();
+  });
+
   it('FR-AUC-03 a leader raising their maximum is told when it is not higher, before sending', async () => {
     const be = backend({ l: auctionListing(), mine: { ...none, hasBid: true, yourMaximum: '150000', leading: true, yourAlias: 1 } });
     renderApp(`/listings/${ID}`, be);

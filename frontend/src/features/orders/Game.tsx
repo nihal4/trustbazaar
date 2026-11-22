@@ -52,8 +52,15 @@ export function useGame(o: OrderView) {
     staleTime: FRESHNESS.money,
     retry: false,
     enabled: o.listing.itemKind === 'game_account' && o.status !== 'cancelled',
+    // Unit 5 asks the seller for the credentials from the order's paid event, a moment after the payment (the outbox is
+    // read every 5 s, DV-67): while the order is paid but the handover still "preparing", ask again every 2 s, at most
+    // a minute, so neither side keeps seeing "Ready for payment" (U8-11)
+    refetchInterval: (q) => (o.status === 'paid' && q.state.data?.status === 'preparing' && q.state.dataUpdateCount < GAME_POLLS ? GAME_POLL_MS : false),
   });
 }
+
+export const GAME_POLL_MS = 2_000;
+const GAME_POLLS = 30;
 
 /** Ready to pay: the current disclosure acknowledged and key version 1 registered (Unit 5's checkout_ready). */
 export const gameReady = (g: GameView | undefined) =>
