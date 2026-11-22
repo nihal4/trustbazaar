@@ -128,7 +128,8 @@ function OrderChat({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
 
 /** FR-PAY-02: after the provider, only the order's status; the return itself proves nothing. */
 function Return({ o, failed, waited, t }: { o: OrderView; failed: boolean; waited: boolean; t: T }) {
-  if (o.status === 'paid' || o.status === 'closed') return <FormMessage kind="success">{t('return.paid')}</FormMessage>;
+  // "held until you have the item" is true only while the order is paid; after it closes the money sentence says where it went
+  if (o.status === 'paid') return <FormMessage kind="success">{t('return.paid')}</FormMessage>;
   if (o.status !== 'awaiting_payment') return null;
   if (failed) return <FormMessage kind="error">{t('return.failed')}</FormMessage>;
   if (waited) return <FormMessage kind="info">{t('return.waiting')}</FormMessage>;
