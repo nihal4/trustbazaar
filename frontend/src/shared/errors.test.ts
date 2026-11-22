@@ -31,6 +31,12 @@ describe('error messages', () => {
     expect(errorText(e, bn, 'bn')).toContain('৪৫');
   });
 
+  it('SEC-ABU-02 a human check still asked after two answers reads as a request to wait, in both languages', () => {
+    const e = new ApiError(428, { type: '/problems/human-verification-required', correlationId: 'c0ffee12' });
+    expect(errorText(e, en, 'en')).toBe('We could not check this request. Try again in a few minutes.');
+    expect(errorText(e, bn, 'bn')).toBe(bn('shell.error.human_check'));
+  });
+
   it('SEC-INP-06 an error that is not from the API gets the page message', () => {
     expect(errorText(new TypeError('x is undefined'), en, 'en')).toBe(en('shell.error.unexpected'));
   });

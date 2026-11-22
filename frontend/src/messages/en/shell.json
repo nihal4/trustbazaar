@@ -8,6 +8,7 @@
   "shell.loading": "Loading…",
   "shell.close": "Close",
   "shell.error.unexpected": "Something went wrong on this page. Reload the page to try again.",
+  "shell.error.human_check": "We could not check this request. Try again in a few minutes.",
   "shell.not_found.title": "Page not found",
   "shell.not_found.home": "Go to the home page",
   "shell.account": "Account",
