@@ -104,12 +104,13 @@ function PendingStepUp() {
 function NotificationsLink({ unread }: { unread: number | null }) {
   const { t, lang } = useLanguage();
   const n = unread ?? 0;
-  const label = n > 0 ? t('shell.notifications_unread', { count: toLocalDigits(String(n > 99 ? 99 : n), lang) + (n > 99 ? '+' : '') })
-    : t('shell.notifications');
+  const count = toLocalDigits(String(n > 99 ? 99 : n), lang) + (n > 99 ? '+' : '');
+  const label = t('shell.notifications_unread');
   return (
-    <Link className={styles.account} to="/notifications" aria-label={label}>
+    // The name is the visible text, the count in words after it (WCAG 2.5.3, Label in Name).
+    <Link className={styles.account} to="/notifications">
       {t('shell.notifications')}
-      {n > 0 && <span className={styles.badge} aria-hidden="true">{toLocalDigits(String(n > 99 ? 99 : n), lang)}{n > 99 ? '+' : ''}</span>}
+      {n > 0 && <>{' '}<span className={styles.badge}>{count}</span><span className={styles.visuallyHidden}>{label}</span></>}
     </Link>
   );
 }
