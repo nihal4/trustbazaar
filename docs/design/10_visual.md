@@ -80,9 +80,9 @@ Each screen keeps its current route, data and behaviour. "Done" means every crit
 ### 7.1 Home (`/`): `home-desktop.jpg`, `home-phone.jpg`, `home-phone-bn.jpg`
 
 - AC-HOME-1: The first screen shows the headline, the search field and, on desktop, the promise tag with the two facts (ID checked; bKash, Nagad or card). On phones the promise is a plum panel under the search.
-- AC-HOME-2: The category row shows counts. The selected category is an ink chip. On phones it scrolls sideways inside itself, never the page.
+- AC-HOME-2: The category row shows the first ten top categories, with "Everything" as an ink chip first; each links to its search. On phones it scrolls sideways inside itself, never the page. (No counts: the API gives none; Decisions log, U10-03.)
 - AC-HOME-3: "Auctions ending soon" shows up to 4 cards (3 on phones, sideways scroll), each with the countdown pill on the photo and the current bid with the number of bids.
-- AC-HOME-4: "New today" is a 5-column grid at 1440 px and 2 columns on phones. Every card follows the listing card of section 6.
+- AC-HOME-4: "Newest listings" is a 5-column grid at 1440 px and 2 columns on phones, with a link to all of them. Every card follows the listing card of section 6, without the save heart and the listing's age, which the API does not offer (Decisions log, U10-03). Featured listings keep their own section with the note "Sellers paid to show these listings here." (FR-MON-05).
 - AC-HOME-5: The "Selling something?" strip has the three steps and "Start selling" linking to `/sell/new`.
 - AC-HOME-6: LCP stays under 2.5 s on the Lighthouse run of U8-11 (NFR-PERF-07).
 

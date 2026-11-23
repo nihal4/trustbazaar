@@ -6,7 +6,7 @@
 //
 // E2E_API_PORT (default 3100) is the port; E2E_FIXTURES (default ../frontend/e2e/.fixtures.json) receives the
 // accounts and ids as JSON. The values are test-only (useTestSecrets): never run this against a real database.
-import { rmSync, writeFileSync } from 'fs';
+import { readFileSync, rmSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 import { randomUUID } from 'crypto';
 import { NestFactory } from '@nestjs/core';
@@ -14,6 +14,7 @@ import { DataSource } from 'typeorm';
 import { AppModule } from '../../src/app.module';
 import { configureApp } from '../../src/app.setup';
 import { seedAreas } from '../../src/areas-seed';
+import { MediaPipeline } from '../../src/modules/listings/services/media';
 import { requireEnv, useTestSecrets } from '../support/env';
 import { openAuction } from '../support/auctions';
 import { IdentityFixtures } from '../support/identity';
@@ -33,6 +34,10 @@ async function main() {
 
   const app = configureApp(await NestFactory.create(AppModule, { rawBody: true, logger: ['error'] }));
   await app.listen(port, '127.0.0.1');
+
+  // sample photos (renders made for the design, test/e2e/photos), stored as an upload is, so the pages show real images
+  const media = app.get(MediaPipeline);
+  const photo = (name: 'phone' | 'camera' | 'pad') => media.store(readFileSync(resolve(__dirname, 'photos', `${name}.jpg`)), 10_000_000);
 
   const ds = await new DataSource({ type: 'postgres', url: requireEnv('DATABASE_URL') }).initialize();
   await seedAreas(ds);
@@ -56,7 +61,8 @@ async function main() {
     [seller.userId, categoryId],
   );
   for (const n of [1, 2]) {
-    await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [listingId, n, randomUUID().replace(/-/g, '')]);
+    const p = await photo('phone');
+    await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, $4, $5)`, [listingId, n, p.key, p.width, p.height]);
   }
   await fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [listingId]);
 
@@ -69,7 +75,8 @@ async function main() {
     [seller.userId, categoryId],
   );
   for (const n of [1, 2]) {
-    await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [disputeListingId, n, randomUUID().replace(/-/g, '')]);
+    const p = await photo('camera');
+    await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, $4, $5)`, [disputeListingId, n, p.key, p.width, p.height]);
   }
   await fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [disputeListingId]);
 
