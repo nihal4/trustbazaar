@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import { createDocument, DocumentRoot } from '../shared/document';
 import { staffRoutes, staffSignIn } from '../staff/routes';
+import '../shared/kit.css';
 import '../shared/tokens.css';
 
 // staff.html: the staff console, /staff/* and /admin/* (section 3.1; U8-10). Staff code is never sent to users:

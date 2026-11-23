@@ -1,10 +1,15 @@
-// The frame of every page of the user app, the console and the KYC page (section 3; section 7):
-// a skip link, the header with the language switch, the signed-out notice and the main region.
+// The frame of every page of the user app, the console and the KYC page (section 3; section 7; Daylight design,
+// docs/design/10_visual.md, section 6): a skip link, the header with the logo and the language switch, the
+// signed-out notice and the main region; in the user app also the footer and, on phones, the tab bar.
 // After a navigation, focus moves to the main region so keyboard and screen-reader users start at
 // the new page.
 import { Suspense, useEffect, useRef, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Button } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
+import { BellIcon, ChatIcon, HomeIcon, OrdersIcon, PlusIcon, SearchIcon, UserIcon } from './icons';
+import { Logo } from './Logo';
 import { useLanguage } from './language/Language';
 import { LanguageSwitch } from './language/LanguageSwitch';
 import { ME_KEY, useMe } from './me';
@@ -37,28 +42,74 @@ export function Shell({ titleKey, home, accountLinks = false }: ShellProps) {
     main.current?.focus();
   }, [pathname]);
 
-  const brand = 'TrustBazaar';
+  // Phones get the tab bar instead of the header's links; decided once on the first render, so nothing jumps.
+  const phone = useMediaQuery('(max-width: 47.99em)', false, { getInitialValueInEffect: false });
+  const tabs = accountLinks && phone;
   return (
     <div className={styles.page}>
       <a className={styles.skip} href="#main">{t('shell.skip_to_content')}</a>
       <header className={styles.header}>
         {home.sameDocument
-          ? <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}>{brand}</Link>
-          : <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}>{brand}</a>}
+          ? <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo /></Link>
+          : <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}><Logo /></a>}
         {titleKey && <span className={styles.docTitle}>{t(titleKey)}</span>}
         <span className={styles.spacer} />
-        {accountLinks && <AccountLink />}
+        {accountLinks && <AccountLink phone={phone} />}
         <LanguageSwitch />
+        {accountLinks && !phone && <Button component={Link} to="/sell/new">{t('shell.sell')}</Button>}
       </header>
       <SignedOutNotice />
       <PendingStepUp />
       <LiveConnection />
-      <main id="main" ref={main} tabIndex={-1} className={styles.main}>
+      <main id="main" ref={main} tabIndex={-1} className={tabs ? `${styles.main} ${styles.withTabs}` : styles.main}>
         <Suspense fallback={<p role="status">{t('shell.loading')}</p>}>
           <Outlet />
         </Suspense>
       </main>
+      {accountLinks && <Footer />}
+      {tabs && <TabBar />}
     </div>
+  );
+}
+
+/** The user app's footer: what the site is, and the help pages. */
+function Footer() {
+  const { t } = useLanguage();
+  return (
+    <footer className={styles.footer}>
+      <div className={styles.footerAbout}>
+        <Logo />
+        <p>{t('shell.footer.tagline')}</p>
+      </div>
+      <nav aria-label={t('shell.footer.nav')}>
+        <ul className={styles.footerLinks}>
+          <li><Link to="/search">{t('shell.tab.search')}</Link></li>
+          <li><Link to="/sell/new">{t('shell.sell')}</Link></li>
+          <li><Link to="/help/terms">{t('shell.footer.terms')}</Link></li>
+          <li><Link to="/help/privacy">{t('shell.footer.privacy')}</Link></li>
+        </ul>
+      </nav>
+    </footer>
+  );
+}
+
+/** On phones: the five places people go most, at the bottom where thumbs reach (Daylight design, section 6). */
+function TabBar() {
+  const { t } = useLanguage();
+  const me = useMe();
+  const tab = (to: string, icon: JSX.Element, label: string, end = false) => (
+    <li><NavLink to={to} end={end} className={({ isActive }) => (isActive ? `${styles.tab} ${styles.tabOn}` : styles.tab)}>{icon}<span>{label}</span></NavLink></li>
+  );
+  return (
+    <nav className={styles.tabBar} aria-label={t('shell.tabs.label')}>
+      <ul>
+        {tab('/', <HomeIcon />, t('shell.tab.home'), true)}
+        {tab('/search', <SearchIcon />, t('shell.tab.search'))}
+        <li><NavLink to="/sell/new" className={styles.tab}><span className={styles.tabSell}><PlusIcon /></span><span>{t('shell.tab.sell')}</span></NavLink></li>
+        {me.isSuccess && tab('/messages', <ChatIcon />, t('shell.messages'))}
+        {me.isSuccess && tab('/orders', <OrdersIcon />, t('shell.orders'))}
+      </ul>
+    </nav>
   );
 }
 
@@ -74,13 +125,24 @@ function SignedOutNotice() {
   );
 }
 
-/** "Account" and the notifications once /me answers; otherwise "Sign in", returning to this page. */
-function AccountLink() {
+/**
+ * "Account" and the notifications once /me answers; otherwise "Sign in", returning to this page. On phones the
+ * header keeps only the notifications and the account, as icons with their names; the tab bar has the rest.
+ */
+function AccountLink({ phone }: { phone: boolean }) {
   const { t } = useLanguage();
   const me = useMe();
   const unread = useUnreadCount();
   useLanguageSync();
   const { pathname, search } = useLocation();
+  if (me.isSuccess && phone) {
+    return (
+      <>
+        <NotificationsLink unread={unread} icon />
+        <Link className={styles.iconLink} to="/account"><UserIcon /><span className={styles.visuallyHidden}>{t('shell.account')}</span></Link>
+      </>
+    );
+  }
   if (me.isSuccess) {
     return (
       <>
@@ -101,15 +163,15 @@ function PendingStepUp() {
 }
 
 /** The notification centre, with the unread count in words as well as a number (not colour alone). */
-function NotificationsLink({ unread }: { unread: number | null }) {
+function NotificationsLink({ unread, icon = false }: { unread: number | null; icon?: boolean }) {
   const { t, lang } = useLanguage();
   const n = unread ?? 0;
   const count = toLocalDigits(String(n > 99 ? 99 : n), lang) + (n > 99 ? '+' : '');
   const label = t('shell.notifications_unread');
   return (
     // The name is the visible text, the count in words after it (WCAG 2.5.3, Label in Name).
-    <Link className={styles.account} to="/notifications">
-      {t('shell.notifications')}
+    <Link className={icon ? styles.iconLink : styles.account} to="/notifications">
+      {icon ? <><BellIcon /><span className={styles.visuallyHidden}>{t('shell.notifications')}</span></> : t('shell.notifications')}
       {n > 0 && <>{' '}<span className={styles.badge}>{count}</span><span className={styles.visuallyHidden}>{label}</span></>}
     </Link>
   );
