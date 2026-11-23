@@ -25,6 +25,8 @@ export const QUEUES = ['disputes', 'reports', 'flagged_activity', 'kyc', 'listin
 export type QueueName = (typeof QUEUES)[number];
 
 export const queueKey = (q: QueueName) => ['staff', 'queues', q] as const;
+/** The most items a queue answer holds (Unit 7's queue service); a full answer is shown as "200+". */
+export const QUEUE_LIMIT = 200;
 
 /** GET /staff/queues/{queue}: oldest first, the overdue on top; each item names where it is acted on. */
 export interface QueueItem {

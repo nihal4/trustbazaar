@@ -143,9 +143,9 @@ The credential screens (`secure.html`, no React and no shared code, SEC-GAM-03) 
 
 ### 7.10 Staff console (`staff.html`): `staff.jpg`
 
-- AC-STF-1: A dark left navigation with the eight queues and their counts, approvals, and the administrators' section for administrators only.
-- AC-STF-2: The queue table shows case, queue, reason, subject, amount and the age in tabular figures. Ages over 24 hours are in danger red, with the time in words.
-- AC-STF-3: The console stays usable at 1280 px. On phones it falls back to stacked rows, as now.
+- AC-STF-1: A dark navigation with, for operators, the eight queues and the number of cases waiting in each (from the queues' own answers, refreshed every minute; "200+" when a queue answer is full, none when a queue is not available), then approvals and terms; for administrators, approvals and the administrators' section. Beside the page from 60rem, above it on smaller screens. The site header with the language switch stays above (Decisions log, U10-09).
+- AC-STF-2: Each queue is a table of case, what it is, amount, waiting time and who has it, with the claim or open action. Ages are in tabular figures, and ages of a day or more are in danger red, with the time in words; overdue cases also say "Overdue" and carry a red edge.
+- AC-STF-3: The console stays usable at 1280 px. On phones each row stacks, every cell under its column's name.
 
 ## 8. Acceptance for the whole redesign (U10-10)
 

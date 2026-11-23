@@ -201,7 +201,7 @@ describe('reference data', () => {
 });
 
 describe('by role', () => {
-  it('FR-OPS-04 an administrator sees the administration; an operator sees the queues and terms, and adds and removes terms', async () => {
+  it('FR-OPS-04 an administrator sees the administration; an operator sees the eight queues and terms, and adds and removes terms', async () => {
     open('/staff/approvals', backend('administrator', { 'GET /staff/approvals': json(200, []) }));
     const adminNav = await screen.findByRole('navigation', { name: 'Console' });
     expect(within(adminNav).getAllByRole('link').map((a) => a.textContent)).toEqual(['Approvals', 'Parameters', 'Staff', 'Reference data', 'Audit log']);
@@ -217,7 +217,10 @@ describe('by role', () => {
     });
     open('/staff/terms', be);
     const nav = await screen.findByRole('navigation', { name: 'Console' });
-    expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual(['Queues', 'Terms', 'Approvals']);
+    expect(within(nav).getAllByRole('link').map((a) => a.textContent)).toEqual([
+      'Disputes', 'Reports', 'Flagged activity', 'KYC submissions', 'Listings in review', 'Ownership proofs', 'Bank payout-account checks', 'Payment discrepancies',
+      'Approvals', 'Terms',
+    ]);
     const add = form('Add a screening term');
     fireEvent.change(within(add).getByLabelText('Term'), { target: { value: ' replica ' } });
     fireEvent.click(within(add).getByLabelText('High risk: held for review'));

@@ -1,9 +1,11 @@
 // The eight queues, /staff/queues/:queue (FR-OPS-01; section 7.9; Unit 7 section 2.3; U8-10): each oldest first, the
 // overdue on top, each item with its age. A dispute, a report or a KYC submission is claimed before it is acted on;
 // the claim runs the server's conflict check (FR-OPS-06), and a refusal is shown as its message. The case files and
-// item opens its case: a claimed case only for the operator who claimed it.
+// item opens its case: a claimed case only for the operator who claimed it. Daylight design (docs/design/10_visual.md,
+// section 7.10, AC-STF-2): a table of case, what it is, amount, waiting time and who has it; ages of a day or more
+// in danger red, with the time in words.
 import { useState } from 'react';
-import { Link, Navigate, NavLink, useOutletContext, useParams } from 'react-router-dom';
+import { Link, Navigate, useOutletContext, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { formatMoney, toLocalDigits } from '../lib/money.js';
 import { formatDateTime, formatDeadline } from '../lib/time.js';
@@ -28,17 +30,7 @@ export function Component() {
   if (!(QUEUES as readonly string[]).includes(queue)) return <p>{t('staff.queue.unknown')}</p>;
   if (me.role !== 'operator') return <FormMessage kind="info">{t('staff.queue.operators_only')}</FormMessage>;
   const q = queue as QueueName;
-  return (
-    <div>
-      <h1>{t('staff.queues.title')}</h1>
-      <nav aria-label={t('staff.queues.title')}>
-        <ul className={styles.tabs}>
-          {QUEUES.map((name) => <li key={name}><NavLink to={`/staff/queues/${name}`}>{t(`staff.queue.${name}`)}</NavLink></li>)}
-        </ul>
-      </nav>
-      <Queue key={q} queue={q} me={me} t={t} lang={lang} />
-    </div>
-  );
+  return <Queue key={q} queue={q} me={me} t={t} lang={lang} />;
 }
 
 function Queue({ queue, me, t, lang }: { queue: QueueName; me: StaffMe; t: T; lang: Lang }) {
@@ -63,8 +55,8 @@ function Queue({ queue, me, t, lang }: { queue: QueueName; me: StaffMe; t: T; la
   });
   const notYet = items.isError && isApiError(items.error, 409) && problemName(items.error) === 'feature-off';
   return (
-    <section aria-labelledby="queue-title" className={styles.panel}>
-      <h2 id="queue-title">{t(`staff.queue.${queue}`)}</h2>
+    <section aria-labelledby="queue-title">
+      <h1 id="queue-title" className={styles.pageTitle}>{t(`staff.queue.${queue}`)}</h1>
       <p className={styles.hint}>{t('staff.queue.order')}</p>
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
       {items.isPending && <p role="status">{t('shell.loading')}</p>}
@@ -72,35 +64,53 @@ function Queue({ queue, me, t, lang }: { queue: QueueName; me: StaffMe; t: T; la
       {items.isError && !notYet && <FormMessage kind="error">{errorText(items.error, t, lang)}</FormMessage>}
       {items.isSuccess && items.data.items.length === 0 && <p>{t('staff.queue.empty')}</p>}
       {items.isSuccess && items.data.items.length > 0 && (
-        <ol className={styles.items}>
-          {items.data.items.map((item) => {
-            const path = claimPath(queue, item.id);
-            return (
-              <li key={item.id} className={item.overdue ? styles.overdue : undefined}>
-                <p>
-                  {item.overdue && <><strong>{t('staff.queue.overdue')}</strong> · </>}
-                  <strong>{age(item.ageHours, t, lang)}</strong> · {t('staff.queue.since', { at: formatDateTime(Date.parse(item.since), lang) })}
-                </p>
-                <Summary queue={queue} item={item} t={t} lang={lang} />
-                <p className={styles.hint}>
-                  {t('staff.queue.ref', { id: short(item.id) })}
-                  {' · '}
-                  {item.assignedTo === me.id ? t('staff.claim.yours') : item.assignedTo ? t('staff.claim.other') : path ? t('staff.claim.open') : t('staff.claim.none_needed')}
-                </p>
-                {casePath(queue, item.id) && (!path || item.assignedTo === me.id) && (
-                  <p><Link to={casePath(queue, item.id)!}>{t('staff.queue.open', { ref: short(item.id) })}</Link></p>
-                )}
-                {path && !item.assignedTo && (
-                  <button type="button" className={styles.secondary} disabled={claim.isPending} onClick={() => { setMessage(null); claim.mutate(path); }}>
-                    {t('staff.claim.button', { ref: short(item.id) })}
-                  </button>
-                )}
-              </li>
-            );
-          })}
-        </ol>
+        // AC-STF-2: a table from 48rem, stacked rows with their labels on phones (AC-STF-3)
+        <table className={styles.queue}>
+          <thead>
+            <tr>
+              <th scope="col">{t('staff.queue.col.case')}</th>
+              <th scope="col">{t('staff.queue.col.details')}</th>
+              <th scope="col" className={styles.num}>{t('staff.queue.col.amount')}</th>
+              <th scope="col">{t('staff.queue.col.waiting')}</th>
+              <th scope="col">{t('staff.queue.col.who')}</th>
+              <th scope="col"><span className={styles.visuallyHidden}>{t('staff.queue.col.action')}</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.data.items.map((item) => {
+              const path = claimPath(queue, item.id);
+              const amount = typeof item.amountCollected === 'string' && item.amountCollected ? formatMoney(BigInt(item.amountCollected), lang) : '';
+              const late = item.overdue || item.ageHours >= 24;
+              return (
+                <tr key={item.id} className={item.overdue ? styles.overdue : undefined}>
+                  <th scope="row" data-label={t('staff.queue.col.case')}>{t('staff.queue.ref', { id: short(item.id) })}</th>
+                  <td data-label={t('staff.queue.col.details')}><Summary queue={queue} item={item} t={t} lang={lang} /></td>
+                  <td data-label={t('staff.queue.col.amount')} className={styles.num}>{amount}</td>
+                  <td data-label={t('staff.queue.col.waiting')}>
+                    <span className={late ? styles.late : styles.age}>
+                      {item.overdue && <>{t('staff.queue.overdue')} · </>}{age(item.ageHours, t, lang)}
+                    </span>
+                    <span className={styles.since}>{t('staff.queue.since', { at: formatDateTime(Date.parse(item.since), lang) })}</span>
+                  </td>
+                  <td data-label={t('staff.queue.col.who')}>
+                    {item.assignedTo === me.id ? t('staff.claim.yours') : item.assignedTo ? t('staff.claim.other') : path ? t('staff.claim.open') : t('staff.claim.none_needed')}
+                  </td>
+                  <td className={styles.act}>
+                    {casePath(queue, item.id) && (!path || item.assignedTo === me.id) && (
+                      <Link className={styles.openLink} to={casePath(queue, item.id)!}>{t('staff.queue.open', { ref: short(item.id) })}</Link>
+                    )}
+                    {path && !item.assignedTo && (
+                      <button type="button" className={styles.claim} disabled={claim.isPending} onClick={() => { setMessage(null); claim.mutate(path); }}>
+                        {t('staff.claim.button', { ref: short(item.id) })}
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       )}
-      <p><Link to="/staff/approvals">{t('staff.nav.approvals')}</Link></p>
     </section>
   );
 }
@@ -114,7 +124,6 @@ function Summary({ queue, item, t, lang }: { queue: QueueName; item: QueueItem; 
       return (
         <p>
           {t('staff.item.dispute', { type: s('type'), status: s('status') })}
-          {s('amountCollected') && ` · ${formatMoney(BigInt(s('amountCollected')), lang)}`}
           {s('decisionTargetAt') && ` · ${t('staff.item.decide_by', { when: formatDeadline(Date.parse(s('decisionTargetAt')), now, lang) })}`}
           {item.fourEyes === true && <> · <strong>{t('staff.item.four_eyes')}</strong></>}
         </p>
