@@ -95,5 +95,19 @@
   "submit.limit": "You have used every attempt for now. You can submit again later.",
   "submit.not_allowed": "Your verification status has changed. The page now shows the current status.",
   "sent.title": "What you sent",
-  "sent.show": "Show the images you sent"
+  "sent.show": "Show the images you sent",
+  "steps.label": "Steps",
+  "steps.details": "Your details",
+  "steps.document": "Your document",
+  "steps.selfies": "Selfies",
+  "steps.send": "Send",
+  "side.rules_title": "Before you take it",
+  "side.private_title": "Only for checking you",
+  "side.after": "After you send it, we show how long the check is expected to take.",
+  "frame.nid": "The whole card inside the frame",
+  "frame.passport": "The whole page inside the frame",
+  "frame.selfie": "Your face inside the oval",
+  "steps.state.done": "(done)",
+  "steps.state.current": "(now)",
+  "steps.state.next": "(to come)"
 }

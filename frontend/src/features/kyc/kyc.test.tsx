@@ -64,6 +64,25 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe('requirements and status', () => {
+  it('IF-UI-02 the steps show where the user is, the side panel the photo rules and who sees the ID, and the header a way out (AC-KYC-1, AC-KYC-3)', async () => {
+    const be = fakeBackend({ 'GET /kyc/status': json(200, status()) });
+    renderDocument('/account/kyc', be, 'en',
+      { routes: kycRoutes, home: { path: '/', sameDocument: false }, titleKey: 'shell.document.kyc', exit: { href: '/account', labelKey: 'shell.kyc_later' } },
+      (root) => <CameraContext.Provider value={standInCamera().camera}>{root}</CameraContext.Provider>);
+    await screen.findByRole('heading', { name: 'What you need' });
+    expect(screen.getByRole('link', { name: 'Finish later' }).getAttribute('href')).toBe('/account');
+    expect(screen.queryByRole('heading', { name: 'Only for checking you' })).toBeNull();   // the intro says it already
+    click('Start');
+    await screen.findByRole('heading', { name: 'Your document details' });
+    await fillDetails();
+    await screen.findByRole('heading', { name: 'Front of your NID', level: 2 });
+    const steps = screen.getByRole('list', { name: 'Steps' });
+    expect(within(steps).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Your details(done)', '2Your document(now)', '3Selfies(to come)', '4Send(to come)']);
+    expect(screen.getByRole('heading', { name: 'Before you take it' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Only for checking you' }).parentElement?.textContent).toContain('seen only by our verification team');
+    expect(screen.getByText('The whole card inside the frame')).toBeTruthy();
+  });
+
   it('NFR-USE-02 the requirements come before any capture, and the review status is shown on every step', async () => {
     const be = fakeBackend({ 'GET /kyc/status': json(200, status()) });
     mount(be, standInCamera().camera);

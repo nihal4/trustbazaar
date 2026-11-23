@@ -1,7 +1,8 @@
 // The KYC wizard (IF-UI-02, NFR-USE-02; section 5.2), in kyc.html, the only document allowed the camera.
 // The requirements come before any capture; the review status is shown above every step; the images
 // stay in memory and are sent once, at the end, to POST /kyc/submissions (multipart, through
-// lib/api.js). Files already sent are shown only through Unit 1's signed links.
+// lib/api.js). Files already sent are shown only through Unit 1's signed links. Daylight layout (docs/design/10_visual.md,
+// section 7.9): the four steps above the camera, and from 60rem a side panel with the photo rules and who sees the ID.
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toLocalDigits } from '../../lib/money.js';
@@ -16,8 +17,8 @@ import { FRESHNESS } from '../../shared/query';
 import { Capture, Preview } from './Capture';
 import { useKycT } from './common';
 import {
-  FILES_FOR, isSelfie, maySubmit, normaliseDocNumber, reasonKey, STATUS_KEY, validDateOfBirth, validDocNumber,
-  type Challenge, type DocType, type ImageKind, type KycStatusView,
+  FILES_FOR, isSelfie, kycStepsOf, maySubmit, normaliseDocNumber, reasonKey, STATUS_KEY, validDateOfBirth, validDocNumber,
+  type Challenge, type DocType, type ImageKind, type KycStatusView, type WizardStep,
 } from './model';
 import styles from './kyc.module.css';
 
@@ -47,7 +48,7 @@ export function Component() {
 
   const s = status.data;
   return (
-    <div className={styles.narrow}>
+    <div className={maySubmit(s) ? styles.page : styles.narrow}>
       <h1>{t('kyc.title')}</h1>
       <StatusBar status={s} />
       {maySubmit(s) ? <Wizard /> : <AfterSubmission status={s} />}
@@ -124,7 +125,7 @@ function AfterSubmission({ status }: { status: KycStatusView }) {
   );
 }
 
-type Step = 'intro' | 'details' | ImageKind | 'review';
+type Step = WizardStep;
 
 function Wizard() {
   const { t, lang } = useKycT();
@@ -255,87 +256,131 @@ function Wizard() {
   const summary: SummaryItem[] = (Object.entries(detailErrors) as [string, string][]).map(([f, m]) => ({ id: `kyc-${f}`, message: m }));
 
   return (
-    <section aria-labelledby="kyc-step-title" className={styles.wizard}>
-      <p className={styles.progress}>{t('wizard.progress', { n: toLocalDigits(String(index + 1), lang), total: toLocalDigits(String(steps.length), lang) })}</p>
-      <h2 id="kyc-step-title" ref={heading} tabIndex={-1} className={styles.stepTitle}>{t(`step.${step}`)}</h2>
-      {message && <FormMessage kind="error">{message}</FormMessage>}
+    <div className={styles.layout}>
+      <section aria-labelledby="kyc-step-title" className={styles.wizard}>
+        <Steps step={step} />
+        <p className={styles.progress}>{t('wizard.progress', { n: toLocalDigits(String(index + 1), lang), total: toLocalDigits(String(steps.length), lang) })}</p>
+        <h2 id="kyc-step-title" ref={heading} tabIndex={-1} className={styles.stepTitle}>{t(`step.${step}`)}</h2>
+        {message && <FormMessage kind="error">{message}</FormMessage>}
 
-      {step === 'intro' && (
+        {step === 'intro' && (
+          <div>
+            <p>{t('intro.lead')}</p>
+            <ul>
+              {(['document', 'both_sides', 'selfie', 'light', 'whole', 'time'] as const).map((k) => <li key={k}>{t(`intro.${k}`)}</li>)}
+            </ul>
+            <p>{t('intro.privacy')}</p>
+          </div>
+        )}
+
+        {step === 'details' && (
+          <form id="kyc-details" onSubmit={next} noValidate>
+            <ErrorSummary title={t('form.errors_title')} items={summary} />
+            <fieldset className={styles.choice}>
+              <legend>{t('details.type')}</legend>
+              {(['nid', 'passport'] as const).map((d) => (
+                <div key={d}>
+                  <input id={`kyc-type-${d}`} type="radio" name="docType" value={d} checked={docType === d}
+                    onChange={() => { setDocType(d); setImages({}); }} />
+                  <label htmlFor={`kyc-type-${d}`}>{t(`details.type.${d}`)}</label>
+                </div>
+              ))}
+            </fieldset>
+            <TextField id="kyc-docNumber" label={t(`details.number.${docType}`)} hint={t(`details.number_hint.${docType}`)}
+              value={details.docNumber} onChange={set('docNumber')} error={detailErrors.docNumber} autoComplete="off" maxLength={30} />
+            <TextField id="kyc-fullName" label={t('details.name')} hint={t('details.name_hint')} value={details.fullName}
+              onChange={set('fullName')} error={detailErrors.fullName} autoComplete="name" maxLength={100} />
+            <TextField id="kyc-dateOfBirth" label={t('details.dob')} hint={t('details.dob_hint')} value={details.dateOfBirth}
+              onChange={set('dateOfBirth')} error={detailErrors.dateOfBirth} type="date" autoComplete="bday" />
+          </form>
+        )}
+
+        {isImage(step) && (
+          <>
+            {step === 'selfie_action' && challenge && (
+              <p className={styles.action} role="status">{t('action.do', { action: t(`action.${challenge.action}`) })}</p>
+            )}
+            {(step !== 'selfie_action' || challenge) && (
+              <Capture key={step} id={`kyc-${step}`} title={t(`image.${step}.title`)} labelledBy="kyc-step-title" hint={t(`image.${step}.hint`)}
+                facing={isSelfie(step) ? 'user' : 'environment'} frame={isSelfie(step) ? 'selfie' : docType} allowFile={!isSelfie(step)} value={images[step] ?? null}
+                onChange={setImage(step)} error={imageErrors[step]} />
+            )}
+          </>
+        )}
+
+        {step === 'review' && (
+          <div>
+            <dl className={styles.facts}>
+              <div><dt>{t('details.type')}</dt><dd>{t(`details.type.${docType}`)}</dd></div>
+              <div><dt>{t(`details.number.${docType}`)}</dt><dd>{normaliseDocNumber(details.docNumber)}</dd></div>
+              <div><dt>{t('details.name')}</dt><dd>{details.fullName.trim()}</dd></div>
+              <div><dt>{t('details.dob')}</dt><dd>{toLocalDigits(details.dateOfBirth, lang)}</dd></div>
+            </dl>
+            <ul className={styles.thumbs}>
+              {FILES_FOR[docType].map((k) => images[k] && (
+                <li key={k}><Preview image={images[k]!} alt={t(`image.${k}.title`)} /><span>{t(`image.${k}.title`)}</span></li>
+              ))}
+            </ul>
+            <p>{t('review.once')}</p>
+          </div>
+        )}
+
+        <div className={styles.nav}>
+          {index > 0 && <button type="button" className={styles.secondary} onClick={back} disabled={busy}>{t('wizard.back')}</button>}
+          {step === 'review'
+            ? (
+              <button type="button" className={styles.primary} onClick={() => void submit()} disabled={busy || waitFor > 0 || !challenge}
+                aria-busy={busy || undefined}>
+                {waitFor > 0 ? t('wizard.wait', { seconds: toLocalDigits(String(waitFor), lang) }) : t('review.submit')}
+              </button>
+            )
+            : step === 'details'
+              ? <button type="submit" form="kyc-details" className={styles.primary}>{t('wizard.next')}</button>
+              : <button type="button" className={styles.primary} onClick={() => next()} disabled={!canGoOn}>{t(step === 'intro' ? 'intro.start' : 'wizard.next')}</button>}
+        </div>
+      </section>
+      {step !== 'intro' && <Side />}
+    </div>
+  );
+}
+
+/** The four steps above the camera (AC-KYC-1): done, now or still to come, in words as well. */
+function Steps({ step }: { step: Step }) {
+  const { t, lang } = useKycT();
+  return (
+    <ol className={styles.steps} aria-label={t('steps.label')}>
+      {kycStepsOf(step).map((s, i) => (
+        <li key={s.key} className={styles[s.state]} aria-current={s.state === 'current' ? 'step' : undefined}>
+          <span className={styles.dot} aria-hidden="true">{s.state === 'done' ? '' : toLocalDigits(String(i + 1), lang)}</span>
+          <span>{t(`steps.${s.key}`)}</span>
+          <span className={styles.visuallyHidden}>{t(`steps.state.${s.state}`)}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/** The side panel (AC-KYC-3): the photo rules, and who sees the ID. The intro says the same, so it is not repeated there. */
+function Side() {
+  const { t } = useKycT();
+  return (
+    <aside className={styles.side}>
+      <section className={styles.rules} aria-labelledby="kyc-rules-title">
+        <h2 id="kyc-rules-title">{t('side.rules_title')}</h2>
+        <ul>{(['document', 'whole', 'light', 'time'] as const).map((k) => <li key={k}>{t(`intro.${k}`)}</li>)}</ul>
+      </section>
+      <section className={styles.private} aria-labelledby="kyc-private-title">
+        <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" focusable="false">
+          <path d="M10 1.5 L17 4.2 V9.4 C17 13.6 14 17 10 18.5 C6 17 3 13.6 3 9.4 V4.2 Z" fill="currentColor" />
+          <path d="M6.8 10 l2.2 2.2 l4.2 -4.6" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
         <div>
-          <p>{t('intro.lead')}</p>
-          <ul>
-            {(['document', 'both_sides', 'selfie', 'light', 'whole', 'time'] as const).map((k) => <li key={k}>{t(`intro.${k}`)}</li>)}
-          </ul>
+          <h2 id="kyc-private-title">{t('side.private_title')}</h2>
           <p>{t('intro.privacy')}</p>
         </div>
-      )}
-
-      {step === 'details' && (
-        <form id="kyc-details" onSubmit={next} noValidate>
-          <ErrorSummary title={t('form.errors_title')} items={summary} />
-          <fieldset className={styles.choice}>
-            <legend>{t('details.type')}</legend>
-            {(['nid', 'passport'] as const).map((d) => (
-              <div key={d}>
-                <input id={`kyc-type-${d}`} type="radio" name="docType" value={d} checked={docType === d}
-                  onChange={() => { setDocType(d); setImages({}); }} />
-                <label htmlFor={`kyc-type-${d}`}>{t(`details.type.${d}`)}</label>
-              </div>
-            ))}
-          </fieldset>
-          <TextField id="kyc-docNumber" label={t(`details.number.${docType}`)} hint={t(`details.number_hint.${docType}`)}
-            value={details.docNumber} onChange={set('docNumber')} error={detailErrors.docNumber} autoComplete="off" maxLength={30} />
-          <TextField id="kyc-fullName" label={t('details.name')} hint={t('details.name_hint')} value={details.fullName}
-            onChange={set('fullName')} error={detailErrors.fullName} autoComplete="name" maxLength={100} />
-          <TextField id="kyc-dateOfBirth" label={t('details.dob')} hint={t('details.dob_hint')} value={details.dateOfBirth}
-            onChange={set('dateOfBirth')} error={detailErrors.dateOfBirth} type="date" autoComplete="bday" />
-        </form>
-      )}
-
-      {isImage(step) && (
-        <>
-          {step === 'selfie_action' && challenge && (
-            <p className={styles.action} role="status">{t('action.do', { action: t(`action.${challenge.action}`) })}</p>
-          )}
-          {(step !== 'selfie_action' || challenge) && (
-            <Capture key={step} id={`kyc-${step}`} title={t(`image.${step}.title`)} labelledBy="kyc-step-title" hint={t(`image.${step}.hint`)}
-              facing={isSelfie(step) ? 'user' : 'environment'} allowFile={!isSelfie(step)} value={images[step] ?? null}
-              onChange={setImage(step)} error={imageErrors[step]} />
-          )}
-        </>
-      )}
-
-      {step === 'review' && (
-        <div>
-          <dl className={styles.facts}>
-            <div><dt>{t('details.type')}</dt><dd>{t(`details.type.${docType}`)}</dd></div>
-            <div><dt>{t(`details.number.${docType}`)}</dt><dd>{normaliseDocNumber(details.docNumber)}</dd></div>
-            <div><dt>{t('details.name')}</dt><dd>{details.fullName.trim()}</dd></div>
-            <div><dt>{t('details.dob')}</dt><dd>{toLocalDigits(details.dateOfBirth, lang)}</dd></div>
-          </dl>
-          <ul className={styles.thumbs}>
-            {FILES_FOR[docType].map((k) => images[k] && (
-              <li key={k}><Preview image={images[k]!} alt={t(`image.${k}.title`)} /><span>{t(`image.${k}.title`)}</span></li>
-            ))}
-          </ul>
-          <p>{t('review.once')}</p>
-        </div>
-      )}
-
-      <div className={styles.nav}>
-        {index > 0 && <button type="button" className={styles.secondary} onClick={back} disabled={busy}>{t('wizard.back')}</button>}
-        {step === 'review'
-          ? (
-            <button type="button" className={styles.primary} onClick={() => void submit()} disabled={busy || waitFor > 0 || !challenge}
-              aria-busy={busy || undefined}>
-              {waitFor > 0 ? t('wizard.wait', { seconds: toLocalDigits(String(waitFor), lang) }) : t('review.submit')}
-            </button>
-          )
-          : step === 'details'
-            ? <button type="submit" form="kyc-details" className={styles.primary}>{t('wizard.next')}</button>
-            : <button type="button" className={styles.primary} onClick={() => next()} disabled={!canGoOn}>{t(step === 'intro' ? 'intro.start' : 'wizard.next')}</button>}
-      </div>
-    </section>
+      </section>
+      <p className={styles.after}>{t('side.after')}</p>
+    </aside>
   );
 }
 

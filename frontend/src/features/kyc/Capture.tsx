@@ -1,6 +1,7 @@
 // One image of the wizard (FR-KYC-02; section 5.2): the camera, a preview and a retake. When the
 // camera is refused or missing, the wizard says how to allow it and, for documents only, offers a file
-// from the device; a selfie is never taken from a file.
+// from the device; a selfie is never taken from a file. The view sits in a dark stage with a guide for the card, the
+// passport page or the face (docs/design/10_visual.md, section 7.9).
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { FormMessage } from '../../shared/form';
 import { cameraProblem, IMAGE_TYPES, MAX_IMAGE_BYTES, stopStream, useCamera, type CameraProblem, type Facing } from './camera';
@@ -15,6 +16,8 @@ interface Props {
   labelledBy: string;
   hint: string;
   facing: Facing;
+  /** the guide drawn over the camera view: a card, a passport page or an oval for the face */
+  frame: 'nid' | 'passport' | 'selfie';
   allowFile: boolean;
   value: Blob | null;
   onChange: (image: Blob | null) => void;
@@ -22,7 +25,7 @@ interface Props {
   error?: string | null;
 }
 
-export function Capture({ id, title, labelledBy, hint, facing, allowFile, value, onChange, error }: Props) {
+export function Capture({ id, title, labelledBy, hint, facing, frame, allowFile, value, onChange, error }: Props) {
   const { t } = useKycT();
   const camera = useCamera();
   const video = useRef<HTMLVideoElement>(null);
@@ -81,21 +84,21 @@ export function Capture({ id, title, labelledBy, hint, facing, allowFile, value,
     <div role="group" aria-labelledby={labelledBy} className={styles.capture}>
       <p>{hint}</p>
       {shown && <FormMessage kind="error">{shown}</FormMessage>}
-      {value
-        ? (
-          <>
-            <Preview image={value} alt={t('capture.preview_alt', { what: title })} />
-            <button type="button" className={styles.secondary} onClick={() => { onChange(null); void start(); }}>{t('capture.retake')}</button>
-          </>
-        )
-        : stream
-          ? (
-            <>
-              <video ref={video} className={styles.video} autoPlay playsInline muted aria-label={t('capture.camera_view')} onLoadedData={() => setReady(true)} />
-              <button type="button" className={styles.primary} onClick={() => void take()} disabled={busy || !ready}>{t('capture.take')}</button>
-            </>
-          )
-          : <button type="button" className={styles.primary} onClick={() => void start()} disabled={busy}>{t('capture.start')}</button>}
+      {/* the camera view, darkened around the guide with the instruction in it (AC-KYC-2) */}
+      <div className={`${styles.stage} ${frame === 'selfie' ? styles.selfieStage : ''}`}>
+        {value
+          ? <Preview image={value} alt={t('capture.preview_alt', { what: title })} />
+          : stream && <video ref={video} className={styles.video} autoPlay playsInline muted aria-label={t('capture.camera_view')} onLoadedData={() => setReady(true)} />}
+        {!value && <span className={frame === 'selfie' ? styles.oval : styles.card} aria-hidden="true" />}
+        {!value && <p className={styles.frameText}>{t(`frame.${frame}`)}</p>}
+      </div>
+      <div className={styles.nav}>
+        {value
+          ? <button type="button" className={styles.secondary} onClick={() => { onChange(null); void start(); }}>{t('capture.retake')}</button>
+          : stream
+            ? <button type="button" className={styles.primary} onClick={() => void take()} disabled={busy || !ready}>{t('capture.take')}</button>
+            : <button type="button" className={styles.primary} onClick={() => void start()} disabled={busy}>{t('capture.start')}</button>}
+      </div>
       {problem && !value && (
         <FormMessage kind="info">
           <p>{t(`capture.problem.${problem}`)}</p>
@@ -104,8 +107,8 @@ export function Capture({ id, title, labelledBy, hint, facing, allowFile, value,
       )}
       {allowFile && !value && problem && (
         <div className={styles.file}>
-          <label htmlFor={`${id}-file`}>{t('capture.choose_file')}</label>
           <input id={`${id}-file`} type="file" accept={IMAGE_TYPES.join(',')} onChange={fromFile} />
+          <label htmlFor={`${id}-file`}>{t('capture.choose_file')}</label>
         </div>
       )}
     </div>

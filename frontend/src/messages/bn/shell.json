@@ -40,5 +40,6 @@
   "shell.account_tabs.label": "আপনার অ্যাকাউন্ট",
   "shell.account_tabs.profile": "প্রোফাইল",
   "shell.account_tabs.security": "নিরাপত্তা",
-  "shell.account_tabs.privacy": "আপনার তথ্য"
+  "shell.account_tabs.privacy": "আপনার তথ্য",
+  "shell.kyc_later": "পরে শেষ করুন"
 }

@@ -84,5 +84,6 @@
   "secure.error.takeover-not-in-progress": "নিয়ন্ত্রণ নেওয়া এখন চলছে না।",
   "secure.error.window-ended": "নিয়ন্ত্রণ নেওয়ার সময় শেষ।",
   "secure.error.recovery-email-confirmed": "আপনি রিকভারি ই-মেইল বদলানো নিশ্চিত করেছেন, তাই এটি আর সম্ভব নয়।",
-  "secure.error.rekey-used": "আবার পাঠানোর একমাত্র অনুরোধটি ব্যবহার হয়ে গেছে।"
+  "secure.error.rekey-used": "আবার পাঠানোর একমাত্র অনুরোধটি ব্যবহার হয়ে গেছে।",
+  "secure.home_link": "TrustBazaar হোম"
 }
