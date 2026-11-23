@@ -3,6 +3,7 @@
 // page load. Route rules only decide what the client offers; the server authorises every request
 // (SEC-ACC-01).
 import { StrictMode } from 'react';
+import { MantineProvider } from '@mantine/core';
 import { createBrowserRouter, RouterProvider, type RouteObject } from 'react-router-dom';
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import { ApiContext, createDocumentApi, type Api, type DocumentKind } from './api';
@@ -15,6 +16,7 @@ import { ME_KEY, STAFF_ME_KEY } from './me';
 import { createSessionNotice, SessionContext, type SessionNotice } from './session';
 import { createStepUpBroker, StepUpContext, type StepUpBroker } from './stepUp';
 import { Shell, type ShellProps } from './Shell';
+import { MANTINE_PROVIDER_PROPS } from './theme';
 
 type Router = ReturnType<typeof createBrowserRouter>;
 
@@ -86,19 +88,21 @@ export function createDocument(setup: DocumentSetup, { createRouter = createBrow
 export function DocumentRoot({ doc, lang }: { doc: ClientDocument; lang?: Lang }) {
   return (
     <StrictMode>
-      <LanguageProvider initial={lang}>
-        <ApiContext.Provider value={doc.api}>
-          <QueryClientProvider client={doc.queryClient}>
-            <SessionContext.Provider value={doc.session}>
-              <StepUpContext.Provider value={doc.stepUp}>
-                <LiveContext.Provider value={doc.live}>
-                  <RouterProvider router={doc.router} />
-                </LiveContext.Provider>
-              </StepUpContext.Provider>
-            </SessionContext.Provider>
-          </QueryClientProvider>
-        </ApiContext.Provider>
-      </LanguageProvider>
+      <MantineProvider {...MANTINE_PROVIDER_PROPS}>
+        <LanguageProvider initial={lang}>
+          <ApiContext.Provider value={doc.api}>
+            <QueryClientProvider client={doc.queryClient}>
+              <SessionContext.Provider value={doc.session}>
+                <StepUpContext.Provider value={doc.stepUp}>
+                  <LiveContext.Provider value={doc.live}>
+                    <RouterProvider router={doc.router} />
+                  </LiveContext.Provider>
+                </StepUpContext.Provider>
+              </SessionContext.Provider>
+            </QueryClientProvider>
+          </ApiContext.Provider>
+        </LanguageProvider>
+      </MantineProvider>
     </StrictMode>
   );
 }

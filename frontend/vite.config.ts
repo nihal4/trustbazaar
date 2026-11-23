@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
 // docs/design/08_frontend.pdf, "Build and the Web Container". Four documents, each its own bundle (section 3.1):
@@ -19,6 +19,9 @@ export default defineConfig({
         secure: resolve(__dirname, 'secure.html'),
       },
     },
+  },
+  test: {
+    setupFiles: ['src/testing/setup.ts'],
   },
   server: {
     port: 5173,

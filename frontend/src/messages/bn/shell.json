@@ -27,5 +27,14 @@
   "shell.notifications": "নোটিফিকেশন",
   "shell.notifications_unread": "টি পড়া হয়নি",
   "shell.messages": "বার্তা",
-  "shell.orders": "অর্ডার"
+  "shell.orders": "অর্ডার",
+  "shell.sell": "বিক্রি করুন",
+  "shell.tab.home": "হোম",
+  "shell.tab.search": "খুঁজুন",
+  "shell.tab.sell": "বিক্রি",
+  "shell.tabs.label": "প্রধান",
+  "shell.footer.tagline": "বাংলাদেশের একটি মার্কেটপ্লেস, যেখানে ক্রেতা পণ্য হাতে না পাওয়া পর্যন্ত প্রতিটি পেমেন্ট আটকে রাখা হয়।",
+  "shell.footer.nav": "সাইটের লিংক",
+  "shell.footer.terms": "শর্তাবলি",
+  "shell.footer.privacy": "গোপনীয়তা"
 }

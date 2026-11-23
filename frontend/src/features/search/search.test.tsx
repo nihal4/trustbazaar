@@ -153,7 +153,7 @@ describe('search', () => {
   it('NFR-USE-04 the page in Bangla, with Bangla digits and category names', async () => {
     renderApp('/search?category=1', backend(), 'bn');
     expect(await screen.findByRole('heading', { name: 'যাচাই করা বিক্রেতাদের কাছ থেকে পুরোনো জিনিস খুঁজুন' })).toBeTruthy();
-    expect((await screen.findAllByRole('listitem')).some((li) => li.textContent?.includes('৩ কিমি দূরে'))).toBe(true);
+    await waitFor(() => expect(within(screen.getByRole('main')).getAllByRole('listitem').some((li) => li.textContent?.includes('৩ কিমি দূরে'))).toBe(true));
     expect(screen.getAllByText('৳১৫,০০০').length).toBeGreaterThan(0);
     expect(within(screen.getByLabelText('বিভাগ')).getByRole('option', { name: 'ফোন' })).toBeTruthy();
   });
