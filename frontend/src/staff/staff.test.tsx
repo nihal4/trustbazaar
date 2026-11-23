@@ -143,20 +143,24 @@ describe('the queues', () => {
     });
     const doc = open('/staff', be);
     await waitFor(() => expect(doc.router.state.location.pathname).toBe('/staff/queues/disputes'));
-    const tabs = screen.getAllByRole('navigation', { name: 'Queues' })[0];
-    expect(within(tabs).getAllByRole('link').map((a) => a.textContent)).toEqual([
+    const nav = screen.getByRole('navigation', { name: 'Console' });
+    await waitFor(() => expect(within(nav).getByRole('link', { name: /^Disputes/ }).textContent).toBe('Disputes2 waiting'));
+    expect(within(nav).getAllByRole('link').map((a) => a.textContent?.replace(/\d+ waiting$/, ''))).toEqual([
       'Disputes', 'Reports', 'Flagged activity', 'KYC submissions', 'Listings in review', 'Ownership proofs', 'Bank payout-account checks', 'Payment discrepancies',
+      'Approvals', 'Terms',
     ]);
-    const rows = await screen.findAllByRole('listitem', {}, { timeout: 3000 }).then(() => screen.getByRole('region', { name: 'Disputes' }).querySelectorAll('ol > li'));
+    const table = await screen.findByRole('table');
+    const rows = within(table).getAllByRole('row').slice(1);
+    expect(within(table).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Case', 'What it is', 'Amount', 'Waiting', 'Who has it', 'Action']);
     expect(rows).toHaveLength(2);
-    expect(rows[0].textContent).toMatch(/^Overdue · 3 d 3 h old · waiting since /);
-    expect(rows[0].textContent).toContain('৳25,000');
-    expect(rows[0].textContent).toContain("needs a second operator's approval");
-    expect(rows[0].textContent).toContain('not claimed');
-    expect(rows[1].textContent).toMatch(/^3 h old/);
-    expect(rows[1].textContent).toContain('claimed by you');
-    expect(within(rows[1] as HTMLElement).queryByRole('button')).toBeNull();
-    fireEvent.click(within(tabs).getByRole('link', { name: 'Payment discrepancies' }));
+    const cells = (r: HTMLElement) => [within(r).getByRole('rowheader'), ...within(r).getAllByRole('cell')].map((c) => c.textContent);
+    expect(cells(rows[0]).slice(0, 5)).toEqual(['Ref. d0000001', expect.stringContaining("needs a second operator's approval"), '৳25,000', expect.stringMatching(/^Overdue · 3 d 3 h oldwaiting since /), 'not claimed']);
+    expect(within(rows[0]).getByText(/^Overdue · 3 d 3 h old/).className).toMatch(/late/);   // a day or more: red, in words too
+    expect(cells(rows[1])[3]).toMatch(/^3 h old/);
+    expect(within(rows[1]).getByText(/^3 h old/).className).not.toMatch(/late/);
+    expect(cells(rows[1])[4]).toBe('claimed by you');
+    expect(within(rows[1]).queryByRole('button')).toBeNull();
+    fireEvent.click(within(nav).getByRole('link', { name: 'Payment discrepancies' }));
     expect(await screen.findByText('This queue is not available yet.')).toBeTruthy();
   });
 

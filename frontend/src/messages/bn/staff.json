@@ -550,5 +550,14 @@
   "staff.terms.add_screening": "একটি স্ক্রিনিং শব্দ যোগ করুন",
   "staff.terms.add_detection": "একটি শনাক্তকরণ শব্দ যোগ করুন",
   "staff.terms.incomplete": "শব্দটি দিন এবং এর ধরন বেছে নিন।",
-  "staff.terms.remove": "\"{term}\" সরান"
+  "staff.terms.remove": "\"{term}\" সরান",
+  "staff.nav.administration": "প্রশাসন",
+  "staff.nav.waiting": " অপেক্ষায়",
+  "staff.queue.col.case": "কেস",
+  "staff.queue.col.details": "বিষয়",
+  "staff.queue.col.amount": "পরিমাণ",
+  "staff.queue.col.waiting": "অপেক্ষা",
+  "staff.queue.col.who": "কার কাছে",
+  "staff.queue.col.action": "কাজ",
+  "staff.nav.more": "আরও"
 }
