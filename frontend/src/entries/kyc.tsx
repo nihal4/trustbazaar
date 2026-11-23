@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import { createDocument, DocumentRoot, signInInUserApp } from '../shared/document';
 import { kycRoutes } from '../features/kyc/routes';
+import '../shared/kit.css';
 import '../shared/tokens.css';
 
 // kyc.html: /account/kyc/*, the only document allowed to use the camera (SEC-WEB-02, FR-KYC-02;

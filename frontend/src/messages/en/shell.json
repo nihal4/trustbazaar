@@ -27,5 +27,14 @@
   "shell.notifications": "Notifications",
   "shell.notifications_unread": " unread",
   "shell.messages": "Messages",
-  "shell.orders": "Orders"
+  "shell.orders": "Orders",
+  "shell.sell": "Sell an item",
+  "shell.tab.home": "Home",
+  "shell.tab.search": "Search",
+  "shell.tab.sell": "Sell",
+  "shell.tabs.label": "Main",
+  "shell.footer.tagline": "A marketplace for Bangladesh where every payment is held until the buyer has the item.",
+  "shell.footer.nav": "Site links",
+  "shell.footer.terms": "Terms",
+  "shell.footer.privacy": "Privacy"
 }
