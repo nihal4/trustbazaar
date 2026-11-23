@@ -4,6 +4,7 @@ import { cleanup, configure, fireEvent, screen, waitFor, within } from '@testing
 import { placeholders } from '../../lib/i18n.js';
 import { fakeBackend, json, problem, renderApp, standInMe, type Call } from '../../testing/app';
 import { commissionOf, nearestArea, type Area, type EditableListing, type SellingTerms } from './sell';
+import { sellStepsOf } from './SellPage';
 import en from '../../messages/en/sell.json';
 import bn from '../../messages/bn/sell.json';
 
@@ -285,3 +286,23 @@ describe('the listing editor', () => {
     for (const k of Object.keys(en) as (keyof typeof en)[]) expect(placeholders(bn[k])).toEqual(placeholders(en[k]));
   });
 });
+
+describe('the listing editor in the Daylight design (U10-06)', () => {
+  it('FR-LST-09 the steps follow the draft: the item, then the photos up to the minimum, then publishing', () => {
+    const states = (l: EditableListing | null) => sellStepsOf(l, 2).map((x) => `${x.key}:${x.state}`).join(' ');
+    expect(states(null)).toBe('details:current photos:next publish:next');
+    expect(states(draft({ photos: [photo(1)] }))).toBe('details:done photos:current publish:next');
+    expect(states(draft({ photos: [photo(1), photo(2)] }))).toBe('details:done photos:done publish:current');
+    expect(states(draft({ itemKind: 'game_account' }))).toBe('details:done game:current publish:next');
+  });
+
+  it('FR-LST-09 a draft shows its steps, the first photo marked as the cover, and the formats on the add tile', async () => {
+    renderApp(`/sell/${ID}`, backend({ [`GET /listings/${ID}`]: json(200, draft({ photos: [photo(1), photo(2)] })) }));
+    const steps = await screen.findByRole('list', { name: 'Steps' });
+    expect(within(steps).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['The item(done)', 'Photos(done)', '3Publish(now)']);
+    const photos = screen.getByRole('region', { name: 'Photos' });
+    expect(within(photos).getAllByText('Cover')).toHaveLength(1);
+    expect(within(photos).getByText('JPEG, PNG or WebP')).toBeTruthy();
+  });
+});
+

@@ -123,8 +123,8 @@ Each screen keeps its current route, data and behaviour. "Done" means every crit
 
 ### 7.7 Sell (`/sell/new`, `/sell/:id`): `sell.jpg`
 
-- AC-SELL-1: The editor shows its sections as a vertical step list (category, photos, details, price and sale type, area and delivery, check and publish). On phones it is a single column with a step counter.
-- AC-SELL-2: The photo grid shows the cover badge, upload progress per photo and an "Add photos" tile with the accepted formats.
+- AC-SELL-1: A new or draft listing shows three steps (the item; its photos, or the game account's details; publishing), done, now or still to come, in words as well: in a column beside the panels on wide screens, in a row on phones. The sections stay as they are (Decisions log, U10-06).
+- AC-SELL-2: The photos are square tiles, the first marked "Cover" and a "Shows defects" tag where it applies, each with its remove button; the file input sits in a dashed "Add photos" tile with the accepted formats; the upload progress is announced as now.
 - AC-SELL-3: The commission note shows the rate in force (CP-25) and what the seller receives for the entered price.
 
 ### 7.8 Sign-in and account (`/signin`, `/register`, `/account/*`): `signin.jpg`
