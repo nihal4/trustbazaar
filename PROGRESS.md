@@ -295,7 +295,7 @@ Design: the Daylight canvas (home page, desktop and phone, in English and Bangla
 
 | ID | Task | Needs | Status | Owner | Branch / PR | Done | Notes |
 |---|---|---|---|---|---|---|---|
-| U10-01 | Visual design: palette, type, logo, components and a mockup of every key screen, each with acceptance criteria (`docs/design/10_visual.md`) | U8-11 | doing | Sabikun Nahar Sinthia | `feature/u10-01-visual-design` | | Daylight direction and the plum palette chosen by the user on 2026-11-23. |
+| U10-01 | Visual design: palette, type, logo, components and a mockup of every key screen, each with acceptance criteria (`docs/design/10_visual.md`) | U8-11 | review | Sabikun Nahar Sinthia | `feature/u10-01-visual-design`, #274 | | Daylight direction and the plum palette chosen by the user on 2026-11-23. |
 | U10-02 | Component kit: Mantine 8.3 with the TrustBazaar theme, self-hosted Schibsted Grotesk and Hind Siliguri, the shell (header, footer, phone tab bar) in all four entries, under the production CSP with Trusted Types and inside the 170 KB first-load budget | U10-01 | todo | | | | |
 | U10-03 | Home and search in the new design | U10-02 | todo | | | | |
 | U10-04 | Listing page and auction panel in the new design | U10-02 | todo | | | | |
