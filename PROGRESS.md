@@ -295,7 +295,7 @@ Design: the Daylight canvas (home page, desktop and phone, in English and Bangla
 
 | ID | Task | Needs | Status | Owner | Branch / PR | Done | Notes |
 |---|---|---|---|---|---|---|---|
-| U10-01 | Visual design: palette, type, logo, components and a mockup of every key screen, each with acceptance criteria (`docs/design/10_visual.md`) | U8-11 | review | Sabikun Nahar Sinthia | `feature/u10-01-visual-design`, #274 | | Daylight direction and the plum palette chosen by the user on 2026-11-23. |
+| U10-01 | Visual design: palette, type, logo, components and a mockup of every key screen, each with acceptance criteria (`docs/design/10_visual.md`) | U8-11 | done | Sabikun Nahar Sinthia | `feature/u10-01-visual-design`, #274 | 2026-11-23 | Daylight direction and the plum palette chosen by the user on 2026-11-23. Delivered: `docs/design/10_visual.md` (principles, colour tokens with their contrasts, Schibsted Grotesk and Hind Siliguri, shape and motion, the price-tag logo, the Mantine 8.3 component mapping, acceptance criteria for home, search, listing, auction, checkout, order and handover, sell, sign-in and account, the ID check and the staff console, and the whole-site criteria for U10-10) and preview images in `docs/design/10_visual/`; the originals are on the Daylight design canvas (#274). |
 | U10-02 | Component kit: Mantine 8.3 with the TrustBazaar theme, self-hosted Schibsted Grotesk and Hind Siliguri, the shell (header, footer, phone tab bar) in all four entries, under the production CSP with Trusted Types and inside the 170 KB first-load budget | U10-01 | todo | | | | |
 | U10-03 | Home and search in the new design | U10-02 | todo | | | | |
 | U10-04 | Listing page and auction panel in the new design | U10-02 | todo | | | | |
@@ -621,3 +621,4 @@ Append one line when a task becomes `done` (newest last).
 | 2026-11-18 | U8-07 | Sabikun Nahar Sinthia | #257, #258 |
 | 2026-11-22 | U8-10 | Sabikun Nahar Sinthia | #261, #262, #265 |
 | 2026-11-23 | U8-11 | Sabikun Nahar Sinthia | #267, #268, #269 |
+| 2026-11-23 | U10-01 | Sabikun Nahar Sinthia | #274 |
