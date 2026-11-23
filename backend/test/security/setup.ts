@@ -1,4 +1,5 @@
 import { randomInt, randomUUID } from 'crypto';
+import type { Type } from '@nestjs/common';
 // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const sharp = require('sharp') as typeof import('sharp').default;
 import { authenticator } from 'otplib';
@@ -27,10 +28,11 @@ export interface Suite {
   signedInStaff: (role: 'operator' | 'administrator') => Promise<{ s: Awaited<ReturnType<IdentityFixtures['staffAccount']>>; b: Browser }>;
 }
 
-export function suite(): Suite {
+/** `routes`: test-only controllers added to the file's backend (one backend per file, see SEC-INF-05). */
+export function suite(routes: Type<unknown>[] = []): Suite {
   const s = {} as Suite;
   beforeAll(async () => {
-    s.t = await startApp();
+    s.t = await startApp(routes);
     s.fx = await IdentityFixtures.open();
     s.cfg = loadConfig(process.env);
     s.origin = s.cfg.publicOrigin;
@@ -105,4 +107,33 @@ export async function draftListing(s: Suite, b: Browser, o: Record<string, unkno
   });
   if (r.status !== 201) throw new Error(`draft refused: ${r.status} ${await r.text()}`);
   return ((await r.json()) as { id: string }).id;
+}
+
+/** An active pickup listing at `price` poisha and the buyer's order awaiting payment, made through the API. */
+export async function pendingOrder(s: Suite, price = 1_500_000): Promise<{ buyer: Awaited<ReturnType<Suite['signedIn']>>; sellerId: string; orderId: string; total: string }> {
+  const sellerId = await s.fx.user({ kyc: 'verified' });
+  const [{ id: categoryId }] = await s.fx.query<{ id: number }>(
+    `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'Phones', 'ফোন', 'physical') RETURNING id`, [`pay-${randomUUID().slice(0, 8)}`]);
+  const [{ id: listingId }] = await s.fx.query<{ id: string }>(
+    `INSERT INTO listings.listings (seller_id, item_kind, sale_format, category_id, title, description, condition, no_visible_defects,
+        fulfilment_options, area_district, approx_lat, approx_lng, price, quantity_total, quantity_available)
+     VALUES ($1, 'physical', 'fixed_price', $2, 'Phone for the payment checks', 'A phone in good condition, written by the security tests.', 'used', true,
+        'pickup_only', 'Dhaka', 23.81, 90.41, $3, 1, 1) RETURNING id`, [sellerId, categoryId, price]);
+  for (const n of [1, 2]) await s.fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 1, 1)`, [listingId, n, randomUUID().replace(/-/g, '')]);
+  await s.fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [listingId]);
+  const buyer = await s.signedIn({ kyc: 'verified' });
+  const r = await buyer.b.post('/orders', { listingId, quantity: 1, fulfilment: 'self_pickup' });
+  if (r.status !== 201) throw new Error(`order refused: ${r.status} ${await r.text()}`);
+  const o = (await r.json()) as { id: string; total: string };
+  return { buyer, sellerId, orderId: o.id, total: o.total };
+}
+
+/** On the mock provider's page: choose the outcome; returns the callback the provider sends the browser to. */
+export async function decideOnMockPage(s: Suite, redirectUrl: string, outcome: 'succeeded' | 'failed' = 'succeeded'): Promise<URL> {
+  const page = new URL(redirectUrl);
+  const form = await fetch(s.t.url(page.pathname.replace('/api/v1', '') + page.search), {
+    method: 'POST', redirect: 'manual', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: `outcome=${outcome}`,
+  });
+  if (form.status !== 303) throw new Error(`mock page: ${form.status}`);
+  return new URL(form.headers.get('location')!);
 }
