@@ -23,7 +23,7 @@ describe('SEC-AUTH-10 password reset tokens', () => {
     // what a copy of the database holds does not work as a link
     for (const leaked of [rows[0].token_hash.toString('base64url'), rows[0].token_hash.toString('hex')]) {
       const r = await s.browser().post('/auth/password/reset', { token: leaked, newPassword: `stolen ${randomUUID()}` });
-      expect([400, 422]).toContain(r.status); // refused, as an invalid link or as no token at all
+      expect([400, 410, 422]).toContain(r.status); // refused, as an invalid link (410) or as no token at all
     }
     const all = await s.fx.query(`SELECT * FROM identity.one_time_tokens WHERE user_id = $1`, [a.userId]);
     expect(JSON.stringify(all)).not.toContain(token);
