@@ -111,5 +111,7 @@
   "listing.game_risk_title": "The publisher's rules",
   "listing.game_risk.1": "The game's publisher may forbid transferring accounts, and may suspend or ban an account that has changed hands.",
   "listing.game_risk.2": "TrustBazaar's protection covers the handover of the login details, your takeover of the account, and the seller taking the account back during the protection period.",
-  "listing.game_risk.3": "It does not cover any action by the publisher. If the publisher suspends or bans the account, you are not refunded."
+  "listing.game_risk.3": "It does not cover any action by the publisher. If the publisher suspends or bans the account, you are not refunded.",
+  "listing.promise.title": "Your money waits with us",
+  "listing.promise.text": "You pay TrustBazaar. The seller is paid only after you confirm you have the item."
 }
