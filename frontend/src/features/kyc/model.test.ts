@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { placeholders } from '../../lib/i18n.js';
 import en from '../../messages/en/kyc.json';
 import bn from '../../messages/bn/kyc.json';
-import { ACTIONS, maySubmit, normaliseDocNumber, reasonKey, REASONS, validDateOfBirth, validDocNumber, type KycStatusView } from './model';
+import { ACTIONS, kycStepsOf, maySubmit, normaliseDocNumber, reasonKey, REASONS, validDateOfBirth, validDocNumber, type KycStatusView } from './model';
 
 describe('document details', () => {
   it.each([
@@ -43,6 +43,17 @@ describe('who may submit', () => {
     expect(reasonKey('blacklisted')).toBe('other');
     expect(reasonKey('duplicate_identity')).toBe('duplicate_identity');
     expect(reasonKey('something_new')).toBe('other');
+  });
+});
+
+describe('the steps above the camera', () => {
+  it('NFR-USE-02 the wizard shows four steps, done, now or still to come, whatever screen it is on', () => {
+    const states = (s: Parameters<typeof kycStepsOf>[0]) => kycStepsOf(s).map((x) => `${x.key}:${x.state}`);
+    expect(states('intro')).toEqual(['details:current', 'document:next', 'selfies:next', 'send:next']);
+    expect(states('doc_back')).toEqual(['details:done', 'document:current', 'selfies:next', 'send:next']);
+    expect(states('passport_photo_page')).toEqual(['details:done', 'document:current', 'selfies:next', 'send:next']);
+    expect(states('selfie_action')).toEqual(['details:done', 'document:done', 'selfies:current', 'send:next']);
+    expect(states('review')).toEqual(['details:done', 'document:done', 'selfies:done', 'send:current']);
   });
 });
 

@@ -294,3 +294,9 @@
   .langSwitch { padding-inline: 0.5rem; }
   .wordmark { font-size: 1rem; }
 }
+
+/* The KYC wizard's way out (docs/design/10_visual.md, section 7.9, AC-KYC-1): plain words on the right of the slim
+   header; on narrow phones the document's name gives way to it. */
+.exit { display: inline-flex; align-items: center; min-height: 44px; color: var(--tb-text); font-weight: 700; white-space: nowrap; text-underline-offset: 3px; }
+@media (max-width: 30rem) { .docTitle { display: none; } }
+@media (max-width: 26rem) { .withExit .wordmark { display: none; } .withExit .exit { margin-left: auto; } }

@@ -60,3 +60,18 @@ export function reasonKey(reason: string): string {
 }
 
 export const ACTIONS = ['turn_head_left', 'turn_head_right', 'look_up', 'smile', 'blink_twice'] as const;
+
+export type WizardStep = 'intro' | 'details' | ImageKind | 'review';
+export type StepGroup = 'details' | 'document' | 'selfies' | 'send';
+
+/**
+ * The four steps shown above the camera (docs/design/10_visual.md, section 7.9, AC-KYC-1): the wizard's screens in
+ * groups (what you need and the details; the document's photos; the two selfies; checking and sending), each done,
+ * now or still to come.
+ */
+export function kycStepsOf(step: WizardStep): { key: StepGroup; state: 'done' | 'current' | 'next' }[] {
+  const group: StepGroup = step === 'intro' || step === 'details' ? 'details' : step === 'review' ? 'send' : isSelfie(step) ? 'selfies' : 'document';
+  const order: StepGroup[] = ['details', 'document', 'selfies', 'send'];
+  const at = order.indexOf(group);
+  return order.map((key, i) => ({ key, state: i < at ? 'done' : i === at ? 'current' : 'next' }));
+}

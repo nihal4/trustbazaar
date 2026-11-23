@@ -137,7 +137,7 @@ export function renderApp(at: string, be: ReturnType<typeof fakeBackend>, lang: 
 
 /** Any user document (the user app, kyc.html) on a memory router; `wrap` adds providers around it. */
 export function renderDocument(at: string, be: ReturnType<typeof fakeBackend>, lang: 'en' | 'bn',
-  setup: { routes: RouteObject[]; home: { path: string; sameDocument: boolean }; accountLinks?: boolean; titleKey?: string },
+  setup: { routes: RouteObject[]; home: { path: string; sameDocument: boolean }; accountLinks?: boolean; titleKey?: string; exit?: { href: string; labelKey: string } },
   wrap: (root: ReactNode) => ReactNode = (r) => r, socket?: FakeSocket) {
   const doc = createDocument(
     { kind: 'user', signIn: signInHere, ...setup },
