@@ -1,15 +1,16 @@
-// Home and search (docs/design/08_frontend.pdf section 7.3; IF-UI-03; FR-SRC-01 to FR-SRC-05; U8-04). The filters
+// Search (docs/design/08_frontend.pdf section 7.3; IF-UI-03; FR-SRC-01 to FR-SRC-05; U8-04; Daylight design,
+// docs/design/10_visual.md, section 7.2: the words on top, the filters in a column beside the results on wide screens
+// and behind a "Show filters" button on phones, the active filters as removable chips). The filters
 // live in the URL, so a search can be shared and the back button works; pages are added with "Show more" rather
 // than endless scrolling, so the footer stays reachable. Distances come from the server in whole kilometres. The
 // location is asked for only when "Use my location" is pressed (I-58); signed-in users otherwise search from the
 // area saved in their account (Unit 3). The area list arrives with Unit 4's /delivery/areas (U4-02).
 import { useState, type FormEvent } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { Button } from '@mantine/core';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { formatMoney, parseTaka, toLocalDigits } from '../../lib/money.js';
-import { formatCountdown } from '../../lib/time.js';
+import { formatMoney, parseTaka } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
-import { useServerNow } from '../../shared/clock';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
 import { useT } from '../../shared/language/Language';
@@ -19,6 +20,7 @@ import { problemName } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import en from '../../messages/en/search.json';
 import bn from '../../messages/bn/search.json';
+import { ListingCard } from './ListingCard';
 import styles from './search.module.css';
 
 const CATALOGUES = { en, bn };
@@ -88,46 +90,46 @@ export function Component() {
     retry: false,
   });
 
+  const items = pages.data?.pages.flatMap((p) => p.items) ?? [];
   return (
     <div className={styles.page}>
-      <h1>{t('search.title')}</h1>
+      <h1 className={styles.title}>{t('search.title')}</h1>
       <p className={styles.lead}>{t('search.lead')}</p>
       <Filters key={key} t={t} lang={lang} params={query} categories={categories.data ?? []} signedIn={me.isSuccess}
         onSearch={(next) => setParams(next)} />
-      {pages.isPending && <p role="status">{t('shell.loading')}</p>}
+      <ActiveFilters t={t} lang={lang} params={query} categories={categories.data ?? []} onChange={(next) => setParams(next)} />
+      {pages.isPending && <p role="status" className={styles.status}>{t('shell.loading')}</p>}
       {pages.isError && (
-        <FormMessage kind="error">
-          {problemName(pages.error) === 'validation-failed' && (query.get('sort') === 'distance' || query.has('maxKm'))
-            ? t('search.needs_point') : errorText(pages.error, t, lang)}
-        </FormMessage>
+        <div className={styles.status}>
+          <FormMessage kind="error">
+            {problemName(pages.error) === 'validation-failed' && (query.get('sort') === 'distance' || query.has('maxKm'))
+              ? t('search.needs_point') : errorText(pages.error, t, lang)}
+          </FormMessage>
+        </div>
       )}
       {pages.data && (
-        <>
+        <div className={styles.results}>
           {pages.data.pages[0].featured.length > 0 && (
             <section aria-labelledby="featured-title" className={styles.featured}>
               <h2 id="featured-title">{t('search.featured')}</h2>
               <p className={styles.hint}>{t('search.featured_note')}</p>
               <ul className={styles.cards}>
-                {pages.data.pages[0].featured.map((c) => <Card key={c.id} c={c} t={t} lang={lang} />)}
+                {pages.data.pages[0].featured.map((c) => <ListingCard key={c.id} c={c} t={t} lang={lang} />)}
               </ul>
             </section>
           )}
           <section aria-labelledby="results-title">
             <h2 id="results-title">{t('search.results')}</h2>
-            {pages.data.pages[0].items.length === 0
-              ? <p>{t('search.empty')}</p>
-              : (
-                <ul className={styles.cards}>
-                  {pages.data.pages.flatMap((p) => p.items).map((c) => <Card key={c.id} c={c} t={t} lang={lang} />)}
-                </ul>
-              )}
+            {items.length === 0
+              ? <p className={styles.empty}>{t('search.empty')}</p>
+              : <ul className={styles.cards}>{items.map((c) => <ListingCard key={c.id} c={c} t={t} lang={lang} />)}</ul>}
             {pages.hasNextPage && (
-              <button type="button" className={styles.more} disabled={pages.isFetchingNextPage} onClick={() => void pages.fetchNextPage()}>
-                {t('search.more')}
-              </button>
+              <div className={styles.moreRow}>
+                <Button variant="default" loading={pages.isFetchingNextPage} onClick={() => void pages.fetchNextPage()}>{t('search.more')}</Button>
+              </div>
             )}
           </section>
-        </>
+        </div>
       )}
     </div>
   );
@@ -146,6 +148,7 @@ function Filters({ t, lang, params, categories, signedIn, onSearch }: {
   const [point, setPoint] = useState(() => (params.get('lat') && params.get('lng') ? { lat: params.get('lat')!, lng: params.get('lng')! } : null));
   const [locating, setLocating] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
   const set = (k: keyof typeof v) => (value: string) => setV((x) => ({ ...x, [k]: value }));
 
   const submit = (e?: FormEvent, at = point) => {
@@ -191,43 +194,86 @@ function Filters({ t, lang, params, categories, signedIn, onSearch }: {
   return (
     <form role="search" className={styles.filters} onSubmit={submit} noValidate>
       <div className={styles.words}>
-        <label htmlFor="search-q">{t('search.words')}</label>
+        <label htmlFor="search-q" className={styles.wordsLabel}>{t('search.words')}</label>
         <input id="search-q" type="search" value={v.q} maxLength={100} onChange={(e) => set('q')(e.target.value)} />
-        <button type="submit">{t('search.submit')}</button>
+        <button type="submit" className={styles.submit}>{t('search.submit')}</button>
       </div>
-      {message && <FormMessage kind="error">{message}</FormMessage>}
-      <fieldset className={styles.grid}>
+      {message && <div className={styles.msg}><FormMessage kind="error">{message}</FormMessage></div>}
+      <button type="button" className={styles.toggle} aria-expanded={open} aria-controls="search-filters" onClick={() => setOpen((o) => !o)}>
+        {open ? t('search.hide_filters') : t('search.show_filters')}
+      </button>
+      <fieldset id="search-filters" className={open ? `${styles.grid} ${styles.open}` : styles.grid}>
         <legend>{t('search.filters')}</legend>
         <Select id="search-category" label={t('search.category')} value={v.category} onChange={set('category')} any={t('search.any')}
-          options={categoryTree(categories).filter(({ c }) => c.selectable).map(({ c, depth }) => [String(c.id), `${' '.repeat(depth)}${name(c)}`])} />
+          options={categoryTree(categories).filter(({ c }) => c.selectable).map(({ c, depth }) => [String(c.id), `${'\u00a0'.repeat(depth * 2)}${name(c)}`])} />
         <Select id="search-kind" label={t('search.item_kind')} value={v.itemKind} onChange={set('itemKind')} any={t('search.any')}
           options={(['physical', 'game_account'] as const).map((k) => [k, t(`search.item_kind.${k}`)])} />
         <Select id="search-format" label={t('search.sale_format')} value={v.saleFormat} onChange={set('saleFormat')} any={t('search.any')}
           options={(['fixed_price', 'auction'] as const).map((k) => [k, t(`search.sale_format.${k}`)])} />
         <Select id="search-condition" label={t('search.condition')} value={v.condition} onChange={set('condition')} any={t('search.any')}
           options={CONDITIONS.map((k) => [k, t(`search.condition.${k}`)])} />
-        <Text id="search-min" label={t('search.min_price')} value={v.minPrice} onChange={set('minPrice')} />
-        <Text id="search-max" label={t('search.max_price')} value={v.maxPrice} onChange={set('maxPrice')} />
+        <div className={styles.pair}>
+          <Text id="search-min" label={t('search.min_price')} value={v.minPrice} onChange={set('minPrice')} />
+          <Text id="search-max" label={t('search.max_price')} value={v.maxPrice} onChange={set('maxPrice')} />
+        </div>
         <Text id="search-km" label={t('search.max_km')} value={v.maxKm} onChange={set('maxKm')} />
         <Select id="search-sort" label={t('search.sort')} value={v.sort} onChange={set('sort')} any={t(v.q.trim() ? 'search.sort.relevance' : 'search.sort.newest')}
           options={SORTS.map((k) => [k, t(`search.sort.${k}`)])} />
+        <div className={styles.location}>
+          {point
+            ? (
+              <>
+                <p>{t('search.location_set')}</p>
+                <button type="button" className={styles.secondary} onClick={() => { setPoint(null); submit(undefined, null); }}>{t('search.clear_location')}</button>
+              </>
+            )
+            : (
+              <>
+                {signedIn && <p className={styles.hint}>{t('search.location_saved')}</p>}
+                <button type="button" className={styles.secondary} onClick={locate} disabled={locating}>{locating ? t('search.locating') : t('search.use_location')}</button>
+              </>
+            )}
+        </div>
+        <button type="submit" className={styles.apply}>{t('search.apply')}</button>
       </fieldset>
-      <div className={styles.location}>
-        {point
-          ? (
-            <>
-              <p>{t('search.location_set')}</p>
-              <button type="button" onClick={() => { setPoint(null); submit(undefined, null); }}>{t('search.clear_location')}</button>
-            </>
-          )
-          : (
-            <>
-              {signedIn && <p className={styles.hint}>{t('search.location_saved')}</p>}
-              <button type="button" onClick={locate} disabled={locating}>{locating ? t('search.locating') : t('search.use_location')}</button>
-            </>
-          )}
-      </div>
     </form>
+  );
+}
+
+/** The filters in force, as chips that remove one each, and "Clear all" (the words stay). */
+function ActiveFilters({ t, lang, params, categories, onChange }: {
+  t: T; lang: Lang; params: URLSearchParams; categories: Category[]; onChange: (next: URLSearchParams) => void;
+}) {
+  const label = (k: string, v: string): string | null => {
+    switch (k) {
+      case 'category': { const c = categories.find((x) => String(x.id) === v); return c ? (lang === 'bn' ? c.nameBn : c.nameEn) : null; }
+      case 'itemKind': return t(`search.item_kind.${v}`);
+      case 'saleFormat': return t(`search.sale_format.${v}`);
+      case 'condition': return t(`search.condition.${v}`);
+      case 'minPrice': return t('search.chip.min', { amount: formatMoney(v, lang) });
+      case 'maxPrice': return t('search.chip.max', { amount: formatMoney(v, lang) });
+      case 'maxKm': return t('search.card.km', { km: v });
+      default: return null;
+    }
+  };
+  const chips = (['category', 'itemKind', 'saleFormat', 'condition', 'minPrice', 'maxPrice', 'maxKm'] as const)
+    .map((k) => ({ k, text: params.get(k) ? label(k, params.get(k)!) : null }))
+    .filter((c): c is { k: typeof c.k; text: string } => c.text !== null);
+  if (chips.length === 0) return null;
+  const without = (keys: string[]) => {
+    const next = new URLSearchParams(params);
+    for (const k of keys) next.delete(k);
+    return next;
+  };
+  return (
+    <div className={styles.chips} role="group" aria-label={t('search.active')}>
+      {chips.map(({ k, text }) => (
+        <button key={k} type="button" className={styles.chip} onClick={() => onChange(without([k]))}>
+          <span className={styles.visuallyHidden}>{t('search.remove')} </span>{text}<span aria-hidden="true" className={styles.x}>×</span>
+        </button>
+      ))}
+      <button type="button" className={styles.clear} onClick={() => onChange(without(chips.map((c) => c.k)))}>{t('search.clear_all')}</button>
+    </div>
   );
 }
 
@@ -253,40 +299,5 @@ function Text({ id, label, value, onChange }: { id: string; label: string; value
       <label htmlFor={id}>{label}</label>
       <input id={id} type="text" inputMode="decimal" value={value} maxLength={20} onChange={(e) => onChange(e.target.value)} />
     </div>
-  );
-}
-
-/** A result: a link to the listing, its text as text, and every label in words (not colour alone). */
-function Card({ c, t, lang }: { c: SearchCard; t: T; lang: Lang }) {
-  return (
-    <li className={styles.card}>
-      <Link to={`/listings/${encodeURIComponent(c.id)}`} className={styles.cardLink}>
-        {c.thumbUrl ? <img src={c.thumbUrl} alt="" width={160} height={120} loading="lazy" className={styles.thumb} /> : <span className={styles.noThumb} />}
-        <span className={styles.cardBody}>
-          {c.featured && <span className={styles.badge}>{t('search.card.featured')}</span>}
-          <span className={styles.cardTitle}>{c.title}</span>
-          <span className={styles.price}>{formatMoney(c.price, lang)}</span>
-          {c.auction && <AuctionLine a={c.auction} t={t} lang={lang} />}
-          {c.currentlyReserved && <span className={styles.note}>{t('search.card.reserved')}</span>}
-          <span className={styles.meta}>
-            {c.itemKind === 'game_account' ? t('search.card.game_account') : c.district}
-            {c.distanceKm !== null && <> · {t('search.card.km', { km: toLocalDigits(String(c.distanceKm), lang) })}</>}
-          </span>
-        </span>
-      </Link>
-    </li>
-  );
-}
-
-function AuctionLine({ a, t, lang }: { a: NonNullable<SearchCard['auction']>; t: T; lang: Lang }) {
-  const now = useServerNow();
-  const left = a.endAt ? formatCountdown(Date.parse(a.endAt) - now, lang) : null;
-  return (
-    <span className={styles.meta}>
-      {t('search.card.auction')}
-      {left && !left.ended && <> · {t('search.card.ends', { left: left.text })}</>}
-      {' · '}{t('search.card.bids', { count: toLocalDigits(String(a.bidCount), lang) })}
-      {!a.reserveMet && <> · {t('search.card.reserve_not_met')}</>}
-    </span>
   );
 }
