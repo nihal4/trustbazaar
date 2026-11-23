@@ -21,9 +21,9 @@ export function TextField({ id, label, value, onChange, hint, error, ...input }:
     <div className={styles.field}>
       <label htmlFor={id}>{label}</label>
       {hint && <p id={`${id}-hint`} className={styles.hint}>{hint}</p>}
-      {error && <p id={`${id}-error`} className={styles.error}>{error}</p>}
       <input id={id} value={value} onChange={(e) => onChange(e.target.value)}
         aria-invalid={error ? true : undefined} aria-describedby={described} {...input} />
+      {error && <p id={`${id}-error`} className={styles.error}>{error}</p>}
     </div>
   );
 }
@@ -39,10 +39,10 @@ interface CheckboxProps {
 export function CheckboxField({ id, label, checked, onChange, error }: CheckboxProps) {
   return (
     <div className={styles.checkbox}>
-      {error && <p id={`${id}-error`} className={styles.error}>{error}</p>}
       <input id={id} type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)}
         aria-invalid={error ? true : undefined} aria-describedby={error ? `${id}-error` : undefined} />
       <label htmlFor={id}>{label}</label>
+      {error && <p id={`${id}-error`} className={styles.error}>{error}</p>}
     </div>
   );
 }

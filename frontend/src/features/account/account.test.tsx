@@ -351,4 +351,38 @@ describe('account and security', () => {
     expect(be.called('POST /me/email/change')).toEqual([]);
     expect(screen.queryByRole('alert')).toBeNull();
   });
+
+  it('IF-UI-01 the account sections share one row of tabs, the current one marked (docs/design/10_visual.md, AC-ACC-3)', async () => {
+    const be = fakeBackend({ 'GET /me': json(200, standInMe), 'GET /auth/sessions': json(200, []) });
+    renderApp('/account/security', be);
+    const tabs = await screen.findByRole('navigation', { name: 'Your account' });
+    const links = within(tabs).getAllByRole('link');
+    expect(links.map((a) => [a.textContent, a.getAttribute('href')])).toEqual([
+      ['Profile', '/account'], ['Security', '/account/security'], ['Notifications', '/notifications'],
+      ['Messages', '/messages'], ['Your data', '/account/privacy'],
+    ]);
+    expect(links.filter((a) => a.getAttribute('aria-current') === 'page').map((a) => a.textContent)).toEqual(['Security']);
+  });
+});
+
+describe('sign-in and registration layout', () => {
+  it('SEC-ABU-02 sign-in says, under its button, that it is protected by a check in the browser without puzzles (AC-ACC-2)', async () => {
+    renderApp('/signin?next=%2Forders', fakeBackend({}));
+    const button = await screen.findByRole('button', { name: 'Sign in' });
+    const note = screen.getByText('Protected by a short check in your browser. No puzzles.');
+    expect(button.compareDocumentPosition(note) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Create an account' }).getAttribute('href')).toBe(`/register?next=${encodeURIComponent('/orders')}`);
+    expect(screen.getByText('Your money waits with us')).toBeTruthy();
+  });
+
+  it('SEC-ABU-02 registration has the same note, and errors stand under their field (AC-ACC-2)', async () => {
+    renderApp('/register', fakeBackend({}));
+    await screen.findByRole('heading', { name: 'Create your account' });
+    expect(screen.getByText('Protected by a short check in your browser. No puzzles.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    await screen.findByRole('alert');
+    const input = screen.getByLabelText('Display name');
+    const error = document.getElementById(input.getAttribute('aria-describedby')!.split(' ').find((id) => id.endsWith('-error'))!)!;
+    expect(input.compareDocumentPosition(error) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
 });

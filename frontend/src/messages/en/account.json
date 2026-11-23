@@ -196,5 +196,9 @@
   "mfa.state_changed": "This setting changed elsewhere. The page now shows the current state.",
   "account.seller_link": "Your sales (seller dashboard)",
   "account.payout_link": "Payout account",
-  "account.privacy_link": "Your data and closing your account"
+  "account.privacy_link": "Your data and closing your account",
+  "human_check.note": "Protected by a short check in your browser. No puzzles.",
+  "signin.welcome": "Welcome back.",
+  "side.promise_title": "Your money waits with us",
+  "side.promise_text": "The seller is paid only after the buyer confirms they have the item."
 }

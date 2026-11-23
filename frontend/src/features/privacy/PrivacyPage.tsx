@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { formatDateTime } from '../../lib/time.js';
 import { useApi } from '../../shared/api';
+import { AccountTabs } from '../../shared/AccountTabs';
 import { ConfirmDialog } from '../../shared/ConfirmDialog';
 import { signInPath } from '../../shared/document';
 import { errorText } from '../../shared/errors';
@@ -44,6 +45,7 @@ export function Component() {
   if (exp.isError && isApiError(exp.error, 401)) return <p><Link to={signInPath('/account/privacy')}>{t('privacy.sign_in')}</Link></p>;
   return (
     <div className={styles.page}>
+      <AccountTabs t={t} />
       <h1>{t('privacy.title')}</h1>
       <p>{t('privacy.intro')} <Link to="/help/privacy">{t('privacy.notice_link')}</Link></p>
       <DataExport status={exp.data ?? null} loading={exp.isPending} error={exp.isError ? exp.error : null} t={t} lang={lang} />

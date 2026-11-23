@@ -36,5 +36,9 @@
   "shell.footer.tagline": "A marketplace for Bangladesh where every payment is held until the buyer has the item.",
   "shell.footer.nav": "Site links",
   "shell.footer.terms": "Terms",
-  "shell.footer.privacy": "Privacy"
+  "shell.footer.privacy": "Privacy",
+  "shell.account_tabs.label": "Your account",
+  "shell.account_tabs.profile": "Profile",
+  "shell.account_tabs.security": "Security",
+  "shell.account_tabs.privacy": "Your data"
 }
