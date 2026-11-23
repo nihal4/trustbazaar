@@ -550,5 +550,14 @@
   "staff.terms.add_screening": "Add a screening term",
   "staff.terms.add_detection": "Add a detection term",
   "staff.terms.incomplete": "Give the term and choose its kind.",
-  "staff.terms.remove": "Remove \"{term}\""
+  "staff.terms.remove": "Remove \"{term}\"",
+  "staff.nav.administration": "Administration",
+  "staff.nav.waiting": " waiting",
+  "staff.queue.col.case": "Case",
+  "staff.queue.col.details": "What it is",
+  "staff.queue.col.amount": "Amount",
+  "staff.queue.col.waiting": "Waiting",
+  "staff.queue.col.who": "Who has it",
+  "staff.queue.col.action": "Action",
+  "staff.nav.more": "More"
 }
