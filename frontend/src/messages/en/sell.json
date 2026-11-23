@@ -179,5 +179,15 @@
   "sell.error.code-expired": "the code has expired; ask for a new one",
   "sell.error.not-editable": "can no longer change",
   "sell.error.not-for-game-accounts": "not for game accounts",
-  "sell.error.use-the-ownership-review": "reviewed with the ownership proof"
+  "sell.error.use-the-ownership-review": "reviewed with the ownership proof",
+  "sell.steps.label": "Steps",
+  "sell.steps.details": "The item",
+  "sell.steps.photos": "Photos",
+  "sell.steps.game": "The game account",
+  "sell.steps.publish": "Publish",
+  "sell.steps.state.done": "(done)",
+  "sell.steps.state.current": "(now)",
+  "sell.steps.state.next": "(still to come)",
+  "sell.cover": "Cover",
+  "sell.add_photos_formats": "JPEG, PNG or WebP"
 }
