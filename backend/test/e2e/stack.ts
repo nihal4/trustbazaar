@@ -102,6 +102,10 @@ async function main() {
 
   // an auction running for a day from ৳1,000, for the live bidding run
   const auctionId = await openAuction(fx, seller.userId, categoryId, { start: '100000', endsIn: '1 day' });
+  for (const { position } of await fx.query<{ position: number }>(`SELECT position FROM listings.listing_photos WHERE listing_id = $1`, [auctionId])) {
+    const p = await photo('camera');
+    await fx.query(`UPDATE listings.listing_photos SET storage_key = $3, width = $4, height = $5 WHERE listing_id = $1 AND position = $2`, [auctionId, position, p.key, p.width, p.height]);
+  }
 
   // the buyer's order, made through the API as the web client makes it
   const sid = await fx.session({ userId: buyer.userId });

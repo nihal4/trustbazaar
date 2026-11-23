@@ -95,17 +95,17 @@ Each screen keeps its current route, data and behaviour. "Done" means every crit
 
 ### 7.3 Listing (`/listings/:id`): `listing.jpg`, `listing-phone.jpg`
 
-- AC-LST-1: The gallery has a large square photo, thumbnails and "1 of N photos". On phones the photo is full width and swipes.
-- AC-LST-2: The side column holds the title, area and age, the price at 44 px (34 px on phones), the facts (condition, ways to get it, stock), "Buy now" (plum), "Message the seller" (outline), the promise note and the seller card (initials, sales, rating, "ID checked").
-- AC-LST-3: On phones "Buy now" and "Message" stay in a sticky bar at the bottom and never cover content.
-- AC-LST-4: Description, details and delivery are tabs. The description is plain text, as now.
+- AC-LST-1: The photos come first: a large first photo with the rest in two columns on wide screens, a sideways strip one photo wide on phones (reachable by keyboard). A listing without photos gives the space to its text.
+- AC-LST-2: The side column holds the category link, the title, the price at 40 px (or the auction panel), "Buy now for ৳…" (plum, full width), the promise note and the seller card: initials, name linking to the profile, the month they joined, "Identity verified", and "Message the seller" (outline). No sales count or rating: the listing does not carry them (Decisions log, U10-04).
+- AC-LST-3: On phones the page is one column: title, photos, price and button, promise, seller, then the text. There is no sticky buy bar; the tab bar holds the bottom of the screen (Decisions log, U10-04).
+- AC-LST-4: Description, details (as a two-column list) and clarifications are sections under the photos, all readable without tabs. The description is plain text, as now.
 - AC-LST-5: Game-account listings keep their risk disclosure, styled as a promise-style note in the danger colour family.
 
 ### 7.4 Auction panel: `auction.jpg`
 
-- AC-AUC-1: The panel's dark top shows the time left in hours, minutes and seconds on the server's clock.
+- AC-AUC-1: The panel's dark top bar names the auction and shows the time left on the server's clock, in danger colour in the last hour.
 - AC-AUC-2: The current bid is the largest figure. "You are the highest bidder" and "You have been outbid" appear as lilac and danger banners, announced to screen readers as now.
-- AC-AUC-3: The bid field shows the minimum (the CP-08 increment), and the button says the amount: "Place bid of ৳41,820". The confirmation dialog and the Idempotency-Key are unchanged.
+- AC-AUC-3: The bid field shows the minimum (the CP-08 increment); the button says "Place bid" (or "Raise my maximum"), and the confirmation names the amount, as U8-04 built it. The Idempotency-Key is unchanged.
 - AC-AUC-4: The proxy bid is a switch with its maximum field. Bid history shows masked names and "You".
 
 ### 7.5 Checkout (`/checkout/:listingId`): `checkout.jpg`
