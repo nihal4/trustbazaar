@@ -135,9 +135,11 @@ Each screen keeps its current route, data and behaviour. "Done" means every crit
 
 ### 7.9 ID check (`kyc.html`): `kyc.jpg`
 
-- AC-KYC-1: A slim header with "Save and finish later". The steps show above the camera.
-- AC-KYC-2: The camera view darkens around a card-shaped frame, with the instruction in it. "Take photo" is the main action. The file upload is offered as "Camera not working? Upload a file", only where U8-03 allows it.
-- AC-KYC-3: The side panel lists the photo rules and says who sees the ID.
+- AC-KYC-1: A slim header with "Finish later", back to the account page (nothing is kept: the images stay only in the page until they are sent, U8-03). On narrow phones the logo's word and the document's name give way to it. Four steps (your details, your document, selfies, send) show above the camera, done, now or still to come in words as well, with "Step n of N" under them (Decisions log, U10-08).
+- AC-KYC-2: The camera view sits in a dark stage, darkened around a card-shaped frame (the passport page's for a passport, an oval for selfies), with the instruction in it. "Take the photo" is the main action. The file is offered as a dashed "Choose a photo of the document" tile only where U8-03 allows it: for a document, after the camera was refused, missing or failed.
+- AC-KYC-3: From the details step on, the side panel lists the photo rules, says who sees the ID, and that the expected review time is shown after sending. On the first step the same text is in the page, so the panel is not shown.
+
+The credential screens (`secure.html`, no React and no shared code, SEC-GAM-03) repeat the tokens and fonts in their own stylesheet, with a slim header carrying the logo. The key's fingerprint and the login details stay in a monospace face, so 0 and O or l and 1 cannot be confused (Decisions log, U10-08).
 
 ### 7.10 Staff console (`staff.html`): `staff.jpg`
 

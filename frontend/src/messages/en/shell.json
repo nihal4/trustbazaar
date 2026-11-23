@@ -40,5 +40,6 @@
   "shell.account_tabs.label": "Your account",
   "shell.account_tabs.profile": "Profile",
   "shell.account_tabs.security": "Security",
-  "shell.account_tabs.privacy": "Your data"
+  "shell.account_tabs.privacy": "Your data",
+  "shell.kyc_later": "Finish later"
 }

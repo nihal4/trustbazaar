@@ -10,6 +10,7 @@ const doc = createDocument({
   kind: 'user',
   titleKey: 'shell.document.kyc',
   home: { path: '/', sameDocument: false },
+  exit: { href: '/account', labelKey: 'shell.kyc_later' },
   signIn: signInInUserApp,
   routes: kycRoutes,
 });

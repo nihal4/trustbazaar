@@ -71,7 +71,7 @@ export function createDocument(setup: DocumentSetup, { createRouter = createBrow
   }, apiOverrides, setup.kind === 'user' ? stepUp.request : undefined);
   const router = createRouter([
     {
-      element: <Shell titleKey={setup.titleKey} home={setup.home} accountLinks={setup.accountLinks} />,
+      element: <Shell titleKey={setup.titleKey} home={setup.home} accountLinks={setup.accountLinks} exit={setup.exit} />,
       children: [
         {
           errorElement: <RouteError />,

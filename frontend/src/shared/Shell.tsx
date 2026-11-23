@@ -28,9 +28,11 @@ export interface ShellProps {
   home: { path: string; sameDocument: boolean };
   /** the user app shows "Sign in" or "Account" in the header */
   accountLinks?: boolean;
+  /** a way out of a focused document (the KYC wizard's "Finish later"), a normal page load */
+  exit?: { href: string; labelKey: string };
 }
 
-export function Shell({ titleKey, home, accountLinks = false }: ShellProps) {
+export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps) {
   const { t } = useLanguage();
   const main = useRef<HTMLElement>(null);
   const { pathname } = useLocation();
@@ -48,7 +50,7 @@ export function Shell({ titleKey, home, accountLinks = false }: ShellProps) {
   return (
     <div className={styles.page}>
       <a className={styles.skip} href="#main">{t('shell.skip_to_content')}</a>
-      <header className={styles.header}>
+      <header className={exit ? `${styles.header} ${styles.withExit}` : styles.header}>
         {home.sameDocument
           ? <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo /></Link>
           : <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}><Logo /></a>}
@@ -56,6 +58,7 @@ export function Shell({ titleKey, home, accountLinks = false }: ShellProps) {
         <span className={styles.spacer} />
         {accountLinks && <AccountLink phone={phone} />}
         <LanguageSwitch />
+        {exit && <a className={styles.exit} href={exit.href}>{t(exit.labelKey)}</a>}
         {accountLinks && !phone && <Button component={Link} to="/sell/new">{t('shell.sell')}</Button>}
       </header>
       <SignedOutNotice />
