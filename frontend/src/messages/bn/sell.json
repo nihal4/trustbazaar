@@ -179,5 +179,15 @@
   "sell.error.code-expired": "কোডের মেয়াদ শেষ; নতুন একটি চান",
   "sell.error.not-editable": "আর বদলানো যায় না",
   "sell.error.not-for-game-accounts": "গেম অ্যাকাউন্টের জন্য নয়",
-  "sell.error.use-the-ownership-review": "মালিকানার প্রমাণসহ যাচাই হয়"
+  "sell.error.use-the-ownership-review": "মালিকানার প্রমাণসহ যাচাই হয়",
+  "sell.steps.label": "ধাপ",
+  "sell.steps.details": "পণ্য",
+  "sell.steps.photos": "ছবি",
+  "sell.steps.game": "গেম অ্যাকাউন্ট",
+  "sell.steps.publish": "প্রকাশ",
+  "sell.steps.state.done": "(হয়ে গেছে)",
+  "sell.steps.state.current": "(এখন)",
+  "sell.steps.state.next": "(বাকি আছে)",
+  "sell.cover": "প্রচ্ছদ",
+  "sell.add_photos_formats": "জেপিইজি, পিএনজি বা ওয়েবপি"
 }
