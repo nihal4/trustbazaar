@@ -1,10 +1,10 @@
-// Noto Sans Bengali, self-hosted (font-src 'self'), loaded only when the language is Bangla
-// (section 6.1; Decisions log, U8-01). Two weights: regular for text, bold for headings and buttons.
-// The faces cover the Bengali block only, so Latin text keeps the system font.
-import regular from '@fontsource/noto-sans-bengali/files/noto-sans-bengali-bengali-400-normal.woff2?url';
-import bold from '@fontsource/noto-sans-bengali/files/noto-sans-bengali-bengali-700-normal.woff2?url';
+// Hind Siliguri, self-hosted (font-src 'self'), loaded only when the language is Bangla
+// (section 6.1; Decisions log, U8-01 and U10-01; docs/design/10_visual.md, section 3). Two weights: regular for
+// text, bold for headings and buttons. The faces cover the Bengali block only, so Latin text keeps Schibsted Grotesk.
+import regular from '@fontsource/hind-siliguri/files/hind-siliguri-bengali-400-normal.woff2?url';
+import bold from '@fontsource/hind-siliguri/files/hind-siliguri-bengali-700-normal.woff2?url';
 
-export const BANGLA_FONT = 'Noto Sans Bengali';
+export const BANGLA_FONT = 'Hind Siliguri';
 const BENGALI_RANGE = 'U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0-1CF9, U+200C-200D, U+20B9, U+25CC, U+A8F1';
 
 let added = false;
