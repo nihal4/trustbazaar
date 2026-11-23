@@ -4,6 +4,7 @@ import { cleanup, configure, fireEvent, screen, waitFor, within } from '@testing
 import { fakeBackend, json, problem, renderApp, standInMe, type Call } from '../../testing/app';
 import { actionsOf } from './Actions';
 import { deadlinesOf } from './Deadlines';
+import { stepsOf } from './OrderPage';
 import { dhakaInput, spaced } from './Handover';
 import type { HandoverView, MeetupPoint, OrderView, SavedAddress, Shipment } from './model';
 import libEn from '../../lib/messages/en.json';
@@ -282,6 +283,14 @@ describe('the meetup handover (Unit 4)', () => {
     expect(screen.queryByRole('button', { name: 'Propose a place and time' })).toBeNull();
   });
 
+  it('FR-DLV-06 right after payment the handover may not exist yet: the page asks again instead of showing an error', async () => {
+    const be = backend({ 'GET /orders/o-1/handover': [problem(404, 'not-found'), problem(404, 'not-found'), json(200, handover())] });
+    renderApp('/orders/o-1', be);
+    expect(await screen.findByRole('button', { name: 'Show code' }, { timeout: 6000 })).toBeTruthy();
+    expect(be.called('GET /orders/o-1/handover')).toHaveLength(3);
+    expect(screen.queryByText('This page or item no longer exists.')).toBeNull();
+  });
+
   it('FR-DLV-04 a time typed as Dhaka time is that instant, whatever the device\'s zone', () => {
     expect(dhakaInput('2026-11-20T00:15')).toBe('2026-11-19T18:15:00.000Z');
     expect(dhakaInput('')).toBeNull();
@@ -396,3 +405,23 @@ describe('the list of orders', () => {
     expect(screen.getByRole('heading', { name: 'সময়সীমা' })).toBeTruthy();
   });
 });
+
+describe('the order steps (Daylight design, U10-05)', () => {
+  it('NFR-USE-07 the steps follow the order: payment, the handover, the end; a cancelled order has none', () => {
+    const states = (o: OrderView) => stepsOf(o).map((x) => x.state).join(' ');
+    expect(states(order({ status: 'awaiting_payment' }))).toBe('current next next');
+    expect(states(order({ status: 'paid', deliveryEventAt: null }))).toBe('done current next');
+    expect(states(order({ status: 'paid', deliveryEventAt: '2026-11-02T10:00:00Z' }))).toBe('done done current');
+    expect(states(order({ status: 'closed' }))).toBe('done done done');
+    expect(stepsOf(order({ status: 'cancelled' }))).toEqual([]);
+  });
+
+  it('NFR-USE-07 the order page shows the steps with the current one marked, in words too', async () => {
+    renderApp('/orders/o-1', backend({}));
+    const steps = await screen.findByRole('list', { name: 'Order progress' });
+    const items = within(steps).getAllByRole('listitem');
+    expect(items.map((li) => li.textContent)).toEqual(['Payment(done)', '2Handover(now)', '3Done(still to come)']);
+    expect(items[1].getAttribute('aria-current')).toBe('step');
+  });
+});
+

@@ -33,6 +33,8 @@ export interface RequestContext {
   correlationId: string | null;
   /** X-Human-Proof, the solved challenge of SEC-ABU-02 (U1-09), when the client sent one. */
   humanProof?: string;
+  /** The rate-limit guard already accepted this request's proof (it works once). */
+  humanChecked?: boolean;
 }
 
 export interface SessionSummary {

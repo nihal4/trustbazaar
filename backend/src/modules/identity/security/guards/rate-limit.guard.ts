@@ -10,7 +10,7 @@ import { cookiesFor } from '../cookies';
 import { CONFIG_PORT, ConfigPort } from '../../../../kernel/config-port';
 import { RATE_RULES } from '../rate-rules';
 import { RateLimiter } from '../rate-limiter.service';
-import { HUMAN_PROOF_HEADER, HumanCheck, HumanScope } from '../human-check';
+import { HUMAN_PROOF_HEADER, HumanCheck, HumanScope, markHumanChecked, wasHumanChecked } from '../human-check';
 import { policyOf, requestOf } from './policy-of';
 
 // 1. RateLimitGuard (Unit 1 section 4.1): the route's rule, before any database work; 429 with Retry-After.
@@ -50,7 +50,10 @@ export class RateLimitGuard implements CanActivate {
       const r = await this.limiter.hit(`rl:${rule}:${subject}`, limit, l.windowSeconds);
       if (!r.allowed) throw new Problem('rate-limited', { retryAfter: r.retryAfterSeconds });
       // SEC-ABU-02: above the challenge mark, the request needs a solved proof-of-work (428 with a new one otherwise)
-      if (l.challengeAfter !== undefined && r.count > l.challengeAfter) await this.human.require(rule as HumanScope, req.ip ?? '', req.header(HUMAN_PROOF_HEADER));
+      if (l.challengeAfter !== undefined && r.count > l.challengeAfter && !wasHumanChecked(req)) {
+        await this.human.require(rule as HumanScope, req.ip ?? '', req.header(HUMAN_PROOF_HEADER));
+        markHumanChecked(req);
+      }
     }
     return true;
   }

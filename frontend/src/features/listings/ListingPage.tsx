@@ -1,9 +1,13 @@
-// The listing page (docs/design/08_frontend.pdf sections 3.3 and 7.3; IF-UI-03; U8-04). It renders from one request,
+// The listing page (docs/design/08_frontend.pdf sections 3.3 and 7.3; IF-UI-03; U8-04; Daylight design,
+// docs/design/10_visual.md, section 7.3: photos first and large, the price or the auction beside them with the main
+// action, the payment promise and the seller; on phones one column). It renders from one request,
 // GET /listings/{id}, which includes the auction state (section 9). Everything the seller wrote is shown as text
 // (SEC-INP-03); the location is the district only (FR-LST-06). A fixed-price item links to its checkout (U8-05);
 // an auction shows its panel. Others see only public listings; the seller sees their own in every state.
 import { Link, useLocation, useParams } from 'react-router-dom';
+import { Button } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
+import { takeEarly } from '../../shared/early';
 import { formatMoney, toLocalDigits } from '../../lib/money.js';
 import { formatDateTime } from '../../lib/time.js';
 import { useApi } from '../../shared/api';
@@ -14,6 +18,7 @@ import type { Lang } from '../../shared/language/lang';
 import { useMe } from '../../shared/me';
 import { useOpenThread } from '../../shared/chat';
 import { isApiError } from '../../shared/problems';
+import { PromiseNote } from '../../shared/PromiseNote';
 import { FRESHNESS } from '../../shared/query';
 import { AuctionPanel } from './AuctionPanel';
 import { listingKey, type ListingView } from './model';
@@ -31,7 +36,7 @@ export function Component() {
   const { pathname } = useLocation();
   const listing = useQuery({
     queryKey: listingKey(id),
-    queryFn: ({ signal }) => api.get(`/listings/${encodeURIComponent(id)}`, { signal }) as Promise<ListingView>,
+    queryFn: async ({ signal }) => (await takeEarly<ListingView>(`/listings/${id}`)) ?? (api.get(`/listings/${encodeURIComponent(id)}`, { signal }) as Promise<ListingView>),
     staleTime: FRESHNESS.search,
     retry: false,
   });
@@ -39,61 +44,84 @@ export function Component() {
   if (listing.isPending) return <p role="status">{t('shell.loading')}</p>;
   if (listing.isError) {
     return isApiError(listing.error, 404)
-      ? <div className={styles.page}><h1>{t('listing.not_found')}</h1><p><Link to="/search">{t('shell.home_link')}</Link></p></div>
+      ? <div><h1>{t('listing.not_found')}</h1><p><Link to="/search">{t('shell.home_link')}</Link></p></div>
       : <FormMessage kind="error">{errorText(listing.error, t, lang)}</FormMessage>;
   }
   const l = listing.data;
   const own = me.data?.id === l.seller.id;
   const signedIn = me.isSuccess;
+  const category = lang === 'bn' ? l.category.nameBn : l.category.nameEn;
   return (
-    <article className={styles.page}>
-      <h1 className={styles.title}>{l.title}</h1>
-      {l.itemKind === 'game_account' && <p className={styles.kind}>{t('listing.game_account')}</p>}
-      {l.itemKind === 'game_account' && (
-        <section aria-labelledby="game-risk-title" className={styles.notice}>
-          <h2 id="game-risk-title">{t('listing.game_risk_title')}</h2>
-          {[1, 2, 3].map((n) => <p key={n}>{t(`listing.game_risk.${n}`)}</p>)}
+    <article className={l.photos.length > 0 ? styles.page : `${styles.page} ${styles.noPhotos}`}>
+      <header className={styles.head}>
+        <p className={styles.crumb}>
+          <Link to={`/search?category=${l.category.id}`}>{category}</Link>
+          {l.itemKind === 'game_account' && <span className={styles.kind}>{t('listing.game_account')}</span>}
+        </p>
+        <h1 className={styles.title}>{l.title}</h1>
+        <Status l={l} own={own} t={t} />
+        {l.itemKind === 'game_account' && (
+          <section aria-labelledby="game-risk-title" className={styles.risk}>
+            <h2 id="game-risk-title">{t('listing.game_risk_title')}</h2>
+            {[1, 2, 3].map((n) => <p key={n}>{t(`listing.game_risk.${n}`)}</p>)}
+          </section>
+        )}
+      </header>
+      <div className={styles.gallery}>
+        <Photos l={l} t={t} lang={lang} />
+      </div>
+      <aside className={styles.side}>
+        {l.saleFormat === 'auction' && l.auction
+          ? <AuctionPanel initial={l.auction} t={t} lang={lang} signedIn={signedIn} own={own} nextPath={pathname} />
+          : <Buy l={l} own={own} t={t} lang={lang} />}
+        <PromiseNote title={t('listing.promise.title')} text={t('listing.promise.text')} />
+        <section aria-labelledby="seller-title" className={styles.seller}>
+          <h2 id="seller-title" className={styles.visuallyHidden}>{t('listing.seller')}</h2>
+          <div className={styles.sellerRow}>
+            <span className={styles.avatar} aria-hidden="true">{initials(l.seller.displayName)}</span>
+            <div>
+              <Link className={styles.sellerName} to={`/users/${encodeURIComponent(l.seller.id)}`}>{l.seller.displayName}</Link>
+              <p className={styles.muted}>{t('listing.seller_joined', { month: joinMonth(l.seller.joinMonth, lang) })}</p>
+            </div>
+            {l.seller.verified && <p className={styles.verified}><Tick />{t('listing.seller_verified')}</p>}
+          </div>
+          {!own && ['active', 'sold', 'ended_unsold'].includes(l.status) && <MessageSeller listingId={l.id} signedIn={signedIn} nextPath={pathname} t={t} lang={lang} />}
         </section>
-      )}
-      <Status l={l} own={own} t={t} />
-      <div className={styles.layout}>
-        <div>
-          <Photos l={l} t={t} lang={lang} />
-          <section aria-labelledby="description-title">
-            <h2 id="description-title">{t('listing.description')}</h2>
-            <p className={styles.text}>{l.description}</p>
+      </aside>
+      <div className={styles.body}>
+        <section aria-labelledby="description-title">
+          <h2 id="description-title">{t('listing.description')}</h2>
+          <p className={styles.text}>{l.description}</p>
+        </section>
+        <Details l={l} t={t} lang={lang} />
+        {l.clarifications.length > 0 && (
+          <section aria-labelledby="clarifications-title">
+            <h2 id="clarifications-title">{t('listing.clarifications')}</h2>
+            <ul className={styles.clarifications}>
+              {l.clarifications.map((c) => (
+                <li key={c.id}>
+                  <p className={styles.text}>{c.body}</p>
+                  <p className={styles.muted}>{t('listing.clarification_at', { at: formatDateTime(Date.parse(c.at), lang) })}</p>
+                </li>
+              ))}
+            </ul>
           </section>
-          {l.clarifications.length > 0 && (
-            <section aria-labelledby="clarifications-title">
-              <h2 id="clarifications-title">{t('listing.clarifications')}</h2>
-              <ul className={styles.clarifications}>
-                {l.clarifications.map((c) => (
-                  <li key={c.id}>
-                    <p className={styles.text}>{c.body}</p>
-                    <p className={styles.muted}>{t('listing.clarification_at', { at: formatDateTime(Date.parse(c.at), lang) })}</p>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-        </div>
-        <aside className={styles.side}>
-          {l.saleFormat === 'auction' && l.auction
-            ? <AuctionPanel initial={l.auction} t={t} lang={lang} signedIn={signedIn} own={own} nextPath={pathname} />
-            : <Buy l={l} own={own} t={t} lang={lang} />}
-          <Details l={l} t={t} lang={lang} />
-          <section aria-labelledby="seller-title" className={styles.seller}>
-            <h2 id="seller-title">{t('listing.seller')}</h2>
-            <p><Link to={`/users/${encodeURIComponent(l.seller.id)}`}>{l.seller.displayName}</Link></p>
-            {l.seller.verified && <p>{t('listing.seller_verified')}</p>}
-            <p className={styles.muted}>{t('listing.seller_joined', { month: joinMonth(l.seller.joinMonth, lang) })}</p>
-            {!own && ['active', 'sold', 'ended_unsold'].includes(l.status) && <MessageSeller listingId={l.id} signedIn={signedIn} nextPath={pathname} t={t} lang={lang} />}
-          </section>
-        </aside>
+        )}
       </div>
     </article>
   );
 }
+
+const Tick = () => (
+  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+    <circle cx="8" cy="8" r="8" fill="currentColor" />
+    <path d="M4.5 8.2 l2.3 2.3 l4.7 -5" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+/** The first letters of up to two words of the seller's name, for the round badge beside it. */
+const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map((w) => [...w][0] ?? '').join('').toUpperCase();
+
 
 type T = ReturnType<typeof useT>['t'];
 
@@ -119,7 +147,8 @@ function Photos({ l, t, lang }: { l: ListingView; t: T; lang: Lang }) {
   return (
     <section aria-labelledby="photos-title">
       <h2 id="photos-title" className={styles.visuallyHidden}>{t('listing.photos')}</h2>
-      <ul className={styles.photos}>
+      {/* phones: one photo across, swiped sideways; wide screens: the first large, the rest in two columns under it */}
+      <ul className={styles.photos} tabIndex={0}>
         {l.photos.map((p, i) => (
           <li key={p.id}>
             <img src={p.url} srcSet={`${p.thumbUrl} 400w, ${p.url} 1600w`} sizes="(min-width: 60rem) 40rem, 100vw"
@@ -143,7 +172,7 @@ function Buy({ l, own, t, lang }: { l: ListingView; own: boolean; t: T; lang: La
       {l.quantity.total > 1 && <p>{t('listing.available', { count: toLocalDigits(String(l.quantity.available), lang) })}</p>}
       {l.currentlyReserved && <p className={styles.notice}>{t('listing.currently_reserved')}</p>}
       {l.status === 'active' && !own && l.quantity.available > 0 && (
-        <Link to={`/checkout/${encodeURIComponent(l.id)}`} className={styles.primaryLink}>{t('listing.buy', { price })}</Link>
+        <Button component={Link} to={`/checkout/${encodeURIComponent(l.id)}`} size="lg" fullWidth>{t('listing.buy', { price })}</Button>
       )}
     </section>
   );
@@ -168,13 +197,13 @@ function Details({ l, t, lang }: { l: ListingView; t: T; lang: Lang }) {
 /** FR-CHT-01: a conversation with the seller about this listing (U8-13); signed-out visitors sign in first. */
 function MessageSeller({ listingId, signedIn, nextPath, t, lang }: { listingId: string; signedIn: boolean; nextPath: string; t: T; lang: Lang }) {
   const { open, busy, error } = useOpenThread();
-  if (!signedIn) return <p><Link to={`/signin?next=${encodeURIComponent(nextPath)}`}>{t('listing.message_seller_sign_in')}</Link></p>;
+  if (!signedIn) return <Button component={Link} variant="default" fullWidth to={`/signin?next=${encodeURIComponent(nextPath)}`}>{t('listing.message_seller_sign_in')}</Button>;
   return (
     <>
       {error !== null && <FormMessage kind="error">{errorText(error, t, lang)}</FormMessage>}
-      <button type="button" className={styles.secondaryButton} onClick={() => open(listingId)} disabled={busy} aria-busy={busy}>
+      <Button variant="default" size="md" fullWidth onClick={() => open(listingId)} disabled={busy} aria-busy={busy}>
         {t('listing.message_seller')}
-      </button>
+      </Button>
     </>
   );
 }

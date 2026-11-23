@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { createHash } from 'crypto';
 import { afterEach, describe, expect, it } from 'vitest';
 import { act, cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { fakeBackend, json, noContent, problem, renderApp, standInMe } from '../../testing/app';
@@ -142,6 +143,26 @@ describe('sign in', () => {
     await waitFor(() => expect(be.called('POST /auth/signin')).toHaveLength(2));
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe(first));
     expect(first).toBe('The number, e-mail or password is not correct.');
+  });
+
+  it('SEC-ABU-02 when the server asks for the human check, the page answers it and the sign-in goes on', async () => {
+    const challenge = { id: 'c-1', algorithm: 'sha256', prefix: '5e1f', difficulty: 8, expiresAt: '2026-11-23T00:05:00Z' };
+    const be = fakeBackend({
+      'POST /auth/signin': [problem(428, 'human-verification-required', { challenge }), json(200, { mfaRequired: true })],
+    });
+    renderApp('/signin', be);
+    await screen.findByRole('heading', { name: 'Sign in' });
+    type('Mobile number or e-mail', 'rahim@example.com');
+    type('Password', 'correct horse');
+    click('Sign in');
+    await waitFor(() => expect(be.called('POST /auth/signin')).toHaveLength(2));
+    const [first, second] = be.called('POST /auth/signin');
+    expect(first.headers.get('X-Human-Proof')).toBeNull();
+    expect(second.body).toEqual(first.body);
+    const [id, nonce] = second.headers.get('X-Human-Proof')!.split(':');
+    expect(id).toBe('c-1');
+    expect(createHash('sha256').update(`5e1f:${nonce}`).digest()[0]).toBe(0);
+    expect(screen.queryByRole('alert')).toBeNull();
   });
 
   it('SEC-AUTH-04 the growing delay is a countdown on the button', async () => {

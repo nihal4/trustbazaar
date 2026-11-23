@@ -111,6 +111,27 @@ describe('the listing page', () => {
   });
 });
 
+describe('the listing page in the Daylight design (U10-04)', () => {
+  it('IF-UI-03 the photos come first, then the price with its button, the payment promise and the seller with initials', async () => {
+    renderApp(`/listings/${ID}`, backend({ l: listing({ seller: { id: 'seller-1', displayName: 'Karim Uddin', verified: true, joinMonth: '2026-10' } }) }));
+    await screen.findByRole('heading', { level: 1 });
+    expect(screen.getByRole('link', { name: 'Cameras' }).getAttribute('href')).toBe('/search?category=1');
+    expect(screen.getByText('Your money waits with us')).toBeTruthy();
+    expect(screen.getByText('You pay TrustBazaar. The seller is paid only after you confirm you have the item.')).toBeTruthy();
+    const seller = screen.getByRole('region', { name: 'Seller' });
+    expect(within(seller).getByText('KU')).toBeTruthy();
+    expect(within(seller).getByRole('link', { name: 'Karim Uddin' }).getAttribute('href')).toBe('/users/seller-1');
+    expect(within(seller).getByText('Identity verified')).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Photos' }).querySelector('ul')!.getAttribute('tabindex')).toBe('0');   // the phone strip scrolls by keyboard too
+  });
+
+  it('NFR-USE-04 the promise and the seller card in Bangla', async () => {
+    renderApp(`/listings/${ID}`, backend({ l: listing() }), 'bn');
+    expect(await screen.findByText('আপনার টাকা আমাদের কাছে থাকে')).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'বিক্রেতা' })).toBeTruthy();
+  });
+});
+
 describe('the auction panel', () => {
   it('FR-AUC-01 price, bids, the masked leader, the reserve, and a countdown on the server\'s clock', async () => {
     // the device clock is 10 minutes slow: the countdown still shows the time left on the server's clock
@@ -231,6 +252,26 @@ describe('the auction panel', () => {
     act(() => socket.push('auction.outbid', { auctionId: ID, price: '155000', seq: 3 }));
     expect(await screen.findByText('You have been outbid.', { selector: '[aria-live="polite"]' })).toBeTruthy();
     expect(await screen.findByText(/Your maximum: ৳1,500 You have been outbid\./)).toBeTruthy();
+  });
+
+  it('FR-AUC-12 after being outbid, the panel no longer says "You are leading" from the bid placed earlier', async () => {
+    const socket = new FakeSocket();
+    let mine: MyStatus = none;
+    const be = backend({ l: auctionListing(), mine: () => mine, bid: () => {
+      mine = { ...none, hasBid: true, yourMaximum: '150000', leading: true, yourAlias: 1 };
+      return json(201, { bidId: '9', outcome: 'leading', yourMaximum: '150000', state: auctionState({ price: '100000', seq: 2, bidCount: 1, leaderAlias: 1 }) })();
+    } });
+    renderApp(`/listings/${ID}`, be, 'en', socket);
+    fireEvent.change(await screen.findByLabelText('Your maximum bid (taka)'), { target: { value: '1,500' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Place bid' }));
+    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Bid ৳1,500' }));
+    expect(await screen.findByText('You are leading at ৳1,000.')).toBeTruthy();
+    await waitFor(() => expect(socket.opened).toBe(1));
+    act(() => socket.accept());
+    mine = { ...mine, leading: false };
+    act(() => socket.push('auction.outbid', { auctionId: ID, price: '155000', seq: 3 }));
+    expect(await screen.findByText(/Your maximum: ৳1,500 You have been outbid\./)).toBeTruthy();
+    expect(screen.queryByText('You are leading at ৳1,000.')).toBeNull();
   });
 
   it('FR-AUC-03 a leader raising their maximum is told when it is not higher, before sending', async () => {

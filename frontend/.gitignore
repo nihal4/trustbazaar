@@ -1,0 +1,6 @@
+
+# end-to-end runs (U8-11)
+e2e/.fixtures.json
+e2e/.states/
+test-results/
+playwright-report/

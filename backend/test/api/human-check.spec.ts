@@ -70,4 +70,17 @@ describe('human verification', () => {
     // the success cleared the failures: the next sign-in needs no challenge
     expect((await browser().post('/auth/signin', { login: a.phone, password: a.password })).status).toBe(204);
   });
+
+  it('SEC-ABU-02 I-64 over both the address mark and the login failures, one solved challenge lets the sign-in through', async () => {
+    const a = await fx.account();
+    for (let i = 0; i < 3; i++) expect((await browser().post('/auth/signin', { login: a.phone, password: 'wrong' })).status).toBe(401);
+    const b = browser();
+    // ten sign-ins from this address reach its mark (more than 10 in 15 minutes asks for the challenge)
+    for (let i = 0; i < 10; i++) expect((await b.post('/auth/signin', { login: `nobody-${i}@example.com`, password: 'wrong' })).status).toBe(401);
+    const r = await b.post('/auth/signin', { login: a.phone, password: a.password });
+    expect(r.status).toBe(428);
+    const { challenge } = await r.json();
+    // the guard accepts the proof, and the sign-in service does not ask for a second one the client could not give
+    expect((await b.post('/auth/signin', { login: a.phone, password: a.password }, { 'x-human-proof': proofOf(challenge) })).status).toBe(204);
+  });
 });

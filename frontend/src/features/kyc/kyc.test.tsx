@@ -44,7 +44,10 @@ const statusBar = () => screen.getByRole('region', { name: 'Your verification' }
 
 async function takePhoto() {
   click('Start the camera');
-  fireEvent.click(await screen.findByRole('button', { name: 'Take the photo' }));
+  const take = await screen.findByRole('button', { name: 'Take the photo' }) as HTMLButtonElement;
+  expect(take.disabled).toBe(true); // until the camera's first frame
+  fireEvent.loadedData(screen.getByLabelText('Camera view'));
+  fireEvent.click(take);
   await screen.findByRole('button', { name: 'Take it again' });
 }
 

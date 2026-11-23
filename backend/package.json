@@ -12,7 +12,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "posttest": "ts-node test/tools/coverage-gate.ts",
-    "test:integration": "jest --config test/jest.integration.json --runInBand",
+    "test:integration": "jest --config test/jest.integration.json --maxWorkers=1",
     "migrate": "node dist/migrate.js",
     "staff:bootstrap": "node dist/staff-bootstrap.js",
     "areas:seed": "node dist/areas-seed.js",

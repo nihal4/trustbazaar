@@ -9,7 +9,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { formatMoney } from '../../lib/money.js';
+import { formatMoney, toLocalDigits } from '../../lib/money.js';
 import { formatCountdown, formatDateTime } from '../../lib/time.js';
 import { useApi } from '../../shared/api';
 import { useOpenThread } from '../../shared/chat';
@@ -87,12 +87,20 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
   return (
     <div className={styles.page}>
       {(awaiting || attempt) && <SimulatedBanner kind="payment" />}
-      <h1>{t('order.title', { title: o.listing.title })}</h1>
-      <p>
-        <strong>{t(`order.status.${o.status}`)}</strong>
-        {' · '}{t(`order.role.${o.role}`)}
-        {' · '}<Link to={`/listings/${encodeURIComponent(o.listing.id)}`}>{t('order.listing_link')}</Link>
-      </p>
+      <header className={styles.head}>
+        <span className={styles.thumb}>
+          {o.listing.photoKey && <img src={`/api/v1/listing-photos/${encodeURIComponent(o.listing.photoKey)}?size=thumb`} alt="" width={88} height={88} />}
+        </span>
+        <div className={styles.headText}>
+          <h1>{t('order.title', { title: o.listing.title })}</h1>
+          <p className={styles.meta}>
+            <span className={styles.status}>{t(`order.status.${o.status}`)}</span>
+            <span>{t(`order.role.${o.role}`)}</span>
+            <Link to={`/listings/${encodeURIComponent(o.listing.id)}`}>{t('order.listing_link')}</Link>
+          </p>
+        </div>
+      </header>
+      <Steps o={o} t={t} lang={lang} />
       {attempt && <Return o={o} failed={failed} waited={waited} t={t} />}
       {!(awaiting && o.role === 'buyer') && <p className={styles.money}>{moneyText(o, t, lang)}</p>}
       <Deadlines o={o} h={handover.data ?? null} t={t} lang={lang} />
@@ -112,6 +120,32 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
   );
 }
 
+/**
+ * Where the order is (Daylight design, docs/design/10_visual.md, section 7.6): payment, the handover (or delivery),
+ * and the end; each step done, current or still to come, in words for screen readers. A cancelled order has none.
+ */
+export function stepsOf(o: OrderView): { key: 'payment' | 'handover' | 'done'; state: 'done' | 'current' | 'next' }[] {
+  if (o.status === 'cancelled') return [];
+  const at = o.status === 'awaiting_payment' ? 0 : o.status === 'closed' ? 3 : o.deliveryEventAt === null ? 1 : 2;
+  return (['payment', 'handover', 'done'] as const).map((key, i) => ({ key, state: i < at ? 'done' : i === at ? 'current' : 'next' }));
+}
+
+function Steps({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
+  const steps = stepsOf(o);
+  if (steps.length === 0) return null;
+  return (
+    <ol className={styles.steps} aria-label={t('order.steps.label')}>
+      {steps.map((s, i) => (
+        <li key={s.key} className={styles[s.state]} aria-current={s.state === 'current' ? 'step' : undefined}>
+          <span className={styles.dot} aria-hidden="true">{s.state === 'done' ? '' : toLocalDigits(String(i + 1), lang)}</span>
+          <span>{t(`order.steps.${s.key}${s.key === 'handover' && o.fulfilment === 'courier' ? '_courier' : ''}`)}</span>
+          <span className={styles.visuallyHidden}>{t(`order.steps.state.${s.state}`)}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 /** Section 7.5 (5): the chat with the other party. The buyer may open it; the seller answers once the buyer wrote. */
 function OrderChat({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
   const { open, busy, error } = useOpenThread();
@@ -128,7 +162,8 @@ function OrderChat({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
 
 /** FR-PAY-02: after the provider, only the order's status; the return itself proves nothing. */
 function Return({ o, failed, waited, t }: { o: OrderView; failed: boolean; waited: boolean; t: T }) {
-  if (o.status === 'paid' || o.status === 'closed') return <FormMessage kind="success">{t('return.paid')}</FormMessage>;
+  // "held until you have the item" is true only while the order is paid; after it closes the money sentence says where it went
+  if (o.status === 'paid') return <FormMessage kind="success">{t('return.paid')}</FormMessage>;
   if (o.status !== 'awaiting_payment') return null;
   if (failed) return <FormMessage kind="error">{t('return.failed')}</FormMessage>;
   if (waited) return <FormMessage kind="info">{t('return.waiting')}</FormMessage>;

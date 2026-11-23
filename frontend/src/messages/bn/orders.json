@@ -320,5 +320,13 @@
   "game.deadline.protection": "সুরক্ষার সময় শেষ হবে",
   "game.deliver_link": "লগইন তথ্য পাঠান",
   "game.credentials_link": "লগইন তথ্য খুলুন",
-  "game.release_early": "আগেই টাকা ছেড়ে দিন"
+  "game.release_early": "আগেই টাকা ছেড়ে দিন",
+  "order.steps.label": "অর্ডারের অগ্রগতি",
+  "order.steps.payment": "পেমেন্ট",
+  "order.steps.handover": "হস্তান্তর",
+  "order.steps.handover_courier": "ডেলিভারি",
+  "order.steps.done": "শেষ",
+  "order.steps.state.done": "(হয়ে গেছে)",
+  "order.steps.state.current": "(এখন)",
+  "order.steps.state.next": "(বাকি আছে)"
 }

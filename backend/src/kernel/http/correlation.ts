@@ -2,12 +2,14 @@ import { randomUUID } from 'crypto';
 import type { NextFunction, Request, Response } from 'express';
 import { Logger } from '@nestjs/common';
 import { withCorrelation } from '../logging/context';
+import type { PrincipalRequest } from './principal';
 
 // Every request gets a correlation id: in X-Correlation-Id on the response, in every problem document
 // (SEC-INP-06), and in every log line written while the request is handled (K-02, kernel/logging). A well-formed
 // incoming id is kept, so a request can be followed through a proxy; anything else is replaced.
-// When the response is sent, one line records the method, the path without its query, the status and the time taken;
-// no header, query or body is logged (SEC-DAT-07).
+// When the response is sent, one line records the method, the path without its query, the status, the time taken, the
+// actor (the signed-in user or staff member as Unit 1's guard established it, or "anonymous") and the source address
+// (SEC-LOG-03); no header, query or body is logged (SEC-DAT-07).
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export function correlationId(req: Request): string {
@@ -22,7 +24,9 @@ export function correlationMiddleware(req: Request, res: Response, next: NextFun
   const started = process.hrtime.bigint();
   res.on('finish', () => {
     const ms = Number((process.hrtime.bigint() - started) / 1000n) / 1000;
-    const line = { msg: 'request', method: req.method, path: req.originalUrl.split('?')[0], status: res.statusCode, ms };
+    const p = (req as Request & PrincipalRequest).principal;
+    const actor = !p ? 'anonymous' : p.type === 'user' ? `user:${p.userId}` : `staff:${p.staffId}`;
+    const line = { msg: 'request', method: req.method, path: req.originalUrl.split('?')[0], status: res.statusCode, ms, actor, ip: req.ip };
     withCorrelation(id, () => (res.statusCode >= 500 ? access.warn(line) : access.log(line)));
   });
   withCorrelation(id, next);

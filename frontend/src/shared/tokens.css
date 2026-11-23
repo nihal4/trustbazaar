@@ -1,30 +1,41 @@
-/* Design tokens and base styles (docs/design/08_frontend.pdf, sections 2.3 and 7). Colours keep text
-   contrast of at least 4.5:1 on the page background; the focus ring is 2px with at least 3:1. */
+/* Design tokens and base styles (docs/design/08_frontend.pdf, sections 2.3 and 7; docs/design/10_visual.md).
+   Colours keep text contrast of at least 4.5:1 on the page background; the focus ring is 2px with at least 3:1. */
 :root {
+  /* Daylight palette (docs/design/10_visual.md, section 2). Text keeps at least 4.5:1 on the page background,
+     control borders and the focus ring at least 3:1. The Mantine theme (theme.ts) uses the same values. */
   --tb-bg: #ffffff;
-  --tb-surface: #f4f6f8;
-  --tb-text: #1b1f24;
-  --tb-muted: #4a5360;
-  --tb-border: #c9d0d8;
-  --tb-accent: #0b5cad;
+  --tb-surface: #f3f1f5;
+  --tb-text: #1e1a26;
+  --tb-muted: #625c6e;
+  --tb-border: #857d92;
+  --tb-line: #e6e1ec;
+  --tb-accent: #4b2378;
   --tb-accent-text: #ffffff;
+  --tb-accent-soft: #e9ddf6;
+  --tb-cream: #fff1ea;
   --tb-warning-bg: #fff4d6;
   --tb-warning-border: #8a5a00;
-  --tb-focus: #0b5cad;
-  --tb-error: #b3261e;
+  --tb-focus: #4b2378;
+  --tb-error: #b42318;
   --tb-success: #1e6b34;
-  --tb-radius: 6px;
+  --tb-radius: 12px;
+  --tb-radius-pill: 999px;
   --tb-space-1: 0.25rem;
   --tb-space-2: 0.5rem;
   --tb-space-3: 1rem;
   --tb-space-4: 1.5rem;
-  --tb-max-width: 72rem;
-  --tb-font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tb-max-width: 80rem;
+  --tb-font: 'Schibsted Grotesk Variable', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tb-line-height: 1.5;
 }
 
-/* Noto Sans Bengali covers only the Bengali block, so Latin text keeps the system font. */
+/* Hind Siliguri covers the Bengali block and is loaded only for Bangla (language/font.ts); Bangla needs taller lines. */
 :root:lang(bn) {
-  --tb-font: 'Noto Sans Bengali', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tb-font: 'Hind Siliguri', 'Schibsted Grotesk Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tb-line-height: 1.7;
+  --mantine-font-family: var(--tb-font);
+  --mantine-font-family-headings: var(--tb-font);
+  --mantine-line-height: 1.7;
 }
 
 *,
@@ -43,7 +54,7 @@ body {
   color: var(--tb-text);
   font-family: var(--tb-font);
   font-size: 1rem;
-  line-height: 1.5;
+  line-height: var(--tb-line-height);
   overflow-wrap: anywhere;
 }
 
@@ -71,3 +82,8 @@ button {
     scroll-behavior: auto !important;
   }
 }
+
+/* Forms never push the page sideways (NFR-USE-05, checked at 320 px by the end-to-end sweep, U8-11): a fieldset
+   otherwise refuses to shrink below its content, and inputs keep their default character width. */
+fieldset { min-width: 0; }
+input, select, textarea { max-width: 100%; box-sizing: border-box; }

@@ -159,11 +159,18 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath }: {
   const mine = myStatus.data;
   return (
     <section aria-labelledby="auction-title" className={styles.auction}>
-      <h2 id="auction-title">{t('auction.title')}</h2>
+      <div className={styles.auctionTop}>
+        <h2 id="auction-title">{t('auction.title')}</h2>
+        {open && (
+          <p className={styles.timeLeft}>
+            {t('auction.time_left')}: <strong role="timer" aria-live="off" className={countdown.urgent ? styles.urgent : undefined}>{countdown.text}</strong>
+          </p>
+        )}
+      </div>
       <p className={styles.visuallyHidden} aria-live="polite" role="status">{announcement}</p>
       <div className={styles.facts}>
-        <p>
-          {state.price ? t('auction.current_price') : t('auction.start_price')}:{' '}
+        <p className={styles.priceLine}>
+          <span className={styles.muted}>{state.price ? t('auction.current_price') : t('auction.start_price')}</span>{' '}
           <strong className={styles.bigPrice}>{money(state.price ?? state.startPrice, lang)}</strong>
         </p>
         <p>{state.bidCount > 0 ? t('auction.bid_count', { count: toLocalDigits(String(state.bidCount), lang) }) : t('auction.no_bids')}</p>
@@ -173,9 +180,6 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath }: {
 
       {open && (
         <div className={styles.clock}>
-          <p>
-            {t('auction.time_left')}: <strong role="timer" aria-live="off" className={countdown.urgent ? styles.urgent : undefined}>{countdown.text}</strong>
-          </p>
           <p className={styles.muted}>{t('auction.ends_at', { at: formatDateTime(Date.parse(state.endAt), lang) })}</p>
           {countdown.urgent && <p className={styles.warning}>{t('auction.late_warning')}</p>}
           {closing && <p role="status">{t('auction.ending')}</p>}
@@ -242,6 +246,11 @@ function BidForm({ id, state, mine, t, lang, onPlaced, onRefused }: {
   const [result, setResult] = useState<{ kind: 'success' | 'info' | 'error'; text: string } | null>(null);
   const [confirming, setConfirming] = useState<bigint | null>(null);
   const leading = mine?.leading === true;
+  // "You are leading at ..." was true when the bid was placed: once another bid overtakes it, it is removed, so the panel
+  // never says both that and "You have been outbid" (U8-11)
+  useEffect(() => {
+    if (!leading) setResult((r) => (r?.kind === 'success' ? null : r));
+  }, [leading]);
   // sent once (section 4.2): a second click before the button shows as disabled sends nothing
   const sending = useRef(false);
   const send = (maximum: bigint) => {

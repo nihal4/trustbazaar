@@ -75,7 +75,7 @@ export class SignInService {
     const now = this.clock.now();
     await this.throttle.check(failKey);
     // SEC-ABU-02: after repeated failures for this login the next attempt needs a solved challenge (428 otherwise)
-    if ((await this.throttle.failures(failKey)) >= HUMAN_CHECK_AFTER_FAILURES) await this.human.require('signin', ctx.ip ?? '', ctx.humanProof);
+    if (!ctx.humanChecked && (await this.throttle.failures(failKey)) >= HUMAN_CHECK_AFTER_FAILURES) await this.human.require('signin', ctx.ip ?? '', ctx.humanProof);
 
     let user: UserRow | undefined;
     if (account) {

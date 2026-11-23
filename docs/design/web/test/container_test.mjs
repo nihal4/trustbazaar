@@ -79,7 +79,7 @@ if (process.env.DEBUG) for (const p of ['/', '/assets/app-3f9a1c.js', '/staff/qu
 }
 const cases = [
   ['/', 'index'], ['/listings/42', 'index'], ['/orders/7?tab=dispute', 'index'],
-  ['/staff/queues/disputes', 'staff'], ['/admin/config', 'staff'],
+  ['/staff/queues/disputes', 'staff'], ['/admin/config', 'staff'], ['/staff', 'staff'], ['/admin', 'staff'], ['/staffing', 'index'],
   ['/account/kyc', 'kyc'], ['/account/kyc/selfie', 'kyc'], ['/account/kycx', 'index'],
   ['/secure/orders/7/credentials', 'secure'], ['/secure/orders/7/deliver', 'secure'],
 ];
@@ -89,7 +89,7 @@ for (const [p, doc] of cases) {
   const body = await r.text();
   titles[p] = body.match(/<title>(\w+)<\/title>/)?.[1];
 }
-check(cases.every(([p, d]) => titles[p] === d), 'every path is served by its document (10 paths, including deep links)');
+check(cases.every(([p, d]) => titles[p] === d), 'every path is served by its document (13 paths, including deep links and /staff and /admin themselves)');
 const sec = await head('/secure/orders/7/credentials');
 check(sec.headers.get('cache-control') === 'no-store', 'SEC-GAM-03 credential pages: Cache-Control no-store');
 check(sec.headers.get('content-security-policy').startsWith("default-src 'none'"), 'credential pages: CSP starts from nothing allowed');
@@ -101,6 +101,8 @@ check(app.headers.get('x-content-type-options') === 'nosniff', 'SEC-WEB-02 nosni
 const asset = await head('/assets/app-3f9a1c.js');
 check(asset.headers.get('cache-control') === 'public, max-age=31536000, immutable', 'hashed assets are cached for a year');
 check(asset.headers.get('content-type').includes('javascript'), 'scripts are served as JavaScript');
+const gz = await fetch(origin + '/assets/app-3f9a1c.js', { headers: { 'Accept-Encoding': 'gzip' } });
+check(gz.headers.get('content-encoding') === 'gzip' && /Accept-Encoding/i.test(gz.headers.get('vary') ?? ''), 'NFR-PERF-07 scripts are sent compressed (DV-53 counts compressed bytes)');
 const api = await head('/api/v1/ping');
 check(api.headers.get('content-security-policy') === null, 'API responses carry the backend\'s headers, not a page policy');
 check((await head('/assets/missing.js')).status === 404, 'a missing asset is 404, not the app page');
