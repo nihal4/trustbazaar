@@ -279,4 +279,13 @@
   .mark { width: 26px; height: 26px; }
   .langSwitch { padding: var(--tb-space-1) 0.75rem; }
   .account { padding: 0 0.375rem; }
+  .langSwitch, .account, .wordmark { white-space: nowrap; }
+  /* the unread count sits on the bell's corner, so the header keeps one line */
+  .iconLink { position: relative; flex: none; }
+  .iconLink .badge { position: absolute; top: -2px; right: -4px; margin: 0; font-size: 0.75rem; line-height: 1.4; }
+}
+@media (max-width: 26rem) {
+  .header { gap: 0.375rem; }
+  .wordmark { font-size: 1.05rem; }
+  .iconLink { min-width: 44px; }
 }
