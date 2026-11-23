@@ -279,7 +279,7 @@ Design: `docs/design/09_integration.pdf` (source `.tex` beside it).
 | ID | Task | Needs | Status | Owner | Branch / PR | Done | Notes |
 |---|---|---|---|---|---|---|---|
 | U9-01 | `docker compose up --wait` in CI; images scanned; SBOM | P0-02, U1-02 | todo | | | | |
-| U9-02 | API security tests for the 47 SEC requirements still untested (Unit 9, section 7.4) | U7-06 | doing | Sabikun Nahar Sinthia | `feature/u9-02-auth-security`, #271; `feature/u9-02-access-security`, #272; `feature/u9-02-pipeline-security` | | Three PRs by area (agreed with the user, 2026-11-23): sign-in, sessions and abuse limits (14 files); access control and data (18); input, logs, payments, infrastructure and the pipeline (15). |
+| U9-02 | API security tests for the 47 SEC requirements still untested (Unit 9, section 7.4) | U7-06 | doing | Sabikun Nahar Sinthia | `feature/u9-02-auth-security`, #271; `feature/u9-02-access-security`, #272; `feature/u9-02-pipeline-security`, #273 | | Three PRs by area (agreed with the user, 2026-11-23): sign-in, sessions and abuse limits (14 files); access control and data (18); input, logs, payments, infrastructure and the pipeline (15). |
 | U9-03 | Reference load test NFR-PERF-01 with k6; acceptance criteria rechecked | U8-11 | todo | | | | |
 | U9-04 | ZAP baseline and triage; ASVS 5.0 checklist (SEC-GEN-01) | U9-01 | todo | | | | |
 | U9-05 | Backup and restore rehearsal; incident procedure in `SECURITY.md` | U9-01 | todo | | | | |
