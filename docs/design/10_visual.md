@@ -110,15 +110,15 @@ Each screen keeps its current route, data and behaviour. "Done" means every crit
 
 ### 7.5 Checkout (`/checkout/:listingId`): `checkout.jpg`
 
-- AC-CHK-1: The item summary, then "How do you want to get it?" and "How do you want to pay?" as choice cards. Payment methods are named in text only, with no logos.
-- AC-CHK-2: The summary column shows every line of the price breakdown and the total (FR-MON-10), then the pay button naming the amount and the method, then the promise note and the checkout hold (CP-13, 15 minutes).
-- AC-CHK-3: The simulated-payment banner is on the page in ink with a "Demo" label (NFR-CMP-05).
+- AC-CHK-1: The item (photo, title, price for one), the quantity when more than one is for sale, and "How you get it" as choice cards; a game account shows its same-browser note instead.
+- AC-CHK-2: The summary column shows the total (or the item total plus delivery), "Continue to payment", the reserve note and the payment promise. The payment method and the price breakdown (FR-MON-10) are on the order page, where the payment is taken (U8-05; Decisions log, U10-05).
+- AC-CHK-3: The test-mode banner is on checkout and on the order page while payment is due, with its wording (NFR-CMP-05).
 
 ### 7.6 Order and handover (`/orders/:id`): `order.jpg`, `order-phone.jpg`
 
-- AC-ORD-1: The headline says what to do next. The money sentence comes first in plum and ink (NFR-USE-07).
-- AC-ORD-2: The order's steps show done, current and next. The current step names its deadline.
-- AC-ORD-3: The handover code is in six large boxes with the "show it only once you have the item" instruction (I-27). The meeting place card offers "Change".
+- AC-ORD-1: The head shows the item's photo, the order title, the status as a badge, the role and the listing link. The money sentence follows on peach cream (NFR-USE-07).
+- AC-ORD-2: Three steps (payment, handover or delivery, done) show done, current and next, in words for screen readers; the deadlines that apply follow as cards.
+- AC-ORD-3: The handover code is one large number in a box with the "show it only once you have the item" instruction (I-27), read aloud as one code.
 - AC-ORD-4: "Message …" (plum) and "Something is wrong" (outline) are the two actions. The dispute, rating and early-release flows of U8-09 and U8-07 keep their screens in this style.
 
 ### 7.7 Sell (`/sell/new`, `/sell/:id`): `sell.jpg`

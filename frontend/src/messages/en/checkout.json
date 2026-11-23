@@ -22,5 +22,8 @@
   "checkout.game_browser": "Buying a game account needs a browser that supports Web Crypto and IndexedDB, and this one does not. Please use an up-to-date Chrome, Firefox, Edge or Safari.",
   "checkout.game_title": "Game account",
   "checkout.game_same_browser": "Use this same browser on this device to open the credentials. If you clear its data or change device, you can ask the seller to send them again once.",
-  "checkout.game_next": "Next you read the publisher-risk notice and create a key in this browser, then pay."
+  "checkout.game_next": "Next you read the publisher-risk notice and create a key in this browser, then pay.",
+  "checkout.summary": "Summary",
+  "checkout.promise.title": "Your money waits with us",
+  "checkout.promise.text": "The seller is paid only after you confirm you have the item."
 }

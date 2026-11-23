@@ -320,5 +320,13 @@
   "game.deadline.protection": "The protection period ends on",
   "game.deliver_link": "Send the login details",
   "game.credentials_link": "Open the login details",
-  "game.release_early": "Release the payment early"
+  "game.release_early": "Release the payment early",
+  "order.steps.label": "Order progress",
+  "order.steps.payment": "Payment",
+  "order.steps.handover": "Handover",
+  "order.steps.handover_courier": "Delivery",
+  "order.steps.done": "Done",
+  "order.steps.state.done": "(done)",
+  "order.steps.state.current": "(now)",
+  "order.steps.state.next": "(still to come)"
 }

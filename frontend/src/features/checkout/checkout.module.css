@@ -1,11 +1,32 @@
-/* Checkout (section 7.4): one column; the main action at least 44 px high. */
-.page { max-width: 40rem; }
-.item { border: 1px solid var(--tb-border); border-radius: var(--tb-radius); background: var(--tb-surface); padding: var(--tb-space-2) var(--tb-space-3); margin-bottom: var(--tb-space-3); }
-.form { display: flex; flex-direction: column; gap: var(--tb-space-2); }
-.field { display: flex; flex-direction: column; gap: var(--tb-space-1); border: 0; padding: 0; margin: 0; }
-.field input[type='text'] { min-height: 44px; max-width: 8rem; font: inherit; padding: 0 var(--tb-space-2); }
-.option { display: flex; align-items: center; gap: var(--tb-space-2); min-height: 44px; }
+/* Checkout (section 7.4; Daylight design, docs/design/10_visual.md, section 7.5): one column on phones; from 60rem the
+   item and the choices on the left and the summary on the right. The main action is at least 48 px high. */
+.page { display: flex; flex-direction: column; gap: 1.25rem; }
+.title { margin: 0; font-size: 2rem; letter-spacing: -0.03em; font-weight: 800; }
+:lang(bn) .title { letter-spacing: 0; font-weight: 700; }
+.layout { display: grid; gap: 1.5rem; align-items: start; }
+@media (min-width: 60rem) { .layout { grid-template-columns: minmax(0, 1fr) 24rem; gap: 2.5rem; } }
+.main { display: flex; flex-direction: column; gap: 1.5rem; min-width: 0; }
+.item { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 1rem; align-items: center; }
+.item p { margin: 0; }
+.thumb { display: block; width: 96px; height: 96px; border-radius: 14px; background: var(--tb-surface); overflow: hidden; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.itemTitle { font-size: 1.0625rem; font-weight: 700; overflow-wrap: anywhere; }
+.itemTitle a { color: var(--tb-text); text-underline-offset: 3px; }
+.form { display: flex; flex-direction: column; gap: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--tb-line); }
+.field { display: flex; flex-direction: column; gap: 0.625rem; border: 0; padding: 0; margin: 0; min-width: 0; }
+.field legend, .field > label { font-size: 1.1875rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 0.25rem; padding: 0; }
+.field input[type='text'] { min-height: 46px; max-width: 8rem; font: inherit; padding: 0 0.875rem; border: 1.5px solid var(--tb-border); border-radius: 12px; }
+.option { display: flex; align-items: center; gap: 0.75rem; min-height: 56px; padding: 0.5rem 1rem; border: 1.5px solid var(--tb-line); border-radius: 14px; background: #fff; cursor: pointer; }
+.option:has(input:checked) { border-color: var(--tb-accent); background: #fbf8fe; }
+.option input { width: 20px; height: 20px; accent-color: var(--tb-accent); flex: none; margin: 0; }
+.option label { flex: 1; cursor: pointer; font-weight: 600; }
+.gameNote { border-radius: 16px; background: var(--tb-surface); padding: 1rem 1.125rem; }
+.gameNote p { margin: 0.25rem 0; }
 .hint { color: var(--tb-muted); margin: 0; }
-.total { font-size: 1.25rem; font-weight: 700; }
-.primary { align-self: flex-start; min-height: 44px; padding: 0 var(--tb-space-3); border-radius: var(--tb-radius); background: var(--tb-accent); color: var(--tb-accent-text); border: 0; font: inherit; font-weight: 700; }
+.summary { display: flex; flex-direction: column; gap: 1rem; border-radius: 22px; background: var(--tb-surface); padding: 1.375rem; }
+.summary h2 { margin: 0; font-size: 1.25rem; }
+.total { margin: 0; font-size: 1.375rem; font-weight: 800; letter-spacing: -0.02em; }
+:lang(bn) .total { letter-spacing: 0; }
+.primary { min-height: 50px; padding: 0 1.5rem; border-radius: 999px; background: var(--tb-accent); color: var(--tb-accent-text); border: 0; font: inherit; font-weight: 700; font-size: 1.0625rem; cursor: pointer; }
 .primary:disabled { opacity: 0.6; }
+.visuallyHidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
