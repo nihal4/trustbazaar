@@ -129,9 +129,9 @@ Each screen keeps its current route, data and behaviour. "Done" means every crit
 
 ### 7.8 Sign-in and account (`/signin`, `/register`, `/account/*`): `signin.jpg`
 
-- AC-ACC-1: Sign-in and registration use the split layout on desktop (form left, peach side with the promise right). On phones it is the form only.
-- AC-ACC-2: Fields have visible labels, errors under the field in danger red, and the human-check line under the button.
-- AC-ACC-3: Account, security, MFA, notifications, messages and privacy pages use the same tabs, inputs and buttons, with no new layout of their own.
+- AC-ACC-1: Sign-in and registration use the split layout on desktop, under the site's header: the form left, a peach-cream panel with the promise right, which stays in view while the registration form scrolls. On phones it is the form only (Decisions log, U10-07).
+- AC-ACC-2: Fields have visible labels, errors under the field in danger red (with the summary at the top as before), and the human-check line "Protected by a short check in your browser. No puzzles." under the main button.
+- AC-ACC-3: Account, security (with the authenticator app), notifications, messages and privacy pages share one row of tabs, the current one marked in words as well as colour (`aria-current`), and the same inputs, panels and pill buttons, with no new layout of their own. On phones the tab row scrolls on its own, never the page.
 
 ### 7.9 ID check (`kyc.html`): `kyc.jpg`
 

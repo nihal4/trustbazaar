@@ -5,6 +5,7 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { formatDateTime } from '../../lib/time.js';
 import { toLocalDigits } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
+import { AccountTabs } from '../../shared/AccountTabs';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
 import { useT } from '../../shared/language/Language';
@@ -50,6 +51,7 @@ export function Component() {
   const items = pages.data.pages.flatMap((p) => p.items);
   return (
     <div className={styles.page}>
+      <AccountTabs t={t} />
       <h1>{t('chat.title')}</h1>
       {items.length === 0
         ? <p>{t('chat.empty')}</p>

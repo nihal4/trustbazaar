@@ -7,6 +7,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 import { formatDateTime } from '../../lib/time.js';
 import { toLocalDigits } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
+import { AccountTabs } from '../../shared/AccountTabs';
 import { errorText } from '../../shared/errors';
 import { CheckboxField, FormMessage, SubmitButton } from '../../shared/form';
 import { useLanguage, useT } from '../../shared/language/Language';
@@ -53,6 +54,7 @@ export function Component() {
   }
   return (
     <div className={styles.page}>
+      <AccountTabs t={t} />
       <h1>{t('notifications.title')}</h1>
       <List t={t} lang={lang} />
       <PreferencesForm />

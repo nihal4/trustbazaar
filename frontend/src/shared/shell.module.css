@@ -289,3 +289,8 @@
   .wordmark { font-size: 1.05rem; }
   .iconLink { min-width: 44px; }
 }
+/* at 320 px, signed in and in Bangla, "English" is the widest switch: a little less padding keeps the line */
+@media (max-width: 21rem) {
+  .langSwitch { padding-inline: 0.5rem; }
+  .wordmark { font-size: 1rem; }
+}
