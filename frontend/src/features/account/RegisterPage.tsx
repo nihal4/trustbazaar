@@ -10,6 +10,7 @@ import { toAsciiDigits } from '../../lib/money.js';
 import { digits, otherError, passwordReasonText, rejectedPasswordReason, retryAfter, useAccountT, useAfterSignIn } from './common';
 import { bangladeshiMobile, isSixDigits, looksLikeEmail, passwordLengthProblem, PASSWORD } from './input';
 import { LEGAL_VERSIONS } from './legal';
+import { AuthSplit, HumanCheckNote } from './AuthSplit';
 import { PrivacyNotice } from './PrivacyNotice';
 import styles from './account.module.css';
 
@@ -138,9 +139,9 @@ export function Component() {
 
   if (started) {
     return (
-      <div className={styles.narrow}>
+      <AuthSplit>
         <h1>{t('register.code_title')}</h1>
-        <p>{t('register.code_sent', { phone: started.phone })}</p>
+        <p className={styles.lead}>{t('register.code_sent', { phone: started.phone })}</p>
         {message && <FormMessage kind="error">{message}</FormMessage>}
         <form onSubmit={verify} noValidate>
           <TextField id="code" label={t('code.label')} value={code} onChange={setCode} error={codeError ?? undefined}
@@ -155,14 +156,18 @@ export function Component() {
         <p><button type="button" className={styles.link} onClick={() => { setStarted(null); setCode(''); setMessage(null); }}>
           {t('register.change_details')}
         </button></p>
-      </div>
+      </AuthSplit>
     );
   }
 
   const summary: SummaryItem[] = (Object.entries(errors) as [Field, string][]).map(([f, m]) => ({ id: `register-${f}`, message: m }));
   return (
-    <div className={styles.narrow}>
+    <AuthSplit>
       <h1>{t('register.title')}</h1>
+      <p className={styles.lead}>
+        {t('register.have_account')}{' '}
+        <Link to={next ? `/signin?next=${encodeURIComponent(next)}` : '/signin'}>{t('signin.link')}</Link>
+      </p>
       <PrivacyNotice />
       <ErrorSummary title={t('form.errors_title')} items={summary} />
       {message && <FormMessage kind="error">{message}</FormMessage>}
@@ -186,7 +191,7 @@ export function Component() {
         <CheckboxField id="register-accept" label={t('register.accept')} checked={accept} onChange={setAccept} error={errors.accept} />
         <SubmitButton busy={busy} disabled={waitFor > 0}>{waitText ?? t('register.submit')}</SubmitButton>
       </form>
-      <p>{t('register.have_account')} <Link to={next ? `/signin?next=${encodeURIComponent(next)}` : '/signin'}>{t('signin.link')}</Link></p>
-    </div>
+      <HumanCheckNote />
+    </AuthSplit>
   );
 }

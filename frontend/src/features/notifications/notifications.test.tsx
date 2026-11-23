@@ -42,7 +42,7 @@ describe('the notification centre', () => {
     const { be } = backend();
     renderApp('/notifications', be);
     expect(await screen.findByText('1 unread')).toBeTruthy();
-    const items = within(screen.getByRole('main')).getAllByRole('listitem');   // the page's, not the footer's
+    const items = within(screen.getByRole('main')).getAllByRole('listitem').filter((li) => !li.closest('nav'));   // the notices, not the footer's or the tabs'
     expect(items.map((li) => within(li).getByText(/Payment received|New sign-in/).textContent)).toEqual(['Payment received', 'New sign-in']);
     expect(within(items[0]).getByText('New')).toBeTruthy();
     expect(within(items[1]).queryByText('New')).toBeNull();

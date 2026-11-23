@@ -10,6 +10,7 @@ import { isApiError, problemName } from '../../shared/problems';
 import { toAsciiDigits } from '../../lib/money.js';
 import { digits, otherError, retryAfter, useAccountT, useAfterSignIn } from './common';
 import { normaliseLogin } from './input';
+import { AuthSplit, HumanCheckNote } from './AuthSplit';
 import styles from './account.module.css';
 
 export function Component() {
@@ -80,9 +81,9 @@ export function Component() {
 
   if (step === 'mfa') {
     return (
-      <div className={styles.narrow}>
+      <AuthSplit>
         <h1>{t('signin.mfa_title')}</h1>
-        <p>{t('signin.mfa_text')}</p>
+        <p className={styles.lead}>{t('signin.mfa_text')}</p>
         {message && <FormMessage kind="error">{message}</FormMessage>}
         <form onSubmit={submitCode} noValidate>
           <TextField id="signin-code" label={t('code.label')} value={code} onChange={setCode}
@@ -92,23 +93,27 @@ export function Component() {
         <p><button type="button" className={styles.link} onClick={() => { setStep('password'); setMessage(null); }}>
           {t('signin.back')}
         </button></p>
-      </div>
+      </AuthSplit>
     );
   }
 
   return (
-    <div className={styles.narrow}>
+    <AuthSplit>
       <h1>{t('signin.title')}</h1>
+      <p className={styles.lead}>
+        {t('signin.welcome')} {t('signin.no_account')}{' '}
+        <Link to={next ? `/register?next=${encodeURIComponent(next)}` : '/register'}>{t('register.link')}</Link>
+      </p>
       {message && <FormMessage kind="error">{message}</FormMessage>}
       <form onSubmit={submitPassword} noValidate>
         <TextField id="signin-login" label={t('signin.login')} hint={t('signin.login_hint')} value={login} onChange={setLogin}
           autoComplete="username" />
         <TextField id="signin-password" label={t('field.password')} value={password} onChange={setPassword}
           type="password" autoComplete="current-password" />
+        <p className={styles.forgot}><Link to="/reset">{t('signin.forgot')}</Link></p>
         <SubmitButton busy={busy} disabled={waitFor > 0}>{button ?? t('signin.submit')}</SubmitButton>
       </form>
-      <p><Link to="/reset">{t('signin.forgot')}</Link></p>
-      <p>{t('signin.no_account')} <Link to={next ? `/register?next=${encodeURIComponent(next)}` : '/register'}>{t('register.link')}</Link></p>
-    </div>
+      <HumanCheckNote />
+    </AuthSplit>
   );
 }
