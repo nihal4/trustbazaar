@@ -20,14 +20,14 @@ describe('logging', () => {
 
   const lineOf = (correlationId: string) => lines.find((l) => l.correlationId === correlationId && l.msg === 'request');
 
-  it('NFR-OBS-02 every request writes one JSON line with its correlation id, method, path, status and time', async () => {
+  it('NFR-OBS-02 SEC-LOG-03 every request writes one JSON line with its correlation id, method, path, status, time, actor and address', async () => {
     const id = randomUUID();
     const r = await fetch(t.url('/health/live?probe=1'), { headers: { 'x-correlation-id': id } });
     expect(r.headers.get('x-correlation-id')).toBe(id);
     await new Promise((resolve) => setImmediate(resolve));
     expect(lineOf(id)).toEqual({
       time: expect.stringMatching(/Z$/), level: 'info', module: 'http', msg: 'request', correlationId: id,
-      method: 'GET', path: '/api/v1/health/live', status: 200, ms: expect.any(Number),
+      method: 'GET', path: '/api/v1/health/live', status: 200, ms: expect.any(Number), actor: 'anonymous', ip: expect.any(String),
     });
   });
 
