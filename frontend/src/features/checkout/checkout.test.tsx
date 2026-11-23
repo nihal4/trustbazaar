@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, configure, fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, configure, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { placeholders } from '../../lib/i18n.js';
 import { fakeBackend, json, problem, renderApp, standInMe, type Call } from '../../testing/app';
 import en from '../../messages/en/checkout.json';
@@ -32,6 +32,14 @@ function backend(o: { l?: Record<string, unknown>; signedIn?: boolean; create?: 
 }
 
 describe('checkout', () => {
+  it('FR-FIX-01 the summary beside the choices holds the total, the button and the payment promise (Daylight design)', async () => {
+    renderApp(`/checkout/${ID}`, backend());
+    const summary = await screen.findByRole('complementary', { name: 'Summary' });
+    expect(within(summary).getByText('Total to pay: ৳1,500')).toBeTruthy();
+    expect(within(summary).getByRole('button', { name: 'Continue to payment' }).getAttribute('form')).toBe('checkout-form');
+    expect(within(summary).getByText('Your money waits with us')).toBeTruthy();
+  });
+
   it('FR-FIX-01 the quantity and self pickup, the total, then one order with an Idempotency-Key and on to its page', async () => {
     const be = backend();
     const doc = renderApp(`/checkout/${ID}`, be);

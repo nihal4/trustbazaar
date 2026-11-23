@@ -1,0 +1,5 @@
+/* The payment promise (docs/design/10_visual.md, section 6). */
+.promise { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 0.75rem; align-items: start; border-radius: 16px; background: var(--tb-cream); padding: 1rem 1.125rem; color: var(--tb-text); }
+.promise svg { color: var(--tb-accent); margin-top: 2px; }
+.promise p { margin: 0; font-size: 0.9375rem; line-height: 1.45; }
+.promise strong { display: block; font-size: 1rem; margin-bottom: 2px; }

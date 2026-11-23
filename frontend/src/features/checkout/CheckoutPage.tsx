@@ -4,7 +4,9 @@
 // auction win. Courier delivery (U8-06) is chosen here and completed on the order page, where the buyer gives the
 // address and gets the binding quote (Unit 4, DV-23) before paying. A game account first needs a browser with Web
 // Crypto and IndexedDB (Unit 5, AS-5) and is told to stay in this browser; its disclosure and key come on the order
-// page before payment (U8-07). A guest is sent to sign in.
+// page before payment (U8-07). A guest is sent to sign in. Daylight design (docs/design/10_visual.md, section 7.5):
+// the item and the choices on the left, the summary with the total, the button and the payment promise on the right;
+// one column on phones.
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -16,6 +18,7 @@ import { FormMessage } from '../../shared/form';
 import { useT } from '../../shared/language/Language';
 import { useMe } from '../../shared/me';
 import { isApiError, problemName } from '../../shared/problems';
+import { PromiseNote } from '../../shared/PromiseNote';
 import { FRESHNESS } from '../../shared/query';
 import { SimulatedBanner } from '../../shared/SimulatedBanner';
 import en from '../../messages/en/checkout.json';
@@ -35,6 +38,7 @@ interface Listing {
   fulfilmentOptions: 'pickup_only' | 'courier_only' | 'pickup_or_courier' | null;
   quantity: { total: number; available: number };
   seller: { id: string };
+  photos?: { thumbUrl: string }[];
 }
 
 /** Unit 5, AS-5: a game account needs a browser that keeps a non-extractable key (Web Crypto) in IndexedDB. */
@@ -110,59 +114,73 @@ export function Component() {
     create.mutate({ q: n, f: chosen }, { onSettled: () => { sending.current = false; } });
   };
 
+  const thumb = l.photos?.[0]?.thumbUrl;
   return (
     <div className={styles.page}>
       <SimulatedBanner kind="payment" />
-      <h1>{t('checkout.title')}</h1>
-      <section aria-labelledby="item-title" className={styles.item}>
-        <h2 id="item-title">{t('checkout.item')}</h2>
-        <p><Link to={`/listings/${encodeURIComponent(l.id)}`}>{l.title}</Link></p>
-        {l.price && <p>{t('checkout.unit_price', { price: formatMoney(BigInt(l.price), lang) })}</p>}
-      </section>
-      {blocked
-        ? <FormMessage kind="info">{blocked}</FormMessage>
-        : (
-          <form onSubmit={submit} noValidate className={styles.form}>
-            {error && <FormMessage kind="error">{error}</FormMessage>}
-            {l.quantity.total > 1 && (
-              <div className={styles.field}>
-                <label htmlFor="checkout-quantity">{t('checkout.quantity')}</label>
-                <input id="checkout-quantity" type="text" inputMode="numeric" value={quantity} maxLength={4}
-                  aria-describedby="checkout-available" onChange={(e) => setQuantity(e.target.value)} />
-                <p id="checkout-available" className={styles.hint}>{t('checkout.available', { count: toLocalDigits(String(max), lang) })}</p>
-              </div>
+      <h1 className={styles.title}>{t('checkout.title')}</h1>
+      <div className={styles.layout}>
+        <div className={styles.main}>
+          <section aria-labelledby="item-title" className={styles.item}>
+            <h2 id="item-title" className={styles.visuallyHidden}>{t('checkout.item')}</h2>
+            <span className={styles.thumb}>{thumb && <img src={thumb} alt="" width={96} height={96} />}</span>
+            <div>
+              <p className={styles.itemTitle}><Link to={`/listings/${encodeURIComponent(l.id)}`}>{l.title}</Link></p>
+              {l.price && <p className={styles.hint}>{t('checkout.unit_price', { price: formatMoney(BigInt(l.price), lang) })}</p>}
+            </div>
+          </section>
+          {blocked
+            ? <FormMessage kind="info">{blocked}</FormMessage>
+            : (
+              <form id="checkout-form" onSubmit={submit} noValidate className={styles.form}>
+                {error && <FormMessage kind="error">{error}</FormMessage>}
+                {l.quantity.total > 1 && (
+                  <div className={styles.field}>
+                    <label htmlFor="checkout-quantity">{t('checkout.quantity')}</label>
+                    <input id="checkout-quantity" type="text" inputMode="numeric" value={quantity} maxLength={4}
+                      aria-describedby="checkout-available" onChange={(e) => setQuantity(e.target.value)} />
+                    <p id="checkout-available" className={styles.hint}>{t('checkout.available', { count: toLocalDigits(String(max), lang) })}</p>
+                  </div>
+                )}
+                {game
+                  ? (
+                    <div className={styles.gameNote}>
+                      <p><strong>{t('checkout.game_title')}</strong></p>
+                      <p>{t('checkout.game_same_browser')}</p>
+                      <p className={styles.hint}>{t('checkout.game_next')}</p>
+                    </div>
+                  )
+                  : (
+                    <fieldset className={styles.field}>
+                      <legend>{t('checkout.fulfilment')}</legend>
+                      {pickup && (
+                        <div className={styles.option}>
+                          <input id="checkout-pickup" type="radio" name="fulfilment" value="self_pickup" checked={chosen === 'self_pickup'} onChange={() => setMethod('self_pickup')} />
+                          <label htmlFor="checkout-pickup">{t('checkout.fulfilment.self_pickup')}</label>
+                        </div>
+                      )}
+                      {courier && (
+                        <div className={styles.option}>
+                          <input id="checkout-courier" type="radio" name="fulfilment" value="courier" checked={chosen === 'courier'} onChange={() => setMethod('courier')} />
+                          <label htmlFor="checkout-courier">{t('checkout.fulfilment.courier')}</label>
+                        </div>
+                      )}
+                      {chosen === 'courier' && <p className={styles.hint}>{t('checkout.courier_note')}</p>}
+                    </fieldset>
+                  )}
+              </form>
             )}
-            {game
-              ? (
-                <div className={styles.field}>
-                  <p><strong>{t('checkout.game_title')}</strong></p>
-                  <p>{t('checkout.game_same_browser')}</p>
-                  <p className={styles.hint}>{t('checkout.game_next')}</p>
-                </div>
-              )
-              : (
-              <fieldset className={styles.field}>
-                <legend>{t('checkout.fulfilment')}</legend>
-                {pickup && (
-                  <div className={styles.option}>
-                    <input id="checkout-pickup" type="radio" name="fulfilment" value="self_pickup" checked={chosen === 'self_pickup'} onChange={() => setMethod('self_pickup')} />
-                    <label htmlFor="checkout-pickup">{t('checkout.fulfilment.self_pickup')}</label>
-                  </div>
-                )}
-                {courier && (
-                  <div className={styles.option}>
-                    <input id="checkout-courier" type="radio" name="fulfilment" value="courier" checked={chosen === 'courier'} onChange={() => setMethod('courier')} />
-                    <label htmlFor="checkout-courier">{t('checkout.fulfilment.courier')}</label>
-                  </div>
-                )}
-                {chosen === 'courier' && <p className={styles.hint}>{t('checkout.courier_note')}</p>}
-              </fieldset>
-              )}
+        </div>
+        {!blocked && (
+          <aside className={styles.summary} aria-labelledby="summary-title">
+            <h2 id="summary-title">{t('checkout.summary')}</h2>
             {total && <p className={styles.total}>{t(chosen === 'courier' ? 'checkout.total_plus_delivery' : 'checkout.total', { total })}</p>}
+            <button type="submit" form="checkout-form" className={styles.primary} disabled={create.isPending}>{t('checkout.continue')}</button>
             <p className={styles.hint}>{t('checkout.reserve_note')}</p>
-            <button type="submit" className={styles.primary} disabled={create.isPending}>{t('checkout.continue')}</button>
-          </form>
+            <PromiseNote title={t('checkout.promise.title')} text={t('checkout.promise.text')} />
+          </aside>
         )}
+      </div>
     </div>
   );
 }

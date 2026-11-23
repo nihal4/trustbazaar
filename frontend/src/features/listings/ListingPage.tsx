@@ -18,6 +18,7 @@ import type { Lang } from '../../shared/language/lang';
 import { useMe } from '../../shared/me';
 import { useOpenThread } from '../../shared/chat';
 import { isApiError } from '../../shared/problems';
+import { PromiseNote } from '../../shared/PromiseNote';
 import { FRESHNESS } from '../../shared/query';
 import { AuctionPanel } from './AuctionPanel';
 import { listingKey, type ListingView } from './model';
@@ -73,7 +74,7 @@ export function Component() {
         {l.saleFormat === 'auction' && l.auction
           ? <AuctionPanel initial={l.auction} t={t} lang={lang} signedIn={signedIn} own={own} nextPath={pathname} />
           : <Buy l={l} own={own} t={t} lang={lang} />}
-        <PromiseNote t={t} />
+        <PromiseNote title={t('listing.promise.title')} text={t('listing.promise.text')} />
         <section aria-labelledby="seller-title" className={styles.seller}>
           <h2 id="seller-title" className={styles.visuallyHidden}>{t('listing.seller')}</h2>
           <div className={styles.sellerRow}>
@@ -121,18 +122,6 @@ const Tick = () => (
 /** The first letters of up to two words of the seller's name, for the round badge beside it. */
 const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map((w) => [...w][0] ?? '').join('').toUpperCase();
 
-/** The payment promise (docs/design/10_visual.md, section 6), beside the price on every listing. */
-function PromiseNote({ t }: { t: T }) {
-  return (
-    <div className={styles.promise}>
-      <svg viewBox="0 0 16 16" width="22" height="22" aria-hidden="true" focusable="false">
-        <path d="M8 1 L14 3.2 V8 C14 11.6 11.4 14 8 15 C4.6 14 2 11.6 2 8 V3.2 Z" fill="currentColor" />
-        <path d="M5.2 8 l2 2 l3.6 -4" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-      <p><strong>{t('listing.promise.title')}</strong>{t('listing.promise.text')}</p>
-    </div>
-  );
-}
 
 type T = ReturnType<typeof useT>['t'];
 
