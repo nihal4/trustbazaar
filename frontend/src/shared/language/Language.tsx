@@ -2,7 +2,7 @@
 // the next visit, and reflected in <html lang> so screen readers pronounce the text correctly.
 import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
 import { translator, type Catalogue, type T } from './catalogue';
-import { loadBanglaFont } from './font';
+import { loadBanglaFont, loadLatinFont } from './font';
 import { chooseLang, type Lang } from './lang';
 import { readStoredLang, storeLang } from './storage';
 
@@ -23,6 +23,7 @@ export function LanguageProvider({ children, initial }: { children: ReactNode; i
 
   useLayoutEffect(() => {
     document.documentElement.lang = lang;
+    loadLatinFont();
     if (lang === 'bn') loadBanglaFont();
   }, [lang]);
 

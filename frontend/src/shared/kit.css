@@ -1,11 +1,10 @@
 /* The component kit's static CSS (docs/design/10_visual.md, section 6; Decisions log, U10-01): Mantine's reset and
-   global rules, the theme's variables (generated, mantine-theme.css), only the components in use, and Schibsted
-   Grotesk. All of it is served from the site (style-src 'self', font-src 'self'). Each entry imports this before
-   tokens.css, so the site's own rules come last. Add a component's file here when a screen starts using it. */
+   global rules, the theme's variables (generated, mantine-theme.css) and only the components in use. The fonts are
+   not here: language/font.ts adds them after the page's load event (AC-ALL-4; Decisions log, U10-10). All of it is
+   served from the site (style-src 'self', font-src 'self'). Each entry imports this before tokens.css, so the site's own rules come last. Add a component's file here when a screen starts using it. */
 @import '@mantine/core/styles/baseline.css';
 @import '@mantine/core/styles/global.css';
 @import './mantine-theme.css';
 @import '@mantine/core/styles/UnstyledButton.css';
 @import '@mantine/core/styles/Button.css';
 @import '@mantine/core/styles/Loader.css';
-@import '@fontsource-variable/schibsted-grotesk/wght.css';

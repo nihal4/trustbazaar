@@ -1,6 +1,6 @@
 # Visual design: Daylight (U10)
 
-Status: draft for review (U10-01). The images in `10_visual/` are previews of the mockups, rendered in the browser of the build container, which falls back to system fonts. The real pages use the fonts named here. The originals are on the "TrustBazaar design: Daylight" canvas (ask Sabikun Nahar Sinthia for access).
+Status: built (U10-01 to U10-10, 2026-11-24); section 8 is checked by the sweep and `src/shared/visual.test.ts`. The images in `10_visual/` are previews of the mockups, rendered in the browser of the build container, which falls back to system fonts. The real pages use the fonts named here. The originals are on the "TrustBazaar design: Daylight" canvas (ask Sabikun Nahar Sinthia for access).
 
 This document changes how the site **looks**. It does not change what any screen does, which APIs it calls or which requirements it meets. Where a screen's behaviour is described below, it is the behaviour Unit 8 already built, restated so the acceptance criteria can be checked against it.
 
@@ -149,9 +149,9 @@ The credential screens (`secure.html`, no React and no shared code, SEC-GAM-03) 
 
 ## 8. Acceptance for the whole redesign (U10-10)
 
-- AC-ALL-1: No screen scrolls sideways at 360 or 320 px (NFR-USE-05).
+- AC-ALL-1: No screen scrolls sideways at 360 or 320 px (NFR-USE-05), in English and, at 320 px, in Bangla.
 - AC-ALL-2: No serious or critical axe issue, and the contrasts of section 2 hold (NFR-USE-06).
 - AC-ALL-3: No CSP or Trusted Types violation under the production headers, and no request to another origin (fonts included).
-- AC-ALL-4: The first load of the home page stays within 170 KB of gzipped JavaScript, and the fonts load after first paint.
+- AC-ALL-4: The first load of the home page stays within 170 KB of gzipped JavaScript, and the fonts load after first paint: in the React documents `language/font.ts` adds them once the window's load event has passed and the browser is idle, never through a stylesheet (Decisions log, U10-10).
 - AC-ALL-5: The five end-to-end journeys of U8-11 pass unchanged, apart from selectors that name the new components.
 - AC-ALL-6: Every text is in both catalogues with the same keys and placeholders (NFR-USE-04).
