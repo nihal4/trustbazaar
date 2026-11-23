@@ -73,9 +73,12 @@ export function Component() {
     return <div className={styles.page}><h1>{t('sell.not_found')}</h1></div>;
   }
   const l = listing.data ?? null;
+  const drafting = !l || l.status === 'draft';
   return (
-    <div className={styles.page}>
-      <h1>{l ? t('sell.title_edit', { title: l.title }) : t('sell.title_new')}</h1>
+    <div className={drafting ? `${styles.page} ${styles.withSteps}` : styles.page}>
+      <h1 className={styles.title}>{l ? t('sell.title_edit', { title: l.title }) : t('sell.title_new')}</h1>
+      {drafting && <SellSteps l={l} minPhotos={terms.data.photos.min} t={t} lang={lang} />}
+      <div className={styles.main}>
       {l && <p><strong>{t(`sell.status.${l.status}`)}</strong>{l.status !== 'draft' && <> · <Link to={`/listings/${encodeURIComponent(l.id)}`}>{t('sell.view_listing')}</Link></>}</p>}
       <p className={styles.hint}>{t('sell.limits', { count: toLocalDigits(String(terms.data.activeListings.count), lang), limit: toLocalDigits(String(terms.data.activeListings.limit), lang) })}</p>
       {(!l || l.status === 'draft' || (l.status === 'active' && !l.locked && l.saleFormat === 'fixed_price')) && (
@@ -87,9 +90,41 @@ export function Component() {
       {l && l.status === 'pending_review' && <FormMessage kind="info">{t(l.itemKind === 'game_account' ? 'sell.game.in_review' : 'sell.in_review')}</FormMessage>}
       {l && l.status === 'active' && (l.locked || l.saleFormat === 'auction') && <p>{t('sell.locked_note')}</p>}
       {l && l.status === 'active' && <Clarifications l={l} t={t} lang={lang} />}
+      </div>
     </div>
   );
 }
+
+/**
+ * Where a new or draft listing stands (Daylight design, docs/design/10_visual.md, section 7.7): the item, then its
+ * photos (or the game account's details), then publishing; each done, now or still to come, in words as well.
+ */
+export function sellStepsOf(l: EditableListing | null, minPhotos: number): { key: 'details' | 'photos' | 'game' | 'publish'; state: 'done' | 'current' | 'next' }[] {
+  const game = l?.itemKind === 'game_account';
+  const media = game ? 'game' : 'photos';
+  const mediaDone = !!l && !game && l.photos.length >= minPhotos;
+  return [
+    { key: 'details', state: l ? 'done' : 'current' },
+    { key: media, state: !l ? 'next' : mediaDone ? 'done' : 'current' },
+    { key: 'publish', state: l && l.status !== 'draft' ? 'done' : mediaDone ? 'current' : 'next' },
+  ];
+}
+
+function SellSteps({ l, minPhotos, t, lang }: { l: EditableListing | null; minPhotos: number; t: T; lang: Lang }) {
+  return (
+    <ol className={styles.steps} aria-label={t('sell.steps.label')}>
+      {sellStepsOf(l, minPhotos).map((s, i) => (
+        <li key={s.key} className={styles[s.state]} aria-current={s.state === 'current' ? 'step' : undefined}>
+          <span className={styles.dot} aria-hidden="true">{s.state === 'done' ? '' : toLocalDigits(String(i + 1), lang)}</span>
+          <span>{t(`sell.steps.${s.key}`)}</span>
+          <span className={styles.visuallyHidden}>{t(`sell.steps.state.${s.state}`)}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+
 
 function useAreas() {
   const api = useApi();
@@ -373,8 +408,11 @@ function Photos({ l, terms, t, lang }: { l: EditableListing; terms: SellingTerms
       <ul className={styles.photos}>
         {l.photos.map((p, i) => (
           <li key={p.id}>
-            <img src={p.thumbUrl} alt={t('sell.photo_alt', { n: toLocalDigits(String(i + 1), lang) })} width={120} height={90} />
-            {p.showsDefects && <span className={styles.tag}>{t('sell.shows_defects')}</span>}
+            <span className={styles.tile}>
+              <img src={p.thumbUrl} alt={t('sell.photo_alt', { n: toLocalDigits(String(i + 1), lang) })} width={200} height={200} />
+              {i === 0 && <span className={styles.cover}>{t('sell.cover')}</span>}
+              {p.showsDefects && <span className={styles.tag}>{t('sell.shows_defects')}</span>}
+            </span>
             <button type="button" className={styles.secondary} disabled={remove.isPending} onClick={() => remove.mutate(p.id)}>
               {t('sell.remove_photo', { n: toLocalDigits(String(i + 1), lang) })}
             </button>
@@ -387,9 +425,12 @@ function Photos({ l, terms, t, lang }: { l: EditableListing; terms: SellingTerms
             <input id="shows-defects" type="checkbox" checked={defects} onChange={(e) => setDefects(e.target.checked)} />
             <label htmlFor="shows-defects">{t('sell.these_show_defects')}</label>
           </div>
-          <label htmlFor="photo-files">{t('sell.add_photos', { left: toLocalDigits(String(left), lang) })}</label>
-          <input ref={input} id="photo-files" type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={progress !== null}
-            onChange={(e) => void upload(e.target.files)} />
+          <div className={styles.addTile}>
+            <label htmlFor="photo-files">{t('sell.add_photos', { left: toLocalDigits(String(left), lang) })}</label>
+            <span className={styles.hint}>{t('sell.add_photos_formats')}</span>
+            <input ref={input} id="photo-files" type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={progress !== null}
+              onChange={(e) => void upload(e.target.files)} />
+          </div>
         </>
       )}
       {progress && <p role="status">{progress}</p>}
