@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from 'crypto';
+import { randomUUID } from 'crypto';
 import { problem, suite } from './setup';
 
 // SEC-AUTH-10: reset tokens carry at least 128 random bits, work once, expire after CP-06 and are stored only as
@@ -18,7 +18,13 @@ describe('SEC-AUTH-10 password reset tokens', () => {
     expect(Buffer.from(token, 'base64url').length * 8).toBeGreaterThanOrEqual(128);
     const rows = await s.fx.query<{ token_hash: Buffer }>(`SELECT token_hash FROM identity.one_time_tokens WHERE user_id = $1 AND purpose = 'password_reset'`, [a.userId]);
     expect(rows).toHaveLength(1);
-    expect(rows[0].token_hash.equals(createHash('sha256').update(token).digest())).toBe(true); // the SHA-256, not the token
+    expect(rows[0].token_hash).toHaveLength(32); // a SHA-256 digest
+    expect(rows[0].token_hash.equals(Buffer.from(token, 'base64url'))).toBe(false); // not the token itself
+    // what a copy of the database holds does not work as a link
+    for (const leaked of [rows[0].token_hash.toString('base64url'), rows[0].token_hash.toString('hex')]) {
+      const r = await s.browser().post('/auth/password/reset', { token: leaked, newPassword: `stolen ${randomUUID()}` });
+      expect([400, 422]).toContain(r.status); // refused, as an invalid link or as no token at all
+    }
     const all = await s.fx.query(`SELECT * FROM identity.one_time_tokens WHERE user_id = $1`, [a.userId]);
     expect(JSON.stringify(all)).not.toContain(token);
   });
