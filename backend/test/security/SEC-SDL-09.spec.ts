@@ -15,6 +15,8 @@ import { fillPath, Route, routeName, routesOf } from '../support/routes';
 // so a new endpoint is tested as soon as it exists: no session, an expired session and a lower role are checked on
 // every one; another user's object on every user endpoint that takes an object, with a fixture of each kind. The
 // guards run before validation, so the first three need no request bodies.
+// Moved here from test/api/authorisation.spec.ts unchanged (U9-02): it is the suite of SEC-SDL-09, one file per security
+// requirement named after it (docs/design/09_integration.pdf section 7.4).
 
 /** Parameters that are not ids: any value reaches the guards. */
 const PARAM: Record<string, string> = { kind: 'doc_front', step: 'password_changed', type: 'dispute' };
