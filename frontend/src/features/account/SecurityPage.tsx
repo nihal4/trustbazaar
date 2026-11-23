@@ -4,6 +4,7 @@
 import { useState, type FormEvent } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApi } from '../../shared/api';
+import { AccountTabs } from '../../shared/AccountTabs';
 import { untilAfter, untilServerTime, useSecondsLeft } from '../../shared/countdown';
 import { FormMessage, SubmitButton, TextField } from '../../shared/form';
 import { ME_KEY } from '../../shared/me';
@@ -44,6 +45,7 @@ export function Component() {
 
   return (
     <div className={styles.narrow}>
+      <AccountTabs t={t} />
       <h1>{t('security.title')}</h1>
       <Sessions list={sessions.data ?? []} error={sessions.isError ? sessions.error : null} />
       <PasswordChange />

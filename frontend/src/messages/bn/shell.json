@@ -36,5 +36,9 @@
   "shell.footer.tagline": "বাংলাদেশের একটি মার্কেটপ্লেস, যেখানে ক্রেতা পণ্য হাতে না পাওয়া পর্যন্ত প্রতিটি পেমেন্ট আটকে রাখা হয়।",
   "shell.footer.nav": "সাইটের লিংক",
   "shell.footer.terms": "শর্তাবলি",
-  "shell.footer.privacy": "গোপনীয়তা"
+  "shell.footer.privacy": "গোপনীয়তা",
+  "shell.account_tabs.label": "আপনার অ্যাকাউন্ট",
+  "shell.account_tabs.profile": "প্রোফাইল",
+  "shell.account_tabs.security": "নিরাপত্তা",
+  "shell.account_tabs.privacy": "আপনার তথ্য"
 }

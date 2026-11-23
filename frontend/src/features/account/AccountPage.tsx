@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { AccountTabs } from '../../shared/AccountTabs';
 import { useApi } from '../../shared/api';
 import { FormMessage } from '../../shared/form';
 import { useMe, type KycStatus } from '../../shared/me';
@@ -41,6 +42,7 @@ export function Component() {
   const u = me.data;
   return (
     <div className={styles.narrow}>
+      <AccountTabs t={t} />
       <h1>{t('account.title')}</h1>
       {message && <FormMessage kind="error">{message}</FormMessage>}
       <dl className={styles.facts}>
@@ -63,10 +65,8 @@ export function Component() {
       </dl>
       {u.accountStatus === 'suspended' && <FormMessage kind="info">{t('account.suspended')}</FormMessage>}
       <ul className={styles.links}>
-        <li><Link to="/account/security">{t('security.link')}</Link></li>
         <li><Link to="/seller">{t('account.seller_link')}</Link></li>
         <li><Link to="/account/payout">{t('account.payout_link')}</Link></li>
-        <li><Link to="/account/privacy">{t('account.privacy_link')}</Link></li>
       </ul>
       <button type="button" className={styles.secondary} onClick={() => void signOut()} disabled={busy}>
         {t('account.sign_out')}
