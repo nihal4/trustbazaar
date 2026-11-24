@@ -11,6 +11,9 @@ export default defineConfig({
   plugins: [react()],
   build: {
     target: 'es2020',
+    // fonts stay files: the policy allows fonts only from the site (font-src 'self'), never as data: URLs, and the
+    // small Bangla figures cuts (src/shared/language/figures) would otherwise be inlined (Decisions log, U10-20)
+    assetsInlineLimit: (file: string) => (file.endsWith('.woff2') ? false : undefined),
     rollupOptions: {
       input: {
         index: resolve(__dirname, 'index.html'),
