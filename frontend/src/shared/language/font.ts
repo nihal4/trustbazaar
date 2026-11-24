@@ -2,14 +2,16 @@
 // window's load event has passed and the browser is idle (docs/design/10_visual.md, sections 3 and 8, AC-ALL-4; Decisions log, U8-01, U10-01
 // and U10-10). Until they arrive the text shows in the system font and then swaps, so the fonts never hold up the
 // listing photo or any other first content (NFR-PERF-07).
-// - Schibsted Grotesk, variable 400 to 900, the Latin and Latin Extended subsets, for every page;
-// - Hind Siliguri, regular and bold, the Bengali block only, when the language is Bangla.
-import latin from '@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-wght-normal.woff2?url';
-import latinExt from '@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-ext-wght-normal.woff2?url';
+// - Geist, variable 100 to 900 (the money-order world, U10-11), the Latin and Latin Extended subsets, for every page;
+// - Hind Siliguri, 400 to 700, the Bengali block only, when the language is Bangla.
+import latin from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url';
+import latinExt from '@fontsource-variable/geist/files/geist-latin-ext-wght-normal.woff2?url';
 import regular from '@fontsource/hind-siliguri/files/hind-siliguri-bengali-400-normal.woff2?url';
+import medium from '@fontsource/hind-siliguri/files/hind-siliguri-bengali-500-normal.woff2?url';
+import semibold from '@fontsource/hind-siliguri/files/hind-siliguri-bengali-600-normal.woff2?url';
 import bold from '@fontsource/hind-siliguri/files/hind-siliguri-bengali-700-normal.woff2?url';
 
-export const LATIN_FONT = 'Schibsted Grotesk Variable';
+export const LATIN_FONT = 'Geist Variable';
 export const BANGLA_FONT = 'Hind Siliguri';
 const LATIN_RANGE = 'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD';
 const LATIN_EXT_RANGE = 'U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF';
@@ -17,11 +19,13 @@ const BENGALI_RANGE = 'U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0-1CF9, U+200
 
 type Face = { family: string; url: string; weight: string; range: string; format: string };
 const LATIN: Face[] = [
-  { family: LATIN_FONT, url: latin, weight: '400 900', range: LATIN_RANGE, format: 'woff2-variations' },
-  { family: LATIN_FONT, url: latinExt, weight: '400 900', range: LATIN_EXT_RANGE, format: 'woff2-variations' },
+  { family: LATIN_FONT, url: latin, weight: '100 900', range: LATIN_RANGE, format: 'woff2-variations' },
+  { family: LATIN_FONT, url: latinExt, weight: '100 900', range: LATIN_EXT_RANGE, format: 'woff2-variations' },
 ];
 const BANGLA: Face[] = [
   { family: BANGLA_FONT, url: regular, weight: '400', range: BENGALI_RANGE, format: 'woff2' },
+  { family: BANGLA_FONT, url: medium, weight: '500', range: BENGALI_RANGE, format: 'woff2' },
+  { family: BANGLA_FONT, url: semibold, weight: '600', range: BENGALI_RANGE, format: 'woff2' },
   { family: BANGLA_FONT, url: bold, weight: '700', range: BENGALI_RANGE, format: 'woff2' },
 ];
 

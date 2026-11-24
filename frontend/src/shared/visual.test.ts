@@ -32,15 +32,15 @@ describe('the Daylight colours', () => {
   const t = tokens(read('shared/tokens.css'));
 
   it.each([
-    ['text', 'bg', 4.5], ['muted', 'bg', 4.5], ['muted', 'surface', 4.5], ['text', 'surface', 4.5], ['text', 'cream', 4.5],
+    ['text', 'bg', 4.5], ['muted', 'bg', 4.5], ['muted', 'surface', 4.5], ['text', 'surface', 4.5], ['text', 'cream', 4.5], ['muted', 'sheet', 4.5], ['accent-strong', 'accent-soft', 4.5], ['on-ink', 'text', 4.5], ['on-ink-accent', 'text', 4.5], ['error-text', 'error-bg', 4.5],
     ['accent-text', 'accent', 4.5], ['accent', 'bg', 4.5], ['accent', 'accent-soft', 4.5], ['error', 'bg', 4.5],
     ['success', 'bg', 4.5], ['border', 'bg', 3], ['focus', 'bg', 3],
   ] as const)('NFR-USE-06 --tb-%s on --tb-%s keeps at least %d:1 (AC-ALL-2)', (fg, bg, min) => {
     expect(contrast(t[fg], t[bg])).toBeGreaterThanOrEqual(min);
   });
 
-  it('NFR-USE-06 the plum, the ink and the control border are the values of section 2', () => {
-    expect([t.accent, t.text, t.muted, t.border, t.surface, t.line, t.error]).toEqual(['#4b2378', '#1e1a26', '#625c6e', '#857d92', '#f3f1f5', '#e6e1ec', '#b42318']);
+  it('NFR-USE-06 the teal ink, the text and the control border are the money-order values of section 2', () => {
+    expect([t.accent, t.text, t.muted, t.border, t.surface, t.line, t.error]).toEqual(['#06525c', '#0d2326', '#4a5f62', '#73878a', '#ebf0ee', '#d3dddb', '#b42318']);
   });
 
   it('SEC-GAM-03 the credential document repeats the same colours in its own stylesheet', () => {
@@ -54,7 +54,8 @@ describe('the fonts', () => {
   const faces = (path: string) => [...readFileSync(require.resolve(path), 'utf8').matchAll(/@font-face\s*\{([^}]*)\}/g)].map((m) => m[1]);
 
   it.each([
-    '@fontsource-variable/schibsted-grotesk/wght.css', '@fontsource/hind-siliguri/bengali-400.css', '@fontsource/hind-siliguri/bengali-700.css',
+    '@fontsource-variable/geist/wght.css', '@fontsource/hind-siliguri/bengali-400.css', '@fontsource/hind-siliguri/bengali-500.css',
+    '@fontsource/hind-siliguri/bengali-600.css', '@fontsource/hind-siliguri/bengali-700.css',
   ])('NFR-PERF-07 %s swaps in after first paint and is served from the site (AC-ALL-3, AC-ALL-4)', (path) => {
     const all = faces(path);
     expect(all.length).toBeGreaterThan(0);
