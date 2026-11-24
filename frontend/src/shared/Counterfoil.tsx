@@ -16,23 +16,27 @@ type Props = {
   /** the form's title */
   title: ReactNode;
   stages?: CounterfoilStage[];
+  /** a name for the list of stages, such as "Order progress" */
+  stagesLabel?: string;
   /** each stage's state in words, for assistive technology and for anyone who cannot tell the marks apart; without
    *  them the stages read as a sequence (an explanation, not an order's state) */
   stateWords?: Record<CounterfoilStage['state'], string>;
   /** the postmark's date, shown once the money has been paid out */
   postmark?: string;
+  /** false when the stub already states the amount in its own words (checkout's "Total to pay") */
+  stubCopy?: boolean;
   /** the id of a heading inside the counterfoil that names it as a region */
   labelledBy?: string;
   children?: ReactNode;
 };
 
-export function Counterfoil({ stub, amount, amountWords, title, stages, stateWords, postmark, labelledBy, children }: Props) {
+export function Counterfoil({ stub, amount, amountWords, title, stages, stagesLabel, stateWords, postmark, stubCopy = true, labelledBy, children }: Props) {
   return (
     <section className={styles.counterfoil} aria-labelledby={labelledBy}>
       <div className={styles.stub}>
         <div className={styles.stubText}>{stub}</div>
         {/* the stub's copy of the amount, as on a money order; read once, on the form */}
-        {amount && <p className={styles.stubAmount} aria-hidden="true">{amount}</p>}
+        {amount && stubCopy && <p className={styles.stubAmount} aria-hidden="true">{amount}</p>}
         {postmark && (
           <p className={styles.postmark}>
             <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false">
@@ -51,7 +55,7 @@ export function Counterfoil({ stub, amount, amountWords, title, stages, stateWor
           </p>
         )}
         {stages && stages.length > 0 && (
-          <ol className={styles.stages}>
+          <ol className={styles.stages} aria-label={stagesLabel}>
             {stages.map((s) => (
               <li key={s.key} className={styles[s.state]} aria-current={stateWords && s.state === 'current' ? 'step' : undefined}>
                 <span className={styles.box} aria-hidden="true" />

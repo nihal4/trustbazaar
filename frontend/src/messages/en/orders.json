@@ -328,5 +328,7 @@
   "order.steps.done": "Done",
   "order.steps.state.done": "(done)",
   "order.steps.state.current": "(now)",
-  "order.steps.state.next": "(still to come)"
+  "order.steps.state.next": "(still to come)",
+  "order.counterfoil.stub": "Money for this order",
+  "order.counterfoil.unpaid": "Not paid yet. Once you pay, TrustBazaar holds the money until you have the item."
 }
