@@ -46,6 +46,16 @@ Geist (variable, self-hosted) for Latin and Hind Siliguri (400 to 700) for Bangl
 (`language/font.ts`, AC-ALL-4). Headings 600, text 400, buttons and labels 600; amounts in tabular figures. Bangla line
 height 1.7, no negative tracking.
 
+Numbers have a face of their own, 'TB Figures', cut from Noto Sans Bengali (`language/figures/`,
+`scripts/subset-figures.py`; U10-20): Hind Siliguri draws the digit one (১) as a small hook high in its box, so
+"৳১৫,০০০" read as "৳ ৫,০০০". The figures face holds only the Bangla digits, the taka sign and the comma, full stop
+and colon, about 2.5 KB a weight. It comes first in the Bangla stack, so every Bangla number is drawn by one face,
+and after Geist in the English stack, where it draws only the taka sign that Geist lacks.
+
+- AC-TYPE-1 (U10-20): In Bangla every digit, the taka sign and the separators between them are drawn by the figures
+  face; in English the taka sign is too (`src/shared/visual.test.ts`). Labels on photos never cut their text off;
+  they wrap inside their box.
+
 ## 4. Shape and depth
 
 Radius 6 px for controls, 10 px for panels (`--tb-radius-control`, `--tb-radius-panel`); no pills, no shadows. Panels
@@ -121,3 +131,14 @@ and teal, and the home page's phone render (`hero-phone.webp`) is gone: the coun
   in Dhaka.
 - AC-ORD-3: The order's inputs and panels follow the foundation: 6 px controls on white, no inset shadows, no
   one-sided bars (a seller's reply to a rating is a boxed note), the game-account warning in the error tokens only.
+
+### AC-SEL (U10-15)
+
+- AC-SEL-1: The listing editor's steps are marked with the counterfoil's boxes (filled when done, carbon copy for the
+  current step, open for the next), in words too; inputs and choices are 6 px controls on white with full 1 px
+  borders; photo tiles sit in a hairline, the cover marked in ink and "Shows defects" in a bordered box; the add tile
+  is dashed; no inset shadows and no monospace.
+- AC-SEL-2: On the seller dashboard each statement is a counterfoil: the stub keeps the day it settled and, once its
+  payout was sent, the postmark with that day; the form carries the order's title, the payout in figures and words,
+  and the breakdown. In the list of payouts a sent payout carries the same stamp with its day. Rows are white sheets
+  in a hairline.

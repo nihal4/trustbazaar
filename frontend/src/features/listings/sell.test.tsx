@@ -287,7 +287,7 @@ describe('the listing editor', () => {
   });
 });
 
-describe('the listing editor in the Daylight design (U10-06)', () => {
+describe('the listing editor (U10-06; money-order world, U10-15)', () => {
   it('FR-LST-09 the steps follow the draft: the item, then the photos up to the minimum, then publishing', () => {
     const states = (l: EditableListing | null) => sellStepsOf(l, 2).map((x) => `${x.key}:${x.state}`).join(' ');
     expect(states(null)).toBe('details:current photos:next publish:next');
@@ -299,7 +299,7 @@ describe('the listing editor in the Daylight design (U10-06)', () => {
   it('FR-LST-09 a draft shows its steps, the first photo marked as the cover, and the formats on the add tile', async () => {
     renderApp(`/sell/${ID}`, backend({ [`GET /listings/${ID}`]: json(200, draft({ photos: [photo(1), photo(2)] })) }));
     const steps = await screen.findByRole('list', { name: 'Steps' });
-    expect(within(steps).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['The item(done)', 'Photos(done)', '3Publish(now)']);
+    expect(within(steps).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['The item(done)', 'Photos(done)', 'Publish(now)']);
     const photos = screen.getByRole('region', { name: 'Photos' });
     expect(within(photos).getAllByText('Cover')).toHaveLength(1);
     expect(within(photos).getByText('JPEG, PNG or WebP')).toBeTruthy();
