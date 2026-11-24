@@ -57,6 +57,7 @@
   font-size: 0.8125rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   transform: rotate(-4deg);
 }
 
@@ -93,7 +94,7 @@
 
 /* from 30rem the stub stands at the left and the tear line runs down */
 @media (min-width: 30rem) {
-  .counterfoil { grid-template-rows: none; grid-template-columns: 8.5rem minmax(0, 1fr); }
+  .counterfoil { grid-template-rows: none; grid-template-columns: 9.5rem minmax(0, 1fr); }
   .stub {
     flex-direction: column;
     flex-wrap: nowrap;

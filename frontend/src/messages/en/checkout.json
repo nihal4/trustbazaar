@@ -25,5 +25,8 @@
   "checkout.game_next": "Next you read the publisher-risk notice and create a key in this browser, then pay.",
   "checkout.summary": "Summary",
   "checkout.promise.title": "Your money waits with us",
-  "checkout.promise.text": "The seller is paid only after you confirm you have the item."
+  "checkout.promise.text": "The seller is paid only after you confirm you have the item.",
+  "checkout.counterfoil.in": "You pay TrustBazaar",
+  "checkout.counterfoil.held": "We hold it",
+  "checkout.counterfoil.out": "The seller is paid when you confirm"
 }

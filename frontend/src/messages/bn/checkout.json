@@ -25,5 +25,8 @@
   "checkout.game_next": "এরপর প্রকাশকের ঝুঁকির নোটিশ পড়বেন এবং এই ব্রাউজারে একটি কী তৈরি করবেন, তারপর পরিশোধ করবেন।",
   "checkout.summary": "সারসংক্ষেপ",
   "checkout.promise.title": "আপনার টাকা আমাদের কাছে থাকে",
-  "checkout.promise.text": "পণ্য হাতে পেয়েছেন নিশ্চিত করলে তবেই বিক্রেতা টাকা পান।"
+  "checkout.promise.text": "পণ্য হাতে পেয়েছেন নিশ্চিত করলে তবেই বিক্রেতা টাকা পান।",
+  "checkout.counterfoil.in": "আপনি ট্রাস্টবাজারকে টাকা দেন",
+  "checkout.counterfoil.held": "আমরা টাকা রাখি",
+  "checkout.counterfoil.out": "আপনি নিশ্চিত করলে বিক্রেতা টাকা পান"
 }
