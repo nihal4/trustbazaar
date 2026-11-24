@@ -153,7 +153,7 @@ describe('registration', () => {
     expect((await start(browser(), both)).r.status).toBe(202);
     expect(sms(e164(both.phone as string), 'otp_register')[0].vars.code).toBe(mails((both.email as string).toLowerCase())[0].vars.code);
 
-    expect((await start(browser(), details({ channel: 'post' }))).r.status).toBe(422);
+    expect((await start(browser(), details({ channel: 'post' }))).r.status).toBe(400);
   });
 
   it('FR-ACC-03 a registration with an e-mail of an open account is refused generically, and that owner is told', async () => {
