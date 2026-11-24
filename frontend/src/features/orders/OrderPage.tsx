@@ -16,7 +16,7 @@ import { useOpenThread } from '../../shared/chat';
 import { useServerNow } from '../../shared/clock';
 import { amountInWords } from '../../shared/amountWords';
 import { ConfirmDialog } from '../../shared/ConfirmDialog';
-import { Counterfoil } from '../../shared/Counterfoil';
+import { Counterfoil, postmarkDate } from '../../shared/Counterfoil';
 import { signInPath } from '../../shared/document';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
@@ -135,7 +135,7 @@ export function stepsOf(o: OrderView): { key: 'payment' | 'handover' | 'done'; s
 export function postmarkOf(o: OrderView, lang: Lang): string | undefined {
   const out = o.escrow && ['released', 'refunded', 'partially_refunded'].includes(o.escrow.state);
   if (!out || !o.closedAt) return undefined;
-  return new Intl.DateTimeFormat(lang === 'bn' ? 'bn-BD' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Dhaka' }).format(Date.parse(o.closedAt));
+  return postmarkDate(o.closedAt, lang);
 }
 
 /**

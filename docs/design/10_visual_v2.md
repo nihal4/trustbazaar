@@ -121,3 +121,14 @@ and teal, and the home page's phone render (`hero-phone.webp`) is gone: the coun
   in Dhaka.
 - AC-ORD-3: The order's inputs and panels follow the foundation: 6 px controls on white, no inset shadows, no
   one-sided bars (a seller's reply to a rating is a boxed note), the game-account warning in the error tokens only.
+
+### AC-SEL (U10-15)
+
+- AC-SEL-1: The listing editor's steps are marked with the counterfoil's boxes (filled when done, carbon copy for the
+  current step, open for the next), in words too; inputs and choices are 6 px controls on white with full 1 px
+  borders; photo tiles sit in a hairline, the cover marked in ink and "Shows defects" in a bordered box; the add tile
+  is dashed; no inset shadows and no monospace.
+- AC-SEL-2: On the seller dashboard each statement is a counterfoil: the stub keeps the day it settled and, once its
+  payout was sent, the postmark with that day; the form carries the order's title, the payout in figures and words,
+  and the breakdown. In the list of payouts a sent payout carries the same stamp with its day. Rows are white sheets
+  in a hairline.
