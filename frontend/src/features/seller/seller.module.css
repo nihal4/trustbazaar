@@ -2,30 +2,30 @@
    section 7.7): one column; panels on mist; rows as white cards; 44 px targets; tables become lists. */
 .page { max-width: 52rem; display: flex; flex-direction: column; gap: 1.25rem; }
 .head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1.5rem; }
-.head h1, .page > h1 { margin: 0; font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.125rem); letter-spacing: -0.03em; font-weight: 800; }
-:lang(bn) .head h1, :lang(bn) .page > h1 { letter-spacing: 0; font-weight: 700; }
-.panel { border-radius: 22px; background: var(--tb-surface); padding: 1.25rem 1.375rem; display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; }
+.head h1, .page > h1 { margin: 0; font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.125rem); letter-spacing: -0.03em; font-weight: 600; }
+:lang(bn) .head h1, :lang(bn) .page > h1 { letter-spacing: 0; font-weight: 600; }
+.panel { border-radius: var(--tb-radius-panel); background: var(--tb-surface); padding: 1.25rem 1.375rem; display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; }
 .panel h2 { margin: 0; font-size: 1.3125rem; letter-spacing: -0.02em; }
 .panel > p { margin: 0; }
 .hint { color: var(--tb-muted); }
 .list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
-.row { border-radius: 14px; background: #fff; padding: 0.75rem 1rem; overflow-wrap: anywhere; }
+.row { border-radius: var(--tb-radius-panel); background: #fff; padding: 0.75rem 1rem; overflow-wrap: anywhere; }
 .row a { color: var(--tb-text); text-underline-offset: 3px; }
 .row p { margin: 0.25rem 0 0; color: var(--tb-muted); font-size: 0.9375rem; }
-.select, .form input { min-height: 46px; font: inherit; max-width: 100%; padding: 0 0.75rem; border: 1.5px solid var(--tb-border); border-radius: 12px; background: #fff; color: var(--tb-text); }
+.select, .form input { min-height: 46px; font: inherit; max-width: 100%; padding: 0 0.75rem; border: 1.5px solid var(--tb-border); border-radius: var(--tb-radius-panel); background: #fff; color: var(--tb-text); }
 .select { max-width: 18rem; }
 .form { display: grid; gap: 0.5rem; }
 .form label { font-weight: 600; }
 .choice { border: 0; padding: 0; margin: 0.5rem 0; display: flex; flex-direction: column; gap: 0.5rem; }
-.choice div { display: flex; align-items: center; gap: 0.75rem; min-height: 50px; padding: 0.375rem 0.875rem; border: 1.5px solid var(--tb-line); border-radius: 14px; background: #fff; }
-.choice div:has(input:checked) { border-color: var(--tb-accent); background: #fbf8fe; }
+.choice div { display: flex; align-items: center; gap: 0.75rem; min-height: 50px; padding: 0.375rem 0.875rem; border: 1.5px solid var(--tb-line); border-radius: var(--tb-radius-panel); background: #fff; }
+.choice div:has(input:checked) { border-color: var(--tb-accent); background: var(--tb-accent-wash); }
 .choice input { width: 20px; height: 20px; accent-color: var(--tb-accent); flex: none; margin: 0; }
 .buttons { display: flex; flex-wrap: wrap; gap: 0.625rem; margin-block: 0.5rem; }
-.primary { min-height: 48px; padding: 0 1.5rem; border-radius: 999px; background: var(--tb-accent); color: var(--tb-accent-text); border: 0; font: inherit; font-weight: 700; cursor: pointer; }
+.primary { min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-radius-control); background: var(--tb-accent); color: var(--tb-accent-text); border: 0; font: inherit; font-weight: 600; cursor: pointer; }
 .primary:disabled { opacity: 0.6; }
-.secondary { align-self: flex-start; min-height: 44px; padding: 0 1.125rem; border: 1.5px solid var(--tb-border); border-radius: 999px; background: var(--tb-bg); color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
-.statement { border-radius: 14px; background: #fff; padding: 0.875rem 1rem; }
+.secondary { align-self: flex-start; min-height: 44px; padding: 0 1.125rem; border: 1.5px solid var(--tb-border); border-radius: var(--tb-radius-control); background: var(--tb-bg); color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
+.statement { border-radius: var(--tb-radius-panel); background: #fff; padding: 0.875rem 1rem; }
 .statement h3 { margin: 0 0 0.25rem; font-size: 1.0625rem; }
 .breakdown { display: grid; grid-template-columns: minmax(0, 1fr) max-content; gap: 0.25rem 1.5rem; max-width: 26rem; margin: 0.5rem 0 0; }
 .breakdown dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
-.total { font-weight: 700; border-top: 1px solid var(--tb-line); padding-top: 0.25rem; }
+.total { font-weight: 600; border-top: 1px solid var(--tb-line); padding-top: 0.25rem; }

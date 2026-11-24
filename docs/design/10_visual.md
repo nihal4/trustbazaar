@@ -1,6 +1,6 @@
 # Visual design: Daylight (U10)
 
-Status: built (U10-01 to U10-10, 2026-11-24); section 8 is checked by the sweep and `src/shared/visual.test.ts`. The images in `10_visual/` are previews of the mockups, rendered in the browser of the build container, which falls back to system fonts. The real pages use the fonts named here. The originals are on the "TrustBazaar design: Daylight" canvas (ask Sabikun Nahar Sinthia for access).
+Status: superseded screen by screen by `10_visual_v2.md` (Money order, from U10-11, 2026-11-25); built (U10-01 to U10-10, 2026-11-24); section 8 is checked by the sweep and `src/shared/visual.test.ts`. The images in `10_visual/` are previews of the mockups, rendered in the browser of the build container, which falls back to system fonts. The real pages use the fonts named here. The originals are on the "TrustBazaar design: Daylight" canvas (ask Sabikun Nahar Sinthia for access).
 
 This document changes how the site **looks**. It does not change what any screen does, which APIs it calls or which requirements it meets. Where a screen's behaviour is described below, it is the behaviour Unit 8 already built, restated so the acceptance criteria can be checked against it.
 

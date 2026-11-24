@@ -9,7 +9,7 @@
 }
 
 .field label {
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .field input {
@@ -43,7 +43,7 @@
 .error {
   margin: 0;
   color: var(--tb-error);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.9375rem;
 }
 
@@ -69,7 +69,7 @@
 
 .summary {
   border: 2px solid var(--tb-error);
-  border-radius: 16px;
+  border-radius: var(--tb-radius-panel);
   padding: 0.875rem 1.125rem;
   margin-bottom: 1.25rem;
 }
@@ -92,7 +92,7 @@
   background: var(--tb-accent);
   color: var(--tb-accent-text);
   font: inherit;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 1.0625rem;
   cursor: pointer;
 }
@@ -119,7 +119,7 @@ div.error {
   padding: 0.75rem 1rem;
   margin-bottom: 1.25rem;
   border: 0;
-  border-radius: 14px;
+  border-radius: var(--tb-radius-panel);
   background: var(--tb-surface);
   color: var(--tb-text);
   font-weight: 500;
@@ -127,13 +127,13 @@ div.error {
 }
 
 div.error {
-  background: #fef3f2;
-  color: #912018;
+  background: var(--tb-error-bg);
+  color: var(--tb-error-text);
   border-left: 4px solid var(--tb-error);
 }
 
 div.success {
-  background: #ecf6ef;
+  background: var(--tb-accent-wash);
   border-left: 4px solid var(--tb-success);
 }
 
