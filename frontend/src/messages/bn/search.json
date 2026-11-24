@@ -78,5 +78,9 @@
   "home.sell.step3": "হস্তান্তরের পর টাকা পান",
   "home.sell.step3_text": "ক্রেতা নিশ্চিত করলে টাকা আপনার কাছে পৌঁছায়।",
   "home.sell.start": "বিক্রি শুরু করুন",
-  "search.card.bid_one": "১টি বিড"
+  "search.card.bid_one": "১টি বিড",
+  "home.counterfoil.stub": "আপনার টাকা যেভাবে যায়",
+  "home.counterfoil.in": "আপনি ট্রাস্টবাজারকে টাকা দেন",
+  "home.counterfoil.held": "আমরা টাকা রাখি",
+  "home.counterfoil.out": "আপনি নিশ্চিত করলে বিক্রেতা টাকা পান"
 }

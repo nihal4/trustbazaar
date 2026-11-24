@@ -16,7 +16,8 @@ type Props = {
   /** the form's title */
   title: ReactNode;
   stages?: CounterfoilStage[];
-  /** each stage's state in words, for assistive technology and for anyone who cannot tell the marks apart */
+  /** each stage's state in words, for assistive technology and for anyone who cannot tell the marks apart; without
+   *  them the stages read as a sequence (an explanation, not an order's state) */
   stateWords?: Record<CounterfoilStage['state'], string>;
   /** the postmark's date, shown once the money has been paid out */
   postmark?: string;
@@ -49,7 +50,7 @@ export function Counterfoil({ stub, amount, amountWords, title, stages, stateWor
         {stages && stages.length > 0 && (
           <ol className={styles.stages}>
             {stages.map((s) => (
-              <li key={s.key} className={styles[s.state]} aria-current={s.state === 'current' ? 'step' : undefined}>
+              <li key={s.key} className={styles[s.state]} aria-current={stateWords && s.state === 'current' ? 'step' : undefined}>
                 <span className={styles.box} aria-hidden="true" />
                 <span>{s.label}</span>
                 {stateWords && <span className={styles.visuallyHidden}>{stateWords[s.state]}</span>}

@@ -78,5 +78,9 @@
   "home.sell.step3": "Get paid on handover",
   "home.sell.step3_text": "The money reaches you when the buyer confirms.",
   "home.sell.start": "Start selling",
-  "search.card.bid_one": "1 bid"
+  "search.card.bid_one": "1 bid",
+  "home.counterfoil.stub": "How your money moves",
+  "home.counterfoil.in": "You pay TrustBazaar",
+  "home.counterfoil.held": "We hold it",
+  "home.counterfoil.out": "The seller is paid when you confirm"
 }
