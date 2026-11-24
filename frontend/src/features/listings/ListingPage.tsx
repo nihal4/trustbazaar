@@ -4,6 +4,7 @@
 // GET /listings/{id}, which includes the auction state (section 9). Everything the seller wrote is shown as text
 // (SEC-INP-03); the location is the district only (FR-LST-06). A fixed-price item links to its checkout (U8-05);
 // an auction shows its panel. Others see only public listings; the seller sees their own in every state.
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { Button } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
@@ -140,8 +141,15 @@ function Status({ l, own, t }: { l: ListingView; own: boolean; t: T }) {
   return null;
 }
 
-/** Photos at 1600 px with the 400 px thumbnail as a smaller alternative; the first one loads first (section 9). */
+/** Photos at 1600 px with the 400 px thumbnail as a smaller alternative; the first one loads first (section 9): the
+ *  others are asked for only once it has arrived (or after three seconds), so nothing shares the network with the
+ *  page's largest paint (NFR-PERF-07; Decisions log, U10-10). */
 function Photos({ l, t, lang }: { l: ListingView; t: T; lang: Lang }) {
+  const [rest, setRest] = useState(false);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setRest(true), 3000);
+    return () => window.clearTimeout(timer);
+  }, []);
   if (l.photos.length === 0) return null;
   const total = toLocalDigits(String(l.photos.length), lang);
   return (
@@ -151,9 +159,10 @@ function Photos({ l, t, lang }: { l: ListingView; t: T; lang: Lang }) {
       <ul className={styles.photos} tabIndex={0}>
         {l.photos.map((p, i) => (
           <li key={p.id}>
-            <img src={p.url} srcSet={`${p.thumbUrl} 400w, ${p.url} 1600w`} sizes="(min-width: 60rem) 40rem, 100vw"
+            <img {...(i === 0 || rest ? { src: p.url, srcSet: `${p.thumbUrl} 400w, ${p.url} 1600w` } : {})} sizes="(min-width: 60rem) 40rem, 100vw"
               width={p.width} height={p.height} alt={t('listing.photo_alt', { title: l.title, n: toLocalDigits(String(i + 1), lang), total })}
-              loading={i === 0 ? 'eager' : 'lazy'} {...(i === 0 ? { fetchpriority: 'high' } : {})} />
+              loading={i === 0 ? 'eager' : 'lazy'}
+              {...(i === 0 ? { fetchpriority: 'high', onLoad: () => setRest(true), onError: () => setRest(true) } : {})} />
             {p.showsDefects && <span className={styles.badge}>{t('listing.shows_defects')}</span>}
           </li>
         ))}

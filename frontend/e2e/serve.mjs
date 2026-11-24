@@ -31,6 +31,8 @@ export function route(path) {
   if (path === '/staff' || path === '/admin' || path.startsWith('/staff/') || path.startsWith('/admin/') || path === '/staff.html') return { file: '/staff.html', headers: HEADERS.staff };
   if (path === '/account/kyc' || path.startsWith('/account/kyc/') || path === '/kyc.html') return { file: '/kyc.html', headers: HEADERS.kyc };
   if (path.startsWith('/secure/') || path === '/secure.html') return { file: '/secure.html', headers: HEADERS.secure };
+  const listing = /^\/listings\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/?$/.exec(path);
+  if (listing) return { file: '/index.html', headers: [...HEADERS.app, ['Link', `</api/v1/listings/${listing[1]}>; rel=preload; as=fetch; crossorigin=anonymous`]] };
   const own = normalize(path);
   const isFile = own !== '/' && existsSync(join(dist, own)) && statSync(join(dist, own)).isFile();
   return { file: isFile ? own : '/index.html', headers: HEADERS.app };
