@@ -11,6 +11,8 @@ import { useApi } from '../../shared/api';
 import { useServerNow } from '../../shared/clock';
 import { signInPath } from '../../shared/document';
 import { errorText } from '../../shared/errors';
+import { amountInWords } from '../../shared/amountWords';
+import { Counterfoil, postmarkDate } from '../../shared/Counterfoil';
 import { FormMessage } from '../../shared/form';
 import type { T } from '../../shared/language/catalogue';
 import { useT } from '../../shared/language/Language';
@@ -153,13 +155,16 @@ function Payouts({ t, lang }: { t: T; lang: Lang }) {
       {payouts.isSuccess && payouts.data.items.length === 0 && <p className={styles.hint}>{t('seller.payouts_none')}</p>}
       <ul className={styles.list}>
         {(payouts.data?.items ?? []).map((p) => (
-          <li key={p.id} className={styles.row}>
-            <strong>{formatMoney(BigInt(p.amount), lang)}</strong> · {t(`seller.payout.${p.status}`)}
-            {p.simulated ? ` · ${t('seller.simulated')}` : ''}
-            <p className={styles.hint}>
-              <Link to={`/orders/${encodeURIComponent(p.orderId)}`}>{t('seller.payout_order')}</Link>
-              {' · '}{formatDateTime(Date.parse(p.sentAt ?? p.createdAt), lang)}
-            </p>
+          <li key={p.id} className={styles.payoutRow}>
+            <div>
+              <strong className={styles.amount}>{formatMoney(BigInt(p.amount), lang)}</strong> · {t(`seller.payout.${p.status}`)}
+              {p.simulated ? ` · ${t('seller.simulated')}` : ''}
+              <p className={styles.hint}>
+                <Link to={`/orders/${encodeURIComponent(p.orderId)}`}>{t('seller.payout_order')}</Link>
+                {' · '}{formatDateTime(Date.parse(p.sentAt ?? p.createdAt), lang)}
+              </p>
+            </div>
+            {p.status === 'sent' && p.sentAt && <span className={styles.stamp} aria-hidden="true">{postmarkDate(p.sentAt, lang)}</span>}
           </li>
         ))}
       </ul>
@@ -181,6 +186,13 @@ function Statements({ t, lang }: { t: T; lang: Lang }) {
   const pages = statements.data?.pages ?? [];
   const items = pages.flatMap((p) => p.items);
   const money = (s: string) => formatMoney(BigInt(s), lang, { decimals: 'always' });
+  // the day a payout was sent comes with the payouts (the same request as the panel above)
+  const payouts = useQuery({
+    queryKey: ['me', 'payouts'],
+    queryFn: ({ signal }) => api.get('/me/payouts', { signal }) as Promise<{ items: PayoutRow[]; nextCursor: string | null }>,
+    retry: false,
+  });
+  const sentAt = new Map((payouts.data?.items ?? []).filter((p) => p.status === 'sent' && p.sentAt).map((p) => [p.id, p.sentAt!]));
   return (
     <section aria-labelledby="statements-title" className={styles.panel}>
       <h2 id="statements-title">{t('seller.statements_title')}</h2>
@@ -188,9 +200,14 @@ function Statements({ t, lang }: { t: T; lang: Lang }) {
       {statements.isError && <FormMessage kind="error">{listingsError(statements.error, t, lang)}</FormMessage>}
       {statements.isSuccess && items.length === 0 && <p className={styles.hint}>{t('seller.statements_none')}</p>}
       {items.map((s) => (
-        <article key={s.orderId} className={styles.statement} aria-label={s.title ?? s.orderId}>
-          <h3><Link to={`/orders/${encodeURIComponent(s.orderId)}`}>{s.title ?? t('seller.untitled')}</Link></h3>
-          <p className={styles.hint}>{t('seller.settled', { at: formatDateTime(Date.parse(s.settledAt), lang) })}</p>
+        <article key={s.orderId} aria-label={s.title ?? s.orderId}>
+          {/* a statement is the counterfoil of a payout (docs/design/10_visual_v2.md, AC-SEL-2): the stub keeps the
+              day it settled and the postmark once the payout was sent; the form the order's title, the payout in
+              figures and words, and the breakdown */}
+          <Counterfoil amount={formatMoney(BigInt(s.sellerPayout), lang)} amountWords={amountInWords(s.sellerPayout, lang)}
+            postmark={s.payout && sentAt.has(s.payout.id) ? postmarkDate(sentAt.get(s.payout.id)!, lang) : undefined}
+            stub={<p className={styles.stubNote}>{t('seller.settled', { at: formatDateTime(Date.parse(s.settledAt), lang) })}</p>}
+            title={<h3 className={styles.stubHeading}><Link to={`/orders/${encodeURIComponent(s.orderId)}`}>{s.title ?? t('seller.untitled')}</Link></h3>}>
           <dl className={styles.breakdown}>
             <dt>{t('seller.line.collected')}</dt><dd>{money(s.amountCollected)}</dd>
             <dt>{t('seller.line.item')}</dt><dd>{money(s.itemPrice)}</dd>
@@ -200,6 +217,7 @@ function Statements({ t, lang }: { t: T; lang: Lang }) {
             <dt className={styles.total}>{t('seller.line.payout')}</dt><dd className={styles.total}>{money(s.sellerPayout)}</dd>
           </dl>
           {s.payout && <p className={styles.hint}>{t('seller.statement_payout', { status: t(`seller.payout.${s.payout.status}`) })}</p>}
+          </Counterfoil>
         </article>
       ))}
       {statements.hasNextPage && <button type="button" className={styles.secondary} onClick={() => void statements.fetchNextPage()}>{t('seller.more')}</button>}
