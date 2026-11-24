@@ -22,6 +22,9 @@ export class MfaDto {
   code!: string;
 }
 
+export const OTP_CHANNELS = ['sms', 'email', 'both'] as const;
+export type OtpChannel = (typeof OTP_CHANNELS)[number];
+
 /** FR-ACC-01, FR-ACC-04: registration details. The password policy itself is checked by the service. */
 export class RegisterDto {
   /** A Bangladeshi mobile number, 01XXXXXXXXX or +8801XXXXXXXXX. */
@@ -53,11 +56,23 @@ export class RegisterDto {
 
   @IsBoolean()
   adultConfirmed!: boolean;
+
+  /** U6-07: where the sign-up code goes; sms when absent. */
+  @IsOptional()
+  @IsIn(OTP_CHANNELS)
+  channel?: OtpChannel;
 }
 
 export class RegistrationIdDto {
   @IsUUID()
   registrationId!: string;
+}
+
+/** A new sign-up code, optionally by another channel than the first (U6-07). */
+export class RegisterResendDto extends RegistrationIdDto {
+  @IsOptional()
+  @IsIn(OTP_CHANNELS)
+  channel?: OtpChannel;
 }
 
 export class RegisterVerifyDto extends RegistrationIdDto {

@@ -42,16 +42,16 @@ import { ChatDataExport } from './services/data-export';
   providers: [
     ChatDataExport,
     { provide: CHAT_DATA_EXPORT, useExisting: ChatDataExport },
-    // log mode only, so far (U6-05); another mode is refused at start until its adapter exists
+    // log mode (U6-05), SMTP and Twilio (U6-07); the development mailbox exists while either channel is in log mode
     {
       provide: DEV_MAILBOX,
       inject: [TB_CONFIG, REDIS],
-      useFactory: (c: TbConfig, r: Redis) => (c.emailMode === 'log' && c.smsMode === 'log' ? new DevMailbox(r) : null),
+      useFactory: (c: TbConfig, r: Redis) => (c.emailMode === 'log' || c.smsMode === 'log' ? new DevMailbox(r) : null),
     },
     {
       provide: 'CHANNELS',
       inject: [TB_CONFIG, REDIS, CLOCK],
-      useFactory: (c: TbConfig, r: Redis, clock: Clock) => channelsFor(c, new DevMailbox(r), clock),
+      useFactory: (c: TbConfig, r: Redis, clock: Clock) => channelsFor({ ...c, emailFrom: process.env.EMAIL_FROM }, new DevMailbox(r), clock),
     },
     { provide: EMAIL_ADAPTER, inject: ['CHANNELS'], useFactory: (ch: ReturnType<typeof channelsFor>) => ch.email },
     { provide: SMS_ADAPTER, inject: ['CHANNELS'], useFactory: (ch: ReturnType<typeof channelsFor>) => ch.sms },

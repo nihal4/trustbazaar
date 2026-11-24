@@ -36,6 +36,8 @@ export interface RegistrationInput {
   termsVersion: string;
   privacyVersion: string;
   adultConfirmed: boolean;
+  /** Where the code goes (U6-07): the phone (default), the e-mail address, or both. */
+  channel?: 'sms' | 'email' | 'both';
 }
 
 export interface RegistrationStarted {
@@ -107,13 +109,23 @@ export class RegistrationService {
     });
 
     if (existing) await this.notify.sendSms(phone, 'register_attempt_existing_number', {});
-    else await this.notify.sendSms(phone, 'otp_register', { code, minutes: String(cp05.otpValidityMinutes) });
+    else await this.sendCode(phone, email, input.channel ?? 'sms', code, cp05.otpValidityMinutes);
     return { registrationId, resendAt: new Date(now.getTime() + RESEND_GAP_SECONDS * 1000).toISOString() };
   }
 
+  /** U6-07: the same code by SMS, by e-mail, or both; one channel failing must not stop the other. */
+  private async sendCode(phone: string, email: string, channel: 'sms' | 'email' | 'both', code: string, minutes: number): Promise<void> {
+    const vars = { code, minutes: String(minutes) };
+    const jobs: Promise<void>[] = [];
+    if (channel !== 'email') jobs.push(this.notify.sendSms(phone, 'otp_register', vars));
+    if (channel !== 'sms') jobs.push(this.notify.sendEmail(email, 'otp_register_email', vars));
+    const results = await Promise.allSettled(jobs);
+    if (results.every((r) => r.status === 'rejected')) throw (results[0] as PromiseRejectedResult).reason;
+  }
+
   /** SEC-AUTH-09: a new code for the same registration; the earlier one stops working. */
-  async resend(registrationId: string): Promise<RegistrationStarted> {
-    const [p] = await this.db.query(`SELECT phone_e164 FROM identity.pending_registrations WHERE id = $1 AND completed_at IS NULL`, [registrationId]);
+  async resend(registrationId: string, channel: 'sms' | 'email' | 'both' = 'sms'): Promise<RegistrationStarted> {
+    const [p] = await this.db.query(`SELECT phone_e164, email FROM identity.pending_registrations WHERE id = $1 AND completed_at IS NULL`, [registrationId]);
     if (!p) throw new Problem('not-found');
     const phone: string = p.phone_e164;
     await this.otp.countSend(phone);
@@ -126,7 +138,7 @@ export class RegistrationService {
       await m.query(`UPDATE identity.pending_registrations SET expires_at = $2 WHERE id = $1`, [registrationId, expiresAt]);
     });
     // The owner of an existing number was told once, at registration; a resend sends nothing to them.
-    if (!existing) await this.notify.sendSms(phone, 'otp_register', { code, minutes: String(cp05.otpValidityMinutes) });
+    if (!existing) await this.sendCode(phone, p.email, channel, code, cp05.otpValidityMinutes);
     return { registrationId, resendAt: new Date(now.getTime() + RESEND_GAP_SECONDS * 1000).toISOString() };
   }
 

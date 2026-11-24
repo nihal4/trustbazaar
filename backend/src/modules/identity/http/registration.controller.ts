@@ -3,7 +3,7 @@ import type { Request, Response } from 'express';
 import { Public, RateLimit } from '../../../kernel/http/policies';
 import { ContactService } from '../services/contact.service';
 import { RegistrationService, RegistrationStarted } from '../services/registration.service';
-import { EmailVerifyDto, RegisterDto, RegisterVerifyDto, RegistrationIdDto } from './auth.dto';
+import { EmailVerifyDto, RegisterDto, RegisterResendDto, RegisterVerifyDto } from './auth.dto';
 import { cookie, ctxOf } from './request';
 import { DEVICE_COOKIE, setSessionCookies } from './session-cookies';
 
@@ -29,8 +29,8 @@ export class RegistrationController {
   @RateLimit('otp-send')
   @Post('register/resend')
   @HttpCode(202)
-  resend(@Body() dto: RegistrationIdDto): Promise<RegistrationStarted> {
-    return this.registration.resend(dto.registrationId);
+  resend(@Body() dto: RegisterResendDto): Promise<RegistrationStarted> {
+    return this.registration.resend(dto.registrationId, dto.channel);
   }
 
   /** FR-ACC-02: the code creates the account; 204 with the new session's cookies. */

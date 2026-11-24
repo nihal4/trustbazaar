@@ -59,7 +59,7 @@ describe('register', () => {
     await screen.findByRole('heading', { name: 'Enter the code' });
     expect(be.called('POST /auth/register')[0].body).toEqual({
       phone: '+8801712345678', email: 'rahim@example.com', displayName: 'Rahim', password: 'correct horse battery staple',
-      termsVersion: '2026-11-01', privacyVersion: '2026-11-01', adultConfirmed: true,
+      termsVersion: '2026-11-01', privacyVersion: '2026-11-01', adultConfirmed: true, channel: 'email',
     });
     expect(screen.getByRole('button', { name: /New code in \d+ s/ }).hasAttribute('disabled')).toBe(true);
 
@@ -67,6 +67,23 @@ describe('register', () => {
     click('Confirm');
     await waitFor(() => expect(doc.router.state.location.pathname).toBe('/orders/9'));
     expect(be.called('POST /auth/register/verify')[0].body).toEqual({ registrationId: 'r-1', code: '123456' });
+  });
+
+  it('FR-ACC-02 the sign-up code is sent by e-mail, with no choice offered, and the next screen says so', async () => {
+    const be = fakeBackend({
+      'POST /auth/register': json(202, { registrationId: 'r-1', resendAt: new Date(Date.now() + 60_000).toISOString() }),
+    });
+    renderApp('/register', be);
+    await screen.findByRole('heading', { name: 'Create your account' });
+    expect(screen.queryByText('Send my sign-up code by')).toBeNull();
+    fillDetails();
+    fireEvent.click(screen.getByLabelText('I am 18 years old or older.'));
+    fireEvent.click(screen.getByLabelText(/accept the terms of use/));
+    click('Create account');
+
+    await screen.findByRole('heading', { name: 'Enter the code' });
+    expect(be.called('POST /auth/register')[0].body).toMatchObject({ channel: 'email' });
+    expect(screen.getByText(/We sent a 6-digit code to rahim@example.com/)).toBeTruthy();
   });
 
   it('FR-ACC-01 a password Unit 1 refuses is explained next to the field', async () => {
