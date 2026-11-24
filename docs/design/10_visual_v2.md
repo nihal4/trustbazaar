@@ -80,3 +80,19 @@ seller's payouts. `shared/PromiseNote.tsx` is its short form, a strip whose stub
 - AC-FND-3: Controls have a 6 px radius and panels 10 px; there are no pill shapes or shadows in the app's own styles.
 - AC-FND-4: The counterfoil shows where the money is in words as well as marks, and its postmark only once the money
   is paid out (`src/shared/counterfoil.test.tsx`); the payment promise is its short form.
+
+### AC-HOME and AC-SRC (U10-12)
+
+- AC-HOME-1: Beside the headline and the search (below them on phones) the counterfoil shows, in order, how the money
+  moves: you pay TrustBazaar, we hold it, the seller is paid when you confirm. It is an explanation, so it shows no
+  amount and claims no state; the facts (identity checked; bKash, Nagad or card) sit under the search.
+- AC-HOME-2: A listing card shows the photo on the second sheet inside a hairline, the price first in tabular figures,
+  then the title and the details; the time left of an auction (red in its last hour) and "Featured" are small boxes on
+  the photo, in words.
+- AC-HOME-3: Categories are boxed links on white, the current one in ink; sections are headed on a hairline; how
+  selling works is one sheet with its three numbered steps (a real sequence).
+- AC-SRC-1: The search field and its button match the home page's; from 60rem the filters stand on a white sheet.
+- AC-SRC-2: The filters in use show as carbon-copy chips with a teal edge; an empty result is a dashed sheet.
+
+The sample photos of the local stack (`backend/test/e2e/photos/`) were recoloured from lavender to the paper ground
+and teal, and the home page's phone render (`hero-phone.webp`) is gone: the counterfoil carries the first screen.

@@ -1,6 +1,7 @@
-// The home page (Daylight design, docs/design/10_visual.md, section 7.1; IF-UI-03; FR-SRC-01; FR-MON-05): the
-// headline and the search, the payment promise as a hanging price tag, the categories, the auctions ending soonest,
-// the featured listings apart with their note, the newest listings, and how selling works. Searching goes to
+// The home page (money-order design, docs/design/10_visual_v2.md, section 7, AC-HOME-1 to AC-HOME-3; IF-UI-03;
+// FR-SRC-01; FR-MON-05): the headline and the search, and beside them the counterfoil that shows how the money moves;
+// the categories, the auctions ending soonest, the featured listings apart with their note, the newest listings, and
+// how selling works. Searching goes to
 // /search with the words in the URL; everything shown here comes from GET /search and GET /categories.
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -8,6 +9,7 @@ import { Button } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { toLocalDigits } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
+import { Counterfoil } from '../../shared/Counterfoil';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
 import { useT } from '../../shared/language/Language';
@@ -16,7 +18,6 @@ import en from '../../messages/en/search.json';
 import bn from '../../messages/bn/search.json';
 import { ListingCard } from './ListingCard';
 import type { Category, SearchPage } from './SearchPage';
-import phone from './hero-phone.webp';
 import styles from './home.module.css';
 
 const CATALOGUES = { en, bn };
@@ -75,20 +76,21 @@ export function Component() {
             <input id="home-q" type="search" maxLength={100} value={words} placeholder={t('home.search_placeholder')} onChange={(e) => setWords(e.target.value)} />
             <button type="submit">{t('search.submit')}</button>
           </form>
-        </div>
-        <div className={styles.stage}>
-          <img className={styles.phone} src={phone} alt="" width={240} height={240} />
-          <svg className={styles.string} viewBox="0 0 150 110" aria-hidden="true" focusable="false">
-            <path d="M4 4 C 40 10, 70 50, 92 64 S 128 84, 144 96" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-          </svg>
-          <div className={styles.promise}>
-            <h2>{t('home.promise.title')}</h2>
-            <p>{t('home.promise.text')}</p>
-          </div>
           <ul className={styles.facts}>
             <li><Check />{t('home.promise.id')}</li>
             <li><Check />{t('home.promise.pay')}</li>
           </ul>
+        </div>
+        <div className={styles.foil}>
+          <Counterfoil
+            stub={<strong>{t('home.counterfoil.stub')}</strong>}
+            title={<><h2 className={styles.foilTitle}>{t('home.promise.title')}</h2><p className={styles.foilText}>{t('home.promise.text')}</p></>}
+            stages={[
+              { key: 'in', label: t('home.counterfoil.in'), state: 'done' },
+              { key: 'held', label: t('home.counterfoil.held'), state: 'current' },
+              { key: 'out', label: t('home.counterfoil.out'), state: 'next' },
+            ]}
+          />
         </div>
       </section>
 
@@ -132,7 +134,7 @@ export function Component() {
             <li key={n}><span className={styles.num} aria-hidden="true">{toLocalDigits(String(n), lang)}</span><span><strong>{t(`home.sell.step${n}`)}</strong>{t(`home.sell.step${n}_text`)}</span></li>
           ))}
         </ol>
-        <Button component={Link} to="/sell/new" variant="outline" color="dark">{t('home.sell.start')}</Button>
+        <Button component={Link} to="/sell/new" variant="outline" color="teal">{t('home.sell.start')}</Button>
       </section>
     </div>
   );
