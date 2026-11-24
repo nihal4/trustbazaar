@@ -1,18 +1,18 @@
 /* The privacy screens (U8-09; Daylight design, docs/design/10_visual.md, section 7.8, AC-ACC-3): one column under the
    account tabs, each part a panel on mist; pill buttons of 44 px; closing the account in danger red, in words too. */
 .page { max-width: 44rem; }
-.page h1 { margin: 0 0 0.75rem; font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem); line-height: 1.1; letter-spacing: -0.035em; font-weight: 800; }
-:lang(bn) .page h1 { letter-spacing: 0; line-height: 1.35; font-weight: 700; }
-.page > p a { color: var(--tb-accent); font-weight: 700; text-underline-offset: 3px; }
+.page h1 { margin: 0 0 0.75rem; font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem); line-height: 1.1; letter-spacing: -0.035em; font-weight: 600; }
+:lang(bn) .page h1 { letter-spacing: 0; line-height: 1.35; font-weight: 600; }
+.page > p a { color: var(--tb-accent); font-weight: 600; text-underline-offset: 3px; }
 .page section { margin-block: 1.25rem; }
-.panel { border-radius: 20px; background: var(--tb-surface); padding: 1.125rem 1.375rem; }
+.panel { border-radius: var(--tb-radius-panel); background: var(--tb-surface); padding: 1.125rem 1.375rem; }
 .panel h2 { margin: 0 0 0.5rem; font-size: 1.3125rem; letter-spacing: -0.02em; }
 :lang(bn) .panel h2 { letter-spacing: 0; }
 .panel > :last-child { margin-bottom: 0; }
 .hint { color: var(--tb-muted); }
 .secondary { min-height: 44px; padding: 0 1.25rem; border: 1.5px solid var(--tb-border); border-radius: var(--tb-radius-pill); background: var(--tb-bg); color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
 .secondary:disabled { color: var(--tb-muted); cursor: not-allowed; }
-.danger { min-height: 44px; padding: 0 1.25rem; border: 2px solid var(--tb-error); border-radius: var(--tb-radius-pill); background: var(--tb-bg); color: var(--tb-error); font: inherit; font-weight: 700; cursor: pointer; }
+.danger { min-height: 44px; padding: 0 1.25rem; border: 2px solid var(--tb-error); border-radius: var(--tb-radius-pill); background: var(--tb-bg); color: var(--tb-error); font: inherit; font-weight: 600; cursor: pointer; }
 .danger:disabled { opacity: 0.6; cursor: not-allowed; }
-.primaryLink { display: inline-flex; align-items: center; min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-radius-pill); background: var(--tb-accent); color: var(--tb-accent-text); font-weight: 700; text-decoration: none; }
+.primaryLink { display: inline-flex; align-items: center; min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-radius-pill); background: var(--tb-accent); color: var(--tb-accent-text); font-weight: 600; text-decoration: none; }
 .primaryLink:focus-visible { outline: 3px solid var(--tb-focus); outline-offset: 3px; }

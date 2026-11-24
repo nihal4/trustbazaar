@@ -1,37 +1,48 @@
-/* Design tokens and base styles (docs/design/08_frontend.pdf, sections 2.3 and 7; docs/design/10_visual.md).
+/* Design tokens and base styles (docs/design/08_frontend.pdf, sections 2.3 and 7; docs/design/10_visual_v2.md).
    Colours keep text contrast of at least 4.5:1 on the page background; the focus ring is 2px with at least 3:1. */
 :root {
-  /* Daylight palette (docs/design/10_visual.md, section 2). Text keeps at least 4.5:1 on the page background,
-     control borders and the focus ring at least 3:1. The Mantine theme (theme.ts) uses the same values. */
-  --tb-bg: #ffffff;
-  --tb-surface: #f3f1f5;
-  --tb-text: #1e1a26;
-  --tb-muted: #625c6e;
-  --tb-border: #857d92;
-  --tb-line: #e6e1ec;
-  --tb-accent: #4b2378;
+  /* Money-order palette (docs/design/10_visual_v2.md, section 2; dealt by taste-skill, "teal on paper"). Text keeps
+     at least 4.5:1 on paper, sheet and surface; control borders and the focus ring at least 3:1. The Mantine theme
+     (theme.ts) uses the same values. */
+  --tb-bg: #f7f9f8;
+  --tb-sheet: #ffffff;
+  --tb-surface: #ebf0ee;
+  --tb-text: #0d2326;
+  --tb-muted: #4a5f62;
+  --tb-border: #73878a;
+  --tb-line: #d3dddb;
+  --tb-accent: #06525c;
   --tb-accent-text: #ffffff;
-  --tb-accent-soft: #e9ddf6;
-  --tb-cream: #fff1ea;
-  --tb-warning-bg: #fff4d6;
-  --tb-warning-border: #8a5a00;
-  --tb-focus: #4b2378;
+  --tb-accent-soft: #d9e8e8;
+  --tb-accent-strong: #04363d;
+  --tb-accent-wash: #eef5f5;
+  --tb-cream: #e6f0ef;
+  --tb-on-ink: #b8c9cb;
+  --tb-on-ink-accent: #9fd0d3;
+  --tb-warning-bg: #fbeee3;
+  --tb-warning-border: #9a4a12;
+  --tb-focus: #06525c;
   --tb-error: #b42318;
-  --tb-success: #1e6b34;
-  --tb-radius: 12px;
-  --tb-radius-pill: 999px;
+  --tb-error-bg: #fef3f2;
+  --tb-error-line: #fecdca;
+  --tb-error-text: #912018;
+  --tb-success: #06525c;
+  --tb-radius: 6px;
+  --tb-radius-pill: 6px;
+  --tb-radius-control: 6px;
+  --tb-radius-panel: 10px;
   --tb-space-1: 0.25rem;
   --tb-space-2: 0.5rem;
   --tb-space-3: 1rem;
   --tb-space-4: 1.5rem;
   --tb-max-width: 80rem;
-  --tb-font: 'Schibsted Grotesk Variable', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tb-font: 'Geist Variable', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --tb-line-height: 1.5;
 }
 
 /* Hind Siliguri covers the Bengali block and is loaded only for Bangla (language/font.ts); Bangla needs taller lines. */
 :root:lang(bn) {
-  --tb-font: 'Hind Siliguri', 'Schibsted Grotesk Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tb-font: 'Hind Siliguri', 'Geist Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --tb-line-height: 1.7;
   --mantine-font-family: var(--tb-font);
   --mantine-font-family-headings: var(--tb-font);
