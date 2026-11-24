@@ -3,7 +3,13 @@
 // held, paid out) and holds the action. When the money is paid out, the stub carries a postmark with the date. Used
 // on the listing's buy panel, at checkout, on the order and on the seller's payouts; the words come from the page.
 import type { ReactNode } from 'react';
+import type { Lang } from './language/lang';
 import styles from './counterfoil.module.css';
+
+/** The postmark's day, as stamped: "21 Nov 2026" or "২১ নভে, ২০২৬", in Dhaka. */
+export function postmarkDate(iso: string, lang: Lang): string {
+  return new Intl.DateTimeFormat(lang === 'bn' ? 'bn-BD' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Dhaka' }).format(Date.parse(iso));
+}
 
 export type CounterfoilStage = { key: string; label: string; state: 'done' | 'current' | 'next' };
 
