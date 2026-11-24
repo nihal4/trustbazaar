@@ -314,7 +314,7 @@ Design: the Daylight canvas (home page, desktop and phone, in English and Bangla
 | U10-17 | ID check (`kyc.html`) and credential pages (`secure.html`) in the money-order world | U10-11 | todo | | | | |
 | U10-18 | Staff console (`staff.html`) in the money-order world | U10-11 | todo | | | | |
 | U10-19 | Sweep of the money-order world, impeccable's finish review and `DESIGN.md` | U10-12, U10-13, U10-14, U10-15, U10-16, U10-17, U10-18 | todo | | | | |
-| U10-20 | Bangla check of the money-order screens so far (U10-10 to U10-15): the figures face for Bangla numbers and the taka sign, the clipped time-left tag, the filter heading on its border | U10-15 | doing | Sabikun Nahar Sinthia | `fix/u10-20-bangla-figures` | | |
+| U10-20 | Bangla check of the money-order screens so far (U10-10 to U10-15): the figures face for Bangla numbers and the taka sign, the clipped time-left tag, the filter heading on its border | U10-15 | doing | Sabikun Nahar Sinthia | `fix/u10-20-bangla-figures`, review, #304 | | |
 
 ## Decisions log
 
