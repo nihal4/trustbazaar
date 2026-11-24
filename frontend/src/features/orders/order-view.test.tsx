@@ -4,7 +4,7 @@ import { cleanup, configure, fireEvent, screen, waitFor, within } from '@testing
 import { fakeBackend, json, problem, renderApp, standInMe, type Call } from '../../testing/app';
 import { actionsOf } from './Actions';
 import { deadlinesOf } from './Deadlines';
-import { stepsOf } from './OrderPage';
+import { postmarkOf, stepsOf } from './OrderPage';
 import { dhakaInput, spaced } from './Handover';
 import type { HandoverView, MeetupPoint, OrderView, SavedAddress, Shipment } from './model';
 import libEn from '../../lib/messages/en.json';
@@ -406,7 +406,7 @@ describe('the list of orders', () => {
   });
 });
 
-describe('the order steps (Daylight design, U10-05)', () => {
+describe('the order\'s counterfoil (money-order world, U10-14)', () => {
   it('NFR-USE-07 the steps follow the order: payment, the handover, the end; a cancelled order has none', () => {
     const states = (o: OrderView) => stepsOf(o).map((x) => x.state).join(' ');
     expect(states(order({ status: 'awaiting_payment' }))).toBe('current next next');
@@ -420,8 +420,24 @@ describe('the order steps (Daylight design, U10-05)', () => {
     renderApp('/orders/o-1', backend({}));
     const steps = await screen.findByRole('list', { name: 'Order progress' });
     const items = within(steps).getAllByRole('listitem');
-    expect(items.map((li) => li.textContent)).toEqual(['Payment(done)', '2Handover(now)', '3Done(still to come)']);
+    expect(items.map((li) => li.textContent)).toEqual(['Payment(done)', 'Handover(now)', 'Done(still to come)']);
     expect(items[1].getAttribute('aria-current')).toBe('step');
+  });
+
+  it('NFR-USE-07 where the money is, the total in figures and in words, and the steps stand on one counterfoil (AC-ORD-2)', async () => {
+    renderApp('/orders/o-1', backend({}));
+    const money = await screen.findByRole('region', { name: 'Money for this order' });
+    expect(within(money).getByRole('list', { name: 'Order progress' })).toBeTruthy();
+    expect(within(money).getAllByText('৳1,500')).toHaveLength(2);     // on the stub and on the form, as on a money order
+    expect(within(money).getByText('One thousand five hundred taka only')).toBeTruthy();
+  });
+
+  it('NFR-USE-07 the postmark carries the day only once the money has left TrustBazaar (AC-ORD-2)', () => {
+    const closedAt = '2026-11-20T20:00:00Z';                         // 21 November in Dhaka
+    expect(postmarkOf(order({ status: 'paid' }), 'en')).toBeUndefined();
+    expect(postmarkOf(order({ status: 'closed', closedAt, escrow: { ...order().escrow!, state: 'released' } }), 'en')).toBe('21 Nov 2026');
+    expect(postmarkOf(order({ status: 'closed', closedAt, escrow: { ...order().escrow!, state: 'refunded' } }), 'bn')).toMatch(/^২১/);
+    expect(postmarkOf(order({ status: 'cancelled', closedAt, escrow: null }), 'en')).toBeUndefined();
   });
 });
 

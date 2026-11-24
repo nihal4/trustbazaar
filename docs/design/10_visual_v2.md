@@ -107,3 +107,17 @@ and teal, and the home page's phone render (`hero-phone.webp`) is gone: the coun
   price first, the bid, the rules and the history. The promise's short form follows the panel.
 - AC-LST-3: The photos sit on the second sheet inside a hairline; "Shows defects" is a box on the photo, in words; the
   seller's initials stand in a square stamp; the game-account warning uses the error tokens only.
+
+### AC-ORD (U10-14)
+
+- AC-ORD-1: At checkout the summary is the counterfoil: the stub says the total to pay (or the item total plus the
+  delivery fee), the form carries the total in figures and, when it is final, in words (`shared/amountWords.ts`: the
+  South Asian scale, "taka ... only" and "টাকা ... মাত্র"), how the money moves in order, and the button with the
+  reservation note. The promise strip is not repeated beside it.
+- AC-ORD-2: On the order, the steps and the money sentence become one counterfoil: the stub keeps the total; the form
+  says in one sentence where the money is (NFR-USE-07; for a buyer who still has to pay, that it is not paid yet), the total in
+  figures and words, and the steps (payment, handover or delivery, done) with the current one marked, in words too.
+  Once the money has left TrustBazaar (paid out to the seller or refunded), the stub carries the postmark with the day
+  in Dhaka.
+- AC-ORD-3: The order's inputs and panels follow the foundation: 6 px controls on white, no inset shadows, no
+  one-sided bars (a seller's reply to a rating is a boxed note), the game-account warning in the error tokens only.

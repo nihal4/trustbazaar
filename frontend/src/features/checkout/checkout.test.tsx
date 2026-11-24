@@ -40,6 +40,14 @@ describe('checkout', () => {
     expect(within(summary).getByText('Your money waits with us')).toBeTruthy();
   });
 
+  it('NFR-USE-07 the summary is the counterfoil: the total in figures and in words, how the money moves, the button (AC-ORD-1)', async () => {
+    renderApp(`/checkout/${ID}`, backend(), 'bn');
+    const summary = await screen.findByRole('complementary', { name: 'সারসংক্ষেপ' });
+    expect(within(summary).getByText('এক হাজার পাঁচ শত টাকা মাত্র')).toBeTruthy();
+    expect(within(summary).getAllByRole('listitem')).toHaveLength(3);
+    expect(screen.queryByText('The seller is paid only after you confirm you have the item.')).toBeNull();
+  });
+
   it('FR-FIX-01 the quantity and self pickup, the total, then one order with an Idempotency-Key and on to its page', async () => {
     const be = backend();
     const doc = renderApp(`/checkout/${ID}`, be);
