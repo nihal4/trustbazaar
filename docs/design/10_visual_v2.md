@@ -46,6 +46,16 @@ Geist (variable, self-hosted) for Latin and Hind Siliguri (400 to 700) for Bangl
 (`language/font.ts`, AC-ALL-4). Headings 600, text 400, buttons and labels 600; amounts in tabular figures. Bangla line
 height 1.7, no negative tracking.
 
+Numbers have a face of their own, 'TB Figures', cut from Noto Sans Bengali (`language/figures/`,
+`scripts/subset-figures.py`; U10-20): Hind Siliguri draws the digit one (১) as a small hook high in its box, so
+"৳১৫,০০০" read as "৳ ৫,০০০". The figures face holds only the Bangla digits, the taka sign and the comma, full stop
+and colon, about 2.5 KB a weight. It comes first in the Bangla stack, so every Bangla number is drawn by one face,
+and after Geist in the English stack, where it draws only the taka sign that Geist lacks.
+
+- AC-TYPE-1 (U10-20): In Bangla every digit, the taka sign and the separators between them are drawn by the figures
+  face; in English the taka sign is too (`src/shared/visual.test.ts`). Labels on photos never cut their text off;
+  they wrap inside their box.
+
 ## 4. Shape and depth
 
 Radius 6 px for controls, 10 px for panels (`--tb-radius-control`, `--tb-radius-panel`); no pills, no shadows. Panels
