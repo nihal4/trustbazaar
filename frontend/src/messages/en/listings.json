@@ -113,5 +113,8 @@
   "listing.game_risk.2": "TrustBazaar's protection covers the handover of the login details, your takeover of the account, and the seller taking the account back during the protection period.",
   "listing.game_risk.3": "It does not cover any action by the publisher. If the publisher suspends or bans the account, you are not refunded.",
   "listing.promise.title": "Your money waits with us",
-  "listing.promise.text": "You pay TrustBazaar. The seller is paid only after you confirm you have the item."
+  "listing.promise.text": "You pay TrustBazaar. The seller is paid only after you confirm you have the item.",
+  "listing.counterfoil.in": "You pay TrustBazaar",
+  "listing.counterfoil.held": "We hold it",
+  "listing.counterfoil.out": "The seller is paid when you confirm"
 }
