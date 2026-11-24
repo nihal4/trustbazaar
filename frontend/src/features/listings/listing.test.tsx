@@ -111,18 +111,33 @@ describe('the listing page', () => {
   });
 });
 
-describe('the listing page in the Daylight design (U10-04)', () => {
+describe('the listing page in the money-order world (U10-13)', () => {
   it('IF-UI-03 the photos come first, then the price with its button, the payment promise and the seller with initials', async () => {
     renderApp(`/listings/${ID}`, backend({ l: listing({ seller: { id: 'seller-1', displayName: 'Karim Uddin', verified: true, joinMonth: '2026-10' } }) }));
     await screen.findByRole('heading', { level: 1 });
     expect(screen.getByRole('link', { name: 'Cameras' }).getAttribute('href')).toBe('/search?category=1');
     expect(screen.getByText('Your money waits with us')).toBeTruthy();
-    expect(screen.getByText('You pay TrustBazaar. The seller is paid only after you confirm you have the item.')).toBeTruthy();
     const seller = screen.getByRole('region', { name: 'Seller' });
     expect(within(seller).getByText('KU')).toBeTruthy();
     expect(within(seller).getByRole('link', { name: 'Karim Uddin' }).getAttribute('href')).toBe('/users/seller-1');
     expect(within(seller).getByText('Identity verified')).toBeTruthy();
     expect(screen.getByRole('region', { name: 'Photos' }).querySelector('ul')!.getAttribute('tabindex')).toBe('0');   // the phone strip scrolls by keyboard too
+  });
+
+  it('NFR-USE-07 a fixed-price item\'s buy panel is the counterfoil: the price, how the money moves in order, and the button (AC-LST-1)', async () => {
+    renderApp(`/listings/${ID}`, backend({ l: listing() }));
+    const panel = await screen.findByRole('region', { name: 'Price' });
+    expect(within(panel).getByText('Your money waits with us')).toBeTruthy();
+    expect(within(panel).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['You pay TrustBazaar', 'We hold it', 'The seller is paid when you confirm']);
+    expect(within(panel).getByRole('link', { name: 'Buy now for ৳15,000' })).toBeTruthy();
+    expect(within(panel).getAllByText('৳15,000')).toHaveLength(2);     // on the stub and on the form, as on a money order
+    expect(screen.queryByText('You pay TrustBazaar. The seller is paid only after you confirm you have the item.')).toBeNull();   // the strip is not repeated
+  });
+
+  it('NFR-USE-07 an auction keeps the payment promise\'s short form under its panel (AC-LST-2)', async () => {
+    renderApp(`/listings/${ID}`, backend({ l: auctionListing() }));
+    const panel = await screen.findByRole('region', { name: 'Auction' });
+    expect(panel.nextElementSibling?.textContent).toContain('You pay TrustBazaar. The seller is paid only after you confirm you have the item.');
   });
 
   it('NFR-USE-04 the promise and the seller card in Bangla', async () => {

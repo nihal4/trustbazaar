@@ -21,15 +21,18 @@ type Props = {
   stateWords?: Record<CounterfoilStage['state'], string>;
   /** the postmark's date, shown once the money has been paid out */
   postmark?: string;
+  /** the id of a heading inside the counterfoil that names it as a region */
+  labelledBy?: string;
   children?: ReactNode;
 };
 
-export function Counterfoil({ stub, amount, amountWords, title, stages, stateWords, postmark, children }: Props) {
+export function Counterfoil({ stub, amount, amountWords, title, stages, stateWords, postmark, labelledBy, children }: Props) {
   return (
-    <section className={styles.counterfoil}>
+    <section className={styles.counterfoil} aria-labelledby={labelledBy}>
       <div className={styles.stub}>
         <div className={styles.stubText}>{stub}</div>
-        {amount && <p className={styles.stubAmount}>{amount}</p>}
+        {/* the stub's copy of the amount, as on a money order; read once, on the form */}
+        {amount && <p className={styles.stubAmount} aria-hidden="true">{amount}</p>}
         {postmark && (
           <p className={styles.postmark}>
             <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false">

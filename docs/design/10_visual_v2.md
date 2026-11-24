@@ -96,3 +96,14 @@ seller's payouts. `shared/PromiseNote.tsx` is its short form, a strip whose stub
 
 The sample photos of the local stack (`backend/test/e2e/photos/`) were recoloured from lavender to the paper ground
 and teal, and the home page's phone render (`hero-phone.webp`) is gone: the counterfoil carries the first screen.
+
+### AC-LST (U10-13)
+
+- AC-LST-1: A fixed-price item's buy panel is the counterfoil: the stub names the price (and how many are left), the
+  amount stands on the stub and on the form, and the form says the money waits with us, shows in order how it moves
+  (an explanation, so no state is claimed) and holds the buy button. The promise strip is not repeated beside it.
+- AC-LST-2: The auction panel is a counterfoil too: its stub on the second sheet carries "Auction" and the time left
+  in tabular figures (red in the last minutes, with the warning in words), above the tear line; the form carries the
+  price first, the bid, the rules and the history. The promise's short form follows the panel.
+- AC-LST-3: The photos sit on the second sheet inside a hairline; "Shows defects" is a box on the photo, in words; the
+  seller's initials stand in a square stamp; the game-account warning uses the error tokens only.

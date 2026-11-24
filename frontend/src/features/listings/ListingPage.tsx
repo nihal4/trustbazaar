@@ -1,6 +1,7 @@
-// The listing page (docs/design/08_frontend.pdf sections 3.3 and 7.3; IF-UI-03; U8-04; Daylight design,
-// docs/design/10_visual.md, section 7.3: photos first and large, the price or the auction beside them with the main
-// action, the payment promise and the seller; on phones one column). It renders from one request,
+// The listing page (docs/design/08_frontend.pdf sections 3.3 and 7.3; IF-UI-03; U8-04; money-order world,
+// docs/design/10_visual_v2.md, AC-LST: photos first and large; beside them the counterfoil, which holds the price,
+// how the money moves and the buy button, or the auction panel with the payment promise; then the seller; on phones
+// one column). It renders from one request,
 // GET /listings/{id}, which includes the auction state (section 9). Everything the seller wrote is shown as text
 // (SEC-INP-03); the location is the district only (FR-LST-06). A fixed-price item links to its checkout (U8-05);
 // an auction shows its panel. Others see only public listings; the seller sees their own in every state.
@@ -19,6 +20,7 @@ import type { Lang } from '../../shared/language/lang';
 import { useMe } from '../../shared/me';
 import { useOpenThread } from '../../shared/chat';
 import { isApiError } from '../../shared/problems';
+import { Counterfoil } from '../../shared/Counterfoil';
 import { PromiseNote } from '../../shared/PromiseNote';
 import { FRESHNESS } from '../../shared/query';
 import { AuctionPanel } from './AuctionPanel';
@@ -73,9 +75,11 @@ export function Component() {
       </div>
       <aside className={styles.side}>
         {l.saleFormat === 'auction' && l.auction
-          ? <AuctionPanel initial={l.auction} t={t} lang={lang} signedIn={signedIn} own={own} nextPath={pathname} />
+          ? (<>
+              <AuctionPanel initial={l.auction} t={t} lang={lang} signedIn={signedIn} own={own} nextPath={pathname} />
+              <PromiseNote title={t('listing.promise.title')} text={t('listing.promise.text')} />
+            </>)
           : <Buy l={l} own={own} t={t} lang={lang} />}
-        <PromiseNote title={t('listing.promise.title')} text={t('listing.promise.text')} />
         <section aria-labelledby="seller-title" className={styles.seller}>
           <h2 id="seller-title" className={styles.visuallyHidden}>{t('listing.seller')}</h2>
           <div className={styles.sellerRow}>
@@ -171,19 +175,26 @@ function Photos({ l, t, lang }: { l: ListingView; t: T; lang: Lang }) {
   );
 }
 
+/** A fixed-price item's buy panel is the counterfoil (AC-LST-1): the stub names the price (and how many are left),
+ *  the form carries the amount, the promise and, in order, how the money moves (an explanation, so no state is
+ *  claimed), and holds the buy button. The promise strip is not repeated beside it. */
 function Buy({ l, own, t, lang }: { l: ListingView; own: boolean; t: T; lang: Lang }) {
   if (!l.price) return null;
   const price = formatMoney(l.price, lang);
+  const stages = (['in', 'held', 'out'] as const).map((key, i) => ({ key, label: t(`listing.counterfoil.${key}`), state: i === 0 ? 'done' as const : i === 1 ? 'current' as const : 'next' as const }));
   return (
-    <section aria-labelledby="price-title" className={styles.buy}>
-      <h2 id="price-title" className={styles.visuallyHidden}>{t('listing.price')}</h2>
-      <p className={styles.bigPrice}>{price}</p>
-      {l.quantity.total > 1 && <p>{t('listing.available', { count: toLocalDigits(String(l.quantity.available), lang) })}</p>}
+    <Counterfoil labelledBy="price-title" amount={price}
+      stub={<>
+        <h2 id="price-title" className={styles.stubHeading}>{t('listing.price')}</h2>
+        {l.quantity.total > 1 && <p className={styles.stubNote}>{t('listing.available', { count: toLocalDigits(String(l.quantity.available), lang) })}</p>}
+      </>}
+      title={<p>{t('listing.promise.title')}</p>}
+      stages={stages}>
       {l.currentlyReserved && <p className={styles.notice}>{t('listing.currently_reserved')}</p>}
       {l.status === 'active' && !own && l.quantity.available > 0 && (
         <Button component={Link} to={`/checkout/${encodeURIComponent(l.id)}`} size="lg" fullWidth>{t('listing.buy', { price })}</Button>
       )}
-    </section>
+    </Counterfoil>
   );
 }
 
