@@ -18,6 +18,10 @@ const BOTH = (bn: string, en: string): [string, string] => [bn, en];
 
 export const MESSAGES: Record<string, Texts> = {
   otp_register: { body: BOTH('TrustBazaar: আপনার নিবন্ধনের কোড {code}। {minutes} মিনিট বৈধ। কাউকে জানাবেন না।', 'TrustBazaar: your registration code is {code}. Valid for {minutes} minutes. Never share it.') },
+  otp_register_email: {
+    subject: BOTH('আপনার TrustBazaar নিবন্ধনের কোড', 'Your TrustBazaar registration code'),
+    body: BOTH('আপনার নিবন্ধনের কোড {code}। {minutes} মিনিট বৈধ। কাউকে জানাবেন না।', 'Your registration code is {code}. Valid for {minutes} minutes. Never share it.'),
+  },
   otp_password_reset: { body: BOTH('TrustBazaar: পাসওয়ার্ড রিসেটের কোড {code}। {minutes} মিনিট বৈধ।', 'TrustBazaar: your password reset code is {code}. Valid for {minutes} minutes.') },
   otp_phone_change: { body: BOTH('TrustBazaar: নতুন নম্বর যাচাইয়ের কোড {code}। {minutes} মিনিট বৈধ।', 'TrustBazaar: the code to confirm your new number is {code}. Valid for {minutes} minutes.') },
   otp_step_up: { body: BOTH('TrustBazaar: নিশ্চিতকরণ কোড {code}। {minutes} মিনিট বৈধ। আপনি না চাইলে কাউকে জানাবেন না।', 'TrustBazaar: your confirmation code is {code}. Valid for {minutes} minutes. If you did not ask for it, share it with no one.') },

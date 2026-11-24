@@ -69,8 +69,8 @@ export interface TbConfig {
   /** COURIER_MODE=mock only: seconds between the mock courier's automatic steps; 0 (default) = the simulator only (U4-04). */
   readonly mockCourierAutoAdvanceSeconds: number;
   readonly emailMode: 'log' | 'smtp';
-  /** Validated by Unit 6's SMS adapter: the design names only "log" and a provider test mode. */
-  readonly smsMode: string;
+  /** log, or twilio (U6-07; the design names "log" and a provider test mode). */
+  readonly smsMode: 'log' | 'twilio';
   readonly secrets: Readonly<Record<SecretName, Secret>>;
   readonly keys: Readonly<Record<KeyringName, Keyring>>;
   readonly providers: Readonly<Partial<Record<ProviderName, Secret>>>;
@@ -105,6 +105,9 @@ export const PROVIDERS = {
   courierWebhookSecret: 'COURIER_WEBHOOK_SECRET',
   smtpUrl: 'SMTP_URL',
   smsApiKey: 'SMS_API_KEY',
+  twilioAccountSid: 'TWILIO_ACCOUNT_SID',
+  twilioAuthToken: 'TWILIO_AUTH_TOKEN',
+  twilioFrom: 'TWILIO_FROM',
 } as const;
 export type ProviderName = keyof typeof PROVIDERS;
 
@@ -230,7 +233,7 @@ export function loadConfig(env: Env): TbConfig {
   const mockCourierAutoAdvanceSeconds = Number(autoText);
   if (!/^\d+$/.test(autoText) || mockCourierAutoAdvanceSeconds > 86_400) problems.push('MOCK_COURIER_AUTO_ADVANCE_SECONDS: whole seconds from 0 to 86400');
   const emailMode = oneOf('EMAIL_MODE', ['log', 'smtp'] as const, 'log');
-  const smsMode = get('SMS_MODE') ?? 'log';
+  const smsMode = oneOf('SMS_MODE', ['log', 'twilio'] as const, 'log');
 
   const secrets = Object.fromEntries(
     Object.entries(SECRETS).map(([key, name]) => [key, secret(name)]),
@@ -247,6 +250,11 @@ export function loadConfig(env: Env): TbConfig {
     providers[key] = new Secret(name, v);
   }
   if (emailMode === 'smtp' && !providers.smtpUrl) problems.push('SMTP_URL: missing (EMAIL_MODE is smtp)');
+  if (smsMode === 'twilio') {
+    for (const k of ['twilioAccountSid', 'twilioAuthToken', 'twilioFrom'] as const) {
+      if (!providers[k]) problems.push(`${PROVIDERS[k]}: missing (SMS_MODE is twilio)`);
+    }
+  }
   // SEC-PAY-05: the payment credentials must match the mode; C-2 never allows live keys. In sandbox mode Stripe's
   // test keys are required (bKash and Nagad come with U2-09); in mock mode none is used.
   const stripeKey = get('STRIPE_SECRET_KEY');
