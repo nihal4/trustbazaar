@@ -11,14 +11,14 @@
   font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem);
   line-height: 1.1;
   letter-spacing: -0.035em;
-  font-weight: 800;
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
 
 :lang(bn) .page h1 {
   letter-spacing: 0;
   line-height: 1.35;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .threads,
@@ -35,7 +35,7 @@
 }
 
 .threads li {
-  border-radius: 16px;
+  border-radius: var(--tb-radius-panel);
   background: var(--tb-surface);
 }
 
@@ -51,7 +51,7 @@
   gap: 0.25rem;
   min-height: 44px;
   padding: 0.875rem 1.125rem;
-  border-radius: 16px;
+  border-radius: var(--tb-radius-panel);
   color: var(--tb-text);
   text-decoration: none;
   overflow-wrap: anywhere;
@@ -68,18 +68,18 @@
 }
 
 .name {
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .badge {
   display: inline-block;
   margin-left: 0.5rem;
   padding: 1px 10px;
-  border-radius: 999px;
+  border-radius: var(--tb-radius-control);
   background: var(--tb-accent-soft);
-  color: #3a1a5e;
+  color: var(--tb-accent-strong);
   font-size: 0.8125rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0;
   vertical-align: middle;
 }
@@ -98,7 +98,7 @@
 }
 
 .unread {
-  font-weight: 700;
+  font-weight: 600;
   color: var(--tb-accent);
 }
 
@@ -109,20 +109,20 @@
   max-width: 85%;
   margin-bottom: 0.625rem;
   padding: 0.75rem 1rem;
-  border-radius: 18px;
+  border-radius: var(--tb-radius-panel);
   overflow-wrap: anywhere;
 }
 
 .mine {
   margin-left: auto;
   background: var(--tb-accent-soft);
-  border-bottom-right-radius: 6px;
+  border-bottom-right-radius: 2px;
 }
 
 .theirs {
   margin-right: auto;
   background: var(--tb-surface);
-  border-bottom-left-radius: 6px;
+  border-bottom-left-radius: 2px;
 }
 
 .empty {
@@ -131,8 +131,8 @@
 
 .sender {
   font-size: 0.8125rem;
-  font-weight: 700;
-  color: #3a1a5e;
+  font-weight: 600;
+  color: var(--tb-accent-strong);
 }
 
 .sender:empty {
@@ -150,7 +150,7 @@
   max-width: 100%;
   max-height: 20rem;
   object-fit: contain;
-  border-radius: 12px;
+  border-radius: var(--tb-radius-panel);
 }
 
 .flag,
@@ -159,7 +159,7 @@
   margin: 0;
   padding: 0.625rem 0.875rem;
   border: 1px solid var(--tb-warning-border);
-  border-radius: 12px;
+  border-radius: var(--tb-radius-panel);
   background: var(--tb-warning-bg);
   color: var(--tb-text);
 }
@@ -176,7 +176,7 @@
 
 .error {
   color: var(--tb-error);
-  font-weight: 700;
+  font-weight: 600;
   margin: 0 0 0.5rem;
 }
 
@@ -191,7 +191,7 @@
 
 .composer label,
 .photo label {
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .composer textarea,
@@ -230,7 +230,7 @@
   background: var(--tb-accent);
   color: var(--tb-accent-text);
   font: inherit;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -248,7 +248,7 @@
 }
 
 .report legend {
-  font-weight: 700;
+  font-weight: 600;
   padding: 0;
 }
 

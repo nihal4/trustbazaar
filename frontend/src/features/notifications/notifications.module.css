@@ -10,13 +10,13 @@
   font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem);
   line-height: 1.1;
   letter-spacing: -0.035em;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 :lang(bn) .page h1 {
   letter-spacing: 0;
   line-height: 1.35;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .toolbar {
@@ -42,7 +42,7 @@
 }
 
 .list li {
-  border-radius: 16px;
+  border-radius: var(--tb-radius-panel);
   overflow: hidden;
 }
 
@@ -79,21 +79,21 @@
 .item:focus-visible {
   outline: 3px solid var(--tb-focus);
   outline-offset: -3px;
-  border-radius: 16px;
+  border-radius: var(--tb-radius-panel);
 }
 
 .new {
   align-self: flex-start;
   padding: 1px 10px;
-  border-radius: 999px;
+  border-radius: var(--tb-radius-control);
   background: var(--tb-accent-soft);
-  color: #3a1a5e;
+  color: var(--tb-accent-strong);
   font-size: 0.8125rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .title {
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .body {
@@ -149,7 +149,7 @@
 }
 
 .choice legend {
-  font-weight: 700;
+  font-weight: 600;
   padding: 0;
   margin-bottom: 0.25rem;
 }

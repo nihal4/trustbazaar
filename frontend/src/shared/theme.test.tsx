@@ -26,7 +26,7 @@ describe('Mantine theme', () => {
   it('SEC-WEB-01 the theme CSS shipped as a static file is the CSS Mantine would add at run time', () => {
     const css = generated();
     if (process.env.UPDATE_MANTINE_CSS) writeFileSync(FILE, css);
-    expect(css).toContain('--mantine-color-plum-7: #4B2378');
+    expect(css).toContain('--mantine-color-teal-7: #06525C');
     expect(readFileSync(FILE, 'utf8')).toBe(css);
   });
 
@@ -43,7 +43,7 @@ describe('Mantine theme', () => {
     };
     const ratio = (a: string, b: string) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
     const c = theme.colors!;
-    expect(ratio(c.plum![7], '#FFFFFF')).toBeGreaterThanOrEqual(4.5);   // white text on buttons, plum links
+    expect(ratio(c.teal![7], '#FFFFFF')).toBeGreaterThanOrEqual(4.5);   // white text on buttons, teal links
     expect(ratio(c.gray![7], '#FFFFFF')).toBeGreaterThanOrEqual(4.5);   // muted text
     expect(ratio(c.gray![6], '#FFFFFF')).toBeGreaterThanOrEqual(4.5);   // placeholders
     expect(ratio(c.gray![7], c.gray![1])).toBeGreaterThanOrEqual(4.5);  // muted text on mist

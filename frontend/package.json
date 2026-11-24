@@ -14,7 +14,7 @@
     "mantine:css": "UPDATE_MANTINE_CSS=1 vitest run src/shared/theme.test.tsx"
   },
   "dependencies": {
-    "@fontsource-variable/schibsted-grotesk": "5.3.0",
+    "@fontsource-variable/geist": "5.3.0",
     "@fontsource/hind-siliguri": "5.3.0",
     "@hpke/core": "1.9.0",
     "@mantine/core": "8.3.18",
