@@ -36,13 +36,15 @@
   --tb-space-3: 1rem;
   --tb-space-4: 1.5rem;
   --tb-max-width: 80rem;
-  --tb-font: 'Geist Variable', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tb-font: 'Geist Variable', 'TB Figures', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --tb-line-height: 1.5;
 }
 
-/* Hind Siliguri covers the Bengali block and is loaded only for Bangla (language/font.ts); Bangla needs taller lines. */
+/* Hind Siliguri covers the Bengali block and is loaded only for Bangla (language/font.ts); the Bangla figures (digits,
+   taka sign and the separators between them) come first from 'TB Figures', so numbers read clearly in one face (Decisions
+   log, U10-20). Bangla needs taller lines. */
 :root:lang(bn) {
-  --tb-font: 'Hind Siliguri', 'Geist Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tb-font: 'TB Figures', 'Hind Siliguri', 'Geist Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --tb-line-height: 1.7;
   --mantine-font-family: var(--tb-font);
   --mantine-font-family-headings: var(--tb-font);

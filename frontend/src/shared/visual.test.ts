@@ -65,6 +65,22 @@ describe('the fonts', () => {
     }
   });
 
+  it('NFR-USE-04 Bangla numbers are drawn by the figures face, first in the Bangla stack: the digits, the taka sign and the separators (AC-TYPE-1)', async () => {
+    const { FIGURES_FONT, FIGURES_RANGE, MARKS_RANGE } = await import('./language/font');
+    expect(read('shared/tokens.css')).toMatch(new RegExp(`:root:lang\\(bn\\) \\{\\s*--tb-font: '${FIGURES_FONT}', 'Hind Siliguri'`));
+    expect(read('secure/secure.css')).toMatch(new RegExp(`:root:lang\\(bn\\) \\{ --font: '${FIGURES_FONT}', 'Hind Siliguri'`));
+    // in English, after Geist, which has no taka sign
+    expect(read('shared/tokens.css')).toContain(`--tb-font: 'Geist Variable', '${FIGURES_FONT}', 'Hind Siliguri'`);
+    expect(FIGURES_RANGE).toBe('U+09E6-09EF, U+09F3');               // ০ to ৯ and ৳
+    expect(MARKS_RANGE).toBe('U+002C, U+002E, U+003A');              // , . :
+    for (const w of [400, 500, 600, 700]) {
+      for (const part of ['digits', 'marks']) {
+        const size = readFileSync(join(SRC, `shared/language/figures/figures-${part}-${w}.woff2`)).length;
+        expect(size, `${part} ${w}`).toBeLessThan(4096);              // a cut of a few glyphs, not the whole face
+      }
+    }
+  });
+
   it('NFR-PERF-07 the stylesheets import fonts only from the site\'s own packages', () => {
     for (const css of [read('shared/kit.css'), read('secure/secure.css')]) {
       for (const m of css.matchAll(/@import\s+['"]([^'"]+)['"]/g)) expect(m[1]).not.toMatch(/^(https?:)?\/\//);
