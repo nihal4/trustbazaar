@@ -77,7 +77,7 @@ export function Component() {
   return (
     <div className={drafting ? `${styles.page} ${styles.withSteps}` : styles.page}>
       <h1 className={styles.title}>{l ? t('sell.title_edit', { title: l.title }) : t('sell.title_new')}</h1>
-      {drafting && <SellSteps l={l} minPhotos={terms.data.photos.min} t={t} lang={lang} />}
+      {drafting && <SellSteps l={l} minPhotos={terms.data.photos.min} t={t} />}
       <div className={styles.main}>
       {l && <p><strong>{t(`sell.status.${l.status}`)}</strong>{l.status !== 'draft' && <> · <Link to={`/listings/${encodeURIComponent(l.id)}`}>{t('sell.view_listing')}</Link></>}</p>}
       <p className={styles.hint}>{t('sell.limits', { count: toLocalDigits(String(terms.data.activeListings.count), lang), limit: toLocalDigits(String(terms.data.activeListings.limit), lang) })}</p>
@@ -110,12 +110,12 @@ export function sellStepsOf(l: EditableListing | null, minPhotos: number): { key
   ];
 }
 
-function SellSteps({ l, minPhotos, t, lang }: { l: EditableListing | null; minPhotos: number; t: T; lang: Lang }) {
+function SellSteps({ l, minPhotos, t }: { l: EditableListing | null; minPhotos: number; t: T }) {
   return (
     <ol className={styles.steps} aria-label={t('sell.steps.label')}>
-      {sellStepsOf(l, minPhotos).map((s, i) => (
+      {sellStepsOf(l, minPhotos).map((s) => (
         <li key={s.key} className={styles[s.state]} aria-current={s.state === 'current' ? 'step' : undefined}>
-          <span className={styles.dot} aria-hidden="true">{s.state === 'done' ? '' : toLocalDigits(String(i + 1), lang)}</span>
+          <span className={styles.dot} aria-hidden="true" />
           <span>{t(`sell.steps.${s.key}`)}</span>
           <span className={styles.visuallyHidden}>{t(`sell.steps.state.${s.state}`)}</span>
         </li>
