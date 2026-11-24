@@ -3,16 +3,33 @@
 // and U10-10). Until they arrive the text shows in the system font and then swaps, so the fonts never hold up the
 // listing photo or any other first content (NFR-PERF-07).
 // - Geist, variable 100 to 900 (the money-order world, U10-11), the Latin and Latin Extended subsets, for every page;
-// - Hind Siliguri, 400 to 700, the Bengali block only, when the language is Bangla.
+// - Hind Siliguri, 400 to 700, the Bengali block only, when the language is Bangla;
+// - with it, the Bangla figures: the digits, the taka sign and the comma, full stop and colon between them, cut from
+//   Noto Sans Bengali (figures/, scripts/subset-figures.py, SIL OFL 1.1). Hind draws the digit one as a small hook
+//   high in its box, so "৳১৫,০০০" read as "৳ ৫,০০০"; the figures face comes first in the Bangla stack, so every
+//   number is drawn by one face whose digits read clearly (Decisions log, U10-20). About 2.5 KB a weight. In
+//   English it comes after Geist and draws only the taka sign, which Geist lacks.
 import latin from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url';
 import latinExt from '@fontsource-variable/geist/files/geist-latin-ext-wght-normal.woff2?url';
 import regular from '@fontsource/hind-siliguri/files/hind-siliguri-bengali-400-normal.woff2?url';
 import medium from '@fontsource/hind-siliguri/files/hind-siliguri-bengali-500-normal.woff2?url';
 import semibold from '@fontsource/hind-siliguri/files/hind-siliguri-bengali-600-normal.woff2?url';
 import bold from '@fontsource/hind-siliguri/files/hind-siliguri-bengali-700-normal.woff2?url';
+import digits400 from './figures/figures-digits-400.woff2?url';
+import digits500 from './figures/figures-digits-500.woff2?url';
+import digits600 from './figures/figures-digits-600.woff2?url';
+import digits700 from './figures/figures-digits-700.woff2?url';
+import marks400 from './figures/figures-marks-400.woff2?url';
+import marks500 from './figures/figures-marks-500.woff2?url';
+import marks600 from './figures/figures-marks-600.woff2?url';
+import marks700 from './figures/figures-marks-700.woff2?url';
 
 export const LATIN_FONT = 'Geist Variable';
 export const BANGLA_FONT = 'Hind Siliguri';
+export const FIGURES_FONT = 'TB Figures';
+/** the Bangla digits ০ to ৯ and the taka sign ৳; the separators a number uses between them */
+export const FIGURES_RANGE = 'U+09E6-09EF, U+09F3';
+export const MARKS_RANGE = 'U+002C, U+002E, U+003A';
 const LATIN_RANGE = 'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD';
 const LATIN_EXT_RANGE = 'U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF';
 const BENGALI_RANGE = 'U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0-1CF9, U+200C-200D, U+20B9, U+25CC, U+A8F1';
@@ -28,6 +45,11 @@ const BANGLA: Face[] = [
   { family: BANGLA_FONT, url: semibold, weight: '600', range: BENGALI_RANGE, format: 'woff2' },
   { family: BANGLA_FONT, url: bold, weight: '700', range: BENGALI_RANGE, format: 'woff2' },
 ];
+const FIGURES: Face[] = ([[400, digits400, marks400], [500, digits500, marks500], [600, digits600, marks600], [700, digits700, marks700]] as const)
+  .flatMap(([weight, d, m]) => [
+    { family: FIGURES_FONT, url: d, weight: String(weight), range: FIGURES_RANGE, format: 'woff2' },
+    { family: FIGURES_FONT, url: m, weight: String(weight), range: MARKS_RANGE, format: 'woff2' },
+  ]);
 
 const added = new Set<string>();
 
@@ -50,10 +72,12 @@ export function afterLoad(run: () => void, win: Window | undefined = globalThis.
   win.addEventListener('load', idle, { once: true });
 }
 
+/** Geist has no taka sign; the figures face, after Geist in the stack, draws "৳" in English too, so a price never
+ *  falls back to whatever font the device has (only the digits file is fetched, when a price is shown). */
 export function loadLatinFont(fonts: FontFaceSet | undefined = globalThis.document?.fonts): void {
-  afterLoad(() => add(LATIN, fonts));
+  afterLoad(() => { add(LATIN, fonts); add(FIGURES, fonts); });
 }
 
 export function loadBanglaFont(fonts: FontFaceSet | undefined = globalThis.document?.fonts): void {
-  afterLoad(() => add(BANGLA, fonts));
+  afterLoad(() => { add(FIGURES, fonts); add(BANGLA, fonts); });   // add() runs each set once per document
 }

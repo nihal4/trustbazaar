@@ -10,8 +10,12 @@
 .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .clock, .featured {
   position: absolute; top: 8px; display: inline-flex; align-items: center; gap: 6px; max-width: calc(100% - 16px);
-  border-radius: 4px; padding: 3px 8px; font-size: 0.8125rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  border-radius: 4px; padding: 3px 8px; font-size: 0.8125rem; line-height: 1.35; font-weight: 600;
 }
+/* the time left is never cut off: on a narrow card, or in Bangla, it wraps onto a second line inside its box */
+.clock { align-items: flex-start; }
+.clock i { margin-top: 0.4em; }
+.featured { white-space: nowrap; }
 .clock { left: 8px; background: var(--tb-text); color: #fff; font-variant-numeric: tabular-nums; }
 .clock i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--tb-on-ink-accent); }
 .soon { background: var(--tb-error); }

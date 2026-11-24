@@ -12,7 +12,7 @@ const gray: MantineColorsTuple = ['#F7F9F8', '#EBF0EE', '#D3DDDB', '#BCC9C8', '#
 /** Errors and auctions in their last hour: shade 6 (#B42318) is 6.2:1 on the paper. */
 const red: MantineColorsTuple = ['#FEF3F2', '#FEE4E2', '#FECDCA', '#FDA29B', '#F97066', '#F04438', '#B42318', '#912018', '#7A271A', '#55160C'];
 
-const FONT = "'Geist Variable', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+const FONT = "'Geist Variable', 'TB Figures', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 
 export const theme = createTheme({
   primaryColor: 'teal',
