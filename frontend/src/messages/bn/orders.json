@@ -328,5 +328,7 @@
   "order.steps.done": "শেষ",
   "order.steps.state.done": "(হয়ে গেছে)",
   "order.steps.state.current": "(এখন)",
-  "order.steps.state.next": "(বাকি আছে)"
+  "order.steps.state.next": "(বাকি আছে)",
+  "order.counterfoil.stub": "এই অর্ডারের টাকা",
+  "order.counterfoil.unpaid": "এখনো পরিশোধ করা হয়নি। পরিশোধ করলে জিনিস হাতে না পাওয়া পর্যন্ত টাকা TrustBazaar-এর কাছে জমা থাকবে।"
 }

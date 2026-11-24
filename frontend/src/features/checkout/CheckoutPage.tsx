@@ -4,9 +4,9 @@
 // auction win. Courier delivery (U8-06) is chosen here and completed on the order page, where the buyer gives the
 // address and gets the binding quote (Unit 4, DV-23) before paying. A game account first needs a browser with Web
 // Crypto and IndexedDB (Unit 5, AS-5) and is told to stay in this browser; its disclosure and key come on the order
-// page before payment (U8-07). A guest is sent to sign in. Daylight design (docs/design/10_visual.md, section 7.5):
-// the item and the choices on the left, the summary with the total, the button and the payment promise on the right;
-// one column on phones.
+// page before payment (U8-07). A guest is sent to sign in. Money-order world (docs/design/10_visual_v2.md, AC-ORD-1):
+// the item and the choices on the left; on the right the summary as the counterfoil, whose stub says the total and
+// whose form carries the amount in figures and in words, how the money moves and the button; one column on phones.
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -18,7 +18,8 @@ import { FormMessage } from '../../shared/form';
 import { useT } from '../../shared/language/Language';
 import { useMe } from '../../shared/me';
 import { isApiError, problemName } from '../../shared/problems';
-import { PromiseNote } from '../../shared/PromiseNote';
+import { amountInWords } from '../../shared/amountWords';
+import { Counterfoil } from '../../shared/Counterfoil';
 import { FRESHNESS } from '../../shared/query';
 import { SimulatedBanner } from '../../shared/SimulatedBanner';
 import en from '../../messages/en/checkout.json';
@@ -99,7 +100,8 @@ export function Component() {
   const max = l.quantity.available;
   const n = Number(toAsciiDigits(quantity).trim());
   const valid = Number.isInteger(n) && n >= 1 && n <= max;
-  const total = l.price && valid ? formatMoney(BigInt(l.price) * BigInt(n), lang) : null;
+  const sum = l.price && valid ? BigInt(l.price) * BigInt(n) : null;
+  const total = sum === null ? null : formatMoney(sum, lang);
   const pickup = l.fulfilmentOptions !== 'courier_only';
   const courier = l.fulfilmentOptions === 'courier_only' || l.fulfilmentOptions === 'pickup_or_courier';
   const game = l.itemKind === 'game_account';
@@ -173,11 +175,17 @@ export function Component() {
         </div>
         {!blocked && (
           <aside className={styles.summary} aria-labelledby="summary-title">
-            <h2 id="summary-title">{t('checkout.summary')}</h2>
-            {total && <p className={styles.total}>{t(chosen === 'courier' ? 'checkout.total_plus_delivery' : 'checkout.total', { total })}</p>}
-            <button type="submit" form="checkout-form" className={styles.primary} disabled={create.isPending}>{t('checkout.continue')}</button>
-            <p className={styles.hint}>{t('checkout.reserve_note')}</p>
-            <PromiseNote title={t('checkout.promise.title')} text={t('checkout.promise.text')} />
+            <Counterfoil stubCopy={false} amount={total ?? undefined}
+              amountWords={sum !== null && chosen !== 'courier' ? amountInWords(sum, lang) : undefined}
+              stub={<>
+                <h2 id="summary-title" className={styles.stubHeading}>{t('checkout.summary')}</h2>
+                {total && <p className={styles.total}>{t(chosen === 'courier' ? 'checkout.total_plus_delivery' : 'checkout.total', { total })}</p>}
+              </>}
+              title={<p>{t('checkout.promise.title')}</p>}
+              stages={(['in', 'held', 'out'] as const).map((key, i) => ({ key, label: t(`checkout.counterfoil.${key}`), state: i === 0 ? 'done' as const : i === 1 ? 'current' as const : 'next' as const }))}>
+              <button type="submit" form="checkout-form" className={styles.primary} disabled={create.isPending}>{t('checkout.continue')}</button>
+              <p className={styles.hint}>{t('checkout.reserve_note')}</p>
+            </Counterfoil>
           </aside>
         )}
       </div>

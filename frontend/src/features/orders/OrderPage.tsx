@@ -9,12 +9,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { formatMoney, toLocalDigits } from '../../lib/money.js';
+import { formatMoney } from '../../lib/money.js';
 import { formatCountdown, formatDateTime } from '../../lib/time.js';
 import { useApi } from '../../shared/api';
 import { useOpenThread } from '../../shared/chat';
 import { useServerNow } from '../../shared/clock';
+import { amountInWords } from '../../shared/amountWords';
 import { ConfirmDialog } from '../../shared/ConfirmDialog';
+import { Counterfoil } from '../../shared/Counterfoil';
 import { signInPath } from '../../shared/document';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
@@ -100,9 +102,8 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
           </p>
         </div>
       </header>
-      <Steps o={o} t={t} lang={lang} />
+      <Money o={o} t={t} lang={lang} />
       {attempt && <Return o={o} failed={failed} waited={waited} t={t} />}
-      {!(awaiting && o.role === 'buyer') && <p className={styles.money}>{moneyText(o, t, lang)}</p>}
       <Deadlines o={o} h={handover.data ?? null} t={t} lang={lang} />
       {awaiting && o.role === 'buyer' && <PayPanel o={o} t={t} lang={lang} />}
       {o.cancelledAt && o.cancelReason && <p className={styles.hint}>{t('order.cancel_reason', { reason: o.cancelReason })}</p>}
@@ -121,8 +122,8 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
 }
 
 /**
- * Where the order is (Daylight design, docs/design/10_visual.md, section 7.6): payment, the handover (or delivery),
- * and the end; each step done, current or still to come, in words for screen readers. A cancelled order has none.
+ * Where the order is: payment, the handover (or delivery), and the end; each step done, current or still to come, in
+ * words for screen readers. A cancelled order has none.
  */
 export function stepsOf(o: OrderView): { key: 'payment' | 'handover' | 'done'; state: 'done' | 'current' | 'next' }[] {
   if (o.status === 'cancelled') return [];
@@ -130,19 +131,27 @@ export function stepsOf(o: OrderView): { key: 'payment' | 'handover' | 'done'; s
   return (['payment', 'handover', 'done'] as const).map((key, i) => ({ key, state: i < at ? 'done' : i === at ? 'current' : 'next' }));
 }
 
-function Steps({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
-  const steps = stepsOf(o);
-  if (steps.length === 0) return null;
+/** The day the money left TrustBazaar, for the postmark: paid out to the seller or refunded to the buyer. */
+export function postmarkOf(o: OrderView, lang: Lang): string | undefined {
+  const out = o.escrow && ['released', 'refunded', 'partially_refunded'].includes(o.escrow.state);
+  if (!out || !o.closedAt) return undefined;
+  return new Intl.DateTimeFormat(lang === 'bn' ? 'bn-BD' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Dhaka' }).format(Date.parse(o.closedAt));
+}
+
+/**
+ * Where the money is, as the counterfoil (money-order world, docs/design/10_visual_v2.md, AC-ORD-2): the stub keeps
+ * the total and, once the money has left TrustBazaar, the postmark with the day; the form says in one sentence where
+ * the money is (NFR-USE-07), the total in figures and in words, and the steps with the current one marked, in words
+ * too. While the buyer still has to pay, the payment panel below says what to do; the sentence says it is not paid yet.
+ */
+function Money({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
+  const steps = stepsOf(o).map((s) => ({ key: s.key, state: s.state, label: t(`order.steps.${s.key}${s.key === 'handover' && o.fulfilment === 'courier' ? '_courier' : ''}`) }));
+  const stateWords = { done: t('order.steps.state.done'), current: t('order.steps.state.current'), next: t('order.steps.state.next') };
   return (
-    <ol className={styles.steps} aria-label={t('order.steps.label')}>
-      {steps.map((s, i) => (
-        <li key={s.key} className={styles[s.state]} aria-current={s.state === 'current' ? 'step' : undefined}>
-          <span className={styles.dot} aria-hidden="true">{s.state === 'done' ? '' : toLocalDigits(String(i + 1), lang)}</span>
-          <span>{t(`order.steps.${s.key}${s.key === 'handover' && o.fulfilment === 'courier' ? '_courier' : ''}`)}</span>
-          <span className={styles.visuallyHidden}>{t(`order.steps.state.${s.state}`)}</span>
-        </li>
-      ))}
-    </ol>
+    <Counterfoil labelledBy="money-title" amount={formatMoney(BigInt(o.total), lang)} amountWords={amountInWords(o.total, lang)}
+      stub={<h2 id="money-title" className={styles.stubHeading}>{t('order.counterfoil.stub')}</h2>}
+      title={<p className={styles.money}>{o.status === 'awaiting_payment' && o.role === 'buyer' ? t('order.counterfoil.unpaid') : moneyText(o, t, lang)}</p>}
+      stages={steps} stagesLabel={t('order.steps.label')} stateWords={stateWords} postmark={postmarkOf(o, lang)} />
   );
 }
 
