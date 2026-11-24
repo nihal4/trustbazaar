@@ -49,6 +49,16 @@ describe('home', () => {
     await waitFor(() => expect(doc.router.state.location.pathname + doc.router.state.location.search).toBe('/search?q=camera'));
   });
 
+  it('NFR-USE-07 beside the search, the counterfoil shows in order how the money moves (docs/design/10_visual_v2.md, AC-HOME-1)', async () => {
+    renderHome(backend());
+    const promise = (await screen.findByRole('heading', { level: 2, name: 'Your money waits with us' })).closest('section')!;
+    expect(within(promise).getByText('How your money moves')).toBeTruthy();
+    expect(within(promise).getAllByRole('listitem').map((li) => li.textContent)).toEqual([
+      'You pay TrustBazaar', 'We hold it', 'The seller is paid when you confirm',
+    ]);
+    expect(within(promise).queryByText(/৳|Tk/)).toBeNull();   // an explanation, not an order: no amount is made up
+  });
+
   it('FR-SRC-02 the top categories that may be chosen link to their results', async () => {
     renderHome(backend());
     const nav = await screen.findByRole('navigation', { name: 'Categories' });

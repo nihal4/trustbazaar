@@ -1,7 +1,7 @@
-// A listing in a grid (Daylight design, docs/design/10_visual.md, sections 6 and 7.1 to 7.2; FR-SRC-05; FR-MON-05):
-// the photo first on a soft background, the price as a tag on it (peach and "Featured" in words for a featured
-// listing), the time left of an auction as a pill on the photo, then the title as text and the details in words.
-// A photo that does not load leaves the soft background, never a broken image.
+// A listing in a grid (money-order design, docs/design/10_visual_v2.md, section 7, AC-HOME-2; FR-SRC-05; FR-MON-05):
+// the photo on the second sheet, with the time left of an auction and "Featured" in words as small boxes on it; then
+// the price in tabular figures, the title, and the details in words. A photo that does not load leaves the sheet,
+// never a broken image.
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatMoney, toLocalDigits } from '../../lib/money.js';
@@ -26,8 +26,9 @@ export function ListingCard({ c, t, lang }: { c: SearchCard; t: T; lang: Lang })
         <span className={styles.photo}>
           {c.thumbUrl && !broken && <img src={c.thumbUrl} alt="" width={400} height={400} loading="lazy" onError={() => setBroken(true)} />}
           {c.auction && <TimeLeft endAt={c.auction.endAt} t={t} lang={lang} />}
-          <span className={c.featured ? `${styles.tag} ${styles.featuredTag}` : styles.tag}>{formatMoney(c.price, lang)}</span>
+          {c.featured && <span className={styles.featured}>{t('search.card.featured')}</span>}
         </span>
+        <span className={styles.price}>{formatMoney(c.price, lang)}</span>
         <span className={styles.title}>{c.title}</span>
         {c.auction && (
           <span className={styles.meta}>
@@ -37,7 +38,6 @@ export function ListingCard({ c, t, lang }: { c: SearchCard; t: T; lang: Lang })
         )}
         {details && <span className={styles.meta}>{details}</span>}
         {c.currentlyReserved && <span className={styles.note}>{t('search.card.reserved')}</span>}
-        {c.featured && <span className={styles.featured}>{t('search.card.featured')}</span>}
       </Link>
     </li>
   );
