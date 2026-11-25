@@ -43,3 +43,6 @@
 .title { font-weight: 500; }
 @media (prefers-reduced-motion: reduce) { .link, .photo img { transition: none; } .link:hover, .link:hover .photo img { transform: none; } }
 .noPhoto { position: absolute; inset: 0; margin: auto; color: var(--tb-border); }
+
+/* the seed illustrations are cream tiles: tone them down on the dark page */
+:root[data-theme='dark'] .photo img { filter: brightness(0.78) saturate(0.9); }
