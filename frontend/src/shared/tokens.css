@@ -1,42 +1,51 @@
 /* Design tokens and base styles (docs/design/08_frontend.pdf, sections 2.3 and 7; docs/design/10_visual_v2.md).
    Colours keep text contrast of at least 4.5:1 on the page background; the focus ring is 2px with at least 3:1. */
 :root {
-  /* Money-order palette (docs/design/10_visual_v2.md, section 2; dealt by taste-skill, "teal on paper"). Text keeps
+  /* Redesign v3 palette (docs/design/10_visual_v3.md), ink-navy and vermilion on white: ink actions, peach as the soft tint, vermilion as the vivid highlight. Text keeps
      at least 4.5:1 on paper, sheet and surface; control borders and the focus ring at least 3:1. The Mantine theme
      (theme.ts) uses the same values. */
-  --tb-bg: #f7f9f8;
+  --tb-bg: #ffffff;
   --tb-sheet: #ffffff;
-  --tb-surface: #ebf0ee;
-  --tb-text: #0d2326;
-  --tb-muted: #4a5f62;
-  --tb-border: #73878a;
-  --tb-line: #d3dddb;
-  --tb-accent: #06525c;
+  --tb-surface: #f3f5f8;
+  --tb-text: #0f1720;
+  --tb-muted: #5a6472;
+  --tb-border: #8590a0;
+  --tb-line: #e2e6ec;
+  --tb-accent: #0f1720;
   --tb-accent-text: #ffffff;
-  --tb-accent-soft: #d9e8e8;
-  --tb-accent-strong: #04363d;
-  --tb-accent-wash: #eef5f5;
-  --tb-cream: #e6f0ef;
-  --tb-on-ink: #b8c9cb;
-  --tb-on-ink-accent: #9fd0d3;
+  --tb-accent-soft: #ffe1d2;
+  --tb-accent-strong: #000000;
+  --tb-accent-wash: #f3f5f8;
+  --tb-cream: #f3f5f8;
+  --tb-on-ink: #aeb8c6;
+  --tb-on-ink-accent: #ff8a5c;
   --tb-warning-bg: #fbeee3;
   --tb-warning-border: #9a4a12;
-  --tb-focus: #06525c;
+  --tb-focus: #0f1720;
   --tb-error: #b42318;
   --tb-error-bg: #fef3f2;
   --tb-error-line: #fecdca;
   --tb-error-text: #912018;
-  --tb-success: #06525c;
-  --tb-radius: 6px;
-  --tb-radius-pill: 6px;
-  --tb-radius-control: 6px;
-  --tb-radius-panel: 10px;
+  --tb-success: #0b6b3f;
+  --tb-protect: #0b6b3f;
+  --tb-hot: #ff6b35;
+  --tb-ink: #0f1720;            /* the always-dark panel: the footer, the payment card, the selling band */
+  --tb-action: #0f1720;         /* the primary button's ground */
+  --tb-action-text: #ffffff;
+  --tb-protect-soft: #dff3e8;
+  --tb-radius: 10px;
+  --tb-radius-pill: 999px;
+  --tb-radius-control: 10px;
+  --tb-radius-panel: 16px;
   --tb-space-1: 0.25rem;
   --tb-space-2: 0.5rem;
   --tb-space-3: 1rem;
   --tb-space-4: 1.5rem;
-  --tb-max-width: 80rem;
-  --tb-font: 'Geist Variable', 'TB Figures', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tb-max-width: 82rem;
+  --tb-shadow-card: 0 1px 2px rgba(15,23,32,.06), 0 6px 18px -8px rgba(15,23,32,.16);
+  --tb-shadow-lift: 0 2px 4px rgba(15,23,32,.08), 0 16px 32px -12px rgba(15,23,32,.24);
+  --tb-font: 'Figtree Variable', 'TB Figures', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tb-font-display: 'Gabarito Variable', 'TB Figures', 'Hind Siliguri', system-ui, sans-serif;
   --tb-line-height: 1.5;
 }
 
@@ -44,11 +53,40 @@
    taka sign and the separators between them) come first from 'TB Figures', so numbers read clearly in one face (Decisions
    log, U10-20). Bangla needs taller lines. */
 :root:lang(bn) {
-  --tb-font: 'TB Figures', 'Hind Siliguri', 'Geist Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tb-font: 'TB Figures', 'Hind Siliguri', 'Figtree Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --tb-line-height: 1.7;
   --mantine-font-family: var(--tb-font);
   --mantine-font-family-headings: var(--tb-font);
   --mantine-line-height: 1.7;
+}
+
+/* The dark theme of the user app (index.html sets data-theme="dark"; the console, the ID check and the credentials page stay
+   light). Same token names, so every component follows; --tb-action turns vermilion with ink text. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --tb-bg: #080d14; --tb-sheet: #0f1824; --tb-surface: #131f2e; --tb-text: #f2f5f9; --tb-muted: #9fb0c3;
+  --tb-border: #62768d; --tb-line: #213145;
+  --tb-accent: #ff7a45; --tb-accent-text: #0a1018; --tb-accent-soft: #2a1b14; --tb-accent-strong: #ffb08a; --tb-accent-wash: #101b29;
+  --tb-cream: #131f2e; --tb-on-ink: #aeb8c6; --tb-on-ink-accent: #ff8a5c; --tb-focus: #ff8a5c;
+  --tb-warning-bg: #2a1d10; --tb-warning-border: #c98a3d;
+  --tb-error: #ff6f8e; --tb-error-bg: #2b1219; --tb-error-line: #6b2a3a; --tb-error-text: #ffb3c0;
+  --tb-success: #5dd39e; --tb-protect: #5dd39e; --tb-protect-soft: #10281e;
+  --tb-ink: #0f1824; --tb-action: #ff6b35; --tb-action-text: #0a1018;
+  --tb-shadow-card: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -10px rgba(0,0,0,.6);
+  --tb-shadow-lift: 0 2px 4px rgba(0,0,0,.4), 0 18px 40px -14px rgba(0,0,0,.7);
+}
+/* Mantine's components read their own variables: point them at the dark values */
+:root[data-theme='dark'][data-mantine-color-scheme='light'] {
+  --mantine-color-body: var(--tb-bg); --mantine-color-text: var(--tb-text); --mantine-color-bright: #fff;
+  --mantine-color-default: var(--tb-sheet); --mantine-color-default-hover: var(--tb-surface); --mantine-color-default-color: var(--tb-text);
+  --mantine-color-default-border: var(--tb-border); --mantine-color-placeholder: #8ea0b5; --mantine-color-dimmed: var(--tb-muted);
+  --mantine-color-disabled: var(--tb-surface); --mantine-color-disabled-color: #6f8196; --mantine-color-disabled-border: var(--tb-line);
+  --mantine-color-anchor: var(--tb-accent); --mantine-color-error: var(--tb-error);
+  --mantine-primary-color-contrast: #0a1018;
+  --mantine-color-brand-filled: #ff6b35; --mantine-color-brand-filled-hover: #ff8a5c;
+  --mantine-color-brand-light: rgba(255,107,53,.14); --mantine-color-brand-light-hover: rgba(255,107,53,.22); --mantine-color-brand-light-color: #ffb08a;
+  --mantine-color-brand-outline: #ff8a5c; --mantine-color-brand-outline-hover: rgba(255,107,53,.1); --mantine-color-brand-text: #ff8a5c;
+  --mantine-color-gray-filled: #62768d; --mantine-color-gray-light: rgba(159,176,195,.12); --mantine-color-gray-light-color: var(--tb-text); --mantine-color-gray-text: var(--tb-muted);
 }
 
 *,
@@ -100,3 +138,6 @@ button {
    otherwise refuses to shrink below its content, and inputs keep their default character width. */
 fieldset { min-width: 0; }
 input, select, textarea { max-width: 100%; box-sizing: border-box; }
+
+/* Tap targets of 44 px for buttons and stand-alone links (WCAG 2.2 AA, NFR-USE-06; checked at every device size) */
+main [class*='Button-root'], main button[type='submit'] { min-height: 44px; }

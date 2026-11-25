@@ -41,5 +41,8 @@
   "shell.account_tabs.profile": "Profile",
   "shell.account_tabs.security": "Security",
   "shell.account_tabs.privacy": "Your data",
-  "shell.kyc_later": "Finish later"
+  "shell.kyc_later": "Finish later",
+  "shell.promise_bar": "Your money is held safely until you confirm the item.",
+  "shell.search_label": "Search TrustBazaar",
+  "shell.search_placeholder": "Search phones, cameras, bikes…"
 }

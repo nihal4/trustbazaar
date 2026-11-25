@@ -39,8 +39,8 @@ describe('the Daylight colours', () => {
     expect(contrast(t[fg], t[bg])).toBeGreaterThanOrEqual(min);
   });
 
-  it('NFR-USE-06 the teal ink, the text and the control border are the money-order values of section 2', () => {
-    expect([t.accent, t.text, t.muted, t.border, t.surface, t.line, t.error]).toEqual(['#06525c', '#0d2326', '#4a5f62', '#73878a', '#ebf0ee', '#d3dddb', '#b42318']);
+  it('NFR-USE-06 the ink-navy, the text and the control border are the redesign v3 values', () => {
+    expect([t.accent, t.text, t.muted, t.border, t.surface, t.line, t.error]).toEqual(['#0f1720', '#0f1720', '#5a6472', '#8590a0', '#f3f5f8', '#e2e6ec', '#b42318']);
   });
 
   it('SEC-GAM-03 the credential document repeats the same colours in its own stylesheet', () => {
@@ -54,7 +54,7 @@ describe('the fonts', () => {
   const faces = (path: string) => [...readFileSync(require.resolve(path), 'utf8').matchAll(/@font-face\s*\{([^}]*)\}/g)].map((m) => m[1]);
 
   it.each([
-    '@fontsource-variable/geist/wght.css', '@fontsource/hind-siliguri/bengali-400.css', '@fontsource/hind-siliguri/bengali-500.css',
+    '@fontsource-variable/figtree/wght.css', '@fontsource-variable/gabarito/wght.css', '@fontsource/hind-siliguri/bengali-400.css', '@fontsource/hind-siliguri/bengali-500.css',
     '@fontsource/hind-siliguri/bengali-600.css', '@fontsource/hind-siliguri/bengali-700.css',
   ])('NFR-PERF-07 %s swaps in after first paint and is served from the site (AC-ALL-3, AC-ALL-4)', (path) => {
     const all = faces(path);
@@ -69,8 +69,8 @@ describe('the fonts', () => {
     const { FIGURES_FONT, FIGURES_RANGE, MARKS_RANGE } = await import('./language/font');
     expect(read('shared/tokens.css')).toMatch(new RegExp(`:root:lang\\(bn\\) \\{\\s*--tb-font: '${FIGURES_FONT}', 'Hind Siliguri'`));
     expect(read('secure/secure.css')).toMatch(new RegExp(`:root:lang\\(bn\\) \\{ --font: '${FIGURES_FONT}', 'Hind Siliguri'`));
-    // in English, after Geist, which has no taka sign
-    expect(read('shared/tokens.css')).toContain(`--tb-font: 'Geist Variable', '${FIGURES_FONT}', 'Hind Siliguri'`);
+    // in English, after Figtree, which has no taka sign
+    expect(read('shared/tokens.css')).toContain(`--tb-font: 'Figtree Variable', '${FIGURES_FONT}', 'Hind Siliguri'`);
     expect(FIGURES_RANGE).toBe('U+09E6-09EF, U+09F3');               // ০ to ৯ and ৳
     expect(MARKS_RANGE).toBe('U+002C, U+002E, U+003A');              // , . :
     for (const w of [400, 500, 600, 700]) {

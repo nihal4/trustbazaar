@@ -1,0 +1,64 @@
+{
+ "note": "Credits for the photographs in this folder: photos.mjs credits prints the footer block for the ones the pages use.",
+ "photos": [
+  {
+   "file": "photo-f58928474.jpg",
+   "files": [
+    "photo-f58928474-500.jpg",
+    "photo-f58928474-960.jpg",
+    "photo-f58928474.jpg"
+   ],
+   "id": "f58928474",
+   "alt": "Smartphone with case cover on table",
+   "by": "Santeri Viinamäki",
+   "licence": "CC BY-SA 4.0",
+   "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Smartphone_with_case_cover_on_table.jpg",
+   "source": "Wikimedia Commons"
+  },
+  {
+   "file": "photo-f120292367-960.jpg",
+   "files": [
+    "photo-f120292367-500.jpg",
+    "photo-f120292367-960.jpg"
+   ],
+   "id": "f120292367",
+   "alt": "Sony A 7 iii full frame mirrorless camera",
+   "by": "Amitabha Gupta",
+   "licence": "CC BY 4.0",
+   "licenceUrl": "https://creativecommons.org/licenses/by/4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Sony_A_7_iii_full_frame_mirrorless_camera.jpg",
+   "source": "Wikimedia Commons"
+  },
+  {
+   "file": "photo-f145308750.jpg",
+   "files": [
+    "photo-f145308750-500.jpg",
+    "photo-f145308750-960.jpg",
+    "photo-f145308750.jpg"
+   ],
+   "id": "f145308750",
+   "alt": "Galaxy S24 Ultra 02",
+   "by": "Vis M",
+   "licence": "CC BY-SA 4.0",
+   "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Galaxy_S24_Ultra_02.jpg",
+   "source": "Wikimedia Commons"
+  },
+  {
+   "file": "photo-f152917755.jpg",
+   "files": [
+    "photo-f152917755-500.jpg",
+    "photo-f152917755-960.jpg",
+    "photo-f152917755.jpg"
+   ],
+   "id": "f152917755",
+   "alt": "Samsung Galaxy S24 Ultra with retail box, front",
+   "by": "Benlisquare",
+   "licence": "CC BY-SA 4.0",
+   "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Samsung_Galaxy_S24_Ultra_with_retail_box,_front.jpg",
+   "source": "Wikimedia Commons"
+  }
+ ]
+}

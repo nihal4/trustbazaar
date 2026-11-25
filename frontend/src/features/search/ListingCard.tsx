@@ -24,6 +24,9 @@ export function ListingCard({ c, t, lang }: { c: SearchCard; t: T; lang: Lang })
     <li className={styles.card}>
       <Link to={`/listings/${encodeURIComponent(c.id)}`} className={styles.link}>
         <span className={styles.photo}>
+          {(!c.thumbUrl || broken) && (
+            <svg className={styles.noPhoto} viewBox="0 0 24 24" width="40" height="40" aria-hidden="true" focusable="false"><path d="M4 7.5 12 3l8 4.500v9L12 21l-8-4.500Z M4 7.500 12 12l8-4.500 M12 12v9" fill="none" stroke="currentColor" strokeWidth="1.500" strokeLinejoin="round" /></svg>
+          )}
           {c.thumbUrl && !broken && <img src={c.thumbUrl} alt="" width={400} height={400} loading="lazy" onError={() => setBroken(true)} />}
           {c.auction && <TimeLeft endAt={c.auction.endAt} t={t} lang={lang} />}
           {c.featured && <span className={styles.featured}>{t('search.card.featured')}</span>}
