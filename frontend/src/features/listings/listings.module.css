@@ -98,11 +98,15 @@
 }
 .rail { display: contents; }
 @media (min-width: 60rem) {
-  /* a spare row under the page, pulled under the footer by a negative margin: the right column keeps its place right up to the footer, which then covers it, instead of being pushed up by the end of the page */
+  .page { grid-template-areas: 'gallery rail' 'body rail'; grid-template-rows: auto 1fr; }
+  .noPhotos { grid-template-areas: 'body rail'; grid-template-rows: auto; }
+  .rail { display: flex; flex-direction: column; gap: 1.25rem; grid-area: rail; align-self: start; min-width: 0; }
+}
+/* a window tall enough (46rem and up): title, price, buy and seller stay in view while the photos and the description scroll, only the left side moves. A spare row under the page, pulled under the footer by a negative margin, keeps the column in place right up to the footer, which then keeps to its left. A shorter window scrolls the whole page: nothing scrolls inside the column. */
+@media (min-width: 60rem) and (min-height: 46rem) {
   .page { grid-template-areas: 'gallery rail' 'body rail' 'pad rail'; grid-template-rows: auto 1fr var(--tb-rail-pad); margin-bottom: calc(var(--tb-rail-pad) * -1); --tb-rail-pad: 18rem; }
   .noPhotos { grid-template-areas: 'body rail' 'pad rail'; grid-template-rows: 1fr var(--tb-rail-pad); }
-  /* title, price, buy and seller stay in view while the photos and the description scroll: only the left side moves */
-  .rail { display: flex; flex-direction: column; gap: 1.25rem; grid-area: rail; position: sticky; top: 5.75rem; align-self: start; min-width: 0; }
+  .rail { position: sticky; top: 5.75rem; }
 }
 .crumb { gap: 0.25rem 0.75rem; }
 .crumb a { color: var(--tb-muted); text-decoration: none; border-bottom: 1px solid var(--tb-line); }
@@ -179,7 +183,6 @@
 .timeLeft strong { font-family: var(--tb-font); font-size: 1.5rem; font-variant-numeric: tabular-nums; }
 .bigPrice { font-family: var(--tb-font); font-weight: var(--tb-display-weight); font-size: clamp(2.25rem, 1.8rem + 1.6vw, 3rem); }
 .facts { padding-top: 1rem; }
-.facts p + p { padding-top: 0.375rem; border-top: 1px solid var(--tb-line); margin-top: 0.375rem; }
 .warning { border-radius: 4px; }
 .mine { border-radius: 0; background: none; border: 0; border-block: 1px solid var(--tb-protect); color: var(--tb-protect); padding: 0.625rem 0; }
 .bid input { border-radius: 6px; background: var(--tb-sheet); }
@@ -220,7 +223,7 @@
 @media (max-width: 59.99rem) { .body { max-width: none; } }
 .body .text { max-width: 68ch; }
 /* a rail taller than the window (a game account's warnings, an auction's bids, a short laptop) scrolls inside itself, so Buy now is never pushed out of reach; the padding and margin keep focus rings from being cut */
-@media (min-width: 60rem) { .rail { max-height: calc(100svh - 6.5rem); overflow-y: auto; overscroll-behavior: contain; padding: 4px; margin: -4px; scrollbar-width: thin; } }
+@media (min-width: 60rem) and (min-height: 46rem) { .rail { max-height: calc(100svh - 6.5rem); overflow-y: auto; overscroll-behavior: contain; padding: 4px; margin: -4px; scrollbar-width: thin; } }
 /* small details: no stub under the category link, balanced title lines, the seller's name and Pro at readable sizes */
 .crumb a { border-bottom: 0; }
 .crumb a:hover { border-bottom: 1px solid var(--tb-hot); }
@@ -240,3 +243,25 @@
 .mine.outbid { border-block-color: var(--tb-error); color: var(--tb-error-text); }
 .closed p + p { margin-top: 0.5rem; }
 .closed .primaryLink { margin-top: 0.625rem; }
+
+/* ---- auction panel, organised: the bid facts are a two-column ruled grid, and the rules and the bid history sit under the
+   description instead of making the fixed column tall (it then fits a laptop screen without scrolling inside itself) ---- */
+.factGrid { display: grid; grid-template-columns: 1fr 1fr; margin-top: 0.75rem; border-block: 1px solid var(--tb-line); }
+.factGrid > p { margin: 0; padding: 0.625rem 0.875rem 0.625rem 0; font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
+.factGrid > p:nth-child(2n) { padding-left: 0.875rem; border-left: 1px solid var(--tb-line); }
+.factGrid > p:nth-child(n+3) { border-top: 1px solid var(--tb-line); }
+.factGrid > p:last-child:nth-child(odd) { grid-column: 1 / -1; padding-right: 0; }
+.extra { display: flex; flex-direction: column; gap: 1.25rem; padding: 1.5rem 0; border-top: 1px solid var(--tb-line); }
+.extra .rules { margin: 0; border-block: 1px solid var(--tb-line); }
+.extra h3 { margin: 0 0 0.75rem; font-family: var(--tb-font-display); font-weight: var(--tb-display-weight); font-size: 1.5rem; letter-spacing: -0.02em; }
+:lang(bn) .extra h3 { letter-spacing: 0; }
+.extra .history { margin: 0; }
+.extra .history li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 0 1.5rem; padding: 0.625rem 0; }
+@media (max-width: 30rem) { .extra .history li { grid-template-columns: 1fr auto; } .extra .history li > :last-child { grid-column: 1 / -1; } }
+/* a laptop screen: tighter vertical rhythm in the fixed column */
+@media (min-width: 60rem) and (min-height: 46rem) and (max-height: 56rem) {
+  .rail { gap: 0.875rem; }
+  .title { font-size: 1.75rem; }
+  .buyPrice, .bigPrice { font-size: 2.25rem; }
+  .buy, .auction { padding: 0.875rem 0; }
+}
