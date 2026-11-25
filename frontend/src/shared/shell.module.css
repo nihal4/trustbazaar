@@ -348,3 +348,6 @@
 .tab:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -4px; }
 @media (prefers-reduced-motion: reduce) { .tab, .tab::before { transition: none; } }
 @media (forced-colors: active) { .tabOn::before { background: Highlight; } .tabBar { border-top-color: CanvasText; } }
+
+/* the footer covers whatever stays in view behind it (the listing's right column) */
+.footer { position: relative; z-index: 2; background: var(--tb-bg); }

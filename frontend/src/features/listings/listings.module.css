@@ -117,8 +117,9 @@
 }
 .rail { display: contents; }
 @media (min-width: 60rem) {
-  .page { grid-template-areas: 'gallery rail' 'body rail'; grid-template-rows: auto 1fr; }
-  .noPhotos { grid-template-areas: 'body rail'; grid-template-rows: auto; }
+  /* a spare row under the page, pulled under the footer by a negative margin: the right column keeps its place right up to the footer, which then covers it, instead of being pushed up by the end of the page */
+  .page { grid-template-areas: 'gallery rail' 'body rail' 'pad rail'; grid-template-rows: auto 1fr var(--tb-rail-pad); margin-bottom: calc(var(--tb-rail-pad) * -1); --tb-rail-pad: 18rem; }
+  .noPhotos { grid-template-areas: 'body rail' 'pad rail'; grid-template-rows: 1fr var(--tb-rail-pad); }
   /* title, price, buy and seller stay in view while the photos and the description scroll: only the left side moves */
   .rail { display: flex; flex-direction: column; gap: 1.25rem; grid-area: rail; position: sticky; top: 5.75rem; align-self: start; min-width: 0; }
 }
@@ -179,10 +180,23 @@
 .secondaryButton { border-radius: 6px; background: none; }
 .actions button:not(.primary) { border: 1px solid var(--tb-border); background: none; color: var(--tb-text); font-weight: 600; cursor: pointer; }
 
-/* the seller: a ruled row with the verified mark in green */
+/* the seller: the photo (initials) with no box, the name with a small verified tick, the rating and the year */
 .seller { border: 0; border-bottom: 1px solid var(--tb-line); border-radius: 0; padding: 1.25rem 0; }
-.avatar { border: 1px solid var(--tb-border); border-radius: 4px; background: var(--tb-surface); color: var(--tb-text); font-family: var(--tb-font-display); }
-.verified { color: var(--tb-protect); }
+.sellerRow { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 0 0.875rem; align-items: center; }
+.avatar { display: grid; place-items: center; width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--tb-surface); color: var(--tb-text); font-family: var(--tb-font-display); font-weight: 600; }
+.sellerInfo { min-width: 0; }
+.sellerInfo p { margin: 0; }
+.sellerLine { display: flex; flex-wrap: wrap; align-items: center; gap: 0 0.5rem; }
+.sellerName { min-height: 28px; }
+.tick { display: inline-flex; color: var(--tb-protect); }
+.tick svg { width: 18px; height: 18px; }
+.pro { display: inline-flex; align-items: center; min-height: 20px; padding: 0 0.4rem; border: 1px solid var(--tb-gold); border-radius: 4px; color: var(--tb-gold); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1; }
+:lang(bn) .pro { letter-spacing: 0; text-transform: none; font-size: 0.75rem; }
+.sellerMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 0 0.75rem; color: var(--tb-muted); font-size: 0.875rem; }
+.stars { display: inline-flex; align-items: center; gap: 0.375rem; }
+.starLine { color: var(--tb-gold); } .starFill { color: var(--tb-gold); }
+.seller > :last-child:not(.sellerRow) { margin-top: 0.875rem; }
+:root { --tb-gold: #e8b84a; }
 
 /* the auction panel: the same ruled panel; the clock and the bids are the live signal */
 .auctionTop { background: none; border-bottom: 1px solid var(--tb-line); padding: 0 0 0.75rem; }
