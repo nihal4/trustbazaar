@@ -5,7 +5,7 @@
 // GET /listings/{id}, which includes the auction state (section 9). Everything the seller wrote is shown as text
 // (SEC-INP-03); the location is the district only (FR-LST-06). A fixed-price item links to its checkout (U8-05);
 // an auction shows its panel. Others see only public listings; the seller sees their own in every state.
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type PointerEvent } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { takeEarly } from '../../shared/early';
@@ -149,32 +149,53 @@ function Status({ l, own, t }: { l: ListingView; own: boolean; t: T }) {
   return null;
 }
 
-/** Photos at 1600 px with the 400 px thumbnail as a smaller alternative; the first one loads first (section 9): the
- *  others are asked for only once it has arrived (or after three seconds), so nothing shares the network with the
- *  page's largest paint (NFR-PERF-07; Decisions log, U10-10). */
+/** One large photo with a row of small ones under it; pressing a small one shows it in the large place (every kind of item).
+ *  Physical items also get a magnifying glass: with a mouse, hovering the large photo shows it enlarged under the pointer
+ *  (a game account has no object to inspect, so none). The large photo is the 1600 px file with the 400 px thumbnail as a
+ *  smaller alternative; the small ones are asked for only once it has arrived (or after three seconds), so nothing shares
+ *  the network with the page's largest paint (NFR-PERF-07; Decisions log, U10-10). */
 function Photos({ l, t, lang }: { l: ListingView; t: T; lang: Lang }) {
   const [rest, setRest] = useState(false);
+  const [at, setAt] = useState(0);
+  const [glass, setGlass] = useState<{ x: number; y: number } | null>(null);
   useEffect(() => {
     const timer = window.setTimeout(() => setRest(true), 3000);
     return () => window.clearTimeout(timer);
   }, []);
   if (l.photos.length === 0) return null;
   const total = toLocalDigits(String(l.photos.length), lang);
+  const p = l.photos[Math.min(at, l.photos.length - 1)];
+  const magnify = l.itemKind === 'physical';
+  const move = (e: PointerEvent<HTMLDivElement>) => {
+    if (!magnify || e.pointerType === 'touch' || e.pointerType === 'pen') return;
+    const r = e.currentTarget.getBoundingClientRect();
+    setGlass({ x: Math.min(100, Math.max(0, ((e.clientX - r.left) / r.width) * 100)), y: Math.min(100, Math.max(0, ((e.clientY - r.top) / r.height) * 100)) });
+  };
   return (
     <section aria-labelledby="photos-title">
       <h2 id="photos-title" className={styles.visuallyHidden}>{t('listing.photos')}</h2>
-      {/* phones: one photo across, swiped sideways; wide screens: the first large, the rest in two columns under it */}
-      <ul className={styles.photos} tabIndex={0}>
-        {l.photos.map((p, i) => (
-          <li key={p.id}>
-            <img {...(i === 0 || rest ? { src: p.url, srcSet: `${p.thumbUrl} 400w, ${p.url} 1600w` } : {})} sizes="(min-width: 60rem) 40rem, 100vw"
-              width={p.width} height={p.height} alt={t('listing.photo_alt', { title: l.title, n: toLocalDigits(String(i + 1), lang), total })}
-              loading={i === 0 ? 'eager' : 'lazy'}
-              {...(i === 0 ? { fetchpriority: 'high', onLoad: () => setRest(true), onError: () => setRest(true) } : {})} />
-            {p.showsDefects && <span className={styles.badge}>{t('listing.shows_defects')}</span>}
-          </li>
-        ))}
-      </ul>
+      <div className={magnify ? `${styles.stage} ${styles.canZoom}` : styles.stage} style={{ aspectRatio: `${p.width} / ${p.height}` }}
+        onPointerMove={move} onPointerLeave={() => setGlass(null)}>
+        <img key={p.id} src={p.url} srcSet={`${p.thumbUrl} 400w, ${p.url} 1600w`} sizes="(min-width: 60rem) 40rem, 100vw"
+          width={p.width} height={p.height} alt={t('listing.photo_alt', { title: l.title, n: toLocalDigits(String(at + 1), lang), total })}
+          loading="eager" {...{ fetchpriority: 'high' }} onLoad={() => setRest(true)} onError={() => setRest(true)} />
+        {p.showsDefects && <span className={styles.badge}>{t('listing.shows_defects')}</span>}
+        {magnify && glass && (
+          <span className={styles.glass} aria-hidden="true" style={{ backgroundImage: `url("${p.url}")`, backgroundPosition: `${glass.x}% ${glass.y}%` }} />
+        )}
+      </div>
+      {l.photos.length > 1 && (
+        <ul className={styles.thumbs}>
+          {l.photos.map((q, i) => (
+            <li key={q.id}>
+              <button type="button" className={i === at ? `${styles.thumb} ${styles.thumbOn}` : styles.thumb} aria-pressed={i === at}
+                aria-label={t('listing.show_photo', { n: toLocalDigits(String(i + 1), lang), total })} onClick={() => setAt(i)}>
+                <img {...(rest || i === at ? { src: q.thumbUrl } : {})} alt="" width={q.width} height={q.height} loading="lazy" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }

@@ -79,14 +79,26 @@ describe('the listing page', () => {
     expect(screen.getByText('The strap is <i>new</i>.')).toBeTruthy();
     expect(screen.getByText('Added Sun 1 Nov 2026, 6:00 pm')).toBeTruthy();
     expect(screen.getByText('Dhaka')).toBeTruthy();
-    const [first, second] = screen.getAllByRole('img') as HTMLImageElement[];
+    const first = screen.getByRole('img') as HTMLImageElement;
     expect(first.alt).toBe('Film camera <script>, photo 1 of 2');
     expect(first.getAttribute('srcset')).toBe('/api/v1/listing-photos/k1?size=thumb 400w, /api/v1/listing-photos/k1 1600w');
     expect(first.getAttribute('loading')).toBe('eager');
-    expect(second.getAttribute('loading')).toBe('lazy');
+    fireEvent.click(screen.getByRole('button', { name: 'Show photo 2 of 2' }));
+    expect((screen.getByRole('img') as HTMLImageElement).alt).toBe('Film camera <script>, photo 2 of 2');   // pressing a small photo shows it in the large place
     expect(screen.getByText('Shows defects')).toBeTruthy();
     expect(screen.getByText('Identity verified')).toBeTruthy();
     expect(screen.getByText('Member since October 2026')).toBeTruthy();
+  });
+
+  it('NFR-USE-07 a physical item\'s large photo has a magnifying glass under the mouse', async () => {
+    renderApp(`/listings/${ID}`, backend({ l: listing() }));
+    await screen.findByRole('heading', { level: 1, name: 'Film camera <script>' });
+    const stage = document.querySelector('article img')!.parentElement!;
+    expect(document.querySelector('[class*="glass"]')).toBeNull();
+    fireEvent.pointerMove(stage, { pointerType: 'mouse', clientX: 10, clientY: 10 });
+    expect(document.querySelector('[class*="glass"]')).not.toBeNull();
+    fireEvent.pointerLeave(stage);
+    expect(document.querySelector('[class*="glass"]')).toBeNull();
   });
 
   it('FR-FIX-01 a fixed-price item links to its checkout; not the seller\'s own, nor a reserved or sold one', async () => {
@@ -121,7 +133,7 @@ describe('the listing page in the money-order world (U10-13)', () => {
     expect(within(seller).getByText('KU')).toBeTruthy();
     expect(within(seller).getByRole('link', { name: 'Karim Uddin' }).getAttribute('href')).toBe('/users/seller-1');
     expect(within(seller).getByText('Identity verified')).toBeTruthy();
-    expect(screen.getByRole('region', { name: 'Photos' }).querySelector('ul')!.getAttribute('tabindex')).toBe('0');   // the phone strip scrolls by keyboard too
+    expect(within(screen.getByRole('region', { name: 'Photos' })).getAllByRole('button')).toHaveLength(2);   // the small photos are buttons: reachable by keyboard
   });
 
   it('NFR-USE-07 a fixed-price item\'s buy panel shows the price once, how the money moves in order, and the button (AC-LST-1)', async () => {
