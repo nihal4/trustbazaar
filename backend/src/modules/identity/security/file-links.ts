@@ -22,6 +22,10 @@ export function verifyFileLink(key: string, token: string, now: Date): FileLinkC
   const [body, sig] = token.split('.');
   if (!body || !sig || token.split('.').length !== 2) return null;
   const given = Buffer.from(sig, 'base64url');
+  // One signature, one token string (SEC-DAT-04, "a changed signature is refused"): a 32-byte signature is 43 base64url characters
+  // and the last one carries only 4 data bits, so the decoder ignores its other 2 bits and four spellings of the same signature
+  // would pass. Re-encoding and comparing refuses every spelling but the canonical one.
+  if (given.toString('base64url') !== sig) return null;
   const expected = mac(key, body);
   if (given.length !== expected.length || !timingSafeEqual(given, expected)) return null;
   try {
