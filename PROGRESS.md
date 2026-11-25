@@ -285,6 +285,7 @@ Design: `docs/design/09_integration.pdf` (source `.tex` beside it).
 | U9-04 | ZAP baseline and triage; ASVS 5.0 checklist (SEC-GEN-01) | U9-01 | todo | | | | |
 | U9-05 | Backup and restore rehearsal; incident procedure in `SECURITY.md` | U9-01 | todo | | | | |
 | U9-06 | Release for the demonstration | U9-02, U9-03, U9-04, U9-05 | todo | | | | |
+| U9-07 | Make the signed file link strict and its test deterministic: one signature, one token spelling (`verifyFileLink`); an exhaustive unit test; `SEC-DAT-04` no longer fails by chance (it failed 1 time in 16) | - | done | S. M. Nihal Ahmed | `fix/u9-07-file-link-canonical`, #308 | 2026-11-25 | Added 2026-11-25 at the user's request after the `integration` check failed on #307 with `SEC-DAT-04`; the integration job on this PR runs the new test |
 
 **Integration notes this unit must apply** (they override the older text of its document where they differ):
 
@@ -565,6 +566,7 @@ Any change to the design made while building: what, why, who agreed, and which d
 | 2026-11-25 | U10-21 | The first v3 build (blue gradient, glow, floating cards) was rejected by the user as generic. Rebuilt with taste-skill's dealer and impeccable's craft floor and detector: palette "white-mint-tiles" (the dealt dark palette was skipped because the user chose a light look), Gabarito and Figtree self-hosted in place of Geist, stand-in photographs from Wikimedia Commons for the hero window. Node 22 (keg-only, Homebrew) was installed because taste-skill needs it. | the user | `docs/design/10_visual_v3.md` |
 | 2026-11-25 | U10-21 | After a side-by-side comparison in the running app the user chose look D (green-black palette, Schibsted Grotesk headlines) and asked for a line grid instead of filled blocks. Gabarito removed, `@fontsource-variable/schibsted-grotesk` added; radii nearly square (4 and 6 px); home sections ruled by hairlines. Applies to every user-app screen through the tokens. | the user | `docs/design/10_visual_v3.md` section 8, `DESIGN.md` |
 | 2026-11-25 | U10-21 | The language switch shows a full-page skeleton while the new language and its fonts load (min 750 ms, fades out in 300 ms), asked for by the user to hide the font change; the footer is three ruled columns. `ensureLangFonts` added to `font.ts`; no change to the one `display: 'swap'` face definition. | the user | `docs/design/10_visual_v3.md` section 9 |
+| 2026-11-25 | U9-07 | The signed file link is accepted only in its canonical base64url spelling: a 32-byte HMAC is 43 characters and the last one has 2 unused bits, which Node's decoder ignores, so four spellings of the same signature were valid and `SEC-DAT-04` ("a changed signature is refused") failed by chance when its test swapped the last character for `A` or `B` (1 time in 16). `verifyFileLink` now re-encodes the decoded signature and compares; the unit test `file-links.spec.ts` checks every character position and every spelling, and the integration test mutates with changes that always alter the signature's data bits. No change to the link format, the key or the lifetime. | the user | `docs/design/01_identity_access.tex` section 6.7 (one sentence, at its next revision) |
 
 ## Finished log
 
@@ -675,3 +677,4 @@ Append one line when a task becomes `done` (newest last).
 | 2026-11-25 | U10-14 | Sabikun Nahar Sinthia | #300 |
 | 2026-11-25 | U10-15 | Sabikun Nahar Sinthia | #302 |
 | 2026-11-25 | U10-21 | S. M. Nihal Ahmed | #306, #307 |
+| 2026-11-25 | U9-07 | S. M. Nihal Ahmed | #308 |
