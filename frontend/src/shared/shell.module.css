@@ -301,7 +301,7 @@
 .footerAbout p { max-width: 32ch; margin: 1rem 0 0; line-height: 1.6; }
 .footerLabel { margin: 0 0 0.5rem; color: var(--tb-text); font-weight: 600; }
 .footerLinks { list-style: none; margin: 0; padding: 0; display: grid; }
-.footerLinks a { display: inline-flex; align-items: center; min-height: 44px; color: var(--tb-muted); text-decoration: none; background-image: linear-gradient(var(--tb-hot), var(--tb-hot)); background-repeat: no-repeat; background-size: 0 1.5px; background-position: 0 calc(50% + 0.7em); transition: color 140ms, background-size 200ms; }
+.footerLinks a { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; color: var(--tb-muted); text-decoration: none; background-image: linear-gradient(var(--tb-hot), var(--tb-hot)); background-repeat: no-repeat; background-size: 0 1.5px; background-position: 0 calc(50% + 0.7em); transition: color 140ms, background-size 200ms; }
 .footerLinks a:hover { color: var(--tb-text); background-size: 100% 1.5px; }
 .footerLinks a:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 3px; color: var(--tb-text); }
 @media (min-width: 48em) {

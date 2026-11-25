@@ -104,3 +104,12 @@ page has no filled cards: sections are ruled by 1 px hairlines and cells (the be
 grid, the category strip, the handover code); the held-money cell has one hot rule on top; step numbers are plain figures in the hot
 colour; radii are nearly square (4 px for the hero, window and photos, 6 px for controls). The hero's gradient and shader colours are
 tokens (`--tb-hero-*`, `--tb-glow-*`). `DESIGN.md` is updated to match.
+
+## 9. Update 2026-11-25: the language change and the footer
+
+Switching language no longer changes the page in front of the reader. It shows a full-page loading skeleton (shimmering blocks in the
+site's own ruled layout, no text and no images, `shared/language/LanguageSkeleton.tsx`) while the new language renders underneath and
+its fonts load (`ensureLangFonts` in `font.ts`: Hind Siliguri, the Bangla figures and the Latin faces are added at once and awaited),
+holds for at least 750 ms, then fades out in 300 ms, so the change of typeface is never seen. The page is marked `aria-busy` while it
+shows; reduced motion drops the shimmer. Box heights are pinned so a box has the same shape in English and Bangla. The footer is three
+ruled columns on the page's thirds (the brand, Explore, Help); the "see all" links are text with an orange arrow and underline.
