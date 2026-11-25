@@ -1,10 +1,11 @@
-import { randomInt, randomUUID } from 'crypto';
+import { randomUUID } from 'crypto';
 import { authenticator } from 'otplib';
 import { loadConfig } from '../../src/kernel/config/config';
 import { NOTIFICATIONS, ForwardedNotifications } from '../../src/modules/identity/adapters/notifications';
 import { startApp, TestApp } from '../support/app';
 import { Browser } from '../support/browser';
 import { IdentityFixtures } from '../support/identity';
+import { randomLocal } from '../support/phones';
 
 // U1-05: step-up, password reset and change, contact changes (Unit 1 sections 6.3 to 6.5), over HTTP against
 // PostgreSQL and Redis, through the real security pipeline.
@@ -12,7 +13,7 @@ const problem = async (r: Response) => {
   const b = await r.json();
   return { status: r.status, type: b.type, errors: b.errors };
 };
-const newLocal = () => `01${randomInt(3, 10)}${String(randomInt(0, 1e8)).padStart(8, '0')}`;
+const newLocal = () => randomLocal();
 const NEW_PASSWORD = 'a slow boat along the river bank';
 
 describe('step-up, passwords and contact changes', () => {

@@ -12,6 +12,7 @@ import { startApp, TestApp } from '../support/app';
 import { openAuction } from '../support/auctions';
 import { Browser } from '../support/browser';
 import { IdentityFixtures } from '../support/identity';
+import { randomPhone } from '../support/phones';
 
 // U7-09: linked accounts (FR-TNS-08) and the relisting flag after a disputed sale (FR-TNS-02), on the running backend
 // (docs/design/07_disputes_trust_staff.pdf sections 6.2 and 8; 03_listings_auctions.pdf sections 5.8 and 5.9).
@@ -107,7 +108,7 @@ describe('linked accounts', () => {
     expect(rows.every((r) => r.bidx.length === 32 && !r.bidx.toString('latin1').includes(number))).toBe(true);
     expect(await payouts.linkedTo(a, [b, c])).toEqual([{ userId: b, via: 'payout_bank' }]);
 
-    const wallet = `+8801${randomInt(3, 10)}${String(randomInt(0, 1e8)).padStart(8, '0')}`;
+    const wallet = randomPhone();
     const d = await fx.user({ kyc: 'verified' });
     for (const u of [c, d]) {
       await fx.query(`UPDATE payments.payout_accounts SET status = 'replaced', replaced_at = now() WHERE user_id = $1 AND status <> 'replaced'`, [u]);

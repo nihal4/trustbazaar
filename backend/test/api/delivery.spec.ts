@@ -1,4 +1,4 @@
-import { randomInt, randomUUID } from 'crypto';
+import { randomUUID } from 'crypto';
 import type Redis from 'ioredis';
 import { REDIS } from '../../src/kernel/redis.provider';
 import { EMAIL_ADAPTER, EmailAdapter } from '../../src/modules/chat/adapters/channels';
@@ -8,6 +8,7 @@ import { NOTIFICATION_PORT, NotificationPort } from '../../src/modules/chat/port
 import { DeliveryService, MAX_ATTEMPTS, RETRY_MINUTES } from '../../src/modules/chat/services/delivery.service';
 import { startApp, TestApp } from '../support/app';
 import { IdentityFixtures } from '../support/identity';
+import { randomPhone } from '../support/phones';
 
 // U6-05: the e-mail and SMS adapters in log mode, NotificationPort for Unit 1, the delivery worker, the development
 // mailbox and retention (docs/design/06_chat_notifications.pdf sections 7.2 and 8; DV-42, DV-43; I-36), against
@@ -101,7 +102,7 @@ describe('delivery of e-mail and SMS', () => {
   });
 
   it('I-36 Unit 1\'s codes go through this unit: in both languages, in the mailbox, and only an HMAC of the number in the database', async () => {
-    const phone = `+8801${randomInt(3, 10)}${String(randomInt(0, 1e8)).padStart(8, '0')}`;
+    const phone = randomPhone();
     const port = t.app.get<NotificationPort>(NOTIFICATION_PORT);
     await port.sendSms(phone, 'otp_register', { code: '482913', minutes: '5' });
     const [m] = await mailbox.list(phone);
@@ -114,7 +115,7 @@ describe('delivery of e-mail and SMS', () => {
   });
 
   it('SEC-SDL-09 staff read the development mailbox (AS-4); users and guests cannot', async () => {
-    const phone = `+8801${randomInt(3, 10)}${String(randomInt(0, 1e8)).padStart(8, '0')}`;
+    const phone = randomPhone();
     await t.app.get<NotificationPort>(NOTIFICATION_PORT).sendSms(phone, 'otp_step_up', { code: '111222', minutes: '5' });
     const staffId = await fx.staff('operator');
     const sid = await fx.session({ staffId });

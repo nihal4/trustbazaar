@@ -4,6 +4,7 @@ import { ESCROW_COMMANDS, ESCROW_QUERY, EscrowCommands, EscrowQuery, ORDERS_PORT
 import { split } from '../../src/modules/orders/services/split';
 import { startApp, TestApp } from '../support/app';
 import { IdentityFixtures } from '../support/identity';
+import { randomPhone } from '../support/phones';
 
 // U2-04: EscrowCommands, EscrowQuery and OrdersPort.lockForFulfilment against PostgreSQL, with its escrow
 // trigger, ledger balance check and refund cap (docs/design/02_orders_payments.pdf sections 4.3 to 5.10).
@@ -195,7 +196,7 @@ describe('escrow', () => {
     const withAccount = async (status: 'active' | 'cooling_off', effective: string) => {
       const seller = await fx.user();
       await fx.query(`INSERT INTO payments.payout_accounts (user_id, kind, wallet_e164, status, effective_at) VALUES ($1, 'bkash_wallet', $2, $3, now() + $4::interval)`,
-        [seller, `+8801${randomInt(3, 10)}${String(randomInt(0, 1e8)).padStart(8, '0')}`, status, effective]);
+        [seller, randomPhone(), status, effective]);
       return seller;
     };
     const cases: [string, string][] = [];

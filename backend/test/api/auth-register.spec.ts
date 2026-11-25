@@ -1,4 +1,4 @@
-import { randomInt, randomUUID } from 'crypto';
+import { randomUUID } from 'crypto';
 import Redis from 'ioredis';
 import { loadConfig } from '../../src/kernel/config/config';
 import { NOTIFICATIONS, ForwardedNotifications } from '../../src/modules/identity/adapters/notifications';
@@ -7,6 +7,7 @@ import { startApp, TestApp } from '../support/app';
 import { Browser } from '../support/browser';
 import { requireEnv } from '../support/env';
 import { IdentityFixtures } from '../support/identity';
+import { randomLocal } from '../support/phones';
 
 // U1-03: registration with phone OTP, and the e-mail link (Unit 1 sections 4.2 and 6.1), over HTTP against
 // PostgreSQL and Redis, through the real security pipeline.
@@ -14,7 +15,7 @@ const problem = async (r: Response) => {
   const b = await r.json();
   return { status: r.status, type: b.type, errors: b.errors };
 };
-const newLocal = () => `01${randomInt(3, 10)}${String(randomInt(0, 1e8)).padStart(8, '0')}`;
+const newLocal = () => randomLocal();
 
 describe('registration', () => {
   let t: TestApp;
