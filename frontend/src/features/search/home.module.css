@@ -1,7 +1,7 @@
 /* The home page (docs/design/10_visual_v3.md): a dark hero panel with a moving gradient ground and a glass product window,
    then the showcase sections. Three radii only: 24 for panels, 16 for cards, 10 for controls. One gutter: 56 px inside the
    hero on wide screens, 20 px on phones. */
-.page { display: flex; flex-direction: column; gap: 4rem; padding-bottom: 3rem; }
+.page { display: flex; flex-direction: column; gap: 4rem; padding-bottom: 0; }
 .visuallyHidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
 .hero { position: relative; isolation: isolate; display: grid; grid-template-columns: 1fr; gap: 2rem; padding: 1.25rem; border-radius: 24px; overflow: hidden; background: linear-gradient(135deg, #0a1018, #15263b 60%, #3a1d12); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08); }
@@ -13,7 +13,7 @@
 .search:focus-within { outline: 2px solid var(--tb-hot); outline-offset: 3px; }
 .search input:focus-visible { outline: none; }
 .searchIcon { flex: none; color: #5a6472; }
-.search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: inherit; font-size: 1.0625rem; min-height: 48px; color: #0f1720; }
+.search input { flex: 1; min-width: 0; text-overflow: ellipsis; border: 0; outline: 0; background: transparent; font: inherit; font-size: 1.0625rem; min-height: 48px; color: #0f1720; }
 .search input::placeholder { color: #5a6472; }
 .search button { flex: none; min-height: 48px; padding: 0 1.5rem; border: 0; border-radius: 8px; background: var(--tb-hot); color: #0a1018; font-weight: 700; cursor: pointer; transition: background 140ms, transform 140ms; }
 .search button:hover { background: #ff8a5c; }
@@ -43,7 +43,7 @@
 .winDone::before { background: #fff; border-color: #fff !important; }
 .winNow { color: #fff; font-weight: 650; }
 .winNow::before { background: var(--tb-hot); border-color: var(--tb-hot) !important; }
-.card { position: relative; z-index: 2; display: flex; gap: 0.75rem; align-items: center; margin-top: 0.75rem; padding: 0.875rem 1rem; border-radius: 12px; background: rgb(10 16 24 / 0.9); border: 1px solid rgb(255 255 255 / 0.18); color: #aeb8c6; font-size: 0.875rem; line-height: 1.35; box-shadow: 0 20px 40px -16px rgb(0 0 0 / 0.7); }
+.card { position: absolute; z-index: 2; left: 1rem; bottom: 1rem; width: min(19rem, calc(100% - 2rem)); display: flex; gap: 0.75rem; align-items: center; padding: 0.875rem 1rem; border-radius: 12px; background: rgb(10 16 24 / 0.9); border: 1px solid rgb(255 255 255 / 0.18); color: #aeb8c6; font-size: 0.875rem; line-height: 1.35; box-shadow: 0 20px 40px -16px rgb(0 0 0 / 0.7); }
 .card strong { display: block; color: #fff; font-size: 1rem; }
 .cardTick { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; background: var(--tb-hot); }
 .cardTick svg circle { fill: #0a1018; } .cardTick svg path { stroke: var(--tb-hot); }
@@ -92,9 +92,9 @@
   .winBody { grid-template-columns: 1fr 1fr; column-gap: 1.5rem; align-items: start; }
   .winBody > :not(.winSteps) { grid-column: 1; }
   .winSteps { display: grid; grid-column: 2; grid-row: 1 / span 5; align-self: start; padding-top: 0.25rem; }
-  .card { position: absolute; left: -2rem; top: 9.5rem; width: min(19rem, 70%); margin: 0; }
   .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2rem 1.25rem; }
-  .steps { grid-template-columns: repeat(3, 1fr); }
+  .steps { grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+  .steps li { grid-column: span 1; }
   .rail { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding: 0; overflow: visible; }
   .rail > li { flex: none; }
 }

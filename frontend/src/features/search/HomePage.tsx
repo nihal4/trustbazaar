@@ -90,6 +90,10 @@ export function Component() {
           <div className={styles.window}>
             <div className={styles.winPhoto}>
               <span className={styles.exampleTag}>{t('home.demo.example')}</span>
+              <div className={styles.card}>
+                <span className={styles.cardTick}><Check /></span>
+                <span><strong>{t('home.demo.held')}</strong>{t('home.demo.held_text')}</span>
+              </div>
               <img src="/img/photo-f152917755-960.jpg" srcSet="/img/photo-f152917755-500.jpg 500w, /img/photo-f152917755-960.jpg 960w" sizes="(max-width: 47.99em) 90vw, 40vw" width="960" height="640" alt="" loading="eager" decoding="async" data-source="stand-in" data-subject="smartphone in its box" />
             </div>
             <div className={styles.winBody}>
@@ -104,10 +108,6 @@ export function Component() {
                 <li>{t('home.counterfoil.out')}</li>
               </ol>
             </div>
-          </div>
-          <div className={styles.card}>
-            <span className={styles.cardTick}><Check /></span>
-            <span><strong>{t('home.demo.held')}</strong>{t('home.demo.held_text')}</span>
           </div>
         </div>
       </section>
