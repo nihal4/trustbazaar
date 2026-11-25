@@ -291,12 +291,11 @@ function Details({ l, t, lang }: { l: ListingView; t: T; lang: Lang }) {
     <section aria-labelledby="details-title">
       <h2 id="details-title">{t('listing.details')}</h2>
       <dl className={styles.details}>
-        <dt>{t('listing.category')}</dt>
-        <dd>{lang === 'bn' ? l.category.nameBn : l.category.nameEn}</dd>
-        {l.condition && (<><dt>{t('listing.condition')}</dt><dd>{t(`listing.condition.${l.condition}`)}</dd></>)}
-        {l.noVisibleDefects !== null && <dd className={styles.wide}>{l.noVisibleDefects ? t('listing.no_visible_defects') : t('listing.defects_in_photos')}</dd>}
-        {l.fulfilmentOptions && (<><dt>{t('listing.fulfilment')}</dt><dd>{t(`listing.fulfilment.${l.fulfilmentOptions}`)}</dd></>)}
-        {l.district && (<><dt>{t('listing.district')}</dt><dd>{l.district}</dd></>)}
+        <div><dt>{t('listing.category')}</dt><dd>{lang === 'bn' ? l.category.nameBn : l.category.nameEn}</dd></div>
+        {l.condition && <div><dt>{t('listing.condition')}</dt><dd>{t(`listing.condition.${l.condition}`)}</dd></div>}
+        {l.fulfilmentOptions && <div><dt>{t('listing.fulfilment')}</dt><dd>{t(`listing.fulfilment.${l.fulfilmentOptions}`)}</dd></div>}
+        {l.district && <div><dt>{t('listing.district')}</dt><dd>{l.district}</dd></div>}
+        {l.noVisibleDefects !== null && <div className={styles.wide}><dd>{l.noVisibleDefects ? t('listing.no_visible_defects') : t('listing.defects_in_photos')}</dd></div>}
       </dl>
     </section>
   );
