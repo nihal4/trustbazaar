@@ -14,9 +14,9 @@ import { formatCountdown, formatDateTime } from '../../lib/time.js';
 import { useApi } from '../../shared/api';
 import { useOpenThread } from '../../shared/chat';
 import { useServerNow } from '../../shared/clock';
-import { amountInWords } from '../../shared/amountWords';
 import { ConfirmDialog } from '../../shared/ConfirmDialog';
-import { Counterfoil, postmarkDate } from '../../shared/Counterfoil';
+import { postmarkDate } from '../../shared/Counterfoil';
+import { EscrowSteps } from '../../shared/EscrowSteps';
 import { signInPath } from '../../shared/document';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
@@ -139,19 +139,27 @@ export function postmarkOf(o: OrderView, lang: Lang): string | undefined {
 }
 
 /**
- * Where the money is, as the counterfoil (money-order world, docs/design/10_visual_v2.md, AC-ORD-2): the stub keeps
- * the total and, once the money has left TrustBazaar, the postmark with the day; the form says in one sentence where
- * the money is (NFR-USE-07), the total in figures and in words, and the steps with the current one marked, in words
- * too. While the buyer still has to pay, the payment panel below says what to do; the sentence says it is not paid yet.
+ * Where the money is (AC-ORD-2): a ruled panel under a vermilion rule: the label, the total once, one sentence on where the money is (NFR-USE-07),
+ * the day it left TrustBazaar once it has, and the three steps as balls on a line with the current one marked, in words too. While the buyer still has
+ * to pay, the payment panel below says what to do and the sentence says it is not paid yet. A cancelled order has no steps.
  */
 function Money({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
-  const steps = stepsOf(o).map((s) => ({ key: s.key, state: s.state, label: t(`order.steps.${s.key}${s.key === 'handover' && o.fulfilment === 'courier' ? '_courier' : ''}`) }));
-  const stateWords = { done: t('order.steps.state.done'), current: t('order.steps.state.current'), next: t('order.steps.state.next') };
+  const steps = stepsOf(o);
+  const now = steps.find((s) => s.state === 'current');
+  const current = steps.length === 0 ? null : now ? ({ payment: 'in', handover: 'held', done: 'out' } as const)[now.key] : 'done';
+  const out = postmarkOf(o, lang);
+  const label = (k: 'payment' | 'handover' | 'done') => t(`order.steps.${k}${k === 'handover' && o.fulfilment === 'courier' ? '_courier' : ''}`);
   return (
-    <Counterfoil labelledBy="money-title" amount={formatMoney(BigInt(o.total), lang)} amountWords={amountInWords(o.total, lang)}
-      stub={<h2 id="money-title" className={styles.stubHeading}>{t('order.counterfoil.stub')}</h2>}
-      title={<p className={styles.money}>{o.status === 'awaiting_payment' && o.role === 'buyer' ? t('order.counterfoil.unpaid') : moneyText(o, t, lang)}</p>}
-      stages={steps} stagesLabel={t('order.steps.label')} stateWords={stateWords} postmark={postmarkOf(o, lang)} />
+    <section aria-labelledby="money-title" className={styles.moneyPanel}>
+      <h2 id="money-title" className={styles.moneyLabel}>{t('order.counterfoil.stub')}</h2>
+      <p className={styles.moneyAmount}>{formatMoney(BigInt(o.total), lang)}</p>
+      <p className={styles.money}>{o.status === 'awaiting_payment' && o.role === 'buyer' ? t('order.counterfoil.unpaid') : moneyText(o, t, lang)}</p>
+      {out && <p className={styles.hint}>{t('order.money_out_on', { date: out })}</p>}
+      {steps.length > 0 && (
+        <EscrowSteps current={current} label={t('order.steps.label')} labels={[label('payment'), label('handover'), label('done')]}
+          stateWords={{ done: t('order.steps.state.done'), current: t('order.steps.state.current'), next: t('order.steps.state.next') }} />
+      )}
+    </section>
   );
 }
 

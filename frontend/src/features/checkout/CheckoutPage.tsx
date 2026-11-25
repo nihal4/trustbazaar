@@ -18,8 +18,7 @@ import { FormMessage } from '../../shared/form';
 import { useT } from '../../shared/language/Language';
 import { useMe } from '../../shared/me';
 import { isApiError, problemName } from '../../shared/problems';
-import { amountInWords } from '../../shared/amountWords';
-import { Counterfoil } from '../../shared/Counterfoil';
+import { EscrowSteps } from '../../shared/EscrowSteps';
 import { FRESHNESS } from '../../shared/query';
 import { SimulatedBanner } from '../../shared/SimulatedBanner';
 import en from '../../messages/en/checkout.json';
@@ -175,17 +174,15 @@ export function Component() {
         </div>
         {!blocked && (
           <aside className={styles.summary} aria-labelledby="summary-title">
-            <Counterfoil stubCopy={false} amount={total ?? undefined}
-              amountWords={sum !== null && chosen !== 'courier' ? amountInWords(sum, lang) : undefined}
-              stub={<>
-                <h2 id="summary-title" className={styles.stubHeading}>{t('checkout.summary')}</h2>
-                {total && <p className={styles.total}>{t(chosen === 'courier' ? 'checkout.total_plus_delivery' : 'checkout.total', { total })}</p>}
-              </>}
-              title={<p>{t('checkout.promise.title')}</p>}
-              stages={(['in', 'held', 'out'] as const).map((key, i) => ({ key, label: t(`checkout.counterfoil.${key}`), state: i === 0 ? 'done' as const : i === 1 ? 'current' as const : 'next' as const }))}>
-              <button type="submit" form="checkout-form" className={styles.primary} disabled={create.isPending}>{t('checkout.continue')}</button>
-              <p className={styles.hint}>{t('checkout.reserve_note')}</p>
-            </Counterfoil>
+            <h2 id="summary-title" className={styles.summaryLabel}>{t('checkout.summary')}</h2>
+            {total && <p className={styles.summaryAmount}>{total}</p>}
+            {total && <p className={styles.hint}>{t(chosen === 'courier' ? 'checkout.total_plus_delivery' : 'checkout.total', { total })}</p>}
+            <p><strong>{t('checkout.promise.title')}</strong></p>
+            <div className={styles.steps}>
+              <EscrowSteps current={null} labels={[t('checkout.counterfoil.in'), t('checkout.counterfoil.held'), t('checkout.counterfoil.out')]} />
+            </div>
+            <button type="submit" form="checkout-form" className={styles.primary} disabled={create.isPending}>{t('checkout.continue')}</button>
+            <p className={styles.hint}>{t('checkout.reserve_note')}</p>
           </aside>
         )}
       </div>

@@ -67,3 +67,32 @@
 .disclosure { border-radius: var(--tb-radius-panel); background: var(--tb-error-bg); border: 1px solid var(--tb-error-line); color: var(--tb-text); padding: 0.875rem 1rem; }
 .check { display: flex; align-items: center; gap: var(--tb-space-2); min-height: 44px; }
 .primaryLink { display: inline-flex; align-items: center; min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-radius-control); background: var(--tb-accent); color: var(--tb-accent-text); font-weight: 600; text-decoration: none; }
+
+/* ---- redesign v3 (U10-23): the order screens in the ruled look of the home, the listing and the room: hairlines and dividers, no outlined or filled boxes
+   (buttons and images keep theirs); one vermilion rule on top of the money panel ---- */
+.moneyPanel { margin-block: var(--tb-space-3); padding: 1rem 0 1.25rem; border-top: 2px solid var(--tb-hot); border-bottom: 1px solid var(--tb-line); }
+.moneyLabel { margin: 0; color: var(--tb-muted); font-size: 0.9375rem; font-weight: 500; }
+.moneyAmount { margin: 0.125rem 0 0.5rem; font-family: var(--tb-font); font-weight: 600; font-size: clamp(2.25rem, 1.8rem + 1.6vw, 3rem); line-height: 1.05; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.moneyPanel .money { margin-bottom: 1rem; }
+.moneyPanel .hint { margin: -0.5rem 0 1rem; }
+.status { min-height: 0; padding: 0; border-radius: 0; background: none; color: var(--tb-hot); font-weight: 700; }
+.panel { padding: 1.25rem 0; border-radius: 0; border-top: 1px solid var(--tb-line); background: none; }
+.deadlines { gap: 0; }
+.deadlines > div { padding: 0.625rem 0; border-radius: 0; background: none; border-top: 1px solid var(--tb-line); }
+.deadlines > div:first-child { border-top: 0; }
+.tabs { gap: 0; margin-block: var(--tb-space-3) 0; border-bottom: 1px solid var(--tb-line); }
+.tab, .tabOn { padding: 0 1.25rem; border-radius: 0; background: none; color: var(--tb-muted); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tabOn { color: var(--tb-text); border-bottom-color: var(--tb-hot); }
+.tab:hover { color: var(--tb-text); }
+.tab:focus-visible, .tabOn:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
+.row a { color: var(--tb-text); font-weight: 600; text-decoration: none; background-image: linear-gradient(var(--tb-hot), var(--tb-hot)); background-repeat: no-repeat; background-size: 0 2px; background-position: 0 100%; transition: background-size 160ms; }
+.row a:hover { background-size: 100% 2px; }
+.tag { padding: 0; border-radius: 0; background: none; border-bottom: 1px solid var(--tb-border); }
+.reply { border: 0; border-left: 2px solid var(--tb-hot); border-radius: 0; background: none; padding: 0.25rem 0 0.25rem 0.75rem; }
+.disclosure { padding: 0.875rem 0; border: 0; border-block: 1px solid var(--tb-error-line); border-radius: 0; background: none; }
+.codeDigits { padding: 0.5rem 0; border: 0; border-block: 1px solid var(--tb-border); border-radius: 0; background: none; }
+.form input, .form select, .form textarea { border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; background: none; padding-left: 0.25rem; }
+.form input:focus-visible, .form select:focus-visible, .form textarea:focus-visible { outline: 0; border-bottom-color: var(--tb-hot); box-shadow: inset 0 -2px 0 var(--tb-hot); }
+@media (prefers-reduced-motion: reduce) { .row a { transition: none; } }
+/* links that stand alone are 44 px targets */
+.row a, .meta a, .page > p > a { display: inline-flex; align-items: center; min-height: 44px; }

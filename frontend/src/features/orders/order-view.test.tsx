@@ -420,16 +420,15 @@ describe('the order\'s counterfoil (money-order world, U10-14)', () => {
     renderApp('/orders/o-1', backend({}));
     const steps = await screen.findByRole('list', { name: 'Order progress' });
     const items = within(steps).getAllByRole('listitem');
-    expect(items.map((li) => li.textContent)).toEqual(['Payment(done)', 'Handover(now)', 'Done(still to come)']);
+    expect(items.map((li) => li.textContent)).toEqual(['Payment (done)', 'Handover (now)', 'Done (still to come)']);
     expect(items[1].getAttribute('aria-current')).toBe('step');
   });
 
-  it('NFR-USE-07 where the money is, the total in figures and in words, and the steps stand on one counterfoil (AC-ORD-2)', async () => {
+  it('NFR-USE-07 where the money is, the total once, and the steps stand on one ruled panel (AC-ORD-2)', async () => {
     renderApp('/orders/o-1', backend({}));
     const money = await screen.findByRole('region', { name: 'Money for this order' });
     expect(within(money).getByRole('list', { name: 'Order progress' })).toBeTruthy();
-    expect(within(money).getAllByText('৳1,500')).toHaveLength(2);     // on the stub and on the form, as on a money order
-    expect(within(money).getByText('One thousand five hundred taka only')).toBeTruthy();
+    expect(within(money).getAllByText('৳1,500')).toHaveLength(1);     // the total is named once, not on a stub and again on a form
   });
 
   it('NFR-USE-07 the postmark carries the day only once the money has left TrustBazaar (AC-ORD-2)', () => {

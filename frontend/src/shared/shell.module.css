@@ -415,3 +415,6 @@
   .iconLink { border-radius: 0; background: none; min-width: 48px; min-height: 48px; border-left: 1px solid var(--tb-line); }
   .iconLink .badge { top: 5px; right: 5px; }
 }
+
+/* the "test mode" strip on payment screens: a ruled band with a warning line above and below, not a filled box */
+.notice { margin: var(--tb-space-3) 0; padding: var(--tb-space-2) 0; background: none; border: 0; border-block: 1px solid var(--tb-warning-border); border-radius: 0; }

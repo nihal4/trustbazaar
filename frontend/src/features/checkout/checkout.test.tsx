@@ -40,11 +40,13 @@ describe('checkout', () => {
     expect(within(summary).getByText('Your money waits with us')).toBeTruthy();
   });
 
-  it('NFR-USE-07 the summary is the counterfoil: the total in figures and in words, how the money moves, the button (AC-ORD-1)', async () => {
+  it('NFR-USE-07 the summary is a ruled column: the total once, how the money moves in order (none of it has happened yet), the button (AC-ORD-1)', async () => {
     renderApp(`/checkout/${ID}`, backend(), 'bn');
     const summary = await screen.findByRole('complementary', { name: 'সারসংক্ষেপ' });
-    expect(within(summary).getByText('এক হাজার পাঁচ শত টাকা মাত্র')).toBeTruthy();
-    expect(within(summary).getAllByRole('listitem')).toHaveLength(3);
+    expect(within(summary).getAllByText('৳১,৫০০').length).toBeGreaterThan(0);
+    const steps = within(summary).getAllByRole('listitem');
+    expect(steps).toHaveLength(3);
+    expect(steps.some((li) => li.getAttribute('aria-current') === 'step')).toBe(false);   // nothing is paid or held at checkout: no step is marked
     expect(screen.queryByText('The seller is paid only after you confirm you have the item.')).toBeNull();
   });
 
