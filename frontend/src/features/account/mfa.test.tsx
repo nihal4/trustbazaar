@@ -50,7 +50,7 @@ describe('turning the authenticator app on', () => {
     expect(qr.getAttribute('aria-label')).not.toContain(SECRET);
     expect(qr.querySelector('path')?.getAttribute('d')).toMatch(/^M\d+ \d+h1v1h-1z/);
     expect(qr.outerHTML).not.toMatch(/data:|https?:|<image|href/);
-    expect(document.querySelector('img, canvas')).toBeNull();
+    expect(document.querySelector('main img, main canvas')).toBeNull();   // the QR is SVG shapes; the logo in the header is an image file, outside main
 
     expect(screen.getByText('JBSW Y3DP EHPK 3PXP JBSW Y3DP EHPK 3PXP')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Open in the authenticator app' }).getAttribute('href')).toBe(URI);

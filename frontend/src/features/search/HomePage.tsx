@@ -3,19 +3,19 @@
 // the categories, the auctions ending soonest, the featured listings apart with their note, the newest listings, and
 // how selling works. Searching goes to
 // /search with the words in the URL; everything shown here comes from GET /search and GET /categories.
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
-import { toLocalDigits } from '../../lib/money.js';
+import { formatMoney, toLocalDigits } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
-import { Counterfoil } from '../../shared/Counterfoil';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
 import { useT } from '../../shared/language/Language';
 import { FRESHNESS } from '../../shared/query';
 import en from '../../messages/en/search.json';
 import bn from '../../messages/bn/search.json';
+import { GlowGround } from './GlowGround';
+import { Journey, SafeBento } from './HomeSections';
 import { ListingCard } from './ListingCard';
 import type { Category, SearchPage } from './SearchPage';
 import styles from './home.module.css';
@@ -34,6 +34,12 @@ export function Component() {
   const api = useApi();
   const navigate = useNavigate();
   const [words, setWords] = useState('');
+  const theme = 'dark' as const;
+  const heroRef = useRef<HTMLElement>(null);
+  const [tick, setTick] = useState(0);
+  useEffect(() => { const id = window.setInterval(() => setTick((n) => n + 1), 1000); return () => window.clearInterval(id); }, []);
+  const left = Math.max(0, 2 * 3600 + 14 * 60 + 9 - tick);
+  const clock = [Math.floor(left / 3600), Math.floor(left / 60) % 60, left % 60].map((n) => String(n).padStart(2, '0')).join(':');
 
   const categories = useQuery({
     queryKey: ['categories'],
@@ -65,10 +71,12 @@ export function Component() {
 
   return (
     <div className={styles.page}>
-      <section className={styles.hero}>
+      <section className={styles.hero} data-theme={theme} ref={heroRef}>
+        <GlowGround area={heroRef} />
         <div className={styles.heroText}>
           <h1 className={styles.title}>{t('home.title')}</h1>
-          <form role="search" className={styles.search} onSubmit={search}>
+          <p className={styles.lede}>{t('home.promise.text')}</p>
+          <form role="search" aria-label={t('home.search_placeholder')} className={styles.search} onSubmit={search}>
             <label htmlFor="home-q" className={styles.visuallyHidden}>{t('home.search_label')}</label>
             <svg className={styles.searchIcon} viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
               <path d="M11 4 a7 7 0 1 0 0.01 0 Z M16.5 16.5 L21 21" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -76,21 +84,31 @@ export function Component() {
             <input id="home-q" type="search" maxLength={100} value={words} placeholder={t('home.search_placeholder')} onChange={(e) => setWords(e.target.value)} />
             <button type="submit">{t('search.submit')}</button>
           </form>
-          <ul className={styles.facts}>
-            <li><Check />{t('home.promise.id')}</li>
-            <li><Check />{t('home.promise.pay')}</li>
-          </ul>
+          <p className={styles.proof}>{t('home.promise.id')}. {t('home.promise.pay')}.</p>
         </div>
-        <div className={styles.foil}>
-          <Counterfoil
-            stub={<strong>{t('home.counterfoil.stub')}</strong>}
-            title={<><h2 className={styles.foilTitle}>{t('home.promise.title')}</h2><p className={styles.foilText}>{t('home.promise.text')}</p></>}
-            stages={[
-              { key: 'in', label: t('home.counterfoil.in'), state: 'done' },
-              { key: 'held', label: t('home.counterfoil.held'), state: 'current' },
-              { key: 'out', label: t('home.counterfoil.out'), state: 'next' },
-            ]}
-          />
+        <div className={styles.art} aria-hidden="true">
+          <div className={styles.window}>
+            <div className={styles.winPhoto}>
+              <span className={styles.exampleTag}>{t('home.demo.example')}</span>
+              <div className={styles.card}>
+                <span className={styles.cardTick}><Check /></span>
+                <span><strong>{t('home.demo.held')}</strong>{t('home.demo.held_text')}</span>
+              </div>
+              <img src="/img/photo-f152917755-960.jpg" srcSet="/img/photo-f152917755-500.jpg 500w, /img/photo-f152917755-960.jpg 960w" sizes="(max-width: 47.99em) 90vw, 40vw" width="960" height="640" alt="" loading="eager" decoding="async" data-source="stand-in" data-subject="smartphone in its box" />
+            </div>
+            <div className={styles.winBody}>
+              <p className={styles.winTitle}>{t('home.demo.title')}</p>
+              <p className={styles.winWhere}>{t('home.demo.where')}</p>
+              <p className={styles.winClock}><i />{t('home.safe.ends')} <b>{toLocalDigits(clock, lang)}</b></p>
+              <p className={styles.winPrice}>{formatMoney('8500000', lang)}</p>
+              <span className={styles.winBtn}>{t('home.demo.buy')}</span>
+              <ol className={styles.winSteps}>
+                <li className={styles.winDone}>{t('home.counterfoil.in')}</li>
+                <li className={styles.winNow}>{t('home.counterfoil.held')}</li>
+                <li>{t('home.counterfoil.out')}</li>
+              </ol>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -103,10 +121,14 @@ export function Component() {
         </nav>
       )}
 
+      <SafeBento t={t} lang={lang} clock={clock} />
+
+      <Journey t={t} lang={lang} />
+
       {ending.length > 0 && (
         <section aria-labelledby="home-auctions" className={styles.section}>
           <div className={styles.head}><h2 id="home-auctions">{t('home.auctions')}</h2><Link to="/search?saleFormat=auction&sort=ending_soon">{t('home.auctions_all')}</Link></div>
-          <ul className={`${styles.grid} ${styles.four}`}>{ending.map((c) => <ListingCard key={c.id} c={c} t={t} lang={lang} />)}</ul>
+          <ul className={styles.rail}>{ending.map((c) => <ListingCard key={c.id} c={c} t={t} lang={lang} />)}</ul>
         </section>
       )}
 
@@ -124,7 +146,7 @@ export function Component() {
         {newest.isError && <FormMessage kind="error">{errorText(newest.error, t, lang)}</FormMessage>}
         {newest.data && (newest.data.items.length === 0
           ? <p>{t('search.empty')}</p>
-          : <ul className={styles.grid}>{newest.data.items.map((c) => <ListingCard key={c.id} c={c} t={t} lang={lang} />)}</ul>)}
+          : <ul className={styles.grid}>{(newest.data.items.length >= 4 ? newest.data.items.slice(0, Math.floor(newest.data.items.length / 4) * 4) : newest.data.items).map((c) => <ListingCard key={c.id} c={c} t={t} lang={lang} />)}</ul>)}
       </section>
 
       <section aria-labelledby="home-sell" className={styles.sell}>
@@ -134,7 +156,7 @@ export function Component() {
             <li key={n}><span className={styles.num} aria-hidden="true">{toLocalDigits(String(n), lang)}</span><span><strong>{t(`home.sell.step${n}`)}</strong>{t(`home.sell.step${n}_text`)}</span></li>
           ))}
         </ol>
-        <Button component={Link} to="/sell/new" variant="outline" color="teal">{t('home.sell.start')}</Button>
+        <Link to="/sell/new" className={styles.sellBtn}>{t('home.sell.start')}</Link>
       </section>
     </div>
   );

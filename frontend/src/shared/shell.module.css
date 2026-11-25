@@ -57,7 +57,7 @@
   font-size: 1.4rem;
   letter-spacing: -0.035em;
   line-height: 1;
-  font-family: 'Geist Variable', system-ui, sans-serif;
+  font-family: var(--tb-font-display);
 }
 
 .docTitle {
@@ -300,3 +300,36 @@
 .exit { display: inline-flex; align-items: center; min-height: 44px; color: var(--tb-text); font-weight: 600; white-space: nowrap; text-underline-offset: 3px; }
 @media (max-width: 30rem) { .docTitle { display: none; } }
 @media (max-width: 26rem) { .withExit .wordmark { display: none; } .withExit .exit { margin-left: auto; } }
+
+/* ---- Redesign v3 (docs/design/10_visual_v3.md): flat and plain. A mint promise bar, a white header with a search field,
+   an ink footer, a standard bottom bar on phones. These rules follow the older ones and win. ---- */
+.promiseBar { margin: 0; display: flex; justify-content: center; align-items: center; gap: 0.5rem; padding: 0.5rem var(--tb-gutter); background: var(--tb-accent-soft); color: var(--tb-text); font-size: 0.875rem; font-weight: 500; line-height: 1.4; text-align: center; }
+.promiseBar svg { flex: none; }
+.header { position: sticky; top: 0; z-index: 20; flex-wrap: nowrap; padding-block: 0.75rem; background: var(--tb-bg); border-bottom: 1px solid var(--tb-line); }
+.wordmark { font-weight: 500; font-size: 1.4rem; letter-spacing: -0.03em; color: var(--tb-text); }
+.headSearch { flex: 1 1 18rem; max-width: 32rem; margin-inline: auto; display: flex; align-items: center; gap: 0.5rem; min-height: 46px; padding: 0 0.875rem; border-radius: var(--tb-radius); background: var(--tb-surface); border: 1.5px solid transparent; color: var(--tb-muted); transition: border-color 140ms, background 140ms; }
+.headSearch:focus-within { background: var(--tb-sheet); border-color: var(--tb-text); }
+.headSearch input:focus-visible { outline: 2px solid var(--tb-text); outline-offset: 4px; border-radius: 4px; }
+.headSearch input { flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; color: var(--tb-text); outline: 0; min-height: 44px; }
+.headSearch svg { flex: none; width: 20px; height: 20px; }
+.account { padding: 0.5rem 0.75rem; font-weight: 500; color: var(--tb-text); text-decoration: none; background-image: linear-gradient(currentColor, currentColor); background-repeat: no-repeat; background-size: 0 1.5px; background-position: 0.75rem calc(100% - 0.4rem); transition: background-size 180ms; }
+.account:hover { background-size: calc(100% - 1.5rem) 1.5px; }
+.langSwitch { border-radius: var(--tb-radius); }
+.footer { margin-top: 4rem; background: var(--tb-ink); border-top: 1px solid var(--tb-line); color: var(--tb-on-ink); padding-block: 3rem; }
+.footer a { color: var(--tb-on-ink); }
+.footer a:hover { color: #fff; }
+.footer .wordmark { color: #fff; }
+.tabOn { color: var(--tb-text); font-weight: 600; }
+.tabSell { background: var(--tb-action); color: var(--tb-action-text); border-radius: var(--tb-radius); }
+@media (max-width: 47.99em) { .header { flex-wrap: wrap; } }
+
+.footer a:focus-visible { outline: 2px solid var(--tb-accent-soft); outline-offset: 3px; }
+
+.wmA { font-weight: 400; } .wmB { font-weight: 650; }
+.logotype { display: block; height: 38px; width: auto; }
+.logotypeBn { height: 36px; }
+@media (max-width: 26rem) { .logotype { height: 30px; } .logotypeBn { height: 30px; } }
+
+/* tap targets of 44 px (WCAG 2.2 AA, NFR-USE-06) */
+.header [class*='Button-root'] { min-height: 44px; }
+.footerLinks a { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; padding-inline: 0.5rem; margin-inline: -0.5rem; }

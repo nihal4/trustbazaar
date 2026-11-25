@@ -1,0 +1,57 @@
+# Visual design, version 3 (U10-21 to U10-28)
+
+Status: in progress (U10-21, 2026-11-25). Replaces the money-order world of `10_visual_v2.md`, which the course teacher
+rejected and asked to be made more advanced. Product truth stays in `PRODUCT.md`. Scope: presentation only; features,
+routes, API calls and the FR-named tests stay.
+
+## 1. Direction
+
+Chosen with the user: "clean premium", a full re-layout (new header, home, cards, listing, checkout), not a re-skin.
+The first attempt (blue gradient, glow, floating cards, a kicker label) was rejected as generic. The rebuild follows
+the two design skills' real tools:
+
+- taste-skill's dealer (`start.mjs deal`, `deal.mjs`): palette "white-mint-tiles" (taken over the dealt dark palettes
+  because the user chose a light look and the buyers use cheap phones in daylight), type "gabarito" (Gabarito for
+  headlines at weight 400, Figtree for text, self-hosted; Hind Siliguri for Bangla), radius soft, hero "collage".
+- impeccable's craft floor and detector (`impeccable detect`): no kicker above a heading, no gradient text, no glass,
+  no glow, no one-sided bars, no overused font. The detector reports no findings on the changed files.
+
+## 2. Tokens
+
+Changed on 2026-11-25 at the user's request ("change the logo and the colour combination, keep the structure"): the ink-and-mint
+pairing was replaced by ink-navy and vermilion. White `#FFFFFF`, surface `#F3F5F8`, ink `#0F1720` (text and every action),
+muted `#5A6472`, control border `#8590A0`, line `#E2E6EC`, peach `#FFE1D2` (soft tint: the promise bar, the payment card, the
+hero ground), vermilion `#FF6B35` (the vivid highlight on ink and as a fill with ink text; never as text on white),
+protected-money green `#0B6B3F` (text only), error `#B42318`. Radius 10 px controls, 16 px panels, 8 px chips. The logo is a
+shopping bag whose handle is a padlock's shackle on an ink tile, with the wordmark in two weights. Contrast pairs are checked
+in `visual.test.ts`.
+
+## 3. Structure
+
+- Shell: a mint promise bar, a sticky white header with the logo, a search field, links and the Sell button; an ink
+  footer; on phones a standard bottom bar.
+- Home: the hero is alone on the first screen (text left, search as the one action; right, a lit mint frame holding a
+  window of a real listing, with a real photograph, the price, the buy button and the three payment steps, cut by the
+  frame, and one small "Payment held" card). Then the categories, "Your money waits with us" in three steps, the
+  auctions on a swipe rail, featured, newest and a flat ink selling band.
+- Listing cards: the photo leads; the card lifts 2 px and the photo zooms 1.03 inside its frame.
+
+## 4. Photographs
+
+The listing photographs in the hero window are stand-ins from Wikimedia Commons, fetched with taste-skill's
+`photos.mjs` into `frontend/public/img/` (the credits are in `credits.json` there). Replace them with TrustBazaar's own
+photographs before release. Item photographs elsewhere come from sellers.
+
+## 5. Still to do
+
+Listing page, checkout, orders, sell, account, ID check, staff and the sweep (U10-22 to U10-28); the footer's credit
+line for the stand-in photographs; the Bangla check of the new screens.
+
+## 6. Update 2026-11-25: dark theme, logo and hero photo
+
+The user chose the dark glossy hero and asked for the rest of the app to match, a more modern hero photograph, and a logo that
+highlights "Trust" and its T. The user app (`index.html`, `data-theme="dark"`) now runs on dark tokens (`tokens.css`,
+`:root[data-theme='dark']`: ground `#080D14`, panels `#0F1824` and `#131F2E`, text `#F2F5F9`, links and actions vermilion
+with ink text); the console, the ID check and the credentials page stay light. The logotype is "Trust" in vermilion with a
+capital T and "bazaar" in white (ink on light), a coin in each "a"; the favicon is the vermilion T on an ink tile. The hero
+window shows a smartphone in its box (a stand-in photograph from Wikimedia Commons, `public/img/credits.json`).

@@ -5,24 +5,24 @@
 // Decisions log, U10-01). theme.test.ts fails when the two drift apart.
 import { createTheme, type MantineColorsTuple, type MantineProviderProps } from '@mantine/core';
 
-/** Petrol teal, the money-order ink: shade 7 (#06525C) is the main colour; white text on it is 8.9:1. */
-const teal: MantineColorsTuple = ['#EEF5F5', '#D9E8E8', '#B5D3D4', '#8DBBBD', '#5E9EA2', '#33818A', '#0F6670', '#06525C', '#04414A', '#04363D'];
+/** Ink, the action colour: shade 7 (#0F1720) is the main colour; white text on it is 8.9:1. */
+const brand: MantineColorsTuple = ['#F3F5F8', '#E2E6EC', '#C6CDD8', '#9AA5B4', '#6F7B8C', '#4A5565', '#2B3644', '#0F1720', '#080D13', '#000000'];
 /** Teal-tinted greys from the paper to ink: 0 paper, 1 surface, 2 line, 5 control borders, 7 muted, 9 ink. */
-const gray: MantineColorsTuple = ['#F7F9F8', '#EBF0EE', '#D3DDDB', '#BCC9C8', '#9BAEAD', '#73878A', '#5E7275', '#4A5F62', '#2B3F42', '#0D2326'];
+const gray: MantineColorsTuple = ['#FFFFFF', '#F3F5F8', '#E2E6EC', '#C4CCD8', '#9AA5B4', '#8590A0', '#6B7686', '#5A6472', '#2B3644', '#0F1720'];
 /** Errors and auctions in their last hour: shade 6 (#B42318) is 6.2:1 on the paper. */
 const red: MantineColorsTuple = ['#FEF3F2', '#FEE4E2', '#FECDCA', '#FDA29B', '#F97066', '#F04438', '#B42318', '#912018', '#7A271A', '#55160C'];
 
-const FONT = "'Geist Variable', 'TB Figures', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+const FONT = "'Figtree Variable', 'TB Figures', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 
 export const theme = createTheme({
-  primaryColor: 'teal',
+  primaryColor: 'brand',
   primaryShade: 7,
-  colors: { teal, gray, red },
-  black: '#0D2326',
+  colors: { brand, gray, red },
+  black: '#0F1720',
   white: '#FFFFFF',
   fontFamily: FONT,
   headings: {
-    fontFamily: FONT,
+    fontFamily: "'Gabarito Variable', 'TB Figures', 'Hind Siliguri', system-ui, sans-serif",
     fontWeight: '500',
     sizes: {
       h1: { fontSize: '2.125rem', lineHeight: '1.1' },
@@ -32,16 +32,16 @@ export const theme = createTheme({
     },
   },
   defaultRadius: 'md',
-  radius: { xs: '4px', sm: '6px', md: '6px', lg: '10px', xl: '14px' },
+  radius: { xs: '6px', sm: '8px', md: '10px', lg: '16px', xl: '24px' },
   focusRing: 'auto',
   cursorType: 'pointer',
   respectReducedMotion: true,
   components: {
-    Button: { defaultProps: { radius: 'sm', size: 'md' } },
+    Button: { defaultProps: { radius: 'md', size: 'md' } },
     ActionIcon: { defaultProps: { radius: 'sm', variant: 'subtle', color: 'gray' } },
     TextInput: { defaultProps: { radius: 'md', size: 'md' } },
     PasswordInput: { defaultProps: { radius: 'md', size: 'md' } },
-    Badge: { defaultProps: { radius: 'xs' } },
+    Badge: { defaultProps: { radius: 'sm' } },
   },
 });
 
