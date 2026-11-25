@@ -93,8 +93,13 @@
   .winBody > :not(.winSteps) { grid-column: 1; }
   .winSteps { display: grid; grid-column: 2; grid-row: 1 / span 5; align-self: start; padding-top: 0.25rem; }
   .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2rem 1.25rem; }
-  .steps { grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
-  .steps li { grid-column: span 1; }
+  .sell { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); grid-template-areas: 'title steps' 'cta steps'; column-gap: 3.5rem; row-gap: 1.5rem; align-items: start; }
+  .sell h2 { grid-area: title; }
+  .sell .steps { grid-area: steps; grid-template-columns: 1fr; gap: 0; }
+  .sell .steps li { padding: 1.25rem 0; border-top: 1px solid var(--tb-line); align-items: flex-start; }
+  .sell .steps li:first-child { padding-top: 0; border-top: 0; }
+  .sell .steps li:last-child { padding-bottom: 0; }
+  .sellBtn { grid-area: cta; align-self: start; }
   .rail { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding: 0; overflow: visible; }
   .rail > li { flex: none; }
 }
