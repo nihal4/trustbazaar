@@ -7,9 +7,9 @@
 .hero { position: relative; isolation: isolate; display: grid; grid-template-columns: 1fr; gap: 2rem; padding: 1.25rem; border-radius: 4px; overflow: hidden; background: linear-gradient(135deg, var(--tb-hero-from, #0a1110), var(--tb-hero-mid, #10231f) 60%, var(--tb-hero-to, #3a1d12)); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1); }
 .heroText { display: flex; flex-direction: column; justify-content: center; gap: 1.25rem; align-items: flex-start; }
 .title { margin: 0; font-family: var(--tb-font-display); font-weight: var(--tb-display-weight); font-size: clamp(2.5rem, 5.6vw, 4rem); line-height: 1.04; letter-spacing: -0.03em; color: #fff; text-wrap: balance; }
-:lang(bn) .title { font-weight: 500; letter-spacing: 0; line-height: 1.3; }
+:lang(bn) .title { font-weight: 600; letter-spacing: 0; line-height: 1.3; }
 .lede { margin: 0; max-width: 34rem; font-size: 1.25rem; line-height: 1.5; color: #b8c7c2; text-wrap: balance; }
-.search { display: flex; align-items: center; gap: 0.5rem; width: 100%; max-width: 34rem; padding: 0.375rem 0.375rem 0.375rem 1rem; border-radius: 6px; background: rgb(255 255 255 / 0.96); box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.55); }
+.search { display: flex; align-items: center; gap: 0.5rem; width: 100%; max-width: 34rem; padding: 0.375rem 0.375rem 0.375rem 1rem; border-radius: 4px; background: rgb(241 245 243 / 0.96); box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.55); }
 .search:focus-within { outline: 2px solid var(--tb-hot); outline-offset: 3px; }
 .search input:focus-visible { outline: none; }
 .searchIcon { flex: none; color: #5a6472; }
@@ -21,7 +21,7 @@
 .proof { margin: 0; color: #b8c7c2; font-size: 0.9375rem; }
 
 .art { position: relative; min-width: 0; }
-.window { position: relative; z-index: 1; height: 100%; display: grid; grid-template-rows: minmax(0, 1fr) auto; overflow: hidden; border-radius: 4px; background: rgb(10 17 16 / 0.72); border: 1px solid rgb(255 255 255 / 0.2); backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), 0 40px 80px -30px rgb(0 0 0 / 0.7); color: #fff; }
+.window { position: relative; z-index: 1; height: 100%; display: grid; grid-template-rows: minmax(0, 1fr) auto; overflow: hidden; border-radius: 4px; background: rgb(10 17 16 / 0.6); border: 1px solid rgb(255 255 255 / 0.2); backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), 0 40px 80px -30px rgb(0 0 0 / 0.7); color: #fff; }
 .window::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, transparent 38%, rgb(255 255 255 / 0.16) 50%, transparent 62%); transform: translateX(-120%); animation: sheen 7s ease-in-out 1.5s infinite; }
 @keyframes sheen { 0%, 55% { transform: translateX(-120%); } 85%, 100% { transform: translateX(120%); } }
 .winPhoto { position: relative; min-height: 13rem; background: var(--tb-surface); border-bottom: 1px solid rgb(255 255 255 / 0.12); }
@@ -29,14 +29,14 @@
 .exampleTag { position: absolute; left: 0.75rem; top: 0.75rem; z-index: 1; padding: 0.25rem 0.625rem; border-radius: 2px; background: rgb(10 17 16 / 0.8); color: #fff; font-size: 0.75rem; font-weight: 600; }
 .winBody { display: grid; grid-template-columns: 1fr; gap: 0.25rem; padding: 1.25rem 1.5rem; }
 .winTitle { margin: 0; font-weight: 600; line-height: 1.3; }
-.winWhere { margin: 0; font-size: 0.875rem; color: #c6d2ce; }
+.winWhere { margin: 0; font-size: 0.9375rem; color: #c6d2ce; }
 .winClock { display: flex; align-items: center; gap: 0.5rem; margin: 0.375rem 0 0; font-size: 0.875rem; font-weight: 500; }
 .winClock b { font-family: var(--tb-font); font-weight: 600; font-variant-numeric: tabular-nums; font-size: 1.0625rem; }
 .winClock i { width: 8px; height: 8px; border-radius: 50%; background: var(--tb-hot); animation: ping2 1.8s infinite; }
 @keyframes ping2 { 0% { box-shadow: 0 0 0 0 rgb(255 107 53 / 0.6); } 70%, 100% { box-shadow: 0 0 0 8px rgb(255 107 53 / 0); } }
 .winPrice { margin: 0.5rem 0; font-family: var(--tb-font); font-weight: 600; font-size: 1.75rem; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-.winBtn { justify-self: start; padding: 0.625rem 1rem; border-radius: 4px; background: var(--tb-hot); color: #0a1018; font-weight: 700; font-size: 0.9375rem; }
-.winSteps { display: none; list-style: none; margin: 0; padding: 0; gap: 0.625rem; font-size: 0.875rem; color: #c6d2ce; }
+.winBtn { justify-self: start; padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid rgb(255 255 255 / 0.35); color: #fff; font-weight: 600; font-size: 0.9375rem; }
+.winSteps { display: none; list-style: none; margin: 0; padding: 0; gap: 0.625rem; font-size: 0.9375rem; color: #c6d2ce; }
 .winSteps li { display: flex; align-items: center; gap: 0.625rem; }
 .winSteps li::before { content: ''; flex: none; width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgb(255 255 255 / 0.5); }
 .winDone { color: #fff; }
@@ -61,8 +61,9 @@
 .section { display: flex; flex-direction: column; gap: 1.5rem; }
 .head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--tb-line); }
 .head h2 { margin: 0; font-family: var(--tb-font-display); font-weight: var(--tb-display-weight); font-size: clamp(1.75rem, 3.6vw, 2.5rem); letter-spacing: -0.025em; line-height: 1.1; min-height: 1.3em; }
-:lang(bn) .head h2 { font-weight: 500; letter-spacing: 0; line-height: 1.3; }
-.head a { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; font-weight: 600; color: var(--tb-text); text-decoration: none; }
+:lang(bn) .head h2 { font-weight: 600; letter-spacing: 0; line-height: 1.3; }
+.head h2 { min-width: 0; }
+.head a { flex: none; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; font-weight: 600; color: var(--tb-text); text-decoration: none; }
 .head a span { background-image: linear-gradient(var(--tb-hot), var(--tb-hot)); background-repeat: no-repeat; background-size: 100% 1.5px; background-position: 0 100%; padding-bottom: 2px; transition: background-size 200ms; }
 .head a svg { flex: none; color: var(--tb-hot); transition: transform 200ms; }
 .head a:hover svg { transform: translateX(4px); }
@@ -79,7 +80,7 @@
 
 .sell { display: grid; gap: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--tb-line); }
 .sell h2 { margin: 0; font-family: var(--tb-font-display); font-weight: var(--tb-display-weight); font-size: clamp(1.75rem, 3.6vw, 2.5rem); letter-spacing: -0.025em; line-height: 1.1; min-height: 1.3em; max-width: 22ch; text-wrap: balance; }
-:lang(bn) .sell h2 { font-weight: 500; letter-spacing: 0; line-height: 1.3; }
+:lang(bn) .sell h2 { font-weight: 600; letter-spacing: 0; line-height: 1.3; }
 .steps { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; border-block: 1px solid var(--tb-line); }
 .steps li { display: flex; gap: 1rem; color: var(--tb-muted); padding: 1.25rem 0; min-height: 6.5rem; }
 .steps li + li { border-top: 1px solid var(--tb-line); }
@@ -119,5 +120,11 @@
   .sell .steps li { padding: 1.5rem 1.5rem 1.5rem 0; }
   .sell .steps li + li { border-top: 0; border-left: 1px solid var(--tb-line); padding-left: 1.5rem; }
 }
+@media (max-width: 30rem) { .head h2 { font-size: 1.5rem; } }
 @media (max-width: 26rem) { .search { padding-left: 0.75rem; } .searchIcon { display: none; } .search button { padding: 0 1rem; } }
 @media (prefers-reduced-motion: reduce) { .window::after, .winClock i { animation: none; } .heroText > *, .window { animation: none; } }
+
+/* Bangla: Hind Siliguri has a small x-height, so body text in the page's cells is a step larger */
+:lang(bn) .winSteps, :lang(bn) .steps li { font-size: 1.0625rem; }
+
+@media (min-width: 48em) and (max-width: 63.99em) { .card { left: auto; right: 1rem; top: 1rem; bottom: auto; } }

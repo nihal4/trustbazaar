@@ -46,5 +46,6 @@
   "shell.search_label": "Search TrustBazaar",
   "shell.search_placeholder": "Search phones, cameras, bikes…",
   "shell.footer.explore": "Explore",
-  "shell.footer.help": "Help"
+  "shell.footer.help": "Help",
+  "shell.language.changing": "Changing language"
 }

@@ -45,7 +45,7 @@
 .noPhoto { position: absolute; inset: 0; margin: auto; color: var(--tb-border); }
 
 /* the seed illustrations are cream tiles: tone them down on the dark page */
-:root[data-theme='dark'] .photo img { filter: brightness(0.6) saturate(0.85); }
+:root[data-theme='dark'] .photo img { filter: brightness(0.92); }
 
 /* the same line heights in English and Bangla, so a card is the same height in both */
 .price { line-height: 1.5rem; }

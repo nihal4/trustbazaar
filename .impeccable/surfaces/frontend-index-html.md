@@ -19,6 +19,6 @@ STORY: The buyer sees a real listing with its escrow state live (clock ticking, 
 
 FIRST VIEWPORT: Header (logotype, search, language, Sell). Hero panel: left, a 3-line headline, one lede, the search field as the single action; right, a glass window with a product photograph on top and its price, buy button, live clock and the three payment steps below, and one small dark card "Payment held" over its lower-left corner. The hero fills the first screen alone.
 
-FORM: Pinned by the user in words: 'clean premium'; 'the dark one look nice ... more dynamic and glossy'; after a side-by-side comparison in the running app, 'well D [green-black palette + Schibsted Grotesk headlines] but i want you to get rid of blocks instead use lines like a line grid looks much better'. seed: none (pinned).
+FORM: Pinned by the user in words: 'clean premium'; 'the dark one look nice ... more dynamic and glossy'; after a side-by-side comparison in the running app, 'well D [green-black palette + Schibsted Grotesk headlines] but i want you to get rid of blocks instead use lines like a line grid looks much better'. The first-surface experience (a live escrow window in a glass panel over a moving gradient ground, the 'Payment held' card) was shown to and kept by the user through every round, who approved the hero as it stands. seed: none (pinned).
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance

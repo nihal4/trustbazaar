@@ -7,7 +7,7 @@ export function LanguageSkeleton({ leaving }: { leaving: boolean }) {
   return (
     <div className={leaving ? `${styles.sk} ${styles.leaving}` : styles.sk} aria-hidden="true">
       <div className={styles.promise}><i /></div>
-      <div className={styles.header}><i className={styles.logo} /><i className={styles.hsearch} /><span /><i className={styles.btn} /><i className={styles.btn} /></div>
+      <div className={styles.header}><i className={styles.logo} /><span /><i className={styles.btn} /><i className={styles.btn} /><i className={`${styles.btn} ${styles.sell}`} /></div>
       <div className={styles.page}>
         <div className={styles.hero}>
           <div className={styles.heroText}><i className={styles.h1} /><i className={styles.h1} /><i className={`${styles.h1} ${styles.short}`} /><i className={styles.lede} /><i className={`${styles.lede} ${styles.short}`} /><i className={styles.bar} /></div>

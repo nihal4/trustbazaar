@@ -14,6 +14,7 @@ interface LanguageValue {
 }
 
 const LanguageContext = createContext<LanguageValue | null>(null);
+const sr = 'tb-sr-only';
 const MIN_MS = 750;
 const LEAVE_MS = 300;
 
@@ -37,18 +38,22 @@ export function LanguageProvider({ children, initial }: { children: ReactNode; i
   current.current = lang;
   const setLang = useCallback((next: Lang) => {
     if (next === current.current) return;
+    const focused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setPhase('loading');
     storeLang(next);
     setLangState(next);
     const min = new Promise<void>((resolve) => setTimeout(resolve, MIN_MS));
     void Promise.all([ensureLangFonts(next), min]).then(() => requestAnimationFrame(() => {
       setPhase('leaving');
-      setTimeout(() => setPhase('idle'), LEAVE_MS);
+      setTimeout(() => { setPhase('idle'); if (focused?.isConnected) focused.focus(); }, LEAVE_MS);
     }));
   }, []);
   useEffect(() => {
     const root = document.documentElement;
+    const app = document.getElementById('root');
     if (phase === 'loading') root.setAttribute('aria-busy', 'true'); else root.removeAttribute('aria-busy');
+    // nothing underneath the loading screen can be reached by keyboard or screen reader until it is gone
+    if (app) app.inert = phase !== 'idle';
   }, [phase]);
 
   const value = useMemo(() => ({ lang, setLang, t: translator(lang) }), [lang, setLang]);
@@ -56,6 +61,7 @@ export function LanguageProvider({ children, initial }: { children: ReactNode; i
     <LanguageContext.Provider value={value}>
       {children}
       {phase !== 'idle' && <LanguageSkeleton leaving={phase === 'leaving'} />}
+      <span className={sr} aria-live="polite">{phase === 'loading' ? value.t('shell.language.changing') : ''}</span>
     </LanguageContext.Provider>
   );
 }

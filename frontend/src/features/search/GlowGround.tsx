@@ -17,8 +17,9 @@ void main(){
   float a = n(p + vec2(t * 0.05, t * 0.03));
   float b = n(p * 1.7 - vec2(t * 0.04, -t * 0.06) + a * 1.6);
   vec3 col = mix(c0, c1, smoothstep(0.15, 0.85, b));
-  col = mix(col, c2, smoothstep(0.5, 0.95, n(p * 0.8 + b + vec2(0.0, t * 0.02))) * 0.9);
+  col = mix(col, c2, smoothstep(0.5, 0.95, n(p * 0.8 + b + vec2(0.0, t * 0.02))) * 0.6);
   col += c3 * 0.30 * smoothstep(0.5, 0.0, distance(uv * vec2(r.x / r.y, 1.0), m * vec2(r.x / r.y, 1.0)));
+  col *= mix(0.55, 1.0, smoothstep(0.0, 0.6, uv.x));
   col += (h(gl_FragCoord.xy + t) - 0.5) * 0.05;
   gl_FragColor = vec4(col, 1.0);
 }`;
