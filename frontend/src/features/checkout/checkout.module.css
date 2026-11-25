@@ -45,3 +45,9 @@
 .summary .hint { margin-top: 0.875rem; }
 .summary .steps { margin-bottom: 1.25rem; }
 .itemTitle a { display: inline-flex; align-items: center; min-height: 44px; }
+
+/* ---- review fixes (U10-23): every row has the same left padding, so choosing one does not move it; the row shows the focus ---- */
+.option { padding-left: 0.75rem; }
+.option:has(input:checked) { padding-left: 0.75rem; }
+.option:focus-within { background: var(--tb-surface); }
+.field input[type='text']:focus-visible { outline: 2px solid transparent; }

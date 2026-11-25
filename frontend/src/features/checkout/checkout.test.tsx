@@ -35,7 +35,7 @@ describe('checkout', () => {
   it('FR-FIX-01 the summary beside the choices holds the total, the button and the payment promise (Daylight design)', async () => {
     renderApp(`/checkout/${ID}`, backend());
     const summary = await screen.findByRole('complementary', { name: 'Summary' });
-    expect(within(summary).getByText('Total to pay: ৳1,500')).toBeTruthy();
+    expect(within(summary).getByText('৳1,500')).toBeTruthy();            // the total, named once
     expect(within(summary).getByRole('button', { name: 'Continue to payment' }).getAttribute('form')).toBe('checkout-form');
     expect(within(summary).getByText('Your money waits with us')).toBeTruthy();
   });
@@ -57,7 +57,7 @@ describe('checkout', () => {
     expect(screen.getByText('Price for one: ৳1,500')).toBeTruthy();
     expect((screen.getByLabelText('Pick it up from the seller (no delivery fee)') as HTMLInputElement).checked).toBe(true);
     fireEvent.change(screen.getByLabelText('Quantity'), { target: { value: '২' } });
-    expect(screen.getByText('Total to pay: ৳3,000')).toBeTruthy();
+    expect(screen.getByText('৳3,000')).toBeTruthy();                      // two units: the total changes
     const button = screen.getByRole('button', { name: 'Continue to payment' });
     fireEvent.click(button);
     fireEvent.click(button);

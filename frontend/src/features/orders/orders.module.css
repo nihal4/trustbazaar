@@ -96,3 +96,17 @@
 @media (prefers-reduced-motion: reduce) { .row a { transition: none; } }
 /* links that stand alone are 44 px targets */
 .row a, .meta a, .page > p > a { display: inline-flex; align-items: center; min-height: 44px; }
+
+/* ---- review fixes (U10-23) ---- */
+.reply { border: 0; border-top: 1px solid var(--tb-line); padding: 0.5rem 0 0; }
+.choice > div { padding: 0.25rem 0; border-top: 1px solid var(--tb-line); min-height: 52px; }
+.choice > div:last-of-type { border-bottom: 1px solid var(--tb-line); }
+.choice > div:focus-within { background: var(--tb-surface); }
+.form input:focus-visible, .form select:focus-visible, .form textarea:focus-visible { outline: 2px solid transparent; }
+.head { margin-top: var(--tb-space-3); }
+.rowAmount { margin: 0; font-family: var(--tb-font); font-weight: 600; font-size: 1.125rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.row.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 1.5rem; align-items: start; }
+.rowMain { min-width: 0; }
+.rowMain p { margin: var(--tb-space-1) 0 0; }
+.rowAmount { padding-top: 0.5rem; }
+@media (max-width: 30rem) { .row.row { grid-template-columns: minmax(0, 1fr); } .rowAmount { grid-row: 1; padding-top: 0; font-size: 1.0625rem; } }

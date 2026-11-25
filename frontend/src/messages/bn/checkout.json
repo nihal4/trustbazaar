@@ -28,5 +28,6 @@
   "checkout.promise.text": "পণ্য হাতে পেয়েছেন নিশ্চিত করলে তবেই বিক্রেতা টাকা পান।",
   "checkout.counterfoil.in": "আপনি ট্রাস্টবাজারকে টাকা দেন",
   "checkout.counterfoil.held": "আমরা টাকা রাখি",
-  "checkout.counterfoil.out": "আপনি নিশ্চিত করলে বিক্রেতা টাকা পান"
+  "checkout.counterfoil.out": "আপনি নিশ্চিত করলে বিক্রেতা টাকা পান",
+  "checkout.steps_label": "টাকা কীভাবে চলে"
 }

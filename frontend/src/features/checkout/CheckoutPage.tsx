@@ -176,10 +176,10 @@ export function Component() {
           <aside className={styles.summary} aria-labelledby="summary-title">
             <h2 id="summary-title" className={styles.summaryLabel}>{t('checkout.summary')}</h2>
             {total && <p className={styles.summaryAmount}>{total}</p>}
-            {total && <p className={styles.hint}>{t(chosen === 'courier' ? 'checkout.total_plus_delivery' : 'checkout.total', { total })}</p>}
+            {total && chosen === 'courier' && <p className={styles.hint}>{t('checkout.total_plus_delivery', { total })}</p>}
             <p><strong>{t('checkout.promise.title')}</strong></p>
             <div className={styles.steps}>
-              <EscrowSteps current={null} labels={[t('checkout.counterfoil.in'), t('checkout.counterfoil.held'), t('checkout.counterfoil.out')]} />
+              <EscrowSteps current={null} label={t('checkout.steps_label')} labels={[t('checkout.counterfoil.in'), t('checkout.counterfoil.held'), t('checkout.counterfoil.out')]} />
             </div>
             <button type="submit" form="checkout-form" className={styles.primary} disabled={create.isPending}>{t('checkout.continue')}</button>
             <p className={styles.hint}>{t('checkout.reserve_note')}</p>

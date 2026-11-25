@@ -389,7 +389,8 @@ describe('the list of orders', () => {
     renderApp('/orders', be);
     const link = await screen.findByRole('link', { name: 'Desk lamp' });
     expect(link.getAttribute('href')).toBe('/orders/o-2');
-    expect(screen.getByText(/^Paid · ৳1,500/)).toBeTruthy();
+    expect(screen.getByText(/^Paid/)).toBeTruthy();                    // the status and the day, with the amount in its own column
+    expect(screen.getByText('৳1,500')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Show more' }));
     expect(await screen.findByRole('link', { name: 'Old radio' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Sold' }));

@@ -40,7 +40,6 @@
   "order.chat_none": "The buyer has not written to you about this order yet.",
   "order.role.buyer": "You are the buyer",
   "order.role.seller": "You are the seller",
-  "order.cancel_reason": "Reason given: {reason}",
   "pay.chosen.self_pickup": "You will pick the item up from the seller.",
   "pay.chosen.courier": "A courier will deliver the item to your address.",
   "pay.chosen.game_account": "You will receive the game account through the sealed handover.",
@@ -331,5 +330,9 @@
   "order.steps.state.next": "(still to come)",
   "order.counterfoil.stub": "Money for this order",
   "order.counterfoil.unpaid": "Not paid yet. Once you pay, TrustBazaar holds the money until you have the item.",
-  "order.money_out_on": "The money left TrustBazaar on {date}."
+  "order.money_out_on": "The money left TrustBazaar on {date}.",
+  "order.cancel_reason.checkout_expired": "The payment was not made in time, so the order was cancelled and the item released.",
+  "order.cancel_reason.payment_window_expired": "The payment time ran out, so the order was cancelled.",
+  "order.cancel_reason.buyer_abandoned": "The buyer left before paying, so the order was cancelled.",
+  "order.cancel_reason.listing_withdrawn": "The seller withdrew the listing, so the order was cancelled."
 }

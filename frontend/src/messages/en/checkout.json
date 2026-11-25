@@ -28,5 +28,6 @@
   "checkout.promise.text": "The seller is paid only after you confirm you have the item.",
   "checkout.counterfoil.in": "You pay TrustBazaar",
   "checkout.counterfoil.held": "We hold it",
-  "checkout.counterfoil.out": "The seller is paid when you confirm"
+  "checkout.counterfoil.out": "The seller is paid when you confirm",
+  "checkout.steps_label": "How the money moves"
 }

@@ -40,7 +40,6 @@
   "order.chat_none": "এই অর্ডার নিয়ে ক্রেতা এখনও আপনাকে বার্তা পাঠাননি।",
   "order.role.buyer": "আপনি ক্রেতা",
   "order.role.seller": "আপনি বিক্রেতা",
-  "order.cancel_reason": "দেওয়া কারণ: {reason}",
   "pay.chosen.self_pickup": "আপনি বিক্রেতার কাছ থেকে জিনিসটি সংগ্রহ করবেন।",
   "pay.chosen.courier": "কুরিয়ার আপনার ঠিকানায় জিনিসটি পৌঁছে দেবে।",
   "pay.chosen.game_account": "আপনি সিল করা হস্তান্তরের মাধ্যমে গেম অ্যাকাউন্টটি পাবেন।",
@@ -331,5 +330,9 @@
   "order.steps.state.next": "(বাকি আছে)",
   "order.counterfoil.stub": "এই অর্ডারের টাকা",
   "order.counterfoil.unpaid": "এখনো পরিশোধ করা হয়নি। পরিশোধ করলে জিনিস হাতে না পাওয়া পর্যন্ত টাকা TrustBazaar-এর কাছে জমা থাকবে।",
-  "order.money_out_on": "টাকা ট্রাস্টবাজার থেকে বেরিয়েছে {date} তারিখে।"
+  "order.money_out_on": "টাকা ট্রাস্টবাজার থেকে বেরিয়েছে {date} তারিখে।",
+  "order.cancel_reason.checkout_expired": "সময়মতো পেমেন্ট হয়নি, তাই অর্ডার বাতিল হয়েছে এবং পণ্যটি ছেড়ে দেওয়া হয়েছে।",
+  "order.cancel_reason.payment_window_expired": "পেমেন্টের সময় শেষ হয়ে গেছে, তাই অর্ডার বাতিল হয়েছে।",
+  "order.cancel_reason.buyer_abandoned": "ক্রেতা পেমেন্ট না করে চলে গেছেন, তাই অর্ডার বাতিল হয়েছে।",
+  "order.cancel_reason.listing_withdrawn": "বিক্রেতা তালিকাটি তুলে নিয়েছেন, তাই অর্ডার বাতিল হয়েছে।"
 }

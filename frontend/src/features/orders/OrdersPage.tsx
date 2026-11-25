@@ -52,9 +52,12 @@ export function Component() {
       <ul className={styles.list}>
         {items.map((o) => (
           <li key={o.id} className={styles.row}>
-            <Link to={`/orders/${encodeURIComponent(o.id)}`}><strong>{o.listing.title}</strong></Link>
-            <p>{t(`order.status.${o.status}`)} · {formatMoney(BigInt(o.total), lang)}{o.createdAt ? ` · ${formatDateTime(Date.parse(o.createdAt), lang)}` : ''}</p>
-            <p className={styles.hint}>{moneyText(o, t, lang)}</p>
+            <div className={styles.rowMain}>
+              <Link to={`/orders/${encodeURIComponent(o.id)}`}><strong>{o.listing.title}</strong></Link>
+              <p>{t(`order.status.${o.status}`)}{o.createdAt ? ` · ${formatDateTime(Date.parse(o.createdAt), lang)}` : ''}</p>
+              <p className={styles.hint}>{moneyText(o, t, lang)}</p>
+            </div>
+            <p className={styles.rowAmount}>{formatMoney(BigInt(o.total), lang)}</p>
           </li>
         ))}
       </ul>

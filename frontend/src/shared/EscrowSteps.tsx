@@ -25,7 +25,7 @@ export interface EscrowStepsProps {
 export function EscrowSteps({ labels, current, classes = { list: styles.list, done: styles.done, current: styles.current }, stateWords, label }: EscrowStepsProps) {
   const at = current === 'done' ? ORDER.length : current === null ? -1 : ORDER.indexOf(current);
   return (
-    <ol className={classes.list} aria-label={label}>
+    <ol className={classes.list} aria-label={label} role="list">
       {labels.map((text, i) => {
         const state = i < at ? 'done' : i === at ? 'current' : 'next';
         return (

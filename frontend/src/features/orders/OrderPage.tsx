@@ -106,7 +106,7 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
       {attempt && <Return o={o} failed={failed} waited={waited} t={t} />}
       <Deadlines o={o} h={handover.data ?? null} t={t} lang={lang} />
       {awaiting && o.role === 'buyer' && <PayPanel o={o} t={t} lang={lang} />}
-      {o.cancelledAt && o.cancelReason && <p className={styles.hint}>{t('order.cancel_reason', { reason: o.cancelReason })}</p>}
+      {o.cancelledAt && o.cancelReason && CANCEL_REASONS.includes(o.cancelReason) && <p className={styles.hint}>{t(`order.cancel_reason.${o.cancelReason}`)}</p>}
       <Actions o={o} t={t} lang={lang} />
       {disputes.data && <Disputes o={o} items={disputes.data.items} t={t} lang={lang} />}
       {handover.data && <Handover o={o} h={handover.data} t={t} lang={lang} />}
@@ -120,6 +120,9 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
     </div>
   );
 }
+
+/** The reasons the server gives for a cancelled order (the order_cancel_reason enum), each in words; an unknown code is not shown. */
+const CANCEL_REASONS = ['checkout_expired', 'payment_window_expired', 'buyer_abandoned', 'listing_withdrawn'];
 
 /**
  * Where the order is: payment, the handover (or delivery), and the end; each step done, current or still to come, in
