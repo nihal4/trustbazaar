@@ -127,7 +127,7 @@ export function Component() {
 
       {ending.length > 0 && (
         <section aria-labelledby="home-auctions" className={styles.section}>
-          <div className={styles.head}><h2 id="home-auctions">{t('home.auctions')}</h2><Link to="/search?saleFormat=auction&sort=ending_soon">{t('home.auctions_all')}</Link></div>
+          <div className={styles.head}><h2 id="home-auctions">{t('home.auctions')}</h2><Link to="/search?saleFormat=auction&sort=ending_soon"><span>{t('home.auctions_all')}</span><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false"><path d="M4 10h11 M11 5l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></Link></div>
           <ul className={styles.rail}>{ending.map((c) => <ListingCard key={c.id} c={c} t={t} lang={lang} />)}</ul>
         </section>
       )}
@@ -141,7 +141,7 @@ export function Component() {
       )}
 
       <section aria-labelledby="home-newest" className={styles.section}>
-        <div className={styles.head}><h2 id="home-newest">{t('home.newest')}</h2><Link to="/search?sort=newest">{t('home.newest_all')}</Link></div>
+        <div className={styles.head}><h2 id="home-newest">{t('home.newest')}</h2><Link to="/search?sort=newest"><span>{t('home.newest_all')}</span><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false"><path d="M4 10h11 M11 5l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></Link></div>
         {newest.isPending && <p role="status">{t('shell.loading')}</p>}
         {newest.isError && <FormMessage kind="error">{errorText(newest.error, t, lang)}</FormMessage>}
         {newest.data && (newest.data.items.length === 0
