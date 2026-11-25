@@ -183,11 +183,11 @@
 /* the seller: the photo (initials) with no box, the name with a small verified tick, the rating and the year */
 .seller { border: 0; border-radius: 0; padding: 1.25rem 0 0; }
 /* a ruled row of cells: photo | name and year | rating and Pro (when there are any) | chat */
-.sellerRow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: stretch; border-block: 1px solid var(--tb-line); }
-.sellerRowRated { grid-template-columns: auto minmax(0, 1fr) auto auto; }
+.sellerRow { --av: 64px; display: grid; grid-template-columns: calc(var(--av) + 14px) minmax(0, 1fr) auto; align-items: stretch; gap: 0; border-block: 1px solid var(--tb-line); }
+.sellerRowRated { grid-template-columns: calc(var(--av) + 14px) minmax(0, 1fr) auto auto; }
 .sellerRow > * { display: flex; align-items: center; padding: 0.75rem 0.875rem; }
 .sellerRow > * + *:not(.chatError) { border-left: 1px solid var(--tb-line); }
-.avatar { display: grid; place-items: center; width: 64px; height: auto; align-self: stretch; margin: 6px; padding: 0; box-sizing: border-box; border: 0; border-radius: 4px; background: var(--tb-surface); color: var(--tb-text); font-family: var(--tb-font-display); font-weight: 600; font-size: 1.125rem; }
+.avatar { display: grid; place-items: center; width: var(--av); height: auto; align-self: stretch; margin: 7px; padding: 0; box-sizing: border-box; border: 0; border-radius: 4px; background: var(--tb-surface); color: var(--tb-text); font-family: var(--tb-font-display); font-weight: 600; font-size: 1.125rem; }
 .sellerRating { flex-direction: column; align-items: flex-start; justify-content: center; gap: 0.375rem; }
 .chatCell { justify-content: center; min-width: 56px; border-top: 0; border-right: 0; border-bottom: 0; background: none; color: var(--tb-text); cursor: pointer; text-decoration: none; transition: color 140ms, background 140ms; }
 .chatCell:hover:not(:disabled) { color: var(--tb-hot); background: var(--tb-surface); }
@@ -241,7 +241,7 @@
 @media (max-width: 30rem) { .thumb { width: 3.5rem; height: 3.5rem; } }
 @media (pointer: coarse) { .glass { display: none; } .canZoom { cursor: auto; } }
 @media (prefers-reduced-motion: reduce) { .thumb { transition: none; } }
-@media (max-width: 30rem) { .sellerRow > * { padding: 0.625rem 0.625rem; } .avatar { width: 52px; padding: 0; } .chatCell { min-width: 48px; } }
+@media (max-width: 30rem) { .sellerRow > * { padding: 0.625rem 0.625rem; } .sellerRow { --av: 52px; } .chatCell { min-width: 48px; } }
 
 /* Buy now and Save for later, side by side */
 .buyRow { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 0.625rem; }
