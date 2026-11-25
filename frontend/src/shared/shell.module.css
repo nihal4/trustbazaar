@@ -303,7 +303,7 @@
 
 /* ---- Redesign v3 (docs/design/10_visual_v3.md): flat and plain. A mint promise bar, a white header with a search field,
    an ink footer, a standard bottom bar on phones. These rules follow the older ones and win. ---- */
-.promiseBar { margin: 0; display: flex; justify-content: center; align-items: center; gap: 0.5rem; padding: 0.5rem var(--tb-gutter); background: var(--tb-accent-soft); color: var(--tb-text); font-size: 0.875rem; font-weight: 500; line-height: 1.4; text-align: center; }
+.promiseBar { margin: 0; display: flex; justify-content: center; align-items: center; gap: 0.5rem; padding: 0.5rem var(--tb-gutter); background: transparent; border-bottom: 1px solid var(--tb-line); color: var(--tb-text); font-size: 0.875rem; font-weight: 500; line-height: 1.4; text-align: center; }
 .promiseBar svg { flex: none; }
 .header { position: sticky; top: 0; z-index: 20; flex-wrap: nowrap; padding-block: 0.75rem; background: var(--tb-bg); border-bottom: 1px solid var(--tb-line); }
 .wordmark { font-weight: 500; font-size: 1.4rem; letter-spacing: -0.03em; color: var(--tb-text); }
@@ -315,7 +315,7 @@
 .account { padding: 0.5rem 0.75rem; font-weight: 500; color: var(--tb-text); text-decoration: none; background-image: linear-gradient(currentColor, currentColor); background-repeat: no-repeat; background-size: 0 1.5px; background-position: 0.75rem calc(100% - 0.4rem); transition: background-size 180ms; }
 .account:hover { background-size: calc(100% - 1.5rem) 1.5px; }
 .langSwitch { border-radius: var(--tb-radius); }
-.footer { margin-top: 4rem; background: var(--tb-ink); border-top: 1px solid var(--tb-line); color: var(--tb-on-ink); padding-block: 3rem; }
+.footer { margin-top: 4rem; background: transparent; border-top: 1px solid var(--tb-line); color: var(--tb-on-ink); padding-block: 3rem; }
 .footer a { color: var(--tb-on-ink); }
 .footer a:hover { color: #fff; }
 .footer .wordmark { color: #fff; }
