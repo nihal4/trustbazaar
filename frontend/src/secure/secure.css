@@ -4,33 +4,33 @@
    12 px inputs and 48 px pill buttons. Text keeps a contrast of at least 4.5:1, control borders 3:1. The key's
    fingerprint and the login details stay in a monospace face, so 0 and O or l and 1 cannot be confused (Decisions
    log, U10-08). */
-@import '@fontsource-variable/geist/wght.css';
+@import '@fontsource-variable/figtree/wght.css';
 @import '@fontsource/hind-siliguri/bengali-400.css';
 @import '@fontsource/hind-siliguri/bengali-500.css';
 @import '@fontsource/hind-siliguri/bengali-600.css';
 @import '@fontsource/hind-siliguri/bengali-700.css';
 
 :root {
-  --bg: #f5f7fb; --surface: #eaeff7; --cream: #e6edfa; --text: #0b1220; --muted: #495466; --border: #6f7c92;
-  --line: #dbe2ee; --accent: #1d4ed8; --accent-soft: #dbe6fd; --accent-text: #ffffff; --error: #b42318;
-  --success: #0f7b4f; --radius: 12px;
-  --font: 'Geist Variable', 'TB Figures', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --bg: #ffffff; --surface: #f3f3f3; --cream: #f3f3f3; --text: #232323; --muted: #686868; --border: #8a8a8a;
+  --line: #e4e4e4; --accent: #232323; --accent-soft: #a1ffcb; --accent-text: #ffffff; --error: #b42318;
+  --success: #0b6b3f; --radius: 12px;
+  --font: 'Figtree Variable', 'TB Figures', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --line-height: 1.5;
 }
 /* the figures, as in the app (src/shared/language/font.ts): in Bangla the digits, taka sign and the separators
-   between them; in English, after Geist, only the taka sign */
+   between them; in English, after Figtree, only the taka sign */
 @font-face { font-family: 'TB Figures'; font-weight: 400; font-display: swap; src: url('../shared/language/figures/figures-digits-400.woff2') format('woff2'); unicode-range: U+09E6-09EF, U+09F3; }
 @font-face { font-family: 'TB Figures'; font-weight: 400; font-display: swap; src: url('../shared/language/figures/figures-marks-400.woff2') format('woff2'); unicode-range: U+002C, U+002E, U+003A; }
 @font-face { font-family: 'TB Figures'; font-weight: 600; font-display: swap; src: url('../shared/language/figures/figures-digits-600.woff2') format('woff2'); unicode-range: U+09E6-09EF, U+09F3; }
 @font-face { font-family: 'TB Figures'; font-weight: 600; font-display: swap; src: url('../shared/language/figures/figures-marks-600.woff2') format('woff2'); unicode-range: U+002C, U+002E, U+003A; }
-:root:lang(bn) { --font: 'TB Figures', 'Hind Siliguri', 'Geist Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; --line-height: 1.7; }
+:root:lang(bn) { --font: 'TB Figures', 'Hind Siliguri', 'Figtree Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; --line-height: 1.7; }
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 1rem; line-height: var(--line-height); overflow-wrap: anywhere; }
 
 .top { display: flex; align-items: center; min-height: 64px; padding: 0 max(1rem, calc((100% - 40rem) / 2 + 1rem)); border-bottom: 1px solid var(--line); }
 .brand { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; color: var(--text); text-decoration: none; }
 .mark { flex: none; }
-.wordmark { font-family: 'Geist Variable', system-ui, sans-serif; font-size: 1.2rem; font-weight: 600; letter-spacing: -0.035em; }
+.wordmark { font-family: 'Gabarito Variable', system-ui, sans-serif; font-size: 1.2rem; font-weight: 500; letter-spacing: -0.035em; }
 
 #root { display: block; max-width: 40rem; margin: 0 auto; padding: 1.75rem 1rem 3rem; }
 h1 { margin: 0 0 1rem; font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.125rem); line-height: 1.15; letter-spacing: -0.03em; font-weight: 600; }
@@ -47,7 +47,7 @@ a { color: var(--accent); font-weight: 600; text-underline-offset: 3px; }
 .panel .hint { font-size: 0.9375rem; }
 .error, .success, .info { margin: 1rem 0; padding: 0.75rem 1rem; border-radius: var(--tb-radius-panel); }
 .error { color: #912018; background: #fef3f2; border: 1px solid #fecdca; font-weight: 600; }
-.success { background: #eef3ff; border: 1px solid var(--accent-soft); }
+.success { background: #f3f3f3; border: 1px solid var(--accent-soft); }
 .info { background: var(--surface); }
 .fingerprint, .secret { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 1.0625rem; letter-spacing: 0.02em; overflow-wrap: anywhere; }
 .details .secret { display: inline-block; padding: 0.25rem 0.625rem; border-radius: 8px; background: var(--bg); border: 1px solid var(--line); }

@@ -6,7 +6,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { toLocalDigits } from '../../lib/money.js';
+import { formatMoney, toLocalDigits } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
@@ -64,35 +64,40 @@ export function Component() {
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
-        <div className={styles.glow} aria-hidden="true" />
         <div className={styles.heroText}>
-          <p className={styles.eyebrow}><Check />{t('home.promise.id')}</p>
           <h1 className={styles.title}>{t('home.title')}</h1>
           <p className={styles.lede}>{t('home.promise.text')}</p>
           <form role="search" aria-label={t('home.search_placeholder')} className={styles.search} onSubmit={search}>
             <label htmlFor="home-q" className={styles.visuallyHidden}>{t('home.search_label')}</label>
-            <svg className={styles.searchIcon} viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+            <svg className={styles.searchIcon} viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
               <path d="M11 4 a7 7 0 1 0 0.01 0 Z M16.5 16.5 L21 21" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
             <input id="home-q" type="search" maxLength={100} value={words} placeholder={t('home.search_placeholder')} onChange={(e) => setWords(e.target.value)} />
             <button type="submit">{t('search.submit')}</button>
           </form>
-          <ul className={styles.chips}>
-            {top.slice(0, 5).map((c) => <li key={c.id}><Link to={`/search?category=${c.id}`}>{lang === 'bn' ? c.nameBn : c.nameEn}</Link></li>)}
-          </ul>
+          <p className={styles.proof}>{t('home.promise.id')}. {t('home.promise.pay')}.</p>
         </div>
-        <div className={styles.stage} aria-hidden="false">
-          <section className={styles.escrow} aria-labelledby="home-promise">
-            <p className={styles.stub}>{t('home.counterfoil.stub')}</p>
-            <h2 id="home-promise" className={styles.escrowHead}><span className={styles.escrowDot} />{t('home.promise.title')}</h2>
-            <ol className={styles.track}>
-              <li className={styles.done}><span className={styles.node}><Check /></span><span>{t('home.counterfoil.in')}</span></li>
-              <li className={styles.current}><span className={styles.node} /><span>{t('home.counterfoil.held')}</span></li>
-              <li><span className={styles.node} /><span>{t('home.counterfoil.out')}</span></li>
-            </ol>
-            <p className={styles.escrowNote}>{t('home.promise.pay')}</p>
-          </section>
-          <div className={styles.floatA}><Check />{t('home.promise.id')}</div>
+        <div className={styles.art} aria-hidden="true">
+          <div className={styles.window}>
+            <div className={styles.winPhoto}>
+              <img src="/img/photo-f120292367-960.jpg" srcSet="/img/photo-f120292367-500.jpg 500w, /img/photo-f120292367-960.jpg 960w" sizes="(max-width: 47.99em) 90vw, 40vw" width="960" height="817" alt="" loading="eager" decoding="async" data-source="stand-in" data-subject="mirrorless camera" />
+            </div>
+            <div className={styles.winBody}>
+              <p className={styles.winTitle}>{t('home.demo.title')}</p>
+              <p className={styles.winWhere}>{t('home.demo.where')}</p>
+              <p className={styles.winPrice}>{formatMoney('8500000', lang)}</p>
+              <span className={styles.winBtn}>{t('home.demo.buy')}</span>
+              <ol className={styles.winSteps}>
+                <li className={styles.winDone}>{t('home.counterfoil.in')}</li>
+                <li className={styles.winNow}>{t('home.counterfoil.held')}</li>
+                <li>{t('home.counterfoil.out')}</li>
+              </ol>
+            </div>
+          </div>
+          <div className={styles.card}>
+            <span className={styles.cardTick}><Check /></span>
+            <span><strong>{t('home.demo.held')}</strong>{t('home.demo.held_text')}</span>
+          </div>
         </div>
       </section>
 
@@ -104,6 +109,16 @@ export function Component() {
           </ul>
         </nav>
       )}
+
+      <section aria-labelledby="home-promise" className={styles.how}>
+        <h2 id="home-promise">{t('home.promise.title')}</h2>
+        <p className={styles.howLabel}>{t('home.counterfoil.stub')}</p>
+        <ol className={styles.howSteps}>
+          <li>{t('home.counterfoil.in')}</li>
+          <li>{t('home.counterfoil.held')}</li>
+          <li>{t('home.counterfoil.out')}</li>
+        </ol>
+      </section>
 
       {ending.length > 0 && (
         <section aria-labelledby="home-auctions" className={styles.section}>

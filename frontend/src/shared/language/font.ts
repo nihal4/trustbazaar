@@ -2,15 +2,17 @@
 // window's load event has passed and the browser is idle (docs/design/10_visual.md, sections 3 and 8, AC-ALL-4; Decisions log, U8-01, U10-01
 // and U10-10). Until they arrive the text shows in the system font and then swaps, so the fonts never hold up the
 // listing photo or any other first content (NFR-PERF-07).
-// - Geist, variable 100 to 900 (the money-order world, U10-11), the Latin and Latin Extended subsets, for every page;
+// - Figtree (text) and Gabarito (headlines), variable, the Latin and Latin Extended subsets, for every page (redesign v3, U10-21, dealt by taste-skill);
 // - Hind Siliguri, 400 to 700, the Bengali block only, when the language is Bangla;
 // - with it, the Bangla figures: the digits, the taka sign and the comma, full stop and colon between them, cut from
 //   Noto Sans Bengali (figures/, scripts/subset-figures.py, SIL OFL 1.1). Hind draws the digit one as a small hook
 //   high in its box, so "৳১৫,০০০" read as "৳ ৫,০০০"; the figures face comes first in the Bangla stack, so every
 //   number is drawn by one face whose digits read clearly (Decisions log, U10-20). About 2.5 KB a weight. In
 //   English it comes after Geist and draws only the taka sign, which Geist lacks.
-import latin from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url';
-import latinExt from '@fontsource-variable/geist/files/geist-latin-ext-wght-normal.woff2?url';
+import latin from '@fontsource-variable/figtree/files/figtree-latin-wght-normal.woff2?url';
+import latinExt from '@fontsource-variable/figtree/files/figtree-latin-ext-wght-normal.woff2?url';
+import displayLatin from '@fontsource-variable/gabarito/files/gabarito-latin-wght-normal.woff2?url';
+import displayLatinExt from '@fontsource-variable/gabarito/files/gabarito-latin-ext-wght-normal.woff2?url';
 import regular from '@fontsource/hind-siliguri/files/hind-siliguri-bengali-400-normal.woff2?url';
 import medium from '@fontsource/hind-siliguri/files/hind-siliguri-bengali-500-normal.woff2?url';
 import semibold from '@fontsource/hind-siliguri/files/hind-siliguri-bengali-600-normal.woff2?url';
@@ -24,7 +26,8 @@ import marks500 from './figures/figures-marks-500.woff2?url';
 import marks600 from './figures/figures-marks-600.woff2?url';
 import marks700 from './figures/figures-marks-700.woff2?url';
 
-export const LATIN_FONT = 'Geist Variable';
+export const LATIN_FONT = 'Figtree Variable';
+export const DISPLAY_FONT = 'Gabarito Variable';
 export const BANGLA_FONT = 'Hind Siliguri';
 export const FIGURES_FONT = 'TB Figures';
 /** the Bangla digits ০ to ৯ and the taka sign ৳; the separators a number uses between them */
@@ -38,6 +41,8 @@ type Face = { family: string; url: string; weight: string; range: string; format
 const LATIN: Face[] = [
   { family: LATIN_FONT, url: latin, weight: '100 900', range: LATIN_RANGE, format: 'woff2-variations' },
   { family: LATIN_FONT, url: latinExt, weight: '100 900', range: LATIN_EXT_RANGE, format: 'woff2-variations' },
+  { family: DISPLAY_FONT, url: displayLatin, weight: '100 900', range: LATIN_RANGE, format: 'woff2-variations' },
+  { family: DISPLAY_FONT, url: displayLatinExt, weight: '100 900', range: LATIN_EXT_RANGE, format: 'woff2-variations' },
 ];
 const BANGLA: Face[] = [
   { family: BANGLA_FONT, url: regular, weight: '400', range: BENGALI_RANGE, format: 'woff2' },
@@ -72,7 +77,7 @@ export function afterLoad(run: () => void, win: Window | undefined = globalThis.
   win.addEventListener('load', idle, { once: true });
 }
 
-/** Geist has no taka sign; the figures face, after Geist in the stack, draws "৳" in English too, so a price never
+/** Figtree has no taka sign; the figures face, after Figtree in the stack, draws "৳" in English too, so a price never
  *  falls back to whatever font the device has (only the digits file is fetched, when a price is shown). */
 export function loadLatinFont(fonts: FontFaceSet | undefined = globalThis.document?.fonts): void {
   afterLoad(() => { add(LATIN, fonts); add(FIGURES, fonts); });
