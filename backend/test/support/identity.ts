@@ -1,4 +1,4 @@
-import { randomBytes, randomInt, randomUUID } from 'crypto';
+import { randomBytes, randomUUID } from 'crypto';
 import * as argon2 from 'argon2';
 import { authenticator } from 'otplib';
 import { DataSource } from 'typeorm';
@@ -12,6 +12,7 @@ import { encryptField } from '../../src/modules/identity/crypto/field-crypto';
 import { ARGON2_PARAMS } from '../../src/modules/identity/crypto/password';
 import { hashRecoveryCode } from '../../src/modules/identity/crypto/totp';
 import { requireEnv, useTestSecrets } from './env';
+import { withFreshPhone } from './phones';
 
 // Accounts and sessions for API tests, created as tb_app (the rows stay: tb_app may not delete users,
 // so every value that must be unique is random). Tokens and CSRF values are made with the same keys the
@@ -38,15 +39,14 @@ export class IdentityFixtures {
   }
 
   async user(o: { kyc?: string; emailVerified?: boolean; status?: 'active' | 'suspended' | 'closed' } = {}): Promise<string> {
-    const phone = `+8801${randomInt(3, 10)}${String(randomInt(0, 1e8)).padStart(8, '0')}`;
     const closed = o.status === 'closed';
-    const [{ id }] = await this.db.query(
+    const [{ id }] = await withFreshPhone((local) => this.db.query(
       `INSERT INTO identity.users (display_name, phone_e164, phone_verified_at, email, email_verified_at, password_hash,
                                    password_single_factor_ok, adult_confirmed_at, kyc_status, account_status, closed_at)
        VALUES ('Test user', $1, now(), $2, $3, '$argon2id$v=19$test', true, now(), $4, $5, $6) RETURNING id`,
-      [phone, `t-${randomUUID()}@tb.test`, o.emailVerified === false ? null : new Date(), o.kyc ?? 'verified',
+      [`+88${local}`, `t-${randomUUID()}@tb.test`, o.emailVerified === false ? null : new Date(), o.kyc ?? 'verified',
        o.status ?? 'active', closed ? new Date() : null],
-    );
+    ));
     return id;
   }
 
@@ -108,16 +108,19 @@ export class IdentityFixtures {
     const password = o.password ?? `pw-${randomUUID()}`;
     const params = o.weakHash ? { ...ARGON2_PARAMS, memoryCost: 4096, timeCost: 1 } : ARGON2_PARAMS;
     const hash = await argon2.hash(password, params);
-    const local = `01${randomInt(3, 10)}${String(randomInt(0, 1e8)).padStart(8, '0')}`;
-    const phone = `+88${local}`;
     const email = `a-${randomUUID()}@TB.test`;
     const closed = o.status === 'closed';
-    const [{ id }] = await this.db.query(
-      `INSERT INTO identity.users (display_name, phone_e164, phone_verified_at, email, email_verified_at, password_hash,
-                                   password_single_factor_ok, mfa_enabled, adult_confirmed_at, kyc_status, account_status, closed_at)
-       VALUES ('Signer', $1, now(), $2, now(), $3, true, $4, now(), $7, $5, $6) RETURNING id`,
-      [phone, email, hash, o.mfa === true, o.status ?? 'active', closed ? new Date() : null, o.kyc ?? 'verified'],
-    );
+    let local = '';
+    const [{ id }] = await withFreshPhone((drawn) => {
+      local = drawn;
+      return this.db.query(
+        `INSERT INTO identity.users (display_name, phone_e164, phone_verified_at, email, email_verified_at, password_hash,
+                                     password_single_factor_ok, mfa_enabled, adult_confirmed_at, kyc_status, account_status, closed_at)
+         VALUES ('Signer', $1, now(), $2, now(), $3, true, $4, now(), $7, $5, $6) RETURNING id`,
+        [`+88${drawn}`, email, hash, o.mfa === true, o.status ?? 'active', closed ? new Date() : null, o.kyc ?? 'verified'],
+      );
+    });
+    const phone = `+88${local}`;
     let totpSecret: string | undefined;
     const recoveryCodes: string[] = [];
     if (o.mfa) {
