@@ -261,7 +261,7 @@ A ruled row: 1px hairline above and below, 1px dividers between items, 52px tall
 - **Lists inside cells:** bids, timeline and methods are ruled rows (hairline between rows; methods separated by vertical rules).
 
 ### Listing grid
-Ruled grid, four across on tablet and up, two on phones; each cell is the photo (4:3.4, 4px radius, no border, dimmed to brightness .78 on dark) over price (Figtree 600 1.25rem), a two-line title at weight 500 and muted details. Clock tag on ink with a vermilion dot (Error Pink ground in the last hour), "Featured" tag on Held Tint, both 2px radius.
+Ruled grid, four across on tablet and up, two on phones; each cell is the photo (4:3.4, 4px radius, 1px hairline border, slightly dimmed to brightness .92 on dark) over price (Figtree 600 1.25rem), a two-line title at weight 500 and muted details. Clock tag on ink with a vermilion dot (Error Pink ground in the last hour), "Featured" tag on Held Tint, both 2px radius.
 
 ### Steps
 Plain Schibsted figures in vermilion (1.5rem) beside a heading and muted copy, ruled between steps (vertical rules on tablet and up). No tile behind the number.
@@ -273,7 +273,7 @@ A 4px frosted panel (`rgb(10 17 16 / .72)`, blur 20px, white 20% border) with a 
 A 16px circle per step: outline for pending, text-colour fill for done, Protect Green fill with a soft ring for the current step; rows ruled by hairlines.
 
 ### Navigation
-Sticky header on the page ground with a hairline underline: the logotype, a centred search field, language switch (pill), account link and Sell. The footer is the Panel ink (#101a19 in dark) with 44px link targets. On phones a bottom tab bar replaces header actions; its Sell tab uses the action colour.
+The home header carries the logotype, the language switch, Sign in and the Sell button; there is no header search on the home page, where the hero's search is the one action (other routes show a search field in the header). The footer is a transparent ground with a top hairline and three ruled columns with 44px link targets. On phones a bottom tab bar replaces header actions; its Sell tab uses the action colour.
 
 ### Logotype
 Outlined SVG in `public/brand/`: "Trust" in vermilion with a capital T, "bazaar" in ink (light) or white (reversed on dark), a coin in each "a"; the Bangla version carries the coin as its full stop. Never set in a live font.

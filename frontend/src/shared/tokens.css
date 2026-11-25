@@ -145,3 +145,5 @@ input, select, textarea { max-width: 100%; box-sizing: border-box; }
 
 /* Tap targets of 44 px for buttons and stand-alone links (WCAG 2.2 AA, NFR-USE-06; checked at every device size) */
 main [class*='Button-root'], main button[type='submit'] { min-height: 44px; }
+
+.tb-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
