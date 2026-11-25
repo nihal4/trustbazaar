@@ -315,3 +315,12 @@
 @media (max-width: 63.99em) { .headSearch { display: none; } }
 @media (min-width: 64em) { .spacerSmall { display: none; } }
 .account, .header [class*='Button-root'], .langSwitch { white-space: nowrap; }
+
+/* The header search, ruled like the page: a line under the field instead of a box, and one focus mark (the hot underline) instead
+   of two rings (the field's and the input's). */
+.headSearch { background: none; border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; padding: 0 0.25rem; box-shadow: none; transition: box-shadow 140ms; }
+.headSearch:focus-within { background: none; border-bottom-color: var(--tb-border); outline: 0; box-shadow: inset 0 -2px 0 var(--tb-hot); }
+.headSearch input, .headSearch input:focus, .headSearch input:focus-visible { outline: 0; box-shadow: none; }
+.headSearch input::placeholder { color: var(--tb-muted); }
+@media (forced-colors: active) { .headSearch { border-bottom-color: CanvasText; } .headSearch:focus-within { outline: 2px solid Highlight; } }
+.headSearch input::-webkit-search-cancel-button { filter: invert(1); opacity: 0.6; }
