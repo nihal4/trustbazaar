@@ -242,3 +242,11 @@
 @media (pointer: coarse) { .glass { display: none; } .canZoom { cursor: auto; } }
 @media (prefers-reduced-motion: reduce) { .thumb { transition: none; } }
 @media (max-width: 30rem) { .sellerRow > * { padding: 0.625rem 0.625rem; } .avatar { width: 52px; padding: 0; } .chatCell { min-width: 48px; } }
+
+/* Buy now and Save for later, side by side */
+.buyRow { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 0.625rem; }
+.saveButton { display: flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 52px; padding: 0 0.875rem; border: 1px solid var(--tb-border); border-radius: 6px; background: none; color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; transition: border-color 140ms, color 140ms; }
+.saveButton:hover { border-color: var(--tb-hot); }
+.saveButton.saved { border-color: var(--tb-hot); color: var(--tb-hot); }
+.saveButton:focus-visible { outline: 2px solid var(--tb-text); outline-offset: 3px; }
+@media (max-width: 22rem) { .buyRow { grid-template-columns: 1fr; } }
