@@ -323,7 +323,7 @@ Design: the Daylight canvas (home page, desktop and phone, in English and Bangla
 | U10-27 | Redesign v3: staff console (`staff.html`) | U10-21 | todo | | | | |
 | U10-28 | Redesign v3: sweep (320 and 360 px, axe, CSP and Trusted Types, first-load budget, Lighthouse, Bangla, e2e green), impeccable audit and polish | U10-22, U10-23, U10-24, U10-25, U10-26, U10-27 | todo | | | | |
 | U10-29 | Saved items: a server-side list of saved listings per account (backend, needs approval) and a Saved page; the listing's Save for later button then uses it instead of browser storage | U10-22 | todo | | | | |
-| U10-30 | Auction room: a live room for bidders (seats in an arc, live bid list, quick bids, Sit this one out) at `/listings/:id/room`, and a Join the live room cell in the listing's bid bar. Design note: `docs/design/10_visual_v3.md` section 10 | U10-22 | review | S. M. Nihal Ahmed | `feature/u10-30-auction-room`, #311 | | Owner approved the three open points of the design note on 2026-11-25: Sit this one out = watcher with no alerts and no effect on the price; version one seats only bidders (no presence); quick-bid buttons stay and still open the confirm dialog. |
+| U10-30 | Auction room: a live room for bidders (seats in an arc, live bid list, quick bids, Sit this one out) at `/listings/:id/room`, and a Join the live room cell in the listing's bid bar. Design note: `docs/design/10_visual_v3.md` section 10 | U10-22 | done | S. M. Nihal Ahmed | `feature/u10-30-auction-room`, #311 | 2026-11-26 | Owner approved the three open points of the design note on 2026-11-25: Sit this one out = watcher with no alerts and no effect on the price; version one seats only bidders (no presence); quick-bid buttons stay and still open the confirm dialog. Merged 2026-11-26 after one approval. Seller rating and Pro on the listing need the server (not sent yet); presence ("watching" seats) is a separate backend task; an SRS line for the room is still to be added. |
 
 ## Decisions log
 
@@ -686,3 +686,4 @@ Append one line when a task becomes `done` (newest last).
 | 2026-11-25 | U10-21 | S. M. Nihal Ahmed | #306, #307 |
 | 2026-11-25 | U9-07 | S. M. Nihal Ahmed | #308 |
 | 2026-11-25 | U10-22 | S. M. Nihal Ahmed | #309 |
+| 2026-11-26 | U10-30 | S. M. Nihal Ahmed | #311 |
