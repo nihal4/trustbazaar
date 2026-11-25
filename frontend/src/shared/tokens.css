@@ -138,3 +138,6 @@ button {
    otherwise refuses to shrink below its content, and inputs keep their default character width. */
 fieldset { min-width: 0; }
 input, select, textarea { max-width: 100%; box-sizing: border-box; }
+
+/* Tap targets of 44 px for buttons and stand-alone links (WCAG 2.2 AA, NFR-USE-06; checked at every device size) */
+main [class*='Button-root'], main button[type='submit'] { min-height: 44px; }

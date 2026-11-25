@@ -357,3 +357,6 @@
   font-weight: 600;
   text-underline-offset: 3px;
 }
+
+/* the "Forgot your password?" link is a stand-alone target: 44 px */
+.forgot a { display: inline-flex; align-items: center; min-height: 44px; }

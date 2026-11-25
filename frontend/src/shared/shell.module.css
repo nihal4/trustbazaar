@@ -329,3 +329,7 @@
 .logotype { display: block; height: 38px; width: auto; }
 .logotypeBn { height: 36px; }
 @media (max-width: 26rem) { .logotype { height: 30px; } .logotypeBn { height: 30px; } }
+
+/* tap targets of 44 px (WCAG 2.2 AA, NFR-USE-06) */
+.header [class*='Button-root'] { min-height: 44px; }
+.footerLinks a { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; padding-inline: 0.5rem; margin-inline: -0.5rem; }
