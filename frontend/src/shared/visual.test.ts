@@ -39,8 +39,8 @@ describe('the Daylight colours', () => {
     expect(contrast(t[fg], t[bg])).toBeGreaterThanOrEqual(min);
   });
 
-  it('NFR-USE-06 the ink, the text and the control border are the redesign v3 values', () => {
-    expect([t.accent, t.text, t.muted, t.border, t.surface, t.line, t.error]).toEqual(['#232323', '#232323', '#686868', '#8a8a8a', '#f3f3f3', '#e4e4e4', '#b42318']);
+  it('NFR-USE-06 the ink-navy, the text and the control border are the redesign v3 values', () => {
+    expect([t.accent, t.text, t.muted, t.border, t.surface, t.line, t.error]).toEqual(['#0f1720', '#0f1720', '#5a6472', '#8590a0', '#f3f5f8', '#e2e6ec', '#b42318']);
   });
 
   it('SEC-GAM-03 the credential document repeats the same colours in its own stylesheet', () => {

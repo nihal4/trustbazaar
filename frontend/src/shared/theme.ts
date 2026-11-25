@@ -5,10 +5,10 @@
 // Decisions log, U10-01). theme.test.ts fails when the two drift apart.
 import { createTheme, type MantineColorsTuple, type MantineProviderProps } from '@mantine/core';
 
-/** Ink, the action colour: shade 7 (#232323) is the main colour; white text on it is 8.9:1. */
-const brand: MantineColorsTuple = ['#F3F3F3', '#E4E4E4', '#CFCFCF', '#A9A9A9', '#808080', '#5C5C5C', '#3A3A3A', '#232323', '#161616', '#0A0A0A'];
+/** Ink, the action colour: shade 7 (#0F1720) is the main colour; white text on it is 8.9:1. */
+const brand: MantineColorsTuple = ['#F3F5F8', '#E2E6EC', '#C6CDD8', '#9AA5B4', '#6F7B8C', '#4A5565', '#2B3644', '#0F1720', '#080D13', '#000000'];
 /** Teal-tinted greys from the paper to ink: 0 paper, 1 surface, 2 line, 5 control borders, 7 muted, 9 ink. */
-const gray: MantineColorsTuple = ['#FFFFFF', '#F3F3F3', '#E4E4E4', '#C8C8C8', '#A4A4A4', '#8A8A8A', '#757575', '#686868', '#3A3A3A', '#232323'];
+const gray: MantineColorsTuple = ['#FFFFFF', '#F3F5F8', '#E2E6EC', '#C4CCD8', '#9AA5B4', '#8590A0', '#6B7686', '#5A6472', '#2B3644', '#0F1720'];
 /** Errors and auctions in their last hour: shade 6 (#B42318) is 6.2:1 on the paper. */
 const red: MantineColorsTuple = ['#FEF3F2', '#FEE4E2', '#FECDCA', '#FDA29B', '#F97066', '#F04438', '#B42318', '#912018', '#7A271A', '#55160C'];
 
@@ -18,7 +18,7 @@ export const theme = createTheme({
   primaryColor: 'brand',
   primaryShade: 7,
   colors: { brand, gray, red },
-  black: '#232323',
+  black: '#0F1720',
   white: '#FFFFFF',
   fontFamily: FONT,
   headings: {

@@ -18,10 +18,13 @@ the two design skills' real tools:
 
 ## 2. Tokens
 
-White `#FFFFFF`, surface `#F3F3F3`, ink `#232323` (text and every action), muted `#686868`, control border `#8A8A8A`,
-line `#E4E4E4`, mint `#A1FFCB` (the highlight: chips, ticks, the promise bar; never text on white), protected-money
-green `#0B6B3F` (text only), error `#B42318`. Radius 10 px controls, 16 px panels, 8 px chips. Shadows only on the
-product window and the small card. Contrast pairs are checked in `visual.test.ts`.
+Changed on 2026-11-25 at the user's request ("change the logo and the colour combination, keep the structure"): the ink-and-mint
+pairing was replaced by ink-navy and vermilion. White `#FFFFFF`, surface `#F3F5F8`, ink `#0F1720` (text and every action),
+muted `#5A6472`, control border `#8590A0`, line `#E2E6EC`, peach `#FFE1D2` (soft tint: the promise bar, the payment card, the
+hero ground), vermilion `#FF6B35` (the vivid highlight on ink and as a fill with ink text; never as text on white),
+protected-money green `#0B6B3F` (text only), error `#B42318`. Radius 10 px controls, 16 px panels, 8 px chips. The logo is a
+shopping bag whose handle is a padlock's shackle on an ink tile, with the wordmark in two weights. Contrast pairs are checked
+in `visual.test.ts`.
 
 ## 3. Structure
 
