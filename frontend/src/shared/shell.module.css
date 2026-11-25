@@ -402,5 +402,5 @@
 .navCell { border-radius: 0; }
 .navCell + .navCell { border-left: 1px solid var(--tb-line); }
 .navGrid .navCell:first-child { border-left: 1px solid var(--tb-line); }
-.footerLang .langSwitch { min-width: 0; padding: 0 0.25rem; border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; }
+.footerLang .langSwitch { min-width: 44px; min-height: 44px; padding: 0 0.5rem; border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; }
 .footerLang .langSwitch:hover { border-bottom-color: var(--tb-hot); }
