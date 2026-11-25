@@ -31,6 +31,7 @@ import { Deadlines } from './Deadlines';
 import { Disputes, useOrderDisputes } from './Disputes';
 import { GamePrepare, gameReady, GameTab, useGame } from './Game';
 import { Handover, useHandover } from './Handover';
+import { Journey } from './Journey';
 import { orderKey, type OrderView } from './model';
 import { moneyText } from './moneyText';
 import { RETURN_POLL_MS, RETURN_WAIT_MS } from './payment';
@@ -108,21 +109,22 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
       </header>
       <Money o={o} t={t} lang={lang} />
       {attempt && <Return o={o} failed={failed} waited={waited} t={t} />}
-      <Deadlines o={o} h={handover.data ?? null} t={t} lang={lang} />
+      <Journey o={o} h={handover.data ?? null} shipments={shipments.data?.items ?? []} t={t} />
+      {!awaiting && <Deadlines o={o} h={handover.data ?? null} t={t} lang={lang} />}
       {awaiting && o.role === 'buyer' && <PayPanel o={o} t={t} lang={lang} onPay={() => setSheet(true)} />}
       {sheet && (
         <PaymentSheet order={{ id: o.id, total: o.total, key: orderKey(o.id) }} t={t} lang={lang} onReceipt={(p) => { const paid = p as OrderView; downloadReceipt(paid, t, lang, paid.counterparty?.displayName || null); }} onClose={() => setSheet(false)}
           onPaid={() => { setSheet(false); void queryClient.invalidateQueries({ queryKey: orderKey(o.id) }); }} />
       )}
       {o.cancelledAt && o.cancelReason && CANCEL_REASONS.includes(o.cancelReason) && <p className={styles.hint}>{t(`order.cancel_reason.${o.cancelReason}`)}</p>}
-      <Actions o={o} t={t} lang={lang} />
-      {disputes.data && <Disputes o={o} items={disputes.data.items} t={t} lang={lang} />}
       {handover.data && <Handover o={o} h={handover.data} t={t} lang={lang} />}
       {handover.isError && <FormMessage kind="error">{errorText(handover.error, t, lang)}</FormMessage>}
       {shipments.data && <Shipments o={o} items={shipments.data.items} t={t} lang={lang} />}
       {shipments.isError && <FormMessage kind="error">{errorText(shipments.error, t, lang)}</FormMessage>}
       {game.data && o.status !== 'awaiting_payment' && <GameTab o={o} g={game.data} t={t} lang={lang} />}
       {game.isError && o.status !== 'awaiting_payment' && <FormMessage kind="error">{errorText(game.error, t, lang)}</FormMessage>}
+      <Actions o={o} t={t} lang={lang} />
+      {disputes.data && <Disputes o={o} items={disputes.data.items} t={t} lang={lang} />}
       <OrderChat o={o} t={t} lang={lang} />
       {ratings.data && <Ratings o={o} r={ratings.data} t={t} lang={lang} />}
     </div>
@@ -227,40 +229,54 @@ function PayPanel({ o, t, lang, onPay }: { o: OrderView; t: T; lang: Lang; onPay
   const ready = !!o.fulfilment && !over && !blockedByGame;
 
   const total = formatMoney(BigInt(o.total), lang);
+  // one sequence: how you get it, what you pay, pay (the numbers say where the buyer is; the step not yet reached is quiet)
   return (
     <section aria-labelledby="pay-title" className={styles.panel}>
       <h2 id="pay-title">{t('pay.title')}</h2>
-      <dl className={styles.breakdown}>
-        <dt>{t('pay.item')}</dt><dd>{line(o.itemPrice)}</dd>
-        <dt>{t('pay.delivery')}</dt><dd>{line(o.deliveryFee)}</dd>
-        <dt className={styles.total}>{t('pay.total')}</dt><dd className={styles.total}>{line(o.total)}</dd>
-      </dl>
-      <p>{t('pay.fee_note')}</p>
-      <p>{t('pay.held_note')}</p>
-      <p className={over ? styles.error : undefined}>
-        {over ? t('pay.window_over') : t('pay.window', { left: formatCountdown(due - now, lang).text, at: formatDateTime(due, lang) })}
-      </p>
       {message && <FormMessage kind="error">{message}</FormMessage>}
-      {!o.fulfilment && (
-        <fieldset className={styles.choice}>
-          <legend>{t('pay.fulfilment')}</legend>
-          <p>{t('pay.choose_fulfilment')}</p>
-          {o.fulfilmentOptions.includes('self_pickup') && (
-            <button type="button" disabled={choose.isPending || over} onClick={() => choose.mutate()}>
-              {t('pay.self_pickup')}
-            </button>
+      <ol className={styles.flow}>
+        <li className={o.fulfilment ? styles.flowDone : styles.flowNow}>
+          <h3><span className={styles.flowNo} aria-hidden="true">1</span>{t('pay.fulfilment')}</h3>
+          {!o.fulfilment ? (
+            <div className={styles.optionRows}>
+              {o.fulfilmentOptions.includes('self_pickup') && (
+                <div className={styles.optionRow}>
+                  <div><strong>{t('pay.pickup_title')}</strong><p className={styles.hint}>{t('pay.pickup_note')}</p></div>
+                  <button type="button" disabled={choose.isPending || over} onClick={() => choose.mutate()}>{t('pay.self_pickup')}</button>
+                </div>
+              )}
+              {o.fulfilmentOptions.includes('courier') && (
+                <div className={styles.optionRow}>
+                  <CourierChoice o={o} t={t} lang={lang} disabled={over} />
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className={styles.chosenRow}>{t(`pay.chosen.${o.fulfilment}`)}</p>
           )}
-          {o.fulfilmentOptions.includes('courier') && <CourierChoice o={o} t={t} lang={lang} disabled={over} />}
-        </fieldset>
-      )}
-      {o.fulfilment && (
-        <p>{t(`pay.chosen.${o.fulfilment}`)}</p>
-      )}
-      {isGame && game.data && <GamePrepare o={o} g={game.data} t={t} lang={lang} disabled={over} />}
-      {isGame && game.isError && <FormMessage kind="error">{errorText(game.error, t, lang)}</FormMessage>}
-      {ready && (
-        <button type="button" className={styles.primary} onClick={onPay}>{t('pay.pay', { total })}</button>
-      )}
+          {isGame && game.data && <GamePrepare o={o} g={game.data} t={t} lang={lang} disabled={over} />}
+          {isGame && game.isError && <FormMessage kind="error">{errorText(game.error, t, lang)}</FormMessage>}
+        </li>
+        <li className={o.fulfilment ? styles.flowDone : styles.flowNext}>
+          <h3><span className={styles.flowNo} aria-hidden="true">2</span>{t('pay.step_total')}</h3>
+          <dl className={styles.breakdown}>
+            <dt>{t('pay.item')}</dt><dd>{line(o.itemPrice)}</dd>
+            <dt>{t('pay.delivery')}</dt><dd>{line(o.deliveryFee)}</dd>
+            <dt className={styles.total}>{t('pay.total')}</dt><dd className={styles.total}>{line(o.total)}</dd>
+          </dl>
+          <p className={styles.hint}>{t('pay.fee_note')}</p>
+        </li>
+        <li className={ready ? styles.flowNow : styles.flowNext}>
+          <h3><span className={styles.flowNo} aria-hidden="true">3</span>{t('pay.step_pay')}</h3>
+          <p className={over ? styles.error : styles.hint}>
+            {over ? t('pay.window_over') : t('pay.window', { left: formatCountdown(due - now, lang).text, at: formatDateTime(due, lang) })}
+          </p>
+          <p className={styles.hint}>{t('pay.held_note')}</p>
+          {ready ? (
+            <button type="button" className={styles.primary} onClick={onPay}>{t('pay.pay', { total })}</button>
+          ) : !over && <p className={styles.hint}>{t(blockedByGame ? 'pay.step_game_first' : 'pay.choose_fulfilment')}</p>}
+        </li>
+      </ol>
     </section>
   );
 }

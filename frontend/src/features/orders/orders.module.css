@@ -163,3 +163,33 @@
 .receiptLink { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; padding: 0 0.125rem; border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; background: none; color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
 .receiptLink:hover { border-bottom-color: var(--tb-hot); }
 .receiptLink:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+
+/* the pay panel as one sequence (U10-23): numbered steps on rules, the step the buyer is on is marked with the one vermilion voice */
+.flow { list-style: none; margin: var(--tb-space-2) 0 0; padding: 0; border-top: 1px solid var(--tb-line); }
+.flow > li { padding: 1.25rem 0; border-bottom: 1px solid var(--tb-line); }
+.flow h3 { display: flex; align-items: center; gap: 0.75rem; margin: 0 0 0.75rem; font-size: 1.0625rem; }
+.flowNo { display: inline-grid; place-items: center; width: 1.625rem; height: 1.625rem; border-radius: 50%; border: 1.5px solid var(--tb-muted); color: var(--tb-muted); font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
+.flowNow .flowNo { border-color: var(--tb-hot); color: var(--tb-hot); }
+.flowDone .flowNo { border-color: var(--tb-protect); color: var(--tb-protect); }
+.flowNext h3 { color: var(--tb-muted); }
+.flow p { margin: 0.25rem 0; }
+.flow .breakdown { max-width: 26rem; margin: 0 0 0.5rem; }
+.chosenRow { font-weight: 600; }
+.optionRows { border-top: 1px solid var(--tb-line); }
+.optionRow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.5rem 1.5rem; align-items: center; padding: 0.875rem 0; border-bottom: 1px solid var(--tb-line); }
+.optionRow:last-child { border-bottom: 0; }
+.optionRow > .courier { grid-column: 1 / -1; }
+.optionRow strong { font-weight: 700; }
+.courier h3 { font-size: 1rem; margin: 0 0 0.25rem; }
+.courier .secondary, .optionRow button { min-height: 44px; }
+.flow .primary { margin-top: 0.75rem; }
+
+/* the journey of a paid order (U10-23) */
+.journey { margin-block: var(--tb-space-3); }
+.journey h2 { margin: 0 0 0.5rem; font-size: 1.25rem; }
+.journeyList { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--tb-line); }
+.journeyList > li { padding: 0.875rem 0; border-bottom: 1px solid var(--tb-line); }
+.journeyList h3 { display: flex; align-items: center; gap: 0.75rem; margin: 0; font-size: 1rem; }
+.journeyDo { margin: 0.375rem 0 0 2.375rem; max-width: 40rem; color: var(--tb-text); line-height: 1.5; text-wrap: pretty; }
+.journeyList .flowNext h3 { color: var(--tb-muted); }
+.srOnly { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

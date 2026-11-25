@@ -21,12 +21,12 @@ import styles from './orders.module.css';
 const CATALOGUES = { en, bn };
 
 /** The status as the stage tabs read it: where the order is, in a few words. */
-function statusWords(o: OrderView, t: (k: string) => string): string {
+function statusWords(o: OrderView, stage: OrderStage, t: (k: string) => string): string {
   if (o.status === 'awaiting_payment') return t('orders.state.awaiting_payment');
   if (o.status === 'cancelled') return t('orders.state.cancelled');
   if (o.status === 'closed') return t('orders.state.closed');
   if (o.escrow?.state === 'frozen_disputed') return t('orders.state.disputed');
-  return o.deliveryEventAt || o.fulfilmentStep ? t(o.fulfilment === 'courier' ? 'orders.state.on_the_way' : 'orders.state.handed_over') : t('orders.state.paid');
+  return stage === 'on_the_way' ? t(o.fulfilment === 'courier' ? 'orders.state.on_the_way' : 'orders.state.handed_over') : t('orders.state.paid');
 }
 
 export function Component() {
@@ -84,7 +84,7 @@ export function Component() {
                     {o.createdAt && <p className={styles.hint}>{formatDateTime(Date.parse(o.createdAt), lang)}</p>}
                   </div>
                   <div className={styles.cell} data-label={t('orders.col.status')}>
-                    <p className={o.status === 'cancelled' ? styles.cancelledMark : undefined}>{statusWords(o, t)}</p>
+                    <p className={o.status === 'cancelled' ? styles.cancelledMark : undefined}>{statusWords(o, stage, t)}</p>
                   </div>
                   <div className={styles.cell} data-label={t(`orders.col.${role === 'buyer' ? 'seller' : 'buyer'}`)}>
                     <p>{who || '—'}</p>
