@@ -19,6 +19,7 @@ export function SafeBento({ t, lang }: { t: T; lang: Lang }) {
       <h2 id="home-safe" className={styles.h2}>{t('home.safe.title')}</h2>
       <div className={styles.bento}>
         <section aria-labelledby="home-promise" className={`${styles.cardBox} ${styles.escrow}`}>
+          <svg className={styles.shield} viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2.8 4.5 5.7v5.6c0 4.7 3.1 8.4 7.5 9.9 4.4-1.5 7.5-5.2 7.5-9.9V5.7Z" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" /><path d="m8.8 12.1 2.3 2.3 4.3-4.6" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
           <p className={styles.label}>{t('home.counterfoil.stub')}</p>
           <h2 id="home-promise" className={styles.h3}>{t('home.promise.title')}</h2>
           <p className={styles.text}>{t('home.safe.escrow_text')}</p>
