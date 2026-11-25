@@ -113,3 +113,20 @@ its fonts load (`ensureLangFonts` in `font.ts`: Hind Siliguri, the Bangla figure
 holds for at least 750 ms, then fades out in 300 ms, so the change of typeface is never seen. The page is marked `aria-busy` while it
 shows; reduced motion drops the shimmer. Box heights are pinned so a box has the same shape in English and Bangla. The footer is three
 ruled columns on the page's thirds (the brand, Explore, Help); the "see all" links are text with an orange arrow and underline.
+
+
+## 10. The auction room (design note, 2026-11-25; for approval before it is built)
+
+Owner's idea: bidders who want to watch an auction live join a dedicated room that shows every bid as it happens, like people seated in a council, and bid or sit out from there. The listing page keeps the quick view: the bid bar (price, clock, See the bids, bid box). The room is the second, immersive view; the bar gets a "Join the live room" cell that opens it. Prototype: `frontend/public/proto-auction/c.html` (static, simulated).
+
+Route and who: `/listings/:id/room`, signed-in users only (guests have no live channel; DV-19). The seller sees it read-only. It exists only while the auction is open; after the close it shows the result and links to the listing.
+
+Screen (laptop and wide): a header row (small photo, title, "Live" mark, time left, number of bidders); left, the stage: bidders seated in an arc, one seat per bidder alias (Bidder 1, 2 ...), the leader's seat in vermilion, the viewer's own seat ringed in white, the current price at the centre below the arc; under the stage the controls: three quick-bid buttons (the next minimum plus one, two and three increments, with the resulting amount shown), a field for the viewer's own maximum, Place bid, and "Sit this one out"; right, the live bid list (newest on top, new rows flash once). On phones the stage is a compact arc above the list, the controls are a bar at the bottom.
+
+Data and rules: everything comes from the existing auction state, bid history, `/my-status` and the live channel `auction:{id}`; bids go through the existing bid API with its confirmation dialog (a quick-bid button opens the same dialog; nothing is sent in one press, FR-AUC and section 8.4). The anti-sniping extension shows on the clock. Aliases only (FR-ACC-10; no names). Seats are the bidders who have bid, because the server does not report who is merely watching; a "watching" count and seats for watchers need presence on the live channel (backend, a separate task).
+
+"Sit this one out": proposed meaning: the viewer stays in the room as a watcher, gets no alerts for this auction, and the price is not affected (bidding is by maximum, so not bidding is already the default). It needs no server support in the first version (the choice is kept on the page only).
+
+Accessibility: the arc is decoration (aria-hidden); the live list and the controls carry the meaning; announcements keep the existing throttle (5 s, outbid at once); no motion beyond one short flash per new bid, and none with reduced motion; the room works with the keyboard and at 320 px; English and Bangla equal.
+
+Open for the owner: (1) the meaning of "Sit this one out"; (2) whether version one may ship without presence (seats = bidders only); (3) whether quick-bid buttons stay (they only shortcut the amount; the dialog still confirms).
