@@ -29,7 +29,7 @@
   "listing.clarifications": "Added by the seller later",
   "listing.clarification_at": "Added {at}",
   "listing.price": "Price",
-  "listing.buy": "Buy now for {price}",
+  "listing.buy": "Buy now",
   "listing.available": "Available: {count}",
   "listing.currently_reserved": "Another buyer is paying for this item now. It becomes available again if they do not pay in time.",
   "listing.status.sold": "This item has been sold.",

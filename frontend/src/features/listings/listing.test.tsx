@@ -103,7 +103,7 @@ describe('the listing page', () => {
 
   it('FR-FIX-01 a fixed-price item links to its checkout; not the seller\'s own, nor a reserved or sold one', async () => {
     renderApp(`/listings/${ID}`, backend({ l: listing() }));
-    expect((await screen.findByRole('link', { name: 'Buy now for ৳15,000' })).getAttribute('href')).toBe(`/checkout/${ID}`);
+    expect((await screen.findByRole('link', { name: 'Buy now' })).getAttribute('href')).toBe(`/checkout/${ID}`);
     cleanup();
     renderApp(`/listings/${ID}`, backend({ l: listing({ currentlyReserved: true, quantity: { total: 1, available: 0 } }) }));
     expect(await screen.findByText(/Another buyer is paying for this item now/)).toBeTruthy();
@@ -141,7 +141,7 @@ describe('the listing page in the money-order world (U10-13)', () => {
     const panel = await screen.findByRole('region', { name: 'Price' });
     expect(within(panel).getByText('You pay TrustBazaar. The seller is paid only after you confirm you have the item.')).toBeTruthy();
     expect(within(panel).queryAllByRole('listitem')).toHaveLength(0);   // no steps: nothing has been paid yet
-    expect(within(panel).getByRole('link', { name: 'Buy now for ৳15,000' })).toBeTruthy();
+    expect(within(panel).getByRole('link', { name: 'Buy now' })).toBeTruthy();
     expect(within(panel).getAllByText('৳15,000')).toHaveLength(1);     // the price is named once, not on a stub and again on a form
   });
 
