@@ -533,3 +533,31 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 .bidNewest .bidAmount { color: var(--tb-hot); }
 .roomStats { align-items: flex-end; }
 .standing, .quickHint, .roomControls p[role='status'] { text-wrap: balance; }
+
+/* ---- ruled, not boxed (owner's review): the home page's language is hairlines and dividers, never an outlined rounded box ---- */
+/* time left and bidders: cells divided by vertical hairlines, no outline */
+.countGrid { border: 0; border-radius: 0; overflow: visible; }
+.countCell + .countCell { border-left: 1px solid var(--tb-line); }
+.roomStats { gap: 0; }
+.roomStats > .countGrid + .countGrid { margin-left: 1.5rem; padding-left: 1.5rem; border-left: 1px solid var(--tb-border); }
+.roomStats > .countGrid .countCell:first-child { padding-left: 0; }
+/* the stage: open ground between two rules */
+.roomStage { border: 0; border-block: 1px solid var(--tb-line); border-radius: 0; background: none; padding: 1.25rem 0 0; }
+/* the live bids: a column under a rule, its rows between hairlines */
+.roomFeed { border: 0; border-top: 2px solid var(--tb-line); border-radius: 0; padding: 0.875rem 0 0; }
+.roomFeed h2 { margin-bottom: 0.5rem; }
+.bidNewest { margin-left: 0; padding-left: 0.75rem !important; }
+.bidList > li:first-child { border-top: 1px solid var(--tb-line); padding-top: 0.75rem; }
+/* quick bids: three cells between rules */
+.quickBids { border: 0; border-block: 1px solid var(--tb-border); border-radius: 0; overflow: visible; }
+.quickBid + .quickBid { border-left: 1px solid var(--tb-border); }
+/* the amount: a ruled field (a line under it, like the search bar) beside the orange Place bid */
+.roomControls .bid > input, .barAct .bid > input { border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; background: none; padding-left: 0.25rem; }
+.roomControls .bid > input:focus-visible, .barAct .bid > input:focus-visible { outline: 0; border-bottom-color: var(--tb-hot); box-shadow: inset 0 -2px 0 var(--tb-hot); }
+.roomControls .bid > .primary, .barAct .bid .primary { border-radius: 0; }
+@media (max-width: 30rem) { .roomControls .bid > input { border-radius: 0; border-right: 0; } .roomControls .bid > .primary { border-radius: 0; } }
+/* Sit this one out | Back to the listing: two cells between rules with one divider */
+.roomActions { border: 0; border-block: 1px solid var(--tb-border); border-radius: 0; overflow: visible; }
+.roomControls > p > .roomAction { border: 0; border-block: 1px solid var(--tb-border); border-radius: 0; }
+.roomStage { border-bottom: 0; }
+.roomHead { border-bottom: 0; padding-bottom: 1rem; }

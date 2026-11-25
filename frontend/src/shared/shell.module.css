@@ -396,3 +396,11 @@
 .promiseShort { display: none; }
 @media (max-width: 25rem) { .promiseLong { display: none; } .promiseShort { display: inline; } }
 .promiseLong, .promiseShort { overflow: hidden; text-overflow: ellipsis; }
+
+/* ruled, not boxed (owner's review): the header's icon cells and the language switch have dividers and rules, no outlines or rounded boxes */
+.navGrid { border: 0; border-radius: 0; overflow: visible; }
+.navCell { border-radius: 0; }
+.navCell + .navCell { border-left: 1px solid var(--tb-line); }
+.navGrid .navCell:first-child { border-left: 1px solid var(--tb-line); }
+.footerLang .langSwitch { min-width: 0; padding: 0 0.25rem; border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; }
+.footerLang .langSwitch:hover { border-bottom-color: var(--tb-hot); }
