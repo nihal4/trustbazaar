@@ -51,6 +51,19 @@ describe('dropdown', () => {
     expect(box().getAttribute('aria-activedescendant')).toBe('d-option-0');
   });
 
+  it('NFR-USE-06 Home and End open the list at the first or last option, and letters typed together find one option', () => {
+    render(<Harness />);
+    fireEvent.keyDown(box(), { key: 'End' });
+    expect(box().getAttribute('aria-expanded')).toBe('true');
+    expect(box().getAttribute('aria-activedescendant')).toBe('d-option-4');
+    fireEvent.keyDown(box(), { key: 'Home' });
+    expect(box().getAttribute('aria-activedescendant')).toBe('d-option-0');
+    fireEvent.keyDown(box(), { key: 'l' });
+    fireEvent.keyDown(box(), { key: 'i' });
+    fireEvent.keyDown(box(), { key: 'k' });
+    expect(box().getAttribute('aria-activedescendant')).toBe('d-option-2');   // "Like new"
+  });
+
   it('NFR-USE-06 clicking an option chooses it, the empty choice clears, and a click outside closes the list', () => {
     render(<Harness initial="new" />);
     fireEvent.click(box());

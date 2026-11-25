@@ -22,6 +22,7 @@ export function Dropdown({ id, label, value, onChange, options, any }: DropdownP
   const selected = Math.max(0, all.findIndex(([k]) => k === value));
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(selected);
+  const typed = useRef({ text: '', at: 0 });
   const root = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const labelId = `${id}-label`;
@@ -47,16 +48,21 @@ export function Dropdown({ id, label, value, onChange, options, any }: DropdownP
     switch (e.key) {
       case 'ArrowDown': e.preventDefault(); if (open) move(active + 1); else show(); break;
       case 'ArrowUp': e.preventDefault(); if (open) move(active - 1); else show(); break;
-      case 'Home': if (open) { e.preventDefault(); move(0); } break;
-      case 'End': if (open) { e.preventDefault(); move(all.length - 1); } break;
+      case 'Home': e.preventDefault(); if (open) move(0); else { setOpen(true); setActive(0); } break;
+      case 'End': e.preventDefault(); if (open) move(all.length - 1); else { setOpen(true); setActive(all.length - 1); } break;
       case 'Enter': case ' ': e.preventDefault(); if (open) choose(active); else show(); break;
       case 'Escape': if (open) { e.preventDefault(); e.stopPropagation(); setOpen(false); } break;
       case 'Tab': setOpen(false); break;
       default:
         if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          // type-ahead: letters typed within 500 ms make one word ("lik" finds "Like new"); one letter repeated cycles the options
+          const now = Date.now();
           const c = e.key.toLocaleLowerCase();
-          const from = open ? active + 1 : selected + 1;
-          const hit = [...all.slice(from), ...all.slice(0, from)].findIndex(([, text]) => text.trim().toLocaleLowerCase().startsWith(c));
+          typed.current = { text: now - typed.current.at < 500 ? typed.current.text + c : c, at: now };
+          const text = typed.current.text;
+          const needle = text.length > 1 && [...text].every((ch) => ch === text[0]) ? text[0] : text;
+          const from = (open ? active : selected) + (needle.length === 1 ? 1 : 0);
+          const hit = [...all.slice(from), ...all.slice(0, from)].findIndex(([, label]) => label.trim().toLocaleLowerCase().startsWith(needle));
           if (hit >= 0) { const i = (from + hit) % all.length; if (open) setActive(i); else onChange(all[i][0]); }
         }
     }
