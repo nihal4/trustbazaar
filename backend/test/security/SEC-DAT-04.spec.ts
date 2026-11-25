@@ -25,9 +25,20 @@ describe('SEC-DAT-04 signed file links', () => {
   it('SEC-DAT-04 a changed signature, a changed path or a guessed link is refused', async () => {
     const { owner, path } = await link();
     expect((await owner.b.get(path)).status).toBe(200);
-    const last = path.slice(-1);
-    const flipped = path.slice(0, -1) + (last === 'A' ? 'B' : 'A');
-    expect((await owner.b.get(flipped)).status).toBeGreaterThanOrEqual(400);
+    // Mutations that always change the signature's data bits (the top bit of a base64url character is always significant), at the
+    // first, the middle and the last position, plus the other spellings of the same signature (same 4 data bits in the last
+    // character). The old check swapped the last character for 'A' or 'B'; when the real last character was 'A' (1 time in 16) 'B'
+    // spelled the same signature and the link was accepted, so the test failed by chance (Decisions log, U9-07).
+    const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+    const sigStart = path.lastIndexOf('.') + 1;
+    const at = (p: string, i: number, ch: string) => p.slice(0, i) + ch + p.slice(i + 1);
+    for (const i of [sigStart, Math.floor((sigStart + path.length) / 2), path.length - 1]) {
+      expect((await owner.b.get(at(path, i, B64[B64.indexOf(path[i]) ^ 32]))).status).toBeGreaterThanOrEqual(400);
+    }
+    const group = B64.indexOf(path.slice(-1)) >> 2;
+    for (let v = group * 4; v < group * 4 + 4; v++) {
+      if (B64[v] !== path.slice(-1)) expect((await owner.b.get(at(path, path.length - 1, B64[v]))).status).toBeGreaterThanOrEqual(400);
+    }
     expect((await owner.b.get('/files/v/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')).status).toBeGreaterThanOrEqual(400);
   });
 
