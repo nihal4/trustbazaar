@@ -1,6 +1,6 @@
 # Visual design, version 2: Money order (U10-11 to U10-19)
 
-Status: in progress (U10-11, 2026-11-25). Replaces the Daylight world of `10_visual.md` screen by screen; until a
+Status: SUPERSEDED on 2026-11-25 by `10_visual_v3.md` (rejected by the course teacher; see the Decisions log, U10-21). Was: in progress (U10-11). Replaces the Daylight world of `10_visual.md` screen by screen; until a
 screen's task is done, that screen keeps its Daylight layout in the new colours and type. Section 8 of
 `10_visual.md` (the whole-site acceptance criteria AC-ALL-1 to AC-ALL-6) still applies, with the values below.
 
