@@ -136,14 +136,14 @@ function TabBar() {
   const { t } = useLanguage();
   const me = useMe();
   const tab = (to: string, icon: JSX.Element, label: string, end = false) => (
-    <li><NavLink to={to} end={end} className={({ isActive }) => (isActive ? `${styles.tab} ${styles.tabOn}` : styles.tab)}>{icon}<span>{label}</span></NavLink></li>
+    <li><NavLink to={to} end={end} className={({ isActive }) => (isActive ? `${styles.tab} ${styles.tabOn}` : styles.tab)}>{icon}<span className={styles.tabLabel}>{label}</span></NavLink></li>
   );
   return (
     <nav className={styles.tabBar} aria-label={t('shell.tabs.label')}>
       <ul>
         {tab('/', <HomeIcon />, t('shell.tab.home'), true)}
         {tab('/search', <SearchIcon />, t('shell.tab.search'))}
-        <li><NavLink to="/sell/new" className={styles.tab}><span className={styles.tabSell}><PlusIcon /></span><span>{t('shell.tab.sell')}</span></NavLink></li>
+        <li><NavLink to="/sell/new" className={({ isActive }) => (isActive ? `${styles.tab} ${styles.tabHot} ${styles.tabOn}` : `${styles.tab} ${styles.tabHot}`)}><span className={styles.tabSell}><PlusIcon /></span><span className={styles.tabLabel}>{t('shell.tab.sell')}</span></NavLink></li>
         {me.isSuccess && tab('/messages', <ChatIcon />, t('shell.messages'))}
         {me.isSuccess && tab('/orders', <OrdersIcon />, t('shell.orders'))}
       </ul>
