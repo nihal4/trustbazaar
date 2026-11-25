@@ -228,10 +228,10 @@ function Filters({ t, lang, params, categories, signedIn, onSearch }: {
         <Select id="search-condition" label={t('search.condition')} value={v.condition} onChange={set('condition')} any={t('search.any')}
           options={CONDITIONS.map((k) => [k, t(`search.condition.${k}`)])} />
         <div className={styles.pair}>
-          <Text id="search-min" label={t('search.min_price')} value={v.minPrice} onChange={set('minPrice')} />
-          <Text id="search-max" label={t('search.max_price')} value={v.maxPrice} onChange={set('maxPrice')} />
+          <Text id="search-min" label={t('search.min_price')} value={v.minPrice} onChange={set('minPrice')} placeholder={t('search.any')} />
+          <Text id="search-max" label={t('search.max_price')} value={v.maxPrice} onChange={set('maxPrice')} placeholder={t('search.any')} />
         </div>
-        <Text id="search-km" label={t('search.max_km')} value={v.maxKm} onChange={set('maxKm')} />
+        <Text id="search-km" label={t('search.max_km')} value={v.maxKm} onChange={set('maxKm')} placeholder={t('search.any')} />
         <Select id="search-sort" label={t('search.sort')} value={v.sort} onChange={set('sort')} any={t(v.q.trim() ? 'search.sort.relevance' : 'search.sort.newest')}
           options={SORTS.map((k) => [k, t(`search.sort.${k}`)])} />
         <div className={styles.location}>
@@ -308,11 +308,11 @@ function Select({ id, label, value, onChange, options, any }: {
   );
 }
 
-function Text({ id, label, value, onChange }: { id: string; label: string; value: string; onChange: (v: string) => void }) {
+function Text({ id, label, value, onChange, placeholder }: { id: string; label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <div className={styles.field}>
       <label htmlFor={id}>{label}</label>
-      <input id={id} type="text" inputMode="decimal" value={value} maxLength={20} onChange={(e) => onChange(e.target.value)} />
+      <input id={id} type="text" inputMode="decimal" value={value} maxLength={20} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
     </div>
   );
 }
