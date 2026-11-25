@@ -588,3 +588,13 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
   .bidNewest { border-left: 3px solid Highlight; }
   .roomActionOn { border-bottom: 2px solid Highlight; }
 }
+
+/* ---- tablets (768 to 1023 px): a lower stage so the form is in view, and the stats row flush with the right edge ---- */
+@media (min-width: 48em) and (max-width: 74.99em) {
+  .roomStage svg { max-height: 8.5rem; }
+  .podium { margin-top: -1.25rem; padding-bottom: 0.75rem; }
+  .roomStage { padding-top: 0.75rem; }
+  .roomHead { padding-bottom: 0.5rem; }
+}
+.roomStats { justify-self: end; }
+.roomStats > .countGrid:last-child .countCell { align-items: flex-end; padding-right: 0; }
