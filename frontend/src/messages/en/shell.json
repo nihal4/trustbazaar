@@ -47,5 +47,7 @@
   "shell.search_placeholder": "Search phones, cameras, bikes…",
   "shell.footer.explore": "Explore",
   "shell.footer.help": "Help",
-  "shell.language.changing": "Changing language"
+  "shell.language.changing": "Changing language",
+  "shell.promise_bar_short": "Money held until you confirm",
+  "shell.footer.language": "Language"
 }

@@ -516,12 +516,20 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 .roomActionOn { background: var(--tb-surface); color: var(--tb-hot); box-shadow: inset 0 -2px 0 var(--tb-hot); }
 .roomAction:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
 .roomControls > p > .roomAction { border: 1px solid var(--tb-border); border-radius: 4px; display: inline-flex; }
-/* the live bids: a ruled table of the newest ten rows; it never scrolls */
+/* the live bids never scroll: the newest ten rows */
 .roomFeed { max-height: none; overflow: visible; padding: 1rem; }
-.bidTable { width: 100%; border-collapse: collapse; border: 1px solid var(--tb-line); font-variant-numeric: tabular-nums; }
-.bidTable th, .bidTable td { padding: 0.625rem 0.75rem; text-align: left; font-weight: 400; border-top: 1px solid var(--tb-line); }
-.bidTable thead th { border-top: 0; background: var(--tb-surface); color: var(--tb-muted); font-size: 0.8125rem; font-weight: 600; }
-.bidTable th + th, .bidTable td { border-left: 1px solid var(--tb-line); }
-.bidTable tbody th { font-weight: 600; }
-.bidTable td:nth-child(2) { text-align: right; font-weight: 600; }
-.bidTable tbody tr:first-child td:nth-child(2) { color: var(--tb-hot); }
+
+/* ---- the live bids as a ledger of rows (a seat chip, who and when, the amount), not a spreadsheet; the header's cells are one height ---- */
+.bidList { list-style: none; margin: 0; padding: 0; }
+.bidList > li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0 0.875rem; padding: 0.75rem 0; border-top: 1px solid var(--tb-line); }
+.bidList > li:first-child { border-top: 0; padding-top: 0.25rem; }
+.bidNewest { box-shadow: inset 3px 0 0 var(--tb-hot); padding-left: 0.75rem !important; margin-left: -0.75rem; padding-right: 0 !important; }
+.bidSeat { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border: 1px solid var(--tb-line); border-radius: 50%; background: var(--tb-surface); font-size: 0.8125rem; font-weight: 600; }
+.bidSeatMe { border-color: var(--tb-text); border-width: 2px; }
+.bidWho { display: flex; flex-direction: column; min-width: 0; }
+.bidWho strong { font-weight: 600; }
+.bidWho small { color: var(--tb-muted); font-size: 0.8125rem; }
+.bidAmount { font-family: var(--tb-font); font-weight: 600; font-size: 1.125rem; font-variant-numeric: tabular-nums; }
+.bidNewest .bidAmount { color: var(--tb-hot); }
+.roomStats { align-items: flex-end; }
+.standing, .quickHint, .roomControls p[role='status'] { text-wrap: balance; }

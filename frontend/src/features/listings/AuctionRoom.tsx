@@ -108,16 +108,13 @@ function Room({ l, auction, own, t, lang }: { l: ListingView; auction: NonNullab
           <h1>{l.title}</h1>
         </div>
         <div className={styles.roomStats}>
-          {open && (
-            <div className={styles.roomStat}>
-              <span className={styles.barK}>{t('room.time_left')}</span>
-              <Countdown left={left} text={countdown.text} urgent={countdown.urgent} t={t} lang={lang} />
-            </div>
-          )}
-          <div className={styles.roomStat}>
-            <span className={styles.barK}>{t('room.in_room')}</span>
-            <span className={styles.countGrid}><span className={styles.countCell}><strong>{toLocalDigits(String(aliases.length), lang)}</strong></span></span>
-          </div>
+          {open && <Countdown left={left} text={countdown.text} urgent={countdown.urgent} t={t} lang={lang} />}
+          <span className={styles.countGrid}>
+            <span className={styles.countCell}>
+              <strong>{toLocalDigits(String(aliases.length), lang)}</strong>
+              <small>{t('room.in_room')}</small>
+            </span>
+          </span>
         </div>
       </header>
 
@@ -178,19 +175,21 @@ function Room({ l, auction, own, t, lang }: { l: ListingView; auction: NonNullab
       <aside className={styles.roomFeed} aria-labelledby="room-feed-title">
         <h2 id="room-feed-title">{t('room.feed')}</h2>
         {items.length === 0 ? <p className={styles.muted}>{t('room.feed_empty')}</p> : (
-          <table className={styles.bidTable}>
-            <caption className={styles.visuallyHidden}>{t('room.feed_caption')}</caption>
-            <thead><tr><th scope="col">{t('room.col_bidder')}</th><th scope="col">{t('room.col_amount')}</th><th scope="col">{t('room.col_time')}</th></tr></thead>
-            <tbody>
-              {items.slice(0, FEED_ROWS).map((b) => (
-                <tr key={b.id} className={fresh.has(b.id) ? styles.flash : undefined}>
-                  <th scope="row">{b.bidderAlias === you ? t('room.you_as', { alias: toLocalDigits(String(b.bidderAlias), lang) }) : t('auction.history_bidder', { alias: toLocalDigits(String(b.bidderAlias), lang) })}</th>
-                  <td>{money(b.amount, lang)}</td>
-                  <td className={styles.muted}>{formatTime(b.at, lang)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ol className={styles.bidList} aria-label={t('room.feed_caption')}>
+            {items.slice(0, FEED_ROWS).map((b, i) => {
+              const mineRow = b.bidderAlias === you;
+              return (
+                <li key={b.id} className={[i === 0 ? styles.bidNewest : '', fresh.has(b.id) ? styles.flash : ''].filter(Boolean).join(' ') || undefined}>
+                  <span className={mineRow ? `${styles.bidSeat} ${styles.bidSeatMe}` : styles.bidSeat} aria-hidden="true">{mineRow ? t('room.you') : t('room.seat_short', { alias: toLocalDigits(String(b.bidderAlias), lang) })}</span>
+                  <span className={styles.bidWho}>
+                    <strong>{mineRow ? t('room.you_as', { alias: toLocalDigits(String(b.bidderAlias), lang) }) : t('auction.history_bidder', { alias: toLocalDigits(String(b.bidderAlias), lang) })}</strong>
+                    <small>{formatTime(b.at, lang)}{b.leading ? ` · ${t('auction.history_leading')}` : ''}</small>
+                  </span>
+                  <span className={styles.bidAmount}>{money(b.amount, lang)}</span>
+                </li>
+              );
+            })}
+          </ol>
         )}
       </aside>
       <p className={styles.visuallyHidden} aria-live="polite" role="status">{sitOut ? '' : announcement}</p>

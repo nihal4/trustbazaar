@@ -50,7 +50,7 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
   return (
     <div className={styles.page}>
       <a className={styles.skip} href="#main">{t('shell.skip_to_content')}</a>
-      {accountLinks && <p className={styles.promiseBar}><ShieldIcon />{t('shell.promise_bar')}</p>}
+      {accountLinks && <p className={styles.promiseBar}><ShieldIcon /><span className={styles.promiseLong}>{t('shell.promise_bar')}</span><span className={styles.promiseShort}>{t('shell.promise_bar_short')}</span></p>}
       <header className={exit ? `${styles.header} ${styles.withExit}` : styles.header}>
         {home.sameDocument
           ? <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo onDark={accountLinks} /></Link>
@@ -58,7 +58,7 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
         {titleKey && <span className={styles.docTitle}>{t(titleKey)}</span>}
         {accountLinks && !phone && pathname !== '/' && pathname !== '/search' ? <><HeaderSearch /><span className={styles.spacerSmall} /></> : <span className={styles.spacer} />}
         {accountLinks && <AccountLink phone={phone} />}
-        <LanguageSwitch />
+        {!accountLinks && <LanguageSwitch />}
         {exit && <a className={styles.exit} href={exit.href}>{t(exit.labelKey)}</a>}
         {accountLinks && !phone && <Button component={Link} to="/sell/new">{t('shell.sell')}</Button>}
       </header>
@@ -126,6 +126,10 @@ function Footer() {
             <li><Link to="/help/privacy">{t('shell.footer.privacy')}</Link></li>
           </ul>
         </nav>
+      </div>
+      <div className={styles.footerLang}>
+        <span id="footer-language" className={styles.footerLabel}>{t('shell.footer.language')}</span>
+        <LanguageSwitch />
       </div>
     </footer>
   );

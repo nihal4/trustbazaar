@@ -48,8 +48,8 @@ describe('the auction room', () => {
     expect(screen.getAllByText('৳1,200').length).toBeGreaterThan(0);
     expect(screen.getByText('Leading: Bidder 2')).toBeTruthy();
     const feed = screen.getByRole('complementary', { name: 'Live bids' });
-    const rows = await within(feed).findAllByRole('row');
-    expect(rows.map((r) => [...r.querySelectorAll('th,td')].slice(0, 2).map((c) => c.textContent).join(' '))).toEqual(['Bidder Bid', 'Bidder 2 ৳1,200', 'Bidder 1 ৳1,000']);   // a header row, then the newest first
+    const rows = await within(feed).findAllByRole('listitem');
+    expect(rows.map((r) => [r.querySelector('strong')!.textContent, r.querySelector('[class*="bidAmount"]')!.textContent])).toEqual([['Bidder 2', '৳1,200'], ['Bidder 1', '৳1,000']]);   // the newest first
     expect(screen.getByRole('timer')).toBeTruthy();
   });
 
@@ -95,15 +95,17 @@ describe('the auction room', () => {
     const bids = Array.from({ length: 14 }, (_, i) => ({ id: String(14 - i), bidderAlias: (i % 4) + 1, amount: String(100000 + (14 - i) * 1000), leading: i === 0, at: '2026-11-01T10:00:00Z' }));
     renderApp(`/listings/${ID}/room`, backend({ l: listing({ auction: state({ bidCount: 14 }) }), bids }));
     const feed = await screen.findByRole('complementary', { name: 'Live bids' });
-    expect(await within(feed).findAllByRole('row')).toHaveLength(11);        // the header and ten bids
+    expect(await within(feed).findAllByRole('listitem')).toHaveLength(10);       // only the newest ten
     expect(feed.getAttribute('tabindex')).toBeNull();
   });
 
   it('NFR-USE-02 the time left is a grid of cells for the eye and one timer text for assistive technology', async () => {
     renderApp(`/listings/${ID}/room`, backend({ l: listing({ auction: state({ endAt: at(2 * 86_400_000 + 21 * 3_600_000 + 10 * 60_000 + 30_000) }) }) }));
     await screen.findByRole('timer');
+    await screen.findAllByRole('listitem');
     const cells = [...document.querySelectorAll('[class*="countCell"]')].map((c) => c.textContent);
     expect(cells.slice(0, 3)).toEqual(['2D', '21H', '10M']);
+    expect(cells[3]).toBe('2Bidders');                                       // the bidders cell is the same kind of cell
     expect(document.querySelector('[class*="countGrid"]')!.getAttribute('aria-hidden')).toBe('true');
   });
 
@@ -111,7 +113,7 @@ describe('the auction room', () => {
     const bids = Array.from({ length: 12 }, (_, i) => ({ id: String(12 - i), bidderAlias: 12 - i, amount: String(100000 + (12 - i) * 1000), leading: i === 0, at: '2026-11-01T10:00:00Z' }));
     renderApp(`/listings/${ID}/room`, backend({ l: listing({ auction: state({ leaderAlias: 12, bidCount: 12 }) }), bids, mine: { ...none, hasBid: true, yourMaximum: '120000', leading: false, yourAlias: 11 } }));
     await screen.findByRole('heading', { level: 1, name: 'Film camera' });
-    await screen.findAllByRole('row');
+    await screen.findAllByRole('listitem');
     const seats = [...document.querySelectorAll('svg text')].map((t) => t.textContent);
     expect(seats).toHaveLength(9);
     expect(seats).toContain('B12');                                         // the leader

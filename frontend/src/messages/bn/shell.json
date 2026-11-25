@@ -47,5 +47,7 @@
   "shell.search_placeholder": "ফোন, ক্যামেরা, বাইক খুঁজুন…",
   "shell.footer.explore": "ঘুরে দেখুন",
   "shell.footer.help": "সহায়তা",
-  "shell.language.changing": "ভাষা বদলানো হচ্ছে"
+  "shell.language.changing": "ভাষা বদলানো হচ্ছে",
+  "shell.promise_bar_short": "নিশ্চিত না করা পর্যন্ত টাকা নিরাপদ",
+  "shell.footer.language": "ভাষা"
 }

@@ -383,3 +383,16 @@
 .navCell:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
 .navCell .badge { position: absolute; top: 5px; right: 5px; min-width: 1.25rem; margin: 0; padding: 0 0.25rem; font-size: 0.6875rem; line-height: 1.35; }
 @media (prefers-reduced-motion: reduce) { .navCell { transition: none; } }
+
+/* the language switch lives in the footer of the user app: a ruled row (label left, the switch as an outlined cell right) */
+.footerLang { display: flex; align-items: center; justify-content: space-between; gap: 1rem; max-width: var(--tb-max-width); margin-inline: auto; padding: 1rem 0 0; border-top: 1px solid var(--tb-line); }
+.footerLang .footerLabel { margin: 0; }
+.footerLang .langSwitch { min-width: 7rem; min-height: 44px; padding: 0 1.25rem; border: 1px solid var(--tb-border); border-radius: 4px; background: none; color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
+.footerLang .langSwitch:hover { border-color: var(--tb-hot); }
+.footerLang .langSwitch:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+:global(html[data-rail='on']) .footerLang { border-top: 0; }
+/* the promise line is one line on every screen: the long sentence, or a short one on narrow phones */
+.promiseBar { white-space: nowrap; overflow: hidden; }
+.promiseShort { display: none; }
+@media (max-width: 25rem) { .promiseLong { display: none; } .promiseShort { display: inline; } }
+.promiseLong, .promiseShort { overflow: hidden; text-overflow: ellipsis; }
