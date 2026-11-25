@@ -5,7 +5,7 @@
 // than endless scrolling, so the footer stays reachable. Distances come from the server in whole kilometres. The
 // location is asked for only when "Use my location" is pressed (I-58); signed-in users otherwise search from the
 // area saved in their account (Unit 3). The area list arrives with Unit 4's /delivery/areas (U4-02).
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button } from '@mantine/core';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
@@ -98,7 +98,14 @@ export function Component() {
       <Filters key={key} t={t} lang={lang} params={query} categories={categories.data ?? []} signedIn={me.isSuccess}
         onSearch={(next) => setParams(next)} />
       <ActiveFilters t={t} lang={lang} params={query} categories={categories.data ?? []} onChange={(next) => setParams(next)} />
-      {pages.isPending && <p role="status" className={styles.status}>{t('shell.loading')}</p>}
+      {pages.isPending && (
+        <div className={styles.status}>
+          <p role="status" className={styles.visuallyHidden}>{t('shell.loading')}</p>
+          <ul className={styles.cards} aria-hidden="true">
+            {[0, 1, 2, 3, 4, 5, 6, 7].map((n) => <li key={n} className={styles.skeleton}><i /><i /><i /></li>)}
+          </ul>
+        </div>
+      )}
       {pages.isError && (
         <div className={styles.status}>
           <FormMessage kind="error">
@@ -150,6 +157,12 @@ function Filters({ t, lang, params, categories, signedIn, onSearch }: {
   const [message, setMessage] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const set = (k: keyof typeof v) => (value: string) => setV((x) => ({ ...x, [k]: value }));
+  // on phones the open filters are a sheet over the page: the page behind does not scroll, and Escape closes it
+  useEffect(() => {
+    if (!open) return undefined;
+    document.documentElement.dataset.sheet = 'open';
+    return () => { delete document.documentElement.dataset.sheet; };
+  }, [open]);
 
   const submit = (e?: FormEvent, at = point) => {
     e?.preventDefault();
@@ -192,18 +205,20 @@ function Filters({ t, lang, params, categories, signedIn, onSearch }: {
 
   const name = (c: Category) => (lang === 'bn' ? c.nameBn : c.nameEn);
   return (
-    <form role="search" className={styles.filters} onSubmit={submit} noValidate>
+    <form role="search" className={styles.filters} onSubmit={submit} noValidate onKeyDown={(e) => { if (e.key === 'Escape' && open) setOpen(false); }}>
       <div className={styles.words}>
         <label htmlFor="search-q" className={styles.wordsLabel}>{t('search.words')}</label>
-        <input id="search-q" type="search" value={v.q} maxLength={100} onChange={(e) => set('q')(e.target.value)} />
+        <input id="search-q" type="search" value={v.q} maxLength={100} placeholder={t('home.search_placeholder')} onChange={(e) => set('q')(e.target.value)} />
         <button type="submit" className={styles.submit}>{t('search.submit')}</button>
       </div>
       {message && <div className={styles.msg}><FormMessage kind="error">{message}</FormMessage></div>}
       <button type="button" className={styles.toggle} aria-expanded={open} aria-controls="search-filters" onClick={() => setOpen((o) => !o)}>
         {open ? t('search.hide_filters') : t('search.show_filters')}
       </button>
+      {open && <button type="button" className={styles.backdrop} aria-hidden="true" tabIndex={-1} onClick={() => setOpen(false)} />}
       <fieldset id="search-filters" className={open ? `${styles.grid} ${styles.open}` : styles.grid}>
         <legend>{t('search.filters')}</legend>
+        <button type="button" className={styles.sheetClose} aria-label={t('shell.close')} onClick={() => setOpen(false)}>×</button>
         <Select id="search-category" label={t('search.category')} value={v.category} onChange={set('category')} any={t('search.any')}
           options={categoryTree(categories).filter(({ c }) => c.selectable).map(({ c, depth }) => [String(c.id), `${'\u00a0'.repeat(depth * 2)}${name(c)}`])} />
         <Select id="search-kind" label={t('search.item_kind')} value={v.itemKind} onChange={set('itemKind')} any={t('search.any')}
