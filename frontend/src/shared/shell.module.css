@@ -324,3 +324,5 @@
 @media (max-width: 47.99em) { .header { flex-wrap: wrap; } }
 
 .footer a:focus-visible { outline: 2px solid var(--tb-accent-soft); outline-offset: 3px; }
+
+.wmA { font-weight: 400; } .wmB { font-weight: 650; }

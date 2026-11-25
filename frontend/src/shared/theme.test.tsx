@@ -26,7 +26,7 @@ describe('Mantine theme', () => {
   it('SEC-WEB-01 the theme CSS shipped as a static file is the CSS Mantine would add at run time', () => {
     const css = generated();
     if (process.env.UPDATE_MANTINE_CSS) writeFileSync(FILE, css);
-    expect(css).toContain('--mantine-color-brand-7: #232323');
+    expect(css).toContain('--mantine-color-brand-7: #0F1720');
     expect(readFileSync(FILE, 'utf8')).toBe(css);
   });
 

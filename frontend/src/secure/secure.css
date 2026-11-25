@@ -11,8 +11,8 @@
 @import '@fontsource/hind-siliguri/bengali-700.css';
 
 :root {
-  --bg: #ffffff; --surface: #f3f3f3; --cream: #f3f3f3; --text: #232323; --muted: #686868; --border: #8a8a8a;
-  --line: #e4e4e4; --accent: #232323; --accent-soft: #a1ffcb; --accent-text: #ffffff; --error: #b42318;
+  --bg: #ffffff; --surface: #f3f5f8; --cream: #f3f5f8; --text: #0f1720; --muted: #5a6472; --border: #8590a0;
+  --line: #e2e6ec; --accent: #0f1720; --accent-soft: #ffe1d2; --accent-text: #ffffff; --error: #b42318;
   --success: #0b6b3f; --radius: 12px;
   --font: 'Figtree Variable', 'TB Figures', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --line-height: 1.5;
@@ -47,7 +47,7 @@ a { color: var(--accent); font-weight: 600; text-underline-offset: 3px; }
 .panel .hint { font-size: 0.9375rem; }
 .error, .success, .info { margin: 1rem 0; padding: 0.75rem 1rem; border-radius: var(--tb-radius-panel); }
 .error { color: #912018; background: #fef3f2; border: 1px solid #fecdca; font-weight: 600; }
-.success { background: #f3f3f3; border: 1px solid var(--accent-soft); }
+.success { background: #f3f5f8; border: 1px solid var(--accent-soft); }
 .info { background: var(--surface); }
 .fingerprint, .secret { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 1.0625rem; letter-spacing: 0.02em; overflow-wrap: anywhere; }
 .details .secret { display: inline-block; padding: 0.25rem 0.625rem; border-radius: 8px; background: var(--bg); border: 1px solid var(--line); }
