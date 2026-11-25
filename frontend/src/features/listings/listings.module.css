@@ -598,3 +598,5 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 }
 .roomStats { justify-self: end; }
 .roomStats > .countGrid:last-child .countCell { align-items: flex-end; padding-right: 0; }
+/* the stage's drawing spans the whole stage and is centred over the price (a limited height scales it, never shifts it) */
+.roomStage svg { display: block; width: 100%; height: auto; margin-inline: 0; }
