@@ -573,7 +573,6 @@ Any change to the design made while building: what, why, who agreed, and which d
 | 2026-11-25 | U10-22 | "Add to cart" is built as **Save for later**: a button beside Buy now that marks the item on the page only for now (browser storage is not allowed outside the language module, SEC-SES-03, so the mark is not kept between visits). There is no cart: each order stays one item with one seller in escrow. Keeping saved items on the server (a list on the account and a Saved page) is a new task, U10-29, not yet built. | the user (chose Save for later) | `docs/srs.tex` (a saved-items requirement), `docs/design/10_visual_v3.md` section 7 |
 | 2026-11-25 | U10-22 | Auctions have no fixed right column: a bid bar is fixed to the bottom of the screen (a ruled grid of cells: price, time left, See the bids, bid box; on phones a small floating tab that opens it), and the bid history can open as a sheet above it. The fixed column overflowed whenever an auction had bids, warnings or a long title. A separate Auction room (live seats, live bids) is a new feature, recorded as task U10-30 with a design note for approval. | the user (chose prototype B, asked for the room) | `docs/design/10_visual_v3.md` sections 7 and 10, SRS (a live-room requirement, if approved) |
 | 2026-11-25 | U9-07 | The signed file link is accepted only in its canonical base64url spelling: a 32-byte HMAC is 43 characters and the last one has 2 unused bits, which Node's decoder ignores, so four spellings of the same signature were valid and `SEC-DAT-04` ("a changed signature is refused") failed by chance when its test swapped the last character for `A` or `B` (1 time in 16). `verifyFileLink` now re-encodes the decoded signature and compares; the unit test `file-links.spec.ts` checks every character position and every spelling, and the integration test mutates with changes that always alter the signature's data bits. No change to the link format, the key or the lifetime. | the user | `docs/design/01_identity_access.tex` section 6.7 (one sentence, at its next revision) |
-| 2026-11-25 | U10-22 | S. M. Nihal Ahmed | #309 |
 
 ## Finished log
 
@@ -685,3 +684,4 @@ Append one line when a task becomes `done` (newest last).
 | 2026-11-25 | U10-15 | Sabikun Nahar Sinthia | #302 |
 | 2026-11-25 | U10-21 | S. M. Nihal Ahmed | #306, #307 |
 | 2026-11-25 | U9-07 | S. M. Nihal Ahmed | #308 |
+| 2026-11-25 | U10-22 | S. M. Nihal Ahmed | #309 |
