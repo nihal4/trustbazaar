@@ -3,8 +3,8 @@
 // the categories, the auctions ending soonest, the featured listings apart with their note, the newest listings, and
 // how selling works. Searching goes to
 // /search with the words in the URL; everything shown here comes from GET /search and GET /categories.
-import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { formatMoney, toLocalDigits } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
@@ -14,6 +14,7 @@ import { useT } from '../../shared/language/Language';
 import { FRESHNESS } from '../../shared/query';
 import en from '../../messages/en/search.json';
 import bn from '../../messages/bn/search.json';
+import { GlowGround } from './GlowGround';
 import { Journey, SafeBento } from './HomeSections';
 import { ListingCard } from './ListingCard';
 import type { Category, SearchPage } from './SearchPage';
@@ -33,6 +34,14 @@ export function Component() {
   const api = useApi();
   const navigate = useNavigate();
   const [words, setWords] = useState('');
+  // ?v=dark and ?v=glow show the glossy hero versions next to the plain one (choice pending, U10-21)
+  const [params] = useSearchParams();
+  const theme = params.get('v') === 'dark' ? 'dark' : params.get('v') === 'glow' ? 'glow' : null;
+  const heroRef = useRef<HTMLElement>(null);
+  const [tick, setTick] = useState(0);
+  useEffect(() => { const id = window.setInterval(() => setTick((n) => n + 1), 1000); return () => window.clearInterval(id); }, []);
+  const left = 2 * 3600 + 14 * 60 + 9 - (tick % 600);
+  const clock = [Math.floor(left / 3600), Math.floor(left / 60) % 60, left % 60].map((n) => String(n).padStart(2, '0')).join(':');
 
   const categories = useQuery({
     queryKey: ['categories'],
@@ -64,7 +73,8 @@ export function Component() {
 
   return (
     <div className={styles.page}>
-      <section className={styles.hero}>
+      <section className={styles.hero} data-theme={theme ?? undefined} ref={heroRef}>
+        {theme && <GlowGround theme={theme} area={heroRef} />}
         <div className={styles.heroText}>
           <h1 className={styles.title}>{t('home.title')}</h1>
           <p className={styles.lede}>{t('home.promise.text')}</p>
@@ -86,6 +96,7 @@ export function Component() {
             <div className={styles.winBody}>
               <p className={styles.winTitle}>{t('home.demo.title')}</p>
               <p className={styles.winWhere}>{t('home.demo.where')}</p>
+              {theme && <p className={styles.winClock}><i />{t('home.safe.ends')} <b>{toLocalDigits(clock, lang)}</b></p>}
               <p className={styles.winPrice}>{formatMoney('8500000', lang)}</p>
               <span className={styles.winBtn}>{t('home.demo.buy')}</span>
               <ol className={styles.winSteps}>
