@@ -29,7 +29,7 @@
   "listing.clarifications": "বিক্রেতা পরে যা যোগ করেছেন",
   "listing.clarification_at": "যোগ করা হয়েছে {at}",
   "listing.price": "দাম",
-  "listing.buy": "{price} দিয়ে এখনই কিনুন",
+  "listing.buy": "এখনই কিনুন",
   "listing.available": "পাওয়া যাচ্ছে: {count}",
   "listing.currently_reserved": "আরেকজন ক্রেতা এখন এর দাম পরিশোধ করছেন। সময়মতো না দিলে এটি আবার পাওয়া যাবে।",
   "listing.status.sold": "এই জিনিসটি বিক্রি হয়ে গেছে।",
