@@ -14,6 +14,7 @@ import { useT } from '../../shared/language/Language';
 import { FRESHNESS } from '../../shared/query';
 import en from '../../messages/en/search.json';
 import bn from '../../messages/bn/search.json';
+import { Journey, SafeBento } from './HomeSections';
 import { ListingCard } from './ListingCard';
 import type { Category, SearchPage } from './SearchPage';
 import styles from './home.module.css';
@@ -110,15 +111,9 @@ export function Component() {
         </nav>
       )}
 
-      <section aria-labelledby="home-promise" className={styles.how}>
-        <h2 id="home-promise">{t('home.promise.title')}</h2>
-        <p className={styles.howLabel}>{t('home.counterfoil.stub')}</p>
-        <ol className={styles.howSteps}>
-          <li>{t('home.counterfoil.in')}</li>
-          <li>{t('home.counterfoil.held')}</li>
-          <li>{t('home.counterfoil.out')}</li>
-        </ol>
-      </section>
+      <SafeBento t={t} lang={lang} />
+
+      <Journey t={t} lang={lang} />
 
       {ending.length > 0 && (
         <section aria-labelledby="home-auctions" className={styles.section}>
