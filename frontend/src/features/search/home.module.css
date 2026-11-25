@@ -85,19 +85,26 @@
 .heroText > :nth-child(2) { animation-delay: 80ms; } .heroText > :nth-child(3) { animation-delay: 160ms; } .heroText > :nth-child(4) { animation-delay: 240ms; }
 .window { animation: slide 800ms cubic-bezier(.2,.7,.2,1) 200ms backwards; }
 
+/* tablet portrait (768 to 1023): the hero stays one column so the window is wide enough for its details */
 @media (min-width: 48em) {
-  .hero { grid-template-columns: 5fr 6fr; gap: 3.5rem; padding: 3.5rem; min-height: min(40rem, calc(100svh - 7rem)); }
-  .art { padding-bottom: 0; }
-  .window { grid-template-rows: minmax(0, 1fr) auto; min-height: 28rem; }
+  .hero { padding: 2.5rem; gap: 2.5rem; }
+  .window { min-height: 26rem; }
   .winBody { grid-template-columns: 1fr 1fr; column-gap: 1.5rem; align-items: start; }
   .winBody > :not(.winSteps) { grid-column: 1; }
   .winSteps { display: grid; grid-column: 2; grid-row: 1 / span 5; align-self: start; padding-top: 0.25rem; }
   .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2rem 1.25rem; }
-  .sell { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'title cta' 'steps steps'; column-gap: 2rem; row-gap: 2rem; align-items: center; }
+  .rail > li { flex-basis: 16rem; }
+  .sell { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'title cta' 'steps steps'; column-gap: 2rem; row-gap: 1.75rem; align-items: center; }
   .sell h2 { grid-area: title; max-width: none; }
-  .sell .steps { grid-area: steps; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem; padding-top: 2rem; border-top: 1px solid var(--tb-line); }
-  .sell .steps li { align-items: flex-start; }
+  .sell .steps { grid-area: steps; padding-top: 1.75rem; border-top: 1px solid var(--tb-line); gap: 1.5rem; }
   .sellBtn { grid-area: cta; justify-self: end; }
+}
+/* laptop and wider (1024 and up): the hero is two columns */
+@media (min-width: 64em) {
+  .hero { grid-template-columns: 5fr 6fr; gap: 3.5rem; padding: 3.5rem; min-height: min(40rem, calc(100svh - 7rem)); }
+  .window { min-height: 28rem; }
+  .sell .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem; padding-top: 2rem; }
+  .sell .steps li { align-items: flex-start; }
   .rail { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding: 0; overflow: visible; }
   .rail > li { flex: none; }
 }
