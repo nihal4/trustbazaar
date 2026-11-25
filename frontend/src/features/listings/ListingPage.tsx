@@ -260,10 +260,36 @@ function Buy({ l, own, t, lang }: { l: ListingView; own: boolean; t: T; lang: La
       {l.quantity.total > 1 && <p className={styles.buyNote}>{t('listing.available', { count: toLocalDigits(String(l.quantity.available), lang) })}</p>}
       {l.currentlyReserved && <p className={styles.notice}>{t('listing.currently_reserved')}</p>}
       {l.status === 'active' && !own && l.quantity.available > 0 && (
-        <Link className={styles.buyButton} to={`/checkout/${encodeURIComponent(l.id)}`}>{t('listing.buy')}</Link>
+        <div className={styles.buyRow}>
+          <Link className={styles.buyButton} to={`/checkout/${encodeURIComponent(l.id)}`}>{t('listing.buy')}</Link>
+          <SaveButton id={l.id} t={t} />
+        </div>
       )}
       <p className={styles.promise}><Shield />{t('listing.promise.text')}</p>
     </section>
+  );
+}
+
+/** "Save for later": a mark on this device (the list is kept in the browser until the server keeps saved items; Decisions log). */
+const SAVED_KEY = 'tb.saved';
+function readSaved(): string[] {
+  try { const v = JSON.parse(window.localStorage.getItem(SAVED_KEY) ?? '[]') as unknown; return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []; } catch { return []; }
+}
+function SaveButton({ id, t }: { id: string; t: T }) {
+  const [saved, setSaved] = useState(() => readSaved().includes(id));
+  const toggle = () => {
+    const next = !saved;
+    try {
+      const rest = readSaved().filter((x) => x !== id);
+      window.localStorage.setItem(SAVED_KEY, JSON.stringify(next ? [id, ...rest].slice(0, 200) : rest));
+    } catch { /* storage may be blocked: the mark then lasts until the page closes */ }
+    setSaved(next);
+  };
+  return (
+    <button type="button" className={saved ? `${styles.saveButton} ${styles.saved}` : styles.saveButton} aria-pressed={saved} onClick={toggle}>
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M6 4 H18 V21 L12 16.5 L6 21 Z" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>
+      {saved ? t('listing.saved') : t('listing.save')}
+    </button>
   );
 }
 
