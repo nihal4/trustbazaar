@@ -29,6 +29,8 @@
   --tb-success: #0b6b3f;
   --tb-protect: #0b6b3f;
   --tb-hot: #ff6b35;
+  --tb-hot-hover: #ff8a5c;       /* the hot colour a step lighter, for hover */
+  --tb-hero-muted: #b8c7c2;      /* secondary text on the hero's dark ground */
   --tb-ink: #0f1720;            /* the always-dark panel: the footer, the payment card, the selling band */
   --tb-action: #0f1720;         /* the primary button's ground */
   --tb-action-text: #ffffff;
@@ -147,3 +149,7 @@ input, select, textarea { max-width: 100%; box-sizing: border-box; }
 main [class*='Button-root'], main button[type='submit'] { min-height: 44px; }
 
 .tb-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* a focused control is never hidden under the sticky header (WCAG 2.4.11) */
+html { scroll-padding-top: 5.5rem; }
+html:has([class*='bidBar']) { scroll-padding-bottom: calc(var(--bar-h, 0px) + 1rem); }

@@ -33,7 +33,7 @@ export interface ListingView {
   photos: { id: string; position: number; url: string; thumbUrl: string; width: number; height: number; showsDefects: boolean }[];
   clarifications: { id: string; body: string; at: string }[];
   auction: (AuctionState & { reservePrice?: string | null }) | null;
-  seller: { id: string; displayName: string; verified: boolean; joinMonth: string };
+  seller: { id: string; displayName: string; verified: boolean; joinMonth: string; /** not sent by the server yet: shown only when present (FR-ACC-10 rating summary; the Pro Seller tier) */ ratingAverage?: number | null; ratingCount?: number; pro?: boolean };
   own?: unknown;
 }
 

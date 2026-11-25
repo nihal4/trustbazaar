@@ -309,3 +309,67 @@
   .footerAbout { padding-right: 2rem; }
   .footerCol { border-top: 0; border-left: 1px solid var(--tb-line); padding-left: 2rem; }
 }
+
+/* the header's own search shows from 1024; below that the page's search is the one, and the links stay on one line */
+.spacerSmall { flex: 1 1 0; }
+@media (max-width: 63.99em) { .headSearch { display: none; } }
+@media (min-width: 64em) { .spacerSmall { display: none; } }
+.account, .header [class*='Button-root'], .langSwitch { white-space: nowrap; }
+
+/* The header search, ruled like the page: a line under the field instead of a box, and one focus mark (the hot underline) instead
+   of two rings (the field's and the input's). */
+.headSearch { background: none; border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; padding: 0 0.25rem; box-shadow: none; transition: box-shadow 140ms; }
+.headSearch:focus-within { background: none; border-bottom-color: var(--tb-border); outline: 0; box-shadow: inset 0 -2px 0 var(--tb-hot); }
+.headSearch input, .headSearch input:focus, .headSearch input:focus-visible { outline: 0; box-shadow: none; }
+.headSearch input::placeholder { color: var(--tb-muted); }
+@media (forced-colors: active) { .headSearch { border-bottom-color: CanvasText; } .headSearch:focus-within { outline: 2px solid Highlight; } }
+.headSearch input::-webkit-search-cancel-button { filter: invert(1); opacity: 0.6; }
+
+/* ---- The phone tab bar, ruled like the page (docs/design/10_visual_v3.md): a line on top, equal cells divided by hairlines, no
+   filled blocks. The current tab has a 2 px hot line on the bar's top edge; Sell is the one hot tab (an outlined square, not a
+   filled pill), so the primary action is marked without a block. Labels never wrap or overflow, down to 320 px. ---- */
+.withTabs { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
+.tabBar { left: 0; right: 0; bottom: 0; padding: 0 0 env(safe-area-inset-bottom); border: 0; border-top: 1px solid var(--tb-border); border-radius: 0; background: var(--tb-bg); box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.tabBar ul { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+.tabBar li { min-width: 0; }
+.tabBar li + li { border-left: 1px solid var(--tb-line); }
+.tab { position: relative; min-height: 58px; gap: 4px; padding: 0 2px; color: var(--tb-muted); font-size: 0.75rem; font-weight: 600; transition: color 140ms, background 140ms; }
+.tab svg { width: 22px; height: 22px; }
+.tab::before { content: ''; position: absolute; left: 0; right: 0; top: -1px; height: 2px; background: transparent; transition: background 140ms; }
+.tab:active { background: var(--tb-surface); }
+.tabOn { color: var(--tb-text); font-weight: 600; }
+.tabOn::before { background: var(--tb-hot); }
+.tabHot { color: var(--tb-hot); }
+.tabHot.tabOn { color: var(--tb-hot); }
+.tabSell { display: grid; place-items: center; width: 22px; height: 22px; border: 1.5px solid var(--tb-hot); border-radius: 4px; background: none; color: var(--tb-hot); }
+.tabSell svg { width: 14px; height: 14px; }
+.tabLabel { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+:lang(bn) .tab { font-size: 0.8125rem; }
+.tab:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -4px; }
+@media (prefers-reduced-motion: reduce) { .tab, .tab::before { transition: none; } }
+@media (forced-colors: active) { .tabOn::before { background: Highlight; } .tabBar { border-top-color: CanvasText; } }
+
+/* On a listing the right column stays in view down to the footer, so the footer keeps to the left of it: the page sets
+   html[data-rail] and --tb-rail-reserve (the column's width and the gap). */
+.footer { position: relative; }
+:global(html[data-rail='on']) .footer { border-top: 0; padding-right: calc(var(--tb-gutter) + var(--tb-rail-reserve, 0px)); }
+:global(html[data-rail='on']) .footerGrid { border-top: 1px solid var(--tb-line); }
+
+/* the signed-in header at laptop width: the Sell button and the links keep their size, the search is what gives way */
+.header > * { flex-shrink: 0; }
+.header > .headSearch { flex: 1 1 9rem; min-width: 9rem; }
+.header [class*='Button-root'] { white-space: nowrap; }
+.header [class*='Button-label'] { overflow: visible; }
+
+/* the confirmation dialog in the ruled look: a hairline panel, the action in vermilion, Cancel as an outline */
+.dialog { background: var(--tb-sheet); color: var(--tb-text); border: 1px solid var(--tb-border); border-radius: 4px; padding: 1.5rem; }
+.dialog::backdrop { background: rgb(0 0 0 / 0.6); }
+.dialog h2 { font-family: var(--tb-font-display); font-weight: var(--tb-display-weight); font-size: 1.5rem; letter-spacing: -0.02em; margin: 0 0 0.75rem; }
+.dialog p { margin: 0 0 0.75rem; line-height: 1.5; }
+.dialogActions { gap: 0.625rem; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--tb-line); }
+.dialogActions button { min-height: 48px; padding: 0 1.25rem; border-radius: 6px; font: inherit; font-weight: 700; cursor: pointer; border: 1px solid var(--tb-border); background: none; color: var(--tb-text); }
+.dialogActions button:first-child { border-color: var(--tb-action); background: var(--tb-action); color: var(--tb-action-text); }
+.dialogActions button:first-child:hover:not(:disabled) { background: var(--tb-hot-hover); }
+.dialogActions button:last-child:hover:not(:disabled) { border-color: var(--tb-hot); }
+.dialogActions button:disabled { opacity: 0.6; cursor: not-allowed; }
+.dialogActions button:focus-visible { outline: 2px solid var(--tb-text); outline-offset: 3px; }

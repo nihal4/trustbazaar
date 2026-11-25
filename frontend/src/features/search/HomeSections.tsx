@@ -3,6 +3,7 @@
 // auction as the hero window, marked "Example"); a real order never shows them. Everything rests except the auction's
 // live dot; the hero clock is the page's one moving number.
 import { formatMoney, toLocalDigits } from '../../lib/money.js';
+import { EscrowSteps } from '../../shared/EscrowSteps';
 import type { useT } from '../../shared/language/Language';
 import type { Lang } from '../../shared/language/lang';
 import styles from './bento.module.css';
@@ -24,11 +25,7 @@ export function SafeBento({ t, lang, clock }: { t: T; lang: Lang; clock: string 
           <p className={styles.text}>{t('home.safe.escrow_text')}</p>
           <div className={styles.ui}>
             <p className={styles.caption}>{t('home.counterfoil.stub')}</p>
-            <ol className={styles.timeline}>
-              <li className={styles.done}>{t('home.counterfoil.in')}</li>
-              <li className={styles.now}>{t('home.counterfoil.held')}</li>
-              <li>{t('home.counterfoil.out')}</li>
-            </ol>
+            <EscrowSteps current="held" labels={[t('home.counterfoil.in'), t('home.counterfoil.held'), t('home.counterfoil.out')]} classes={{ list: styles.timeline, done: styles.done, current: styles.now }} />
           </div>
         </article>
 
