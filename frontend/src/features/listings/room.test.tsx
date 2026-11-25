@@ -26,14 +26,14 @@ const listing = (o: Partial<ListingView> = {}): ListingView => ({
   photos: [], clarifications: [], auction: state(), seller: { id: 'seller-1', displayName: 'Karim', verified: true, joinMonth: '2026-10' }, ...o,
 });
 const none: MyStatus = { hasBid: false, yourMaximum: null, leading: false, yourAlias: null, orderId: null, secondChanceOffer: null };
-const backend = (o: { l?: ListingView; signedIn?: boolean; me?: typeof standInMe; mine?: MyStatus; bid?: (c: Call) => Response } = {}) => fakeBackend({
+const backend = (o: { l?: ListingView; signedIn?: boolean; me?: typeof standInMe; mine?: MyStatus; bid?: (c: Call) => Response; bids?: object[] } = {}) => fakeBackend({
   'GET /me': o.signedIn === false ? json(401, { type: '/problems/session-ended' }) : json(200, o.me ?? standInMe),
   'POST /auth/refresh': json(401, {}),
   'GET /notifications/unread-count': json(200, { unread: 0 }),
   'GET /me/notification-preferences': json(200, { language: 'en', emailTransactional: true }),
   [`GET /listings/${ID}`]: o.l ? json(200, o.l) : problem(404, 'not-found'),
   [`GET /auctions/${ID}/state`]: json(200, (o.l ?? listing()).auction),
-  [`GET /auctions/${ID}/bids`]: json(200, { items: [
+  [`GET /auctions/${ID}/bids`]: json(200, { items: o.bids ?? [
     { id: '2', bidderAlias: 2, amount: '120000', leading: true, at: '2026-11-01T10:00:00Z' },
     { id: '1', bidderAlias: 1, amount: '100000', leading: false, at: '2026-11-01T09:00:00Z' },
   ] }),
@@ -54,26 +54,52 @@ describe('the auction room', () => {
 
   it('FR-AUC-01 a quick bid fills the field and opens the same confirmation; nothing is sent until it is confirmed', async () => {
     const calls: string[] = [];
-    const bid = (c: Call) => { calls.push(c.path); return json(201, { bidId: '9', outcome: 'leading', yourMaximum: '175000', state: state({ price: '125000', seq: 3, bidCount: 3, leaderAlias: 3 }) })(); };
+    const bid = (c: Call) => { calls.push(c.path); return json(201, { bidId: '9', outcome: 'leading', yourMaximum: '130000', state: state({ price: '125000', seq: 3, bidCount: 3, leaderAlias: 3 }) })(); };
     renderApp(`/listings/${ID}/room`, backend({ l: listing(), bid }));
     const group = await screen.findByRole('group', { name: 'Quick bids' });
-    fireEvent.click(within(group).getAllByRole('button')[1]);          // the minimum plus ৳500
+    expect(within(group).getAllByRole('button').map((b) => b.textContent)).toEqual(['৳1,250', '৳1,300', '৳1,350']);   // the minimum and the next two steps of the auction's own increment
+    fireEvent.click(within(group).getAllByRole('button')[1]);
     const dialog = await screen.findByRole('dialog', { hidden: true });
-    expect(within(dialog).getByText(/A bid of ৳1,750 is binding/)).toBeTruthy();
+    expect(within(dialog).getByText(/A bid of ৳1,300 is binding/)).toBeTruthy();
     expect(calls).toEqual([]);                                          // pressing a quick bid sends nothing
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Bid ৳1,750' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Bid ৳1,300' }));
     await screen.findByText(/You are leading/, undefined, { timeout: 3000 }).catch(() => null);
     expect(calls).toEqual([`/auctions/${ID}/bids`]);                    // sent once
   });
 
-  it('NFR-USE-02 Sit this one out turns this page\'s announcements off and says what it does not change', async () => {
+  it('NFR-USE-02 Sit this one out turns this page\'s announcements off, says what it does not change, and keeps the live region in place', async () => {
     renderApp(`/listings/${ID}/room`, backend({ l: listing() }));
     const sit = await screen.findByRole('button', { name: 'Sit this one out' });
-    expect(document.querySelector('[aria-live="polite"][role="status"]')).not.toBeNull();
+    expect(sit.getAttribute('aria-pressed')).toBeNull();                   // the label changes, so no pressed state as well
     fireEvent.click(sit);
-    expect(screen.getByRole('button', { name: 'Join in again' }).getAttribute('aria-pressed')).toBe('true');
-    expect(screen.getByText(/alerts you get elsewhere/)).toBeTruthy();
-    expect(document.querySelector('[aria-live="polite"][role="status"]')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Join in again' })).toBeTruthy();
+    expect(screen.getByText(/Notifications and e-mail are not changed/)).toBeTruthy();
+    const region = document.querySelector('[aria-live="polite"][role="status"]');
+    expect(region).not.toBeNull();                                         // still mounted, so a later announcement is not lost
+    expect(region!.textContent).toBe('');
+  });
+
+  it('FR-AUC-01 the viewer\'s own standing is in the room, and a leading viewer gets quick bids above their own maximum', async () => {
+    renderApp(`/listings/${ID}/room`, backend({ l: listing({ auction: state({ leaderAlias: 1 }) }), mine: { ...none, hasBid: true, yourMaximum: '150000', leading: true, yourAlias: 1 } }));
+    expect(await screen.findByText(/Your maximum: ৳1,500\. You are leading\./)).toBeTruthy();
+    expect(screen.getByText('Leading: You')).toBeTruthy();
+    const group = screen.getByRole('group', { name: 'Quick bids' });
+    expect(within(group).getAllByRole('button').map((b) => b.textContent)).toEqual(['৳1,550', '৳1,600', '৳1,650']);
+    cleanup();
+    renderApp(`/listings/${ID}/room`, backend({ l: listing(), mine: { ...none, hasBid: true, yourMaximum: '110000', leading: false, yourAlias: 1 } }));
+    expect(await screen.findByText(/You have been outbid\./)).toBeTruthy();
+  });
+
+  it('FR-AUC-01 with more than nine bidders the leader and the viewer keep a seat, and the count shows everyone', async () => {
+    const bids = Array.from({ length: 12 }, (_, i) => ({ id: String(12 - i), bidderAlias: 12 - i, amount: String(100000 + (12 - i) * 1000), leading: i === 0, at: '2026-11-01T10:00:00Z' }));
+    renderApp(`/listings/${ID}/room`, backend({ l: listing({ auction: state({ leaderAlias: 12, bidCount: 12 }) }), bids, mine: { ...none, hasBid: true, yourMaximum: '120000', leading: false, yourAlias: 11 } }));
+    await screen.findByRole('heading', { level: 1, name: 'Film camera' });
+    await screen.findAllByRole('listitem');
+    const seats = [...document.querySelectorAll('svg text')].map((t) => t.textContent);
+    expect(seats).toHaveLength(9);
+    expect(seats).toContain('B12');                                         // the leader
+    expect(seats).toContain('You');                                         // the viewer (Bidder 11)
+    expect(screen.getByText('12')).toBeTruthy();                            // the number of bidders
   });
 
   it('IF-UI-03 a guest is sent to sign in, the seller watches without controls, and a fixed-price listing has no room', async () => {

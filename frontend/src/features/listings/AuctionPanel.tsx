@@ -187,9 +187,9 @@ const amountError = (reason: string, t: T) => t(`auction.amount.${reason}`);
 
 /** The bid form, with its checks, its confirmation and its single send. The auction room passes `quick`: amounts (in poisha) that fill the field and
  *  go through the same checks and the same confirmation dialog; nothing is sent by pressing one. */
-export function BidForm({ id, state, mine, t, lang, onPlaced, onRefused, quick = [] }: {
+export function BidForm({ id, state, mine, t, lang, onPlaced, onRefused, quick = [], quickHint }: {
   id: string; state: AuctionState; mine: MyStatus | undefined; t: T; lang: Lang;
-  onPlaced: (r: BidResult, sentAt: number) => void; onRefused: () => void; quick?: bigint[];
+  onPlaced: (r: BidResult, sentAt: number) => void; onRefused: () => void; quick?: bigint[]; quickHint?: string;
 }) {
   const api = useApi();
   const [amount, setAmount] = useState('');
@@ -260,6 +260,7 @@ export function BidForm({ id, state, mine, t, lang, onPlaced, onRefused, quick =
           })}
         </div>
       )}
+      {quick.length > 0 && quickHint && <p className={styles.quickHint}>{quickHint}</p>}
       {state.minimumBid && !leading && <p><strong>{t('auction.minimum', { amount: money(state.minimumBid, lang) })}</strong></p>}
       {result && <FormMessage kind={result.kind}>{result.text}</FormMessage>}
       <label htmlFor="bid-amount" className={styles.visuallyHidden}>{label}</label>

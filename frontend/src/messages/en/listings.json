@@ -141,11 +141,13 @@
   "room.feed_empty": "No bids yet. The first bid will appear here.",
   "room.sit_out": "Sit this one out",
   "room.join_in": "Join in again",
-  "room.sit_out_note": "You are watching. In-page announcements are off for this auction; alerts you get elsewhere (notifications, e-mail) are not changed, and the price is not affected.",
+  "room.sit_out_note": "Screen-reader announcements are off on this page until you leave it. Notifications and e-mail are not changed, the price is not affected, and you can still bid.",
   "room.back": "Back to the listing",
   "room.closed": "This auction has closed.",
   "room.own": "This is your auction. You can watch it here; you cannot bid.",
   "room.not_auction": "This listing is not an auction.",
   "room.sign_in": "Sign in to join the room",
-  "room.new_bid": "{alias} bid {amount}"
+  "room.new_bid": "{alias} bid {amount}",
+  "room.seat_short": "B{alias}",
+  "room.you_as": "You (Bidder {alias})"
 }

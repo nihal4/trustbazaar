@@ -461,3 +461,25 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 .roomControls .bid > input { grid-column: 1; }
 .roomControls .bid > .primary { grid-column: 2; min-width: 9rem; }
 @media (max-width: 30rem) { .roomControls .bid > input { grid-column: 1 / -1; } .roomControls .bid > .primary { grid-column: 1 / -1; } }
+
+/* ---- room review fixes ---- */
+.roomStats { display: flex; gap: 1.5rem; }
+.standing { margin-top: 0.375rem; padding: 0.375rem 0; border-block: 1px solid var(--tb-protect); color: var(--tb-protect); font-size: 0.9375rem; }
+.standing.standingOut { border-block-color: var(--tb-error); color: var(--tb-error-text); }
+.roomControls p, .roomControls .quickHint { margin: 0; }
+.quickHint { color: var(--tb-muted); font-size: 0.875rem; }
+.roomControls a { display: inline-flex; align-items: center; min-height: 44px; }
+.roomFeed:focus-visible, .sitOut:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+.roomControls p:empty { display: none; }
+.roomStage { background: radial-gradient(ellipse at 50% 100%, var(--tb-surface), var(--tb-sheet) 70%); }
+.roomStage svg { max-height: 13rem; margin-inline: auto; }
+@media (prefers-reduced-motion: no-preference) { .liveDot { animation-iteration-count: 5; } }
+@media (forced-colors: active) { .seat text { fill: CanvasText; } .seatLead text { fill: HighlightText; } }
+@media (max-width: 47.99em) {
+  .roomStats { grid-column: 1 / -1; }
+  .roomTitle h1 { font-size: 1.25rem; }
+  .roomStage { padding: 0.75rem 0.5rem 0; }
+  .seat text { font-size: 24px; }
+  .barBody > .barRoom { justify-content: flex-start; }
+}
+@media (max-width: 30rem) { .seat text { font-size: 28px; } }
