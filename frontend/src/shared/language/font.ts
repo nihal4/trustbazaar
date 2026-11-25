@@ -2,7 +2,7 @@
 // window's load event has passed and the browser is idle (docs/design/10_visual.md, sections 3 and 8, AC-ALL-4; Decisions log, U8-01, U10-01
 // and U10-10). Until they arrive the text shows in the system font and then swaps, so the fonts never hold up the
 // listing photo or any other first content (NFR-PERF-07).
-// - Figtree (text) and Gabarito (headlines), variable, the Latin and Latin Extended subsets, for every page (redesign v3, U10-21, dealt by taste-skill);
+// - Figtree (text) and Schibsted Grotesk (headlines), variable, the Latin and Latin Extended subsets, for every page (redesign v3, U10-21, dealt by taste-skill);
 // - Hind Siliguri, 400 to 700, the Bengali block only, when the language is Bangla;
 // - with it, the Bangla figures: the digits, the taka sign and the comma, full stop and colon between them, cut from
 //   Noto Sans Bengali (figures/, scripts/subset-figures.py, SIL OFL 1.1). Hind draws the digit one as a small hook
@@ -11,8 +11,8 @@
 //   English it comes after Geist and draws only the taka sign, which Geist lacks.
 import latin from '@fontsource-variable/figtree/files/figtree-latin-wght-normal.woff2?url';
 import latinExt from '@fontsource-variable/figtree/files/figtree-latin-ext-wght-normal.woff2?url';
-import displayLatin from '@fontsource-variable/gabarito/files/gabarito-latin-wght-normal.woff2?url';
-import displayLatinExt from '@fontsource-variable/gabarito/files/gabarito-latin-ext-wght-normal.woff2?url';
+import displayLatin from '@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-wght-normal.woff2?url';
+import displayLatinExt from '@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-ext-wght-normal.woff2?url';
 import regular from '@fontsource/hind-siliguri/files/hind-siliguri-bengali-400-normal.woff2?url';
 import medium from '@fontsource/hind-siliguri/files/hind-siliguri-bengali-500-normal.woff2?url';
 import semibold from '@fontsource/hind-siliguri/files/hind-siliguri-bengali-600-normal.woff2?url';
@@ -27,7 +27,7 @@ import marks600 from './figures/figures-marks-600.woff2?url';
 import marks700 from './figures/figures-marks-700.woff2?url';
 
 export const LATIN_FONT = 'Figtree Variable';
-export const DISPLAY_FONT = 'Gabarito Variable';
+export const DISPLAY_FONT = 'Schibsted Grotesk Variable';
 export const BANGLA_FONT = 'Hind Siliguri';
 export const FIGURES_FONT = 'TB Figures';
 /** the Bangla digits ০ to ৯ and the taka sign ৳; the separators a number uses between them */

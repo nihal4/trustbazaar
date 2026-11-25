@@ -22,8 +22,8 @@ export const theme = createTheme({
   white: '#FFFFFF',
   fontFamily: FONT,
   headings: {
-    fontFamily: "'Gabarito Variable', 'TB Figures', 'Hind Siliguri', system-ui, sans-serif",
-    fontWeight: '500',
+    fontFamily: "'Schibsted Grotesk Variable', 'TB Figures', 'Hind Siliguri', system-ui, sans-serif",
+    fontWeight: '600',
     sizes: {
       h1: { fontSize: '2.125rem', lineHeight: '1.1' },
       h2: { fontSize: '1.75rem', lineHeight: '1.15' },
@@ -32,7 +32,7 @@ export const theme = createTheme({
     },
   },
   defaultRadius: 'md',
-  radius: { xs: '6px', sm: '8px', md: '10px', lg: '16px', xl: '24px' },
+  radius: { xs: '2px', sm: '4px', md: '6px', lg: '8px', xl: '12px' },
   focusRing: 'auto',
   cursorType: 'pointer',
   respectReducedMotion: true,
