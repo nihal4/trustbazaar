@@ -19,6 +19,7 @@ import { LedgerService } from './services/ledger.service';
 import { StatementService } from './services/statement.service';
 import { OrdersJobs } from './jobs/orders.jobs';
 import { PayoutService } from './services/payout.service';
+import { PaymentMethodService } from './services/payment-method.service';
 import { PAYOUT_PROVIDER, SimulatedPayoutProvider } from './adapters/payout-provider';
 import { OrderService } from './services/order.service';
 import { PAYMENT_PROVIDERS, PaymentService } from './services/payment.service';
@@ -55,6 +56,7 @@ import { OrdersDataExport } from './services/data-export';
     OrdersClosureCheck,
     { provide: PRO_STATUS, useExisting: MonetizationService },
     PayoutService,
+    PaymentMethodService,
     OrdersJobs,
     { provide: PAYOUT_PROVIDER, useClass: SimulatedPayoutProvider },
     { provide: ESCROW_COMMANDS, useExisting: EscrowService },

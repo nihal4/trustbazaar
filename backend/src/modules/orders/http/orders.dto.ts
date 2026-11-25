@@ -149,3 +149,19 @@ export class BankAccountDecisionDto extends StaffReasonDto {
   @IsIn(['approve', 'reject'])
   decision!: 'approve' | 'reject';
 }
+
+/** U10-23: the buyer's default payment method, as a label only: never a card number, a code or a PIN. */
+export class SavedPaymentMethodDto {
+  @IsIn(['card', 'bkash', 'nagad'])
+  kind!: 'card' | 'bkash' | 'nagad';
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(24)
+  @Matches(/^[A-Za-z][A-Za-z ]*$/)
+  brand?: string;
+
+  @IsString()
+  @Matches(/^[0-9]{4}$/)
+  last4!: string;
+}

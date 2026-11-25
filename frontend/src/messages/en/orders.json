@@ -362,7 +362,7 @@
   "pay.sheet.save_ask": "Do you want to keep {method} as your default payment method?",
   "pay.sheet.save_yes": "Yes, make it my default",
   "pay.sheet.save_no": "Not now",
-  "pay.sheet.save_note": "Only the name of the method is kept, for this visit. Card numbers and PINs are never kept.",
+  "pay.sheet.save_note": "The method's name and last four digits are kept on your account. Card numbers, codes and PINs are never kept.",
   "pay.sheet.continue": "Continue to your order",
   "pay.sheet.failed": "The payment did not go through",
   "pay.sheet.nothing_charged": "Nothing was charged. You can try again.",
@@ -390,5 +390,6 @@
   "orders.col.buyer": "Buyer",
   "orders.col.money": "Money",
   "order.steps.payment_done": "Payment complete",
-  "order.steps.handover_held": "Money on hold"
+  "order.steps.handover_held": "Money on hold",
+  "pay.sheet.forget": "Forget my default method"
 }

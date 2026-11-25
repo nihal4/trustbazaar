@@ -362,7 +362,7 @@
   "pay.sheet.save_ask": "{method} কি আপনার ডিফল্ট পেমেন্ট পদ্ধতি হিসেবে রাখবেন?",
   "pay.sheet.save_yes": "হ্যাঁ, ডিফল্ট করুন",
   "pay.sheet.save_no": "এখন নয়",
-  "pay.sheet.save_note": "শুধু পদ্ধতির নাম এই সফরের জন্য রাখা হয়। কার্ড নম্বর ও পিন কখনও রাখা হয় না।",
+  "pay.sheet.save_note": "পদ্ধতির নাম ও শেষ চার অঙ্ক আপনার অ্যাকাউন্টে রাখা হয়। কার্ড নম্বর, কোড ও পিন কখনও রাখা হয় না।",
   "pay.sheet.continue": "আপনার অর্ডারে যান",
   "pay.sheet.failed": "পেমেন্ট সম্পন্ন হয়নি",
   "pay.sheet.nothing_charged": "কিছু কাটা হয়নি। আবার চেষ্টা করতে পারেন।",
@@ -390,5 +390,6 @@
   "orders.col.buyer": "ক্রেতা",
   "orders.col.money": "টাকা",
   "order.steps.payment_done": "পেমেন্ট সম্পন্ন",
-  "order.steps.handover_held": "টাকা ধরে রাখা আছে"
+  "order.steps.handover_held": "টাকা ধরে রাখা আছে",
+  "pay.sheet.forget": "ডিফল্ট পদ্ধতি মুছুন"
 }

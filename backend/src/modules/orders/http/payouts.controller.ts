@@ -1,13 +1,14 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Put, ParseUUIDPipe, Post, Query, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { correlationId } from '../../../kernel/http/correlation';
 import { Staff, StepUp, Verified } from '../../../kernel/http/policies';
 import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
+import { PaymentMethodService } from '../services/payment-method.service';
 import { LedgerService } from '../services/ledger.service';
 import { AccountInput, PayoutService } from '../services/payout.service';
 import { StatementService } from '../services/statement.service';
-import { BankAccountDecisionDto, PayoutAccountDto, PayoutsQuery, RevenueLogQuery, StaffReasonDto } from './orders.dto';
+import { BankAccountDecisionDto, PayoutAccountDto, SavedPaymentMethodDto, PayoutsQuery, RevenueLogQuery, StaffReasonDto } from './orders.dto';
 
 // Payout accounts, payouts and their staff endpoints (docs/design/02_orders_payments.pdf section 4; U2-10);
 // settlement statements and the revenue log (U2-06).
@@ -27,7 +28,30 @@ export class MyPayoutsController {
   constructor(
     private readonly payouts: PayoutService,
     private readonly statementsOf: StatementService,
+    private readonly methods: PaymentMethodService,
   ) {}
+
+  /** U10-23: the default payment method, masked, or null. */
+  @Verified()
+  @Get('payment-method')
+  async method(@CurrentPrincipal() p: Principal) {
+    return { method: await this.methods.get(userOf(p).userId) };
+  }
+
+  /** U10-23: keep this method as the default (a label only). */
+  @Verified()
+  @Put('payment-method')
+  async setMethod(@CurrentPrincipal() p: Principal, @Body() dto: SavedPaymentMethodDto) {
+    return { method: await this.methods.set(userOf(p).userId, dto) };
+  }
+
+  /** U10-23: forget the default payment method. */
+  @Verified()
+  @Delete('payment-method')
+  @HttpCode(204)
+  async clearMethod(@CurrentPrincipal() p: Principal) {
+    await this.methods.clear(userOf(p).userId);
+  }
 
   /** The current (latest) payout account and its status, or null. */
   @Verified('payout')

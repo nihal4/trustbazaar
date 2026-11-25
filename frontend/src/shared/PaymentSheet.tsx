@@ -3,11 +3,10 @@
 // same on the checkout and on the order page. The providers are simulated (PAYMENT_MODE=mock): any details are accepted, no OTP is asked, no real money
 // moves, and the sheet says so. What is typed is never sent or stored; only the method's own name goes to the server (POST /orders/{id}/payments),
 // exactly as before. With a simulated provider the sheet plays the provider's page itself (completeMockPayment) and then reads the ORDER's status; with a real
-// provider (a page on a configured host) it leaves for that page as it always did. The default method is remembered for this visit only, as a masked
-// label (the brand and the last four digits, or the wallet with most digits hidden): browser storage is not allowed (SEC-SES-03) and the server keeps no
-// payment methods yet.
+// provider (a page on a configured host) it leaves for that page as it always did. The default method is kept on the account (GET, PUT and DELETE /me/payment-method)
+// as a masked label only: the kind, a card's brand and the last four digits. Browser storage is not used (SEC-SES-03).
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { formatMoney } from '../lib/money.js';
 import { useApi } from './api';
 import { errorText } from './errors';
@@ -28,8 +27,10 @@ const MIN_PROCESSING_MS = 2_800;
 const POLL_MS = 600;
 const POLL_LIMIT_MS = 15_000;
 
-interface DefaultMethod { method: Method; label: string }
-const DEFAULT_KEY = ['payment', 'default-method'] as const;
+/** The default method as the server keeps it: a masked label only (kind, a card's brand, the last four digits). */
+interface Saved { kind: Method; brand: string | null; last4: string }
+interface DefaultMethod { method: Method; label: string; saved: Saved }
+const DEFAULT_KEY = ['me', 'payment-method'] as const;
 
 /** The order the sheet pays: id, total (poisha) and the query key the app keeps it under. */
 export interface PayableOrder { id: string; total: string; key: readonly unknown[] }
@@ -49,7 +50,9 @@ export function PaymentSheet({ order, onClose, onPaid, t, lang }: { order: Payab
   const [message, setMessage] = useState<string | null>(null);
   const [paidWith, setPaidWith] = useState<DefaultMethod | null>(null);
   const sending = useRef(false);
-  const defaults = queryClient.getQueryData<DefaultMethod>(DEFAULT_KEY);
+  const saved = useQuery({ queryKey: DEFAULT_KEY, queryFn: ({ signal }) => api.get('/me/payment-method', { signal }) as Promise<{ method: Saved | null }>, retry: false, staleTime: 30_000 });
+  const savedLabel = (m: Saved) => (m.kind === 'card' ? `${m.brand || t('pay.sheet.card')} ${t('pay.sheet.ending', { last: m.last4 })}` : `${t(`pay.method.${m.kind}`)} ${t('pay.sheet.ending', { last: m.last4 })}`);
+  const defaults: DefaultMethod | null = saved.data?.method ? { method: saved.data.method.kind, label: savedLabel(saved.data.method), saved: saved.data.method } : null;
   const total = formatMoney(BigInt(order.total), lang);
   const brand = useMemo(() => detectBrand(number), [number]);
 
@@ -93,7 +96,8 @@ export function PaymentSheet({ order, onClose, onPaid, t, lang }: { order: Payab
       if (!paid) throw new Error('not-paid');
       const rest = MIN_PROCESSING_MS - (Date.now() - started);
       if (rest > 0) await new Promise((res) => setTimeout(res, rest));
-      setPaidWith({ method, label: label(method) });
+      const mask: Saved = method === 'card' ? { kind: 'card', brand: brand.label || null, last4: lastFour(number) } : { kind: method, brand: null, last4: wallet.replace(/\D/g, '').slice(-4) };
+      setPaidWith({ method, label: label(method), saved: mask });
       setStep('done');
     } catch (e) {
       const name = problemName(e);
@@ -106,15 +110,27 @@ export function PaymentSheet({ order, onClose, onPaid, t, lang }: { order: Payab
     }
   }
 
-  const finish = (saveAsDefault: boolean) => {
-    if (saveAsDefault && paidWith) queryClient.setQueryData(DEFAULT_KEY, paidWith);
+  // the answer to "keep it as your default?" is kept on the account (a masked label only); a failure to save never blocks the order
+  const finish = async (saveAsDefault: boolean) => {
+    if (saveAsDefault && paidWith) {
+      try {
+        await api.put('/me/payment-method', paidWith.saved);
+        void queryClient.invalidateQueries({ queryKey: DEFAULT_KEY });
+      } catch { /* the payment is made; the default can be set next time */ }
+    }
     onPaid(order.id);
+  };
+  const forget = async () => {
+    try {
+      await api.del('/me/payment-method');
+      void queryClient.invalidateQueries({ queryKey: DEFAULT_KEY });
+    } catch { /* shown again next time */ }
   };
   const busy = step === 'processing';
   const close = () => { if (!busy) onClose(); };
 
   return (
-    <dialog ref={dialog} className={styles.sheet} aria-labelledby="pay-sheet-title" onCancel={(e) => { e.preventDefault(); if (step === 'done') finish(false); else close(); }}
+    <dialog ref={dialog} className={styles.sheet} aria-labelledby="pay-sheet-title" onCancel={(e) => { e.preventDefault(); if (step === 'done') void finish(false); else close(); }}
       onClick={(e) => { if (e.target === dialog.current && step !== 'done') close(); }}>
       <div className={styles.inner}>
         <div className={styles.grab} aria-hidden="true" />
@@ -135,7 +151,10 @@ export function PaymentSheet({ order, onClose, onPaid, t, lang }: { order: Payab
                 </li>
               ))}
             </ul>
-            <button type="button" className={styles.quiet} onClick={close}>{t('pay.cancel')}</button>
+            <div className={styles.answer}>
+              {defaults && <button type="button" className={styles.quiet} onClick={() => void forget()}>{t('pay.sheet.forget')}</button>}
+              <button type="button" className={styles.quiet} onClick={close}>{t('pay.cancel')}</button>
+            </div>
           </>
         )}
 
@@ -197,13 +216,13 @@ export function PaymentSheet({ order, onClose, onPaid, t, lang }: { order: Payab
             <p className={styles.amount}>{total}</p>
             <p className={styles.lead}>{t('pay.sheet.held', { method: paidWith.label })}</p>
             {defaults?.label === paidWith.label ? (
-              <button type="button" className={styles.pay} onClick={() => finish(false)}>{t('pay.sheet.continue')}</button>
+              <button type="button" className={styles.pay} onClick={() => void finish(false)}>{t('pay.sheet.continue')}</button>
             ) : (
               <>
                 <p className={styles.ask}>{t('pay.sheet.save_ask', { method: paidWith.label })}</p>
                 <div className={styles.answer}>
-                  <button type="button" className={styles.pay} onClick={() => finish(true)}>{t('pay.sheet.save_yes')}</button>
-                  <button type="button" className={styles.quiet} onClick={() => finish(false)}>{t('pay.sheet.save_no')}</button>
+                  <button type="button" className={styles.pay} onClick={() => void finish(true)}>{t('pay.sheet.save_yes')}</button>
+                  <button type="button" className={styles.quiet} onClick={() => void finish(false)}>{t('pay.sheet.save_no')}</button>
                 </div>
                 <p className={styles.fine}>{t('pay.sheet.save_note')}</p>
               </>

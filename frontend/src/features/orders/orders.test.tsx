@@ -47,6 +47,8 @@ function backend(o: { order?: OrderView | (() => OrderView); pay?: (c: Call) => 
     'GET /orders/o-1': o.signedIn === false ? json(401, { type: '/problems/session-ended' }) : () => json(200, typeof o.order === 'function' ? o.order() : (o.order ?? order()))(),
     'GET /orders/o-404': problem(404, 'not-found'),
     'POST /orders/o-1/payments': o.pay ?? json(201, { attemptId: 'a-1', provider: 'nagad', amount: '150000', redirectUrl: '/api/v1/mock-provider/a-1?state=s1' }),
+    'GET /me/payment-method': json(200, { method: null }),
+    'PUT /me/payment-method': json(200, { method: null }),
     'PUT /orders/o-1/fulfilment': o.fulfil ?? json(200, order()),
   });
 }
@@ -92,7 +94,9 @@ describe('paying for an order', () => {
     expect(sent[0].headers.get('Idempotency-Key')).toMatch(/^[0-9a-f-]{36}$/);
     expect(went).toEqual([]);                                                    // no leaving the site: the simulated provider is played in the sheet
     expect(within(sheet).getByText(/^Do you want to keep Nagad 01/)).toBeTruthy();       // the default-method question, with the number masked
-    fireEvent.click(within(sheet).getByRole('button', { name: 'Not now' }));
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Yes, make it my default' }));
+    await waitFor(() => expect(be.called('PUT /me/payment-method')).toHaveLength(1));
+    expect(be.called('PUT /me/payment-method')[0].body).toEqual({ kind: 'nagad', brand: null, last4: '5678' });   // a masked label only: never the number or the PIN
     // the page behind now shows the payment as done, in green, and the money on hold
     await waitFor(() => expect(screen.getAllByRole('listitem').map((li) => li.textContent)).toContain('Payment complete (done)'));
     expect(screen.queryByRole('dialog')).toBeNull();
