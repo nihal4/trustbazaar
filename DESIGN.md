@@ -166,6 +166,7 @@ A bottle-green black ground with one vermilion voice and a green that only ever 
 - **Protect Green** (#5dd39e, `--tb-protect`, `--tb-success`): held and verified states only: the current timeline step, tick marks, the best bid, the "Payment held" tick. On Protect Green Ground (#10281e).
 
 ### Tertiary
+- **Pro Gold** (#e8b84a, `--tb-gold`, defined in `features/listings/listings.module.css`): the Pro Seller badge and the seller's rating star, nothing else. Never an action colour.
 - **Held Tint** (#2b1a12, `--tb-accent-soft`): the "Featured" tag on listings. A brown tint, not an orange fill.
 - **Error Pink** (#ff6f8e, `--tb-error`) on Error Ground (#2b1219), text #ffb3c0: errors and the live auction dot.
 
@@ -265,6 +266,9 @@ Ruled grid, four across on tablet and up, two on phones; each cell is the photo 
 
 ### Steps
 Plain Schibsted figures in vermilion (1.5rem) beside a heading and muted copy, ruled between steps (vertical rules on tablet and up). No tile behind the number.
+
+### Listing page (buy column and seller row)
+Wide screens: the photos and description scroll on the left; the right column (category, title, vermilion top rule, price, Buy now with Save for later beside it, one muted line on when the seller is paid, then the seller row) stays in view until the page ends, and the footer keeps to its left (`html[data-rail]`, `--tb-rail-reserve`). A rail taller than the window scrolls inside itself. No order steps and no green on the buy panel: a visitor has not paid, so nothing is held (the steps appear at checkout and on the order). The seller is a ruled row of cells: a square photo with even 7px gaps, the name beside a scalloped verified seal (Protect Green) over the join year, the rating star with Pro in gold, and a chat cell. The gallery is one large photo with 72px thumbnails under it; physical items get a hover magnifier (240%, mouse only).
 
 ### Glass window (home hero only)
 A 4px frosted panel (`rgb(10 17 16 / .72)`, blur 20px, white 20% border) with a photograph over price, buy button, live clock and the three payment steps; a small dark "Payment held" card (`rgb(10 17 16 / .9)`, 4px) sits over its lower-left corner with a green tick.
