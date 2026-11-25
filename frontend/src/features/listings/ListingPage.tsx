@@ -83,11 +83,17 @@ export function Component() {
           <h2 id="seller-title" className={styles.visuallyHidden}>{t('listing.seller')}</h2>
           <div className={styles.sellerRow}>
             <span className={styles.avatar} aria-hidden="true">{initials(l.seller.displayName)}</span>
-            <div>
-              <Link className={styles.sellerName} to={`/users/${encodeURIComponent(l.seller.id)}`}>{l.seller.displayName}</Link>
-              <p className={styles.muted}>{t('listing.seller_joined', { month: joinMonth(l.seller.joinMonth, lang) })}</p>
+            <div className={styles.sellerInfo}>
+              <p className={styles.sellerLine}>
+                <Link className={styles.sellerName} to={`/users/${encodeURIComponent(l.seller.id)}`}>{l.seller.displayName}</Link>
+                {l.seller.verified && <span className={styles.tick} title={t('listing.seller_verified')}><Tick /><span className={styles.visuallyHidden}>{t('listing.seller_verified')}</span></span>}
+                {l.seller.pro === true && <span className={styles.pro}>{t('listing.seller_pro')}</span>}
+              </p>
+              <p className={styles.sellerMeta}>
+                {l.seller.ratingCount ? <Stars average={l.seller.ratingAverage ?? 0} count={l.seller.ratingCount} t={t} lang={lang} /> : null}
+                <span>{t('listing.seller_since', { year: toLocalDigits(l.seller.joinMonth.slice(0, 4), lang) })}</span>
+              </p>
             </div>
-            {l.seller.verified && <p className={styles.verified}><Tick />{t('listing.seller_verified')}</p>}
           </div>
           {!own && ['active', 'sold', 'ended_unsold'].includes(l.status) && <MessageSeller listingId={l.id} signedIn={signedIn} nextPath={pathname} t={t} lang={lang} />}
         </section>
@@ -114,6 +120,26 @@ export function Component() {
         )}
       </div>
     </article>
+  );
+}
+
+/** Five small stars filled to the average (a drawn mark, not text), with the average and the number of ratings beside them. */
+function Stars({ average, count, t, lang }: { average: number; count: number; t: T; lang: Lang }) {
+  const avg = Math.min(5, Math.max(0, average));
+  const shown = toLocalDigits(avg.toFixed(1), lang);
+  return (
+    <span className={styles.stars} role="img" aria-label={t('listing.rating', { average: shown, count: toLocalDigits(String(count), lang) })}>
+      <svg viewBox="0 0 60 12" width="60" height="12" aria-hidden="true" focusable="false">
+        <defs><clipPath id="star-fill"><rect x="0" y="0" width={(avg / 5) * 60} height="12" /></clipPath></defs>
+        <g fill="none" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" className={styles.starLine}>
+          {[0, 1, 2, 3, 4].map((i) => <path key={i} transform={`translate(${i * 12} 0)`} d="M6 .9 L7.7 4.4 L11.5 4.9 L8.7 7.5 L9.4 11.3 L6 9.5 L2.6 11.3 L3.3 7.5 L.5 4.9 L4.3 4.4 Z" />)}
+        </g>
+        <g clipPath="url(#star-fill)" fill="currentColor" className={styles.starFill}>
+          {[0, 1, 2, 3, 4].map((i) => <path key={i} transform={`translate(${i * 12} 0)`} d="M6 .9 L7.7 4.4 L11.5 4.9 L8.7 7.5 L9.4 11.3 L6 9.5 L2.6 11.3 L3.3 7.5 L.5 4.9 L4.3 4.4 Z" />)}
+        </g>
+      </svg>
+      <span aria-hidden="true">{shown} ({toLocalDigits(String(count), lang)})</span>
+    </span>
   );
 }
 

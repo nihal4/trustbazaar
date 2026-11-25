@@ -87,7 +87,7 @@ describe('the listing page', () => {
     expect((screen.getByRole('img') as HTMLImageElement).alt).toBe('Film camera <script>, photo 2 of 2');   // pressing a small photo shows it in the large place
     expect(screen.getByText('Shows defects')).toBeTruthy();
     expect(screen.getByText('Identity verified')).toBeTruthy();
-    expect(screen.getByText('Member since October 2026')).toBeTruthy();
+    expect(screen.getByText('Since 2026')).toBeTruthy();
   });
 
   it('NFR-USE-07 a physical item\'s large photo has a magnifying glass under the mouse', async () => {
