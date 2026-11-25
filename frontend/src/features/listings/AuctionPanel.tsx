@@ -53,6 +53,13 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
     return initial;
   });
   const { text: announcement, say } = useAnnouncer();
+  const [sheet, setSheet] = useState(false);
+  useEffect(() => {
+    if (!sheet) return undefined;
+    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') setSheet(false); };
+    document.addEventListener('keydown', key);
+    return () => document.removeEventListener('keydown', key);
+  }, [sheet]);
 
   /** Newer by seq; or the same seq closed, since closing does not change the auction's version. */
   const accept = useCallback((s: AuctionState) => {
@@ -169,8 +176,11 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
         </ul>
       </details>
 
-      <section aria-labelledby="history-title">
-        <h3 id="history-title">{t('auction.history')}</h3>
+      <section id="history-box" aria-labelledby="history-title" className={sheet ? `${styles.historyBox} ${styles.sheetOpen}` : styles.historyBox}>
+        <div className={styles.sheetHead}>
+          <h3 id="history-title">{t('auction.history')}</h3>
+          {sheet && <button type="button" className={styles.sheetClose} aria-label={t('shell.close')} onClick={() => setSheet(false)}><svg viewBox="0 0 12 12" width="14" height="14" aria-hidden="true" focusable="false"><path d="M2 2l8 8M10 2l-8 8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg></button>}
+        </div>
         {history.data && history.data.items.length === 0 && <p>{t('auction.history_empty')}</p>}
         {history.data && history.data.items.length > 0 && (
           <ol className={styles.history}>
@@ -186,61 +196,81 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
       </section>
     </div>
   );
-  return (
-    <section aria-labelledby="auction-title" className={styles.auction}>
-      <div className={styles.auctionTop}>
-        <h2 id="auction-title">{t('auction.title')}</h2>
-        {open && (
-          <p className={styles.timeLeft}>
-            {t('auction.time_left')}: <strong role="timer" aria-live="off" className={countdown.urgent ? styles.urgent : undefined}>{countdown.text}</strong>
-          </p>
+  // the bar at the bottom of the screen carries what a bidder needs at a glance: the price, the clock, a way to see the bids and the bid
+  // itself; it shows while bidding is open and the viewer can bid (a guest gets the sign-in link)
+  const barVisible = open && !closing && !own;
+  const priceBlock = (
+    <>
+      <span className={styles.barK}>{state.price ? t('auction.current_price') : t('auction.start_price')}</span>
+      <strong className={styles.barV}>{money(state.price ?? state.startPrice, lang)}</strong>
+    </>
+  );
+  const bar = (
+    <div className={styles.bidBar} role="group" aria-label={t('auction.title')}>
+      <div className={styles.barCell}>{priceBlock}</div>
+      <div className={styles.barCell}>
+        <span className={styles.barK}>{t('auction.time_left')}</span>
+        <strong role="timer" aria-live="off" className={countdown.urgent ? `${styles.barV} ${styles.urgent}` : styles.barV}>{countdown.text}</strong>
+      </div>
+      <div className={`${styles.barCell} ${styles.barMid}`}>
+        <button type="button" className={styles.seeBids} aria-expanded={sheet} aria-controls="history-box" onClick={() => setSheet((v) => !v)}>
+          {t('auction.see_bids')}{state.bidCount > 0 && <span className={styles.bidCount} aria-hidden="true">{toLocalDigits(String(state.bidCount), lang)}</span>}
+        </button>
+      </div>
+      <div className={styles.barAct}>
+        {!signedIn ? (
+          <Link to={signInPath(nextPath)} className={styles.primaryLink}>{t('auction.sign_in_to_bid')}</Link>
+        ) : (
+          <BidForm id={id} state={state} mine={mine} t={t} lang={lang} onPlaced={(r, sentAt) => {
+            const at = Date.parse(r.state.serverTime);
+            if (Number.isFinite(at)) serverClock.sampleHttp(at, sentAt, Date.now());
+            accept(r.state);
+            refreshMine();
+          }} onRefused={() => void refetch()} />
         )}
       </div>
-      <p className={styles.visuallyHidden} aria-live="polite" role="status">{announcement}</p>
-      <div className={styles.facts}>
-        <p className={styles.priceLine}>
-          <span className={styles.muted}>{state.price ? t('auction.current_price') : t('auction.start_price')}</span>{' '}
-          <strong className={styles.bigPrice}>{money(state.price ?? state.startPrice, lang)}</strong>
-        </p>
-        <div className={styles.factGrid}>
-          <p>{state.bidCount > 0 ? t('auction.bid_count', { count: toLocalDigits(String(state.bidCount), lang) }) : t('auction.no_bids')}</p>
-          {state.leaderAlias !== null && <p>{t('auction.leader', { alias: toLocalDigits(String(state.leaderAlias), lang) })}</p>}
-          {state.hasReserve && <p>{state.reserveMet ? t('auction.reserve_met') : t('auction.reserve_not_met')}</p>}
-          {open && <p className={styles.muted}>{t('auction.ends_at', { at: formatDateTime(Date.parse(state.endAt), lang) })}</p>}
+    </div>
+  );
+  return (
+    <>
+      <section aria-labelledby="auction-title" className={styles.auction}>
+        <div className={styles.auctionTop}>
+          <h2 id="auction-title">{t('auction.title')}</h2>
         </div>
-      </div>
-
-      {open && (countdown.urgent || closing) && (
-        <div className={styles.clock}>
-          {countdown.urgent && <p className={styles.warning}>{t('auction.late_warning')}</p>}
-          {closing && <p role="status">{t('auction.ending')}</p>}
+        <p className={styles.visuallyHidden} aria-live="polite" role="status">{announcement}</p>
+        <div className={styles.facts}>
+          {!barVisible && (
+            <p className={styles.priceLine}>
+              <span className={styles.muted}>{state.price ? t('auction.current_price') : t('auction.start_price')}</span>{' '}
+              <strong className={styles.bigPrice}>{money(state.price ?? state.startPrice, lang)}</strong>
+            </p>
+          )}
+          <div className={styles.factGrid}>
+            <p>{state.bidCount > 0 ? t('auction.bid_count', { count: toLocalDigits(String(state.bidCount), lang) }) : t('auction.no_bids')}</p>
+            {state.leaderAlias !== null && <p>{t('auction.leader', { alias: toLocalDigits(String(state.leaderAlias), lang) })}</p>}
+            {state.hasReserve && <p>{state.reserveMet ? t('auction.reserve_met') : t('auction.reserve_not_met')}</p>}
+            {open && <p className={styles.muted}>{t('auction.ends_at', { at: formatDateTime(Date.parse(state.endAt), lang) })}</p>}
+          </div>
         </div>
-      )}
-      {!open && <Closed state={state} t={t} lang={lang} mine={mine} />}
 
-      {open && !closing && own && <p>{t('auction.own')}</p>}
-      {open && !closing && !own && !signedIn && (
-        <>
-          <p><Link to={signInPath(nextPath)} className={styles.primaryLink}>{t('auction.sign_in_to_bid')}</Link></p>
-          <p className={styles.muted}>{t('auction.guest_live')}</p>
-        </>
-      )}
-      {open && !closing && !own && signedIn && (
-        <BidForm id={id} state={state} mine={mine} t={t} lang={lang} onPlaced={(r, sentAt) => {
-          const at = Date.parse(r.state.serverTime);
-          if (Number.isFinite(at)) serverClock.sampleHttp(at, sentAt, Date.now());
-          accept(r.state);
-          refreshMine();
-        }} onRefused={() => void refetch()} />
-      )}
-      {mine && open && mine.hasBid && (
-        <p className={mine.leading ? styles.mine : `${styles.mine} ${styles.outbid}`}>
-          {t('auction.your_maximum', { amount: money(mine.yourMaximum!, lang) })} {mine.leading ? t('auction.you_lead') : t('auction.you_are_outbid')}
-        </p>
-      )}
-
+        {open && (countdown.urgent || closing) && (
+          <div className={styles.clock}>
+            {countdown.urgent && <p className={styles.warning}>{t('auction.late_warning')}</p>}
+            {closing && <p role="status">{t('auction.ending')}</p>}
+          </div>
+        )}
+        {!open && <Closed state={state} t={t} lang={lang} mine={mine} />}
+        {open && !closing && own && <p>{t('auction.own')}</p>}
+        {open && !closing && !own && !signedIn && <p className={styles.muted}>{t('auction.guest_live')}</p>}
+        {mine && open && mine.hasBid && (
+          <p className={mine.leading ? styles.mine : `${styles.mine} ${styles.outbid}`}>
+            {t('auction.your_maximum', { amount: money(mine.yourMaximum!, lang) })} {mine.leading ? t('auction.you_lead') : t('auction.you_are_outbid')}
+          </p>
+        )}
+      </section>
+      {barVisible && createPortal(bar, document.body)}
       {extraHost ? createPortal(extraNode, extraHost) : extraNode}
-    </section>
+    </>
   );
 }
 
@@ -310,8 +340,8 @@ function BidForm({ id, state, mine, t, lang, onPlaced, onRefused }: {
     <form onSubmit={submit} noValidate className={styles.bid}>
       {state.minimumBid && !leading && <p><strong>{t('auction.minimum', { amount: money(state.minimumBid, lang) })}</strong></p>}
       {result && <FormMessage kind={result.kind}>{result.text}</FormMessage>}
-      <label htmlFor="bid-amount">{label}</label>
-      <input id="bid-amount" type="text" inputMode="decimal" autoComplete="off" value={amount} maxLength={20}
+      <label htmlFor="bid-amount" className={styles.visuallyHidden}>{label}</label>
+      <input id="bid-amount" type="text" inputMode="decimal" autoComplete="off" value={amount} maxLength={20} placeholder={label}
         aria-invalid={error ? true : undefined} aria-describedby={error ? 'bid-amount-error' : undefined}
         onChange={(e) => setAmount(e.target.value)} />
       {error && <p id="bid-amount-error" className={styles.fieldError}>{error}</p>}

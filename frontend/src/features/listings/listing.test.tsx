@@ -101,16 +101,14 @@ describe('the listing page', () => {
     expect(document.querySelector('[class*="glass"]')).toBeNull();
   });
 
-  it('NFR-USE-07 Save for later marks the item on this device, and the mark can be taken off', async () => {
-    window.localStorage.removeItem('tb.saved');
+  it('NFR-USE-07 Save for later marks the item on the page, and the mark can be taken off (kept between visits by U10-29)', async () => {
     renderApp(`/listings/${ID}`, backend({ l: listing() }));
     const save = await screen.findByRole('button', { name: 'Save for later' });
     expect(save.getAttribute('aria-pressed')).toBe('false');
     fireEvent.click(save);
     expect(screen.getByRole('button', { name: 'Saved' }).getAttribute('aria-pressed')).toBe('true');
-    expect(JSON.parse(window.localStorage.getItem('tb.saved')!)).toEqual([ID]);
     fireEvent.click(screen.getByRole('button', { name: 'Saved' }));
-    expect(JSON.parse(window.localStorage.getItem('tb.saved')!)).toEqual([]);
+    expect(screen.getByRole('button', { name: 'Save for later' }).getAttribute('aria-pressed')).toBe('false');
   });
 
   it('FR-FIX-01 a fixed-price item links to its checkout; not the seller\'s own, nor a reserved or sold one', async () => {
