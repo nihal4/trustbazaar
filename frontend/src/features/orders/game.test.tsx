@@ -64,7 +64,7 @@ describe('before payment', () => {
     renderApp('/orders/o-1', be);
     expect(await screen.findByText(/^The game's publisher may forbid transferring accounts/)).toBeTruthy();
     expect(screen.getByText(/^It does not cover any action by the publisher\./)).toBeTruthy();
-    expect(screen.queryByText('How you pay')).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Pay ৳/ })).toBeNull();
     const confirm = screen.getByRole('button', { name: 'Confirm' }) as HTMLButtonElement;
     expect(confirm.disabled).toBe(true);
     fireEvent.click(screen.getByLabelText(/^I have read this/));
@@ -73,19 +73,19 @@ describe('before payment', () => {
     expect(link.getAttribute('href')).toBe('/secure/orders/o-1/key');
     expect(be.called('POST /orders/o-1/game/acknowledge')[0].body).toEqual({ version: 1 });
     expect(screen.getByText(/^Use this same browser on this device/)).toBeTruthy();
-    expect(screen.queryByText('How you pay')).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Pay ৳/ })).toBeNull();
     cleanup();
 
     renderApp('/orders/o-1', backend({}, { game: () => game({ disclosure: { currentVersion: 1, acknowledgedVersion: 1, acknowledgedAt: iso(0) }, keyVersion: 1 }) }));
     expect(await screen.findByText('Your key is ready in this browser. You can pay now.')).toBeTruthy();
-    expect(screen.getByText('How you pay')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Pay ৳/ })).toBeTruthy();
   });
 
   it('FR-GAM-07 a browser without IndexedDB is told so and offered no payment; an unknown disclosure version asks for a reload', async () => {
     vi.stubGlobal('indexedDB', undefined);
     renderApp('/orders/o-1', backend());
     expect(await screen.findByText(/^This browser cannot keep the key a game-account purchase needs/)).toBeTruthy();
-    expect(screen.queryByText('How you pay')).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Pay ৳/ })).toBeNull();
     cleanup();
     vi.stubGlobal('indexedDB', { open: () => ({}) });
     renderApp('/orders/o-1', backend({}, { game: () => game({ disclosure: { currentVersion: 2, acknowledgedVersion: null, acknowledgedAt: null } }) }));

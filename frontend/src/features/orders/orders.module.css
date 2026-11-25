@@ -110,3 +110,42 @@
 .rowMain p { margin: var(--tb-space-1) 0 0; }
 .rowAmount { padding-top: 0.5rem; }
 @media (max-width: 30rem) { .row.row { grid-template-columns: minmax(0, 1fr); } .rowAmount { grid-row: 1; padding-top: 0; font-size: 1.0625rem; } }
+
+/* The orders list as a ruled grid (U10-23): a small photo, the item, its status, the other party, the money and the receipt; bought and cancelled kept in
+   their own sections. No boxes: hairline rules between rows; the photo is the only framed thing (an image). */
+.ordersSection { margin-top: var(--tb-space-4); }
+.sectionTitle { display: flex; align-items: baseline; gap: 0.625rem; margin: 0 0 var(--tb-space-1); font-family: var(--tb-font-display); font-weight: var(--tb-display-weight); font-size: 1.25rem; letter-spacing: -0.01em; }
+.count { color: var(--tb-muted); font-family: var(--tb-font); font-weight: 600; font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
+.gridHead, .gridRow { display: grid; grid-template-columns: 4rem minmax(0, 2.2fr) minmax(0, 1.4fr) minmax(0, 1.2fr) minmax(5.5rem, auto) 10.5rem; gap: 0 1.25rem; align-items: center; }
+.gridHead { padding-block: 0.5rem; border-top: 2px solid var(--tb-hot); border-bottom: 1px solid var(--tb-line); color: var(--tb-muted); font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+:lang(bn) .gridHead { letter-spacing: 0; text-transform: none; }
+.gridRow { padding-block: 0.75rem; border-bottom: 1px solid var(--tb-line); }
+.gridRow p { margin: 0; }
+.gridRow .hint { margin-top: 0.125rem; font-size: 0.875rem; color: var(--tb-muted); }
+.thumb { width: 4rem; height: 4rem; overflow: hidden; border-radius: 4px; background: var(--tb-surface); }
+.thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cellMain, .cell { min-width: 0; overflow-wrap: anywhere; }
+.alignEnd { text-align: right; justify-self: end; }
+.gridRow .rowAmount { padding-top: 0; }
+.cellAction { display: flex; justify-content: flex-end; }
+.receipt { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; padding: 0 0.25rem; border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; background: none; color: var(--tb-text); font: inherit; font-weight: 600; font-size: 0.9375rem; white-space: nowrap; cursor: pointer; }
+.receipt:hover { border-bottom-color: var(--tb-hot); }
+.receipt:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+@media (max-width: 60rem) {
+  .gridHead { display: none; }
+  .gridRow { grid-template-columns: 4rem minmax(0, 1fr) auto; grid-template-areas: 'photo main money' 'photo status status' 'photo who who' '. action action'; gap: 0.125rem 1rem; align-items: start; }
+  .gridRow > :nth-child(1) { grid-area: photo; }
+  .gridRow > :nth-child(2) { grid-area: main; }
+  .gridRow > :nth-child(3) { grid-area: status; }
+  .gridRow > :nth-child(4) { grid-area: who; }
+  .gridRow > :nth-child(5) { grid-area: money; }
+  .gridRow > :nth-child(6) { grid-area: action; justify-content: flex-start; }
+  .cell[data-label]:not(.alignEnd)::before { content: attr(data-label); display: block; color: var(--tb-muted); font-size: 0.8125rem; }
+}
+@media (forced-colors: active) { .gridHead { border-top-color: CanvasText; } }
+
+.wide { max-width: 75rem; }
+.gridRow a { display: inline; min-height: 0; color: var(--tb-text); font-weight: 600; text-decoration: none; background-image: linear-gradient(var(--tb-hot), var(--tb-hot)); background-repeat: no-repeat; background-size: 0 2px; background-position: 0 100%; transition: background-size 160ms; }
+.gridRow a:hover { background-size: 100% 2px; }
+.gridRow a:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .gridRow a { transition: none; } }

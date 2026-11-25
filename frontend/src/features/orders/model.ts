@@ -12,6 +12,8 @@ export interface OrderView {
   listing: { id: string; title: string; itemKind: 'physical' | 'game_account'; photoKey: string | null };
   /** The chat thread of the order's buyer and seller, null until they have written (Decisions log, U8-13). */
   threadId: string | null;
+  /** The other party: the seller to the buyer, the buyer to the seller (public display name only). */
+  counterparty?: { id: string; displayName: string };
   quantity: number;
   itemPrice: string;
   deliveryFee: string;

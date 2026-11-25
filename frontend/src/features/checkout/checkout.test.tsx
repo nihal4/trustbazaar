@@ -27,7 +27,7 @@ function backend(o: { l?: Record<string, unknown>; signedIn?: boolean; create?: 
     'GET /me/notification-preferences': json(200, { language: 'en', emailTransactional: true }),
     [`GET /listings/${ID}`]: json(200, listing(o.l)),
     'POST /orders': o.create ?? json(201, { id: 'o-1' }),
-    'GET /orders/o-1': json(200, { id: 'o-1', status: 'awaiting_payment', role: 'buyer', listing: { id: ID, title: 'Desk lamp' } }),
+    'GET /orders/o-1': json(200, { id: 'o-1', status: 'awaiting_payment', role: 'buyer', total: '300000', listing: { id: ID, title: 'Desk lamp' } }),
   });
 }
 
@@ -61,6 +61,11 @@ describe('checkout', () => {
     const button = screen.getByRole('button', { name: 'Continue to payment' });
     fireEvent.click(button);
     fireEvent.click(button);
+    // a pickup order is paid right here: the payment sheet rises over the checkout, with the order's own total
+    const sheet = await screen.findByRole('dialog');
+    expect(within(sheet).getByRole('heading', { name: 'Pay ৳3,000' })).toBeTruthy();
+    expect(doc.router.state.location.pathname).toBe(`/checkout/${ID}`);
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Cancel' }));          // leaving the sheet goes on to the order's page, still unpaid
     await waitFor(() => expect(doc.router.state.location.pathname).toBe('/orders/o-1'));
     const sent = be.called('POST /orders');
     expect(sent).toHaveLength(1);

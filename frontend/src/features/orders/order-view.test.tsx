@@ -377,6 +377,28 @@ describe('courier delivery and shipments (Unit 4)', () => {
 });
 
 describe('the list of orders', () => {
+  it('NFR-USE-07 IF-UI-05 the list is a ruled grid with the item, status, seller and money, a receipt for a paid order, and cancelled orders in their own section', async () => {
+    const photo = { ...order().listing, photoKey: 'ph-1' };
+    const be = backend({
+      'GET /orders': json(200, { items: [
+        order({ id: 'o-2', listing: photo, counterparty: { id: 's-1', displayName: 'Rahim Traders' } }),
+        order({ id: 'o-5', status: 'awaiting_payment', escrow: null, paidAt: null, listing: { ...photo, title: 'Unpaid lamp' } }),
+        order({ id: 'o-6', status: 'cancelled', escrow: null, paidAt: null, cancelledAt: '2026-11-02T10:00:00Z', listing: { ...photo, title: 'Gone phone' } }),
+      ], nextCursor: null }),
+    });
+    renderApp('/orders', be);
+    await screen.findByRole('link', { name: 'Desk lamp' });
+    const bought = screen.getByRole('region', { name: /^Bought/ });
+    const cancelled = screen.getByRole('region', { name: /^Cancelled/ });
+    expect(within(bought).getAllByRole('listitem')).toHaveLength(2);
+    expect(within(cancelled).getAllByRole('listitem')).toHaveLength(1);
+    expect(within(cancelled).getByRole('link', { name: 'Gone phone' })).toBeTruthy();
+    expect(within(bought).getByText('Rahim Traders')).toBeTruthy();                       // the seller, in a column of their own
+    expect(bought.querySelector('img')?.getAttribute('src')).toBe('/api/v1/listing-photos/ph-1?size=thumb');
+    expect(within(bought).getAllByRole('button', { name: /^Download the receipt for/ })).toHaveLength(1);   // only the paid order has one
+    expect(within(cancelled).queryByRole('button', { name: /receipt/ })).toBeNull();
+  });
+
   it('IF-UI-05 bought and sold orders, each with its status, total and where the money is, more on request', async () => {
     const be = backend({
       'GET /orders': (c) => {
@@ -421,7 +443,7 @@ describe('the order\'s counterfoil (money-order world, U10-14)', () => {
     renderApp('/orders/o-1', backend({}));
     const steps = await screen.findByRole('list', { name: 'Order progress' });
     const items = within(steps).getAllByRole('listitem');
-    expect(items.map((li) => li.textContent)).toEqual(['Payment (done)', 'Handover (now)', 'Done (still to come)']);
+    expect(items.map((li) => li.textContent)).toEqual(['Payment complete (done)', 'Money on hold (now)', 'Product confirmed, seller paid (still to come)']);
     expect(items[1].getAttribute('aria-current')).toBe('step');
   });
 

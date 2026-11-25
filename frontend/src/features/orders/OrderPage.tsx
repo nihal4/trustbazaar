@@ -6,7 +6,7 @@
 // buyer chooses how to get the item (self pickup, or courier with a binding quote) and pays here. The provider sends
 // the buyer back here (/orders/{id}?payment={attempt}&result=...; Decisions log, U2-03 and U8-05): the page never
 // treats that return as payment, and checks the order every 2 s for up to 30 s.
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { formatMoney } from '../../lib/money.js';
@@ -14,7 +14,6 @@ import { formatCountdown, formatDateTime } from '../../lib/time.js';
 import { useApi } from '../../shared/api';
 import { useOpenThread } from '../../shared/chat';
 import { useServerNow } from '../../shared/clock';
-import { ConfirmDialog } from '../../shared/ConfirmDialog';
 import { postmarkDate } from '../../shared/Counterfoil';
 import { EscrowSteps } from '../../shared/EscrowSteps';
 import { signInPath } from '../../shared/document';
@@ -23,7 +22,7 @@ import { FormMessage } from '../../shared/form';
 import type { T } from '../../shared/language/catalogue';
 import { useT } from '../../shared/language/Language';
 import type { Lang } from '../../shared/language/lang';
-import { isApiError, problemName } from '../../shared/problems';
+import { isApiError } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { SimulatedBanner } from '../../shared/SimulatedBanner';
 import { Actions } from './Actions';
@@ -34,7 +33,8 @@ import { GamePrepare, gameReady, GameTab, useGame } from './Game';
 import { Handover, useHandover } from './Handover';
 import { orderKey, type OrderView } from './model';
 import { moneyText } from './moneyText';
-import { away, PROVIDERS, providerPage, RETURN_POLL_MS, RETURN_WAIT_MS, type Provider } from './payment';
+import { RETURN_POLL_MS, RETURN_WAIT_MS } from './payment';
+import { PaymentSheet } from '../../shared/PaymentSheet';
 import { Ratings, useOrderRatings } from './Ratings';
 import { Shipments, useShipments } from './Shipments';
 import en from '../../messages/en/orders.json';
@@ -80,6 +80,9 @@ export function Component() {
 }
 
 function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; attempt: string | null; failed: boolean; waited: boolean; t: T; lang: Lang }) {
+  // the payment sheet belongs to the page, not to the pay panel: the panel goes away the moment the order is paid, and the sheet still has to show it
+  const [sheet, setSheet] = useState(false);
+  const queryClient = useQueryClient();
   const handover = useHandover(o);
   const shipments = useShipments(o);
   const disputes = useOrderDisputes(o);
@@ -105,7 +108,11 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
       <Money o={o} t={t} lang={lang} />
       {attempt && <Return o={o} failed={failed} waited={waited} t={t} />}
       <Deadlines o={o} h={handover.data ?? null} t={t} lang={lang} />
-      {awaiting && o.role === 'buyer' && <PayPanel o={o} t={t} lang={lang} />}
+      {awaiting && o.role === 'buyer' && <PayPanel o={o} t={t} lang={lang} onPay={() => setSheet(true)} />}
+      {sheet && (
+        <PaymentSheet order={{ id: o.id, total: o.total, key: orderKey(o.id) }} t={t} lang={lang} onClose={() => setSheet(false)}
+          onPaid={() => { setSheet(false); void queryClient.invalidateQueries({ queryKey: orderKey(o.id) }); }} />
+      )}
       {o.cancelledAt && o.cancelReason && CANCEL_REASONS.includes(o.cancelReason) && <p className={styles.hint}>{t(`order.cancel_reason.${o.cancelReason}`)}</p>}
       <Actions o={o} t={t} lang={lang} />
       {disputes.data && <Disputes o={o} items={disputes.data.items} t={t} lang={lang} />}
@@ -151,7 +158,9 @@ function Money({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
   const now = steps.find((s) => s.state === 'current');
   const current = steps.length === 0 ? null : now ? ({ payment: 'in', handover: 'held', done: 'out' } as const)[now.key] : 'done';
   const out = postmarkOf(o, lang);
-  const label = (k: 'payment' | 'handover' | 'done') => t(`order.steps.${k}${k === 'handover' && o.fulfilment === 'courier' ? '_courier' : ''}`);
+  // the three stages in the buyer's words: Payment complete -> Money on hold -> Product confirmed (the last stage, when the seller is paid)
+  const paidDone = steps.find((s) => s.key === 'payment')?.state === 'done';
+  const label = (k: 'payment' | 'handover' | 'done') => (k === 'payment' ? t(paidDone ? 'order.steps.payment_done' : 'order.steps.payment') : k === 'handover' ? t('order.steps.handover_held') : t('order.steps.done'));
   return (
     <section aria-labelledby="money-title" className={styles.moneyPanel}>
       <h2 id="money-title" className={styles.moneyLabel}>{t('order.counterfoil.stub')}</h2>
@@ -190,14 +199,11 @@ function Return({ o, failed, waited, t }: { o: OrderView; failed: boolean; waite
   return <p role="status">{t('return.checking')}</p>;
 }
 
-function PayPanel({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
+function PayPanel({ o, t, lang, onPay }: { o: OrderView; t: T; lang: Lang; onPay: () => void }) {
   const api = useApi();
   const queryClient = useQueryClient();
   const now = useServerNow();
-  const [provider, setProvider] = useState<Provider>('bkash');
-  const [confirming, setConfirming] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [leaving, setLeaving] = useState(false);
   const due = Date.parse(o.paymentDueAt);
   const over = due <= now;
   // a game account is paid only once the disclosure is acknowledged and the key exists (Unit 5, checkout_ready)
@@ -211,29 +217,7 @@ function PayPanel({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
     onSuccess: (next) => queryClient.setQueryData(orderKey(o.id), next),
     onError: (e) => setMessage(errorText(e, t, lang)),
   });
-  const pay = useMutation({
-    mutationFn: () => api.post(`/orders/${encodeURIComponent(o.id)}/payments`, { provider }, { idempotent: true }) as Promise<{ redirectUrl: string }>,
-    onSuccess: (r) => {
-      setConfirming(false);
-      const page = providerPage(r.redirectUrl);
-      if (!page) return setMessage(t('pay.bad_redirect'));
-      setLeaving(true);
-      away.go(page);
-    },
-    onError: (e) => {
-      setConfirming(false);
-      const name = problemName(e);
-      setMessage(name === 'feature-off' ? t('pay.provider_off') : name === 'provider-unavailable' ? t('pay.provider_unavailable') : errorText(e, t, lang));
-      if (name === 'order-state') void queryClient.invalidateQueries({ queryKey: orderKey(o.id) });
-    },
-  });
-  // sent once (section 4.2): a second click before the button shows as disabled sends nothing
-  const sending = useRef(false);
-  const send = () => {
-    if (sending.current) return;
-    sending.current = true;
-    pay.mutate(undefined, { onSettled: () => { sending.current = false; } });
-  };
+  const ready = !!o.fulfilment && !over && !blockedByGame;
 
   const total = formatMoney(BigInt(o.total), lang);
   return (
@@ -250,7 +234,6 @@ function PayPanel({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
         {over ? t('pay.window_over') : t('pay.window', { left: formatCountdown(due - now, lang).text, at: formatDateTime(due, lang) })}
       </p>
       {message && <FormMessage kind="error">{message}</FormMessage>}
-      {leaving && <p role="status">{t('pay.leaving')}</p>}
       {!o.fulfilment && (
         <fieldset className={styles.choice}>
           <legend>{t('pay.fulfilment')}</legend>
@@ -268,25 +251,8 @@ function PayPanel({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
       )}
       {isGame && game.data && <GamePrepare o={o} g={game.data} t={t} lang={lang} disabled={over} />}
       {isGame && game.isError && <FormMessage kind="error">{errorText(game.error, t, lang)}</FormMessage>}
-      {o.fulfilment && !over && !blockedByGame && (
-        <>
-          <fieldset className={styles.choice}>
-            <legend>{t('pay.method')}</legend>
-            {PROVIDERS.map((p) => (
-              <div key={p}>
-                <input id={`pay-${p}`} type="radio" name="provider" value={p} checked={provider === p} onChange={() => setProvider(p)} />
-                <label htmlFor={`pay-${p}`}>{t(`pay.method.${p}`)}</label>
-              </div>
-            ))}
-          </fieldset>
-          <button type="button" className={styles.primary} disabled={pay.isPending || leaving} onClick={() => setConfirming(true)}>{t('pay.pay', { total })}</button>
-        </>
-      )}
-      {confirming && (
-        <ConfirmDialog id="pay-confirm" title={t('pay.confirm_title')} busy={pay.isPending}
-          confirmLabel={t('pay.confirm_button', { total })} cancelLabel={t('pay.cancel')} onConfirm={send} onCancel={() => setConfirming(false)}>
-          <p>{t('confirm.buy_now', { amount: total, item: line(o.itemPrice), delivery: line(o.deliveryFee) })}</p>
-        </ConfirmDialog>
+      {ready && (
+        <button type="button" className={styles.primary} onClick={onPay}>{t('pay.pay', { total })}</button>
       )}
     </section>
   );

@@ -63,27 +63,44 @@ describe('paying for an order', () => {
     expect(within(panel).getByText(/^Pay within (15:00|14:5\d) \(by .+\)\.$/)).toBeTruthy();
   });
 
-  it('FR-PAY-01 "Pay" states its consequence, starts the payment once with an Idempotency-Key, and opens the provider\'s page', async () => {
-    const be = backend();
+  const openSheet = async () => {
+    fireEvent.click(await screen.findByRole('button', { name: 'Pay ৳1,500' }));
+    return await screen.findByRole('dialog');
+  };
+  const payWallet = (sheet: HTMLElement, method: 'bKash' | 'Nagad') => {
+    fireEvent.click(within(sheet).getByRole('button', { name: new RegExp(`^${method}`) }));
+    fireEvent.change(within(sheet).getByLabelText(`${method} number`), { target: { value: '01712345678' } });
+    fireEvent.change(within(sheet).getByLabelText(`${method} PIN`), { target: { value: '1234' } });
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Pay ৳1,500' }));
+  };
+
+  it('FR-PAY-01 the payment sheet offers bKash, Nagad and a card, takes any details, starts the payment once with an Idempotency-Key and says it is complete', async () => {
+    let status: 'awaiting_payment' | 'paid' = 'awaiting_payment';
+    const be = backend({ order: () => (status === 'paid' ? paid() : order()), pay: () => { status = 'paid'; return json(201, { attemptId: 'a-1', provider: 'nagad', amount: '150000', redirectUrl: '/api/v1/mock-provider/a-1?state=s1' })(); } });
+    const fetched: string[] = [];
+    // the simulated provider's page is played in the sheet: its "Pay" form is posted (not followed), the server then asks the provider
+    vi.stubGlobal('fetch', ((u: string, init?: RequestInit) => { fetched.push(`${init?.method} ${String(u)}`); return Promise.resolve(new Response('', { status: 200 })); }) as typeof fetch);
     renderApp('/orders/o-1', be);
-    fireEvent.click(await screen.findByLabelText('Nagad'));
-    fireEvent.click(screen.getByRole('button', { name: 'Pay ৳1,500' }));
-    const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText(libEn['confirm.buy_now'].replace('{amount}', '৳1,500').replace('{item}', '৳1,500.00').replace('{delivery}', '৳0.00'))).toBeTruthy();
-    const confirm = within(dialog).getByRole('button', { name: 'Pay ৳1,500' });
-    fireEvent.click(confirm);
-    fireEvent.click(confirm);
-    await waitFor(() => expect(went).toEqual([`${window.location.origin}/api/v1/mock-provider/a-1?state=s1`]));
+    const sheet = await openSheet();
+    expect(within(sheet).getAllByRole('button').map((b) => b.textContent).join('|')).toMatch(/bKash.*Nagad.*Card/);
+    payWallet(sheet, 'Nagad');
+    expect(await within(sheet).findByText('Payment complete', {}, { timeout: 8000 })).toBeTruthy();
+    expect(fetched).toEqual([`POST ${window.location.origin}/api/v1/mock-provider/a-1?state=s1`]);
     const sent = be.called('POST /orders/o-1/payments');
     expect(sent).toHaveLength(1);
     expect(sent[0].body).toEqual({ provider: 'nagad' });
     expect(sent[0].headers.get('Idempotency-Key')).toMatch(/^[0-9a-f-]{36}$/);
-  });
+    expect(went).toEqual([]);                                                    // no leaving the site: the simulated provider is played in the sheet
+    expect(within(sheet).getByText(/^Do you want to keep Nagad 01/)).toBeTruthy();       // the default-method question, with the number masked
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Not now' }));
+    // the page behind now shows the payment as done, in green, and the money on hold
+    await waitFor(() => expect(screen.getAllByRole('listitem').map((li) => li.textContent)).toContain('Payment complete (done)'));
+    expect(screen.queryByRole('dialog')).toBeNull();
+  }, 20_000);
 
   it('SEC-PAY-02 a provider page on a host that is not configured is not followed, so PINs are typed only on the provider\'s own page', async () => {
     renderApp('/orders/o-1', backend({ pay: json(201, { attemptId: 'a-1', redirectUrl: 'https://checkout.stripe.com.evil.example/pay' }) }));
-    fireEvent.click(await screen.findByRole('button', { name: 'Pay ৳1,500' }));
-    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Pay ৳1,500' }));
+    payWallet(await openSheet(), 'bKash');
     expect(await screen.findByText('We could not open the payment page safely. Please try again or choose another method.')).toBeTruthy();
     expect(went).toEqual([]);
     expect(providerPage('https://checkout.stripe.com/c/pay/x', ['checkout.stripe.com'], 'https://tb.test')).toBe('https://checkout.stripe.com/c/pay/x');
@@ -93,13 +110,11 @@ describe('paying for an order', () => {
 
   it('FR-PAY-01 a method that is not available, and a provider that cannot be reached, are explained', async () => {
     renderApp('/orders/o-1', backend({ pay: problem(409, 'feature-off', { errors: [{ field: 'provider', reason: 'not-available-in-this-mode' }] }) }));
-    fireEvent.click(await screen.findByRole('button', { name: 'Pay ৳1,500' }));
-    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Pay ৳1,500' }));
+    payWallet(await openSheet(), 'bKash');
     expect(await screen.findByText('This payment method is not available right now. Please choose another.')).toBeTruthy();
     cleanup();
     renderApp('/orders/o-1', backend({ pay: problem(503, 'provider-unavailable', {}, { 'Retry-After': '30' }) }));
-    fireEvent.click(await screen.findByRole('button', { name: 'Pay ৳1,500' }));
-    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Pay ৳1,500' }));
+    payWallet(await openSheet(), 'bKash');
     expect(await screen.findByText('The payment service cannot be reached right now. Please try again shortly.')).toBeTruthy();
   });
 

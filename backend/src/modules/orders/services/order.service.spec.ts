@@ -61,7 +61,10 @@ function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; ve
   };
   const db = { ...manager, manager, transaction: (cb: (m: typeof manager) => unknown) => cb(manager) };
   const listings = { reserve: jest.fn(async () => o.reserve ?? true), snapshot: jest.fn(async () => o.snap ?? snapshot()) };
-  const identity = { getPrincipal: jest.fn(async () => ({ verifiedAt: o.verifiedAt === undefined ? new Date('2026-01-01') : o.verifiedAt })) };
+  const identity = {
+    getPrincipal: jest.fn(async () => ({ verifiedAt: o.verifiedAt === undefined ? new Date('2026-01-01') : o.verifiedAt })),
+    getPublicProfile: jest.fn(async (id: string) => ({ id, displayName: `Name of ${id}` })),
+  };
   const audit = { record: jest.fn(async () => undefined) };
   const values = parameterValues({ ...PARAMS, 'CP-36': o.cp36 ?? true });
   const params = { current: async () => ({ ...values, version: 7 }), switchOn: async () => o.switchOn ?? true } as unknown as ConfigPort;
@@ -182,7 +185,7 @@ describe('OrderService', () => {
     const s = setup();
     const { order } = await s.svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined);
     s.escrows.rows.push({ orderId: order.id, state: 'held', releasePolicy: 'standard', amountCollected: '1000000', amountRefunded: '0', disputeWindowEndsAt: null, autoReleaseAt: NOW });
-    expect(await s.svc.getOrderForParty(order.id, 'S')).toMatchObject({ role: 'seller', escrow: { state: 'held', autoReleaseAt: NOW.toISOString() } });
+    expect(await s.svc.getOrderForParty(order.id, 'S')).toMatchObject({ role: 'seller', counterparty: { id: 'B', displayName: 'Name of B' }, escrow: { state: 'held', autoReleaseAt: NOW.toISOString() } });
     expect(await problemOf(s.svc.getOrderForParty(order.id, 'X'))).toEqual(['not-found']);
     expect((await s.svc.getOrderForParty(order.id, 'B')).cancellationRequest).toBeNull();
     s.cancellations.rows.push({ id: 'C1', orderId: order.id, status: 'pending', reason: 'Wrong model', createdAt: NOW });
