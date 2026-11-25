@@ -35,6 +35,7 @@ This file is the single record of what is being built, by whom, and what is fini
 | P0-08 | SRS update: DV-1 to DV-67, DC-15 and the SRS clarifications of the integration register (does not block coding) | - | todo | | | | |
 | P0-09 | Clear `npm audit --audit-level=high` in the backend while keeping NestJS 10 (C-1): npm `overrides` to the patched versions, each scoped to the package that needs it (SEC-SDL-04) | P0-04 | done | S. M. Nihal Ahmed | #63 | 2026-11-01 | Found when `lint-and-unit (backend)` first ran to the end (#61). |
 | P0-10 | The CI audit with documented exceptions (SEC-SDL-04): `scripts/audit-check.mjs` fails on high and critical advisories except those in `audit-exceptions.json`, each with a reason and a review date | P0-09 | done | Sabikun Nahar Sinthia | `fix/p0-10-audit-exceptions`, #250 | 2026-11-18 | Found on 2026-11-18 when GHSA-fc5q-39xc-vjpf (picomatch, every version, no fix) failed every pull request (#249). |
+| P0-11 | Commit hygiene: no AI co-author or session trailers (a project setting that turns the attribution off, a CI check on pull requests, and a runbook to clean the old history) | | doing | S. M. Nihal Ahmed | `chore/no-ai-trailers` | | Owner decision 2026-11-25: stop the trailers and also clean the history (451 commits on main carry `Co-Authored-By: Claude`, plus `Claude-Session:` lines). The history rewrite needs all three authors' agreement and a repo admin; see `scripts/strip-ai-trailers.md`. |
 
 ## K: Shared kernel (with Unit 1)
 
