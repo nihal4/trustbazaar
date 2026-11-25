@@ -114,8 +114,13 @@
 .page { row-gap: 1.5rem; }
 @media (min-width: 60rem) {
   .page { column-gap: 3rem; }
-  /* the buy / bid panel stays in view while the page scrolls */
-  .side { position: sticky; top: 1.5rem; align-self: start; }
+}
+.rail { display: contents; }
+@media (min-width: 60rem) {
+  .page { grid-template-areas: 'gallery rail' 'body rail'; grid-template-rows: auto 1fr; }
+  .noPhotos { grid-template-areas: 'body rail'; grid-template-rows: auto; }
+  /* title, price, buy and seller stay in view while the photos and the description scroll: only the left side moves */
+  .rail { display: flex; flex-direction: column; gap: 1.25rem; grid-area: rail; position: sticky; top: 5.75rem; align-self: start; min-width: 0; }
 }
 .crumb { gap: 0.25rem 0.75rem; }
 .crumb a { color: var(--tb-muted); text-decoration: none; border-bottom: 1px solid var(--tb-line); }
