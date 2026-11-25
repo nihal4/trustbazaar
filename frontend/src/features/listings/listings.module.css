@@ -600,3 +600,6 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 .roomStats > .countGrid:last-child .countCell { align-items: flex-end; padding-right: 0; }
 /* the stage's drawing spans the whole stage and is centred over the price (a limited height scales it, never shifts it) */
 .roomStage svg { display: block; width: 100%; height: auto; margin-inline: 0; }
+
+/* the seller's rating star is gold (a dead-code cleanup had removed this rule together with an unused one) */
+.starFill { color: var(--tb-gold); }
