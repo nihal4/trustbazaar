@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-25T00:00:00Z",
+  "title": "Design System: TrustBazaar",
+  "extensions": {
+    "colorMeta": {
+      "night-ground": { "role": "neutral", "displayName": "Night Ground", "canonical": "#080d14", "tonalRamp": ["#030509", "#080d14", "#0f1824", "#131f2e", "#213145", "#62768d", "#9fb0c3", "#f2f5f9"] },
+      "panel": { "role": "neutral", "displayName": "Panel", "canonical": "#0f1824", "tonalRamp": ["#05080c", "#0a1018", "#0f1824", "#131f2e", "#1a2a3d", "#213145", "#3a4c63", "#62768d"] },
+      "panel-raised": { "role": "neutral", "displayName": "Panel Raised", "canonical": "#131f2e", "tonalRamp": ["#080d14", "#0f1824", "#131f2e", "#1a2a3d", "#213145", "#3a4c63", "#62768d", "#9fb0c3"] },
+      "text": { "role": "neutral", "displayName": "Text", "canonical": "#f2f5f9", "tonalRamp": ["#62768d", "#7d8ea3", "#9fb0c3", "#b6c1cf", "#c3ccd8", "#dce2ea", "#f2f5f9", "#ffffff"] },
+      "vermilion": { "role": "primary", "displayName": "Vermilion", "canonical": "#ff6b35", "tonalRamp": ["#3a1d12", "#7a3318", "#b84a22", "#e65a2b", "#ff6b35", "#ff8a5c", "#ffb08a", "#ffe1d2"] },
+      "held-brown": { "role": "tertiary", "displayName": "Held Brown", "canonical": "#2a1b14", "tonalRamp": ["#140d0a", "#2a1b14", "#3a2418", "#5a3320", "#8a5a40", "#c9b4a6", "#ffb08a", "#ffe1d2"] },
+      "protect-green": { "role": "secondary", "displayName": "Protect Green", "canonical": "#5dd39e", "tonalRamp": ["#0b2218", "#10281e", "#0b6b3f", "#1f9c66", "#3dbb85", "#5dd39e", "#9be5c3", "#dff3e8"] },
+      "error-pink": { "role": "tertiary", "displayName": "Error Pink", "canonical": "#ff6f8e", "tonalRamp": ["#2b1219", "#4a1d2b", "#6b2a3a", "#a8405a", "#d95676", "#ff6f8e", "#ffb3c0", "#fff0f3"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Home hero headline only, Gabarito 500." },
+      "headline": { "displayName": "Headline", "purpose": "Section headings, one line on wide screens." },
+      "title": { "displayName": "Title", "purpose": "Bento card headings." },
+      "price": { "displayName": "Price", "purpose": "Static money values in Gabarito with tabular figures." },
+      "figure": { "displayName": "Figure", "purpose": "Ticking clocks, bids and code digits in Figtree tabular." }
+    },
+    "shadows": [
+      { "name": "hairline", "value": "inset 0 0 0 1px var(--tb-line)", "purpose": "Outline of every panel and card; the only surface edge." },
+      { "name": "card", "value": "0 1px 2px rgba(0,0,0,.4), 0 8px 24px -10px rgba(0,0,0,.6)", "purpose": "Dark-theme raised pieces (--tb-shadow-card)." },
+      { "name": "lift", "value": "0 2px 4px rgba(0,0,0,.4), 0 18px 40px -14px rgba(0,0,0,.7)", "purpose": "Dark-theme lifted pieces (--tb-shadow-lift)." },
+      { "name": "hero-window", "value": "inset 0 1px 0 rgb(255 255 255 / .3), 0 40px 80px -30px rgb(0 0 0 / .7)", "purpose": "Home hero glass window only." }
+    ],
+    "motion": [
+      { "name": "ease-rise", "value": "cubic-bezier(.2,.7,.2,1)", "purpose": "Hero entrance (rise 600ms, window slide 800ms after 200ms) and photo zoom (400ms)." },
+      { "name": "hover-fast", "value": "140ms", "purpose": "Button and chip colour and 2px lift transitions." },
+      { "name": "card-lift", "value": "180ms", "purpose": "Listing card translateY(-2px) on hover." },
+      { "name": "sheen", "value": "7s ease-in-out 1.5s infinite", "purpose": "Home glass window passing sheen." },
+      { "name": "ping", "value": "1.8s infinite", "purpose": "Live dots (vermilion in the hero, error pink on the auction)." },
+      { "name": "reduced-motion", "value": "all animation and transition off", "purpose": "prefers-reduced-motion disables every animation; WebGL ground draws one still frame." }
+    ],
+    "breakpoints": [
+      { "name": "phone", "value": "0 to 767px (max-width 47.99em)" },
+      { "name": "tablet", "value": "768px (48em) to 1023px" },
+      { "name": "laptop", "value": "1024px (64em) and up" },
+      { "name": "narrow", "value": "26rem and 30rem tweaks" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one hot action: Sell, search submit.",
+      "html": "<a class=\"ds-btn-primary\" href=\"#\">Start selling</a>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; min-height: 48px; padding: 0 1.5rem; border-radius: 10px; background: #ff6b35; color: #0a1018; font-family: 'Figtree Variable', system-ui, sans-serif; font-weight: 700; text-decoration: none; transition: transform 140ms, background 140ms; } .ds-btn-primary:hover { background: #ff8a5c; transform: translateY(-2px); } .ds-btn-primary:active { transform: scale(0.97); } .ds-btn-primary:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }"
+    },
+    {
+      "name": "Hero Search",
+      "kind": "input",
+      "refersTo": "search-hero",
+      "description": "The single action in the hero: a white field with a vermilion submit.",
+      "html": "<div class=\"ds-search\"><input placeholder=\"Search listings\" /><button>Search</button></div>",
+      "css": ".ds-search { display: flex; align-items: center; gap: 0.5rem; max-width: 34rem; padding: 0.375rem 0.375rem 0.375rem 1rem; border-radius: 10px; background: rgb(255 255 255 / 0.96); box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.55); } .ds-search:focus-within { outline: 2px solid #ff6b35; outline-offset: 3px; } .ds-search input { flex: 1; min-width: 0; min-height: 48px; border: 0; outline: 0; background: transparent; font: inherit; font-size: 1.0625rem; color: #0f1720; } .ds-search button { min-height: 48px; padding: 0 1.5rem; border: 0; border-radius: 8px; background: #ff6b35; color: #0a1018; font-weight: 700; cursor: pointer; } .ds-search button:hover { background: #ff8a5c; }"
+    },
+    {
+      "name": "Category Chip",
+      "kind": "chip",
+      "refersTo": "category-chip",
+      "description": "Horizontal category strip item; the first one (All) wears the held brown.",
+      "html": "<a class=\"ds-chip\" href=\"#\">Phones</a>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1rem; border-radius: 10px; background: #131f2e; color: #f2f5f9; font-weight: 500; text-decoration: none; transition: background 140ms, transform 140ms; } .ds-chip:hover { background: #2a1b14; transform: translateY(-2px); } .ds-chip:focus-visible { outline: 2px solid #ff8a5c; outline-offset: 2px; }"
+    },
+    {
+      "name": "Bento Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Panel colour with a 1px hairline, 16px radius; the safety explanation unit.",
+      "html": "<div class=\"ds-card\"><h3>Money held until you have it</h3><p>Your payment stays with us until you confirm the item.</p></div>",
+      "css": ".ds-card { display: flex; flex-direction: column; gap: 0.75rem; padding: 1.5rem; border-radius: 16px; background: #0f1824; box-shadow: inset 0 0 0 1px #213145; color: #f2f5f9; max-width: 22rem; } .ds-card h3 { margin: 0; font-family: 'Gabarito Variable', system-ui, sans-serif; font-weight: 500; font-size: 1.375rem; letter-spacing: -0.02em; line-height: 1.2; } .ds-card p { margin: 0; color: #9fb0c3; max-width: 36ch; }"
+    },
+    {
+      "name": "Held-Money Card",
+      "kind": "card",
+      "refersTo": "card-held",
+      "description": "The one accented card: brown tint with a vermilion-tinted hairline.",
+      "html": "<div class=\"ds-held\"><h3>Payment held</h3><p>Released only after the handover code.</p></div>",
+      "css": ".ds-held { display: flex; flex-direction: column; gap: 0.75rem; padding: 1.5rem; border-radius: 16px; background: #2a1b14; box-shadow: inset 0 0 0 1px rgb(255 107 53 / 0.28); color: #f2f5f9; max-width: 22rem; } .ds-held h3 { margin: 0; font-family: 'Gabarito Variable', system-ui, sans-serif; font-weight: 500; font-size: 1.375rem; letter-spacing: -0.02em; } .ds-held p { margin: 0; color: #d6c3b8; }"
+    },
+    {
+      "name": "Escrow Timeline",
+      "kind": "custom",
+      "description": "Three payment steps; green marks the current held state.",
+      "html": "<ul class=\"ds-tl\"><li class=\"done\">Paid</li><li class=\"now\">Held</li><li>Released</li></ul>",
+      "css": ".ds-tl { list-style: none; margin: 0; padding: 0; width: 14rem; color: #9fb0c3; font-family: 'Figtree Variable', system-ui, sans-serif; } .ds-tl li { display: flex; align-items: center; gap: 0.875rem; padding: 0.75rem 0; font-weight: 500; } .ds-tl li + li { border-top: 1px solid rgb(255 255 255 / 0.1); } .ds-tl li::before { content: ''; flex: none; width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgb(255 255 255 / 0.4); } .ds-tl .done { color: #f2f5f9; } .ds-tl .done::before { background: #f2f5f9; border-color: #f2f5f9; } .ds-tl .now { color: #fff; font-weight: 650; } .ds-tl .now::before { background: #5dd39e; border-color: #5dd39e; box-shadow: 0 0 0 4px rgb(93 211 158 / 0.22); }"
+    },
+    {
+      "name": "Glass Window (home only)",
+      "kind": "custom",
+      "description": "The hero's frosted product window; not for reuse on other screens.",
+      "html": "<div class=\"ds-glass\"><strong>Example listing</strong><span class=\"ds-price\">৳15,000</span></div>",
+      "css": ".ds-glass { display: grid; gap: 0.25rem; padding: 1.25rem 1.5rem; border-radius: 16px; background: rgb(10 16 24 / 0.72); border: 1px solid rgb(255 255 255 / 0.2); backdrop-filter: blur(20px) saturate(1.5); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), 0 40px 80px -30px rgb(0 0 0 / 0.7); color: #fff; font-family: 'Figtree Variable', system-ui, sans-serif; } .ds-price { font-family: 'Gabarito Variable', system-ui, sans-serif; font-size: 1.75rem; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Night Market",
+    "overview": "TrustBazaar is a marketplace for buyers in Bangladesh, in English and Bangla at equal weight. The shipped home page sets it as a night market: a near-black navy ground, panels one step lighter, and a single vermilion that does all the calling. The page proves safety by showing the mechanism (a real listing, a live clock, a \"Payment held\" card) rather than asserting it with a badge. The system is flat: every surface is a panel colour with a 1px hairline. The one exception is the home hero, with a moving WebGL gradient ground and a frosted-glass product window; these exist only on the home hero.",
+    "keyCharacteristics": [
+      "Dark theme on the user app; console, ID check and credentials pages stay light.",
+      "One surface system: panel colour plus a 1px inset hairline, three radii (24, 16, 10).",
+      "Gabarito for headlines at weight 500, Figtree for text and every ticking figure.",
+      "Hero fills the first screen alone; its moving ground falls back to a still CSS gradient.",
+      "44px minimum tap targets; reduced motion switches every animation off."
+    ],
+    "rules": [
+      { "name": "The One Hot Colour Rule", "body": "Vermilion is the only hot colour. It marks an action or a live signal; it is never decoration, never a large fill, and never carries white text.", "section": "colors" },
+      { "name": "The Protect Green Rule", "body": "Green means held or verified money and nothing else.", "section": "colors" },
+      { "name": "The Held Brown Rule", "body": "The brown tint belongs to the held-money card and its step markers.", "section": "colors" },
+      { "name": "The Ticking Figures Rule", "body": "Anything that updates in place is Figtree with tabular-nums. Gabarito is for static display and prices.", "section": "typography" },
+      { "name": "The Bangla Face Rule", "body": "In Bangla the stack becomes TB Figures, Hind Siliguri, Figtree, line height 1.7 for body and 1.3 to 1.4 for headings, letter-spacing 0 on headings and prices.", "section": "typography" },
+      { "name": "The One Surface Rule", "body": "Panel colour plus a 1px hairline is the only surface. No second card style.", "section": "elevation" },
+      { "name": "The Home-Only Glass Rule", "body": "The WebGL gradient ground and the frosted-glass window with its sheen exist only on the home hero.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep every surface to panel colour plus a 1px hairline, with radii of 24 (panels), 16 (cards) and 10 (controls).",
+      "Do reserve vermilion (#ff6b35) for actions and live signals, with #0a1018 text on it.",
+      "Do use Protect Green only for held or verified states, and Held Brown for the held-money card.",
+      "Do set headings in Gabarito 500 and all ticking figures in Figtree with tabular numerals.",
+      "Do keep tap targets at 44px minimum and design for 320px, phones under 768, tablets 768 to 1023, laptops 1024 and up.",
+      "Do keep a still fallback for any animation and honour prefers-reduced-motion.",
+      "Do keep Bangla on Hind Siliguri with the TB Figures digits first in the stack, at line height 1.7."
+    ],
+    "donts": [
+      "Don't use the WebGL ground, backdrop blur or the glass sheen outside the home hero.",
+      "Don't put white text on vermilion or use vermilion as a large background fill.",
+      "Don't add a fourth radius or a second card style.",
+      "Don't use Protect Green or Error Pink as decoration.",
+      "Don't set a changing number in Gabarito.",
+      "Don't let the held-money brown tint spread to ordinary cards.",
+      "Don't convey state by colour alone; the timeline pairs fill with text weight and the clock pairs colour with its label."
+    ]
+  }
+}

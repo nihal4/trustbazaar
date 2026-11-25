@@ -72,6 +72,9 @@
   --tb-error: #ff6f8e; --tb-error-bg: #2b1219; --tb-error-line: #6b2a3a; --tb-error-text: #ffb3c0;
   --tb-success: #5dd39e; --tb-protect: #5dd39e; --tb-protect-soft: #10281e;
   --tb-ink: #0f1824; --tb-action: #ff6b35; --tb-action-text: #0a1018;
+  /* the home hero's ground: the CSS gradient under the shader and the shader's four colours (GlowGround.tsx reads these) */
+  --tb-hero-from: #0a1018; --tb-hero-mid: #15263b; --tb-hero-to: #3a1d12;
+  --tb-glow-0: #0a1018; --tb-glow-1: #15263b; --tb-glow-2: #ff6b35; --tb-glow-3: #ffb08a;
   --tb-shadow-card: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -10px rgba(0,0,0,.6);
   --tb-shadow-lift: 0 2px 4px rgba(0,0,0,.4), 0 18px 40px -14px rgba(0,0,0,.7);
 }
