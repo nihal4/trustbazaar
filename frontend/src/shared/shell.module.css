@@ -326,6 +326,6 @@
 .footer a:focus-visible { outline: 2px solid var(--tb-accent-soft); outline-offset: 3px; }
 
 .wmA { font-weight: 400; } .wmB { font-weight: 650; }
-.logotype { display: block; height: 28px; width: auto; }
+.logotype { display: block; height: 32px; width: auto; }
 .logotypeBn { height: 30px; }
 @media (max-width: 26rem) { .logotype { height: 24px; } .logotypeBn { height: 26px; } }

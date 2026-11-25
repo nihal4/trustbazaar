@@ -96,14 +96,14 @@
   "home.safe.auction_text": "The server keeps the time. A bid in the last minutes extends the end, so nobody is sniped.",
   "home.safe.ends": "Ends in",
   "home.safe.bidder": "Bidder {n}",
-  "home.safe.id_title": "Every seller is ID-checked",
+  "home.safe.id_title": "ID-checked sellers",
   "home.safe.id_text": "An ID card and two selfies, reviewed by a person. One verified account per person.",
   "home.safe.id_card": "ID card checked",
   "home.safe.id_selfie": "Selfies match",
-  "home.safe.code_title": "Hand over with a one‑time code",
+  "home.safe.code_title": "One‑time handover code",
   "home.safe.code_text": "Inspect the item first. Give the seller the code only when you are happy.",
   "home.safe.code_label": "Handover code",
-  "home.safe.pay_title": "Pay the way you already do",
+  "home.safe.pay_title": "Pay your usual way",
   "home.safe.pay_text": "Choose bKash, Nagad or a card. The money goes to TrustBazaar first.",
   "home.safe.card": "Card",
   "home.journey.title": "How a purchase goes",
@@ -114,5 +114,6 @@
   "home.journey.pay": "Pay safely",
   "home.journey.pay_text": "TrustBazaar holds your money. The seller can see that it is there.",
   "home.journey.meet": "Meet and confirm",
-  "home.journey.meet_text": "Inspect the item, give the code, and the seller is paid."
+  "home.journey.meet_text": "Inspect the item, give the code, and the seller is paid.",
+  "home.demo.example": "Example"
 }

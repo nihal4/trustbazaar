@@ -42,3 +42,4 @@
 .price { font-family: var(--tb-font-display); font-size: 1.25rem; font-weight: 500; letter-spacing: -0.02em; }
 .title { font-weight: 500; }
 @media (prefers-reduced-motion: reduce) { .link, .photo img { transition: none; } .link:hover, .link:hover .photo img { transform: none; } }
+.noPhoto { position: absolute; inset: 0; margin: auto; color: var(--tb-border); }
