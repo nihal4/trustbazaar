@@ -154,11 +154,16 @@
 .buyPromise > p, .promise { display: flex; gap: 0.5rem; align-items: center; margin: 0 0 0.75rem; font-weight: 600; }
 .promise { padding: 0.75rem 0; border-bottom: 1px solid var(--tb-line); font-weight: 400; align-items: flex-start; }
 .shield { flex: none; color: var(--tb-protect); margin-top: 2px; }
-.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; counter-reset: step; }
-.steps li { counter-increment: step; padding: 0.625rem 0.75rem 0 0; border-top: 2px solid var(--tb-line); color: var(--tb-muted); font-size: 0.8125rem; line-height: 1.35; }
-.steps li::before { content: counter(step); display: block; margin-bottom: 0.25rem; font-weight: 600; font-variant-numeric: tabular-nums; }
-.steps .stepDone { border-top-color: var(--tb-protect); color: var(--tb-text); }
-.steps .stepNow { border-top-color: var(--tb-protect); color: var(--tb-protect); font-weight: 600; }
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; }
+/* each step is a ball on a line: a step the money has reached is a filled green ball, a step it has not is an empty ring, grey */
+.steps li { position: relative; padding: 1.75rem 0.75rem 0 0; color: var(--tb-muted); font-size: 0.8125rem; line-height: 1.35; }
+.steps li::before { content: ''; position: absolute; left: 0; top: 0; z-index: 1; box-sizing: border-box; width: 16px; height: 16px; border: 2px solid var(--tb-border); border-radius: 50%; background: var(--tb-bg); }
+.steps li::after { content: ''; position: absolute; left: 16px; right: 0; top: 7px; height: 2px; background: var(--tb-line); }
+.steps li:last-child::after { content: none; }
+.steps .stepDone, .steps .stepNow { color: var(--tb-text); }
+.steps .stepDone::before, .steps .stepNow::before { border-color: var(--tb-protect); background: var(--tb-protect); }
+.steps .stepDone::after { background: var(--tb-protect); }
+.steps .stepNow { color: var(--tb-protect); font-weight: 600; }
 .buyButton, .primary, .primaryLink { display: flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 1.5rem; border-radius: 6px; background: var(--tb-action); color: var(--tb-action-text); font-weight: 700; font-size: 1.0625rem; text-decoration: none; border: 0; cursor: pointer; transition: background 140ms, transform 140ms; }
 .buyButton:hover, .primary:hover:not(:disabled), .primaryLink:hover { background: var(--tb-hot-hover); }
 .buyButton:active, .primary:active:not(:disabled) { transform: translateY(1px); }
@@ -192,7 +197,7 @@
 .offer { border-radius: 0; background: none; border: 0; border-block: 1px solid var(--tb-hot); padding: 0.875rem 0; }
 .closed { border-block: 1px solid var(--tb-line); padding: 0.75rem 0; }
 @media (prefers-reduced-motion: reduce) { .buyButton, .primary { transition: none; } }
-@media (forced-colors: active) { .buy, .auction { border-top-color: CanvasText; } .steps li { border-top-color: CanvasText; } }
+@media (forced-colors: active) { .buy, .auction { border-top-color: CanvasText; } .steps li::before { border-color: CanvasText; } .steps .stepDone::before, .steps .stepNow::before { background: Highlight; } .steps li::after { background: CanvasText; } }
 
 /* the gallery: one large photo, small ones under it (all items); a magnifying glass on the large one for physical items */
 .stage { position: relative; width: 100%; max-height: 38rem; border: 1px solid var(--tb-line); border-radius: 4px; background: var(--tb-surface); overflow: hidden; }
