@@ -46,3 +46,12 @@ photographs before release. Item photographs elsewhere come from sellers.
 
 Listing page, checkout, orders, sell, account, ID check, staff and the sweep (U10-22 to U10-28); the footer's credit
 line for the stand-in photographs; the Bangla check of the new screens.
+
+## 6. Update 2026-11-25: dark theme, logo and hero photo
+
+The user chose the dark glossy hero and asked for the rest of the app to match, a more modern hero photograph, and a logo that
+highlights "Trust" and its T. The user app (`index.html`, `data-theme="dark"`) now runs on dark tokens (`tokens.css`,
+`:root[data-theme='dark']`: ground `#080D14`, panels `#0F1824` and `#131F2E`, text `#F2F5F9`, links and actions vermilion
+with ink text); the console, the ID check and the credentials page stay light. The logotype is "Trust" in vermilion with a
+capital T and "bazaar" in white (ink on light), a coin in each "a"; the favicon is the vermilion T on an ink tile. The hero
+window shows a smartphone in its box (a stand-in photograph from Wikimedia Commons, `public/img/credits.json`).

@@ -53,8 +53,8 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
       {accountLinks && <p className={styles.promiseBar}><ShieldIcon />{t('shell.promise_bar')}</p>}
       <header className={exit ? `${styles.header} ${styles.withExit}` : styles.header}>
         {home.sameDocument
-          ? <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo /></Link>
-          : <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}><Logo /></a>}
+          ? <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo onDark={accountLinks} /></Link>
+          : <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}><Logo onDark={accountLinks} /></a>}
         {titleKey && <span className={styles.docTitle}>{t(titleKey)}</span>}
         {accountLinks && !phone ? <HeaderSearch /> : <span className={styles.spacer} />}
         {accountLinks && <AccountLink phone={phone} />}
@@ -108,7 +108,7 @@ function Footer() {
   return (
     <footer className={styles.footer}>
       <div className={styles.footerAbout}>
-        <Logo />
+        <Logo onDark />
         <p>{t('shell.footer.tagline')}</p>
       </div>
       <nav aria-label={t('shell.footer.nav')}>
