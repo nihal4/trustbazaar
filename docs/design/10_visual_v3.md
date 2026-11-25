@@ -93,3 +93,14 @@ fix batch, get a verdict pass, then open the PR. A surface brief is written for 
 
 **Open decision for the user.** The colour and type review suggested a bottle-green-black palette and Schibsted Grotesk for headlines.
 This is a one-place token change if decided before U10-22 spreads the system to more screens.
+
+## 8. Update 2026-11-25: look D and the ruled grid
+
+The user compared four looks side by side in the running app (current; green-black; Schibsted headlines; both) and chose D, and asked to
+replace the filled blocks with lines, a line grid. Changes: the dark palette is a bottle-green black (ground `#0A1110`, panels `#101A19`,
+surface `#16221F`, hairline `#2A3B36`, text `#F1F5F3`, muted `#A2B5B0`, held tint `#2B1A12`; the vermilion, the protect green and the error
+pink are unchanged); headlines are Schibsted Grotesk at weight 600 (Figtree stays for text and all figures; Bangla unchanged); the home
+page has no filled cards: sections are ruled by 1 px hairlines and cells (the bento, the purchase strip, the selling steps, the listing
+grid, the category strip, the handover code); the held-money cell has one hot rule on top; step numbers are plain figures in the hot
+colour; radii are nearly square (4 px for the hero, window and photos, 6 px for controls). The hero's gradient and shader colours are
+tokens (`--tb-hero-*`, `--tb-glow-*`). `DESIGN.md` is updated to match.

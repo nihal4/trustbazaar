@@ -36,10 +36,10 @@
 .photo { border: 0; border-radius: var(--tb-radius-panel); aspect-ratio: 4 / 3.4; background: var(--tb-surface); margin-bottom: 10px; }
 .photo img { transition: transform 400ms cubic-bezier(.2,.7,.2,1); }
 .link:hover .photo img { transform: scale(1.03); }
-.clock, .featured { border-radius: 6px; }
+.clock, .featured { border-radius: 2px; }
 .clock { background: var(--tb-ink); }
 .featured { border: 0; background: var(--tb-accent-soft); color: var(--tb-text); }
-.price { font-family: var(--tb-font-display); font-size: 1.25rem; font-weight: 500; letter-spacing: -0.02em; }
+.price { font-family: var(--tb-font); font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; }
 .title { font-weight: 500; }
 @media (prefers-reduced-motion: reduce) { .link, .photo img { transition: none; } .link:hover, .link:hover .photo img { transform: none; } }
 .noPhoto { position: absolute; inset: 0; margin: auto; color: var(--tb-border); }

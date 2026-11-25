@@ -54,7 +54,7 @@ describe('the fonts', () => {
   const faces = (path: string) => [...readFileSync(require.resolve(path), 'utf8').matchAll(/@font-face\s*\{([^}]*)\}/g)].map((m) => m[1]);
 
   it.each([
-    '@fontsource-variable/figtree/wght.css', '@fontsource-variable/gabarito/wght.css', '@fontsource/hind-siliguri/bengali-400.css', '@fontsource/hind-siliguri/bengali-500.css',
+    '@fontsource-variable/figtree/wght.css', '@fontsource-variable/schibsted-grotesk/wght.css', '@fontsource/hind-siliguri/bengali-400.css', '@fontsource/hind-siliguri/bengali-500.css',
     '@fontsource/hind-siliguri/bengali-600.css', '@fontsource/hind-siliguri/bengali-700.css',
   ])('NFR-PERF-07 %s swaps in after first paint and is served from the site (AC-ALL-3, AC-ALL-4)', (path) => {
     const all = faces(path);
