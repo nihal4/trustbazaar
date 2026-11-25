@@ -312,7 +312,7 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 .barAct .bid { grid-template-rows: auto auto; }
 .barAct .bid > input { grid-column: 1; grid-row: 2; }
 .barAct .bid > .primary { grid-column: 2; grid-row: 2; }
-.barAct .bid > .fieldError, .barAct .bid > div:not([role='dialog']) { position: absolute; right: 0; bottom: calc(100% + 6px); z-index: 2; width: max-content; max-width: min(26rem, 92vw); padding: 0.375rem 0.625rem; border: 1px solid var(--tb-error-line); border-radius: 4px; background: var(--tb-error-bg); color: var(--tb-error-text); }
+.barAct .bid > .fieldError, .barAct .bid > div:not([role='dialog']) { position: absolute; right: 0; bottom: calc(100% + 6px); z-index: 2; width: max-content; max-width: min(27rem, 92vw); padding: 0.375rem 0.625rem; border: 1px solid var(--tb-error-line); border-radius: 4px; background: var(--tb-error-bg); color: var(--tb-error-text); }
 .barAct .bid > p:first-child { grid-column: 1 / -1; grid-row: 1; }
 /* with no price block above it, the facts grid starts right under the Auction line */
 .facts:not(:has(.priceLine)) { padding-top: 0.75rem; }
@@ -347,12 +347,12 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 .barBody > .barCell:first-child { padding-left: 0; }
 .barBody > .barMid { justify-content: center; }
 .barBody > .barAct { padding: 0.625rem 0 0.625rem 1.5rem; width: auto; justify-self: stretch; display: flex; flex-direction: column; justify-content: flex-end; }
-.barBody > .barAct > * { width: min(100%, 26rem); margin-left: auto; }
+.barBody > .barAct > * { width: min(100%, 27rem); margin-left: auto; }
 .barCell { padding-bottom: 0; }
 .barToggle { display: none; }
 /* phones: the bar is a small floating tab at the right edge (a chevron and the price); pressing it opens the bar, a chevron closes it */
 @media (max-width: 47.99em) {
-  .bidBar { left: auto; right: 12px; bottom: calc(58px + 12px + env(safe-area-inset-bottom)); width: auto; border: 1px solid var(--tb-hot); border-radius: 6px; border-top-width: 1px; box-shadow: none; }
+  .bidBar { left: auto; right: 1rem; bottom: calc(58px + 16px + env(safe-area-inset-bottom)); width: auto; border: 1px solid var(--tb-hot); border-radius: 6px; border-top-width: 1px; box-shadow: none; }
   .bidBar[data-open='true'] { left: 0; right: 0; bottom: calc(58px + env(safe-area-inset-bottom)); border: 0; border-top: 2px solid var(--tb-hot); border-radius: 0; padding: 0.25rem 1rem 0.625rem; }
   .barToggle { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; padding: 0 0.875rem; border: 0; background: none; color: var(--tb-text); font: inherit; font-weight: 700; font-variant-numeric: tabular-nums; cursor: pointer; }
   .bidBar[data-open='true'] .barToggle { margin-left: auto; padding: 0 0.25rem; }
@@ -390,3 +390,22 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 .barBody .seeBids .bidCount { color: var(--tb-hot); font-weight: 700; font-variant-numeric: tabular-nums; }
 .seeArrow svg { display: block; }
 @media (max-width: 47.99em) { .seeLabel { padding: 0; } .barBody .seeBids { padding: 0; } .barBody .seeBids .bidCount, .seeArrow { width: 3rem; } .seeChev { margin-left: 0; } }
+
+/* ---- final review fixes ---- */
+/* details: the vertical hairline between the columns runs unbroken from the first row to the last */
+@media (min-width: 30rem) {
+  .details { row-gap: 0; }
+  .details > div:not(.wide) { padding-block: 0.625rem; }
+  .details > div:nth-child(-n+2):not(.wide) { padding-top: 0; }
+}
+/* an ended or sold auction is not an open action: no vermilion rule, a muted label (and no payment line, see ListingPage) */
+.auction[data-closed] { border-top-color: var(--tb-line); }
+.auction[data-closed] .auctionTop h2 { color: var(--tb-muted); }
+/* a rated seller on the narrowest phones: the rating and Pro take a row of their own so the name keeps its width */
+@media (max-width: 22rem) {
+  .sellerRowRated { grid-template-columns: calc(var(--av) + 14px) minmax(0, 1fr) auto; }
+  .sellerRowRated .sellerRating { grid-column: 1 / -1; grid-row: 2; flex-direction: row; align-items: center; gap: 0.75rem; padding: 0.5rem 0.875rem; border-left: 0; border-top: 1px solid var(--tb-line); }
+  .sellerRowRated .chatCell { grid-column: 3; grid-row: 1; }
+}
+:lang(bn) .factGrid > p { font-size: 1rem; line-height: 1.5; }
+:lang(bn) .bidCount { font-size: 1rem; }
