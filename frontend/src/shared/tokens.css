@@ -149,3 +149,6 @@ input, select, textarea { max-width: 100%; box-sizing: border-box; }
 main [class*='Button-root'], main button[type='submit'] { min-height: 44px; }
 
 .tb-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* a focused control is never hidden under the sticky header (WCAG 2.4.11) */
+html { scroll-padding-top: 5.5rem; }

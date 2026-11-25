@@ -48,12 +48,13 @@ export function Component() {
   const ready = listing.isSuccess;
   useEffect(() => {
     const el = rail.current;
-    if (!ready || !el || typeof ResizeObserver === 'undefined') return undefined;
+    if (!ready || !el || typeof ResizeObserver === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
     const root = document.documentElement;
+    const wide = window.matchMedia('(min-width: 60rem)');
     const apply = () => {
-      if (window.innerWidth >= 960) {
+      if (wide.matches) {
         root.dataset.rail = 'on';
-        root.style.setProperty('--tb-rail-reserve', `${Math.round(el.getBoundingClientRect().width + 48)}px`);
+        root.style.setProperty('--tb-rail-reserve', `${Math.round(el.getBoundingClientRect().width + 40)}px`);
       } else {
         delete root.dataset.rail;
         root.style.removeProperty('--tb-rail-reserve');
@@ -62,10 +63,10 @@ export function Component() {
     apply();
     const watch = new ResizeObserver(apply);
     watch.observe(el);
-    window.addEventListener('resize', apply);
+    wide.addEventListener('change', apply);
     return () => {
       watch.disconnect();
-      window.removeEventListener('resize', apply);
+      wide.removeEventListener('change', apply);
       delete root.dataset.rail;
       root.style.removeProperty('--tb-rail-reserve');
     };
