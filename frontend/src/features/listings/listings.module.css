@@ -307,3 +307,13 @@
 @media (forced-colors: active) { .bidBar { border-top-color: CanvasText; } }
 .bidCount { display: inline-grid; place-items: center; min-width: 1.5rem; height: 1.5rem; margin-left: 0.5rem; padding: 0 0.375rem; border-radius: 4px; background: var(--tb-surface); color: var(--tb-hot); font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
 .barMid { justify-content: center; }
+/* the bar never changes height: a bid's answer or a field error floats just above the bid box instead of pushing the button onto a new row */
+.barAct { position: relative; }
+.barAct .bid { grid-template-rows: auto auto; }
+.barAct .bid > input { grid-column: 1; grid-row: 2; }
+.barAct .bid > .primary { grid-column: 2; grid-row: 2; }
+.barAct .bid > .fieldError, .barAct .bid > div:not([role='dialog']) { position: absolute; right: 0; bottom: calc(100% + 6px); z-index: 2; width: max-content; max-width: min(26rem, 92vw); padding: 0.375rem 0.625rem; border: 1px solid var(--tb-error-line); border-radius: 4px; background: var(--tb-error-bg); color: var(--tb-error-text); box-shadow: 0 8px 24px -8px rgb(0 0 0 / 0.6); }
+.barAct .bid > p:first-child { grid-column: 1 / -1; grid-row: 1; }
+/* with no price block above it, the facts grid starts right under the Auction line */
+.facts:not(:has(.priceLine)) { padding-top: 0.75rem; }
+.facts:not(:has(.priceLine)) .factGrid { margin-top: 0; border-top: 0; }
