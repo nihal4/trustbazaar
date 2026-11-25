@@ -71,7 +71,7 @@
   --tb-warning-bg: #2a1d10; --tb-warning-border: #c98a3d;
   --tb-error: #ff8a80; --tb-error-bg: #2b1412; --tb-error-line: #6b2b25; --tb-error-text: #ffb4ab;
   --tb-success: #5dd39e; --tb-protect: #5dd39e; --tb-protect-soft: #10281e;
-  --tb-ink: #04080d; --tb-action: #ff6b35; --tb-action-text: #0a1018;
+  --tb-ink: #0f1824; --tb-action: #ff6b35; --tb-action-text: #0a1018;
   --tb-shadow-card: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -10px rgba(0,0,0,.6);
   --tb-shadow-lift: 0 2px 4px rgba(0,0,0,.4), 0 18px 40px -14px rgba(0,0,0,.7);
 }

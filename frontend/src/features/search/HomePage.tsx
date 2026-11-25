@@ -38,7 +38,7 @@ export function Component() {
   const heroRef = useRef<HTMLElement>(null);
   const [tick, setTick] = useState(0);
   useEffect(() => { const id = window.setInterval(() => setTick((n) => n + 1), 1000); return () => window.clearInterval(id); }, []);
-  const left = 2 * 3600 + 14 * 60 + 9 - (tick % 600);
+  const left = Math.max(0, 2 * 3600 + 14 * 60 + 9 - tick);
   const clock = [Math.floor(left / 3600), Math.floor(left / 60) % 60, left % 60].map((n) => String(n).padStart(2, '0')).join(':');
 
   const categories = useQuery({
@@ -89,12 +89,13 @@ export function Component() {
         <div className={styles.art} aria-hidden="true">
           <div className={styles.window}>
             <div className={styles.winPhoto}>
+              <span className={styles.exampleTag}>{t('home.demo.example')}</span>
               <img src="/img/photo-f152917755-960.jpg" srcSet="/img/photo-f152917755-500.jpg 500w, /img/photo-f152917755-960.jpg 960w" sizes="(max-width: 47.99em) 90vw, 40vw" width="960" height="640" alt="" loading="eager" decoding="async" data-source="stand-in" data-subject="smartphone in its box" />
             </div>
             <div className={styles.winBody}>
               <p className={styles.winTitle}>{t('home.demo.title')}</p>
               <p className={styles.winWhere}>{t('home.demo.where')}</p>
-              {<p className={styles.winClock}><i />{t('home.safe.ends')} <b>{toLocalDigits(clock, lang)}</b></p>}
+              <p className={styles.winClock}><i />{t('home.safe.ends')} <b>{toLocalDigits(clock, lang)}</b></p>
               <p className={styles.winPrice}>{formatMoney('8500000', lang)}</p>
               <span className={styles.winBtn}>{t('home.demo.buy')}</span>
               <ol className={styles.winSteps}>
@@ -112,7 +113,7 @@ export function Component() {
       </section>
 
       {top.length > 0 && (
-        <nav aria-label={t('home.categories')} className={styles.catsWrap}>
+        <nav aria-label={t('home.categories')}>
           <ul className={styles.cats}>
             <li><Link className={`${styles.cat} ${styles.catAll}`} to="/search">{t('home.all')}</Link></li>
             {top.map((c) => <li key={c.id}><Link className={styles.cat} to={`/search?category=${c.id}`}>{lang === 'bn' ? c.nameBn : c.nameEn}</Link></li>)}
@@ -120,7 +121,7 @@ export function Component() {
         </nav>
       )}
 
-      <SafeBento t={t} lang={lang} />
+      <SafeBento t={t} lang={lang} clock={clock} />
 
       <Journey t={t} lang={lang} />
 
@@ -145,7 +146,7 @@ export function Component() {
         {newest.isError && <FormMessage kind="error">{errorText(newest.error, t, lang)}</FormMessage>}
         {newest.data && (newest.data.items.length === 0
           ? <p>{t('search.empty')}</p>
-          : <ul className={styles.grid}>{newest.data.items.map((c) => <ListingCard key={c.id} c={c} t={t} lang={lang} />)}</ul>)}
+          : <ul className={styles.grid}>{(newest.data.items.length >= 4 ? newest.data.items.slice(0, Math.floor(newest.data.items.length / 4) * 4) : newest.data.items).map((c) => <ListingCard key={c.id} c={c} t={t} lang={lang} />)}</ul>)}
       </section>
 
       <section aria-labelledby="home-sell" className={styles.sell}>

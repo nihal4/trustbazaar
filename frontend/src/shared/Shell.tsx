@@ -56,7 +56,7 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
           ? <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo onDark={accountLinks} /></Link>
           : <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}><Logo onDark={accountLinks} /></a>}
         {titleKey && <span className={styles.docTitle}>{t(titleKey)}</span>}
-        {accountLinks && !phone ? <HeaderSearch /> : <span className={styles.spacer} />}
+        {accountLinks && !phone && pathname !== '/' ? <HeaderSearch /> : <span className={styles.spacer} />}
         {accountLinks && <AccountLink phone={phone} />}
         <LanguageSwitch />
         {exit && <a className={styles.exit} href={exit.href}>{t(exit.labelKey)}</a>}
