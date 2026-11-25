@@ -1,6 +1,7 @@
 {
   "listing.not_found": "This listing is not available. It may have been sold or removed.",
   "listing.photos": "Photos",
+  "listing.show_photo": "Show photo {n} of {total}",
   "listing.photo_alt": "{title}, photo {n} of {total}",
   "listing.shows_defects": "Shows defects",
   "listing.description": "Description",

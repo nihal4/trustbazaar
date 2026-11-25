@@ -1,6 +1,7 @@
 {
   "listing.not_found": "এই বিজ্ঞাপনটি পাওয়া যাচ্ছে না। হয়তো বিক্রি হয়ে গেছে বা সরিয়ে নেওয়া হয়েছে।",
   "listing.photos": "ছবি",
+  "listing.show_photo": "{total}টির মধ্যে {n} নম্বর ছবি দেখুন",
   "listing.photo_alt": "{title}, {total}টির মধ্যে {n} নম্বর ছবি",
   "listing.shows_defects": "ত্রুটি দেখানো হয়েছে",
   "listing.description": "বিবরণ",
