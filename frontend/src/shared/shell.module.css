@@ -349,5 +349,8 @@
 @media (prefers-reduced-motion: reduce) { .tab, .tab::before { transition: none; } }
 @media (forced-colors: active) { .tabOn::before { background: Highlight; } .tabBar { border-top-color: CanvasText; } }
 
-/* the footer covers whatever stays in view behind it (the listing's right column) */
-.footer { position: relative; z-index: 2; background: var(--tb-bg); }
+/* On a listing the right column stays in view down to the footer, so the footer keeps to the left of it: the page sets
+   html[data-rail] and --tb-rail-reserve (the column's width and the gap). */
+.footer { position: relative; }
+:global(html[data-rail='on']) .footer { border-top: 0; padding-right: calc(var(--tb-gutter) + var(--tb-rail-reserve, 0px)); }
+:global(html[data-rail='on']) .footerGrid { border-top: 1px solid var(--tb-line); }
