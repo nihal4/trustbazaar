@@ -4,33 +4,27 @@
 // answer to a bid; AuctionFeed keeps only the newest by seq, so a message arriving late never shows an older state.
 // The countdown runs on the server's clock. The bidder's own maximum and lead come from my-status, shown only to
 // them; after the close, the winner's order and a second-chance offer come from there too (Decisions log, U3-05).
-import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AuctionFeed } from '../../lib/live.js';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatMoney, parseTaka, toLocalDigits } from '../../lib/money.js';
-import { formatCountdown, formatDateTime, formatDeadline } from '../../lib/time.js';
+import { formatDateTime, formatDeadline } from '../../lib/time.js';
 import { ApiError } from '../../lib/api.js';
 import { useApi } from '../../shared/api';
-import { serverClock, useServerNow, withServerTime } from '../../shared/clock';
+import { serverClock, useServerNow } from '../../shared/clock';
 import { ConfirmDialog } from '../../shared/ConfirmDialog';
 import { signInPath } from '../../shared/document';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
 import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
-import { useLive, useLiveEvent } from '../../shared/live';
 import { problemName } from '../../shared/problems';
-import { useAnnouncer } from './announcer';
-import { historyKey, listingKey, myStatusKey, type AuctionState, type BidHistory, type BidResult, type MyStatus } from './model';
+import { useAuctionLive } from './useAuctionLive';
+import { myStatusKey, type AuctionState, type BidResult, type MyStatus } from './model';
 import styles from './listings.module.css';
 
-/** DV-19: guests poll the state; DV-55: signed-in pages fetch it again every 60 s besides the live feed. */
-export const GUEST_POLL_MS = 5_000;
-export const SIGNED_IN_POLL_MS = 60_000;
-/** After the end, until the close is announced (DV-17 is 2 s; the closer runs every 2 s). */
-export const CLOSING_POLL_MS = 3_000;
+export { GUEST_POLL_MS, SIGNED_IN_POLL_MS, CLOSING_POLL_MS } from './useAuctionLive';
 
 const money = (p: string | bigint, lang: Lang) => formatMoney(p, lang);
 
@@ -39,20 +33,7 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
   /** where the rules and the bid history go: under the description, so the panel in the fixed column stays short (null: under the panel) */
   extraHost?: HTMLElement | null;
 }) {
-  const id = initial.auctionId;
-  const api = useApi();
-  const live = useLive();
-  const queryClient = useQueryClient();
-  const feed = useRef<AuctionFeed | null>(null);
-  const [state, setState] = useState<AuctionState>(() => {
-    const f = new AuctionFeed();
-    f.apply(initial as never);
-    feed.current = f;
-    const at = Date.parse(initial.serverTime);
-    if (Number.isFinite(at)) serverClock.sampleMessage(at, Date.now());
-    return initial;
-  });
-  const { text: announcement, say } = useAnnouncer();
+  const { id, state, accept, refetch, history, refreshMine, announcement, open, closing, countdown, mine } = useAuctionLive({ initial, t, lang, signedIn, own });
   const [sheet, setSheet] = useState(false);
   const [barOpen, setBarOpen] = useState(false);   // phones only: the bar is a small floating tab until it is opened
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -68,112 +49,6 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
     return () => document.removeEventListener('keydown', key);
   }, [sheet]);
 
-  /** Newer by seq; or the same seq closed, since closing does not change the auction's version. */
-  const accept = useCallback((s: AuctionState) => {
-    const f = feed.current!;
-    const cur = f.state as unknown as AuctionState;
-    const closedNow = cur && s.seq === cur.seq && cur.status === 'open' && s.status !== 'open';
-    if (f.apply(s as never) || closedNow) {
-      f.state = s as never;
-      setState(s);
-    }
-  }, []);
-
-  const refetch = useCallback(async () => {
-    try {
-      accept(await withServerTime(() => api.get(`/auctions/${encodeURIComponent(id)}/state`) as Promise<AuctionState>));
-    } catch {
-      // the next poll, message or reconnection tries again
-    }
-  }, [api, id, accept]);
-
-  const myStatus = useQuery({
-    queryKey: myStatusKey(id),
-    queryFn: ({ signal }) => api.get(`/auctions/${encodeURIComponent(id)}/my-status`, { signal }) as Promise<MyStatus>,
-    enabled: signedIn && !own,
-    staleTime: 0,
-    retry: false,
-  });
-  const history = useQuery({
-    queryKey: historyKey(id),
-    queryFn: ({ signal }) => api.get(`/auctions/${encodeURIComponent(id)}/bids`, { signal }) as Promise<BidHistory>,
-    staleTime: 0,
-    retry: false,
-  });
-  const refreshMine = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: myStatusKey(id) });
-  }, [queryClient, id]);
-
-  // the live room while the page is open; every (re)connection fetches the state, in case messages were missed
-  const open = state.status === 'open';
-  useEffect(() => {
-    if (!live || !signedIn) return;
-    const leave = live.join(`auction:${id}`);
-    const off = live.onConnect(() => {
-      void refetch();
-      refreshMine();
-    });
-    return () => {
-      off();
-      leave();
-    };
-  }, [live, signedIn, id, refetch, refreshMine]);
-  useLiveEvent('auction.state', (p) => {
-    if (p.auctionId !== id) return;
-    const at = Date.parse(String(p.serverTime));
-    if (Number.isFinite(at)) serverClock.sampleMessage(at, Date.now());
-    accept(p as unknown as AuctionState);
-  }, signedIn);
-  useLiveEvent('auction.closed', (p) => {
-    if (p.auctionId !== id) return;
-    void refetch();
-    refreshMine();
-    void queryClient.invalidateQueries({ queryKey: listingKey(id) });
-  }, signedIn);
-  useLiveEvent('auction.outbid', (p) => {
-    if (p.auctionId !== id) return;
-    say(t('auction.you_are_outbid'), true);
-    refreshMine();
-  }, signedIn);
-
-  // polling: guests have no live channel; signed-in pages check every minute as well (DV-55)
-  const now = useServerNow();
-  const ended = Date.parse(state.endAt) <= now;
-  const closing = open && ended;
-  useEffect(() => {
-    if (!open) return;
-    const ms = closing ? CLOSING_POLL_MS : signedIn ? SIGNED_IN_POLL_MS : GUEST_POLL_MS;
-    const timer = setInterval(() => void refetch(), ms);
-    return () => clearInterval(timer);
-  }, [open, closing, signedIn, refetch]);
-
-  // the history and my-status follow the state; price changes are announced (at most every 5 s)
-  const seen = useRef({ seq: state.seq, price: state.price, status: state.status });
-  useEffect(() => {
-    const before = seen.current;
-    seen.current = { seq: state.seq, price: state.price, status: state.status };
-    if (state.seq !== before.seq) void queryClient.invalidateQueries({ queryKey: historyKey(id) });
-    if (state.price && state.price !== before.price) say(t('auction.announce.price', { price: money(state.price, lang) }));
-    if (state.status !== before.status) refreshMine();
-  }, [state, id, queryClient, say, t, lang, refreshMine]);
-
-  // the countdown is announced at 5 minutes and at 1 minute, not every second
-  const left = Date.parse(state.endAt) - now;
-  const announced = useRef<{ five: boolean; one: boolean }>({ five: left <= 300_000, one: left <= 60_000 });
-  useEffect(() => {
-    if (!open) return;
-    if (!announced.current.five && left <= 300_000 && left > 60_000) {
-      announced.current.five = true;
-      say(t('auction.announce.five_minutes'), true);
-    }
-    if (!announced.current.one && left <= 60_000 && left > 0) {
-      announced.current = { five: true, one: true };
-      say(t('auction.announce.one_minute'), true);
-    }
-  }, [left, open, say, t]);
-
-  const countdown = formatCountdown(left, lang);
-  const mine = myStatus.data;
   const extraNode = (
     <div className={styles.extra}>
       <details className={styles.rules}>
