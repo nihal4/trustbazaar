@@ -54,9 +54,15 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
   });
   const { text: announcement, say } = useAnnouncer();
   const [sheet, setSheet] = useState(false);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const seeRef = useRef<HTMLButtonElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+  // the sheet is non-modal: focus moves to its close button when it opens and returns to "See the bids" when it closes; Escape closes it
+  // (unless a confirmation dialog is open, which takes Escape itself)
   useEffect(() => {
     if (!sheet) return undefined;
-    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') setSheet(false); };
+    closeRef.current?.focus();
+    const key = (e: KeyboardEvent) => { if (e.key === 'Escape' && !document.querySelector('dialog[open]')) { setSheet(false); seeRef.current?.focus(); } };
     document.addEventListener('keydown', key);
     return () => document.removeEventListener('keydown', key);
   }, [sheet]);
@@ -176,10 +182,10 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
         </ul>
       </details>
 
-      <section id="history-box" aria-labelledby="history-title" className={sheet ? `${styles.historyBox} ${styles.sheetOpen}` : styles.historyBox}>
+      <section id="history-box" aria-labelledby="history-title" tabIndex={sheet ? -1 : undefined} className={sheet ? `${styles.historyBox} ${styles.sheetOpen}` : styles.historyBox}>
         <div className={styles.sheetHead}>
           <h3 id="history-title">{t('auction.history')}</h3>
-          {sheet && <button type="button" className={styles.sheetClose} aria-label={t('shell.close')} onClick={() => setSheet(false)}><svg viewBox="0 0 12 12" width="14" height="14" aria-hidden="true" focusable="false"><path d="M2 2l8 8M10 2l-8 8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg></button>}
+          {sheet && <button type="button" ref={closeRef} className={styles.sheetClose} aria-label={t('shell.close')} onClick={() => { setSheet(false); seeRef.current?.focus(); }}><svg viewBox="0 0 12 12" width="14" height="14" aria-hidden="true" focusable="false"><path d="M2 2l8 8M10 2l-8 8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg></button>}
         </div>
         {history.data && history.data.items.length === 0 && <p>{t('auction.history_empty')}</p>}
         {history.data && history.data.items.length > 0 && (
@@ -199,6 +205,20 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
   // the bar at the bottom of the screen carries what a bidder needs at a glance: the price, the clock, a way to see the bids and the bid
   // itself; it shows while bidding is open and the viewer can bid (a guest gets the sign-in link)
   const barVisible = open && !closing && !own;
+  useEffect(() => { if (!barVisible) setSheet(false); }, [barVisible]);
+  // the bar's real height (and what sits under it, such as the phone tab bar) as --bar-h: the sheet, the room at the end of the page and the
+  // scroll padding all use it instead of fixed numbers
+  useEffect(() => {
+    const el = barRef.current;
+    const root = document.documentElement;
+    if (!barVisible || !el || typeof ResizeObserver === 'undefined') return undefined;
+    const measure = () => root.style.setProperty('--bar-h', `${Math.round(window.innerHeight - el.getBoundingClientRect().top)}px`);
+    measure();
+    const watch = new ResizeObserver(measure);
+    watch.observe(el);
+    window.addEventListener('resize', measure);
+    return () => { watch.disconnect(); window.removeEventListener('resize', measure); root.style.removeProperty('--bar-h'); };
+  }, [barVisible]);
   const priceBlock = (
     <>
       <span className={styles.barK}>{state.price ? t('auction.current_price') : t('auction.start_price')}</span>
@@ -206,14 +226,15 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
     </>
   );
   const bar = (
-    <div className={styles.bidBar} role="group" aria-label={t('auction.title')}>
+    <div className={styles.bidBar} role="group" aria-label={t('auction.title')} ref={barRef}>
       <div className={styles.barCell}>{priceBlock}</div>
       <div className={styles.barCell}>
         <span className={styles.barK}>{t('auction.time_left')}</span>
         <strong role="timer" aria-live="off" className={countdown.urgent ? `${styles.barV} ${styles.urgent}` : styles.barV}>{countdown.text}</strong>
       </div>
       <div className={`${styles.barCell} ${styles.barMid}`}>
-        <button type="button" className={styles.seeBids} aria-expanded={sheet} aria-controls="history-box" onClick={() => setSheet((v) => !v)}>
+        <button type="button" ref={seeRef} className={styles.seeBids} aria-expanded={sheet} aria-controls="history-box" onClick={() => setSheet((v) => !v)}
+          aria-label={state.bidCount > 0 ? `${t('auction.see_bids')} (${toLocalDigits(String(state.bidCount), lang)})` : undefined}>
           {t('auction.see_bids')}{state.bidCount > 0 && <span className={styles.bidCount} aria-hidden="true">{toLocalDigits(String(state.bidCount), lang)}</span>}
         </button>
       </div>
@@ -341,10 +362,10 @@ function BidForm({ id, state, mine, t, lang, onPlaced, onRefused }: {
       {state.minimumBid && !leading && <p><strong>{t('auction.minimum', { amount: money(state.minimumBid, lang) })}</strong></p>}
       {result && <FormMessage kind={result.kind}>{result.text}</FormMessage>}
       <label htmlFor="bid-amount" className={styles.visuallyHidden}>{label}</label>
-      <input id="bid-amount" type="text" inputMode="decimal" autoComplete="off" value={amount} maxLength={20} placeholder={label}
+      <input id="bid-amount" type="text" inputMode="decimal" autoComplete="off" value={amount} maxLength={20} placeholder={t('auction.amount_placeholder')}
         aria-invalid={error ? true : undefined} aria-describedby={error ? 'bid-amount-error' : undefined}
         onChange={(e) => setAmount(e.target.value)} />
-      {error && <p id="bid-amount-error" className={styles.fieldError}>{error}</p>}
+      {error && <p id="bid-amount-error" role="alert" className={styles.fieldError}>{error}</p>}
       <button type="submit" className={styles.primary} disabled={place.isPending}>{leading ? t('auction.raise') : t('auction.place_bid')}</button>
       {confirming !== null && (
         <ConfirmDialog id="bid-confirm" title={t('auction.confirm_title')} busy={place.isPending}

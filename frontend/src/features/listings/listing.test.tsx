@@ -184,7 +184,7 @@ describe('the auction panel', () => {
     expect(screen.getByText('How bidding works').closest('details')).toBeTruthy();
     const history = screen.getByRole('heading', { name: 'Bid history' }).closest('section')!;
     expect((await within(history).findAllByRole('listitem')).map((li) => li.textContent)).toEqual([
-      expect.stringContaining('Bidder 2৳1,200'), expect.stringContaining('Bidder 1৳1,000 (led)'),
+      expect.stringContaining('Bidder 2৳1,200'), expect.stringContaining('Bidder 1৳1,000 (took the lead)'),
     ]);
   });
 
@@ -287,7 +287,7 @@ describe('the auction panel', () => {
     mine = { ...mine, leading: false };
     act(() => socket.push('auction.outbid', { auctionId: ID, price: '155000', seq: 3 }));
     expect(await screen.findByText('You have been outbid.', { selector: '[aria-live="polite"]' })).toBeTruthy();
-    expect(await screen.findByText(/Your maximum: ৳1,500 You have been outbid\./)).toBeTruthy();
+    expect(await screen.findByText(/Your maximum: ৳1,500\. You have been outbid\./)).toBeTruthy();
   });
 
   it('FR-AUC-12 after being outbid, the panel no longer says "You are leading" from the bid placed earlier', async () => {
@@ -306,7 +306,7 @@ describe('the auction panel', () => {
     act(() => socket.accept());
     mine = { ...mine, leading: false };
     act(() => socket.push('auction.outbid', { auctionId: ID, price: '155000', seq: 3 }));
-    expect(await screen.findByText(/Your maximum: ৳1,500 You have been outbid\./)).toBeTruthy();
+    expect(await screen.findByText(/Your maximum: ৳1,500\. You have been outbid\./)).toBeTruthy();
     expect(screen.queryByText('You are leading at ৳1,000.')).toBeNull();
   });
 
