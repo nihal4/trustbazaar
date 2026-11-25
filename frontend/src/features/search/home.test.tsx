@@ -104,7 +104,7 @@ describe('search chips', () => {
     const doc = renderApp('/search?q=phone&category=1&saleFormat=auction&maxPrice=1500000', backend());
     const chips = await screen.findByRole('group', { name: 'Filters in use' });
     await waitFor(() => expect(within(chips).getAllByRole('button').map((b) => b.textContent)).toEqual([
-      'Remove filter: Phones×', 'Remove filter: Auction×', 'Remove filter: Up to ৳15,000×', 'Clear all',
+      'Remove filter: Phones', 'Remove filter: Auction', 'Remove filter: Up to ৳15,000', 'Clear all',
     ]));
     fireEvent.click(within(chips).getByRole('button', { name: 'Remove filter: Auction' }));
     await waitFor(() => expect(doc.router.state.location.search).toBe('?q=phone&category=1&maxPrice=1500000'));

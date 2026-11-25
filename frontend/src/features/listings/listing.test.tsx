@@ -79,19 +79,41 @@ describe('the listing page', () => {
     expect(screen.getByText('The strap is <i>new</i>.')).toBeTruthy();
     expect(screen.getByText('Added Sun 1 Nov 2026, 6:00 pm')).toBeTruthy();
     expect(screen.getByText('Dhaka')).toBeTruthy();
-    const [first, second] = screen.getAllByRole('img') as HTMLImageElement[];
+    const first = screen.getByRole('img') as HTMLImageElement;
     expect(first.alt).toBe('Film camera <script>, photo 1 of 2');
     expect(first.getAttribute('srcset')).toBe('/api/v1/listing-photos/k1?size=thumb 400w, /api/v1/listing-photos/k1 1600w');
     expect(first.getAttribute('loading')).toBe('eager');
-    expect(second.getAttribute('loading')).toBe('lazy');
+    fireEvent.click(screen.getByRole('button', { name: 'Show photo 2 of 2' }));
+    expect((screen.getByRole('img') as HTMLImageElement).alt).toBe('Film camera <script>, photo 2 of 2');   // pressing a small photo shows it in the large place
     expect(screen.getByText('Shows defects')).toBeTruthy();
     expect(screen.getByText('Identity verified')).toBeTruthy();
-    expect(screen.getByText('Member since October 2026')).toBeTruthy();
+    expect(screen.getByText('Since 2026')).toBeTruthy();
+  });
+
+  it('NFR-USE-07 a physical item\'s large photo has a magnifying glass under the mouse', async () => {
+    renderApp(`/listings/${ID}`, backend({ l: listing() }));
+    await screen.findByRole('heading', { level: 1, name: 'Film camera <script>' });
+    const stage = document.querySelector('article img')!.parentElement!;
+    expect(document.querySelector('[class*="glass"]')).toBeNull();
+    fireEvent.pointerMove(stage, { pointerType: 'mouse', clientX: 10, clientY: 10 });
+    expect(document.querySelector('[class*="glass"]')).not.toBeNull();
+    fireEvent.pointerLeave(stage);
+    expect(document.querySelector('[class*="glass"]')).toBeNull();
+  });
+
+  it('NFR-USE-07 Save for later marks the item on the page, and the mark can be taken off (kept between visits by U10-29)', async () => {
+    renderApp(`/listings/${ID}`, backend({ l: listing() }));
+    const save = await screen.findByRole('button', { name: 'Save for later' });
+    expect(save.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(save);
+    expect(screen.getByRole('button', { name: 'Saved' }).getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(screen.getByRole('button', { name: 'Saved' }));
+    expect(screen.getByRole('button', { name: 'Save for later' }).getAttribute('aria-pressed')).toBe('false');
   });
 
   it('FR-FIX-01 a fixed-price item links to its checkout; not the seller\'s own, nor a reserved or sold one', async () => {
     renderApp(`/listings/${ID}`, backend({ l: listing() }));
-    expect((await screen.findByRole('link', { name: 'Buy now for ৳15,000' })).getAttribute('href')).toBe(`/checkout/${ID}`);
+    expect((await screen.findByRole('link', { name: 'Buy now' })).getAttribute('href')).toBe(`/checkout/${ID}`);
     cleanup();
     renderApp(`/listings/${ID}`, backend({ l: listing({ currentlyReserved: true, quantity: { total: 1, available: 0 } }) }));
     expect(await screen.findByText(/Another buyer is paying for this item now/)).toBeTruthy();
@@ -116,22 +138,21 @@ describe('the listing page in the money-order world (U10-13)', () => {
     renderApp(`/listings/${ID}`, backend({ l: listing({ seller: { id: 'seller-1', displayName: 'Karim Uddin', verified: true, joinMonth: '2026-10' } }) }));
     await screen.findByRole('heading', { level: 1 });
     expect(screen.getByRole('link', { name: 'Cameras' }).getAttribute('href')).toBe('/search?category=1');
-    expect(screen.getByText('Your money waits with us')).toBeTruthy();
+    expect(screen.getByText('You pay TrustBazaar. The seller is paid only after you confirm you have the item.')).toBeTruthy();
     const seller = screen.getByRole('region', { name: 'Seller' });
     expect(within(seller).getByText('KU')).toBeTruthy();
     expect(within(seller).getByRole('link', { name: 'Karim Uddin' }).getAttribute('href')).toBe('/users/seller-1');
     expect(within(seller).getByText('Identity verified')).toBeTruthy();
-    expect(screen.getByRole('region', { name: 'Photos' }).querySelector('ul')!.getAttribute('tabindex')).toBe('0');   // the phone strip scrolls by keyboard too
+    expect(within(screen.getByRole('region', { name: 'Photos' })).getAllByRole('button')).toHaveLength(2);   // the small photos are buttons: reachable by keyboard
   });
 
-  it('NFR-USE-07 a fixed-price item\'s buy panel is the counterfoil: the price, how the money moves in order, and the button (AC-LST-1)', async () => {
+  it('NFR-USE-07 a fixed-price item\'s buy panel shows the price once, the button and one quiet line on when the seller is paid, with no order steps (AC-LST-1)', async () => {
     renderApp(`/listings/${ID}`, backend({ l: listing() }));
     const panel = await screen.findByRole('region', { name: 'Price' });
-    expect(within(panel).getByText('Your money waits with us')).toBeTruthy();
-    expect(within(panel).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['You pay TrustBazaar', 'We hold it', 'The seller is paid when you confirm']);
-    expect(within(panel).getByRole('link', { name: 'Buy now for ৳15,000' })).toBeTruthy();
-    expect(within(panel).getAllByText('৳15,000')).toHaveLength(2);     // on the stub and on the form, as on a money order
-    expect(screen.queryByText('You pay TrustBazaar. The seller is paid only after you confirm you have the item.')).toBeNull();   // the strip is not repeated
+    expect(within(panel).getByText('You pay TrustBazaar. The seller is paid only after you confirm you have the item.')).toBeTruthy();
+    expect(within(panel).queryAllByRole('listitem')).toHaveLength(0);   // no steps: nothing has been paid yet
+    expect(within(panel).getByRole('link', { name: 'Buy now' })).toBeTruthy();
+    expect(within(panel).getAllByText('৳15,000')).toHaveLength(1);     // the price is named once, not on a stub and again on a form
   });
 
   it('NFR-USE-07 an auction keeps the payment promise\'s short form under its panel (AC-LST-2)', async () => {
@@ -142,7 +163,7 @@ describe('the listing page in the money-order world (U10-13)', () => {
 
   it('NFR-USE-04 the promise and the seller card in Bangla', async () => {
     renderApp(`/listings/${ID}`, backend({ l: listing() }), 'bn');
-    expect(await screen.findByText('আপনার টাকা আমাদের কাছে থাকে')).toBeTruthy();
+    expect(await screen.findByText('আপনি টাকা দেন ট্রাস্টবাজারে। পণ্য হাতে পেয়েছেন নিশ্চিত করলে তবেই বিক্রেতা টাকা পান।')).toBeTruthy();
     expect(screen.getByRole('region', { name: 'বিক্রেতা' })).toBeTruthy();
   });
 });
@@ -163,7 +184,7 @@ describe('the auction panel', () => {
     expect(screen.getByText('How bidding works').closest('details')).toBeTruthy();
     const history = screen.getByRole('heading', { name: 'Bid history' }).closest('section')!;
     expect((await within(history).findAllByRole('listitem')).map((li) => li.textContent)).toEqual([
-      expect.stringContaining('Bidder 2৳1,200'), expect.stringContaining('Bidder 1৳1,000 (led)'),
+      expect.stringContaining('Bidder 2৳1,200'), expect.stringContaining('Bidder 1৳1,000 (took the lead)'),
     ]);
   });
 
@@ -266,7 +287,7 @@ describe('the auction panel', () => {
     mine = { ...mine, leading: false };
     act(() => socket.push('auction.outbid', { auctionId: ID, price: '155000', seq: 3 }));
     expect(await screen.findByText('You have been outbid.', { selector: '[aria-live="polite"]' })).toBeTruthy();
-    expect(await screen.findByText(/Your maximum: ৳1,500 You have been outbid\./)).toBeTruthy();
+    expect(await screen.findByText(/Your maximum: ৳1,500\. You have been outbid\./)).toBeTruthy();
   });
 
   it('FR-AUC-12 after being outbid, the panel no longer says "You are leading" from the bid placed earlier', async () => {
@@ -285,7 +306,7 @@ describe('the auction panel', () => {
     act(() => socket.accept());
     mine = { ...mine, leading: false };
     act(() => socket.push('auction.outbid', { auctionId: ID, price: '155000', seq: 3 }));
-    expect(await screen.findByText(/Your maximum: ৳1,500 You have been outbid\./)).toBeTruthy();
+    expect(await screen.findByText(/Your maximum: ৳1,500\. You have been outbid\./)).toBeTruthy();
     expect(screen.queryByText('You are leading at ৳1,000.')).toBeNull();
   });
 

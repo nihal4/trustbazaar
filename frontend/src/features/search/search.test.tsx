@@ -55,9 +55,10 @@ describe('search', () => {
     expect(Object.fromEntries(be.called('GET /search')[0].query)).toEqual({ q: 'phone', category: '2', minPrice: '150000', sort: 'price_asc' });
     expect((screen.getByLabelText('What are you looking for?') as HTMLInputElement).value).toBe('phone');
     expect((screen.getByLabelText('Lowest price (taka)') as HTMLInputElement).value).toBe('1500');
-    expect((screen.getByLabelText('Category') as HTMLSelectElement).value).toBe('2');
+    expect(screen.getByRole('combobox', { name: /Category/ }).textContent).toBe('Android phones');
     // categories in tree order; prohibited ones are not offered as a filter
-    const options = within(screen.getByLabelText('Category')).getAllByRole('option').map((x) => x.textContent?.trim());
+    fireEvent.click(screen.getByRole('combobox', { name: /Category/ }));
+    const options = within(screen.getByRole('listbox', { name: 'Category' })).getAllByRole('option').map((x) => x.textContent?.trim());
     expect(options).toEqual(['Any', 'Phones', 'Android phones']);
   });
 
@@ -66,7 +67,8 @@ describe('search', () => {
     const doc = renderApp('/search', be);
     await screen.findByText('Table');
     fireEvent.change(screen.getByLabelText('What are you looking for?'), { target: { value: ' মোবাইল ' } });
-    fireEvent.change(screen.getByLabelText('How it is sold'), { target: { value: 'auction' } });
+    fireEvent.click(screen.getByRole('combobox', { name: /How it is sold/ }));
+    fireEvent.click(screen.getByRole('option', { name: 'Auction' }));
     fireEvent.change(screen.getByLabelText('Highest price (taka)'), { target: { value: '১,৫০০' } });
     fireEvent.click(screen.getByRole('button', { name: 'Search' }));
     await waitFor(() => expect(doc.router.state.location.search).toBe(`?q=${encodeURIComponent('মোবাইল')}&saleFormat=auction&maxPrice=150000`));
@@ -156,7 +158,8 @@ describe('search', () => {
     expect(await screen.findByRole('heading', { name: 'যাচাই করা বিক্রেতাদের কাছ থেকে পুরোনো জিনিস খুঁজুন' })).toBeTruthy();
     await waitFor(() => expect(within(screen.getByRole('main')).getAllByRole('listitem').some((li) => li.textContent?.includes('৩ কিমি দূরে'))).toBe(true));
     expect(screen.getAllByText('৳১৫,০০০').length).toBeGreaterThan(0);
-    expect(within(screen.getByLabelText('বিভাগ')).getByRole('option', { name: 'ফোন' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('combobox', { name: /বিভাগ/ }));
+    expect(within(screen.getByRole('listbox', { name: 'বিভাগ' })).getByRole('option', { name: 'ফোন' })).toBeTruthy();
   });
 
   it('NFR-USE-04 both languages have the same keys and placeholders, in Bangla script', () => {

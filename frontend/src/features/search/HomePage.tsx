@@ -14,6 +14,7 @@ import { useT } from '../../shared/language/Language';
 import { FRESHNESS } from '../../shared/query';
 import en from '../../messages/en/search.json';
 import bn from '../../messages/bn/search.json';
+import { EscrowSteps } from '../../shared/EscrowSteps';
 import { GlowGround } from './GlowGround';
 import { Journey, SafeBento } from './HomeSections';
 import { ListingCard } from './ListingCard';
@@ -102,11 +103,7 @@ export function Component() {
               <p className={styles.winClock}><i />{t('home.safe.ends')} <b>{toLocalDigits(clock, lang)}</b></p>
               <p className={styles.winPrice}>{formatMoney('8500000', lang)}</p>
               <span className={styles.winBtn}>{t('home.demo.buy')}</span>
-              <ol className={styles.winSteps}>
-                <li className={styles.winDone}>{t('home.counterfoil.in')}</li>
-                <li className={styles.winNow}>{t('home.counterfoil.held')}</li>
-                <li>{t('home.counterfoil.out')}</li>
-              </ol>
+              <EscrowSteps current="held" labels={[t('home.counterfoil.in'), t('home.counterfoil.held'), t('home.counterfoil.out')]} classes={{ list: styles.winSteps, done: styles.winDone, current: styles.winNow }} />
             </div>
           </div>
         </div>

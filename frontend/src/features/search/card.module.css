@@ -51,3 +51,5 @@
 .price { line-height: 1.5rem; }
 .title { line-height: 1.4rem; }
 .meta, .note { line-height: 1.25rem; }
+
+:lang(bn) .meta, :lang(bn) .note { font-size: 0.9375rem; }

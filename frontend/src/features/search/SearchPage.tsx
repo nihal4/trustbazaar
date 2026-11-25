@@ -5,7 +5,7 @@
 // than endless scrolling, so the footer stays reachable. Distances come from the server in whole kilometres. The
 // location is asked for only when "Use my location" is pressed (I-58); signed-in users otherwise search from the
 // area saved in their account (Unit 3). The area list arrives with Unit 4's /delivery/areas (U4-02).
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button } from '@mantine/core';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
@@ -13,6 +13,7 @@ import { formatMoney, parseTaka } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
+import { Dropdown } from '../../shared/Dropdown';
 import { useT } from '../../shared/language/Language';
 import type { Lang } from '../../shared/language/lang';
 import { useMe } from '../../shared/me';
@@ -24,6 +25,28 @@ import { ListingCard } from './ListingCard';
 import styles from './search.module.css';
 
 const CATALOGUES = { en, bn };
+
+/** a drawn cross, not a text glyph (craft floor); the colour is the parent's */
+const Cross = ({ size }: { size: number }) => (
+  <svg viewBox="0 0 12 12" width={size} height={size} aria-hidden="true" focusable="false"><path d="M2 2l8 8M10 2l-8 8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+);
+const SearchGlyph = () => (
+  <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M11 4 a7 7 0 1 0 0.01 0 Z M16.5 16.5 L21 21" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+);
+
+/** true while the viewport is narrower than 60rem, where the open filters are a sheet over the page */
+function useSheet(): boolean {
+  const query = '(max-width: 59.99rem)';
+  const [sheet, setSheet] = useState(() => typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia(query).matches);
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return undefined;
+    const m = window.matchMedia(query);
+    const on = () => setSheet(m.matches);
+    m.addEventListener('change', on);
+    return () => m.removeEventListener('change', on);
+  }, []);
+  return sheet;
+}
 
 export interface Category { id: number; parentId: number | null; slug: string; nameEn: string; nameBn: string; itemKind: string; selectable: boolean }
 export interface SearchCard {
@@ -98,7 +121,15 @@ export function Component() {
       <Filters key={key} t={t} lang={lang} params={query} categories={categories.data ?? []} signedIn={me.isSuccess}
         onSearch={(next) => setParams(next)} />
       <ActiveFilters t={t} lang={lang} params={query} categories={categories.data ?? []} onChange={(next) => setParams(next)} />
-      {pages.isPending && <p role="status" className={styles.status}>{t('shell.loading')}</p>}
+      {pages.isPending && (
+        <div className={styles.status}>
+          <p role="status" className={styles.visuallyHidden}>{t('shell.loading')}</p>
+          <h2 className={styles.loadingTitle} aria-hidden="true">{t('search.results')}</h2>
+          <ul className={styles.cards} aria-hidden="true">
+            {[0, 1, 2, 3, 4, 5, 6, 7].map((n) => <li key={n} className={styles.skeleton}><i /><i /><i /></li>)}
+          </ul>
+        </div>
+      )}
       {pages.isError && (
         <div className={styles.status}>
           <FormMessage kind="error">
@@ -149,7 +180,37 @@ function Filters({ t, lang, params, categories, signedIn, onSearch }: {
   const [locating, setLocating] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const sheet = useSheet();
+  const modal = open && sheet;
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLFieldSetElement>(null);
   const set = (k: keyof typeof v) => (value: string) => setV((x) => ({ ...x, [k]: value }));
+  // On phones the open filters are a sheet over the page, so they behave as a modal dialog: focus moves into the sheet, Tab stays
+  // inside it, Escape closes it from anywhere, the page behind does not scroll, and focus returns to the "Show filters" row.
+  useEffect(() => {
+    if (!modal) return undefined;
+    document.documentElement.dataset.sheet = 'open';
+    closeRef.current?.focus();
+    const key = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { e.preventDefault(); setOpen(false); return; }
+      if (e.key !== 'Tab' || !panelRef.current) return;
+      const items = [...panelRef.current.querySelectorAll<HTMLElement>('button, input, select, [role="combobox"], a[href], [tabindex]:not([tabindex="-1"])')].filter((el) => !el.hasAttribute('disabled') && el.offsetParent !== null);
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (!panelRef.current.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+      else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', key);
+    const toggle = toggleRef.current;
+    return () => {
+      document.removeEventListener('keydown', key);
+      delete document.documentElement.dataset.sheet;
+      toggle?.focus();
+    };
+  }, [modal]);
 
   const submit = (e?: FormEvent, at = point) => {
     e?.preventDefault();
@@ -192,18 +253,24 @@ function Filters({ t, lang, params, categories, signedIn, onSearch }: {
 
   const name = (c: Category) => (lang === 'bn' ? c.nameBn : c.nameEn);
   return (
-    <form role="search" className={styles.filters} onSubmit={submit} noValidate>
+    <form role="search" className={styles.filters} onSubmit={submit} noValidate onKeyDown={(e) => { if (e.key === 'Escape' && open && !sheet) setOpen(false); }}>
       <div className={styles.words}>
         <label htmlFor="search-q" className={styles.wordsLabel}>{t('search.words')}</label>
-        <input id="search-q" type="search" value={v.q} maxLength={100} onChange={(e) => set('q')(e.target.value)} />
+        <span className={styles.wordsIcon}><SearchGlyph /></span>
+        <input id="search-q" type="search" value={v.q} maxLength={100} placeholder={t('home.search_placeholder')} onChange={(e) => set('q')(e.target.value)} />
         <button type="submit" className={styles.submit}>{t('search.submit')}</button>
       </div>
       {message && <div className={styles.msg}><FormMessage kind="error">{message}</FormMessage></div>}
-      <button type="button" className={styles.toggle} aria-expanded={open} aria-controls="search-filters" onClick={() => setOpen((o) => !o)}>
+      <button type="button" ref={toggleRef} className={styles.toggle} aria-expanded={open} aria-controls="search-filters" onClick={() => setOpen((o) => !o)}>
         {open ? t('search.hide_filters') : t('search.show_filters')}
       </button>
-      <fieldset id="search-filters" className={open ? `${styles.grid} ${styles.open}` : styles.grid}>
-        <legend>{t('search.filters')}</legend>
+      {open && <button type="button" className={styles.backdrop} aria-hidden="true" tabIndex={-1} onClick={() => setOpen(false)} />}
+      <fieldset
+        id="search-filters" ref={panelRef} className={open ? `${styles.grid} ${styles.open}` : styles.grid}
+        role={modal ? 'dialog' : undefined} aria-modal={modal ? true : undefined} aria-labelledby={modal ? 'search-filters-title' : undefined}
+      >
+        <legend id="search-filters-title">{t('search.filters')}</legend>
+        <button type="button" ref={closeRef} className={styles.sheetClose} aria-label={t('shell.close')} onClick={() => setOpen(false)}><Cross size={18} /></button>
         <Select id="search-category" label={t('search.category')} value={v.category} onChange={set('category')} any={t('search.any')}
           options={categoryTree(categories).filter(({ c }) => c.selectable).map(({ c, depth }) => [String(c.id), `${'\u00a0'.repeat(depth * 2)}${name(c)}`])} />
         <Select id="search-kind" label={t('search.item_kind')} value={v.itemKind} onChange={set('itemKind')} any={t('search.any')}
@@ -213,10 +280,10 @@ function Filters({ t, lang, params, categories, signedIn, onSearch }: {
         <Select id="search-condition" label={t('search.condition')} value={v.condition} onChange={set('condition')} any={t('search.any')}
           options={CONDITIONS.map((k) => [k, t(`search.condition.${k}`)])} />
         <div className={styles.pair}>
-          <Text id="search-min" label={t('search.min_price')} value={v.minPrice} onChange={set('minPrice')} />
-          <Text id="search-max" label={t('search.max_price')} value={v.maxPrice} onChange={set('maxPrice')} />
+          <Text id="search-min" label={t('search.min_price')} value={v.minPrice} onChange={set('minPrice')} placeholder={t('search.any')} />
+          <Text id="search-max" label={t('search.max_price')} value={v.maxPrice} onChange={set('maxPrice')} placeholder={t('search.any')} />
         </div>
-        <Text id="search-km" label={t('search.max_km')} value={v.maxKm} onChange={set('maxKm')} />
+        <Text id="search-km" label={t('search.max_km')} value={v.maxKm} onChange={set('maxKm')} placeholder={t('search.any')} />
         <Select id="search-sort" label={t('search.sort')} value={v.sort} onChange={set('sort')} any={t(v.q.trim() ? 'search.sort.relevance' : 'search.sort.newest')}
           options={SORTS.map((k) => [k, t(`search.sort.${k}`)])} />
         <div className={styles.location}>
@@ -269,7 +336,7 @@ function ActiveFilters({ t, lang, params, categories, onChange }: {
     <div className={styles.chips} role="group" aria-label={t('search.active')}>
       {chips.map(({ k, text }) => (
         <button key={k} type="button" className={styles.chip} onClick={() => onChange(without([k]))}>
-          <span className={styles.visuallyHidden}>{t('search.remove')} </span>{text}<span aria-hidden="true" className={styles.x}>×</span>
+          <span className={styles.visuallyHidden}>{t('search.remove')} </span>{text}<span aria-hidden="true" className={styles.x}><Cross size={10} /></span>
         </button>
       ))}
       <button type="button" className={styles.clear} onClick={() => onChange(without(chips.map((c) => c.k)))}>{t('search.clear_all')}</button>
@@ -284,20 +351,16 @@ function Select({ id, label, value, onChange, options, any }: {
 }) {
   return (
     <div className={styles.field}>
-      <label htmlFor={id}>{label}</label>
-      <select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="">{any}</option>
-        {options.map(([k, text]) => <option key={k} value={k}>{text}</option>)}
-      </select>
+      <Dropdown id={id} label={label} value={value} onChange={onChange} options={options} any={any} />
     </div>
   );
 }
 
-function Text({ id, label, value, onChange }: { id: string; label: string; value: string; onChange: (v: string) => void }) {
+function Text({ id, label, value, onChange, placeholder }: { id: string; label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <div className={styles.field}>
       <label htmlFor={id}>{label}</label>
-      <input id={id} type="text" inputMode="decimal" value={value} maxLength={20} onChange={(e) => onChange(e.target.value)} />
+      <input id={id} type="text" inputMode="decimal" value={value} maxLength={20} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
     </div>
   );
 }

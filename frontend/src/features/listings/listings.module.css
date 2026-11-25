@@ -21,16 +21,6 @@
 .muted { color: var(--tb-muted); }
 .text { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; line-height: 1.65; }
 
-/* photos: a sideways strip on phones, a large first photo and a two-column grid from 48rem */
-.photos { list-style: none; margin: 0; padding: 0; display: flex; gap: 0.5rem; overflow-x: auto; scroll-snap-type: x mandatory; border-radius: var(--tb-radius-panel); }
-.photos:focus-visible { outline: 3px solid var(--tb-focus); outline-offset: 3px; }
-.photos li { position: relative; flex: 0 0 100%; scroll-snap-align: start; aspect-ratio: 1 / 1; border: 1px solid var(--tb-line); border-radius: var(--tb-radius-panel); background: var(--tb-surface); overflow: hidden; }
-.photos img { width: 100%; height: 100%; object-fit: contain; display: block; }
-@media (min-width: 48rem) {
-  .photos { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; overflow: visible; }
-  .photos li { aspect-ratio: 1 / 1; }
-  .photos li:first-child { grid-column: 1 / -1; aspect-ratio: 4 / 3; }
-}
 .badge { position: absolute; left: 12px; top: 12px; background: var(--tb-sheet); border: 1px solid var(--tb-border); border-radius: var(--tb-radius-control); padding: 3px 10px; font-size: 0.8125rem; font-weight: 600; }
 
 .clarifications { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem; }
@@ -42,20 +32,12 @@
 .risk h2 { margin: 0 0 0.5rem; font-size: 1.0625rem; color: var(--tb-error-text); }
 .risk p { margin: 0.375rem 0 0; line-height: 1.5; }
 
-/* the buy panel's stub (the counterfoil, shared/Counterfoil.tsx) */
-.stubHeading { margin: 0; font-size: 0.875rem; font-weight: 600; color: var(--tb-text); }
-.stubNote { margin: 0; }
 .bigPrice { font-size: 2.25rem; line-height: 1; letter-spacing: -0.03em; font-weight: 500; font-variant-numeric: tabular-nums; }
 :lang(bn) .bigPrice { letter-spacing: 0; }
 
-.seller { display: flex; flex-direction: column; gap: 0.875rem; border: 1px solid var(--tb-line); border-radius: var(--tb-radius-panel); padding: 1rem 1.125rem; }
-.sellerRow { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 0.75rem; align-items: center; }
 .sellerRow p { margin: 0; font-size: 0.875rem; }
-.avatar { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--tb-accent); border-radius: var(--tb-radius-control); background: var(--tb-accent-wash); color: var(--tb-accent-strong); font-weight: 600; }
 .sellerName { color: var(--tb-text); font-weight: 600; text-decoration: none; overflow-wrap: anywhere; }
 .sellerName:hover { text-decoration: underline; text-underline-offset: 3px; }
-@media (max-width: 30rem) { .verified { grid-column: 2 / -1; } }
-.verified { display: inline-flex; align-items: center; gap: 0.375rem; color: var(--tb-accent); font-weight: 600; font-size: 0.8125rem; white-space: nowrap; }
 
 .details { display: grid; grid-template-columns: minmax(8rem, max-content) minmax(0, 1fr); gap: 0.625rem 1.5rem; margin: 0; }
 .details dt { color: var(--tb-muted); }
@@ -98,10 +80,332 @@
 
 .primary, .primaryLink { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-radius-control); background: var(--tb-accent); color: var(--tb-accent-text); border: 0; font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; }
 .primary:disabled { opacity: 0.6; }
-.secondaryButton { min-height: 44px; padding: 0 1.25rem; border: 1px solid var(--tb-border); border-radius: var(--tb-radius-control); background: var(--tb-bg); color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
 .actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .actions button { min-height: 44px; padding: 0 1.25rem; font: inherit; border-radius: var(--tb-radius-control); }
 .visuallyHidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
 /* tap targets of 44 px */
 .crumb a, .sellerName { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; }
+
+/* ======================================================================================================================
+   Redesign v3 (U10-22): the listing page and the auction panel in the home's ruled look (docs/design/10_visual_v3.md).
+   Hairlines and cells instead of filled boxes; one hot colour for the action and the live signal; green only for what is
+   held or verified; figures in Figtree, tabular. This block comes last and replaces the earlier rules of the same names.
+   ====================================================================================================================== */
+.page { row-gap: 1.5rem; }
+@media (min-width: 60rem) {
+  .page { column-gap: 3rem; }
+}
+.rail { display: contents; }
+@media (min-width: 60rem) {
+  .page { grid-template-areas: 'gallery rail' 'body rail'; grid-template-rows: auto 1fr; }
+  .noPhotos { grid-template-areas: 'body rail'; grid-template-rows: auto; }
+  .rail { display: flex; flex-direction: column; gap: 1.25rem; grid-area: rail; align-self: start; min-width: 0; }
+}
+/* a window tall enough (46rem and up): title, price, buy and seller stay in view while the photos and the description scroll, only the left side moves. A spare row under the page, pulled under the footer by a negative margin, keeps the column in place right up to the footer, which then keeps to its left. A shorter window scrolls the whole page: nothing scrolls inside the column. */
+@media (min-width: 60rem) and (min-height: 46rem) {
+  .page { grid-template-areas: 'gallery rail' 'body rail' 'pad rail'; grid-template-rows: auto 1fr var(--tb-rail-pad); margin-bottom: calc(var(--tb-rail-pad) * -1); --tb-rail-pad: 18rem; }
+  .noPhotos { grid-template-areas: 'body rail' 'pad rail'; grid-template-rows: 1fr var(--tb-rail-pad); }
+  .rail { position: sticky; top: 5.75rem; }
+}
+.crumb { gap: 0.25rem 0.75rem; }
+.crumb a { color: var(--tb-muted); text-decoration: none; border-bottom: 1px solid var(--tb-line); }
+.crumb a:hover { color: var(--tb-text); border-bottom-color: var(--tb-hot); }
+.title { font-family: var(--tb-font-display); font-weight: var(--tb-display-weight); letter-spacing: -0.02em; line-height: 1.12; }
+.kind { border-radius: 4px; background: none; border: 1px solid var(--tb-line); color: var(--tb-muted); }
+.notice { border-radius: 0; background: none; border: 0; border-block: 1px solid var(--tb-line); padding: 0.75rem 0; }
+.risk { border-radius: 0; background: none; border: 0; border-top: 2px solid var(--tb-error); border-bottom: 1px solid var(--tb-error-line); padding: 1rem 0; }
+
+/* photos: square frames between hairlines */
+.badge { border-radius: 4px; background: var(--tb-bg); }
+
+/* body: ruled sections, details as rows between hairlines */
+.body { gap: 0; }
+.body > section { padding: 1.5rem 0; border-top: 1px solid var(--tb-line); }
+.body h2 { font-family: var(--tb-font-display); font-weight: var(--tb-display-weight); font-size: 1.5rem; letter-spacing: -0.02em; margin: 0 0 1rem; }
+:lang(bn) .body h2 { letter-spacing: 0; }
+.details { display: block; }
+.details dt { margin: 0; padding-top: 0.75rem; border-top: 1px solid var(--tb-line); font-size: 0.9375rem; }
+.details dt:first-of-type { border-top: 0; padding-top: 0; }
+.details dd { margin: 0.125rem 0 0.75rem; }
+.details .wide { padding-top: 0.75rem; border-top: 1px solid var(--tb-line); margin: 0 0 0.75rem; }
+.clarifications { gap: 0; }
+.clarifications li { border-radius: 0; background: none; padding: 0.875rem 0; border-top: 1px solid var(--tb-line); }
+.clarifications li:first-child { border-top: 0; padding-top: 0; }
+
+/* the buy panel */
+.buy, .auction { border: 0; border-top: 2px solid var(--tb-hot); border-bottom: 0; border-radius: 0; background: none; padding: 1.25rem 0; }
+.buyLabel { margin: 0; color: var(--tb-muted); font-size: 0.9375rem; font-weight: 500; }
+.buyPrice { margin: 0.125rem 0 1.25rem; font-family: var(--tb-font); font-weight: var(--tb-display-weight); font-size: clamp(2.25rem, 1.8rem + 1.6vw, 3rem); line-height: 1.05; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+:lang(bn) .buyPrice { letter-spacing: 0; }
+.buyNote { margin: -0.75rem 0 1.25rem; color: var(--tb-muted); }
+.promise { display: flex; gap: 0.5rem; align-items: center; margin: 0 0 0.75rem; font-weight: 600; }
+.promise { margin: 0.875rem 0 0; padding: 0; border: 0; color: var(--tb-muted); font-size: 0.875rem; line-height: 1.45; font-weight: 400; align-items: flex-start; }
+.shield { flex: none; color: var(--tb-protect); margin-top: 2px; }
+/* each step is a ball on a line: a step the money has reached is a filled green ball, a step it has not is an empty ring, grey */
+.buyButton, .primary, .primaryLink { display: flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 1.5rem; border-radius: 6px; background: var(--tb-action); color: var(--tb-action-text); font-weight: 700; font-size: 1.0625rem; text-decoration: none; border: 0; cursor: pointer; transition: background 140ms, transform 140ms; }
+.buyButton:hover, .primary:hover:not(:disabled), .primaryLink:hover { background: var(--tb-hot-hover); }
+.buyButton:active, .primary:active:not(:disabled) { transform: translateY(1px); }
+.buyButton:focus-visible, .primary:focus-visible, .primaryLink:focus-visible { outline: 2px solid var(--tb-text); outline-offset: 3px; }
+.actions button:not(.primary) { border: 1px solid var(--tb-border); background: none; color: var(--tb-text); font-weight: 600; cursor: pointer; }
+
+/* the seller: the photo (initials) with no box, the name with a small verified tick, the rating and the year */
+.seller { border: 0; border-radius: 0; padding: 0; }
+/* a ruled row of cells: photo | name and year | rating and Pro (when there are any) | chat */
+.sellerRow { --av: 64px; display: grid; grid-template-columns: calc(var(--av) + 14px) minmax(0, 1fr) auto; align-items: stretch; gap: 0; min-height: calc(var(--av) + 16px); border-block: 1px solid var(--tb-line); }
+.sellerRowRated { grid-template-columns: calc(var(--av) + 14px) minmax(0, 1fr) auto auto; }
+.sellerRow > * { display: flex; align-items: center; padding: 0.75rem 0.875rem; }
+.sellerRow > * + *:not(.chatError) { border-left: 1px solid var(--tb-line); }
+.avatar { display: grid; place-items: center; width: var(--av); height: auto; align-self: stretch; margin: 7px; padding: 0; box-sizing: border-box; border: 0; border-radius: 4px; background: var(--tb-surface); color: var(--tb-text); font-family: var(--tb-font-display); font-weight: 600; font-size: 1.125rem; }
+.sellerRating { flex-direction: column; align-items: flex-start; justify-content: center; gap: 0.375rem; }
+.chatCell { justify-content: center; min-width: 56px; border-top: 0; border-right: 0; border-bottom: 0; background: none; color: var(--tb-text); cursor: pointer; text-decoration: none; transition: color 140ms, background 140ms; }
+.chatCell:hover:not(:disabled) { color: var(--tb-hot); background: var(--tb-surface); }
+.chatCell:disabled { opacity: 0.6; cursor: not-allowed; }
+.chatCell:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
+.chatError { grid-column: 1 / -1; border-left: 0 !important; padding: 0 0 0.75rem; }
+.sellerInfo { min-width: 0; flex-direction: column; align-items: flex-start; justify-content: center; gap: 0.125rem; }
+.sellerInfo p { margin: 0; }
+.sellerLine { display: flex; flex-wrap: nowrap; align-items: center; gap: 0 0.5rem; }
+.sellerName { min-height: 44px; min-width: 44px; margin-block: -8px; }
+.tick { display: inline-flex; color: var(--tb-protect); }
+.tick svg { width: 20px; height: 20px; }
+.pro { display: inline-flex; align-items: center; min-height: 20px; padding: 0 0.4rem; border: 1px solid var(--tb-gold); border-radius: 4px; color: var(--tb-gold); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1; }
+:lang(bn) .pro { letter-spacing: 0; text-transform: none; font-size: 0.75rem; }
+.sellerMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 0 0.75rem; color: var(--tb-muted); font-size: 0.875rem; }
+.stars { display: inline-flex; align-items: center; gap: 0.375rem; }
+:root { --tb-gold: #e8b84a; }
+
+/* the auction panel: the same ruled panel; the clock and the bids are the live signal */
+.auctionTop { background: none; border-bottom: 1px solid var(--tb-line); padding: 0 0 0.75rem; }
+.auctionTop::before, .auctionTop::after { content: none; }
+.auction > :not(.auctionTop) { margin-left: 0; margin-right: 0; }
+.auctionTop h2 { color: var(--tb-hot); font-size: 0.9375rem; letter-spacing: 0.02em; }
+.timeLeft strong { font-family: var(--tb-font); font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+.bigPrice { font-family: var(--tb-font); font-weight: var(--tb-display-weight); font-size: clamp(2.25rem, 1.8rem + 1.6vw, 3rem); }
+.facts { padding-top: 1rem; }
+.warning { border-radius: 4px; }
+.mine { border-radius: 0; background: none; border: 0; border-block: 1px solid var(--tb-protect); color: var(--tb-protect); padding: 0.625rem 0; }
+.bid input { border-radius: 6px; background: var(--tb-sheet); }
+.bid input:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 1px; }
+.history li { border-top: 1px solid var(--tb-line); }
+.rules { border-block: 1px solid var(--tb-line); }
+.offer { border-radius: 0; background: none; border: 0; border-block: 1px solid var(--tb-hot); padding: 0.875rem 0; }
+.closed { border-block: 1px solid var(--tb-line); padding: 0.75rem 0; }
+@media (prefers-reduced-motion: reduce) { .buyButton, .primary { transition: none; } }
+@media (forced-colors: active) { .buy, .auction { border-top-color: CanvasText; } }
+
+/* the gallery: one large photo, small ones under it (all items); a magnifying glass on the large one for physical items */
+.stage { position: relative; width: 100%; max-height: 38rem; border: 1px solid var(--tb-line); border-radius: 4px; background: var(--tb-surface); overflow: hidden; }
+.stage > img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.canZoom { cursor: zoom-in; }
+.glass { position: absolute; inset: 0; background-repeat: no-repeat; background-size: 240%; background-color: var(--tb-surface); pointer-events: none; }
+.thumbs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0 0; padding: 0; list-style: none; }
+.thumb { display: block; width: 4.5rem; height: 4.5rem; padding: 0; border: 1px solid var(--tb-line); border-radius: 4px; background: var(--tb-surface); overflow: hidden; cursor: pointer; opacity: 0.7; transition: opacity 140ms, border-color 140ms; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb:hover { opacity: 1; }
+.thumbOn { opacity: 1; border-color: var(--tb-hot); box-shadow: inset 0 0 0 1px var(--tb-hot); }
+.thumb:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+@media (max-width: 30rem) { .thumb { width: 3.5rem; height: 3.5rem; } }
+@media (pointer: coarse) { .glass { display: none; } .canZoom { cursor: auto; } }
+@media (prefers-reduced-motion: reduce) { .thumb { transition: none; } }
+@media (max-width: 30rem) { .sellerRow > * { padding: 0.625rem 0.625rem; } .sellerRow { --av: 52px; } .chatCell { min-width: 48px; } }
+
+/* Buy now and Save for later, side by side */
+.buyRow { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 0.625rem; }
+.saveButton { display: flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 52px; padding: 0 0.875rem; border: 1px solid var(--tb-border); border-radius: 6px; background: none; color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; transition: border-color 140ms, color 140ms; }
+.saveButton:hover { border-color: var(--tb-hot); }
+.saveButton.saved { border-color: var(--tb-hot); color: var(--tb-hot); }
+.saveButton:focus-visible { outline: 2px solid var(--tb-text); outline-offset: 3px; }
+@media (max-width: 22rem) { .buyRow { grid-template-columns: 1fr; } }
+
+/* ---- review fixes (impeccable finish review of the listing page) ---- */
+/* a narrow window: the description and details run the full column, so their rules end where the photo and buy panel's do; the reading measure stays about 68 characters */
+@media (max-width: 59.99rem) { .body { max-width: none; } }
+.body .text { max-width: 68ch; }
+/* a rail taller than the window (a game account's warnings, an auction's bids, a short laptop) scrolls inside itself, so Buy now is never pushed out of reach; the padding and margin keep focus rings from being cut */
+@media (min-width: 60rem) and (min-height: 46rem) { .rail { max-height: calc(100svh - 6.5rem); overflow-y: auto; overscroll-behavior: contain; padding: 4px; margin: -4px; scrollbar-width: thin; } }
+/* small details: no stub under the category link, balanced title lines, the seller's name and Pro at readable sizes */
+.crumb a { border-bottom: 0; }
+.crumb a:hover { border-bottom: 1px solid var(--tb-hot); }
+.title { text-wrap: balance; }
+.sellerName { font-size: 1rem; }
+.pro { font-size: 0.75rem; }
+/* colour discipline: green is for held and verified only (the payment line is a promise, so its shield is muted); gold is for Pro and the rating star */
+.shield { color: var(--tb-muted); }
+/* Bangla: small text a step larger, and the two buttons stack on phones where "পরে দেখতে রাখুন" would wrap */
+:lang(bn) .buyLabel, :lang(bn) .crumb, :lang(bn) .sellerMeta { font-size: 1rem; }
+:lang(bn) .promise { font-size: 0.9375rem; line-height: 1.6; }
+:lang(bn) .pro { font-size: 0.875rem; }
+@media (max-width: 30rem) { :lang(bn) .buyRow { grid-template-columns: 1fr; } }
+/* the bid form: a field error sits clear of the button under it */
+.fieldError { margin: 0 0 0.25rem; }
+/* being outbid is not a "held" state: pink, not green; the winner's line has room above its button */
+.mine.outbid { border-block-color: var(--tb-error); color: var(--tb-error-text); }
+.closed p + p { margin-top: 0.5rem; }
+.closed .primaryLink { margin-top: 0.625rem; }
+
+/* ---- auction panel, organised: the bid facts are a two-column ruled grid, and the rules and the bid history sit under the
+   description instead of making the fixed column tall (it then fits a laptop screen without scrolling inside itself) ---- */
+.factGrid { display: grid; grid-template-columns: 1fr 1fr; margin-top: 0.75rem; border-block: 1px solid var(--tb-line); }
+.factGrid > p { margin: 0; padding: 0.625rem 0.875rem 0.625rem 0; font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
+.factGrid > p:nth-child(2n) { padding-left: 0.875rem; border-left: 1px solid var(--tb-line); }
+.factGrid > p:nth-child(n+3) { border-top: 1px solid var(--tb-line); }
+.factGrid > p:last-child:nth-child(odd) { grid-column: 1 / -1; padding-right: 0; }
+.extra { display: flex; flex-direction: column; gap: 1.25rem; padding: 1.5rem 0; border-top: 1px solid var(--tb-line); }
+.extra .rules { margin: 0; border-block: 1px solid var(--tb-line); }
+.extra h3 { margin: 0 0 0.75rem; font-family: var(--tb-font-display); font-weight: var(--tb-display-weight); font-size: 1.5rem; letter-spacing: -0.02em; }
+:lang(bn) .extra h3 { letter-spacing: 0; }
+.extra .history { margin: 0; }
+.extra .history li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 0 1.5rem; padding: 0.625rem 0; }
+@media (max-width: 30rem) { .extra .history li { grid-template-columns: 1fr auto; } .extra .history li > :last-child { grid-column: 1 / -1; } }
+/* a laptop screen: tighter vertical rhythm in the fixed column */
+@media (min-width: 60rem) and (min-height: 46rem) and (max-height: 56rem) {
+  .rail { gap: 0.875rem; }
+  .title { font-size: 1.75rem; }
+  .buyPrice, .bigPrice { font-size: 2.25rem; }
+  .buy, .auction { padding: 0.875rem 0; }
+}
+
+/* ---- auctions: the floating bid bar (prototype B, chosen by the owner). The page flows normally, with no fixed column: the price, the
+   clock, "See the bids" and the bid box sit in a bar at the bottom of the screen. The bid history is the same list on the page and,
+   when "See the bids" is pressed, a sheet over the page above the bar. ---- */
+@media (min-width: 60rem) {
+  .flow.page { grid-template-areas: 'gallery rail' 'body rail'; grid-template-rows: auto 1fr; margin-bottom: 0; }
+  .flow.noPhotos { grid-template-areas: 'body rail'; grid-template-rows: auto; }
+  .flow .rail { position: static; max-height: none; overflow: visible; padding: 0; margin: 0; }
+}
+.flow { padding-bottom: 1.5rem; }
+body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
+.flow .auction { padding-top: 0.875rem; }
+.bidBar { --g: max(clamp(1rem, 4vw, 3.5rem), calc((100% - var(--tb-max-width)) / 2 + clamp(1rem, 4vw, 3.5rem))); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: grid; grid-template-columns: auto auto auto minmax(0, 1fr); align-items: end; gap: 0 1.75rem; padding: 0.75rem var(--g); background: var(--tb-sheet); border-top: 2px solid var(--tb-hot); }
+.barCell { display: flex; flex-direction: column; min-width: 0; }
+.barK { color: var(--tb-muted); font-size: 0.8125rem; line-height: 1.3; }
+.barV { font-family: var(--tb-font); font-weight: 600; font-size: 1.5rem; line-height: 1.2; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.barMid { align-items: flex-start; gap: 0.25rem; }
+.seeBids { display: inline-flex; align-items: center; min-height: 44px; flex: none; white-space: nowrap; padding: 0 0.75rem; border: 1px solid var(--tb-border); border-radius: 6px; background: none; color: var(--tb-text); font: inherit; font-size: 0.875rem; font-weight: 600; cursor: pointer; }
+.seeBids:hover, .seeBids[aria-expanded='true'] { border-color: var(--tb-hot); }
+.seeBids:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+.barAct { min-width: 0; justify-self: end; width: min(100%, 26rem); }
+.barAct .primaryLink { width: 100%; }
+.barAct .bid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.25rem 0.5rem; margin: 0; }
+.barAct .bid > p, .barAct .bid > div[role], .barAct .bid > [class*='FormMessage'] { grid-column: 1 / -1; margin: 0; font-size: 0.8125rem; }
+.barAct .bid input { min-height: 48px; margin: 0; }
+.barAct .bid .primary { min-height: 48px; padding: 0 1.25rem; white-space: nowrap; }
+.barAct .bid .fieldError { grid-column: 1 / -1; margin: 0; font-size: 0.8125rem; }
+/* the history: inline on the page; a sheet above the bar when opened */
+.historyBox { padding: 0; }
+.sheetHead { display: flex; align-items: center; justify-content: space-between; }
+.sheetClose { display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: none; color: var(--tb-text); cursor: pointer; }
+.sheetOpen { --g: max(clamp(1rem, 4vw, 3.5rem), calc((100% - var(--tb-max-width)) / 2 + clamp(1rem, 4vw, 3.5rem))); position: fixed; left: 0; right: 0; bottom: var(--bar-h, 78px); z-index: 29; max-height: 55svh; overflow: auto; padding: 1rem var(--g) 1.25rem; background: var(--tb-sheet); border-top: 1px solid var(--tb-hot); }
+.sheetOpen:focus { outline: none; }
+@media (max-width: 47.99em) {
+  .bidBar { bottom: calc(58px + env(safe-area-inset-bottom)); grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem; padding: 0.625rem 1rem; }
+  .barMid { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between; }
+  .barAct { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: no-preference) { .sheetOpen { animation: sheetIn 200ms ease-out; } @keyframes sheetIn { from { transform: translateY(12px); opacity: 0; } } }
+@media (forced-colors: active) { .bidBar { border-top-color: CanvasText; } }
+.bidCount { display: inline-grid; place-items: center; min-width: 1.5rem; height: 1.5rem; margin-left: 0.5rem; padding: 0 0.375rem; border-radius: 4px; background: var(--tb-surface); color: var(--tb-hot); font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
+.barMid { justify-content: center; }
+/* the bar never changes height: a bid's answer or a field error floats just above the bid box instead of pushing the button onto a new row */
+.barAct { position: relative; }
+.barAct .bid { grid-template-rows: auto auto; }
+.barAct .bid > input { grid-column: 1; grid-row: 2; }
+.barAct .bid > .primary { grid-column: 2; grid-row: 2; }
+.barAct .bid > .fieldError, .barAct .bid > div:not([role='dialog']) { position: absolute; right: 0; bottom: calc(100% + 6px); z-index: 2; width: max-content; max-width: min(27rem, 92vw); padding: 0.375rem 0.625rem; border: 1px solid var(--tb-error-line); border-radius: 4px; background: var(--tb-error-bg); color: var(--tb-error-text); }
+.barAct .bid > p:first-child { grid-column: 1 / -1; grid-row: 1; }
+/* with no price block above it, the facts grid starts right under the Auction line */
+.facts:not(:has(.priceLine)) { padding-top: 0.75rem; }
+.facts:not(:has(.priceLine)) .factGrid { margin-top: 0; border-top: 0; }
+/* review: label rows, Bangla sizes, the sheet's close mark aligned with the rule's end, the placeholder never clipped mid-word */
+.barCell { padding-bottom: 9px; }
+.barAct .bid > p:first-child { line-height: 1.3; }
+.sheetHead .sheetClose { margin-right: -15px; }
+.barAct .bid input::placeholder { text-overflow: ellipsis; }
+:lang(bn) .barK, :lang(bn) .barAct .bid > p { font-size: 0.9375rem; line-height: 1.5; }
+:lang(bn) .seeBids { font-size: 1rem; }
+
+/* ---- details: a quiet two-column grid, one vertical hairline between the columns and no line under every row ---- */
+.details { display: grid; grid-template-columns: 1fr; gap: 1.25rem 0; margin: 0; }
+.details > div { min-width: 0; padding: 0; border: 0; }
+.details dt { margin: 0; padding: 0; border: 0; color: var(--tb-muted); font-size: 0.875rem; }
+.details dd { margin: 0.125rem 0 0; padding: 0; border: 0; font-weight: 600; overflow-wrap: anywhere; }
+.details > .wide { grid-column: 1 / -1; padding-top: 0.25rem; border-top: 0 !important; margin: 0 !important; }
+.details > .wide dd { margin: 0; font-weight: 500; color: var(--tb-muted); }
+@media (min-width: 30rem) {
+  .details { grid-template-columns: 1fr 1fr; }
+  .details > div:nth-child(2n) { padding-left: 1.25rem; border-left: 1px solid var(--tb-line); }
+  .details > .wide { padding-left: 0 !important; border-left: 0 !important; }
+}
+.details > .wide:not(:first-child) { margin-top: 0.25rem; }
+
+/* ---- the bid bar as a ruled grid of cells: price | time | bids | bid box, a hairline between the cells, labels on top, values on one line ---- */
+.bidBar { display: block; padding-block: 0; }
+.barBody { display: grid; grid-template-columns: auto auto auto minmax(0, 1fr); align-items: stretch; }
+.barBody > * + * { border-left: 1px solid var(--tb-line); }
+.barBody > .barCell { padding: 0.625rem 1.5rem; justify-content: space-between; gap: 0.25rem; }
+.barBody > .barCell:first-child { padding-left: 0; }
+.barBody > .barMid { justify-content: center; }
+.barBody > .barAct { padding: 0.625rem 0 0.625rem 1.5rem; width: auto; justify-self: stretch; display: flex; flex-direction: column; justify-content: flex-end; }
+.barBody > .barAct > * { width: min(100%, 27rem); margin-left: auto; }
+.barCell { padding-bottom: 0; }
+.barToggle { display: none; }
+/* phones: the bar is a small floating tab at the right edge (a chevron and the price); pressing it opens the bar, a chevron closes it */
+@media (max-width: 47.99em) {
+  .bidBar { left: auto; right: 1rem; bottom: calc(58px + 16px + env(safe-area-inset-bottom)); width: auto; border: 1px solid var(--tb-hot); border-radius: 6px; border-top-width: 1px; box-shadow: none; }
+  .bidBar[data-open='true'] { left: 0; right: 0; bottom: calc(58px + env(safe-area-inset-bottom)); border: 0; border-top: 2px solid var(--tb-hot); border-radius: 0; padding: 0.25rem 1rem 0.625rem; }
+  .barToggle { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; padding: 0 0.875rem; border: 0; background: none; color: var(--tb-text); font: inherit; font-weight: 700; font-variant-numeric: tabular-nums; cursor: pointer; }
+  .bidBar[data-open='true'] .barToggle { margin-left: auto; padding: 0 0.25rem; }
+  .barToggle:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
+  .barToggle .toggleText { white-space: nowrap; }
+  .toggleText::before { content: attr(data-price); }
+  .chevLeft { color: var(--tb-hot); } .chevDown { transform: rotate(-90deg); }
+  .barBody { display: none; }
+  .bidBar[data-open='true'] .barBody { display: grid; grid-template-columns: 1fr 1fr; }
+  .barBody > .barCell { padding: 0.375rem 0; }
+  .barBody > .barCell:nth-child(2) { padding-left: 1rem; border-left: 1px solid var(--tb-line); }
+  .barBody > .barMid { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: center; border-left: 0; border-top: 1px solid var(--tb-line); }
+  .barBody > .barAct { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--tb-line); padding: 0.625rem 0 0; }
+  .barBody > .barAct > * { width: 100%; }
+  .sheetOpen { bottom: var(--bar-h, 0px); }
+}
+@media (prefers-reduced-motion: no-preference) { .bidBar[data-open='true'] { animation: sheetIn 200ms ease-out; } }
+
+/* "See the bids" is a whole cell of the grid, not a boxed button: the cell fills with the surface tone on hover and carries a vermilion line along its foot while the sheet is open */
+.barBody > .barMid { padding: 0; align-items: stretch; }
+.barBody .seeBids { position: relative; flex: 1; width: 100%; min-height: 44px; gap: 0.625rem; justify-content: center; padding: 0 1.5rem; border: 0; border-radius: 0; background: none; font-size: 1rem; }
+.barBody .seeBids:hover { background: var(--tb-surface); }
+.barBody .seeBids[aria-expanded='true'] { background: var(--tb-surface); }
+.barBody .seeBids[aria-expanded='true']::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--tb-hot); }
+.barBody .seeBids:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
+.seeChev, .seeChevOpen { flex: none; color: var(--tb-muted); transition: transform 160ms; }
+.seeChevOpen { transform: rotate(180deg); color: var(--tb-hot); }
+@media (max-width: 47.99em) { .barBody > .barMid { padding: 0; } .barBody .seeBids { justify-content: space-between; padding: 0; } .seeChev { margin-left: auto; } }
+@media (prefers-reduced-motion: reduce) { .seeChev, .seeChevOpen { transition: none; } }
+
+/* the See-the-bids cell is a small grid of its own: label | count | arrow, the count and the arrow each in a square cell between hairlines and centred in it */
+.barBody .seeBids { display: grid; grid-template-columns: 1fr auto auto; align-items: stretch; gap: 0; padding: 0; justify-content: stretch; }
+.seeLabel { display: flex; align-items: center; padding: 0 1.25rem; }
+.barBody .seeBids .bidCount, .seeArrow { display: grid; place-items: center; width: 3rem; margin: 0; padding: 0; border: 0; border-left: 1px solid var(--tb-line); border-radius: 0; background: none; height: auto; min-width: 0; font-size: 0.9375rem; }
+.barBody .seeBids .bidCount { color: var(--tb-hot); font-weight: 700; font-variant-numeric: tabular-nums; }
+.seeArrow svg { display: block; }
+@media (max-width: 47.99em) { .seeLabel { padding: 0; } .barBody .seeBids { padding: 0; } .barBody .seeBids .bidCount, .seeArrow { width: 3rem; } .seeChev { margin-left: 0; } }
+
+/* ---- final review fixes ---- */
+/* details: the vertical hairline between the columns runs unbroken from the first row to the last */
+@media (min-width: 30rem) {
+  .details { row-gap: 0; }
+  .details > div:not(.wide) { padding-block: 0.625rem; }
+  .details > div:nth-child(-n+2):not(.wide) { padding-top: 0; }
+}
+/* an ended or sold auction is not an open action: no vermilion rule, a muted label (and no payment line, see ListingPage) */
+.auction[data-closed] { border-top-color: var(--tb-line); }
+.auction[data-closed] .auctionTop h2 { color: var(--tb-muted); }
+/* a rated seller on the narrowest phones: the rating and Pro take a row of their own so the name keeps its width */
+@media (max-width: 22rem) {
+  .sellerRowRated { grid-template-columns: calc(var(--av) + 14px) minmax(0, 1fr) auto; }
+  .sellerRowRated .sellerRating { grid-column: 1 / -1; grid-row: 2; flex-direction: row; align-items: center; gap: 0.75rem; padding: 0.5rem 0.875rem; border-left: 0; border-top: 1px solid var(--tb-line); }
+  .sellerRowRated .chatCell { grid-column: 3; grid-row: 1; }
+}
+:lang(bn) .factGrid > p { font-size: 1rem; line-height: 1.5; }
+:lang(bn) .bidCount { font-size: 1rem; }
