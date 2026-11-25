@@ -24,6 +24,7 @@
 .timeline .now::before { background: var(--tb-protect); border-color: var(--tb-protect); box-shadow: 0 0 0 4px rgb(93 211 158 / 0.22); }
 
 .clockRow { display: flex; align-items: center; gap: 0.5rem; font-weight: 500; margin-top: auto; padding-top: 1rem; }
+.clockRow + .ui { margin-top: 0; padding-top: 0.75rem; }
 .clockRow strong { font-family: var(--tb-font); font-weight: 600; font-size: 1.5rem; font-variant-numeric: tabular-nums; }
 .tag { margin-left: auto; padding: 0.125rem 0.5rem; border: 1px solid var(--tb-line); border-radius: 2px; color: var(--tb-muted); font-size: 0.8125rem; font-style: normal; font-weight: 600; }
 .live { width: 9px; height: 9px; border-radius: 50%; background: var(--tb-error); animation: ping 1.8s infinite; }
@@ -77,13 +78,8 @@
   .cardBox:nth-child(even) { padding-left: 2rem; }
   .escrow, .auction { min-height: 26.25rem; }
   .idCard, .code, .pay { min-height: 18rem; }
-  .escrow { grid-column: 1 / span 4; }
-  .auction { grid-column: 5 / span 8; padding-right: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto 1fr auto; column-gap: 2rem; align-content: stretch; }
-  .auction .h3, .auction .text { grid-column: 1; }
-  .auction .clockRow { grid-column: 1; grid-row: 3; align-self: end; margin-top: 0; padding-top: 0; }
-  .auction .ui { grid-column: 2; grid-row: 1 / span 3; margin-top: 0; padding-top: 0; align-self: end; }
-  .auction .bids { margin-top: 0; }
-  .auction .bids li { min-height: 3.25rem; align-items: center; }
+  .escrow { grid-column: 1 / span 6; }
+  .auction { grid-column: 7 / span 6; padding-right: 0; }
   .idCard, .code, .pay { grid-column: span 4; padding: 2rem; padding-left: 0; }
   .pay { display: flex; }
   .pay .methods { margin: auto 0 0; padding: 1rem 0 0; align-self: auto; }
