@@ -147,12 +147,12 @@
 /* the buy panel */
 .buy, .auction { border: 0; border-top: 2px solid var(--tb-hot); border-bottom: 1px solid var(--tb-line); border-radius: 0; background: none; padding: 1.25rem 0; }
 .buyLabel { margin: 0; color: var(--tb-muted); font-size: 0.9375rem; font-weight: 500; }
-.buyPrice { margin: 0.125rem 0 0; font-family: var(--tb-font); font-weight: var(--tb-display-weight); font-size: clamp(2.25rem, 1.8rem + 1.6vw, 3rem); line-height: 1.05; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.buyPrice { margin: 0.125rem 0 1.25rem; font-family: var(--tb-font); font-weight: var(--tb-display-weight); font-size: clamp(2.25rem, 1.8rem + 1.6vw, 3rem); line-height: 1.05; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
 :lang(bn) .buyPrice { letter-spacing: 0; }
-.buyNote { margin: 0.25rem 0 0; color: var(--tb-muted); }
+.buyNote { margin: -0.75rem 0 1.25rem; color: var(--tb-muted); }
 .buyPromise { margin: 1.25rem 0; padding: 1rem 0; border-block: 1px solid var(--tb-line); }
 .buyPromise > p, .promise { display: flex; gap: 0.5rem; align-items: center; margin: 0 0 0.75rem; font-weight: 600; }
-.promise { padding: 0.75rem 0; border-bottom: 1px solid var(--tb-line); font-weight: 400; align-items: flex-start; }
+.promise { margin: 0.875rem 0 0; padding: 0; border: 0; color: var(--tb-muted); font-size: 0.875rem; line-height: 1.45; font-weight: 400; align-items: flex-start; }
 .shield { flex: none; color: var(--tb-protect); margin-top: 2px; }
 .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; }
 /* each step is a ball on a line: a step the money has reached is a filled green ball, a step it has not is an empty ring, grey */

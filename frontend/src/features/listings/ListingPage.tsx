@@ -19,7 +19,6 @@ import type { Lang } from '../../shared/language/lang';
 import { useMe } from '../../shared/me';
 import { useOpenThread } from '../../shared/chat';
 import { isApiError } from '../../shared/problems';
-import { EscrowSteps } from '../../shared/EscrowSteps';
 import { FRESHNESS } from '../../shared/query';
 import { AuctionPanel } from './AuctionPanel';
 import { listingKey, type ListingView } from './model';
@@ -75,7 +74,7 @@ export function Component() {
         {l.saleFormat === 'auction' && l.auction
           ? (<>
               <AuctionPanel initial={l.auction} t={t} lang={lang} signedIn={signedIn} own={own} nextPath={pathname} />
-              <p className={styles.promise}><Shield />{t('listing.promise.title')}. {t('listing.promise.text')}</p>
+              <p className={styles.promise}><Shield />{t('listing.promise.text')}</p>
             </>)
           : <Buy l={l} own={own} t={t} lang={lang} />}
         <section aria-labelledby="seller-title" className={styles.seller}>
@@ -201,8 +200,8 @@ function Photos({ l, t, lang }: { l: ListingView; t: T; lang: Lang }) {
 }
 
 /** A fixed-price item's buy panel (AC-LST-1), ruled like the home page: the price first and large, how many are left, the
- *  payment promise with the three steps of the money in order (an explanation, so no state is claimed), then the buy
- *  button. On wide screens the panel stays in view while the page scrolls. */
+ *  buy button, and one quiet line saying when the seller is paid (no steps and no state: a visitor has not paid yet; the
+ *  steps appear at checkout and on the order, where they are real). On wide screens the panel stays in view while the page scrolls. */
 function Buy({ l, own, t, lang }: { l: ListingView; own: boolean; t: T; lang: Lang }) {
   if (!l.price) return null;
   const price = formatMoney(l.price, lang);
@@ -211,15 +210,11 @@ function Buy({ l, own, t, lang }: { l: ListingView; own: boolean; t: T; lang: La
       <h2 id="price-title" className={styles.buyLabel}>{t('listing.price')}</h2>
       <p className={styles.buyPrice}>{price}</p>
       {l.quantity.total > 1 && <p className={styles.buyNote}>{t('listing.available', { count: toLocalDigits(String(l.quantity.available), lang) })}</p>}
-      <div className={styles.buyPromise}>
-        <p><Shield />{t('listing.promise.title')}</p>
-        <EscrowSteps current="held" labels={[t('listing.counterfoil.in'), t('listing.counterfoil.held'), t('listing.counterfoil.out')]}
-          classes={{ list: styles.steps, done: styles.stepDone, current: styles.stepNow }} />
-      </div>
       {l.currentlyReserved && <p className={styles.notice}>{t('listing.currently_reserved')}</p>}
       {l.status === 'active' && !own && l.quantity.available > 0 && (
         <Link className={styles.buyButton} to={`/checkout/${encodeURIComponent(l.id)}`}>{t('listing.buy', { price })}</Link>
       )}
+      <p className={styles.promise}><Shield />{t('listing.promise.text')}</p>
     </section>
   );
 }
