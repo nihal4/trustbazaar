@@ -177,6 +177,16 @@ describe('configuration', () => {
     expect(problems({ ...dev(), EMAIL_MODE: 'smtp' })).toEqual(['SMTP_URL: missing (EMAIL_MODE is smtp)']);
   });
 
+  it('SEC-DAT-05 SMS by Twilio needs its account, token and number; other SMS modes are refused', () => {
+    expect(problems({ ...dev(), SMS_MODE: 'twilio' })).toEqual([
+      'TWILIO_ACCOUNT_SID: missing (SMS_MODE is twilio)',
+      'TWILIO_AUTH_TOKEN: missing (SMS_MODE is twilio)',
+      'TWILIO_FROM: missing (SMS_MODE is twilio)',
+    ]);
+    expect(problems({ ...dev(), SMS_MODE: 'twilio', TWILIO_ACCOUNT_SID: 'AC1', TWILIO_AUTH_TOKEN: 'tok', TWILIO_FROM: '+15005550006' })).toEqual([]);
+    expect(problems({ ...dev(), SMS_MODE: 'gateway' })).toHaveLength(1);
+  });
+
   it('SEC-DAT-05 all problems are reported at once', () => {
     expect(problems({}).length).toBe(Object.keys(SECRETS).length + Object.keys(KEYRINGS).length + 2);
   });
