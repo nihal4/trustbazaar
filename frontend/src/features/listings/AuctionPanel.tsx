@@ -5,6 +5,7 @@
 // The countdown runs on the server's clock. The bidder's own maximum and lead come from my-status, shown only to
 // them; after the close, the winner's order and a second-chance offer come from there too (Decisions log, U3-05).
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AuctionFeed } from '../../lib/live.js';
@@ -33,8 +34,10 @@ export const CLOSING_POLL_MS = 3_000;
 
 const money = (p: string | bigint, lang: Lang) => formatMoney(p, lang);
 
-export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath }: {
+export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraHost = null }: {
   initial: AuctionState; t: T; lang: Lang; signedIn: boolean; own: boolean; nextPath: string;
+  /** where the rules and the bid history go: under the description, so the panel in the fixed column stays short (null: under the panel) */
+  extraHost?: HTMLElement | null;
 }) {
   const id = initial.auctionId;
   const api = useApi();
@@ -157,6 +160,32 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath }: {
 
   const countdown = formatCountdown(left, lang);
   const mine = myStatus.data;
+  const extraNode = (
+    <div className={styles.extra}>
+      <details className={styles.rules}>
+        <summary>{t('auction.rules_title')}</summary>
+        <ul>
+          {(['increment', 'proxy', 'reserve', 'sniping', 'binding'] as const).map((k) => <li key={k}>{t(`auction.rules.${k}`)}</li>)}
+        </ul>
+      </details>
+
+      <section aria-labelledby="history-title">
+        <h3 id="history-title">{t('auction.history')}</h3>
+        {history.data && history.data.items.length === 0 && <p>{t('auction.history_empty')}</p>}
+        {history.data && history.data.items.length > 0 && (
+          <ol className={styles.history}>
+            {history.data.items.map((b) => (
+              <li key={b.id}>
+                <span>{t('auction.history_bidder', { alias: toLocalDigits(String(b.bidderAlias), lang) })}</span>
+                <span>{money(b.amount, lang)}{b.leading ? ` (${t('auction.history_leading')})` : ''}</span>
+                <span className={styles.muted}>{formatDateTime(Date.parse(b.at), lang)}</span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+    </div>
+  );
   return (
     <section aria-labelledby="auction-title" className={styles.auction}>
       <div className={styles.auctionTop}>
@@ -173,14 +202,16 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath }: {
           <span className={styles.muted}>{state.price ? t('auction.current_price') : t('auction.start_price')}</span>{' '}
           <strong className={styles.bigPrice}>{money(state.price ?? state.startPrice, lang)}</strong>
         </p>
-        <p>{state.bidCount > 0 ? t('auction.bid_count', { count: toLocalDigits(String(state.bidCount), lang) }) : t('auction.no_bids')}</p>
-        {state.leaderAlias !== null && <p>{t('auction.leader', { alias: toLocalDigits(String(state.leaderAlias), lang) })}</p>}
-        {state.hasReserve && <p>{state.reserveMet ? t('auction.reserve_met') : t('auction.reserve_not_met')}</p>}
+        <div className={styles.factGrid}>
+          <p>{state.bidCount > 0 ? t('auction.bid_count', { count: toLocalDigits(String(state.bidCount), lang) }) : t('auction.no_bids')}</p>
+          {state.leaderAlias !== null && <p>{t('auction.leader', { alias: toLocalDigits(String(state.leaderAlias), lang) })}</p>}
+          {state.hasReserve && <p>{state.reserveMet ? t('auction.reserve_met') : t('auction.reserve_not_met')}</p>}
+          {open && <p className={styles.muted}>{t('auction.ends_at', { at: formatDateTime(Date.parse(state.endAt), lang) })}</p>}
+        </div>
       </div>
 
-      {open && (
+      {open && (countdown.urgent || closing) && (
         <div className={styles.clock}>
-          <p className={styles.muted}>{t('auction.ends_at', { at: formatDateTime(Date.parse(state.endAt), lang) })}</p>
           {countdown.urgent && <p className={styles.warning}>{t('auction.late_warning')}</p>}
           {closing && <p role="status">{t('auction.ending')}</p>}
         </div>
@@ -208,28 +239,7 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath }: {
         </p>
       )}
 
-      <details className={styles.rules}>
-        <summary>{t('auction.rules_title')}</summary>
-        <ul>
-          {(['increment', 'proxy', 'reserve', 'sniping', 'binding'] as const).map((k) => <li key={k}>{t(`auction.rules.${k}`)}</li>)}
-        </ul>
-      </details>
-
-      <section aria-labelledby="history-title">
-        <h3 id="history-title">{t('auction.history')}</h3>
-        {history.data && history.data.items.length === 0 && <p>{t('auction.history_empty')}</p>}
-        {history.data && history.data.items.length > 0 && (
-          <ol className={styles.history}>
-            {history.data.items.map((b) => (
-              <li key={b.id}>
-                <span>{t('auction.history_bidder', { alias: toLocalDigits(String(b.bidderAlias), lang) })}</span>
-                <span>{money(b.amount, lang)}{b.leading ? ` (${t('auction.history_leading')})` : ''}</span>
-                <span className={styles.muted}>{formatDateTime(Date.parse(b.at), lang)}</span>
-              </li>
-            ))}
-          </ol>
-        )}
-      </section>
+      {extraHost ? createPortal(extraNode, extraHost) : extraNode}
     </section>
   );
 }

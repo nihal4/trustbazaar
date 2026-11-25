@@ -45,12 +45,13 @@ export function Component() {
   // On wide screens the right column stays in view down to the footer, so the footer makes room beside it (shell.module.css reads
   // html[data-rail] and --tb-rail-reserve) instead of covering it or pushing it up.
   const rail = useRef<HTMLDivElement>(null);
+  const [extraHost, setExtraHost] = useState<HTMLElement | null>(null);
   const ready = listing.isSuccess;
   useEffect(() => {
     const el = rail.current;
     if (!ready || !el || typeof ResizeObserver === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
     const root = document.documentElement;
-    const wide = window.matchMedia('(min-width: 60rem)');
+    const wide = window.matchMedia('(min-width: 60rem) and (min-height: 46rem)');
     const apply = () => {
       if (wide.matches) {
         root.dataset.rail = 'on';
@@ -106,7 +107,7 @@ export function Component() {
       <aside className={styles.side}>
         {l.saleFormat === 'auction' && l.auction
           ? (<>
-              <AuctionPanel initial={l.auction} t={t} lang={lang} signedIn={signedIn} own={own} nextPath={pathname} />
+              <AuctionPanel initial={l.auction} t={t} lang={lang} signedIn={signedIn} own={own} nextPath={pathname} extraHost={extraHost} />
               <p className={styles.promise}><Shield />{t('listing.promise.text')}</p>
             </>)
           : <Buy l={l} own={own} t={t} lang={lang} />}
@@ -138,6 +139,7 @@ export function Component() {
           <p className={styles.text}>{l.description}</p>
         </section>
         <Details l={l} t={t} lang={lang} />
+        {l.saleFormat === 'auction' && <div ref={setExtraHost} />}
         {l.clarifications.length > 0 && (
           <section aria-labelledby="clarifications-title">
             <h2 id="clarifications-title">{t('listing.clarifications')}</h2>
