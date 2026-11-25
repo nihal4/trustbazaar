@@ -227,7 +227,7 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
     </>
   );
   const bar = (
-    <div className={styles.bidBar} role="group" aria-label={t('auction.title')} ref={barRef} data-open={barOpen}>
+    <div className={styles.bidBar} role="group" aria-label={t('auction.place_bid')} ref={barRef} data-open={barOpen}>
       <button type="button" className={styles.barToggle} aria-expanded={barOpen} aria-controls="bid-bar-body" onClick={() => setBarOpen((v) => !v)}
         aria-label={barOpen ? t('shell.close') : `${t('auction.open_bar')}: ${money(state.price ?? state.startPrice, lang)}`}>
         <svg viewBox="0 0 12 12" width="14" height="14" aria-hidden="true" focusable="false" className={barOpen ? styles.chevDown : styles.chevLeft}><path d="M8 1.5 L3.5 6 L8 10.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -266,7 +266,7 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
   );
   return (
     <>
-      <section aria-labelledby="auction-title" className={styles.auction}>
+      <section aria-labelledby="auction-title" className={styles.auction} data-closed={open ? undefined : 'true'}>
         <div className={styles.auctionTop}>
           <h2 id="auction-title">{t('auction.title')}</h2>
         </div>

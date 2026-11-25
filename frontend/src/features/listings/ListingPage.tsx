@@ -108,7 +108,7 @@ export function Component() {
         {l.saleFormat === 'auction' && l.auction
           ? (<>
               <AuctionPanel initial={l.auction} t={t} lang={lang} signedIn={signedIn} own={own} nextPath={pathname} extraHost={extraHost} />
-              <p className={styles.promise}><Shield />{t('listing.promise.text')}</p>
+              {l.auction.status === 'open' && <p className={styles.promise}><Shield />{t('listing.promise.text')}</p>}
             </>)
           : <Buy l={l} own={own} t={t} lang={lang} />}
         <section aria-labelledby="seller-title" className={styles.seller}>

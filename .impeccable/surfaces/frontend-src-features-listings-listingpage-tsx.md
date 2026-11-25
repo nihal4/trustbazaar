@@ -7,7 +7,7 @@ related_targets: []
 
 # Surface: TrustBazaar listing page (the buyer's decision screen)
 
-Scope: `frontend/src/features/listings/ListingPage.tsx` and `listings.module.css` (the fixed-price buy panel, the gallery, the seller row, details; the auction panel is restyled in the same look but could not be captured: the demo data has no auction); mode Operate, inheriting the home page's world (see DESIGN.md and `.impeccable/surfaces/frontend-index-html.md`). Audience: buyers in Bangladesh on mid-range phones deciding whether to buy a used item from a stranger; job: judge the item and the seller, then buy or save it. Constraints: Bangla and English equal, 44px targets, CSP/Trusted Types, WCAG 2.2 AA, 320px.
+Scope: `frontend/src/features/listings/ListingPage.tsx` and `listings.module.css` (the fixed-price buy panel, the gallery, the seller row, details; the auction page (a bid bar fixed to the bottom of the screen as a ruled grid of cells, a bid-history sheet above it, and on phones a small floating tab that opens the bar) is part of this surface); mode Operate, inheriting the home page's world (see DESIGN.md and `.impeccable/surfaces/frontend-index-html.md`). Audience: buyers in Bangladesh on mid-range phones deciding whether to buy a used item from a stranger; job: judge the item and the seller, then buy or save it. Constraints: Bangla and English equal, 44px targets, CSP/Trusted Types, WCAG 2.2 AA, 320px.
 
 ## Direction contract
 
