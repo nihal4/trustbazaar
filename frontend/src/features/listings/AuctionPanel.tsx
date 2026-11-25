@@ -108,7 +108,7 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
         <svg viewBox="0 0 12 12" width="14" height="14" aria-hidden="true" focusable="false" className={barOpen ? styles.chevDown : styles.chevLeft}><path d="M8 1.5 L3.5 6 L8 10.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
         {!barOpen && <span className={styles.toggleText} aria-hidden="true" data-price={money(state.price ?? state.startPrice, lang)} />}
       </button>
-      <div className={styles.barBody} id="bid-bar-body">
+      <div className={styles.barBody} id="bid-bar-body" data-room={signedIn}>
       <div className={styles.barCell}>{priceBlock}</div>
       <div className={styles.barCell}>
         <span className={styles.barK}>{t('auction.time_left')}</span>
@@ -124,6 +124,7 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
           </span>
         </button>
       </div>
+      {signedIn && <Link to={`/listings/${encodeURIComponent(id)}/room`} className={styles.barRoom}><span className={styles.liveDot} aria-hidden="true" />{t('room.join')}</Link>}
       <div className={styles.barAct}>
         {!signedIn ? (
           <Link to={signInPath(nextPath)} className={styles.primaryLink}>{t('auction.sign_in_to_bid')}</Link>
@@ -184,9 +185,11 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
 
 const amountError = (reason: string, t: T) => t(`auction.amount.${reason}`);
 
-function BidForm({ id, state, mine, t, lang, onPlaced, onRefused }: {
+/** The bid form, with its checks, its confirmation and its single send. The auction room passes `quick`: amounts (in poisha) that fill the field and
+ *  go through the same checks and the same confirmation dialog; nothing is sent by pressing one. */
+export function BidForm({ id, state, mine, t, lang, onPlaced, onRefused, quick = [] }: {
   id: string; state: AuctionState; mine: MyStatus | undefined; t: T; lang: Lang;
-  onPlaced: (r: BidResult, sentAt: number) => void; onRefused: () => void;
+  onPlaced: (r: BidResult, sentAt: number) => void; onRefused: () => void; quick?: bigint[];
 }) {
   const api = useApi();
   const [amount, setAmount] = useState('');
@@ -231,8 +234,11 @@ function BidForm({ id, state, mine, t, lang, onPlaced, onRefused }: {
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
+    check(amount);
+  };
+  const check = (text: string) => {
     setResult(null);
-    const p = parseTaka(amount);
+    const p = parseTaka(text);
     if (!p.ok) return setError(amountError(p.reason, t));
     // explained before sending: below the minimum, or not above one's own maximum (the server decides in the end)
     if (leading && mine?.yourMaximum && p.poisha <= BigInt(mine.yourMaximum)) return setError(t('auction.refused.max_not_higher'));
@@ -246,6 +252,14 @@ function BidForm({ id, state, mine, t, lang, onPlaced, onRefused }: {
   const label = leading ? t('auction.raise_label') : t('auction.amount_label');
   return (
     <form onSubmit={submit} noValidate className={styles.bid}>
+      {quick.length > 0 && (
+        <div className={styles.quickBids} role="group" aria-label={t('room.quick')}>
+          {quick.map((q) => {
+            const text = (q / 100n).toString();
+            return <button type="button" key={text} className={styles.quickBid} onClick={() => { setAmount(text); check(text); }}>{money(q, lang)}</button>;
+          })}
+        </div>
+      )}
       {state.minimumBid && !leading && <p><strong>{t('auction.minimum', { amount: money(state.minimumBid, lang) })}</strong></p>}
       {result && <FormMessage kind={result.kind}>{result.text}</FormMessage>}
       <label htmlFor="bid-amount" className={styles.visuallyHidden}>{label}</label>

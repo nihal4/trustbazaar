@@ -4,6 +4,7 @@ import type { RouteObject } from 'react-router-dom';
 
 export const listingRoutes: RouteObject[] = [
   { path: '/listings/:id', lazy: () => import('./ListingPage') },
+  { path: '/listings/:id/room', lazy: () => import('./AuctionRoom') },
   { path: '/sell/new', lazy: () => import('./SellPage') },
   { path: '/sell/:id', lazy: () => import('./SellPage') },
 ];

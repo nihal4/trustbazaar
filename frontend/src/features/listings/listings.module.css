@@ -409,3 +409,55 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 }
 :lang(bn) .factGrid > p { font-size: 1rem; line-height: 1.5; }
 :lang(bn) .bidCount { font-size: 1rem; }
+
+/* ---- the auction room (U10-30) and the bar's "Join the live room" cell ---- */
+.liveDot { display: inline-block; width: 9px; height: 9px; margin-right: 0.5rem; border-radius: 50%; background: var(--tb-error); }
+@media (prefers-reduced-motion: no-preference) { .liveDot { animation: livePulse 1.4s ease-in-out infinite; } @keyframes livePulse { 50% { opacity: 0.3; } } }
+.barBody > .barRoom { display: flex; align-items: center; justify-content: center; padding: 0 1.25rem; color: var(--tb-text); font-weight: 600; text-decoration: none; white-space: nowrap; border-left: 1px solid var(--tb-line); }
+.barBody > .barRoom:hover { background: var(--tb-surface); }
+.barRoom:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
+.bidBar > .barBody[data-room='true'] { grid-template-columns: auto auto auto auto minmax(0, 1fr); }
+@media (max-width: 47.99em) { .bidBar[data-open='true'] .barBody { grid-template-columns: 1fr 1fr; } .barBody > .barRoom { grid-column: 1 / -1; justify-content: space-between; padding: 0; min-height: 44px; border-left: 0; border-top: 1px solid var(--tb-line); } }
+
+.room { max-width: 82rem; margin: 0 auto; display: grid; gap: 1.5rem 2rem; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 60rem) { .room { grid-template-columns: minmax(0, 1fr) 22rem; } .roomHead { grid-column: 1 / -1; } }
+.roomHead { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 0 1.5rem; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--tb-line); }
+.roomThumb { width: 64px; height: 64px; object-fit: cover; border-radius: 4px; background: var(--tb-surface); }
+.roomTitle { min-width: 0; } .roomTitle h1 { margin: 0; font-size: 1.5rem; line-height: 1.2; overflow-wrap: anywhere; }
+.roomLive { display: flex; align-items: center; margin: 0 0 0.25rem; color: var(--tb-error); font-size: 0.875rem; font-weight: 700; }
+.roomStat { display: flex; flex-direction: column; }
+@media (max-width: 47.99em) { .roomHead { grid-template-columns: auto minmax(0, 1fr); gap: 0.75rem 1rem; } .roomStat { grid-column: span 1; } }
+.roomStage { border: 1px solid var(--tb-line); border-radius: 4px; background: radial-gradient(ellipse at 50% 100%, #10231f, var(--tb-sheet) 70%); padding: 1rem 1rem 0; }
+.roomStage svg { display: block; width: 100%; height: auto; }
+.seat circle { fill: var(--tb-surface); stroke: var(--tb-line); stroke-width: 2; }
+.seat text { fill: var(--tb-text); font: 600 14px var(--tb-font); text-anchor: middle; }
+.seatLead circle { fill: var(--tb-hot); stroke: var(--tb-hot-hover); } .seatLead text { fill: var(--tb-action-text); }
+.seatMe circle { stroke: var(--tb-text); stroke-width: 3; }
+.podium { display: flex; flex-direction: column; align-items: center; margin-top: -2rem; padding-bottom: 1rem; text-align: center; position: relative; }
+.roomPrice { font-family: var(--tb-font); font-weight: 600; font-size: clamp(2rem, 1.5rem + 2vw, 3rem); line-height: 1.1; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.roomControls { grid-column: 1; border-top: 2px solid var(--tb-hot); padding-top: 1rem; display: grid; gap: 0.75rem; align-content: start; }
+.roomControls .bid { display: grid; gap: 0.5rem; margin: 0; }
+.quickBids { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+.quickBid { min-height: 48px; border: 1px solid var(--tb-border); border-radius: 6px; background: none; color: var(--tb-text); font: inherit; font-weight: 600; font-variant-numeric: tabular-nums; cursor: pointer; }
+.quickBid:hover { border-color: var(--tb-hot); } .quickBid:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+.sitOut { justify-self: start; min-height: 44px; padding: 0; border: 0; background: none; color: var(--tb-muted); font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.sitOut[aria-pressed='true'] { color: var(--tb-hot); }
+.roomFeed { border: 1px solid var(--tb-line); border-radius: 4px; padding: 1rem; max-height: 36rem; overflow: auto; }
+@media (min-width: 60rem) { .roomFeed { grid-column: 2; grid-row: 2 / span 2; } }
+.roomFeed h2 { margin: 0 0 0.75rem; font-size: 1.25rem; }
+.roomFeed .history li { grid-template-columns: minmax(0, 1fr) auto; }
+@media (prefers-reduced-motion: no-preference) { .flash { animation: bidFlash 1.2s ease-out; } @keyframes bidFlash { from { background: rgb(255 107 53 / 0.25); } } }
+@media (forced-colors: active) { .seat circle { stroke: CanvasText; } .seatLead circle { fill: Highlight; } }
+
+/* the bar with the room cell is too wide for one row below 75em: the bid box takes a row of its own under the four cells */
+@media (min-width: 48em) and (max-width: 74.99em) {
+  .bidBar > .barBody[data-room='true'] { grid-template-columns: auto auto minmax(0, 1fr) auto; }
+  .barBody[data-room='true'] > .barAct { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--tb-line); padding: 0.625rem 0; }
+  .barBody[data-room='true'] > .barAct > * { width: 100%; margin-left: 0; }
+}
+/* the room's bid form on one compact block: quick bids, then the field and Place bid side by side */
+.roomControls .bid { grid-template-columns: minmax(0, 1fr) auto; align-items: start; }
+.roomControls .bid > .quickBids, .roomControls .bid > p, .roomControls .bid > .fieldError { grid-column: 1 / -1; }
+.roomControls .bid > input { grid-column: 1; }
+.roomControls .bid > .primary { grid-column: 2; min-width: 9rem; }
+@media (max-width: 30rem) { .roomControls .bid > input { grid-column: 1 / -1; } .roomControls .bid > .primary { grid-column: 1 / -1; } }
