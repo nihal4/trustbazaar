@@ -19,7 +19,7 @@
 .lede { width: 70%; height: 1.125rem; }
 .bar { width: min(100%, 30rem); height: 3.25rem; margin-top: 0.5rem; }
 .short { width: 45%; }
-.window { display: grid; gap: 0.75rem; min-height: 16rem; }
+.window { display: grid; gap: 0.75rem; align-content: start; }
 .photo { height: 12rem; }
 .winBody { display: grid; gap: 0.625rem; }
 .line { height: 0.875rem; width: 90%; }
