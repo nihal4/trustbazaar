@@ -234,3 +234,9 @@
 :lang(bn) .promise { font-size: 0.9375rem; line-height: 1.6; }
 :lang(bn) .pro { font-size: 0.875rem; }
 @media (max-width: 30rem) { :lang(bn) .buyRow { grid-template-columns: 1fr; } }
+/* the bid form: a field error sits clear of the button under it */
+.fieldError { margin: 0 0 0.25rem; }
+/* being outbid is not a "held" state: pink, not green; the winner's line has room above its button */
+.mine.outbid { border-block-color: var(--tb-error); color: var(--tb-error-text); }
+.closed p + p { margin-top: 0.5rem; }
+.closed .primaryLink { margin-top: 0.625rem; }

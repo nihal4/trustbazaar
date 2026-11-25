@@ -203,7 +203,7 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath }: {
         }} onRefused={() => void refetch()} />
       )}
       {mine && open && mine.hasBid && (
-        <p className={styles.mine}>
+        <p className={mine.leading ? styles.mine : `${styles.mine} ${styles.outbid}`}>
           {t('auction.your_maximum', { amount: money(mine.yourMaximum!, lang) })} {mine.leading ? t('auction.you_lead') : t('auction.you_are_outbid')}
         </p>
       )}
