@@ -5,11 +5,9 @@
 // /search with the words in the URL; everything shown here comes from GET /search and GET /categories.
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { toLocalDigits } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
-import { Counterfoil } from '../../shared/Counterfoil';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
 import { useT } from '../../shared/language/Language';
@@ -66,36 +64,40 @@ export function Component() {
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
+        <div className={styles.glow} aria-hidden="true" />
         <div className={styles.heroText}>
+          <p className={styles.eyebrow}><Check />{t('home.promise.id')}</p>
           <h1 className={styles.title}>{t('home.title')}</h1>
-          <form role="search" className={styles.search} onSubmit={search}>
+          <p className={styles.lede}>{t('home.promise.text')}</p>
+          <form role="search" aria-label={t('home.search_placeholder')} className={styles.search} onSubmit={search}>
             <label htmlFor="home-q" className={styles.visuallyHidden}>{t('home.search_label')}</label>
-            <svg className={styles.searchIcon} viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+            <svg className={styles.searchIcon} viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
               <path d="M11 4 a7 7 0 1 0 0.01 0 Z M16.5 16.5 L21 21" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
             <input id="home-q" type="search" maxLength={100} value={words} placeholder={t('home.search_placeholder')} onChange={(e) => setWords(e.target.value)} />
             <button type="submit">{t('search.submit')}</button>
           </form>
-          <ul className={styles.facts}>
-            <li><Check />{t('home.promise.id')}</li>
-            <li><Check />{t('home.promise.pay')}</li>
+          <ul className={styles.chips}>
+            {top.slice(0, 5).map((c) => <li key={c.id}><Link to={`/search?category=${c.id}`}>{lang === 'bn' ? c.nameBn : c.nameEn}</Link></li>)}
           </ul>
         </div>
-        <div className={styles.foil}>
-          <Counterfoil
-            stub={<strong>{t('home.counterfoil.stub')}</strong>}
-            title={<><h2 className={styles.foilTitle}>{t('home.promise.title')}</h2><p className={styles.foilText}>{t('home.promise.text')}</p></>}
-            stages={[
-              { key: 'in', label: t('home.counterfoil.in'), state: 'done' },
-              { key: 'held', label: t('home.counterfoil.held'), state: 'current' },
-              { key: 'out', label: t('home.counterfoil.out'), state: 'next' },
-            ]}
-          />
+        <div className={styles.stage} aria-hidden="false">
+          <section className={styles.escrow} aria-labelledby="home-promise">
+            <p className={styles.stub}>{t('home.counterfoil.stub')}</p>
+            <h2 id="home-promise" className={styles.escrowHead}><span className={styles.escrowDot} />{t('home.promise.title')}</h2>
+            <ol className={styles.track}>
+              <li className={styles.done}><span className={styles.node}><Check /></span><span>{t('home.counterfoil.in')}</span></li>
+              <li className={styles.current}><span className={styles.node} /><span>{t('home.counterfoil.held')}</span></li>
+              <li><span className={styles.node} /><span>{t('home.counterfoil.out')}</span></li>
+            </ol>
+            <p className={styles.escrowNote}>{t('home.promise.pay')}</p>
+          </section>
+          <div className={styles.floatA}><Check />{t('home.promise.id')}</div>
         </div>
       </section>
 
       {top.length > 0 && (
-        <nav aria-label={t('home.categories')}>
+        <nav aria-label={t('home.categories')} className={styles.catsWrap}>
           <ul className={styles.cats}>
             <li><Link className={`${styles.cat} ${styles.catAll}`} to="/search">{t('home.all')}</Link></li>
             {top.map((c) => <li key={c.id}><Link className={styles.cat} to={`/search?category=${c.id}`}>{lang === 'bn' ? c.nameBn : c.nameEn}</Link></li>)}
@@ -106,7 +108,7 @@ export function Component() {
       {ending.length > 0 && (
         <section aria-labelledby="home-auctions" className={styles.section}>
           <div className={styles.head}><h2 id="home-auctions">{t('home.auctions')}</h2><Link to="/search?saleFormat=auction&sort=ending_soon">{t('home.auctions_all')}</Link></div>
-          <ul className={`${styles.grid} ${styles.four}`}>{ending.map((c) => <ListingCard key={c.id} c={c} t={t} lang={lang} />)}</ul>
+          <ul className={styles.rail}>{ending.map((c) => <ListingCard key={c.id} c={c} t={t} lang={lang} />)}</ul>
         </section>
       )}
 
@@ -134,7 +136,7 @@ export function Component() {
             <li key={n}><span className={styles.num} aria-hidden="true">{toLocalDigits(String(n), lang)}</span><span><strong>{t(`home.sell.step${n}`)}</strong>{t(`home.sell.step${n}_text`)}</span></li>
           ))}
         </ol>
-        <Button component={Link} to="/sell/new" variant="outline" color="teal">{t('home.sell.start')}</Button>
+        <Link to="/sell/new" className={styles.sellBtn}>{t('home.sell.start')}</Link>
       </section>
     </div>
   );

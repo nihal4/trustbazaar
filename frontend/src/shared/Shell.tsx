@@ -3,9 +3,9 @@
 // signed-out notice and the main region; in the user app also the footer and, on phones, the tab bar.
 // After a navigation, focus moves to the main region so keyboard and screen-reader users start at
 // the new page.
-import { Suspense, useEffect, useRef, useSyncExternalStore } from 'react';
+import { Suspense, useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { BellIcon, ChatIcon, HomeIcon, OrdersIcon, PlusIcon, SearchIcon, UserIcon } from './icons';
@@ -50,12 +50,13 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
   return (
     <div className={styles.page}>
       <a className={styles.skip} href="#main">{t('shell.skip_to_content')}</a>
+      {accountLinks && <p className={styles.promiseBar}><ShieldIcon />{t('shell.promise_bar')}</p>}
       <header className={exit ? `${styles.header} ${styles.withExit}` : styles.header}>
         {home.sameDocument
           ? <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo /></Link>
           : <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}><Logo /></a>}
         {titleKey && <span className={styles.docTitle}>{t(titleKey)}</span>}
-        <span className={styles.spacer} />
+        {accountLinks && !phone ? <HeaderSearch /> : <span className={styles.spacer} />}
         {accountLinks && <AccountLink phone={phone} />}
         <LanguageSwitch />
         {exit && <a className={styles.exit} href={exit.href}>{t(exit.labelKey)}</a>}
@@ -72,6 +73,32 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
       {accountLinks && <Footer />}
       {tabs && <TabBar />}
     </div>
+  );
+}
+
+const ShieldIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+    <path d="M12 2.8 4.5 5.7v5.6c0 4.7 3.1 8.4 7.5 9.9 4.4-1.5 7.5-5.2 7.5-9.9V5.7Z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+    <path d="m8.8 12.1 2.3 2.3 4.3-4.6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+/** The search in the header of the user app on wide screens: a pill that goes to /search with the words in the URL. */
+function HeaderSearch() {
+  const { t } = useLanguage();
+  const navigate = useNavigate();
+  const [words, setWords] = useState('');
+  const go = (e: FormEvent) => {
+    e.preventDefault();
+    const q = words.trim();
+    void navigate(q ? `/search?q=${encodeURIComponent(q)}` : '/search');
+  };
+  return (
+    <form role="search" aria-label={t('shell.search_label')} className={styles.headSearch} onSubmit={go}>
+      <label htmlFor="head-q" className={styles.visuallyHidden}>{t('shell.search_label')}</label>
+      <SearchIcon />
+      <input id="head-q" type="search" maxLength={100} value={words} placeholder={t('shell.search_placeholder')} onChange={(e) => setWords(e.target.value)} />
+    </form>
   );
 }
 

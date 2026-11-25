@@ -1,20 +1,16 @@
-// The TrustBazaar mark (docs/design/10_visual_v2.md, section 5): a money-order counterfoil, the stub torn along its
-// perforation and the form postmarked with a tick, and the wordmark beside it. Inline SVG, so the header needs no
-// request. Decorative: the link around it is named.
+// The TrustBazaar mark (docs/design/10_visual_v3.md): a rounded blue tile with a shield and a tick, and the wordmark
+// beside it. Inline SVG, so the header needs no request. Decorative: the link around it is named.
 import styles from './shell.module.css';
 
-const PERFORATION = [9.5, 12.5, 15.5, 18.5, 21.5, 24.5];
-
 export function Logo({ onDark = false }: { onDark?: boolean }) {
-  const form = onDark ? '#FFFFFF' : '#06525C';
-  const paper = onDark ? '#0D2326' : '#F7F9F8';
+  const tile = onDark ? '#FFFFFF' : '#1D4ED8';
+  const ink = onDark ? '#1D4ED8' : '#FFFFFF';
   return (
     <span className={styles.logo}>
-      <svg className={styles.mark} viewBox="0 0 34 34" width="30" height="30" aria-hidden="true" focusable="false">
-        <rect x="2" y="7" width="30" height="20" rx="2" fill={form} />
-        {PERFORATION.map((y) => <circle key={y} cx="11" cy={y} r="0.95" fill={paper} />)}
-        <circle cx="21.5" cy="17" r="5.6" fill="none" stroke={paper} strokeWidth="1.5" />
-        <path d="M19 17.2 l1.8 1.8 l3.4 -3.8" fill="none" stroke={paper} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      <svg className={styles.mark} viewBox="0 0 34 34" width="32" height="32" aria-hidden="true" focusable="false">
+        <rect width="34" height="34" rx="10" fill={tile} />
+        <path d="M17 6.5 8.8 9.7v6.3c0 5.1 3.4 9.1 8.2 10.8 4.8-1.7 8.2-5.700 8.2-10.800V9.700Z" fill="none" stroke={ink} strokeWidth="2.2" strokeLinejoin="round" />
+        <path d="m13.200 16.400 2.800 2.800 5-5.300" fill="none" stroke={ink} strokeWidth="2.200" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
       <span className={styles.wordmark} aria-hidden="true">trustbazaar</span>
     </span>
