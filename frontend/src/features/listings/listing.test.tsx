@@ -124,13 +124,13 @@ describe('the listing page in the money-order world (U10-13)', () => {
     expect(screen.getByRole('region', { name: 'Photos' }).querySelector('ul')!.getAttribute('tabindex')).toBe('0');   // the phone strip scrolls by keyboard too
   });
 
-  it('NFR-USE-07 a fixed-price item\'s buy panel is the counterfoil: the price, how the money moves in order, and the button (AC-LST-1)', async () => {
+  it('NFR-USE-07 a fixed-price item\'s buy panel shows the price once, how the money moves in order, and the button (AC-LST-1)', async () => {
     renderApp(`/listings/${ID}`, backend({ l: listing() }));
     const panel = await screen.findByRole('region', { name: 'Price' });
     expect(within(panel).getByText('Your money waits with us')).toBeTruthy();
     expect(within(panel).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['You pay TrustBazaar', 'We hold it', 'The seller is paid when you confirm']);
     expect(within(panel).getByRole('link', { name: 'Buy now for ৳15,000' })).toBeTruthy();
-    expect(within(panel).getAllByText('৳15,000')).toHaveLength(2);     // on the stub and on the form, as on a money order
+    expect(within(panel).getAllByText('৳15,000')).toHaveLength(1);     // the price is named once, not on a stub and again on a form
     expect(screen.queryByText('You pay TrustBazaar. The seller is paid only after you confirm you have the item.')).toBeNull();   // the strip is not repeated
   });
 

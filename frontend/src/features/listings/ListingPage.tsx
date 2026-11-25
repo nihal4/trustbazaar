@@ -7,7 +7,6 @@
 // an auction shows its panel. Others see only public listings; the seller sees their own in every state.
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { Button } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { takeEarly } from '../../shared/early';
 import { formatMoney, toLocalDigits } from '../../lib/money.js';
@@ -20,8 +19,7 @@ import type { Lang } from '../../shared/language/lang';
 import { useMe } from '../../shared/me';
 import { useOpenThread } from '../../shared/chat';
 import { isApiError } from '../../shared/problems';
-import { Counterfoil } from '../../shared/Counterfoil';
-import { PromiseNote } from '../../shared/PromiseNote';
+import { EscrowSteps } from '../../shared/EscrowSteps';
 import { FRESHNESS } from '../../shared/query';
 import { AuctionPanel } from './AuctionPanel';
 import { listingKey, type ListingView } from './model';
@@ -77,7 +75,7 @@ export function Component() {
         {l.saleFormat === 'auction' && l.auction
           ? (<>
               <AuctionPanel initial={l.auction} t={t} lang={lang} signedIn={signedIn} own={own} nextPath={pathname} />
-              <PromiseNote title={t('listing.promise.title')} text={t('listing.promise.text')} />
+              <p className={styles.promise}><Shield />{t('listing.promise.title')}. {t('listing.promise.text')}</p>
             </>)
           : <Buy l={l} own={own} t={t} lang={lang} />}
         <section aria-labelledby="seller-title" className={styles.seller}>
@@ -117,10 +115,16 @@ export function Component() {
   );
 }
 
+const Shield = () => (
+  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false" className={styles.shield}>
+    <path d="M12 3 L20 6 V12 C20 16.5 16.5 19.8 12 21 C7.5 19.8 4 16.5 4 12 V6 Z M8.5 12.2 l2.4 2.4 l4.6 -5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 const Tick = () => (
   <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
     <circle cx="8" cy="8" r="8" fill="currentColor" />
-    <path d="M4.5 8.2 l2.3 2.3 l4.7 -5" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M4.5 8.2 l2.3 2.3 l4.7 -5" fill="none" stroke="var(--tb-bg)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
@@ -175,26 +179,27 @@ function Photos({ l, t, lang }: { l: ListingView; t: T; lang: Lang }) {
   );
 }
 
-/** A fixed-price item's buy panel is the counterfoil (AC-LST-1): the stub names the price (and how many are left),
- *  the form carries the amount, the promise and, in order, how the money moves (an explanation, so no state is
- *  claimed), and holds the buy button. The promise strip is not repeated beside it. */
+/** A fixed-price item's buy panel (AC-LST-1), ruled like the home page: the price first and large, how many are left, the
+ *  payment promise with the three steps of the money in order (an explanation, so no state is claimed), then the buy
+ *  button. On wide screens the panel stays in view while the page scrolls. */
 function Buy({ l, own, t, lang }: { l: ListingView; own: boolean; t: T; lang: Lang }) {
   if (!l.price) return null;
   const price = formatMoney(l.price, lang);
-  const stages = (['in', 'held', 'out'] as const).map((key, i) => ({ key, label: t(`listing.counterfoil.${key}`), state: i === 0 ? 'done' as const : i === 1 ? 'current' as const : 'next' as const }));
   return (
-    <Counterfoil labelledBy="price-title" amount={price}
-      stub={<>
-        <h2 id="price-title" className={styles.stubHeading}>{t('listing.price')}</h2>
-        {l.quantity.total > 1 && <p className={styles.stubNote}>{t('listing.available', { count: toLocalDigits(String(l.quantity.available), lang) })}</p>}
-      </>}
-      title={<p>{t('listing.promise.title')}</p>}
-      stages={stages}>
+    <section className={styles.buy} aria-labelledby="price-title">
+      <h2 id="price-title" className={styles.buyLabel}>{t('listing.price')}</h2>
+      <p className={styles.buyPrice}>{price}</p>
+      {l.quantity.total > 1 && <p className={styles.buyNote}>{t('listing.available', { count: toLocalDigits(String(l.quantity.available), lang) })}</p>}
+      <div className={styles.buyPromise}>
+        <p><Shield />{t('listing.promise.title')}</p>
+        <EscrowSteps current="held" labels={[t('listing.counterfoil.in'), t('listing.counterfoil.held'), t('listing.counterfoil.out')]}
+          classes={{ list: styles.steps, done: styles.stepDone, current: styles.stepNow }} />
+      </div>
       {l.currentlyReserved && <p className={styles.notice}>{t('listing.currently_reserved')}</p>}
       {l.status === 'active' && !own && l.quantity.available > 0 && (
-        <Button component={Link} to={`/checkout/${encodeURIComponent(l.id)}`} size="lg" fullWidth>{t('listing.buy', { price })}</Button>
+        <Link className={styles.buyButton} to={`/checkout/${encodeURIComponent(l.id)}`}>{t('listing.buy', { price })}</Link>
       )}
-    </Counterfoil>
+    </section>
   );
 }
 
@@ -217,13 +222,13 @@ function Details({ l, t, lang }: { l: ListingView; t: T; lang: Lang }) {
 /** FR-CHT-01: a conversation with the seller about this listing (U8-13); signed-out visitors sign in first. */
 function MessageSeller({ listingId, signedIn, nextPath, t, lang }: { listingId: string; signedIn: boolean; nextPath: string; t: T; lang: Lang }) {
   const { open, busy, error } = useOpenThread();
-  if (!signedIn) return <Button component={Link} variant="default" fullWidth to={`/signin?next=${encodeURIComponent(nextPath)}`}>{t('listing.message_seller_sign_in')}</Button>;
+  if (!signedIn) return <Link className={styles.ghost} to={`/signin?next=${encodeURIComponent(nextPath)}`}>{t('listing.message_seller_sign_in')}</Link>;
   return (
     <>
       {error !== null && <FormMessage kind="error">{errorText(error, t, lang)}</FormMessage>}
-      <Button variant="default" size="md" fullWidth onClick={() => open(listingId)} disabled={busy} aria-busy={busy}>
+      <button type="button" className={styles.ghost} onClick={() => open(listingId)} disabled={busy} aria-busy={busy}>
         {t('listing.message_seller')}
-      </Button>
+      </button>
     </>
   );
 }
