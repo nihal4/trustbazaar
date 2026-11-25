@@ -209,12 +209,23 @@ export class OrderService implements OrdersPort {
 
   // ---------------------------------------------------------------- my orders
 
-  async list(userId: string, role: 'buyer' | 'seller', cursor: string | undefined) {
+  /**
+   * The stage tabs of the orders list (U10-23): one rule, used by the list and mirrored by the web client's progress.
+   *  orders: waiting for payment, or paid and not yet handed over or sent; on_the_way: paid, and the seller has handed over or sent it
+   *  (the buyer has it or it is coming), until it is closed; completed: closed, refunded or cancelled.
+   */
+  private static readonly STAGE_SQL: Record<'orders' | 'on_the_way' | 'completed', string> = {
+    orders: `(status = 'awaiting_payment' OR (status = 'paid' AND fulfilment_done_at IS NULL AND delivery_event_at IS NULL))`,
+    on_the_way: `(status = 'paid' AND (fulfilment_done_at IS NOT NULL OR delivery_event_at IS NOT NULL))`,
+    completed: `(status IN ('closed', 'cancelled'))`,
+  };
+
+  async list(userId: string, role: 'buyer' | 'seller', cursor: string | undefined, stage?: 'orders' | 'on_the_way' | 'completed') {
     const after = decodeCursor(cursor);
     const column = role === 'seller' ? 'seller_id' : 'buyer_id';
     const rows: { id: string; cursor_at: string }[] = await this.db.query(
       `SELECT id, ${cursorAt('created_at')} AS cursor_at FROM orders.orders
-       WHERE ${column} = $1 AND ($2::timestamptz IS NULL OR (created_at, id) < ($2::timestamptz, $3::uuid))
+       WHERE ${column} = $1 ${stage ? `AND ${OrderService.STAGE_SQL[stage]}` : ''} AND ($2::timestamptz IS NULL OR (created_at, id) < ($2::timestamptz, $3::uuid))
        ORDER BY created_at DESC, id DESC LIMIT ${PAGE + 1}`,
       [userId, after?.at ?? null, after?.id ?? null],
     );

@@ -40,6 +40,11 @@ export class OrdersQuery {
   @IsIn(['buyer', 'seller'])
   role?: 'buyer' | 'seller';
 
+  /** U10-23: the stage tab of the orders list. */
+  @IsOptional()
+  @IsIn(['orders', 'on_the_way', 'completed'])
+  stage?: 'orders' | 'on_the_way' | 'completed';
+
   @IsOptional()
   @IsString()
   @MaxLength(100)

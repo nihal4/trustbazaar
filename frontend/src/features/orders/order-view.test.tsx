@@ -377,26 +377,37 @@ describe('courier delivery and shipments (Unit 4)', () => {
 });
 
 describe('the list of orders', () => {
-  it('NFR-USE-07 IF-UI-05 the list is a ruled grid with the item, status, seller and money, a receipt for a paid order, and cancelled orders in their own section', async () => {
+  it('NFR-USE-07 IF-UI-05 the list is a ruled grid with the item, status, seller and money, and a receipt for a paid order; the tab is asked of the server', async () => {
     const photo = { ...order().listing, photoKey: 'ph-1' };
     const be = backend({
       'GET /orders': json(200, { items: [
         order({ id: 'o-2', listing: photo, counterparty: { id: 's-1', displayName: 'Rahim Traders' } }),
         order({ id: 'o-5', status: 'awaiting_payment', escrow: null, paidAt: null, listing: { ...photo, title: 'Unpaid lamp' } }),
-        order({ id: 'o-6', status: 'cancelled', escrow: null, paidAt: null, cancelledAt: '2026-11-02T10:00:00Z', listing: { ...photo, title: 'Gone phone' } }),
       ], nextCursor: null }),
     });
     renderApp('/orders', be);
     await screen.findByRole('link', { name: 'Desk lamp' });
-    const bought = screen.getByRole('region', { name: /^Bought/ });
-    const cancelled = screen.getByRole('region', { name: /^Cancelled/ });
-    expect(within(bought).getAllByRole('listitem')).toHaveLength(2);
-    expect(within(cancelled).getAllByRole('listitem')).toHaveLength(1);
-    expect(within(cancelled).getByRole('link', { name: 'Gone phone' })).toBeTruthy();
-    expect(within(bought).getByText('Rahim Traders')).toBeTruthy();                       // the seller, in a column of their own
-    expect(bought.querySelector('img')?.getAttribute('src')).toBe('/api/v1/listing-photos/ph-1?size=thumb');
-    expect(within(bought).getAllByRole('button', { name: /^Download the receipt for/ })).toHaveLength(1);   // only the paid order has one
-    expect(within(cancelled).queryByRole('button', { name: /receipt/ })).toBeNull();
+    expect(be.calls.some((c) => c.path === '/orders' && c.query.get('stage') === 'orders' && c.query.get('role') === 'buyer')).toBe(true);
+    const list = screen.getByRole('region', { name: 'Orders' });
+    expect(within(list).getAllByRole('listitem')).toHaveLength(2);
+    expect(within(list).getByText('Rahim Traders')).toBeTruthy();                       // the seller, in a column of their own
+    expect(list.querySelector('img')?.getAttribute('src')).toBe('/api/v1/listing-photos/ph-1?size=thumb');
+    expect(within(list).getAllByRole('button', { name: /^Download the receipt for/ })).toHaveLength(1);   // only the paid order has one
+  });
+
+  it('IF-UI-05 the stage tabs are Orders, On the way and Completed; a cancelled order is marked in Completed', async () => {
+    const be = backend({
+      'GET /orders': (c) => json(200, { items: c.query.get('stage') === 'completed'
+        ? [order({ id: 'o-6', status: 'cancelled', escrow: null, paidAt: null, cancelledAt: '2026-11-02T10:00:00Z', listing: { ...order().listing, title: 'Gone phone' } })] : [], nextCursor: null })(),
+    });
+    renderApp('/orders', be);
+    expect(await screen.findByText('No orders waiting.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /On the way/ }));
+    expect(await screen.findByText('Nothing on the way.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /Completed/ }));
+    expect(await screen.findByRole('link', { name: 'Gone phone' })).toBeTruthy();
+    expect(screen.getByText('Cancelled')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /receipt/ })).toBeNull();
   });
 
   it('IF-UI-05 bought and sold orders, each with its status, total and where the money is, more on request', async () => {
@@ -416,7 +427,7 @@ describe('the list of orders', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Show more' }));
     expect(await screen.findByRole('link', { name: 'Old radio' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Sold' }));
-    expect(await screen.findByText('You have not sold anything yet.')).toBeTruthy();
+    expect(await screen.findByText('No orders waiting.')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Sold' }).getAttribute('aria-pressed')).toBe('true');
   });
 

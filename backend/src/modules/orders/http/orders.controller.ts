@@ -42,7 +42,7 @@ export class OrdersController {
   @SignedIn()
   @Get()
   list(@Query() q: OrdersQuery, @CurrentPrincipal() p: Principal) {
-    return this.orders.list(userOf(p), q.role ?? 'buyer', q.cursor);
+    return this.orders.list(userOf(p), q.role ?? 'buyer', q.cursor, q.stage);
   }
 
   /** IF-UI-05: the order, its escrow and every deadline (I-52). */

@@ -149,3 +149,17 @@
 .gridRow a:hover { background-size: 100% 2px; }
 .gridRow a:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .gridRow a { transition: none; } }
+
+/* the stage tabs of the orders list (U10-23): numbered, in the order an order lives; ruled, no boxes */
+.stageTabs { display: flex; flex-wrap: wrap; gap: 0 2rem; margin-top: var(--tb-space-2); }
+.stageTab, .stageOn { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; padding: 0; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--tb-muted); font: inherit; font-weight: 600; cursor: pointer; }
+.stageOn { color: var(--tb-text); border-bottom-color: var(--tb-hot); }
+.stageTab:hover { color: var(--tb-text); }
+.stageTab:focus-visible, .stageOn:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+.stageNo { display: inline-grid; place-items: center; width: 1.375rem; height: 1.375rem; border-radius: 50%; border: 1px solid currentColor; font-size: 0.75rem; font-variant-numeric: tabular-nums; }
+.cancelledMark { color: var(--tb-muted); font-weight: 600; }
+.cancelledMark::before { content: ''; display: inline-block; width: 0.5rem; height: 0.5rem; margin-right: 0.5rem; border-radius: 50%; background: var(--tb-muted); }
+
+.receiptLink { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; padding: 0 0.125rem; border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; background: none; color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
+.receiptLink:hover { border-bottom-color: var(--tb-hot); }
+.receiptLink:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }

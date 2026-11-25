@@ -192,6 +192,17 @@ describe('OrderService', () => {
     expect((await s.svc.getOrderForParty(order.id, 'B')).cancellationRequest).toEqual({ id: 'C1', status: 'pending', reason: 'Wrong model', createdAt: NOW.toISOString() });
   });
 
+  it('IF-UI-05 the stage tabs filter on the server, so every tab pages on its own: orders, on the way, completed', async () => {
+    const s = setup({ rows: [] });
+    await s.svc.list('B', 'buyer', undefined, 'orders');
+    await s.svc.list('B', 'buyer', undefined, 'on_the_way');
+    await s.svc.list('B', 'buyer', undefined, 'completed');
+    const sql = s.manager.query.mock.calls.map((c: unknown[]) => String(c[0]));
+    expect(sql[0]).toContain(`status = 'awaiting_payment'`);
+    expect(sql[1]).toContain('fulfilment_done_at IS NOT NULL');
+    expect(sql[2]).toContain(`'closed', 'cancelled'`);
+  });
+
   it('IF-UI-05 my orders in pages of 50 with a cursor', async () => {
     const rows = Array.from({ length: 51 }, (_, i) => ({ id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`, cursor_at: '2026-11-01T10:00:00.123456Z' }));
     const s = setup({ rows });
@@ -255,7 +266,7 @@ describe('OrdersController', () => {
     await c.fulfilment('o', { fulfilment: 'self_pickup' }, user);
     await c.receipt('o', user);
     expect(statements.receipt).toHaveBeenCalledWith('o', 'B');
-    expect(svc.list).toHaveBeenCalledWith('B', 'buyer', undefined);
+    expect(svc.list).toHaveBeenCalledWith('B', 'buyer', undefined, undefined);
     expect(svc.getOrderPage).toHaveBeenCalledWith('o', 'B');
     expect(svc.chooseFulfilment).toHaveBeenCalledWith('B', 'o', 'self_pickup', undefined);
     expect(() => c.view('o', { type: 'staff', staffId: 's', sessionId: 's', role: 'operator' })).toThrow(Problem);

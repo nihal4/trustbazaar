@@ -35,7 +35,7 @@ const DEFAULT_KEY = ['me', 'payment-method'] as const;
 /** The order the sheet pays: id, total (poisha) and the query key the app keeps it under. */
 export interface PayableOrder { id: string; total: string; key: readonly unknown[] }
 
-export function PaymentSheet({ order, onClose, onPaid, t, lang }: { order: PayableOrder; onClose: () => void; onPaid: (orderId: string) => void; t: T; lang: Lang }) {
+export function PaymentSheet({ order, onClose, onPaid, onReceipt, t, lang }: { order: PayableOrder; onClose: () => void; onPaid: (orderId: string) => void; /** Saves the receipt of the order just paid (the order as the server now has it); the page that owns the receipt passes it. */ onReceipt?: (paid: unknown) => void; t: T; lang: Lang }) {
   const api = useApi();
   const queryClient = useQueryClient();
   const dialog = useRef<HTMLDialogElement>(null);
@@ -50,6 +50,7 @@ export function PaymentSheet({ order, onClose, onPaid, t, lang }: { order: Payab
   const [message, setMessage] = useState<string | null>(null);
   const [paidWith, setPaidWith] = useState<DefaultMethod | null>(null);
   const sending = useRef(false);
+  const paidOrder = useRef<unknown>(null);
   const saved = useQuery({ queryKey: DEFAULT_KEY, queryFn: ({ signal }) => api.get('/me/payment-method', { signal }) as Promise<{ method: Saved | null }>, retry: false, staleTime: 30_000 });
   const savedLabel = (m: Saved) => (m.kind === 'card' ? `${m.brand || t('pay.sheet.card')} ${t('pay.sheet.ending', { last: m.last4 })}` : `${t(`pay.method.${m.kind}`)} ${t('pay.sheet.ending', { last: m.last4 })}`);
   const defaults: DefaultMethod | null = saved.data?.method ? { method: saved.data.method.kind, label: savedLabel(saved.data.method), saved: saved.data.method } : null;
@@ -91,6 +92,7 @@ export function PaymentSheet({ order, onClose, onPaid, t, lang }: { order: Payab
       for (let waited = 0; waited < POLL_LIMIT_MS && !paid; waited += POLL_MS) {
         const o = await api.get(`/orders/${encodeURIComponent(order.id)}`) as { status: string };
         paid = o.status === 'paid';
+        if (paid) paidOrder.current = o;
         if (!paid) await new Promise((res) => setTimeout(res, POLL_MS));
       }
       if (!paid) throw new Error('not-paid');
@@ -215,6 +217,7 @@ export function PaymentSheet({ order, onClose, onPaid, t, lang }: { order: Payab
             <h2 id="pay-sheet-title" className={styles.title} role="status">{t('pay.sheet.complete')}</h2>
             <p className={styles.amount}>{total}</p>
             <p className={styles.lead}>{t('pay.sheet.held', { method: paidWith.label })}</p>
+            {onReceipt && <button type="button" className={styles.quiet} onClick={() => onReceipt(paidOrder.current)}>{t('orders.receipt')}</button>}
             {defaults?.label === paidWith.label ? (
               <button type="button" className={styles.pay} onClick={() => void finish(false)}>{t('pay.sheet.continue')}</button>
             ) : (

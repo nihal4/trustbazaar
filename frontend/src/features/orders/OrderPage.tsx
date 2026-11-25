@@ -34,6 +34,7 @@ import { Handover, useHandover } from './Handover';
 import { orderKey, type OrderView } from './model';
 import { moneyText } from './moneyText';
 import { RETURN_POLL_MS, RETURN_WAIT_MS } from './payment';
+import { downloadReceipt, hasReceipt } from './receipt';
 import { PaymentSheet } from '../../shared/PaymentSheet';
 import { Ratings, useOrderRatings } from './Ratings';
 import { Shipments, useShipments } from './Shipments';
@@ -110,7 +111,7 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
       <Deadlines o={o} h={handover.data ?? null} t={t} lang={lang} />
       {awaiting && o.role === 'buyer' && <PayPanel o={o} t={t} lang={lang} onPay={() => setSheet(true)} />}
       {sheet && (
-        <PaymentSheet order={{ id: o.id, total: o.total, key: orderKey(o.id) }} t={t} lang={lang} onClose={() => setSheet(false)}
+        <PaymentSheet order={{ id: o.id, total: o.total, key: orderKey(o.id) }} t={t} lang={lang} onReceipt={(p) => { const paid = p as OrderView; downloadReceipt(paid, t, lang, paid.counterparty?.displayName || null); }} onClose={() => setSheet(false)}
           onPaid={() => { setSheet(false); void queryClient.invalidateQueries({ queryKey: orderKey(o.id) }); }} />
       )}
       {o.cancelledAt && o.cancelReason && CANCEL_REASONS.includes(o.cancelReason) && <p className={styles.hint}>{t(`order.cancel_reason.${o.cancelReason}`)}</p>}
@@ -167,6 +168,12 @@ function Money({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
       <p className={styles.moneyAmount}>{formatMoney(BigInt(o.total), lang)}</p>
       <p className={styles.money}>{o.status === 'awaiting_payment' && o.role === 'buyer' ? t('order.counterfoil.unpaid') : moneyText(o, t, lang)}</p>
       {out && <p className={styles.hint}>{t('order.money_out_on', { date: out })}</p>}
+      {hasReceipt(o) && (
+        <button type="button" className={styles.receiptLink} onClick={() => downloadReceipt(o, t, lang, o.counterparty?.displayName || null)}>
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M8 2v8m0 0L4.5 6.5M8 10l3.5-3.5M3 13h10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          {t('orders.receipt')}
+        </button>
+      )}
       {steps.length > 0 && (
         <EscrowSteps current={current} label={t('order.steps.label')} labels={[label('payment'), label('handover'), label('done')]}
           stateWords={{ done: t('order.steps.state.done'), current: t('order.steps.state.current'), next: t('order.steps.state.next') }} />
