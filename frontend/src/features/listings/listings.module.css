@@ -181,12 +181,24 @@
 .actions button:not(.primary) { border: 1px solid var(--tb-border); background: none; color: var(--tb-text); font-weight: 600; cursor: pointer; }
 
 /* the seller: the photo (initials) with no box, the name with a small verified tick, the rating and the year */
-.seller { border: 0; border-bottom: 1px solid var(--tb-line); border-radius: 0; padding: 1.25rem 0; }
-.sellerRow { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 0 0.875rem; align-items: center; }
-.avatar { display: grid; place-items: center; width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--tb-surface); color: var(--tb-text); font-family: var(--tb-font-display); font-weight: 600; }
-.sellerInfo { min-width: 0; }
+.seller { border: 0; border-radius: 0; padding: 1.25rem 0 0; }
+/* a ruled row of cells: photo | name and year | rating and Pro (when there are any) | chat */
+.sellerRow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: stretch; border-block: 1px solid var(--tb-line); }
+.sellerRowRated { grid-template-columns: auto minmax(0, 1fr) auto auto; }
+.sellerRow > * { display: flex; align-items: center; padding: 0.75rem 0.875rem; }
+.sellerRow > :first-child { padding-left: 0; }
+.sellerRow > * + *:not(.chatError) { border-left: 1px solid var(--tb-line); }
+.avatar { display: grid; place-items: center; width: 48px; height: 48px; box-sizing: content-box; border: 0; border-radius: 50%; background: none; color: var(--tb-text); font-family: var(--tb-font-display); font-weight: 600; position: relative; }
+.sellerRow > .avatar { background: none; }
+.sellerRating { flex-direction: column; align-items: flex-start; justify-content: center; gap: 0.375rem; }
+.chatCell { justify-content: center; min-width: 56px; border-top: 0; border-right: 0; border-bottom: 0; background: none; color: var(--tb-text); cursor: pointer; text-decoration: none; transition: color 140ms, background 140ms; }
+.chatCell:hover:not(:disabled) { color: var(--tb-hot); background: var(--tb-surface); }
+.chatCell:disabled { opacity: 0.6; cursor: not-allowed; }
+.chatCell:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
+.chatError { grid-column: 1 / -1; border-left: 0 !important; padding: 0 0 0.75rem; }
+.sellerInfo { min-width: 0; flex-direction: column; align-items: flex-start; justify-content: center; gap: 0.125rem; }
 .sellerInfo p { margin: 0; }
-.sellerLine { display: flex; flex-wrap: wrap; align-items: center; gap: 0 0.5rem; }
+.sellerLine { display: flex; flex-wrap: nowrap; align-items: center; gap: 0 0.5rem; }
 .sellerName { min-height: 28px; }
 .tick { display: inline-flex; color: var(--tb-protect); }
 .tick svg { width: 18px; height: 18px; }
@@ -195,7 +207,6 @@
 .sellerMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 0 0.75rem; color: var(--tb-muted); font-size: 0.875rem; }
 .stars { display: inline-flex; align-items: center; gap: 0.375rem; }
 .starLine { color: var(--tb-gold); } .starFill { color: var(--tb-gold); }
-.seller > :last-child:not(.sellerRow) { margin-top: 0.875rem; }
 :root { --tb-gold: #e8b84a; }
 
 /* the auction panel: the same ruled panel; the clock and the bids are the live signal */
@@ -232,3 +243,4 @@
 @media (max-width: 30rem) { .thumb { width: 3.5rem; height: 3.5rem; } }
 @media (pointer: coarse) { .glass { display: none; } .canZoom { cursor: auto; } }
 @media (prefers-reduced-motion: reduce) { .thumb { transition: none; } }
+@media (max-width: 30rem) { .sellerRow > * { padding: 0.625rem 0.625rem; } .avatar { width: 40px; height: 40px; } .chatCell { min-width: 48px; } }

@@ -18,6 +18,7 @@ import { useT } from '../../shared/language/Language';
 import type { Lang } from '../../shared/language/lang';
 import { useMe } from '../../shared/me';
 import { useOpenThread } from '../../shared/chat';
+import { ChatIcon } from '../../shared/icons';
 import { isApiError } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { AuctionPanel } from './AuctionPanel';
@@ -81,21 +82,23 @@ export function Component() {
           : <Buy l={l} own={own} t={t} lang={lang} />}
         <section aria-labelledby="seller-title" className={styles.seller}>
           <h2 id="seller-title" className={styles.visuallyHidden}>{t('listing.seller')}</h2>
-          <div className={styles.sellerRow}>
+          <div className={l.seller.pro === true || l.seller.ratingCount ? `${styles.sellerRow} ${styles.sellerRowRated}` : styles.sellerRow}>
             <span className={styles.avatar} aria-hidden="true">{initials(l.seller.displayName)}</span>
             <div className={styles.sellerInfo}>
               <p className={styles.sellerLine}>
                 <Link className={styles.sellerName} to={`/users/${encodeURIComponent(l.seller.id)}`}>{l.seller.displayName}</Link>
                 {l.seller.verified && <span className={styles.tick} title={t('listing.seller_verified')}><Tick /><span className={styles.visuallyHidden}>{t('listing.seller_verified')}</span></span>}
-                {l.seller.pro === true && <span className={styles.pro}>{t('listing.seller_pro')}</span>}
               </p>
-              <p className={styles.sellerMeta}>
-                {l.seller.ratingCount ? <Stars average={l.seller.ratingAverage ?? 0} count={l.seller.ratingCount} t={t} lang={lang} /> : null}
-                <span>{t('listing.seller_since', { year: toLocalDigits(l.seller.joinMonth.slice(0, 4), lang) })}</span>
-              </p>
+              <p className={styles.sellerMeta}>{t('listing.seller_since', { year: toLocalDigits(l.seller.joinMonth.slice(0, 4), lang) })}</p>
             </div>
+            {(l.seller.pro === true || l.seller.ratingCount) ? (
+              <div className={styles.sellerRating}>
+                {l.seller.ratingCount ? <Stars average={l.seller.ratingAverage ?? 0} count={l.seller.ratingCount} t={t} lang={lang} /> : null}
+                {l.seller.pro === true && <span className={styles.pro}>{t('listing.seller_pro')}</span>}
+              </div>
+            ) : null}
+            {!own && ['active', 'sold', 'ended_unsold'].includes(l.status) && <MessageSeller listingId={l.id} signedIn={signedIn} nextPath={pathname} t={t} lang={lang} />}
           </div>
-          {!own && ['active', 'sold', 'ended_unsold'].includes(l.status) && <MessageSeller listingId={l.id} signedIn={signedIn} nextPath={pathname} t={t} lang={lang} />}
         </section>
       </aside>
       </div>
@@ -123,20 +126,13 @@ export function Component() {
   );
 }
 
-/** Five small stars filled to the average (a drawn mark, not text), with the average and the number of ratings beside them. */
+/** One gold star with the average and the number of ratings beside it (a drawn mark, not text). */
 function Stars({ average, count, t, lang }: { average: number; count: number; t: T; lang: Lang }) {
-  const avg = Math.min(5, Math.max(0, average));
-  const shown = toLocalDigits(avg.toFixed(1), lang);
+  const shown = toLocalDigits(Math.min(5, Math.max(0, average)).toFixed(1), lang);
   return (
     <span className={styles.stars} role="img" aria-label={t('listing.rating', { average: shown, count: toLocalDigits(String(count), lang) })}>
-      <svg viewBox="0 0 60 12" width="60" height="12" aria-hidden="true" focusable="false">
-        <defs><clipPath id="star-fill"><rect x="0" y="0" width={(avg / 5) * 60} height="12" /></clipPath></defs>
-        <g fill="none" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" className={styles.starLine}>
-          {[0, 1, 2, 3, 4].map((i) => <path key={i} transform={`translate(${i * 12} 0)`} d="M6 .9 L7.7 4.4 L11.5 4.9 L8.7 7.5 L9.4 11.3 L6 9.5 L2.6 11.3 L3.3 7.5 L.5 4.9 L4.3 4.4 Z" />)}
-        </g>
-        <g clipPath="url(#star-fill)" fill="currentColor" className={styles.starFill}>
-          {[0, 1, 2, 3, 4].map((i) => <path key={i} transform={`translate(${i * 12} 0)`} d="M6 .9 L7.7 4.4 L11.5 4.9 L8.7 7.5 L9.4 11.3 L6 9.5 L2.6 11.3 L3.3 7.5 L.5 4.9 L4.3 4.4 Z" />)}
-        </g>
+      <svg viewBox="0 0 12 12" width="16" height="16" aria-hidden="true" focusable="false" className={styles.starFill}>
+        <path fill="currentColor" d="M6 .9 L7.7 4.4 L11.5 4.9 L8.7 7.5 L9.4 11.3 L6 9.5 L2.6 11.3 L3.3 7.5 L.5 4.9 L4.3 4.4 Z" />
       </svg>
       <span aria-hidden="true">{shown} ({toLocalDigits(String(count), lang)})</span>
     </span>
@@ -267,13 +263,14 @@ function Details({ l, t, lang }: { l: ListingView; t: T; lang: Lang }) {
 /** FR-CHT-01: a conversation with the seller about this listing (U8-13); signed-out visitors sign in first. */
 function MessageSeller({ listingId, signedIn, nextPath, t, lang }: { listingId: string; signedIn: boolean; nextPath: string; t: T; lang: Lang }) {
   const { open, busy, error } = useOpenThread();
-  if (!signedIn) return <Link className={styles.ghost} to={`/signin?next=${encodeURIComponent(nextPath)}`}>{t('listing.message_seller_sign_in')}</Link>;
+  // one ruled cell at the end of the seller row: a chat mark (its name is in the label, for the screen reader and the tooltip)
+  if (!signedIn) return <Link className={styles.chatCell} to={`/signin?next=${encodeURIComponent(nextPath)}`} aria-label={t('listing.message_seller_sign_in')} title={t('listing.message_seller_sign_in')}><ChatIcon /></Link>;
   return (
     <>
-      {error !== null && <FormMessage kind="error">{errorText(error, t, lang)}</FormMessage>}
-      <button type="button" className={styles.ghost} onClick={() => open(listingId)} disabled={busy} aria-busy={busy}>
-        {t('listing.message_seller')}
+      <button type="button" className={styles.chatCell} onClick={() => open(listingId)} disabled={busy} aria-busy={busy} aria-label={t('listing.message_seller')} title={t('listing.message_seller')}>
+        <ChatIcon />
       </button>
+      {error !== null && <div className={styles.chatError}><FormMessage kind="error">{errorText(error, t, lang)}</FormMessage></div>}
     </>
   );
 }
