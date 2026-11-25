@@ -44,5 +44,8 @@
   "shell.kyc_later": "Finish later",
   "shell.promise_bar": "Your money is held safely until you confirm the item.",
   "shell.search_label": "Search TrustBazaar",
-  "shell.search_placeholder": "Search phones, cameras, bikes…"
+  "shell.search_placeholder": "Search phones, cameras, bikes…",
+  "shell.footer.explore": "Explore",
+  "shell.footer.help": "Help",
+  "shell.language.changing": "Changing language"
 }

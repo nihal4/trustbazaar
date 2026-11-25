@@ -30,7 +30,7 @@ body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--
 .top { display: flex; align-items: center; min-height: 64px; padding: 0 max(1rem, calc((100% - 40rem) / 2 + 1rem)); border-bottom: 1px solid var(--line); }
 .brand { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; color: var(--text); text-decoration: none; }
 .mark { flex: none; }
-.wordmark { font-family: 'Gabarito Variable', system-ui, sans-serif; font-size: 1.2rem; font-weight: 500; letter-spacing: -0.035em; }
+.wordmark { font-family: 'Schibsted Grotesk Variable', system-ui, sans-serif; font-size: 1.2rem; font-weight: 500; letter-spacing: -0.035em; }
 
 #root { display: block; max-width: 40rem; margin: 0 auto; padding: 1.75rem 1rem 3rem; }
 h1 { margin: 0 0 1rem; font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.125rem); line-height: 1.15; letter-spacing: -0.03em; font-weight: 600; }

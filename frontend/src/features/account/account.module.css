@@ -98,7 +98,7 @@
   max-width: 62%;
   padding: 1.125rem 1.25rem 1.25rem 2.375rem;
   background: var(--tb-accent);
-  color: #fff;
+  color: var(--tb-accent-text);
   clip-path: polygon(1.25rem 0, 100% 0, 100% 100%, 1.25rem 100%, 0 50%);
   border-radius: 0 16px 16px 0;
   transform: rotate(-6deg);
@@ -129,7 +129,7 @@
   line-height: 1.05;
   letter-spacing: -0.03em;
   font-weight: 600;
-  color: #fff;
+  color: var(--tb-accent-text);
 }
 
 :lang(bn) .sideTag .sideTitle {

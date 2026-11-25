@@ -2,7 +2,7 @@
 // window's load event has passed and the browser is idle (docs/design/10_visual.md, sections 3 and 8, AC-ALL-4; Decisions log, U8-01, U10-01
 // and U10-10). Until they arrive the text shows in the system font and then swaps, so the fonts never hold up the
 // listing photo or any other first content (NFR-PERF-07).
-// - Figtree (text) and Gabarito (headlines), variable, the Latin and Latin Extended subsets, for every page (redesign v3, U10-21, dealt by taste-skill);
+// - Figtree (text) and Schibsted Grotesk (headlines), variable, the Latin and Latin Extended subsets, for every page (redesign v3, U10-21, dealt by taste-skill);
 // - Hind Siliguri, 400 to 700, the Bengali block only, when the language is Bangla;
 // - with it, the Bangla figures: the digits, the taka sign and the comma, full stop and colon between them, cut from
 //   Noto Sans Bengali (figures/, scripts/subset-figures.py, SIL OFL 1.1). Hind draws the digit one as a small hook
@@ -11,8 +11,8 @@
 //   English it comes after Geist and draws only the taka sign, which Geist lacks.
 import latin from '@fontsource-variable/figtree/files/figtree-latin-wght-normal.woff2?url';
 import latinExt from '@fontsource-variable/figtree/files/figtree-latin-ext-wght-normal.woff2?url';
-import displayLatin from '@fontsource-variable/gabarito/files/gabarito-latin-wght-normal.woff2?url';
-import displayLatinExt from '@fontsource-variable/gabarito/files/gabarito-latin-ext-wght-normal.woff2?url';
+import displayLatin from '@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-wght-normal.woff2?url';
+import displayLatinExt from '@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-ext-wght-normal.woff2?url';
 import regular from '@fontsource/hind-siliguri/files/hind-siliguri-bengali-400-normal.woff2?url';
 import medium from '@fontsource/hind-siliguri/files/hind-siliguri-bengali-500-normal.woff2?url';
 import semibold from '@fontsource/hind-siliguri/files/hind-siliguri-bengali-600-normal.woff2?url';
@@ -27,7 +27,7 @@ import marks600 from './figures/figures-marks-600.woff2?url';
 import marks700 from './figures/figures-marks-700.woff2?url';
 
 export const LATIN_FONT = 'Figtree Variable';
-export const DISPLAY_FONT = 'Gabarito Variable';
+export const DISPLAY_FONT = 'Schibsted Grotesk Variable';
 export const BANGLA_FONT = 'Hind Siliguri';
 export const FIGURES_FONT = 'TB Figures';
 /** the Bangla digits ০ to ৯ and the taka sign ৳; the separators a number uses between them */
@@ -85,4 +85,26 @@ export function loadLatinFont(fonts: FontFaceSet | undefined = globalThis.docume
 
 export function loadBanglaFont(fonts: FontFaceSet | undefined = globalThis.document?.fonts): void {
   afterLoad(() => { add(FIGURES, fonts); add(BANGLA, fonts); });   // add() runs each set once per document
+}
+
+/**
+ * Adds the faces of a language now (not after the load event) and resolves when the glyphs the page needs are loaded, or after
+ * `limitMs`; the language switch keeps its loading screen up until then, so the change of face is never seen (Decisions log, U10-21).
+ */
+export async function ensureLangFonts(lang: 'en' | 'bn', limitMs = 4000, fonts: FontFaceSet | undefined = globalThis.document?.fonts): Promise<void> {
+  if (!fonts || typeof FontFace === 'undefined') return;
+  add(LATIN, fonts);
+  add(FIGURES, fonts);
+  const wanted = [`400 1rem '${LATIN_FONT}'`, `600 1rem '${DISPLAY_FONT}'`];
+  const sample = ['Aa৳', 'Aa৳'];
+  if (lang === 'bn') {
+    add(BANGLA, fonts);
+    wanted.push(`400 1rem '${BANGLA_FONT}'`, `600 1rem '${BANGLA_FONT}'`, `500 1rem '${FIGURES_FONT}'`, `600 1rem '${FIGURES_FONT}'`);
+    sample.push('বাংলা ট্রাস্টবাজার', 'বাংলা ট্রাস্টবাজার', '০১২৩৪৫৬৭৮৯,.', '০১২৩৪৫৬৭৮৯,.');
+  } else {
+    wanted.push(`500 1rem '${FIGURES_FONT}'`);
+    sample.push('৳');
+  }
+  const loads = wanted.map((spec, i) => fonts.load(spec, sample[i]).catch(() => []));
+  await Promise.race([Promise.all(loads), new Promise((resolve) => setTimeout(resolve, limitMs))]);
 }

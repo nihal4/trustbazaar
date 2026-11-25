@@ -19,8 +19,8 @@ export function SafeBento({ t, lang, clock }: { t: T; lang: Lang; clock: string 
     <section aria-labelledby="home-safe" className={styles.safe}>
       <h2 id="home-safe" className={styles.h2}>{t('home.safe.title')}</h2>
       <div className={styles.bento}>
-        <section aria-labelledby="home-promise" className={`${styles.cardBox} ${styles.escrow}`}>
-          <h2 id="home-promise" className={styles.h3}>{t('home.promise.title')}</h2>
+        <article aria-labelledby="home-promise" className={`${styles.cardBox} ${styles.escrow}`}>
+          <h3 id="home-promise" className={styles.h3}>{t('home.promise.title')}</h3>
           <p className={styles.text}>{t('home.safe.escrow_text')}</p>
           <div className={styles.ui}>
             <p className={styles.caption}>{t('home.counterfoil.stub')}</p>
@@ -30,13 +30,13 @@ export function SafeBento({ t, lang, clock }: { t: T; lang: Lang; clock: string 
               <li>{t('home.counterfoil.out')}</li>
             </ol>
           </div>
-        </section>
+        </article>
 
         <article className={`${styles.cardBox} ${styles.auction}`}>
           <h3 className={styles.h3}>{t('home.safe.auction_title')}</h3>
           <p className={styles.text}>{t('home.safe.auction_text')}</p>
+          <div className={styles.clockRow} aria-hidden="true"><span className={styles.live} />{t('home.safe.ends')}<strong>{toLocalDigits(clock, lang)}</strong><em className={styles.tag}>{t('home.demo.example')}</em></div>
           <div className={styles.ui} aria-hidden="true">
-            <div className={styles.clockRow}><span className={styles.live} />{t('home.safe.ends')}<strong>{toLocalDigits(clock, lang)}</strong><em className={styles.tag}>{t('home.demo.example')}</em></div>
             <ul className={styles.bids}>
               {[['3', '8500000'], ['1', '8400000'], ['2', '8300000']].map(([n, p]) => (
                 <li key={n}><span>{t('home.safe.bidder', { n: toLocalDigits(n, lang) })}</span><b>{formatMoney(p, lang)}</b></li>

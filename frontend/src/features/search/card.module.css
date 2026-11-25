@@ -33,16 +33,21 @@
 .link:hover { transform: translateY(-2px); }
 .link:hover .title { text-decoration: none; }
 .link:hover .photo { border-color: var(--tb-line); }
-.photo { border: 0; border-radius: var(--tb-radius-panel); aspect-ratio: 4 / 3.4; background: var(--tb-surface); margin-bottom: 10px; }
+.photo { border: 1px solid var(--tb-line); border-radius: var(--tb-radius-panel); aspect-ratio: 4 / 3.4; background: var(--tb-bg); margin-bottom: 10px; }
 .photo img { transition: transform 400ms cubic-bezier(.2,.7,.2,1); }
 .link:hover .photo img { transform: scale(1.03); }
-.clock, .featured { border-radius: 6px; }
+.clock, .featured { border-radius: 2px; }
 .clock { background: var(--tb-ink); }
 .featured { border: 0; background: var(--tb-accent-soft); color: var(--tb-text); }
-.price { font-family: var(--tb-font-display); font-size: 1.25rem; font-weight: 500; letter-spacing: -0.02em; }
+.price { font-family: var(--tb-font); font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; }
 .title { font-weight: 500; }
 @media (prefers-reduced-motion: reduce) { .link, .photo img { transition: none; } .link:hover, .link:hover .photo img { transform: none; } }
 .noPhoto { position: absolute; inset: 0; margin: auto; color: var(--tb-border); }
 
 /* the seed illustrations are cream tiles: tone them down on the dark page */
-:root[data-theme='dark'] .photo img { filter: brightness(0.78) saturate(0.9); }
+:root[data-theme='dark'] .photo img { filter: brightness(0.82) saturate(0.95); }
+
+/* the same line heights in English and Bangla, so a card is the same height in both */
+.price { line-height: 1.5rem; }
+.title { line-height: 1.4rem; }
+.meta, .note { line-height: 1.25rem; }

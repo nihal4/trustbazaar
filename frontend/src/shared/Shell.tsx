@@ -107,18 +107,26 @@ function Footer() {
   const { t } = useLanguage();
   return (
     <footer className={styles.footer}>
-      <div className={styles.footerAbout}>
-        <Logo onDark />
-        <p>{t('shell.footer.tagline')}</p>
+      <div className={styles.footerGrid}>
+        <div className={styles.footerAbout}>
+          <Logo onDark />
+          <p>{t('shell.footer.tagline')}</p>
+        </div>
+        <nav className={styles.footerCol} aria-labelledby="footer-explore">
+          <p id="footer-explore" className={styles.footerLabel}>{t('shell.footer.explore')}</p>
+          <ul className={styles.footerLinks}>
+            <li><Link to="/search">{t('shell.tab.search')}</Link></li>
+            <li><Link to="/sell/new">{t('shell.sell')}</Link></li>
+          </ul>
+        </nav>
+        <nav className={styles.footerCol} aria-labelledby="footer-help">
+          <p id="footer-help" className={styles.footerLabel}>{t('shell.footer.help')}</p>
+          <ul className={styles.footerLinks}>
+            <li><Link to="/help/terms">{t('shell.footer.terms')}</Link></li>
+            <li><Link to="/help/privacy">{t('shell.footer.privacy')}</Link></li>
+          </ul>
+        </nav>
       </div>
-      <nav aria-label={t('shell.footer.nav')}>
-        <ul className={styles.footerLinks}>
-          <li><Link to="/search">{t('shell.tab.search')}</Link></li>
-          <li><Link to="/sell/new">{t('shell.sell')}</Link></li>
-          <li><Link to="/help/terms">{t('shell.footer.terms')}</Link></li>
-          <li><Link to="/help/privacy">{t('shell.footer.privacy')}</Link></li>
-        </ul>
-      </nav>
     </footer>
   );
 }
