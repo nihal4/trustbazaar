@@ -370,3 +370,15 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
   .sheetOpen { bottom: var(--bar-h, 0px); }
 }
 @media (prefers-reduced-motion: no-preference) { .bidBar[data-open='true'] { animation: sheetIn 200ms ease-out; } }
+
+/* "See the bids" is a whole cell of the grid, not a boxed button: the cell fills with the surface tone on hover and carries a vermilion line along its foot while the sheet is open */
+.barBody > .barMid { padding: 0; align-items: stretch; }
+.barBody .seeBids { position: relative; flex: 1; width: 100%; min-height: 44px; gap: 0.625rem; justify-content: center; padding: 0 1.5rem; border: 0; border-radius: 0; background: none; font-size: 1rem; }
+.barBody .seeBids:hover { background: var(--tb-surface); }
+.barBody .seeBids[aria-expanded='true'] { background: var(--tb-surface); }
+.barBody .seeBids[aria-expanded='true']::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--tb-hot); }
+.barBody .seeBids:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
+.seeChev, .seeChevOpen { flex: none; color: var(--tb-muted); transition: transform 160ms; }
+.seeChevOpen { transform: rotate(180deg); color: var(--tb-hot); }
+@media (max-width: 47.99em) { .barBody > .barMid { padding: 0; } .barBody .seeBids { justify-content: space-between; padding: 0; } .seeChev { margin-left: auto; } }
+@media (prefers-reduced-motion: reduce) { .seeChev, .seeChevOpen { transition: none; } }
