@@ -64,14 +64,15 @@
 :lang(bn) .head h2 { font-weight: 500; letter-spacing: 0; line-height: 1.3; }
 .head a { font-weight: 600; min-height: 44px; display: inline-flex; align-items: center; }
 .note { margin: 0; color: var(--tb-muted); }
-/* listings: a ruled grid, the photo and its text in a cell, hairlines between the cells */
-.grid, .rail { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin: 0; padding: 0; list-style: none; background: var(--tb-line); border-block: 1px solid var(--tb-line); }
-.grid > li, .rail > li { background: var(--tb-bg); padding: 1rem; }
+/* listings: a ruled grid. The photo and its text sit in a column; a hairline stands in the middle of every 2 rem gutter and a
+   hairline closes every row, so partial rows leave nothing painted and every photo has the same width and the same gutters. */
+.grid, .rail { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 2rem; row-gap: 0; margin: 0; padding: 0; list-style: none; border-block: 1px solid var(--tb-line); }
+.grid > li, .rail > li { position: relative; padding: 1.25rem 0; border-top: 1px solid var(--tb-line); }
+.grid > li:nth-child(-n+2), .rail > li:nth-child(-n+2) { border-top: 0; }
+.grid > li:nth-child(2n)::before, .rail > li:nth-child(2n)::before { content: ''; position: absolute; left: -1rem; top: 0; bottom: 0; width: 1px; background: var(--tb-line); }
 .rail { overflow: visible; }
-.grid > li:nth-child(odd), .rail > li:nth-child(odd) { padding-left: 0; }
-.grid > li:nth-child(even), .rail > li:nth-child(even) { padding-right: 0; }
 
-.sell { display: grid; gap: 1.5rem; padding-top: 2rem; border-top: 1px solid var(--tb-line); }
+.sell { display: grid; gap: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--tb-line); }
 .sell h2 { margin: 0; font-family: var(--tb-font-display); font-weight: var(--tb-display-weight); font-size: clamp(1.75rem, 3.6vw, 2.5rem); letter-spacing: -0.025em; line-height: 1.1; max-width: 22ch; text-wrap: balance; }
 :lang(bn) .sell h2 { font-weight: 500; letter-spacing: 0; line-height: 1.3; }
 .steps { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; border-block: 1px solid var(--tb-line); }
@@ -98,9 +99,8 @@
   .winBody > :not(.winSteps) { grid-column: 1; }
   .winSteps { display: grid; grid-column: 2; grid-row: 1 / span 5; align-self: start; padding-top: 0.25rem; }
   .grid, .rail { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .grid > li, .rail > li { padding: 1rem; }
-  .grid > li:nth-child(4n+1), .rail > li:nth-child(4n+1) { padding-left: 0; }
-  .grid > li:nth-child(4n), .rail > li:nth-child(4n) { padding-right: 0; }
+  .grid > li:nth-child(-n+4), .rail > li:nth-child(-n+4) { border-top: 0; }
+  .grid > li:not(:nth-child(4n+1))::before, .rail > li:not(:nth-child(4n+1))::before { content: ''; position: absolute; left: -1rem; top: 0; bottom: 0; width: 1px; background: var(--tb-line); }
   .sell { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'title cta' 'steps steps'; column-gap: 2rem; row-gap: 1.75rem; align-items: center; }
   .sell h2 { grid-area: title; max-width: none; }
   .sell .steps { grid-area: steps; }
@@ -110,8 +110,8 @@
 @media (min-width: 64em) {
   .hero { grid-template-columns: 5fr 6fr; gap: 3.5rem; padding: 3.5rem; min-height: min(40rem, calc(100svh - 7rem)); }
   .window { min-height: 28rem; }
-  .sell .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); border-block: 0; border-top: 1px solid var(--tb-line); }
-  .sell .steps li { padding: 1.5rem 1.5rem 0 0; }
+  .sell .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sell .steps li { padding: 1.5rem 1.5rem 1.5rem 0; }
   .sell .steps li + li { border-top: 0; border-left: 1px solid var(--tb-line); padding-left: 1.5rem; }
 }
 @media (max-width: 26rem) { .search { padding-left: 0.75rem; } .searchIcon { display: none; } .search button { padding: 0 1rem; } }
