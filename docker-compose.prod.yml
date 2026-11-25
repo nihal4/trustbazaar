@@ -10,6 +10,7 @@ x-app-env-prod: &app-env-prod
   COURIER_MODE: ${COURIER_MODE:?set COURIER_MODE}
   SMS_MODE: ${SMS_MODE:?set SMS_MODE}
   EMAIL_MODE: smtp
+  EMAIL_FROM: ${EMAIL_FROM:?set EMAIL_FROM}
 
 services:
   postgres:
@@ -39,5 +40,8 @@ services:
       CALLBACK_STATE_KEY: ${CALLBACK_STATE_KEY:?set CALLBACK_STATE_KEY}
       HANDOVER_KEY: ${HANDOVER_KEY:?set HANDOVER_KEY}
       SMTP_URL: ${SMTP_URL:?set SMTP_URL}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_FROM: ${TWILIO_FROM:-}
   web:
     ports: !override ["127.0.0.1:${TB_HTTP_PORT:-8080}:8080"]

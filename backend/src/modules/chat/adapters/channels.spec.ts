@@ -1,16 +1,37 @@
 import { normaliseTo } from '../../../dev-mailbox';
 import { compose, MESSAGES } from '../services/direct-messages';
-import { channelsFor, maskAddress } from './channels';
+import { channelsFor, maskAddress, SmtpEmailAdapter, TwilioSmsAdapter } from './channels';
 import type { DevMailbox } from './dev-mailbox';
 
 const clock = { now: () => new Date('2026-11-01T12:00:00Z') };
 
 describe('e-mail and SMS channels', () => {
-  it('IF-SW-05 only log mode is built; another mode is refused at start, not silently dropped', () => {
+  it('IF-SW-05 log mode is simulated; an unknown mode is refused at start, not silently dropped', () => {
     const mailbox = {} as DevMailbox;
     expect(channelsFor({ emailMode: 'log', smsMode: 'log' }, mailbox, clock).email.simulated).toBe(true);
-    expect(() => channelsFor({ emailMode: 'smtp', smsMode: 'log' }, mailbox, clock)).toThrow(/EMAIL_MODE=smtp has no adapter yet/);
+    expect(() => channelsFor({ emailMode: 'smtp', smsMode: 'log' }, mailbox, clock)).toThrow(/needs SMTP_URL/);
+    expect(() => channelsFor({ emailMode: 'log', smsMode: 'twilio' }, mailbox, clock)).toThrow(/needs TWILIO_/);
     expect(() => channelsFor({ emailMode: 'log', smsMode: 'gateway' }, mailbox, clock)).toThrow(/SMS_MODE=gateway/);
+  });
+
+  it('IF-SW-05 the SMTP adapter sends the message from the configured address and is not simulated', async () => {
+    const sendMail = jest.fn().mockResolvedValue({ messageId: '<m1@x>' });
+    const email = new SmtpEmailAdapter({ sendMail }, 'TrustBazaar <no-reply@example.com>');
+    await expect(email.send('a@b.com', 'Hi', 'Body')).resolves.toEqual({ ref: '<m1@x>' });
+    expect(sendMail).toHaveBeenCalledWith({ from: 'TrustBazaar <no-reply@example.com>', to: 'a@b.com', subject: 'Hi', text: 'Body' });
+    expect(email.simulated).toBe(false);
+  });
+
+  it('IF-SW-06 the Twilio adapter posts To, From and Body with basic auth; a refusal does not echo the response', async () => {
+    const http = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ sid: 'SM123' }) });
+    const sms = new TwilioSmsAdapter({ accountSid: 'AC1', authToken: 'tok', from: '+15005550006' }, http as unknown as typeof fetch);
+    await expect(sms.send('+8801712345678', 'code 123456')).resolves.toEqual({ ref: 'SM123' });
+    const [url, init] = http.mock.calls[0];
+    expect(url).toBe('https://api.twilio.com/2010-04-01/Accounts/AC1/Messages.json');
+    expect(init.headers.authorization).toBe(`Basic ${Buffer.from('AC1:tok').toString('base64')}`);
+    expect(new URLSearchParams(init.body).get('To')).toBe('+8801712345678');
+    http.mockResolvedValue({ ok: false, status: 400, json: async () => ({ message: '+8801712345678 invalid' }) });
+    await expect(sms.send('+8801712345678', 'x')).rejects.toThrow('Twilio refused the message (HTTP 400)');
   });
 
   it('SEC-DAT-07 the log line masks the address', () => {

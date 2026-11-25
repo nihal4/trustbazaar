@@ -34,7 +34,7 @@ export function Component() {
   const [waitUntil, setWaitUntil] = useState<number | null>(null);
   const waitFor = useSecondsLeft(waitUntil);
 
-  const [started, setStarted] = useState<(Started & { phone: string }) | null>(null);
+  const [started, setStarted] = useState<(Started & { phone: string; email: string }) | null>(null);
   const [code, setCode] = useState('');
   const [codeError, setCodeError] = useState<string | null>(null);
   const [resendUntil, setResendUntil] = useState<number | null>(null);
@@ -68,9 +68,9 @@ export function Component() {
     try {
       const s: Started = await api.post('/auth/register', {
         phone, email: form.email.trim(), displayName: form.displayName.trim(), password: form.password,
-        termsVersion: LEGAL_VERSIONS.terms, privacyVersion: LEGAL_VERSIONS.privacy, adultConfirmed: adult,
+        termsVersion: LEGAL_VERSIONS.terms, privacyVersion: LEGAL_VERSIONS.privacy, adultConfirmed: adult, channel: 'email', // the sign-up code goes by e-mail only (U6-07)
       });
-      setStarted({ ...s, phone });
+      setStarted({ ...s, phone, email: form.email.trim() });
       setResendUntil(untilServerTime(s.resendAt));
     } catch (err) {
       const reason = rejectedPasswordReason(err);
@@ -123,7 +123,7 @@ export function Component() {
     if (!started || resendIn > 0) return;
     setCodeError(null);
     try {
-      const s: Started = await api.post('/auth/register/resend', { registrationId: started.registrationId });
+      const s: Started = await api.post('/auth/register/resend', { registrationId: started.registrationId, channel: 'email' });
       setStarted({ ...started, ...s });
       setResendUntil(untilServerTime(s.resendAt));
       setMessage(null);
@@ -141,7 +141,7 @@ export function Component() {
     return (
       <AuthSplit>
         <h1>{t('register.code_title')}</h1>
-        <p className={styles.lead}>{t('register.code_sent', { phone: started.phone })}</p>
+        <p className={styles.lead}>{t('register.code_sent_email', { email: started.email })}</p>
         {message && <FormMessage kind="error">{message}</FormMessage>}
         <form onSubmit={verify} noValidate>
           <TextField id="code" label={t('code.label')} value={code} onChange={setCode} error={codeError ?? undefined}
