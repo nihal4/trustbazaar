@@ -121,12 +121,15 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+        with: { fetch-depth: 0 }                              # the trailer check reads the pull request's commits
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with: { python-version: "3.12" }
       - run: python3 docs/design/integration/check_documents.py docs
       - run: python3 docs/design/deploy/test_compose.py .
       - run: python3 scripts/check_progress.py --summary    # PROGRESS.md (BUILDING.md section 8)
       - run: python3 scripts/check_test_names.py              # tests named after requirements (BUILDING.md section 6)
+      - run: python3 scripts/check_commit_trailers.py "origin/${{ github.base_ref }}"   # no AI co-author or session trailers (P0-11)
+        if: github.event_name == 'pull_request'
 
   images:                                                   # SEC-SDL-06, SEC-SDL-07
     runs-on: ubuntu-24.04
