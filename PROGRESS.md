@@ -285,7 +285,7 @@ Design: `docs/design/09_integration.pdf` (source `.tex` beside it).
 | U9-04 | ZAP baseline and triage; ASVS 5.0 checklist (SEC-GEN-01) | U9-01 | todo | | | | |
 | U9-05 | Backup and restore rehearsal; incident procedure in `SECURITY.md` | U9-01 | todo | | | | |
 | U9-06 | Release for the demonstration | U9-02, U9-03, U9-04, U9-05 | todo | | | | |
-| U9-07 | Make the signed file link strict and its test deterministic: one signature, one token spelling (`verifyFileLink`); an exhaustive unit test; `SEC-DAT-04` no longer fails by chance (it failed 1 time in 16) | - | doing | S. M. Nihal Ahmed | `fix/u9-07-file-link-canonical` | | Added 2026-11-25 at the user's request after the `integration` check failed on #307 with `SEC-DAT-04` |
+| U9-07 | Make the signed file link strict and its test deterministic: one signature, one token spelling (`verifyFileLink`); an exhaustive unit test; `SEC-DAT-04` no longer fails by chance (it failed 1 time in 16) | - | review | S. M. Nihal Ahmed | `fix/u9-07-file-link-canonical`, #308 |  | Added 2026-11-25 at the user's request after the `integration` check failed on #307 with `SEC-DAT-04`; the integration job on this PR runs the new test |
 
 **Integration notes this unit must apply** (they override the older text of its document where they differ):
 
