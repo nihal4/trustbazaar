@@ -404,3 +404,14 @@
 .navGrid .navCell:first-child { border-left: 1px solid var(--tb-line); }
 .footerLang .langSwitch { min-width: 44px; min-height: 44px; padding: 0 0.5rem; border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; }
 .footerLang .langSwitch:hover { border-bottom-color: var(--tb-hot); }
+
+/* the confirmation dialog, ruled: a vermilion rule on top and a hairline under, no outline; Cancel is a ruled cell; the paragraphs wrap with no lone last word */
+.dialog { border: 0; border-top: 2px solid var(--tb-hot); border-bottom: 1px solid var(--tb-border); border-radius: 0; }
+.dialog p { text-wrap: pretty; margin: 0 0 0.75rem; }
+.dialogActions button:last-child { border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; background: none; }
+.dialogActions button:last-child:hover:not(:disabled) { border-bottom-color: var(--tb-hot); }
+/* the phone header's bell and account: ruled cells (a hairline between them), not filled round tiles */
+@media (max-width: 47.99em) {
+  .iconLink { border-radius: 0; background: none; min-width: 48px; min-height: 48px; border-left: 1px solid var(--tb-line); }
+  .iconLink .badge { top: 5px; right: 5px; }
+}

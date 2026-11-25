@@ -312,7 +312,7 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 .barAct .bid { grid-template-rows: auto auto; }
 .barAct .bid > input { grid-column: 1; grid-row: 2; }
 .barAct .bid > .primary { grid-column: 2; grid-row: 2; }
-.barAct .bid > .fieldError, .barAct .bid > div:not([role='dialog']) { position: absolute; right: 0; bottom: calc(100% + 6px); z-index: 2; width: max-content; max-width: min(27rem, 92vw); padding: 0.375rem 0.625rem; border: 1px solid var(--tb-error-line); border-radius: 4px; background: var(--tb-error-bg); color: var(--tb-error-text); }
+.barAct .bid > .fieldError, .barAct .bid > div:not([role='dialog']) { position: absolute; right: 0; bottom: calc(100% + 6px); z-index: 2; width: max-content; max-width: min(27rem, 92vw); padding: 0.375rem 0.625rem; border: 0; border-block: 1px solid var(--tb-error-line); border-radius: 0; background: var(--tb-sheet); color: var(--tb-error-text); }
 .barAct .bid > p:first-child { grid-column: 1 / -1; grid-row: 1; }
 /* with no price block above it, the facts grid starts right under the Auction line */
 .facts:not(:has(.priceLine)) { padding-top: 0.75rem; }
@@ -427,8 +427,6 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 .roomLive { display: flex; align-items: center; margin: 0 0 0.25rem; color: var(--tb-error); font-size: 0.875rem; font-weight: 700; }
 .roomStat { display: flex; flex-direction: column; }
 @media (max-width: 47.99em) { .roomHead { grid-template-columns: auto minmax(0, 1fr); gap: 0.75rem 1rem; } .roomStat { grid-column: span 1; } }
-.roomStage { border: 1px solid var(--tb-line); border-radius: 4px; background: radial-gradient(ellipse at 50% 100%, #10231f, var(--tb-sheet) 70%); padding: 1rem 1rem 0; }
-.roomStage svg { display: block; width: 100%; height: auto; }
 .seat circle { fill: var(--tb-surface); stroke: var(--tb-line); stroke-width: 2; }
 .seat text { fill: var(--tb-text); font: 600 14px var(--tb-font); text-anchor: middle; }
 .seatLead circle { fill: var(--tb-hot); stroke: var(--tb-hot-hover); } .seatLead text { fill: var(--tb-action-text); }
@@ -437,12 +435,10 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 .roomPrice { font-family: var(--tb-font); font-weight: 600; font-size: clamp(2rem, 1.5rem + 2vw, 3rem); line-height: 1.1; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
 .roomControls { grid-column: 1; border-top: 2px solid var(--tb-hot); padding-top: 1rem; display: grid; gap: 0.75rem; align-content: start; }
 .roomControls .bid { display: grid; gap: 0.5rem; margin: 0; }
-.quickBids { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
-.quickBid { min-height: 48px; border: 1px solid var(--tb-border); border-radius: 6px; background: none; color: var(--tb-text); font: inherit; font-weight: 600; font-variant-numeric: tabular-nums; cursor: pointer; }
-.quickBid:hover { border-color: var(--tb-hot); } .quickBid:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+.quickBids { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .sitOut { justify-self: start; min-height: 44px; padding: 0; border: 0; background: none; color: var(--tb-muted); font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .sitOut[aria-pressed='true'] { color: var(--tb-hot); }
-.roomFeed { border: 1px solid var(--tb-line); border-radius: 4px; padding: 1rem; max-height: 36rem; overflow: auto; }
+.roomFeed { padding: 0.875rem 0 0; }
 @media (min-width: 60rem) { .roomFeed { grid-column: 2; grid-row: 2 / span 2; } }
 .roomFeed h2 { margin: 0 0 0.75rem; font-size: 1.25rem; }
 .roomFeed .history li { grid-template-columns: minmax(0, 1fr) auto; }
@@ -466,7 +462,6 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 .roomStats { display: flex; gap: 1.5rem; }
 .standing { margin-top: 0.375rem; padding: 0.375rem 0; border-block: 1px solid var(--tb-protect); color: var(--tb-protect); font-size: 0.9375rem; }
 .standing.standingOut { border-block-color: var(--tb-error); color: var(--tb-error-text); }
-.roomControls p, .roomControls .quickHint { margin: 0; }
 .quickHint { color: var(--tb-muted); font-size: 0.875rem; }
 .roomControls a { display: inline-flex; align-items: center; min-height: 44px; }
 .roomFeed:focus-visible, .sitOut:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
@@ -486,7 +481,7 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 
 /* ---- the room and the bar as grids (owner's review) ---- */
 /* time left: ruled cells, number over unit */
-.countGrid { display: inline-grid; grid-auto-flow: column; grid-auto-columns: minmax(2.75rem, auto); border: 1px solid var(--tb-line); border-radius: 4px; overflow: hidden; width: max-content; }
+.countGrid { display: inline-grid; grid-auto-flow: column; grid-auto-columns: minmax(2.75rem, auto); width: max-content; }
 .countCell { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.25rem 0.625rem; }
 .countCell + .countCell { border-left: 1px solid var(--tb-line); }
 .countCell strong { font-family: var(--tb-font); font-weight: 600; font-size: 1.25rem; line-height: 1.15; font-variant-numeric: tabular-nums; }
@@ -499,23 +494,23 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 .roomStats { align-items: stretch; gap: 1rem; }
 .roomStat { gap: 0.25rem; }
 /* quick bids: one ruled row of three cells */
-.quickBids { gap: 0; border: 1px solid var(--tb-border); border-radius: 4px; overflow: hidden; }
-.quickBid { min-height: 52px; border: 0; border-radius: 0; font-size: 1.0625rem; }
+.quickBids { gap: 0; }
+.quickBid { min-height: 52px; border: 0; border-radius: 0; font: inherit; font-size: 1.0625rem; font-weight: 600; font-variant-numeric: tabular-nums; background: none; color: var(--tb-text); cursor: pointer; }
 .quickBid + .quickBid { border-left: 1px solid var(--tb-border); }
 .quickBid:hover { background: var(--tb-surface); border-color: var(--tb-border); }
 .quickBid:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
 /* the amount and Place bid: two cells of one ruled row */
-.roomControls .bid > input { border: 1px solid var(--tb-border); border-right: 0; border-radius: 4px 0 0 4px; min-height: 52px; }
+.roomControls .bid > input { min-height: 52px; }
 .roomControls .bid > .primary { border-radius: 0 4px 4px 0; min-height: 52px; }
 @media (max-width: 30rem) { .roomControls .bid > input { border-right: 1px solid var(--tb-border); border-radius: 4px 4px 0 0; } .roomControls .bid > .primary { border-radius: 0 0 4px 4px; } }
 /* Sit this one out and Back to the listing: two visible cells */
-.roomActions { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--tb-border); border-radius: 4px; overflow: hidden; }
+.roomActions { display: grid; grid-template-columns: 1fr 1fr; }
 .roomAction { display: flex; align-items: center; justify-content: center; gap: 0.625rem; min-height: 52px; padding: 0 1rem; border: 0; background: none; color: var(--tb-text); font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; }
 .roomActions .roomAction + .roomAction { border-left: 1px solid var(--tb-border); }
 .roomAction:hover { background: var(--tb-surface); }
-.roomActionOn { background: var(--tb-surface); color: var(--tb-hot); box-shadow: inset 0 -2px 0 var(--tb-hot); }
+.roomActionOn { color: var(--tb-hot); box-shadow: inset 0 -2px 0 var(--tb-hot); }
 .roomAction:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
-.roomControls > p > .roomAction { border: 1px solid var(--tb-border); border-radius: 4px; display: inline-flex; }
+.roomControls > p > .roomAction { display: inline-flex; }
 /* the live bids never scroll: the newest ten rows */
 .roomFeed { max-height: none; overflow: visible; padding: 1rem; }
 
@@ -523,7 +518,7 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 .bidList { list-style: none; margin: 0; padding: 0; }
 .bidList > li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0 0.875rem; padding: 0.75rem 0; border-top: 1px solid var(--tb-line); }
 .bidList > li:first-child { border-top: 0; padding-top: 0.25rem; }
-.bidNewest { box-shadow: inset 3px 0 0 var(--tb-hot); padding-left: 0.75rem !important; margin-left: -0.75rem; padding-right: 0 !important; }
+.bidNewest { box-shadow: inset 3px 0 0 var(--tb-hot); }
 .bidSeat { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border: 1px solid var(--tb-line); border-radius: 50%; background: var(--tb-surface); font-size: 0.8125rem; font-weight: 600; }
 .bidSeatMe { border-color: var(--tb-text); border-width: 2px; }
 .bidWho { display: flex; flex-direction: column; min-width: 0; }
@@ -546,7 +541,7 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 /* the live bids: a column under a rule, its rows between hairlines */
 .roomFeed { border: 0; border-top: 2px solid var(--tb-line); border-radius: 0; padding: 0.875rem 0 0; }
 .roomFeed h2 { margin-bottom: 0.5rem; }
-.bidNewest { margin-left: 0; padding-left: 0.75rem !important; }
+.bidList > li { padding-left: 0.75rem; }
 .bidList > li:first-child { border-top: 1px solid var(--tb-line); padding-top: 0.75rem; }
 /* quick bids: three cells between rules */
 .quickBids { border: 0; border-block: 1px solid var(--tb-border); border-radius: 0; overflow: visible; }
@@ -561,3 +556,35 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 .roomControls > p > .roomAction { border: 0; border-block: 1px solid var(--tb-border); border-radius: 0; }
 .roomStage { border-bottom: 0; }
 .roomHead { border-bottom: 0; padding-bottom: 1rem; }
+
+/* ---- final room review ---- */
+/* the dialog is inside the room's controls: its paragraphs keep their spacing, and nothing in it is left alone on a line */
+.roomControls > p, .roomControls .bid > p, .roomControls .quickHint { margin: 0; }
+/* titles break at their commas first, so a model name is not split ("S21 / FE") */
+.titlePart { display: inline-block; max-width: 100%; }
+/* the ledger: every row has the same left edge, the newest has its bar on that edge */
+.bidList > li { padding-left: 0.75rem; }
+/* the stats row: one rule weight, the last cell flush with the column edge, labels at 12px */
+.roomStats > .countGrid + .countGrid { border-left-color: var(--tb-line); }
+.roomStats > .countGrid:last-child .countCell:last-child { padding-right: 0; }
+.countCell small { font-size: 0.75rem; }
+@media (max-width: 47.99em) { .roomStats > .countGrid .countCell:first-child { align-items: flex-start; } }
+/* placeholders at the muted colour (contrast) */
+.roomControls .bid > input::placeholder, .barAct .bid > input::placeholder { color: var(--tb-muted); opacity: 1; }
+/* Sit this one out when on: the foot line only */
+.roomActionOn { background: none; }
+/* on narrow phones the two action cells stack their icon over a centred label */
+@media (max-width: 30rem) { .roomAction { flex-direction: column; gap: 0.25rem; padding: 0.5rem; text-align: center; text-wrap: balance; font-size: 0.9375rem; min-height: 56px; } }
+@media (max-width: 22rem) { .seat text { font-size: 30px; } }
+/* short laptops: a lower stage keeps more of the form in view */
+@media (min-width: 48em) and (max-height: 760px) { .roomStage svg { max-height: 8.5rem; } .podium { margin-top: -1rem; } }
+/* the collapsed phone bid tab: a square tab on a vermilion top rule, no rounded outline */
+@media (max-width: 47.99em) {
+  .bidBar:not([data-open='true']) { border: 0; border-top: 2px solid var(--tb-hot); border-left: 1px solid var(--tb-line); border-radius: 0; background: var(--tb-sheet); }
+}
+/* forced colours: the marks drawn with shadows get real borders */
+@media (forced-colors: active) {
+  .roomControls .bid > input:focus-visible, .barAct .bid > input:focus-visible { outline: 2px solid Highlight; }
+  .bidNewest { border-left: 3px solid Highlight; }
+  .roomActionOn { border-bottom: 2px solid Highlight; }
+}

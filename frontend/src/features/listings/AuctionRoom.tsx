@@ -20,6 +20,7 @@ import { isApiError } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { BidForm } from './AuctionPanel';
 import { Countdown } from './Countdown';
+import { TitleParts } from './TitleParts';
 import { listingKey, type ListingView } from './model';
 import { useAuctionLive } from './useAuctionLive';
 import en from '../../messages/en/listings.json';
@@ -105,7 +106,7 @@ function Room({ l, auction, own, t, lang }: { l: ListingView; auction: NonNullab
         {photo && <img className={styles.roomThumb} src={photo.thumbUrl} alt="" width={64} height={64} />}
         <div className={styles.roomTitle}>
           <p className={styles.roomLive}>{open ? <><span className={styles.liveDot} aria-hidden="true" />{t('room.live')}</> : t('room.closed')}</p>
-          <h1>{l.title}</h1>
+          <h1><TitleParts text={l.title} /></h1>
         </div>
         <div className={styles.roomStats}>
           {open && <Countdown left={left} text={countdown.text} urgent={countdown.urgent} t={t} lang={lang} />}

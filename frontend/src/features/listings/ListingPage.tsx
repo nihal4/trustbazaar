@@ -22,6 +22,7 @@ import { ChatIcon } from '../../shared/icons';
 import { isApiError } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { AuctionPanel } from './AuctionPanel';
+import { TitleParts } from './TitleParts';
 import { listingKey, type ListingView } from './model';
 import en from '../../messages/en/listings.json';
 import bn from '../../messages/bn/listings.json';
@@ -95,7 +96,7 @@ export function Component() {
           <Link to={`/search?category=${l.category.id}`}>{category}</Link>
           {l.itemKind === 'game_account' && <span className={styles.kind}>{t('listing.game_account')}</span>}
         </p>
-        <h1 className={styles.title}>{l.title}</h1>
+        <h1 className={styles.title}><TitleParts text={l.title} /></h1>
         <Status l={l} own={own} t={t} />
         {l.itemKind === 'game_account' && (
           <section aria-labelledby="game-risk-title" className={styles.risk}>
