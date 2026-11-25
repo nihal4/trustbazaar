@@ -152,3 +152,4 @@ main [class*='Button-root'], main button[type='submit'] { min-height: 44px; }
 
 /* a focused control is never hidden under the sticky header (WCAG 2.4.11) */
 html { scroll-padding-top: 5.5rem; }
+html:has([class*='bidBar']) { scroll-padding-bottom: calc(var(--bar-h, 0px) + 1rem); }
