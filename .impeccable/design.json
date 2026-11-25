@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-25T12:00:00Z",
+  "generatedAt": "2026-11-25T20:00:00Z",
   "title": "Design System: TrustBazaar",
   "extensions": {
     "colorMeta": {
@@ -123,6 +123,51 @@
           "#ffb3c0",
           "#fff0f3"
         ]
+      },
+      "pro-gold": {
+        "role": "tertiary",
+        "displayName": "Pro Gold",
+        "canonical": "#e8b84a",
+        "tonalRamp": [
+          "#2a2008",
+          "#4d3a10",
+          "#7a5d1c",
+          "#a98428",
+          "#cfa23a",
+          "#e8b84a",
+          "#f2d17f",
+          "#faeab8"
+        ]
+      },
+      "error-text": {
+        "role": "tertiary",
+        "displayName": "Error Text",
+        "canonical": "#ffb3c0",
+        "tonalRamp": [
+          "#2b1219",
+          "#4a1d2b",
+          "#6b2a3a",
+          "#a8405a",
+          "#d95676",
+          "#ff8fa6",
+          "#ffb3c0",
+          "#fff0f3"
+        ]
+      },
+      "search-well": {
+        "role": "neutral",
+        "displayName": "Search Well",
+        "canonical": "#f1f5f3",
+        "tonalRamp": [
+          "#66807a",
+          "#a2b5b0",
+          "#cbd7d3",
+          "#dde6e3",
+          "#e8eeec",
+          "#f1f5f3",
+          "#f8fbf9",
+          "#ffffff"
+        ]
       }
     },
     "typographyMeta": {
@@ -144,11 +189,15 @@
       },
       "figure": {
         "displayName": "Figure",
-        "purpose": "Ticking clocks, bids and code digits in Figtree 600 tabular."
+        "purpose": "Ticking clocks, bid bar values and code digits in Figtree 600 tabular; countdown cells 1.25rem."
       },
       "step-number": {
         "displayName": "Step figure",
         "purpose": "Plain vermilion step numerals, Schibsted 600, no tile."
+      },
+      "buy-price": {
+        "displayName": "Buy price",
+        "purpose": "The listing page's buy price and the auction's current price, Figtree 600, clamp 2.25rem to 3rem, tabular."
       }
     },
     "shadows": [
@@ -160,12 +209,27 @@
       {
         "name": "hero-search",
         "value": "0 18px 40px -18px rgb(0 0 0 / .55)",
-        "purpose": "The white hero search well."
+        "purpose": "The pale hero search well."
       },
       {
         "name": "held-rule",
         "value": "inset 0 2px 0 var(--tb-hot)",
-        "purpose": "The one 2px vermilion top rule on the held-money cell; the category strip's first item uses inset 0 -2px 0."
+        "purpose": "Rules drawn as inset shadow: the 2px vermilion top of the held-money cell; inset 0 -2px 0 is the focus underline on fields and the category first item; inset 3px 0 0 marks the newest bid. Forced colours swap them for borders."
+      },
+      {
+        "name": "hero-payment-card",
+        "value": "0 20px 40px -16px rgb(0 0 0 / .7)",
+        "purpose": "The small Payment held card on the home hero."
+      },
+      {
+        "name": "filter-sheet",
+        "value": "0 -24px 48px rgb(0 0 0 / .5)",
+        "purpose": "The phone filter sheet over its backdrop."
+      },
+      {
+        "name": "dropdown-menu",
+        "value": "0 18px 36px rgb(0 0 0 / .5)",
+        "purpose": "The ruled dropdown menu from 60rem. No other surface (bars, sheets, dialog, cells) carries a shadow."
       }
     ],
     "motion": [
@@ -198,6 +262,21 @@
         "name": "reduced-motion",
         "value": "all animation and transition off",
         "purpose": "prefers-reduced-motion disables every animation; WebGL ground draws one still frame."
+      },
+      {
+        "name": "sheet-in",
+        "value": "200ms ease-out",
+        "purpose": "Bid history sheet and opened phone bid bar rise; filter sheet rises 260ms."
+      },
+      {
+        "name": "live-pulse",
+        "value": "1.4s ease-in-out, 5 iterations",
+        "purpose": "The pink live dot in the room; off under reduced motion."
+      },
+      {
+        "name": "bid-flash",
+        "value": "1.2s ease-out",
+        "purpose": "A newly arrived bid row flashes once; off under reduced motion."
       }
     ],
     "breakpoints": [
@@ -216,6 +295,14 @@
       {
         "name": "narrow",
         "value": "26rem and 30rem tweaks"
+      },
+      {
+        "name": "split",
+        "value": "60rem: listing page, search and room become two columns"
+      },
+      {
+        "name": "room-bar",
+        "value": "48em to 75em: the bid bar's bid box takes its own row"
       }
     ]
   },
@@ -234,7 +321,7 @@
       "refersTo": "search-hero",
       "description": "The single action in the hero: a white field with a vermilion submit.",
       "html": "<div class=\"ds-search\"><input placeholder=\"Search listings\" /><button>Search</button></div>",
-      "css": ".ds-search { display: flex; align-items: center; gap: 0.5rem; max-width: 34rem; padding: 0.375rem 0.375rem 0.375rem 1rem; border-radius: 6px; background: rgb(255 255 255 / 0.96); box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.55); } .ds-search:focus-within { outline: 2px solid #ff6b35; outline-offset: 3px; } .ds-search input { flex: 1; min-width: 0; min-height: 48px; border: 0; outline: 0; background: transparent; font: inherit; font-size: 1.0625rem; color: #0f1720; } .ds-search button { min-height: 48px; padding: 0 1.5rem; border: 0; border-radius: 4px; background: #ff6b35; color: #0a1018; font-weight: 700; cursor: pointer; } .ds-search button:hover { background: #ff8a5c; }"
+      "css": ".ds-search { display: flex; align-items: center; gap: 0.5rem; max-width: 34rem; padding: 0.375rem 0.375rem 0.375rem 1rem; border-radius: 4px; background: rgb(241 245 243 / 0.96); box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.55); } .ds-search:focus-within { outline: 2px solid #ff6b35; outline-offset: 3px; } .ds-search input { flex: 1; min-width: 0; min-height: 48px; border: 0; outline: 0; background: transparent; font: inherit; font-size: 1.0625rem; color: #0f1720; } .ds-search button { min-height: 48px; padding: 0 1.5rem; border: 0; border-radius: 4px; background: #ff6b35; color: #0a1018; font-weight: 700; cursor: pointer; } .ds-search button:hover { background: #ff8a5c; }"
     },
     {
       "name": "Category Strip",
@@ -289,14 +376,86 @@
       "description": "The hero's frosted product window; not for reuse on other screens.",
       "html": "<div class=\"ds-glass\"><strong>Example listing</strong><span class=\"ds-price\">৳15,000</span></div>",
       "css": ".ds-glass { display: grid; gap: 0.25rem; padding: 1.25rem 1.5rem; border-radius: 4px; background: rgb(10 17 16 / 0.72); border: 1px solid rgb(255 255 255 / 0.2); backdrop-filter: blur(20px) saturate(1.5); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), 0 40px 80px -30px rgb(0 0 0 / 0.7); color: #fff; font-family: 'Figtree Variable', system-ui, sans-serif; } .ds-price { font-family: 'Figtree Variable', system-ui, sans-serif; font-size: 1.75rem; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Buy Button",
+      "kind": "button",
+      "refersTo": "button-buy",
+      "description": "Listing page Buy now: 52px, 6px, with the outlined Save for later beside it.",
+      "html": "<div class=\"ds-buyrow\"><a class=\"ds-buy\" href=\"#\">Buy now</a><button class=\"ds-save\">Save for later</button></div>",
+      "css": ".ds-buyrow{display:grid;grid-template-columns:1.25fr 1fr;gap:.625rem;width:20rem;border-top:2px solid #ff6b35;padding-top:1.25rem;font-family:'Figtree Variable',system-ui,sans-serif}.ds-buy{display:flex;align-items:center;justify-content:center;min-height:52px;border-radius:6px;background:#ff6b35;color:#0a1018;font-weight:700;font-size:1.0625rem;text-decoration:none}.ds-buy:hover{background:#ff8a5c}.ds-buy:focus-visible{outline:2px solid #f1f5f3;outline-offset:3px}.ds-save{min-height:52px;border:1px solid #66807a;border-radius:6px;background:none;color:#f1f5f3;font:inherit;font-weight:600;cursor:pointer}.ds-save:hover{border-color:#ff6b35}.ds-save:focus-visible{outline:2px solid #f1f5f3;outline-offset:3px}"
+    },
+    {
+      "name": "Header Icon Grid",
+      "kind": "nav",
+      "refersTo": "nav-cell",
+      "description": "Ruled grid of icon cells in the signed-in header: hairlines between, no outline, no rounding.",
+      "html": "<nav class=\"ds-navgrid\"><a class=\"ds-navcell\" href=\"#\" aria-label=\"Notifications\"><svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\"><path d=\"M6 17V11a6 6 0 1 1 12 0v6l1.5 2h-15zM10 21h4\"/></svg></a><a class=\"ds-navcell\" href=\"#\" aria-label=\"Account\"><svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\"><circle cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4 21a8 8 0 0 1 16 0\"/></svg></a></nav>",
+      "css": ".ds-navgrid{display:flex;width:max-content;background:#0a1110}.ds-navcell{display:grid;place-items:center;width:52px;height:48px;color:#f1f5f3;text-decoration:none;transition:background 140ms}.ds-navcell+.ds-navcell,.ds-navcell:first-child{border-left:1px solid #2a3b36}.ds-navcell:hover{background:#16221f}.ds-navcell:focus-visible{outline:2px solid #ff6b35;outline-offset:-3px}"
+    },
+    {
+      "name": "Footer Language Row",
+      "kind": "nav",
+      "description": "Ruled footer row: label at the left, the language switch as text over a line at the right.",
+      "html": "<div class=\"ds-lang\"><span>Language</span><button>বাংলা</button></div>",
+      "css": ".ds-lang{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:22rem;padding-top:1rem;border-top:1px solid #2a3b36;color:#f1f5f3;font-family:'Figtree Variable',system-ui,sans-serif;}.ds-lang span{font-weight:600}.ds-lang button{min-width:44px;min-height:44px;padding:0 .5rem;border:0;border-bottom:1px solid #66807a;border-radius:0;background:none;color:#f1f5f3;font:inherit;font-weight:600;cursor:pointer}.ds-lang button:hover{border-bottom-color:#ff6b35}.ds-lang button:focus-visible{outline:2px solid #ff6b35;outline-offset:2px}"
+    },
+    {
+      "name": "Phone Tab Bar",
+      "kind": "nav",
+      "refersTo": "tab-item",
+      "description": "Fixed bottom bar: hairline cells, a 2px vermilion line over the current tab, Sell as an outlined vermilion square.",
+      "html": "<ul class=\"ds-tabs\"><li class=\"on\">Home</li><li>Saved</li><li class=\"sell\"><b></b>Sell</li><li>Chat</li></ul>",
+      "css": ".ds-tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;width:22rem;margin:0;padding:0;list-style:none;border-top:1px solid #66807a;background:#0a1110;color:#f1f5f3;font-family:'Figtree Variable',system-ui,sans-serif;}.ds-tabs li{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:58px;color:#a2b5b0;font-size:.75rem;font-weight:600}.ds-tabs li+li{border-left:1px solid #2a3b36}.ds-tabs .on{color:#f1f5f3}.ds-tabs .on::before{content:'';position:absolute;left:0;right:0;top:-1px;height:2px;background:#ff6b35}.ds-tabs .sell{color:#ff6b35}.ds-tabs b{width:22px;height:22px;border:1.5px solid #ff6b35;border-radius:4px}"
+    },
+    {
+      "name": "Confirm Dialog",
+      "kind": "custom",
+      "refersTo": "dialog",
+      "description": "Ruled confirmation dialog: vermilion rule on top, line at the foot, no outline or radius.",
+      "html": "<div class=\"ds-dialog\"><h2>Place this bid?</h2><p>You bid ৳16,000. A bid cannot be taken back.</p><div class=\"ds-actions\"><button>Place bid</button><button>Cancel</button></div></div>",
+      "css": ".ds-dialog{width:24rem;padding:1.5rem;background:#101a19;color:#f1f5f3;border:0;border-top:2px solid #ff6b35;border-bottom:1px solid #66807a;border-radius:0;font-family:'Figtree Variable',system-ui,sans-serif}.ds-dialog h2{margin:0 0 .75rem;font-family:'Schibsted Grotesk Variable',system-ui,sans-serif;font-weight:600;font-size:1.5rem;letter-spacing:-.02em}.ds-dialog p{margin:0 0 .75rem;line-height:1.5}.ds-actions{display:flex;gap:.625rem;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid #2a3b36}.ds-actions button{min-height:48px;padding:0 1.25rem;font:inherit;font-weight:700;cursor:pointer}.ds-actions button:first-child{border:1px solid #ff6b35;border-radius:6px;background:#ff6b35;color:#0a1018}.ds-actions button:first-child:hover{background:#ff8a5c}.ds-actions button:last-child{border:0;border-bottom:1px solid #66807a;border-radius:0;background:none;color:#f1f5f3}.ds-actions button:last-child:hover{border-bottom-color:#ff6b35}"
+    },
+    {
+      "name": "Auction Bid Bar",
+      "kind": "custom",
+      "refersTo": "bid-bar",
+      "description": "Fixed bar on a 2px vermilion rule: price, countdown cells, See the bids, bid box, hairlines between cells.",
+      "html": "<div class=\"ds-bar\"><div class=\"ds-c\"><span class=\"k\">Current bid</span><span class=\"v\">৳15,500</span></div><div class=\"ds-c\"><span class=\"k\">Time left</span><span class=\"v\">02:14:09</span></div><button class=\"ds-see\"><span>See the bids</span><b>7</b></button><div class=\"ds-bid\"><input placeholder=\"৳16,000 or more\" /><button>Place bid</button></div></div>",
+      "css": ".ds-bar{display:grid;grid-template-columns:auto auto auto 1fr;align-items:stretch;width:46rem;background:#101a19;border-top:2px solid #ff6b35;color:#f1f5f3;font-family:'Figtree Variable',system-ui,sans-serif;}.ds-bar>*+*{border-left:1px solid #2a3b36}.ds-c{display:flex;flex-direction:column;justify-content:center;padding:.625rem 1.5rem}.ds-c:first-child{padding-left:0}.k{color:#a2b5b0;font-size:.8125rem}.v{font-weight:600;font-size:1.5rem;font-variant-numeric:tabular-nums;letter-spacing:-.01em}.ds-see{display:grid;grid-template-columns:1fr auto;border:0;background:none;color:#f1f5f3;font:inherit;font-weight:600;cursor:pointer}.ds-see span{display:flex;align-items:center;padding:0 1.25rem}.ds-see b{display:grid;place-items:center;width:3rem;border-left:1px solid #2a3b36;color:#ff6b35}.ds-see:hover{background:#16221f}.ds-bid{display:grid;grid-template-columns:1fr auto;align-items:end;gap:.5rem;padding:.625rem 0 .625rem 1.5rem}.ds-bid input{min-height:48px;border:0;border-bottom:1px solid #66807a;background:none;color:#f1f5f3;font:inherit}.ds-bid input:focus-visible{outline:0;box-shadow:inset 0 -2px 0 #ff6b35}.ds-bid button{min-height:48px;padding:0 1.25rem;border:0;border-radius:0;background:#ff6b35;color:#0a1018;font-weight:700}"
+    },
+    {
+      "name": "Countdown Cells",
+      "kind": "custom",
+      "refersTo": "count-cell",
+      "description": "Time left as ruled cells, number over unit.",
+      "html": "<div class=\"ds-count\"><div><strong>02</strong><small>HRS</small></div><div><strong>14</strong><small>MIN</small></div><div><strong>09</strong><small>SEC</small></div></div>",
+      "css": ".ds-count{display:inline-grid;grid-auto-flow:column;grid-auto-columns:minmax(2.75rem,auto);color:#f1f5f3;font-family:'Figtree Variable',system-ui,sans-serif;}.ds-count div{display:flex;flex-direction:column;align-items:center;padding:.25rem .625rem}.ds-count div+div{border-left:1px solid #2a3b36}.ds-count strong{font-weight:600;font-size:1.25rem;line-height:1.15;font-variant-numeric:tabular-nums}.ds-count small{color:#a2b5b0;font-size:.75rem;font-weight:600;letter-spacing:.06em}"
+    },
+    {
+      "name": "Quick Bids",
+      "kind": "custom",
+      "refersTo": "quick-bid",
+      "description": "One ruled row of three cells between control-border rules; fills the bid field.",
+      "html": "<div class=\"ds-quick\"><button>৳16,000</button><button>৳16,500</button><button>৳17,000</button></div>",
+      "css": ".ds-quick{display:grid;grid-template-columns:repeat(3,1fr);width:22rem;border-block:1px solid #66807a}.ds-quick button{min-height:52px;border:0;border-radius:0;background:none;color:#f1f5f3;font-family:'Figtree Variable',system-ui,sans-serif;font-size:1.0625rem;font-weight:600;font-variant-numeric:tabular-nums;cursor:pointer}.ds-quick button+button{border-left:1px solid #66807a}.ds-quick button:hover{background:#16221f}.ds-quick button:focus-visible{outline:2px solid #ff6b35;outline-offset:-3px}"
+    },
+    {
+      "name": "Seller Row",
+      "kind": "custom",
+      "refersTo": "seller-row",
+      "description": "Ruled row of cells: avatar, name with verified seal and join year, rating with Pro, chat.",
+      "html": "<div class=\"ds-seller\"><span class=\"av\">RA</span><div class=\"info\"><strong>Rahim A.</strong><small>Joined 2024</small></div><div class=\"rate\"><span>4.8 (31)</span><i>PRO</i></div></div>",
+      "css": ".ds-seller{display:grid;grid-template-columns:78px 1fr auto;align-items:stretch;width:24rem;border-block:1px solid #2a3b36;color:#f1f5f3;font-family:'Figtree Variable',system-ui,sans-serif;}.ds-seller>*{display:flex;align-items:center;padding:.75rem .875rem}.ds-seller>*+*{border-left:1px solid #2a3b36}.av{display:grid!important;place-items:center;width:64px;margin:7px;padding:0!important;border:0!important;border-radius:4px;background:#16221f;font-family:'Schibsted Grotesk Variable',system-ui,sans-serif;font-weight:600;font-size:1.125rem}.info{flex-direction:column;align-items:flex-start!important;justify-content:center}.info small{color:#a2b5b0;font-size:.875rem}.rate{flex-direction:column;align-items:flex-start!important;justify-content:center;gap:.375rem;color:#a2b5b0;font-size:.875rem}.rate i{padding:0 .4rem;border:1px solid #e8b84a;border-radius:4px;color:#e8b84a;font-style:normal;font-size:.75rem;font-weight:700;letter-spacing:.08em}"
     }
   ],
   "narrative": {
     "northStar": "The Night Market",
-    "overview": "TrustBazaar is a marketplace for buyers in Bangladesh, in English and Bangla at equal weight. The shipped home page is a bottle-green black ground with white-grey text and a single vermilion that does all the calling. The page proves safety by showing the mechanism (a real listing, a live clock, a \"Payment held\" card) rather than asserting it with a badge. The system is ruled, not boxed. Below the hero there are no filled cards: sections are separated by 1px hairlines, and grids are cells in the page colour over a 1px gap that shows the hairline colour. Depth comes from lines and tone, not shadow. The one exception is the hero, which carries a moving WebGL gradient ground and a frosted-glass product window with a passing sheen; these exist only on the home hero and are not part of the shared system. Colour has jobs. Vermilion is for actions, the live signal, step figures and the single rule on the held-money cell. Protect Green marks money that is held and sellers that are verified. Error Pink is only for errors and the last-hour auction clock.",
+    "overview": "TrustBazaar is a marketplace for buyers in Bangladesh, in English and Bangla at equal weight. The shipped home page is a bottle-green black ground with white-grey text and a single vermilion that does all the calling. The page proves safety by showing the mechanism (a real listing, a live clock, a \"Payment held\" card) rather than asserting it with a badge. The system is ruled, not boxed, and that is the heart of the look. Across the user app (home, search, listing page, auction room, header, footer, dialog) there are no filled cards and no outlined or rounded boxes except buttons and images: sections, rows, cells, fields and dialogs are separated by 1px hairlines and dividers, and grids are cells in the page colour over a 1px gap that shows the hairline colour. Depth comes from lines and tone, not shadow. The exception is the home hero, which carries a moving WebGL gradient ground and a frosted-glass product window with a passing sheen; these exist only on the home hero and are not part of the shared system. Colour has jobs. Vermilion is for actions, the live signal, step figures and the one 2px rule that tops a panel asking for an action. Protect Green marks money that is held and sellers that are verified. Pro Gold marks Pro sellers. Error Pink is for errors, being outbid, the last-hour clock and the live dot.",
     "keyCharacteristics": [
       "Dark theme on the user app (`data-theme=\"dark\"`); the console, ID check and credentials pages stay on the light tokens.",
-      "Ruled Grid: hairlines and cells, no filled cards; radii nearly square (4px boxes, 6px controls).",
+      "Ruled Grid: hairlines and cells, no filled cards, no outlined or rounded boxes except buttons and images; radii nearly square (4px images and buttons, 6px the larger buttons).",
+      "One vermilion voice; green only for held or verified; gold only for Pro and the rating star.",
       "Schibsted Grotesk 600 for headlines, Figtree for text and every figure.",
       "Hero fills the first screen alone; its moving ground falls back to a still CSS gradient.",
       "44px minimum tap targets; reduced motion switches every animation off."
@@ -309,7 +468,12 @@
       },
       {
         "name": "The Protect Green Rule",
-        "body": "Green means held or verified money and nothing else. Do not use it for \"success\" decoration or for brand accent.",
+        "body": "Green means held or verified money and nothing else. Do not use it for \"success\" decoration or for brand accent. Being outbid is pink, not green.",
+        "section": "colors"
+      },
+      {
+        "name": "The Gold Rule",
+        "body": "Gold is for Pro and the rating star only; never an action, a fill or a rule.",
         "section": "colors"
       },
       {
@@ -324,7 +488,17 @@
       },
       {
         "name": "The Ruled Grid Rule",
-        "body": "Lines, not boxes. Separate content with 1px hairlines (`--tb-line`) and ruled cells; do not fill a card, do not outline one with a box. A section, strip, list or code is a rule above it, rules between its cells, and nothing else.",
+        "body": "Lines, not boxes. Separate content with 1px hairlines (`--tb-line`) and ruled cells; do not fill a card, do not outline one with a box. Only buttons and images keep a box. A section, strip, list, field, dialog or code is a rule above it, rules between its cells, and nothing else.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Hot Top Rule",
+        "body": "A panel that asks the visitor for an action (buy, bid, the bid bar, the room's controls, the confirm dialog) is topped by one 2px vermilion rule on the page or sheet colour. An ended or sold auction loses it and returns to a hairline.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Rule-Not-Ring Rule",
+        "body": "A text field has no box and no ring: it is a 1px control-border line under it, and focus draws a 2px vermilion underline. Buttons and cells take a 2px vermilion focus ring, inset on cells.",
         "section": "elevation"
       },
       {
@@ -334,20 +508,22 @@
       }
     ],
     "dos": [
-      "**Do** separate sections and cells with 1px hairlines (#2a3b36) and gap-1px grids over the line colour; radii of 4 (boxes), 6 (controls).",
-      "**Do** reserve vermilion (#ff6b35) for actions, live signals, step figures and the single held-money top rule, with #0a1018 text on it.",
-      "**Do** use Protect Green only for held or verified states.",
+      "**Do** separate sections, rows and cells with 1px hairlines (#2a3b36) and gap-1px grids over the line colour; give only buttons and images a box, at 4px (6px for the larger buttons).",
+      "**Do** reserve vermilion (#ff6b35) for actions, live signals, step figures, focus underlines and the single 2px rule atop an action panel, with #0a1018 text on it.",
+      "**Do** use Protect Green only for held or verified states, and Pro Gold only for Pro and the rating star.",
       "**Do** set headings in Schibsted Grotesk 600 and every number in Figtree with tabular numerals.",
+      "**Do** draw a text field as a line with a vermilion underline on focus.",
       "**Do** keep tap targets at 44px minimum and design for 320px, phones under 768, tablets 768 to 1023, laptops 1024 and up.",
-      "**Do** keep a still fallback for any animation and honour `prefers-reduced-motion`.",
+      "**Do** keep a still fallback for any animation and honour `prefers-reduced-motion`; give every inset-shadow mark a real border in forced-colours mode.",
       "**Do** keep Bangla on Hind Siliguri with the TB Figures digits first in the stack, at line height 1.7."
     ],
     "donts": [
-      "**Don't** fill a card or box a section on the home; use a rule.",
+      "**Don't** fill a card, outline a box or round a panel anywhere in the user app; use a rule. Buttons and images are the only boxes.",
       "**Don't** use the WebGL ground, backdrop blur or the glass sheen outside the home hero.",
       "**Don't** put white text on vermilion or use vermilion as a large background fill.",
-      "**Don't** put the step numbers in a tile or circle.",
-      "**Don't** use Protect Green or Error Pink as decoration.",
+      "**Don't** put the step numbers in a tile or circle, or turn the language switch, header links or tabs into pills or filled tiles.",
+      "**Don't** use Protect Green or Error Pink as decoration, or show green on a buy panel before money is held.",
+      "**Don't** add a shadow to a bar, sheet, dialog or cell; shadows belong to the hero and the two floating overlays.",
       "**Don't** set a number in Schibsted Grotesk.",
       "**Don't** convey state by colour alone; the timeline pairs fill with text weight and the clock pairs colour with its label."
     ]
