@@ -242,7 +242,8 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
       <div className={`${styles.barCell} ${styles.barMid}`}>
         <button type="button" ref={seeRef} className={styles.seeBids} aria-expanded={sheet} aria-controls="history-box" onClick={() => setSheet((v) => !v)}
           aria-label={state.bidCount > 0 ? `${t('auction.see_bids')} (${toLocalDigits(String(state.bidCount), lang)})` : undefined}>
-          {t('auction.see_bids')}{state.bidCount > 0 && <span className={styles.bidCount} aria-hidden="true">{toLocalDigits(String(state.bidCount), lang)}</span>}
+          <span>{t('auction.see_bids')}</span>{state.bidCount > 0 && <span className={styles.bidCount} aria-hidden="true">{toLocalDigits(String(state.bidCount), lang)}</span>}
+          <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" focusable="false" className={sheet ? styles.seeChevOpen : styles.seeChev}><path d="M2 7.5 L6 3.5 L10 7.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </button>
       </div>
       <div className={styles.barAct}>
