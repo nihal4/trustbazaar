@@ -128,3 +128,9 @@
 :lang(bn) .winSteps, :lang(bn) .steps li { font-size: 1.0625rem; }
 
 @media (min-width: 48em) and (max-width: 63.99em) { .card { left: auto; right: 1rem; top: 1rem; bottom: auto; } }
+
+@media (forced-colors: active) {
+  .catAll { box-shadow: none; border-bottom: 2px solid Highlight; }
+  .hero { border: 1px solid CanvasText; box-shadow: none; }
+  .head a span { background-image: none; border-bottom: 2px solid Highlight; }
+}
