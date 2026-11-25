@@ -12,7 +12,7 @@
 .search input:focus-visible { outline: 2px solid var(--tb-text); outline-offset: 4px; border-radius: 4px; }
 .searchIcon { flex: none; color: var(--tb-muted); }
 .search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: inherit; font-size: 1.0625rem; min-height: 48px; color: var(--tb-text); }
-.search button { flex: none; min-height: 48px; padding: 0 1.5rem; border: 0; border-radius: 8px; background: var(--tb-text); color: #fff; font-weight: 600; cursor: pointer; transition: background 140ms, transform 140ms; }
+.search button { flex: none; min-height: 48px; padding: 0 1.5rem; border: 0; border-radius: var(--tb-radius); background: var(--tb-text); color: #fff; font-weight: 600; cursor: pointer; transition: background 140ms, transform 140ms; }
 .search button:hover { background: #000; }
 .search button:active { transform: scale(0.97); }
 .proof { margin: 0; color: var(--tb-muted); font-size: 0.9375rem; }
@@ -70,12 +70,12 @@
 .steps li { display: flex; gap: 1rem; color: var(--tb-on-ink); }
 .steps strong { display: block; color: #fff; font-size: 1.125rem; margin-bottom: 0.25rem; }
 .num { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 8px; background: var(--tb-accent-soft); color: var(--tb-text); font-weight: 700; font-variant-numeric: tabular-nums; }
-.sellBtn { justify-self: start; display: inline-flex; align-items: center; min-height: 48px; padding: 0 1.5rem; border-radius: 8px; background: var(--tb-accent-soft); color: var(--tb-text) !important; font-weight: 700; text-decoration: none; transition: transform 140ms, background 140ms; }
+.sellBtn { justify-self: start; display: inline-flex; align-items: center; min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-radius); background: var(--tb-accent-soft); color: var(--tb-text) !important; font-weight: 700; text-decoration: none; transition: transform 140ms, background 140ms; }
 .sellBtn:hover { background: #fff; transform: translateY(-2px); }
 
 @media (min-width: 48em) {
-  .hero { grid-template-columns: 5fr 6fr; gap: 3rem; min-height: min(36rem, calc(100vh - 8rem)); }
-  .art { height: min(32rem, 70vh); }
+  .hero { grid-template-columns: 5fr 6fr; gap: 3rem; min-height: calc(100svh - 8rem); margin-bottom: 1rem; }
+  .art { height: min(32rem, calc(100svh - 11rem)); }
   .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem 1.25rem; }
   .steps, .howSteps { grid-template-columns: repeat(3, 1fr); }
   .rail > li { flex-basis: 16rem; }
