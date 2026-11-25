@@ -13,6 +13,7 @@ import { formatMoney, parseTaka } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
+import { Dropdown } from '../../shared/Dropdown';
 import { useT } from '../../shared/language/Language';
 import type { Lang } from '../../shared/language/lang';
 import { useMe } from '../../shared/me';
@@ -299,11 +300,7 @@ function Select({ id, label, value, onChange, options, any }: {
 }) {
   return (
     <div className={styles.field}>
-      <label htmlFor={id}>{label}</label>
-      <select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="">{any}</option>
-        {options.map(([k, text]) => <option key={k} value={k}>{text}</option>)}
-      </select>
+      <Dropdown id={id} label={label} value={value} onChange={onChange} options={options} any={any} />
     </div>
   );
 }

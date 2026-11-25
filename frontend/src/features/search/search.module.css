@@ -51,7 +51,7 @@ html[data-sheet='open'] { overflow: hidden; }
 .grid legend { float: left; width: 100%; padding: 0; margin-bottom: 0.5rem; font-family: var(--tb-font-display); font-size: 1.25rem; font-weight: var(--tb-display-weight); letter-spacing: -0.015em; }
 /* each filter is a row between hairlines: the label above, the value below with no box; the focused row gets the hot underline */
 .field { display: flex; flex-direction: column; gap: 0.125rem; min-width: 0; padding: 0.75rem 0; border-bottom: 1px solid var(--tb-line); transition: box-shadow 140ms; }
-.field:focus-within { box-shadow: inset 0 -2px 0 var(--tb-hot); }
+.field:has(input:focus-visible) { box-shadow: inset 0 -2px 0 var(--tb-hot); }
 .field label { color: var(--tb-muted); font-size: 0.9375rem; font-weight: 500; }
 .field select, .field input { min-height: 44px; width: 100%; padding: 0; border: 0; border-radius: 0; outline: 0; background: transparent; color: var(--tb-text); font: inherit; font-size: 1.0625rem; }
 .field select { appearance: none; -webkit-appearance: none; padding-right: 1.75rem; cursor: pointer; background-image: linear-gradient(45deg, transparent 50%, var(--tb-hot) 50%), linear-gradient(135deg, var(--tb-hot) 50%, transparent 50%); background-position: calc(100% - 0.55rem) 55%, calc(100% - 0.2rem) 55%; background-size: 0.35rem 0.35rem, 0.35rem 0.35rem; background-repeat: no-repeat; }
