@@ -50,7 +50,7 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
   return (
     <div className={styles.page}>
       <a className={styles.skip} href="#main">{t('shell.skip_to_content')}</a>
-      {accountLinks && <p className={styles.promiseBar}><ShieldIcon />{t('shell.promise_bar')}</p>}
+      {accountLinks && <p className={styles.promiseBar}><ShieldIcon /><span className={styles.promiseLong}>{t('shell.promise_bar')}</span><span className={styles.promiseShort}>{t('shell.promise_bar_short')}</span></p>}
       <header className={exit ? `${styles.header} ${styles.withExit}` : styles.header}>
         {home.sameDocument
           ? <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo onDark={accountLinks} /></Link>
@@ -58,7 +58,7 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
         {titleKey && <span className={styles.docTitle}>{t(titleKey)}</span>}
         {accountLinks && !phone && pathname !== '/' && pathname !== '/search' ? <><HeaderSearch /><span className={styles.spacerSmall} /></> : <span className={styles.spacer} />}
         {accountLinks && <AccountLink phone={phone} />}
-        <LanguageSwitch />
+        {!accountLinks && <LanguageSwitch />}
         {exit && <a className={styles.exit} href={exit.href}>{t(exit.labelKey)}</a>}
         {accountLinks && !phone && <Button component={Link} to="/sell/new">{t('shell.sell')}</Button>}
       </header>
@@ -127,6 +127,10 @@ function Footer() {
           </ul>
         </nav>
       </div>
+      <div className={styles.footerLang}>
+        <span id="footer-language" className={styles.footerLabel}>{t('shell.footer.language')}</span>
+        <LanguageSwitch />
+      </div>
     </footer>
   );
 }
@@ -183,12 +187,12 @@ function AccountLink({ phone }: { phone: boolean }) {
   }
   if (me.isSuccess) {
     return (
-      <>
-        <Link className={styles.account} to="/orders">{t('shell.orders')}</Link>
-        <Link className={styles.account} to="/messages">{t('shell.messages')}</Link>
-        <NotificationsLink unread={unread} />
-        <Link className={styles.account} to="/account">{t('shell.account')}</Link>
-      </>
+      <div className={styles.navGrid}>
+        <Link className={styles.navCell} to="/orders" title={t('shell.orders')}><OrdersIcon /><span className={styles.visuallyHidden}>{t('shell.orders')}</span></Link>
+        <Link className={styles.navCell} to="/messages" title={t('shell.messages')}><ChatIcon /><span className={styles.visuallyHidden}>{t('shell.messages')}</span></Link>
+        <NotificationsLink unread={unread} icon cell />
+        <Link className={styles.navCell} to="/account" title={t('shell.account')}><UserIcon /><span className={styles.visuallyHidden}>{t('shell.account')}</span></Link>
+      </div>
     );
   }
   if (pathname === '/signin' || pathname === '/register') return null;
@@ -201,14 +205,14 @@ function PendingStepUp() {
 }
 
 /** The notification centre, with the unread count in words as well as a number (not colour alone). */
-function NotificationsLink({ unread, icon = false }: { unread: number | null; icon?: boolean }) {
+function NotificationsLink({ unread, icon = false, cell = false }: { unread: number | null; icon?: boolean; cell?: boolean }) {
   const { t, lang } = useLanguage();
   const n = unread ?? 0;
   const count = toLocalDigits(String(n > 99 ? 99 : n), lang) + (n > 99 ? '+' : '');
   const label = t('shell.notifications_unread');
   return (
     // The name is the visible text, the count in words after it (WCAG 2.5.3, Label in Name).
-    <Link className={icon ? styles.iconLink : styles.account} to="/notifications">
+    <Link className={cell ? styles.navCell : icon ? styles.iconLink : styles.account} to="/notifications" title={cell ? t('shell.notifications') : undefined}>
       {icon ? <><BellIcon /><span className={styles.visuallyHidden}>{t('shell.notifications')}</span></> : t('shell.notifications')}
       {n > 0 && <>{' '}<span className={styles.badge}>{count}</span><span className={styles.visuallyHidden}>{label}</span></>}
     </Link>

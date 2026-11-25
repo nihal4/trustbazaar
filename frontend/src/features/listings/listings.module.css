@@ -312,7 +312,7 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 .barAct .bid { grid-template-rows: auto auto; }
 .barAct .bid > input { grid-column: 1; grid-row: 2; }
 .barAct .bid > .primary { grid-column: 2; grid-row: 2; }
-.barAct .bid > .fieldError, .barAct .bid > div:not([role='dialog']) { position: absolute; right: 0; bottom: calc(100% + 6px); z-index: 2; width: max-content; max-width: min(27rem, 92vw); padding: 0.375rem 0.625rem; border: 1px solid var(--tb-error-line); border-radius: 4px; background: var(--tb-error-bg); color: var(--tb-error-text); }
+.barAct .bid > .fieldError, .barAct .bid > div:not([role='dialog']) { position: absolute; right: 0; bottom: calc(100% + 6px); z-index: 2; width: max-content; max-width: min(27rem, 92vw); padding: 0.375rem 0.625rem; border: 0; border-block: 1px solid var(--tb-error-line); border-radius: 0; background: var(--tb-sheet); color: var(--tb-error-text); }
 .barAct .bid > p:first-child { grid-column: 1 / -1; grid-row: 1; }
 /* with no price block above it, the facts grid starts right under the Auction line */
 .facts:not(:has(.priceLine)) { padding-top: 0.75rem; }
@@ -409,3 +409,194 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 }
 :lang(bn) .factGrid > p { font-size: 1rem; line-height: 1.5; }
 :lang(bn) .bidCount { font-size: 1rem; }
+
+/* ---- the auction room (U10-30) and the bar's "Join the live room" cell ---- */
+.liveDot { display: inline-block; width: 9px; height: 9px; margin-right: 0.5rem; border-radius: 50%; background: var(--tb-error); }
+@media (prefers-reduced-motion: no-preference) { .liveDot { animation: livePulse 1.4s ease-in-out infinite; } @keyframes livePulse { 50% { opacity: 0.3; } } }
+.barBody > .barRoom { display: flex; align-items: center; justify-content: center; padding: 0 1.25rem; color: var(--tb-text); font-weight: 600; text-decoration: none; white-space: nowrap; border-left: 1px solid var(--tb-line); }
+.barBody > .barRoom:hover { background: var(--tb-surface); }
+.barRoom:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
+.bidBar > .barBody[data-room='true'] { grid-template-columns: auto auto auto auto minmax(0, 1fr); }
+@media (max-width: 47.99em) { .bidBar[data-open='true'] .barBody { grid-template-columns: 1fr 1fr; } .barBody > .barRoom { grid-column: 1 / -1; justify-content: space-between; padding: 0; min-height: 44px; border-left: 0; border-top: 1px solid var(--tb-line); } }
+
+.room { max-width: 82rem; margin: 0 auto; display: grid; gap: 1.5rem 2rem; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 60rem) { .room { grid-template-columns: minmax(0, 1fr) 22rem; } .roomHead { grid-column: 1 / -1; } }
+.roomHead { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 0 1.5rem; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--tb-line); }
+.roomThumb { width: 64px; height: 64px; object-fit: cover; border-radius: 4px; background: var(--tb-surface); }
+.roomTitle { min-width: 0; } .roomTitle h1 { margin: 0; font-size: 1.5rem; line-height: 1.2; overflow-wrap: anywhere; }
+.roomLive { display: flex; align-items: center; margin: 0 0 0.25rem; color: var(--tb-error); font-size: 0.875rem; font-weight: 700; }
+.roomStat { display: flex; flex-direction: column; }
+@media (max-width: 47.99em) { .roomHead { grid-template-columns: auto minmax(0, 1fr); gap: 0.75rem 1rem; } .roomStat { grid-column: span 1; } }
+.seat circle { fill: var(--tb-surface); stroke: var(--tb-line); stroke-width: 2; }
+.seat text { fill: var(--tb-text); font: 600 14px var(--tb-font); text-anchor: middle; }
+.seatLead circle { fill: var(--tb-hot); stroke: var(--tb-hot-hover); } .seatLead text { fill: var(--tb-action-text); }
+.seatMe circle { stroke: var(--tb-text); stroke-width: 3; }
+.podium { display: flex; flex-direction: column; align-items: center; margin-top: -2rem; padding-bottom: 1rem; text-align: center; position: relative; }
+.roomPrice { font-family: var(--tb-font); font-weight: 600; font-size: clamp(2rem, 1.5rem + 2vw, 3rem); line-height: 1.1; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.roomControls { grid-column: 1; border-top: 2px solid var(--tb-hot); padding-top: 1rem; display: grid; gap: 0.75rem; align-content: start; }
+.roomControls .bid { display: grid; gap: 0.5rem; margin: 0; }
+.quickBids { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.sitOut { justify-self: start; min-height: 44px; padding: 0; border: 0; background: none; color: var(--tb-muted); font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.sitOut[aria-pressed='true'] { color: var(--tb-hot); }
+.roomFeed { padding: 0.875rem 0 0; }
+@media (min-width: 60rem) { .roomFeed { grid-column: 2; grid-row: 2 / span 2; } }
+.roomFeed h2 { margin: 0 0 0.75rem; font-size: 1.25rem; }
+.roomFeed .history li { grid-template-columns: minmax(0, 1fr) auto; }
+@media (prefers-reduced-motion: no-preference) { .flash { animation: bidFlash 1.2s ease-out; } @keyframes bidFlash { from { background: rgb(255 107 53 / 0.25); } } }
+@media (forced-colors: active) { .seat circle { stroke: CanvasText; } .seatLead circle { fill: Highlight; } }
+
+/* the bar with the room cell is too wide for one row below 75em: the bid box takes a row of its own under the four cells */
+@media (min-width: 48em) and (max-width: 74.99em) {
+  .bidBar > .barBody[data-room='true'] { grid-template-columns: auto auto minmax(0, 1fr) auto; }
+  .barBody[data-room='true'] > .barAct { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--tb-line); padding: 0.625rem 0; }
+  .barBody[data-room='true'] > .barAct > * { width: 100%; margin-left: 0; }
+}
+/* the room's bid form on one compact block: quick bids, then the field and Place bid side by side */
+.roomControls .bid { grid-template-columns: minmax(0, 1fr) auto; align-items: start; }
+.roomControls .bid > .quickBids, .roomControls .bid > p, .roomControls .bid > .fieldError { grid-column: 1 / -1; }
+.roomControls .bid > input { grid-column: 1; }
+.roomControls .bid > .primary { grid-column: 2; min-width: 9rem; }
+@media (max-width: 30rem) { .roomControls .bid > input { grid-column: 1 / -1; } .roomControls .bid > .primary { grid-column: 1 / -1; } }
+
+/* ---- room review fixes ---- */
+.roomStats { display: flex; gap: 1.5rem; }
+.standing { margin-top: 0.375rem; padding: 0.375rem 0; border-block: 1px solid var(--tb-protect); color: var(--tb-protect); font-size: 0.9375rem; }
+.standing.standingOut { border-block-color: var(--tb-error); color: var(--tb-error-text); }
+.quickHint { color: var(--tb-muted); font-size: 0.875rem; }
+.roomControls a { display: inline-flex; align-items: center; min-height: 44px; }
+.roomFeed:focus-visible, .sitOut:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+.roomControls p:empty { display: none; }
+.roomStage { background: radial-gradient(ellipse at 50% 100%, var(--tb-surface), var(--tb-sheet) 70%); }
+.roomStage svg { max-height: 13rem; margin-inline: auto; }
+@media (prefers-reduced-motion: no-preference) { .liveDot { animation-iteration-count: 5; } }
+@media (forced-colors: active) { .seat text { fill: CanvasText; } .seatLead text { fill: HighlightText; } }
+@media (max-width: 47.99em) {
+  .roomStats { grid-column: 1 / -1; }
+  .roomTitle h1 { font-size: 1.25rem; }
+  .roomStage { padding: 0.75rem 0.5rem 0; }
+  .seat text { font-size: 24px; }
+  .barBody > .barRoom { justify-content: flex-start; }
+}
+@media (max-width: 30rem) { .seat text { font-size: 28px; } }
+
+/* ---- the room and the bar as grids (owner's review) ---- */
+/* time left: ruled cells, number over unit */
+.countGrid { display: inline-grid; grid-auto-flow: column; grid-auto-columns: minmax(2.75rem, auto); width: max-content; }
+.countCell { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.25rem 0.625rem; }
+.countCell + .countCell { border-left: 1px solid var(--tb-line); }
+.countCell strong { font-family: var(--tb-font); font-weight: 600; font-size: 1.25rem; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.countCell small { color: var(--tb-muted); font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.06em; line-height: 1.2; }
+:lang(bn) .countCell small { letter-spacing: 0; font-size: 0.75rem; }
+.countGrid.urgent .countCell strong { color: var(--tb-error); }
+.barCell .countGrid { margin-top: 0.125rem; }
+.barBody > .barCell { justify-content: center; }
+/* the header of the room: the time and the number of bidders sit in one row of cells */
+.roomStats { align-items: stretch; gap: 1rem; }
+.roomStat { gap: 0.25rem; }
+/* quick bids: one ruled row of three cells */
+.quickBids { gap: 0; }
+.quickBid { min-height: 52px; border: 0; border-radius: 0; font: inherit; font-size: 1.0625rem; font-weight: 600; font-variant-numeric: tabular-nums; background: none; color: var(--tb-text); cursor: pointer; }
+.quickBid + .quickBid { border-left: 1px solid var(--tb-border); }
+.quickBid:hover { background: var(--tb-surface); border-color: var(--tb-border); }
+.quickBid:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
+/* the amount and Place bid: two cells of one ruled row */
+.roomControls .bid > input { min-height: 52px; }
+.roomControls .bid > .primary { border-radius: 0 4px 4px 0; min-height: 52px; }
+@media (max-width: 30rem) { .roomControls .bid > input { border-right: 1px solid var(--tb-border); border-radius: 4px 4px 0 0; } .roomControls .bid > .primary { border-radius: 0 0 4px 4px; } }
+/* Sit this one out and Back to the listing: two visible cells */
+.roomActions { display: grid; grid-template-columns: 1fr 1fr; }
+.roomAction { display: flex; align-items: center; justify-content: center; gap: 0.625rem; min-height: 52px; padding: 0 1rem; border: 0; background: none; color: var(--tb-text); font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; }
+.roomActions .roomAction + .roomAction { border-left: 1px solid var(--tb-border); }
+.roomAction:hover { background: var(--tb-surface); }
+.roomActionOn { color: var(--tb-hot); box-shadow: inset 0 -2px 0 var(--tb-hot); }
+.roomAction:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
+.roomControls > p > .roomAction { display: inline-flex; }
+/* the live bids never scroll: the newest ten rows */
+.roomFeed { max-height: none; overflow: visible; padding: 1rem; }
+
+/* ---- the live bids as a ledger of rows (a seat chip, who and when, the amount), not a spreadsheet; the header's cells are one height ---- */
+.bidList { list-style: none; margin: 0; padding: 0; }
+.bidList > li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0 0.875rem; padding: 0.75rem 0; border-top: 1px solid var(--tb-line); }
+.bidList > li:first-child { border-top: 0; padding-top: 0.25rem; }
+.bidNewest { box-shadow: inset 3px 0 0 var(--tb-hot); }
+.bidSeat { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border: 1px solid var(--tb-line); border-radius: 50%; background: var(--tb-surface); font-size: 0.8125rem; font-weight: 600; }
+.bidSeatMe { border-color: var(--tb-text); border-width: 2px; }
+.bidWho { display: flex; flex-direction: column; min-width: 0; }
+.bidWho strong { font-weight: 600; }
+.bidWho small { color: var(--tb-muted); font-size: 0.8125rem; }
+.bidAmount { font-family: var(--tb-font); font-weight: 600; font-size: 1.125rem; font-variant-numeric: tabular-nums; }
+.bidNewest .bidAmount { color: var(--tb-hot); }
+.roomStats { align-items: flex-end; }
+.standing, .quickHint, .roomControls p[role='status'] { text-wrap: balance; }
+
+/* ---- ruled, not boxed (owner's review): the home page's language is hairlines and dividers, never an outlined rounded box ---- */
+/* time left and bidders: cells divided by vertical hairlines, no outline */
+.countGrid { border: 0; border-radius: 0; overflow: visible; }
+.countCell + .countCell { border-left: 1px solid var(--tb-line); }
+.roomStats { gap: 0; }
+.roomStats > .countGrid + .countGrid { margin-left: 1.5rem; padding-left: 1.5rem; border-left: 1px solid var(--tb-border); }
+.roomStats > .countGrid .countCell:first-child { padding-left: 0; }
+/* the stage: open ground between two rules */
+.roomStage { border: 0; border-block: 1px solid var(--tb-line); border-radius: 0; background: none; padding: 1.25rem 0 0; }
+/* the live bids: a column under a rule, its rows between hairlines */
+.roomFeed { border: 0; border-top: 2px solid var(--tb-line); border-radius: 0; padding: 0.875rem 0 0; }
+.roomFeed h2 { margin-bottom: 0.5rem; }
+.bidList > li { padding-left: 0.75rem; }
+.bidList > li:first-child { border-top: 1px solid var(--tb-line); padding-top: 0.75rem; }
+/* quick bids: three cells between rules */
+.quickBids { border: 0; border-block: 1px solid var(--tb-border); border-radius: 0; overflow: visible; }
+.quickBid + .quickBid { border-left: 1px solid var(--tb-border); }
+/* the amount: a ruled field (a line under it, like the search bar) beside the orange Place bid */
+.roomControls .bid > input, .barAct .bid > input { border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; background: none; padding-left: 0.25rem; }
+.roomControls .bid > input:focus-visible, .barAct .bid > input:focus-visible { outline: 0; border-bottom-color: var(--tb-hot); box-shadow: inset 0 -2px 0 var(--tb-hot); }
+.roomControls .bid > .primary, .barAct .bid .primary { border-radius: 0; }
+@media (max-width: 30rem) { .roomControls .bid > input { border-radius: 0; border-right: 0; } .roomControls .bid > .primary { border-radius: 0; } }
+/* Sit this one out | Back to the listing: two cells between rules with one divider */
+.roomActions { border: 0; border-block: 1px solid var(--tb-border); border-radius: 0; overflow: visible; }
+.roomControls > p > .roomAction { border: 0; border-block: 1px solid var(--tb-border); border-radius: 0; }
+.roomStage { border-bottom: 0; }
+.roomHead { border-bottom: 0; padding-bottom: 1rem; }
+
+/* ---- final room review ---- */
+/* the dialog is inside the room's controls: its paragraphs keep their spacing, and nothing in it is left alone on a line */
+.roomControls > p, .roomControls .bid > p, .roomControls .quickHint { margin: 0; }
+/* titles break at their commas first, so a model name is not split ("S21 / FE") */
+.titlePart { display: inline-block; max-width: 100%; }
+/* the ledger: every row has the same left edge, the newest has its bar on that edge */
+.bidList > li { padding-left: 0.75rem; }
+/* the stats row: one rule weight, the last cell flush with the column edge, labels at 12px */
+.roomStats > .countGrid + .countGrid { border-left-color: var(--tb-line); }
+.roomStats > .countGrid:last-child .countCell:last-child { padding-right: 0; }
+.countCell small { font-size: 0.75rem; }
+@media (max-width: 47.99em) { .roomStats > .countGrid .countCell:first-child { align-items: flex-start; } }
+/* placeholders at the muted colour (contrast) */
+.roomControls .bid > input::placeholder, .barAct .bid > input::placeholder { color: var(--tb-muted); opacity: 1; }
+/* Sit this one out when on: the foot line only */
+.roomActionOn { background: none; }
+/* on narrow phones the two action cells stack their icon over a centred label */
+@media (max-width: 30rem) { .roomAction { flex-direction: column; gap: 0.25rem; padding: 0.5rem; text-align: center; text-wrap: balance; font-size: 0.9375rem; min-height: 56px; } }
+@media (max-width: 22rem) { .seat text { font-size: 30px; } }
+/* short laptops: a lower stage keeps more of the form in view */
+@media (min-width: 48em) and (max-height: 760px) { .roomStage svg { max-height: 8.5rem; } .podium { margin-top: -1rem; } }
+/* the collapsed phone bid tab: a square tab on a vermilion top rule, no rounded outline */
+@media (max-width: 47.99em) {
+  .bidBar:not([data-open='true']) { border: 0; border-top: 2px solid var(--tb-hot); border-left: 1px solid var(--tb-line); border-radius: 0; background: var(--tb-sheet); }
+}
+/* forced colours: the marks drawn with shadows get real borders */
+@media (forced-colors: active) {
+  .roomControls .bid > input:focus-visible, .barAct .bid > input:focus-visible { outline: 2px solid Highlight; }
+  .bidNewest { border-left: 3px solid Highlight; }
+  .roomActionOn { border-bottom: 2px solid Highlight; }
+}
+
+/* ---- tablets (768 to 1023 px): a lower stage so the form is in view, and the stats row flush with the right edge ---- */
+@media (min-width: 48em) and (max-width: 74.99em) {
+  .roomStage svg { max-height: 8.5rem; }
+  .podium { margin-top: -1.25rem; padding-bottom: 0.75rem; }
+  .roomStage { padding-top: 0.75rem; }
+  .roomHead { padding-bottom: 0.5rem; }
+}
+.roomStats { justify-self: end; }
+.roomStats > .countGrid:last-child .countCell { align-items: flex-end; padding-right: 0; }
+/* the stage's drawing spans the whole stage and is centred over the price (a limited height scales it, never shifts it) */
+.roomStage svg { display: block; width: 100%; height: auto; margin-inline: 0; }
