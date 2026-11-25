@@ -53,6 +53,11 @@ export function Component() {
   const category = lang === 'bn' ? l.category.nameBn : l.category.nameEn;
   return (
     <article className={l.photos.length > 0 ? styles.page : `${styles.page} ${styles.noPhotos}`}>
+      <div className={styles.gallery}>
+        <Photos l={l} t={t} lang={lang} />
+      </div>
+      {/* the right-hand column on wide screens (title, price, buy, seller) is one block that stays in view while the photos and the description scroll */}
+      <div className={styles.rail}>
       <header className={styles.head}>
         <p className={styles.crumb}>
           <Link to={`/search?category=${l.category.id}`}>{category}</Link>
@@ -67,9 +72,6 @@ export function Component() {
           </section>
         )}
       </header>
-      <div className={styles.gallery}>
-        <Photos l={l} t={t} lang={lang} />
-      </div>
       <aside className={styles.side}>
         {l.saleFormat === 'auction' && l.auction
           ? (<>
@@ -90,6 +92,7 @@ export function Component() {
           {!own && ['active', 'sold', 'ended_unsold'].includes(l.status) && <MessageSeller listingId={l.id} signedIn={signedIn} nextPath={pathname} t={t} lang={lang} />}
         </section>
       </aside>
+      </div>
       <div className={styles.body}>
         <section aria-labelledby="description-title">
           <h2 id="description-title">{t('listing.description')}</h2>
