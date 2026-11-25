@@ -60,9 +60,14 @@
 
 .section { display: flex; flex-direction: column; gap: 1.5rem; }
 .head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--tb-line); }
-.head h2 { margin: 0; font-family: var(--tb-font-display); font-weight: var(--tb-display-weight); font-size: clamp(1.75rem, 3.6vw, 2.5rem); letter-spacing: -0.025em; line-height: 1.1; }
+.head h2 { margin: 0; font-family: var(--tb-font-display); font-weight: var(--tb-display-weight); font-size: clamp(1.75rem, 3.6vw, 2.5rem); letter-spacing: -0.025em; line-height: 1.1; min-height: 1.3em; }
 :lang(bn) .head h2 { font-weight: 500; letter-spacing: 0; line-height: 1.3; }
-.head a { font-weight: 600; min-height: 44px; display: inline-flex; align-items: center; }
+.head a { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; font-weight: 600; color: var(--tb-text); text-decoration: none; }
+.head a span { background-image: linear-gradient(var(--tb-hot), var(--tb-hot)); background-repeat: no-repeat; background-size: 100% 1.5px; background-position: 0 100%; padding-bottom: 2px; transition: background-size 200ms; }
+.head a svg { flex: none; color: var(--tb-hot); transition: transform 200ms; }
+.head a:hover svg { transform: translateX(4px); }
+.head a:hover span { background-size: 0 1.5px; background-position: 100% 100%; }
+.head a:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 4px; }
 .note { margin: 0; color: var(--tb-muted); }
 /* listings: a ruled grid. The photo and its text sit in a column; a hairline stands in the middle of every 2 rem gutter and a
    hairline closes every row, so partial rows leave nothing painted and every photo has the same width and the same gutters. */
@@ -73,10 +78,10 @@
 .rail { overflow: visible; }
 
 .sell { display: grid; gap: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--tb-line); }
-.sell h2 { margin: 0; font-family: var(--tb-font-display); font-weight: var(--tb-display-weight); font-size: clamp(1.75rem, 3.6vw, 2.5rem); letter-spacing: -0.025em; line-height: 1.1; max-width: 22ch; text-wrap: balance; }
+.sell h2 { margin: 0; font-family: var(--tb-font-display); font-weight: var(--tb-display-weight); font-size: clamp(1.75rem, 3.6vw, 2.5rem); letter-spacing: -0.025em; line-height: 1.1; min-height: 1.3em; max-width: 22ch; text-wrap: balance; }
 :lang(bn) .sell h2 { font-weight: 500; letter-spacing: 0; line-height: 1.3; }
 .steps { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; border-block: 1px solid var(--tb-line); }
-.steps li { display: flex; gap: 1rem; color: var(--tb-muted); padding: 1.25rem 0; }
+.steps li { display: flex; gap: 1rem; color: var(--tb-muted); padding: 1.25rem 0; min-height: 6.5rem; }
 .steps li + li { border-top: 1px solid var(--tb-line); }
 .steps strong { display: block; color: var(--tb-text); font-size: 1.125rem; margin-bottom: 0.25rem; }
 .num { flex: none; width: 2.25rem; font-family: var(--tb-font-display); font-weight: var(--tb-display-weight); font-size: 1.5rem; line-height: 1; color: var(--tb-hot); font-variant-numeric: tabular-nums; }
