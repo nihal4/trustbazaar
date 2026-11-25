@@ -183,12 +183,12 @@ function AccountLink({ phone }: { phone: boolean }) {
   }
   if (me.isSuccess) {
     return (
-      <>
-        <Link className={styles.account} to="/orders">{t('shell.orders')}</Link>
-        <Link className={styles.account} to="/messages">{t('shell.messages')}</Link>
-        <NotificationsLink unread={unread} />
-        <Link className={styles.account} to="/account">{t('shell.account')}</Link>
-      </>
+      <div className={styles.navGrid}>
+        <Link className={styles.navCell} to="/orders" title={t('shell.orders')}><OrdersIcon /><span className={styles.visuallyHidden}>{t('shell.orders')}</span></Link>
+        <Link className={styles.navCell} to="/messages" title={t('shell.messages')}><ChatIcon /><span className={styles.visuallyHidden}>{t('shell.messages')}</span></Link>
+        <NotificationsLink unread={unread} icon cell />
+        <Link className={styles.navCell} to="/account" title={t('shell.account')}><UserIcon /><span className={styles.visuallyHidden}>{t('shell.account')}</span></Link>
+      </div>
     );
   }
   if (pathname === '/signin' || pathname === '/register') return null;
@@ -201,14 +201,14 @@ function PendingStepUp() {
 }
 
 /** The notification centre, with the unread count in words as well as a number (not colour alone). */
-function NotificationsLink({ unread, icon = false }: { unread: number | null; icon?: boolean }) {
+function NotificationsLink({ unread, icon = false, cell = false }: { unread: number | null; icon?: boolean; cell?: boolean }) {
   const { t, lang } = useLanguage();
   const n = unread ?? 0;
   const count = toLocalDigits(String(n > 99 ? 99 : n), lang) + (n > 99 ? '+' : '');
   const label = t('shell.notifications_unread');
   return (
     // The name is the visible text, the count in words after it (WCAG 2.5.3, Label in Name).
-    <Link className={icon ? styles.iconLink : styles.account} to="/notifications">
+    <Link className={cell ? styles.navCell : icon ? styles.iconLink : styles.account} to="/notifications" title={cell ? t('shell.notifications') : undefined}>
       {icon ? <><BellIcon /><span className={styles.visuallyHidden}>{t('shell.notifications')}</span></> : t('shell.notifications')}
       {n > 0 && <>{' '}<span className={styles.badge}>{count}</span><span className={styles.visuallyHidden}>{label}</span></>}
     </Link>

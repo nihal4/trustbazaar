@@ -149,5 +149,14 @@
   "room.sign_in": "রুমে যোগ দিতে সাইন ইন করুন",
   "room.new_bid": "{alias} {amount} বিড করেছেন",
   "room.seat_short": "বি{alias}",
-  "room.you_as": "আপনি (বিডার {alias})"
+  "room.you_as": "আপনি (বিডার {alias})",
+  "auction.unit_d": "দিন",
+  "auction.unit_h": "ঘ",
+  "auction.unit_m": "মি",
+  "auction.unit_s": "সে",
+  "room.col_bidder": "বিডার",
+  "room.col_amount": "বিড",
+  "room.col_time": "সময়",
+  "room.feed_caption": "সর্বশেষ ১০টি বিড, নতুনটি আগে",
+  "room.back_short": "তালিকায় ফিরুন"
 }

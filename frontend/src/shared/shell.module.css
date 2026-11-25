@@ -373,3 +373,13 @@
 .dialogActions button:last-child:hover:not(:disabled) { border-color: var(--tb-hot); }
 .dialogActions button:disabled { opacity: 0.6; cursor: not-allowed; }
 .dialogActions button:focus-visible { outline: 2px solid var(--tb-text); outline-offset: 3px; }
+
+/* the signed-in header's links as a ruled grid of icon cells (the names stay for screen readers and as tooltips) */
+.navGrid { display: flex; flex: none; border: 1px solid var(--tb-line); border-radius: 4px; overflow: hidden; }
+.navCell { position: relative; display: grid; place-items: center; width: 52px; height: 48px; color: var(--tb-text); text-decoration: none; background: none; transition: background 140ms; }
+.navCell + .navCell { border-left: 1px solid var(--tb-line); }
+.navCell:hover { background: var(--tb-surface); }
+.navCell svg { width: 22px; height: 22px; }
+.navCell:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
+.navCell .badge { position: absolute; top: 5px; right: 5px; min-width: 1.25rem; margin: 0; padding: 0 0.25rem; font-size: 0.6875rem; line-height: 1.35; }
+@media (prefers-reduced-motion: reduce) { .navCell { transition: none; } }

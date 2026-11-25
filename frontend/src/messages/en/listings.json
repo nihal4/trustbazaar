@@ -149,5 +149,14 @@
   "room.sign_in": "Sign in to join the room",
   "room.new_bid": "{alias} bid {amount}",
   "room.seat_short": "B{alias}",
-  "room.you_as": "You (Bidder {alias})"
+  "room.you_as": "You (Bidder {alias})",
+  "auction.unit_d": "D",
+  "auction.unit_h": "H",
+  "auction.unit_m": "M",
+  "auction.unit_s": "S",
+  "room.col_bidder": "Bidder",
+  "room.col_amount": "Bid",
+  "room.col_time": "Time",
+  "room.feed_caption": "The last 10 bids, newest first",
+  "room.back_short": "Back to the listing"
 }

@@ -20,6 +20,7 @@ import { FormMessage } from '../../shared/form';
 import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
 import { problemName } from '../../shared/problems';
+import { Countdown } from './Countdown';
 import { useAuctionLive } from './useAuctionLive';
 import { myStatusKey, type AuctionState, type BidResult, type MyStatus } from './model';
 import styles from './listings.module.css';
@@ -33,7 +34,7 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
   /** where the rules and the bid history go: under the description, so the panel in the fixed column stays short (null: under the panel) */
   extraHost?: HTMLElement | null;
 }) {
-  const { id, state, accept, refetch, history, refreshMine, announcement, open, closing, countdown, mine } = useAuctionLive({ initial, t, lang, signedIn, own });
+  const { id, state, accept, refetch, history, refreshMine, announcement, open, closing, countdown, left, mine } = useAuctionLive({ initial, t, lang, signedIn, own });
   const [sheet, setSheet] = useState(false);
   const [barOpen, setBarOpen] = useState(false);   // phones only: the bar is a small floating tab until it is opened
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -112,7 +113,7 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
       <div className={styles.barCell}>{priceBlock}</div>
       <div className={styles.barCell}>
         <span className={styles.barK}>{t('auction.time_left')}</span>
-        <strong role="timer" aria-live="off" className={countdown.urgent ? `${styles.barV} ${styles.urgent}` : styles.barV}>{countdown.text}</strong>
+        <Countdown left={left} text={countdown.text} urgent={countdown.urgent} t={t} lang={lang} />
       </div>
       <div className={`${styles.barCell} ${styles.barMid}`}>
         <button type="button" ref={seeRef} className={styles.seeBids} aria-expanded={sheet} aria-controls="history-box" onClick={() => setSheet((v) => !v)}

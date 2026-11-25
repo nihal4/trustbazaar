@@ -483,3 +483,45 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
   .barBody > .barRoom { justify-content: flex-start; }
 }
 @media (max-width: 30rem) { .seat text { font-size: 28px; } }
+
+/* ---- the room and the bar as grids (owner's review) ---- */
+/* time left: ruled cells, number over unit */
+.countGrid { display: inline-grid; grid-auto-flow: column; grid-auto-columns: minmax(2.75rem, auto); border: 1px solid var(--tb-line); border-radius: 4px; overflow: hidden; width: max-content; }
+.countCell { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.25rem 0.625rem; }
+.countCell + .countCell { border-left: 1px solid var(--tb-line); }
+.countCell strong { font-family: var(--tb-font); font-weight: 600; font-size: 1.25rem; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.countCell small { color: var(--tb-muted); font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.06em; line-height: 1.2; }
+:lang(bn) .countCell small { letter-spacing: 0; font-size: 0.75rem; }
+.countGrid.urgent .countCell strong { color: var(--tb-error); }
+.barCell .countGrid { margin-top: 0.125rem; }
+.barBody > .barCell { justify-content: center; }
+/* the header of the room: the time and the number of bidders sit in one row of cells */
+.roomStats { align-items: stretch; gap: 1rem; }
+.roomStat { gap: 0.25rem; }
+/* quick bids: one ruled row of three cells */
+.quickBids { gap: 0; border: 1px solid var(--tb-border); border-radius: 4px; overflow: hidden; }
+.quickBid { min-height: 52px; border: 0; border-radius: 0; font-size: 1.0625rem; }
+.quickBid + .quickBid { border-left: 1px solid var(--tb-border); }
+.quickBid:hover { background: var(--tb-surface); border-color: var(--tb-border); }
+.quickBid:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
+/* the amount and Place bid: two cells of one ruled row */
+.roomControls .bid > input { border: 1px solid var(--tb-border); border-right: 0; border-radius: 4px 0 0 4px; min-height: 52px; }
+.roomControls .bid > .primary { border-radius: 0 4px 4px 0; min-height: 52px; }
+@media (max-width: 30rem) { .roomControls .bid > input { border-right: 1px solid var(--tb-border); border-radius: 4px 4px 0 0; } .roomControls .bid > .primary { border-radius: 0 0 4px 4px; } }
+/* Sit this one out and Back to the listing: two visible cells */
+.roomActions { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--tb-border); border-radius: 4px; overflow: hidden; }
+.roomAction { display: flex; align-items: center; justify-content: center; gap: 0.625rem; min-height: 52px; padding: 0 1rem; border: 0; background: none; color: var(--tb-text); font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; }
+.roomActions .roomAction + .roomAction { border-left: 1px solid var(--tb-border); }
+.roomAction:hover { background: var(--tb-surface); }
+.roomActionOn { background: var(--tb-surface); color: var(--tb-hot); box-shadow: inset 0 -2px 0 var(--tb-hot); }
+.roomAction:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
+.roomControls > p > .roomAction { border: 1px solid var(--tb-border); border-radius: 4px; display: inline-flex; }
+/* the live bids: a ruled table of the newest ten rows; it never scrolls */
+.roomFeed { max-height: none; overflow: visible; padding: 1rem; }
+.bidTable { width: 100%; border-collapse: collapse; border: 1px solid var(--tb-line); font-variant-numeric: tabular-nums; }
+.bidTable th, .bidTable td { padding: 0.625rem 0.75rem; text-align: left; font-weight: 400; border-top: 1px solid var(--tb-line); }
+.bidTable thead th { border-top: 0; background: var(--tb-surface); color: var(--tb-muted); font-size: 0.8125rem; font-weight: 600; }
+.bidTable th + th, .bidTable td { border-left: 1px solid var(--tb-line); }
+.bidTable tbody th { font-weight: 600; }
+.bidTable td:nth-child(2) { text-align: right; font-weight: 600; }
+.bidTable tbody tr:first-child td:nth-child(2) { color: var(--tb-hot); }

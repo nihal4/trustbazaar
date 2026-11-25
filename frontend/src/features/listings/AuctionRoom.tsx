@@ -19,6 +19,7 @@ import { useMe } from '../../shared/me';
 import { isApiError } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { BidForm } from './AuctionPanel';
+import { Countdown } from './Countdown';
 import { listingKey, type ListingView } from './model';
 import { useAuctionLive } from './useAuctionLive';
 import en from '../../messages/en/listings.json';
@@ -29,6 +30,9 @@ const CATALOGUES = { en, bn };
 type T = ReturnType<typeof useT>['t'];
 const money = (p: string | bigint, lang: Lang) => formatMoney(p, lang);
 const MAX_SEATS = 9;
+/** The live list shows the newest ten bids and never scrolls. */
+const FEED_ROWS = 10;
+const formatTime = (iso: string, lang: Lang) => new Intl.DateTimeFormat(lang === 'bn' ? 'bn-BD' : 'en-GB', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Dhaka' }).format(Date.parse(iso));
 
 export function Component() {
   const { id = '' } = useParams();
@@ -65,7 +69,7 @@ function seatAt(i: number, n: number) {
 
 function Room({ l, auction, own, t, lang }: { l: ListingView; auction: NonNullable<ListingView['auction']>; own: boolean; t: T; lang: Lang }) {
   const live = useAuctionLive({ initial: auction, t, lang, signedIn: true, own });
-  const { state, history, mine, open, closing, countdown, accept, refreshMine, refetch, announcement } = live;
+  const { state, history, mine, open, closing, countdown, left, accept, refreshMine, refetch, announcement } = live;
   const [sitOut, setSitOut] = useState(false);
   const items = history.data?.items ?? [];
   // seats: the bidders who have bid, in the order they first bid (the server does not report who is only watching)
@@ -104,16 +108,16 @@ function Room({ l, auction, own, t, lang }: { l: ListingView; auction: NonNullab
           <h1>{l.title}</h1>
         </div>
         <div className={styles.roomStats}>
-        {open && (
+          {open && (
+            <div className={styles.roomStat}>
+              <span className={styles.barK}>{t('room.time_left')}</span>
+              <Countdown left={left} text={countdown.text} urgent={countdown.urgent} t={t} lang={lang} />
+            </div>
+          )}
           <div className={styles.roomStat}>
-            <span className={styles.barK}>{t('room.time_left')}</span>
-            <strong role="timer" aria-live="off" className={countdown.urgent ? `${styles.barV} ${styles.urgent}` : styles.barV}>{countdown.text}</strong>
+            <span className={styles.barK}>{t('room.in_room')}</span>
+            <span className={styles.countGrid}><span className={styles.countCell}><strong>{toLocalDigits(String(aliases.length), lang)}</strong></span></span>
           </div>
-        )}
-        <div className={styles.roomStat}>
-          <span className={styles.barK}>{t('room.in_room')}</span>
-          <strong className={styles.barV}>{toLocalDigits(String(aliases.length), lang)}</strong>
-        </div>
         </div>
       </header>
 
@@ -153,26 +157,40 @@ function Room({ l, auction, own, t, lang }: { l: ListingView; auction: NonNullab
                 accept(r.state);
                 refreshMine();
               }} onRefused={() => void refetch()} />
-            <button type="button" className={styles.sitOut} onClick={() => setSitOut((v) => !v)}>{sitOut ? t('room.join_in') : t('room.sit_out')}</button>
+            <div className={styles.roomActions}>
+              <button type="button" className={sitOut ? `${styles.roomAction} ${styles.roomActionOn}` : styles.roomAction} onClick={() => setSitOut((v) => !v)}>
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M2 12 C5 6 9 4 12 4 C15 4 19 6 22 12 C19 18 15 20 12 20 C9 20 5 18 2 12 Z M12 9 a3 3 0 1 0 0.01 0 Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>
+                {sitOut ? t('room.join_in') : t('room.sit_out')}
+              </button>
+              <Link className={styles.roomAction} to={`/listings/${encodeURIComponent(l.id)}`}>
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M15 5 L8 12 L15 19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                {t('room.back_short')}
+              </Link>
+            </div>
             <p className={styles.muted} role="status">{sitOut ? t('room.sit_out_note') : ''}</p>
           </>
         ) : (
           <p role="status">{own ? t('room.own') : !open ? t('room.closed') : t('auction.ending')}</p>
         )}
-        <p><Link to={`/listings/${encodeURIComponent(l.id)}`}>{t('room.back')}</Link></p>
+        {!biddingOpen && <p><Link className={styles.roomAction} to={`/listings/${encodeURIComponent(l.id)}`}>{t('room.back_short')}</Link></p>}
       </section>
 
-      <aside className={styles.roomFeed} aria-labelledby="room-feed-title" tabIndex={0}>
+      <aside className={styles.roomFeed} aria-labelledby="room-feed-title">
         <h2 id="room-feed-title">{t('room.feed')}</h2>
         {items.length === 0 ? <p className={styles.muted}>{t('room.feed_empty')}</p> : (
-          <ol className={styles.history}>
-            {items.map((b) => (
-              <li key={b.id} className={fresh.has(b.id) ? styles.flash : undefined}>
-                <span>{b.bidderAlias === you ? t('room.you_as', { alias: toLocalDigits(String(b.bidderAlias), lang) }) : t('auction.history_bidder', { alias: toLocalDigits(String(b.bidderAlias), lang) })}</span>
-                <span>{money(b.amount, lang)}{b.leading ? ` (${t('auction.history_leading')})` : ''}</span>
-              </li>
-            ))}
-          </ol>
+          <table className={styles.bidTable}>
+            <caption className={styles.visuallyHidden}>{t('room.feed_caption')}</caption>
+            <thead><tr><th scope="col">{t('room.col_bidder')}</th><th scope="col">{t('room.col_amount')}</th><th scope="col">{t('room.col_time')}</th></tr></thead>
+            <tbody>
+              {items.slice(0, FEED_ROWS).map((b) => (
+                <tr key={b.id} className={fresh.has(b.id) ? styles.flash : undefined}>
+                  <th scope="row">{b.bidderAlias === you ? t('room.you_as', { alias: toLocalDigits(String(b.bidderAlias), lang) }) : t('auction.history_bidder', { alias: toLocalDigits(String(b.bidderAlias), lang) })}</th>
+                  <td>{money(b.amount, lang)}</td>
+                  <td className={styles.muted}>{formatTime(b.at, lang)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </aside>
       <p className={styles.visuallyHidden} aria-live="polite" role="status">{sitOut ? '' : announcement}</p>
