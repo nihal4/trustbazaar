@@ -23,12 +23,10 @@ void main(){
   gl_FragColor = vec4(col, 1.0);
 }`;
 const hex = (s: string): [number, number, number] => [1, 3, 5].map((i) => parseInt(s.slice(i, i + 2), 16) / 255) as [number, number, number];
-const PALETTES = {
-  dark: ['#0A1018', '#15263B', '#FF6B35', '#FFB08A'],
-  glow: ['#FFF4ED', '#FFE1D2', '#FFA879', '#FFFFFF'],
-} as const;
+const PALETTES = { dark: ['#0A1018', '#15263B', '#FF6B35', '#FFB08A'] } as const;
 
-export function GlowGround({ theme, area }: { theme: 'dark' | 'glow'; area: React.RefObject<HTMLElement> }) {
+export function GlowGround({ area }: { area: React.RefObject<HTMLElement> }) {
+  const theme = 'dark';
   const canvas = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const c = canvas.current;
@@ -80,6 +78,6 @@ export function GlowGround({ theme, area }: { theme: 'dark' | 'glow'; area: Reac
       dispose = () => { cancelAnimationFrame(raf); io.disconnect(); host?.removeEventListener('pointermove', move); c.removeEventListener('webglcontextlost', lost); gl.getExtension('WEBGL_lose_context')?.loseContext(); };
     });
     return () => { cancelled.v = true; dispose(); };
-  }, [theme, area]);
+  }, [area]);
   return <canvas ref={canvas} className={styles.ground} aria-hidden="true" />;
 }

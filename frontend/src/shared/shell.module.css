@@ -315,12 +315,12 @@
 .account { padding: 0.5rem 0.75rem; font-weight: 500; color: var(--tb-text); text-decoration: none; background-image: linear-gradient(currentColor, currentColor); background-repeat: no-repeat; background-size: 0 1.5px; background-position: 0.75rem calc(100% - 0.4rem); transition: background-size 180ms; }
 .account:hover { background-size: calc(100% - 1.5rem) 1.5px; }
 .langSwitch { border-radius: var(--tb-radius); }
-.footer { margin-top: 4rem; background: var(--tb-text); color: var(--tb-on-ink); padding-block: 3rem; }
+.footer { margin-top: 4rem; background: var(--tb-ink); border-top: 1px solid var(--tb-line); color: var(--tb-on-ink); padding-block: 3rem; }
 .footer a { color: var(--tb-on-ink); }
 .footer a:hover { color: #fff; }
 .footer .wordmark { color: #fff; }
 .tabOn { color: var(--tb-text); font-weight: 600; }
-.tabSell { background: var(--tb-text); color: #fff; border-radius: var(--tb-radius); }
+.tabSell { background: var(--tb-action); color: var(--tb-action-text); border-radius: var(--tb-radius); }
 @media (max-width: 47.99em) { .header { flex-wrap: wrap; } }
 
 .footer a:focus-visible { outline: 2px solid var(--tb-accent-soft); outline-offset: 3px; }

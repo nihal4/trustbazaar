@@ -4,7 +4,7 @@
 // how selling works. Searching goes to
 // /search with the words in the URL; everything shown here comes from GET /search and GET /categories.
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { formatMoney, toLocalDigits } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
@@ -34,9 +34,7 @@ export function Component() {
   const api = useApi();
   const navigate = useNavigate();
   const [words, setWords] = useState('');
-  // ?v=dark and ?v=glow show the glossy hero versions next to the plain one (choice pending, U10-21)
-  const [params] = useSearchParams();
-  const theme = params.get('v') === 'dark' ? 'dark' : params.get('v') === 'glow' ? 'glow' : null;
+  const theme = 'dark' as const;
   const heroRef = useRef<HTMLElement>(null);
   const [tick, setTick] = useState(0);
   useEffect(() => { const id = window.setInterval(() => setTick((n) => n + 1), 1000); return () => window.clearInterval(id); }, []);
@@ -73,8 +71,8 @@ export function Component() {
 
   return (
     <div className={styles.page}>
-      <section className={styles.hero} data-theme={theme ?? undefined} ref={heroRef}>
-        {theme && <GlowGround theme={theme} area={heroRef} />}
+      <section className={styles.hero} data-theme={theme} ref={heroRef}>
+        <GlowGround area={heroRef} />
         <div className={styles.heroText}>
           <h1 className={styles.title}>{t('home.title')}</h1>
           <p className={styles.lede}>{t('home.promise.text')}</p>
@@ -91,12 +89,12 @@ export function Component() {
         <div className={styles.art} aria-hidden="true">
           <div className={styles.window}>
             <div className={styles.winPhoto}>
-              <img src="/img/photo-f120292367-960.jpg" srcSet="/img/photo-f120292367-500.jpg 500w, /img/photo-f120292367-960.jpg 960w" sizes="(max-width: 47.99em) 90vw, 40vw" width="960" height="817" alt="" loading="eager" decoding="async" data-source="stand-in" data-subject="mirrorless camera" />
+              <img src="/img/photo-f152917755-960.jpg" srcSet="/img/photo-f152917755-500.jpg 500w, /img/photo-f152917755-960.jpg 960w" sizes="(max-width: 47.99em) 90vw, 40vw" width="960" height="640" alt="" loading="eager" decoding="async" data-source="stand-in" data-subject="smartphone in its box" />
             </div>
             <div className={styles.winBody}>
               <p className={styles.winTitle}>{t('home.demo.title')}</p>
               <p className={styles.winWhere}>{t('home.demo.where')}</p>
-              {theme && <p className={styles.winClock}><i />{t('home.safe.ends')} <b>{toLocalDigits(clock, lang)}</b></p>}
+              {<p className={styles.winClock}><i />{t('home.safe.ends')} <b>{toLocalDigits(clock, lang)}</b></p>}
               <p className={styles.winPrice}>{formatMoney('8500000', lang)}</p>
               <span className={styles.winBtn}>{t('home.demo.buy')}</span>
               <ol className={styles.winSteps}>
