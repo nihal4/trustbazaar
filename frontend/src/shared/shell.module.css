@@ -57,7 +57,7 @@
   font-size: 1.4rem;
   letter-spacing: -0.035em;
   line-height: 1;
-  font-family: 'Geist Variable', system-ui, sans-serif;
+  font-family: var(--tb-font-display);
 }
 
 .docTitle {
@@ -301,24 +301,23 @@
 @media (max-width: 30rem) { .docTitle { display: none; } }
 @media (max-width: 26rem) { .withExit .wordmark { display: none; } .withExit .exit { margin-left: auto; } }
 
-/* ---- Redesign v3 (docs/design/10_visual_v3.md): a slim promise bar, a sticky frosted header with a pill search,
-   pill links, a dark footer and a floating phone tab bar. These rules follow the older ones and win. ---- */
-.promiseBar { margin: 0; display: flex; justify-content: center; align-items: center; gap: 0.5rem; padding: 0.5rem var(--tb-gutter); background: var(--tb-text); color: var(--tb-on-ink); font-size: 0.875rem; line-height: 1.4; text-align: center; }
-.promiseBar svg { flex: none; color: var(--tb-on-ink-accent); }
-.header { position: sticky; top: 0; z-index: 20; flex-wrap: nowrap; padding-block: 0.75rem; background: rgb(255 255 255 / 0.86); backdrop-filter: saturate(1.6) blur(14px); -webkit-backdrop-filter: saturate(1.6) blur(14px); border-bottom: 1px solid var(--tb-line); }
-.wordmark { font-weight: 700; font-size: 1.3rem; letter-spacing: -0.04em; color: var(--tb-text); }
-.headSearch { flex: 1 1 18rem; max-width: 34rem; margin-inline: auto; display: flex; align-items: center; gap: 0.5rem; min-height: 46px; padding: 0 1rem; border-radius: 999px; background: var(--tb-surface); border: 1.5px solid transparent; color: var(--tb-muted); transition: background 160ms, border-color 160ms, box-shadow 160ms; }
-.headSearch:focus-within { background: var(--tb-sheet); border-color: var(--tb-accent); box-shadow: 0 0 0 4px var(--tb-accent-soft); }
+/* ---- Redesign v3 (docs/design/10_visual_v3.md): flat and plain. A mint promise bar, a white header with a search field,
+   an ink footer, a standard bottom bar on phones. These rules follow the older ones and win. ---- */
+.promiseBar { margin: 0; display: flex; justify-content: center; align-items: center; gap: 0.5rem; padding: 0.5rem var(--tb-gutter); background: var(--tb-accent-soft); color: var(--tb-text); font-size: 0.875rem; font-weight: 500; line-height: 1.4; text-align: center; }
+.promiseBar svg { flex: none; }
+.header { position: sticky; top: 0; z-index: 20; flex-wrap: nowrap; padding-block: 0.75rem; background: var(--tb-bg); border-bottom: 1px solid var(--tb-line); }
+.wordmark { font-weight: 500; font-size: 1.4rem; letter-spacing: -0.03em; color: var(--tb-text); }
+.headSearch { flex: 1 1 18rem; max-width: 32rem; margin-inline: auto; display: flex; align-items: center; gap: 0.5rem; min-height: 46px; padding: 0 0.875rem; border-radius: var(--tb-radius); background: var(--tb-surface); border: 1.5px solid transparent; color: var(--tb-muted); transition: border-color 140ms, background 140ms; }
+.headSearch:focus-within { background: var(--tb-sheet); border-color: var(--tb-text); }
 .headSearch input { flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; color: var(--tb-text); outline: 0; min-height: 44px; }
 .headSearch svg { flex: none; width: 20px; height: 20px; }
-.account { border-radius: 999px; padding: 0.5rem 0.9rem; font-weight: 600; color: var(--tb-text); text-decoration: none; transition: background 140ms; }
-.account:hover { background: var(--tb-surface); }
-.langSwitch { border-radius: 999px; }
-.footer { margin-top: 4rem; background: var(--tb-text); color: var(--tb-on-ink); border-radius: 32px 32px 0 0; padding-block: 3rem; }
+.account { padding: 0.5rem 0.75rem; font-weight: 500; color: var(--tb-text); text-decoration: none; background-image: linear-gradient(currentColor, currentColor); background-repeat: no-repeat; background-size: 0 1.5px; background-position: 0.75rem calc(100% - 0.4rem); transition: background-size 180ms; }
+.account:hover { background-size: calc(100% - 1.5rem) 1.5px; }
+.langSwitch { border-radius: var(--tb-radius); }
+.footer { margin-top: 4rem; background: var(--tb-text); color: var(--tb-on-ink); padding-block: 3rem; }
 .footer a { color: var(--tb-on-ink); }
 .footer a:hover { color: #fff; }
 .footer .wordmark { color: #fff; }
-.tabBar { left: 0.75rem; right: 0.75rem; bottom: 0.75rem; border: 1px solid var(--tb-line); border-radius: 22px; background: rgb(255 255 255 / 0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: var(--tb-shadow-card); }
-.tabOn { color: var(--tb-accent); }
-.tabSell { background: var(--tb-accent); color: #fff; border-radius: 16px; }
+.tabOn { color: var(--tb-text); font-weight: 600; }
+.tabSell { background: var(--tb-text); color: #fff; border-radius: var(--tb-radius); }
 @media (max-width: 47.99em) { .header { flex-wrap: wrap; } }

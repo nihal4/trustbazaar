@@ -1,0 +1,34 @@
+{
+ "note": "Credits for the photographs in this folder: photos.mjs credits prints the footer block for the ones the pages use.",
+ "photos": [
+  {
+   "file": "photo-f58928474.jpg",
+   "files": [
+    "photo-f58928474-500.jpg",
+    "photo-f58928474-960.jpg",
+    "photo-f58928474.jpg"
+   ],
+   "id": "f58928474",
+   "alt": "Smartphone with case cover on table",
+   "by": "Santeri Viinamäki",
+   "licence": "CC BY-SA 4.0",
+   "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Smartphone_with_case_cover_on_table.jpg",
+   "source": "Wikimedia Commons"
+  },
+  {
+   "file": "photo-f120292367-960.jpg",
+   "files": [
+    "photo-f120292367-500.jpg",
+    "photo-f120292367-960.jpg"
+   ],
+   "id": "f120292367",
+   "alt": "Sony A 7 iii full frame mirrorless camera",
+   "by": "Amitabha Gupta",
+   "licence": "CC BY 4.0",
+   "licenceUrl": "https://creativecommons.org/licenses/by/4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Sony_A_7_iii_full_frame_mirrorless_camera.jpg",
+   "source": "Wikimedia Commons"
+  }
+ ]
+}

@@ -1,46 +1,47 @@
 /* Design tokens and base styles (docs/design/08_frontend.pdf, sections 2.3 and 7; docs/design/10_visual_v2.md).
    Colours keep text contrast of at least 4.5:1 on the page background; the focus ring is 2px with at least 3:1. */
 :root {
-  /* Redesign v3 palette (docs/design/10_visual_v3.md): clean cool white, one confident blue, green only for protected money. Text keeps
+  /* Redesign v3 palette (docs/design/10_visual_v3.md), dealt by taste-skill ("white-mint-tiles"): white ground, ink actions, mint as the highlight. Text keeps
      at least 4.5:1 on paper, sheet and surface; control borders and the focus ring at least 3:1. The Mantine theme
      (theme.ts) uses the same values. */
-  --tb-bg: #f5f7fb;
+  --tb-bg: #ffffff;
   --tb-sheet: #ffffff;
-  --tb-surface: #eaeff7;
-  --tb-text: #0b1220;
-  --tb-muted: #495466;
-  --tb-border: #6f7c92;
-  --tb-line: #dbe2ee;
-  --tb-accent: #1d4ed8;
+  --tb-surface: #f3f3f3;
+  --tb-text: #232323;
+  --tb-muted: #686868;
+  --tb-border: #8a8a8a;
+  --tb-line: #e4e4e4;
+  --tb-accent: #232323;
   --tb-accent-text: #ffffff;
-  --tb-accent-soft: #dbe6fd;
-  --tb-accent-strong: #172e80;
-  --tb-accent-wash: #eef3ff;
-  --tb-cream: #e6edfa;
-  --tb-on-ink: #b9c4d8;
-  --tb-on-ink-accent: #9bbcff;
+  --tb-accent-soft: #a1ffcb;
+  --tb-accent-strong: #232323;
+  --tb-accent-wash: #f3f3f3;
+  --tb-cream: #f3f3f3;
+  --tb-on-ink: #a4a4a4;
+  --tb-on-ink-accent: #a1ffcb;
   --tb-warning-bg: #fbeee3;
   --tb-warning-border: #9a4a12;
-  --tb-focus: #1d4ed8;
+  --tb-focus: #232323;
   --tb-error: #b42318;
   --tb-error-bg: #fef3f2;
   --tb-error-line: #fecdca;
   --tb-error-text: #912018;
-  --tb-success: #0f7b4f;
-  --tb-protect: #0f7b4f;
-  --tb-protect-soft: #e3f6ee;
-  --tb-radius: 12px;
+  --tb-success: #0b6b3f;
+  --tb-protect: #0b6b3f;
+  --tb-protect-soft: #a1ffcb;
+  --tb-radius: 10px;
   --tb-radius-pill: 999px;
-  --tb-radius-control: 12px;
-  --tb-radius-panel: 18px;
+  --tb-radius-control: 10px;
+  --tb-radius-panel: 16px;
   --tb-space-1: 0.25rem;
   --tb-space-2: 0.5rem;
   --tb-space-3: 1rem;
   --tb-space-4: 1.5rem;
   --tb-max-width: 82rem;
-  --tb-shadow-card: 0 1px 2px rgba(11,18,32,.06), 0 8px 24px -8px rgba(11,18,32,.12);
-  --tb-shadow-lift: 0 2px 4px rgba(11,18,32,.06), 0 18px 40px -12px rgba(29,78,216,.28);
-  --tb-font: 'Geist Variable', 'TB Figures', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tb-shadow-card: 0 1px 2px rgba(35,35,35,.06), 0 6px 18px -8px rgba(35,35,35,.16);
+  --tb-shadow-lift: 0 2px 4px rgba(35,35,35,.08), 0 16px 32px -12px rgba(35,35,35,.24);
+  --tb-font: 'Figtree Variable', 'TB Figures', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tb-font-display: 'Gabarito Variable', 'TB Figures', 'Hind Siliguri', system-ui, sans-serif;
   --tb-line-height: 1.5;
 }
 
@@ -48,7 +49,7 @@
    taka sign and the separators between them) come first from 'TB Figures', so numbers read clearly in one face (Decisions
    log, U10-20). Bangla needs taller lines. */
 :root:lang(bn) {
-  --tb-font: 'TB Figures', 'Hind Siliguri', 'Geist Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tb-font: 'TB Figures', 'Hind Siliguri', 'Figtree Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --tb-line-height: 1.7;
   --mantine-font-family: var(--tb-font);
   --mantine-font-family-headings: var(--tb-font);
