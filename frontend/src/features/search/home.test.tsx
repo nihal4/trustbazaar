@@ -45,11 +45,11 @@ describe('home', () => {
     const doc = renderHome(backend());
     expect(await screen.findByRole('heading', { level: 1, name: 'Find it nearby. Pay when it is in your hands.' })).toBeTruthy();
     fireEvent.change(screen.getByLabelText('What are you looking for?'), { target: { value: ' camera ' } });
-    fireEvent.click(within(screen.getByRole('search')).getByRole('button', { name: 'Search' }));
+    fireEvent.click(within(screen.getByRole('search', { name: 'Phones, cycles, game accounts' })).getByRole('button', { name: 'Search' }));
     await waitFor(() => expect(doc.router.state.location.pathname + doc.router.state.location.search).toBe('/search?q=camera'));
   });
 
-  it('NFR-USE-07 beside the search, the counterfoil shows in order how the money moves (docs/design/10_visual_v2.md, AC-HOME-1)', async () => {
+  it('NFR-USE-07 beside the search, the escrow card shows in order how the money moves (docs/design/10_visual_v3.md)', async () => {
     renderHome(backend());
     const promise = (await screen.findByRole('heading', { level: 2, name: 'Your money waits with us' })).closest('section')!;
     expect(within(promise).getByText('How your money moves')).toBeTruthy();

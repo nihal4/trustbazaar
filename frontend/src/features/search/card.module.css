@@ -27,3 +27,18 @@
 :lang(bn) .price { letter-spacing: 0; }
 .title { line-height: 1.35; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .meta, .note { color: var(--tb-muted); font-size: 0.875rem; line-height: 1.4; }
+
+/* ---- Redesign v3: a soft rounded card that lifts, with the photo zooming inside its frame ---- */
+.link { gap: 4px; padding: 0.5rem; margin: -0.5rem; border-radius: 22px; transition: transform 200ms, background 200ms, box-shadow 200ms; }
+.link:hover { transform: translateY(-4px); background: var(--tb-sheet); box-shadow: var(--tb-shadow-lift); }
+.link:hover .title { text-decoration: none; }
+.link:hover .photo { border-color: transparent; }
+.photo { border: 0; border-radius: 16px; aspect-ratio: 4 / 3.4; background: linear-gradient(135deg, var(--tb-surface), var(--tb-cream)); margin-bottom: 10px; }
+.photo img { transition: transform 500ms cubic-bezier(.2,.7,.2,1); }
+.link:hover .photo img { transform: scale(1.05); }
+.clock, .featured { border-radius: 999px; backdrop-filter: blur(8px); }
+.clock { background: rgb(11 18 32 / 0.78); }
+.featured { border: 0; background: rgb(255 255 255 / 0.92); }
+.price { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+.title { font-weight: 500; }
+@media (prefers-reduced-motion: reduce) { .link, .photo img { transition: none; } .link:hover, .link:hover .photo img { transform: none; } }

@@ -39,8 +39,8 @@ describe('the Daylight colours', () => {
     expect(contrast(t[fg], t[bg])).toBeGreaterThanOrEqual(min);
   });
 
-  it('NFR-USE-06 the teal ink, the text and the control border are the money-order values of section 2', () => {
-    expect([t.accent, t.text, t.muted, t.border, t.surface, t.line, t.error]).toEqual(['#06525c', '#0d2326', '#4a5f62', '#73878a', '#ebf0ee', '#d3dddb', '#b42318']);
+  it('NFR-USE-06 the blue, the text and the control border are the redesign v3 values', () => {
+    expect([t.accent, t.text, t.muted, t.border, t.surface, t.line, t.error]).toEqual(['#1d4ed8', '#0b1220', '#495466', '#6f7c92', '#eaeff7', '#dbe2ee', '#b42318']);
   });
 
   it('SEC-GAM-03 the credential document repeats the same colours in its own stylesheet', () => {

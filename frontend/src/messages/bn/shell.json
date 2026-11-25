@@ -41,5 +41,8 @@
   "shell.account_tabs.profile": "প্রোফাইল",
   "shell.account_tabs.security": "নিরাপত্তা",
   "shell.account_tabs.privacy": "আপনার তথ্য",
-  "shell.kyc_later": "পরে শেষ করুন"
+  "shell.kyc_later": "পরে শেষ করুন",
+  "shell.promise_bar": "আপনি পণ্য নিশ্চিত না করা পর্যন্ত আপনার টাকা নিরাপদে আটকে থাকে।",
+  "shell.search_label": "ট্রাস্টবাজারে খুঁজুন",
+  "shell.search_placeholder": "ফোন, ক্যামেরা, বাইক খুঁজুন…"
 }
