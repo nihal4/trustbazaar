@@ -17,16 +17,18 @@ void main(){
   float a = n(p + vec2(t * 0.05, t * 0.03));
   float b = n(p * 1.7 - vec2(t * 0.04, -t * 0.06) + a * 1.6);
   vec3 col = mix(c0, c1, smoothstep(0.15, 0.85, b));
-  col = mix(col, c2, smoothstep(0.5, 0.95, n(p * 0.8 + b + vec2(0.0, t * 0.02))) * 0.9);
+  col = mix(col, c2, smoothstep(0.5, 0.95, n(p * 0.8 + b + vec2(0.0, t * 0.02))) * 0.6);
   col += c3 * 0.30 * smoothstep(0.5, 0.0, distance(uv * vec2(r.x / r.y, 1.0), m * vec2(r.x / r.y, 1.0)));
+  col *= mix(0.55, 1.0, smoothstep(0.0, 0.6, uv.x));
   col += (h(gl_FragCoord.xy + t) - 0.5) * 0.05;
   gl_FragColor = vec4(col, 1.0);
 }`;
 const hex = (s: string): [number, number, number] => [1, 3, 5].map((i) => parseInt(s.slice(i, i + 2), 16) / 255) as [number, number, number];
-const PALETTES = { dark: ['#0A1018', '#15263B', '#FF6B35', '#FFB08A'] } as const;
+const FALLBACK = ['#0A1018', '#15263B', '#FF6B35', '#FFB08A'];
+/** the shader's colours come from the --tb-glow-0 to -3 tokens, so the palette lives in tokens.css only */
+const colours = (): string[] => FALLBACK.map((d, i) => { const v = getComputedStyle(document.documentElement).getPropertyValue(`--tb-glow-${i}`).trim(); return /^#[0-9a-f]{6}$/i.test(v) ? v : d; });
 
 export function GlowGround({ area }: { area: React.RefObject<HTMLElement> }) {
-  const theme = 'dark';
   const canvas = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const c = canvas.current;
@@ -52,7 +54,7 @@ export function GlowGround({ area }: { area: React.RefObject<HTMLElement> }) {
       gl.enableVertexAttribArray(loc);
       gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
       const u = (name: string) => gl.getUniformLocation(prog, name);
-      PALETTES[theme].forEach((col, i) => gl.uniform3fv(u(`c${i}`), hex(col)));
+      colours().forEach((col, i) => gl.uniform3fv(u(`c${i}`), hex(col)));
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const pointer = { x: 0.7, y: 0.6, tx: 0.7, ty: 0.6 };
       let visible = true;

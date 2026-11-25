@@ -17,7 +17,7 @@
   --tb-accent-strong: #000000;
   --tb-accent-wash: #f3f5f8;
   --tb-cream: #f3f5f8;
-  --tb-on-ink: #aeb8c6;
+  --tb-on-ink: #b3c2be;
   --tb-on-ink-accent: #ff8a5c;
   --tb-warning-bg: #fbeee3;
   --tb-warning-border: #9a4a12;
@@ -33,10 +33,10 @@
   --tb-action: #0f1720;         /* the primary button's ground */
   --tb-action-text: #ffffff;
   --tb-protect-soft: #dff3e8;
-  --tb-radius: 10px;
+  --tb-radius: 6px;
   --tb-radius-pill: 999px;
-  --tb-radius-control: 10px;
-  --tb-radius-panel: 16px;
+  --tb-radius-control: 6px;
+  --tb-radius-panel: 4px;
   --tb-space-1: 0.25rem;
   --tb-space-2: 0.5rem;
   --tb-space-3: 1rem;
@@ -45,7 +45,8 @@
   --tb-shadow-card: 0 1px 2px rgba(15,23,32,.06), 0 6px 18px -8px rgba(15,23,32,.16);
   --tb-shadow-lift: 0 2px 4px rgba(15,23,32,.08), 0 16px 32px -12px rgba(15,23,32,.24);
   --tb-font: 'Figtree Variable', 'TB Figures', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --tb-font-display: 'Gabarito Variable', 'TB Figures', 'Hind Siliguri', system-ui, sans-serif;
+  --tb-display-weight: 600;
+  --tb-font-display: 'Schibsted Grotesk Variable', 'TB Figures', 'Hind Siliguri', system-ui, sans-serif;
   --tb-line-height: 1.5;
 }
 
@@ -64,14 +65,17 @@
    light). Same token names, so every component follows; --tb-action turns vermilion with ink text. */
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --tb-bg: #080d14; --tb-sheet: #0f1824; --tb-surface: #131f2e; --tb-text: #f2f5f9; --tb-muted: #9fb0c3;
-  --tb-border: #62768d; --tb-line: #213145;
-  --tb-accent: #ff7a45; --tb-accent-text: #0a1018; --tb-accent-soft: #2a1b14; --tb-accent-strong: #ffb08a; --tb-accent-wash: #101b29;
-  --tb-cream: #131f2e; --tb-on-ink: #aeb8c6; --tb-on-ink-accent: #ff8a5c; --tb-focus: #ff8a5c;
+  --tb-bg: #0a1110; --tb-sheet: #101a19; --tb-surface: #16221f; --tb-text: #f1f5f3; --tb-muted: #a2b5b0;
+  --tb-border: #66807a; --tb-line: #2a3b36;
+  --tb-accent: #ff7a45; --tb-accent-text: #0a1018; --tb-accent-soft: #2b1a12; --tb-accent-strong: #ffb08a; --tb-accent-wash: #0f1b19;
+  --tb-cream: #16221f; --tb-on-ink: #b3c2be; --tb-on-ink-accent: #ff8a5c; --tb-focus: #ff8a5c;
   --tb-warning-bg: #2a1d10; --tb-warning-border: #c98a3d;
   --tb-error: #ff6f8e; --tb-error-bg: #2b1219; --tb-error-line: #6b2a3a; --tb-error-text: #ffb3c0;
   --tb-success: #5dd39e; --tb-protect: #5dd39e; --tb-protect-soft: #10281e;
-  --tb-ink: #0f1824; --tb-action: #ff6b35; --tb-action-text: #0a1018;
+  --tb-ink: #101a19; --tb-action: #ff6b35; --tb-action-text: #0a1018;
+  /* the home hero's ground: the CSS gradient under the shader and the shader's four colours (GlowGround.tsx reads these) */
+  --tb-hero-from: #0a1110; --tb-hero-mid: #10231f; --tb-hero-to: #3a1d12;
+  --tb-glow-0: #0a1110; --tb-glow-1: #10231f; --tb-glow-2: #ff6b35; --tb-glow-3: #ffb08a;
   --tb-shadow-card: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -10px rgba(0,0,0,.6);
   --tb-shadow-lift: 0 2px 4px rgba(0,0,0,.4), 0 18px 40px -14px rgba(0,0,0,.7);
 }
@@ -141,3 +145,5 @@ input, select, textarea { max-width: 100%; box-sizing: border-box; }
 
 /* Tap targets of 44 px for buttons and stand-alone links (WCAG 2.2 AA, NFR-USE-06; checked at every device size) */
 main [class*='Button-root'], main button[type='submit'] { min-height: 44px; }
+
+.tb-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

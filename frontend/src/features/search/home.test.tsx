@@ -51,7 +51,7 @@ describe('home', () => {
 
   it('NFR-USE-07 beside the search, the escrow card shows in order how the money moves (docs/design/10_visual_v3.md)', async () => {
     renderHome(backend());
-    const promise = (await screen.findByRole('heading', { level: 2, name: 'Your money waits with us' })).closest('section')!;
+    const promise = (await screen.findByRole('heading', { level: 3, name: 'Your money waits with us' })).closest('article')!;
     expect(within(promise).getByText('How your money moves')).toBeTruthy();
     expect(within(promise).getAllByRole('listitem').map((li) => li.textContent)).toEqual([
       'You pay TrustBazaar', 'We hold it', 'The seller is paid when you confirm',

@@ -44,5 +44,8 @@
   "shell.kyc_later": "পরে শেষ করুন",
   "shell.promise_bar": "আপনি পণ্য নিশ্চিত না করা পর্যন্ত আপনার টাকা নিরাপদে আটকে থাকে।",
   "shell.search_label": "ট্রাস্টবাজারে খুঁজুন",
-  "shell.search_placeholder": "ফোন, ক্যামেরা, বাইক খুঁজুন…"
+  "shell.search_placeholder": "ফোন, ক্যামেরা, বাইক খুঁজুন…",
+  "shell.footer.explore": "ঘুরে দেখুন",
+  "shell.footer.help": "সহায়তা",
+  "shell.language.changing": "ভাষা বদলানো হচ্ছে"
 }
