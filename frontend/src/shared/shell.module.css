@@ -324,3 +324,27 @@
 .headSearch input::placeholder { color: var(--tb-muted); }
 @media (forced-colors: active) { .headSearch { border-bottom-color: CanvasText; } .headSearch:focus-within { outline: 2px solid Highlight; } }
 .headSearch input::-webkit-search-cancel-button { filter: invert(1); opacity: 0.6; }
+
+/* ---- The phone tab bar, ruled like the page (docs/design/10_visual_v3.md): a line on top, equal cells divided by hairlines, no
+   filled blocks. The current tab has a 2 px hot line on the bar's top edge; Sell is the one hot tab (an outlined square, not a
+   filled pill), so the primary action is marked without a block. Labels never wrap or overflow, down to 320 px. ---- */
+.withTabs { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
+.tabBar { left: 0; right: 0; bottom: 0; padding: 0 0 env(safe-area-inset-bottom); border: 0; border-top: 1px solid var(--tb-border); border-radius: 0; background: var(--tb-bg); box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.tabBar ul { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+.tabBar li { min-width: 0; }
+.tabBar li + li { border-left: 1px solid var(--tb-line); }
+.tab { position: relative; min-height: 58px; gap: 4px; padding: 0 2px; color: var(--tb-muted); font-size: 0.75rem; font-weight: 600; transition: color 140ms, background 140ms; }
+.tab svg { width: 22px; height: 22px; }
+.tab::before { content: ''; position: absolute; left: 0; right: 0; top: -1px; height: 2px; background: transparent; transition: background 140ms; }
+.tab:active { background: var(--tb-surface); }
+.tabOn { color: var(--tb-text); font-weight: 600; }
+.tabOn::before { background: var(--tb-hot); }
+.tabHot { color: var(--tb-hot); }
+.tabHot.tabOn { color: var(--tb-hot); }
+.tabSell { display: grid; place-items: center; width: 22px; height: 22px; border: 1.5px solid var(--tb-hot); border-radius: 4px; background: none; color: var(--tb-hot); }
+.tabSell svg { width: 14px; height: 14px; }
+.tabLabel { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+:lang(bn) .tab { font-size: 0.8125rem; }
+.tab:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -4px; }
+@media (prefers-reduced-motion: reduce) { .tab, .tab::before { transition: none; } }
+@media (forced-colors: active) { .tabOn::before { background: Highlight; } .tabBar { border-top-color: CanvasText; } }
