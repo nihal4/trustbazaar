@@ -86,3 +86,25 @@ export function loadLatinFont(fonts: FontFaceSet | undefined = globalThis.docume
 export function loadBanglaFont(fonts: FontFaceSet | undefined = globalThis.document?.fonts): void {
   afterLoad(() => { add(FIGURES, fonts); add(BANGLA, fonts); });   // add() runs each set once per document
 }
+
+/**
+ * Adds the faces of a language now (not after the load event) and resolves when the glyphs the page needs are loaded, or after
+ * `limitMs`; the language switch keeps its loading screen up until then, so the change of face is never seen (Decisions log, U10-21).
+ */
+export async function ensureLangFonts(lang: 'en' | 'bn', limitMs = 4000, fonts: FontFaceSet | undefined = globalThis.document?.fonts): Promise<void> {
+  if (!fonts || typeof FontFace === 'undefined') return;
+  add(LATIN, fonts);
+  add(FIGURES, fonts);
+  const wanted = [`400 1rem '${LATIN_FONT}'`, `600 1rem '${DISPLAY_FONT}'`];
+  const sample = ['Aa৳', 'Aa৳'];
+  if (lang === 'bn') {
+    add(BANGLA, fonts);
+    wanted.push(`400 1rem '${BANGLA_FONT}'`, `600 1rem '${BANGLA_FONT}'`, `500 1rem '${FIGURES_FONT}'`, `600 1rem '${FIGURES_FONT}'`);
+    sample.push('বাংলা ট্রাস্টবাজার', 'বাংলা ট্রাস্টবাজার', '০১২৩৪৫৬৭৮৯,.', '০১২৩৪৫৬৭৮৯,.');
+  } else {
+    wanted.push(`500 1rem '${FIGURES_FONT}'`);
+    sample.push('৳');
+  }
+  const loads = wanted.map((spec, i) => fonts.load(spec, sample[i]).catch(() => []));
+  await Promise.race([Promise.all(loads), new Promise((resolve) => setTimeout(resolve, limitMs))]);
+}

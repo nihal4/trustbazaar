@@ -1,8 +1,9 @@
 // The language of the page (NFR-USE-04; section 6.1): chosen at any time from the header, kept for
 // the next visit, and reflected in <html lang> so screen readers pronounce the text correctly.
-import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { translator, type Catalogue, type T } from './catalogue';
-import { loadBanglaFont, loadLatinFont } from './font';
+import { ensureLangFonts, loadBanglaFont, loadLatinFont } from './font';
+import { LanguageSkeleton } from './LanguageSkeleton';
 import { chooseLang, type Lang } from './lang';
 import { readStoredLang, storeLang } from './storage';
 
@@ -13,6 +14,8 @@ interface LanguageValue {
 }
 
 const LanguageContext = createContext<LanguageValue | null>(null);
+const MIN_MS = 750;
+const LEAVE_MS = 300;
 
 export function initialLang(): Lang {
   return chooseLang(readStoredLang(), globalThis.navigator?.languages ?? []);
@@ -27,13 +30,34 @@ export function LanguageProvider({ children, initial }: { children: ReactNode; i
     if (lang === 'bn') loadBanglaFont();
   }, [lang]);
 
+  // A change of language shows a full-page skeleton while the new language renders underneath and its fonts load, so the change
+  // of typeface is never seen. It stays at least MIN_MS (so it reads as a deliberate transition), at most as long as the fonts take.
+  const [phase, setPhase] = useState<'idle' | 'loading' | 'leaving'>('idle');
+  const current = useRef(lang);
+  current.current = lang;
   const setLang = useCallback((next: Lang) => {
+    if (next === current.current) return;
+    setPhase('loading');
     storeLang(next);
     setLangState(next);
+    const min = new Promise<void>((resolve) => setTimeout(resolve, MIN_MS));
+    void Promise.all([ensureLangFonts(next), min]).then(() => requestAnimationFrame(() => {
+      setPhase('leaving');
+      setTimeout(() => setPhase('idle'), LEAVE_MS);
+    }));
   }, []);
+  useEffect(() => {
+    const root = document.documentElement;
+    if (phase === 'loading') root.setAttribute('aria-busy', 'true'); else root.removeAttribute('aria-busy');
+  }, [phase]);
 
   const value = useMemo(() => ({ lang, setLang, t: translator(lang) }), [lang, setLang]);
-  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
+  return (
+    <LanguageContext.Provider value={value}>
+      {children}
+      {phase !== 'idle' && <LanguageSkeleton leaving={phase === 'leaving'} />}
+    </LanguageContext.Provider>
+  );
 }
 
 export function useLanguage(): LanguageValue {
