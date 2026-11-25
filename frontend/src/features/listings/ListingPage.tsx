@@ -5,7 +5,7 @@
 // GET /listings/{id}, which includes the auction state (section 9). Everything the seller wrote is shown as text
 // (SEC-INP-03); the location is the district only (FR-LST-06). A fixed-price item links to its checkout (U8-05);
 // an auction shows its panel. Others see only public listings; the seller sees their own in every state.
-import { useEffect, useState, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { takeEarly } from '../../shared/early';
@@ -42,6 +42,35 @@ export function Component() {
     retry: false,
   });
 
+  // On wide screens the right column stays in view down to the footer, so the footer makes room beside it (shell.module.css reads
+  // html[data-rail] and --tb-rail-reserve) instead of covering it or pushing it up.
+  const rail = useRef<HTMLDivElement>(null);
+  const ready = listing.isSuccess;
+  useEffect(() => {
+    const el = rail.current;
+    if (!ready || !el || typeof ResizeObserver === 'undefined') return undefined;
+    const root = document.documentElement;
+    const apply = () => {
+      if (window.innerWidth >= 960) {
+        root.dataset.rail = 'on';
+        root.style.setProperty('--tb-rail-reserve', `${Math.round(el.getBoundingClientRect().width + 48)}px`);
+      } else {
+        delete root.dataset.rail;
+        root.style.removeProperty('--tb-rail-reserve');
+      }
+    };
+    apply();
+    const watch = new ResizeObserver(apply);
+    watch.observe(el);
+    window.addEventListener('resize', apply);
+    return () => {
+      watch.disconnect();
+      window.removeEventListener('resize', apply);
+      delete root.dataset.rail;
+      root.style.removeProperty('--tb-rail-reserve');
+    };
+  }, [ready]);
+
   if (listing.isPending) return <p role="status">{t('shell.loading')}</p>;
   if (listing.isError) {
     return isApiError(listing.error, 404)
@@ -58,7 +87,7 @@ export function Component() {
         <Photos l={l} t={t} lang={lang} />
       </div>
       {/* the right-hand column on wide screens (title, price, buy, seller) is one block that stays in view while the photos and the description scroll */}
-      <div className={styles.rail}>
+      <div className={styles.rail} ref={rail}>
       <header className={styles.head}>
         <p className={styles.crumb}>
           <Link to={`/search?category=${l.category.id}`}>{category}</Link>
@@ -157,13 +186,6 @@ const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map((w) 
 
 
 type T = ReturnType<typeof useT>['t'];
-
-/** '2026-10' as "October 2026" in the page's language and digits. */
-function joinMonth(ym: string, lang: Lang): string {
-  const [y, m] = ym.split('-').map(Number);
-  if (!y || !m) return ym;
-  return new Intl.DateTimeFormat(lang === 'bn' ? 'bn-BD' : 'en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(Date.UTC(y, m - 1, 1));
-}
 
 function Status({ l, own, t }: { l: ListingView; own: boolean; t: T }) {
   if (l.status === 'sold') return <p role="status" className={styles.notice}>{t('listing.status.sold')}</p>;
