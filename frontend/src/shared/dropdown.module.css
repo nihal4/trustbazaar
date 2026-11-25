@@ -1,6 +1,7 @@
 /* The ruled dropdown: no box, no rounded menu; rows between hairlines, the chosen row ticked in the hot colour. */
 .root { position: relative; display: flex; flex-direction: column; gap: 0.125rem; min-width: 0; }
 .label { color: var(--tb-muted); font-size: 0.9375rem; font-weight: 500; }
+:lang(bn) .label { font-size: 1.0625rem; line-height: 1.5; }
 .button { position: relative; display: flex; align-items: center; width: 100%; min-height: 44px; padding: 0 1.75rem 0 0; border: 0; border-radius: 0; outline: 0; background: none; color: var(--tb-text); font: inherit; font-size: 1.0625rem; text-align: left; cursor: pointer; }
 .button::after { content: ''; position: absolute; right: 0.25rem; top: 50%; width: 0.5rem; height: 0.5rem; border-right: 2px solid var(--tb-hot); border-bottom: 2px solid var(--tb-hot); transform: translateY(-70%) rotate(45deg); transition: transform 160ms; }
 .button[aria-expanded='true']::after { transform: translateY(-30%) rotate(-135deg); }
@@ -8,7 +9,8 @@
 .list { margin: 0.25rem 0 0; padding: 0; list-style: none; max-height: min(28rem, 55svh); overflow-y: auto; background: var(--tb-sheet); border-block: 1px solid var(--tb-border); }
 .option { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 48px; padding: 0 0.75rem; border-top: 1px solid var(--tb-line); color: var(--tb-text); font-size: 1.0625rem; cursor: pointer; }
 .option:first-child { border-top: 0; }
-.option[data-active] { background: var(--tb-surface); }
+.option[data-active] { background: #1d2c29; }
+.root:has(.button:focus-visible) .option[data-active] { outline: 2px solid var(--tb-hot); outline-offset: -2px; }
 .option[aria-selected='true'] { font-weight: 600; }
 .option[aria-selected='true']::after { content: ''; flex: none; width: 0.4rem; height: 0.75rem; margin-right: 0.25rem; border-right: 2px solid var(--tb-hot); border-bottom: 2px solid var(--tb-hot); transform: rotate(45deg) translateY(-2px); }
 @media (min-width: 60rem) {
