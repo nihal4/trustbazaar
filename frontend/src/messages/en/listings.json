@@ -86,6 +86,7 @@
   "auction.own": "Bidding is open to other members. You cannot bid on your own auction.",
   "auction.see_bids": "See the bids",
   "auction.amount_placeholder": "Your maximum (taka)",
+  "auction.open_bar": "Open the bidding bar",
   "auction.rules_title": "How bidding works",
   "auction.rules.increment": "Each bid must be at least the minimum shown: the current price plus the bid increment.",
   "auction.rules.proxy": "You can enter the most you are willing to pay. TrustBazaar then bids for you, only as much as needed to keep you in the lead. Nobody sees your maximum.",

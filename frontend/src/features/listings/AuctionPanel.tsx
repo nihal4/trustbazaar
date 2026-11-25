@@ -54,6 +54,7 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
   });
   const { text: announcement, say } = useAnnouncer();
   const [sheet, setSheet] = useState(false);
+  const [barOpen, setBarOpen] = useState(false);   // phones only: the bar is a small floating tab until it is opened
   const closeRef = useRef<HTMLButtonElement>(null);
   const seeRef = useRef<HTMLButtonElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
@@ -226,7 +227,13 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
     </>
   );
   const bar = (
-    <div className={styles.bidBar} role="group" aria-label={t('auction.title')} ref={barRef}>
+    <div className={styles.bidBar} role="group" aria-label={t('auction.title')} ref={barRef} data-open={barOpen}>
+      <button type="button" className={styles.barToggle} aria-expanded={barOpen} aria-controls="bid-bar-body" onClick={() => setBarOpen((v) => !v)}
+        aria-label={barOpen ? t('shell.close') : `${t('auction.open_bar')}: ${money(state.price ?? state.startPrice, lang)}`}>
+        <svg viewBox="0 0 12 12" width="14" height="14" aria-hidden="true" focusable="false" className={barOpen ? styles.chevDown : styles.chevLeft}><path d="M8 1.5 L3.5 6 L8 10.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        {!barOpen && <span className={styles.toggleText} aria-hidden="true" data-price={money(state.price ?? state.startPrice, lang)} />}
+      </button>
+      <div className={styles.barBody} id="bid-bar-body">
       <div className={styles.barCell}>{priceBlock}</div>
       <div className={styles.barCell}>
         <span className={styles.barK}>{t('auction.time_left')}</span>
@@ -249,6 +256,7 @@ export function AuctionPanel({ initial, t, lang, signedIn, own, nextPath, extraH
             refreshMine();
           }} onRefused={() => void refetch()} />
         )}
+      </div>
       </div>
     </div>
   );
