@@ -46,7 +46,7 @@ export function Component() {
   // html[data-rail] and --tb-rail-reserve) instead of covering it or pushing it up.
   const rail = useRef<HTMLDivElement>(null);
   const [extraHost, setExtraHost] = useState<HTMLElement | null>(null);
-  const ready = listing.isSuccess;
+  const ready = listing.isSuccess && listing.data.saleFormat !== 'auction';
   useEffect(() => {
     const el = rail.current;
     if (!ready || !el || typeof ResizeObserver === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
@@ -84,7 +84,7 @@ export function Component() {
   const signedIn = me.isSuccess;
   const category = lang === 'bn' ? l.category.nameBn : l.category.nameEn;
   return (
-    <article className={l.photos.length > 0 ? styles.page : `${styles.page} ${styles.noPhotos}`}>
+    <article className={[styles.page, l.photos.length > 0 ? '' : styles.noPhotos, l.saleFormat === 'auction' ? styles.flow : ''].filter(Boolean).join(' ')}>
       <div className={styles.gallery}>
         <Photos l={l} t={t} lang={lang} />
       </div>
@@ -273,21 +273,11 @@ function Buy({ l, own, t, lang }: { l: ListingView; own: boolean; t: T; lang: La
   );
 }
 
-/** "Save for later": a mark on this device (the list is kept in the browser until the server keeps saved items; Decisions log). */
-const SAVED_KEY = 'tb.saved';
-function readSaved(): string[] {
-  try { const v = JSON.parse(window.localStorage.getItem(SAVED_KEY) ?? '[]') as unknown; return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []; } catch { return []; }
-}
-function SaveButton({ id, t }: { id: string; t: T }) {
-  const [saved, setSaved] = useState(() => readSaved().includes(id));
-  const toggle = () => {
-    const next = !saved;
-    try {
-      const rest = readSaved().filter((x) => x !== id);
-      window.localStorage.setItem(SAVED_KEY, JSON.stringify(next ? [id, ...rest].slice(0, 200) : rest));
-    } catch { /* storage may be blocked: the mark then lasts until the page closes */ }
-    setSaved(next);
-  };
+/** "Save for later": for now a mark on this page only. Browser storage is not allowed outside the language module (SEC-SES-03), so keeping
+ *  the mark between visits waits for the server list (task U10-29; Decisions log). */
+function SaveButton({ t }: { id: string; t: T }) {
+  const [saved, setSaved] = useState(false);
+  const toggle = () => setSaved((v) => !v);
   return (
     <button type="button" className={saved ? `${styles.saveButton} ${styles.saved}` : styles.saveButton} aria-pressed={saved} onClick={toggle}>
       <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M6 4 H18 V21 L12 16.5 L6 21 Z" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>

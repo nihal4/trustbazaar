@@ -84,6 +84,7 @@
   "auction.sign_in_to_bid": "Sign in to bid",
   "auction.guest_live": "Sign in for live updates. This page checks for new bids every few seconds.",
   "auction.own": "Bidding is open to other members. You cannot bid on your own auction.",
+  "auction.see_bids": "See the bids",
   "auction.rules_title": "How bidding works",
   "auction.rules.increment": "Each bid must be at least the minimum shown: the current price plus the bid increment.",
   "auction.rules.proxy": "You can enter the most you are willing to pay. TrustBazaar then bids for you, only as much as needed to keep you in the lead. Nobody sees your maximum.",

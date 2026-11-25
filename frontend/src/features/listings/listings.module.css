@@ -265,3 +265,45 @@
   .buyPrice, .bigPrice { font-size: 2.25rem; }
   .buy, .auction { padding: 0.875rem 0; }
 }
+
+/* ---- auctions: the floating bid bar (prototype B, chosen by the owner). The page flows normally, with no fixed column: the price, the
+   clock, "See the bids" and the bid box sit in a bar at the bottom of the screen. The bid history is the same list on the page and,
+   when "See the bids" is pressed, a sheet over the page above the bar. ---- */
+@media (min-width: 60rem) {
+  .flow.page { grid-template-areas: 'gallery rail' 'body rail'; grid-template-rows: auto 1fr; margin-bottom: 0; }
+  .flow.noPhotos { grid-template-areas: 'body rail'; grid-template-rows: auto; }
+  .flow .rail { position: static; max-height: none; overflow: visible; padding: 0; margin: 0; }
+}
+.flow { padding-bottom: 8rem; }
+.flow .auction { padding-top: 0.875rem; }
+.bidBar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: grid; grid-template-columns: auto auto minmax(0, 1fr) minmax(0, 26rem); align-items: center; gap: 0 1.75rem; padding: 0.75rem max(1rem, calc((100vw - 75rem) / 2)); background: var(--tb-sheet); border-top: 2px solid var(--tb-hot); }
+.barCell { display: flex; flex-direction: column; min-width: 0; }
+.barK { color: var(--tb-muted); font-size: 0.8125rem; line-height: 1.3; }
+.barV { font-family: var(--tb-font); font-weight: 600; font-size: 1.5rem; line-height: 1.2; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.barMid { align-items: flex-start; gap: 0.25rem; }
+.seeBids { display: inline-flex; align-items: center; min-height: 36px; padding: 0 0.75rem; border: 1px solid var(--tb-border); border-radius: 6px; background: none; color: var(--tb-text); font: inherit; font-size: 0.875rem; font-weight: 600; cursor: pointer; }
+.seeBids:hover, .seeBids[aria-expanded='true'] { border-color: var(--tb-hot); }
+.seeBids:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+.barAct { min-width: 0; }
+.barAct .primaryLink { width: 100%; }
+.barAct .bid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.25rem 0.5rem; margin: 0; }
+.barAct .bid > p, .barAct .bid > div[role], .barAct .bid > [class*='FormMessage'] { grid-column: 1 / -1; margin: 0; font-size: 0.8125rem; }
+.barAct .bid input { min-height: 48px; margin: 0; }
+.barAct .bid .primary { min-height: 48px; padding: 0 1.25rem; white-space: nowrap; }
+.barAct .bid .fieldError { grid-column: 1 / -1; margin: 0; font-size: 0.8125rem; }
+/* the history: inline on the page; a sheet above the bar when opened */
+.historyBox { padding: 0; }
+.sheetHead { display: flex; align-items: center; justify-content: space-between; }
+.sheetClose { display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: none; color: var(--tb-text); cursor: pointer; }
+.sheetOpen { position: fixed; left: 0; right: 0; bottom: 78px; z-index: 29; max-height: 55svh; overflow: auto; padding: 1rem max(1rem, calc((100vw - 75rem) / 2)) 1.25rem; background: var(--tb-sheet); border-top: 1px solid var(--tb-border); box-shadow: 0 -18px 40px -12px rgb(0 0 0 / 0.6); }
+@media (max-width: 47.99em) {
+  .bidBar { bottom: calc(58px + env(safe-area-inset-bottom)); grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem; padding: 0.625rem 1rem; }
+  .barMid { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between; }
+  .barAct { grid-column: 1 / -1; }
+  .flow { padding-bottom: 14rem; }
+  .sheetOpen { bottom: calc(58px + 172px + env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: no-preference) { .sheetOpen { animation: sheetIn 200ms ease-out; } @keyframes sheetIn { from { transform: translateY(12px); opacity: 0; } } }
+@media (forced-colors: active) { .bidBar { border-top-color: CanvasText; } }
+.bidCount { display: inline-grid; place-items: center; min-width: 1.5rem; height: 1.5rem; margin-left: 0.5rem; padding: 0 0.375rem; border-radius: 4px; background: var(--tb-surface); color: var(--tb-hot); font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
+.barMid { justify-content: center; }
