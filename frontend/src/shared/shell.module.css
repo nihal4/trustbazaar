@@ -354,3 +354,22 @@
 .footer { position: relative; }
 :global(html[data-rail='on']) .footer { border-top: 0; padding-right: calc(var(--tb-gutter) + var(--tb-rail-reserve, 0px)); }
 :global(html[data-rail='on']) .footerGrid { border-top: 1px solid var(--tb-line); }
+
+/* the signed-in header at laptop width: the Sell button and the links keep their size, the search is what gives way */
+.header > * { flex-shrink: 0; }
+.header > .headSearch { flex: 1 1 9rem; min-width: 9rem; }
+.header [class*='Button-root'] { white-space: nowrap; }
+.header [class*='Button-label'] { overflow: visible; }
+
+/* the confirmation dialog in the ruled look: a hairline panel, the action in vermilion, Cancel as an outline */
+.dialog { background: var(--tb-sheet); color: var(--tb-text); border: 1px solid var(--tb-border); border-radius: 4px; padding: 1.5rem; }
+.dialog::backdrop { background: rgb(0 0 0 / 0.6); }
+.dialog h2 { font-family: var(--tb-font-display); font-weight: var(--tb-display-weight); font-size: 1.5rem; letter-spacing: -0.02em; margin: 0 0 0.75rem; }
+.dialog p { margin: 0 0 0.75rem; line-height: 1.5; }
+.dialogActions { gap: 0.625rem; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--tb-line); }
+.dialogActions button { min-height: 48px; padding: 0 1.25rem; border-radius: 6px; font: inherit; font-weight: 700; cursor: pointer; border: 1px solid var(--tb-border); background: none; color: var(--tb-text); }
+.dialogActions button:first-child { border-color: var(--tb-action); background: var(--tb-action); color: var(--tb-action-text); }
+.dialogActions button:first-child:hover:not(:disabled) { background: var(--tb-hot-hover); }
+.dialogActions button:last-child:hover:not(:disabled) { border-color: var(--tb-hot); }
+.dialogActions button:disabled { opacity: 0.6; cursor: not-allowed; }
+.dialogActions button:focus-visible { outline: 2px solid var(--tb-text); outline-offset: 3px; }
