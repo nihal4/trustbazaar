@@ -382,3 +382,11 @@ body:has(.bidBar) { padding-bottom: var(--bar-h, 0px); }
 .seeChevOpen { transform: rotate(180deg); color: var(--tb-hot); }
 @media (max-width: 47.99em) { .barBody > .barMid { padding: 0; } .barBody .seeBids { justify-content: space-between; padding: 0; } .seeChev { margin-left: auto; } }
 @media (prefers-reduced-motion: reduce) { .seeChev, .seeChevOpen { transition: none; } }
+
+/* the See-the-bids cell is a small grid of its own: label | count | arrow, the count and the arrow each in a square cell between hairlines and centred in it */
+.barBody .seeBids { display: grid; grid-template-columns: 1fr auto auto; align-items: stretch; gap: 0; padding: 0; justify-content: stretch; }
+.seeLabel { display: flex; align-items: center; padding: 0 1.25rem; }
+.barBody .seeBids .bidCount, .seeArrow { display: grid; place-items: center; width: 3rem; margin: 0; padding: 0; border: 0; border-left: 1px solid var(--tb-line); border-radius: 0; background: none; height: auto; min-width: 0; font-size: 0.9375rem; }
+.barBody .seeBids .bidCount { color: var(--tb-hot); font-weight: 700; font-variant-numeric: tabular-nums; }
+.seeArrow svg { display: block; }
+@media (max-width: 47.99em) { .seeLabel { padding: 0; } .barBody .seeBids { padding: 0; } .barBody .seeBids .bidCount, .seeArrow { width: 3rem; } .seeChev { margin-left: 0; } }
