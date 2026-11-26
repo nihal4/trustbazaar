@@ -79,7 +79,7 @@
   "actions.request.lapsed.buyer": "আপনার বাতিলের অনুরোধের উত্তর সময়মতো আসেনি।",
   "actions.request.lapsed.seller": "ক্রেতার বাতিলের অনুরোধের উত্তর সময়মতো দেওয়া হয়নি।",
   "handover.title": "সাক্ষাতে হস্তান্তর",
-  "handover.status.arranging": "দেখা করার জায়গা ও সময় ঠিক করুন।",
+  "handover.status.arranging": "এখনও জায়গা ও সময় ঠিক হয়নি।",
   "handover.status.agreed": "জায়গা ও সময় ঠিক হয়েছে।",
   "handover.status.completed": "জিনিসটি হস্তান্তর হয়েছে।",
   "handover.status.locked": "হস্তান্তর কোড লক হয়ে গেছে।",
@@ -324,7 +324,7 @@
   "order.steps.payment": "পেমেন্ট",
   "order.steps.handover": "হস্তান্তর",
   "order.steps.handover_courier": "ডেলিভারি",
-  "order.steps.done": "পণ্য নিশ্চিত, বিক্রেতা টাকা পেয়েছেন",
+  "order.steps.done": "বিক্রেতা টাকা পেয়েছেন",
   "order.steps.state.done": "(হয়ে গেছে)",
   "order.steps.state.current": "(এখন)",
   "order.steps.state.next": "(বাকি আছে)",
@@ -461,5 +461,9 @@
   "dispute.not_yet": "পণ্য হস্তান্তর বা পাঠানো হলে, অথবা বিক্রেতার সময়সীমা পার হলে আপনি বিরোধ খুলতে পারবেন।",
   "order.next.label": "পরবর্তী ধাপ ও অপর পক্ষ",
   "order.party.verified": "পরিচয় যাচাই করা হয়েছে",
-  "order.party.since": "{year} থেকে"
+  "order.party.since": "{year} থেকে সদস্য",
+  "order.fact.status": "অবস্থা",
+  "order.fact.role": "ভূমিকা",
+  "order.fact.listing": "তালিকা",
+  "order.chat.short": "বার্তা"
 }

@@ -32,12 +32,14 @@ export function Deadlines({ o, h, t, lang }: { o: OrderView; h: HandoverView | n
   const now = useServerNow();
   const list = deadlinesOf(o, h);
   if (list.length === 0) return null;
+  const soon = (d: Deadline) => d.at - now < 3_600_000 && d.at > now;
+  // the next deadline stands out and the block stays in view in the rail; the others follow as ruled rows
   return (
-    <section aria-labelledby="deadlines-title">
-      <h2 id="deadlines-title">{t('deadlines.title')}</h2>
+    <section aria-labelledby="deadlines-title" className={styles.spot}>
+      <h2 id="deadlines-title" className={styles.spotHead}>{t('deadlines.title')}</h2>
       <dl className={styles.deadlines}>
         {list.map((d) => (
-          <div key={d.key} className={d.at - now < 3_600_000 && d.at > now ? styles.urgent : undefined}>
+          <div key={d.key} className={soon(d) ? styles.urgent : undefined}>
             <dt>{t(d.key)}</dt>
             <dd>{formatDeadline(d.at, now, lang)}</dd>
           </div>

@@ -250,3 +250,70 @@
 .cols { margin-top: var(--tb-space-3); }
 .main > .moneyPanel { margin-top: 1rem; }
 .rail { margin-top: 0; }
+
+/* ---- review round (impeccable): one ruled structure for the whole page ---- */
+/* the facts under the title: three ruled cells, label over value */
+.head { grid-template-columns: 88px minmax(0, 1fr); align-items: start; row-gap: 0; }
+.head .facts { grid-column: 1 / -1; margin: 1rem 0 0; }
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-block: 1px solid var(--tb-line); }
+.facts > div { display: grid; gap: 0.125rem; padding: 0.75rem 1rem; }
+.facts > div:first-child { padding-left: 0; }
+.facts > div + div { border-left: 1px solid var(--tb-line); }
+.facts dt { color: var(--tb-muted); font-size: 0.8125rem; }
+.facts dd { margin: 0; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.facts dd a { display: inline-flex; align-items: center; min-height: 24px; color: var(--tb-text); text-underline-offset: 3px; }
+.facts .status { color: var(--tb-protect); }
+.headText h1 { margin: 0; align-self: center; }
+.thumb { width: 64px; height: 64px; }
+.head { grid-template-columns: 64px minmax(0, 1fr); align-items: center; }
+
+/* the money panel keeps a hairline on top: the vermilion rule belongs to the rail */
+.moneyPanel { border-top: 1px solid var(--tb-line); }
+
+/* the deadline: always in view at the head of the rail */
+.spot { display: grid; gap: 0.25rem; padding: 1rem 0 1.25rem 1rem; border-left: 3px solid var(--tb-hot); }
+.spotHead { margin: 0; color: var(--tb-muted); font-size: 0.8125rem; font-weight: 600; }
+.spotWhat { margin: 0; color: var(--tb-muted); }
+.spotWhen { margin: 0; font-size: 1.25rem; font-weight: 600; line-height: 1.25; font-variant-numeric: tabular-nums; text-wrap: balance; }
+.spot .deadlines { margin-top: 0.75rem; }
+.spot.urgent .spotWhen { color: var(--tb-hot); }
+.rail > .spot { border-bottom: 1px solid var(--tb-line); }
+
+/* the journey: plain numbers on hairlines, no outlined circles */
+.flowNo, .journeyList .flowNo { width: 1.5rem; height: auto; border: 0; border-radius: 0; font-size: 0.9375rem; font-weight: 600; }
+.flowNow .flowNo { color: var(--tb-hot); }
+.flowDone .flowNo { color: var(--tb-protect); }
+.flowNo svg { width: 18px; height: 18px; }
+
+/* the rail: normal-case headings, ruled cells that show they act, the other party without a filled badge */
+.partyHead { text-transform: none; letter-spacing: 0; font-size: 1.125rem !important; font-weight: 600; color: var(--tb-text); }
+.avatar, .partyRow .avatar { background: none; border: 0; border-radius: 0; color: var(--tb-muted); }
+.chatCell { flex-direction: column; gap: 0.125rem; }
+.chatLabel { font-size: 0.75rem; font-weight: 600; }
+.actionCell > button { justify-content: space-between; }
+.actionCell > button::after { content: ''; width: 0.5rem; height: 0.5rem; margin-left: 0.5rem; border: solid currentColor; border-width: 1.5px 1.5px 0 0; transform: rotate(45deg); flex: none; }
+.actionCell > button { display: flex; align-items: center; justify-content: space-between; text-align: left; }
+.actionGrid button.quiet { color: var(--tb-muted); font-weight: 500; }
+
+/* phones: the page reads head, money, what to do next (the rail), then the story */
+@media (max-width: 59.99rem) {
+  .cols { display: flex; flex-direction: column; }
+  .main { display: contents; }
+  .main > * { order: 4; }
+  .main > .head { order: 0; }
+  .main > .moneyPanel, .main > .early { order: 1; }
+  .rail { order: 2; }
+  .facts > div { padding-inline: 0.625rem; }
+}
+
+/* the popup: map links quiet, Back a plain underlined link */
+.choice a { color: var(--tb-muted); text-decoration: underline; text-underline-offset: 3px; }
+.form .buttons .secondary { border: 0; background: none; text-decoration: underline; text-underline-offset: 3px; min-width: 0; }
+.spot .deadlines { margin-top: 0.25rem; gap: 0; }
+.spot .deadlines > div { padding: 0.625rem 0; }
+.spot .deadlines > div:first-child dd { font-size: 1.25rem; font-weight: 600; line-height: 1.25; text-wrap: balance; }
+.spot .deadlines > div:first-child dt { color: var(--tb-muted); }
+.spot .deadlines .urgent dd { color: var(--tb-hot); }
+.rail > section.spot { gap: 0.25rem; padding: 1rem 0 1.25rem 1rem; border-left: 3px solid var(--tb-hot); background: var(--tb-surface); }
+.rail > section.spot .spotHead { color: var(--tb-muted); }
+.spot .deadlines > div:first-child dd { font-size: 1.125rem; text-wrap: pretty; }

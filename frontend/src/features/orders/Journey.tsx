@@ -5,6 +5,7 @@
 import type { T } from '../../shared/language/catalogue';
 import type { HandoverView, OrderView, Shipment } from './model';
 import styles from './orders.module.css';
+import { Tick } from '../../shared/icons';
 
 type State = 'done' | 'now' | 'next';
 interface Step { key: string; state: State }
@@ -58,7 +59,7 @@ export function Journey({ o, h, shipments, t }: { o: OrderView; h: HandoverView 
         {j.steps.map((st, i) => (
           <li key={st.key} className={st.state === 'done' ? styles.flowDone : st.state === 'now' ? styles.flowNow : styles.flowNext} aria-current={st.state === 'now' ? 'step' : undefined}>
             <h3>
-              <span className={styles.flowNo} aria-hidden="true">{st.state === 'done' ? '✓' : i + 1}</span>
+              <span className={styles.flowNo} aria-hidden="true">{st.state === 'done' ? <Tick /> : i + 1}</span>
               {t(`journey.${j.kind}.${st.key}`, { courier: who })}
               <span className={styles.srOnly}> {t(`journey.state.${st.state}`)}</span>
             </h3>

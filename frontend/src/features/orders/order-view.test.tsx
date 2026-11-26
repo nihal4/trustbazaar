@@ -454,7 +454,7 @@ describe('the order\'s counterfoil (money-order world, U10-14)', () => {
     renderApp('/orders/o-1', backend({}));
     const steps = await screen.findByRole('list', { name: 'Order progress' });
     const items = within(steps).getAllByRole('listitem');
-    expect(items.map((li) => li.textContent)).toEqual(['Payment complete (done)', 'Money on hold (now)', 'Product confirmed, seller paid (still to come)']);
+    expect(items.map((li) => li.textContent)).toEqual(['Payment complete (done)', 'Money on hold (now)', 'Seller paid (still to come)']);
     expect(items[1].getAttribute('aria-current')).toBe('step');
   });
 

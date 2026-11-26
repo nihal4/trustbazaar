@@ -106,17 +106,16 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
         </span>
         <div className={styles.headText}>
           <h1>{t('order.title', { title: o.listing.title })}</h1>
-          <p className={styles.meta}>
-            <span className={styles.status}>{t(`order.status.${o.status}`)}</span>
-            <span>{t(`order.role.${o.role}`)}</span>
-            <Link to={`/listings/${encodeURIComponent(o.listing.id)}`}>{t('order.listing_link')}</Link>
-          </p>
         </div>
+        <dl className={styles.facts}>
+          <div><dt>{t('order.fact.status')}</dt><dd className={styles.status}>{t(`order.status.${o.status}`)}</dd></div>
+          <div><dt>{t('order.fact.role')}</dt><dd>{t(`order.role.${o.role}`)}</dd></div>
+          <div><dt>{t('order.fact.listing')}</dt><dd><Link to={`/listings/${encodeURIComponent(o.listing.id)}`}>{t('order.listing_link')}</Link></dd></div>
+        </dl>
       </header>
       <Money o={o} t={t} lang={lang} />
       {attempt && <Return o={o} failed={failed} waited={waited} t={t} />}
       <Journey o={o} h={handover.data ?? null} shipments={shipments.data?.items ?? []} t={t} />
-      {!awaiting && <Deadlines o={o} h={handover.data ?? null} t={t} lang={lang} />}
       {awaiting && o.role === 'buyer' && <PayPanel o={o} t={t} lang={lang} onPay={() => setSheet(true)} />}
       {sheet && (
         <PaymentSheet order={{ id: o.id, total: o.total, key: orderKey(o.id) }} t={t} lang={lang} onReceipt={(p) => { const paid = p as OrderView; downloadReceipt(paid, t, lang, paid.counterparty?.displayName || null); }} onClose={() => setSheet(false)}
@@ -131,6 +130,7 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
       {ratings.data && <Ratings o={o} r={ratings.data} t={t} lang={lang} />}
       </div>
       <aside className={styles.rail} aria-label={t('order.next.label')}>
+      <Deadlines o={o} h={handover.data ?? null} t={t} lang={lang} />
       {handover.data && <Handover o={o} h={handover.data} t={t} lang={lang} after={handoverOpen ? actions : undefined} />}
       {handover.isError && <FormMessage kind="error">{errorText(handover.error, t, lang)}</FormMessage>}
       {!handoverOpen && !handover.isLoading && <Actions o={o} t={t} lang={lang} />}
@@ -222,11 +222,11 @@ function PartyCard({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
 function OrderChat({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
   const { open, busy, error } = useOpenThread();
   const label = t(o.role === 'buyer' ? 'order.message_seller' : 'order.message_buyer');
-  if (o.threadId) return <Link className={styles.chatCell} to={`/messages/${encodeURIComponent(o.threadId)}`} aria-label={label} title={label}><ChatIcon /></Link>;
+  if (o.threadId) return <Link className={styles.chatCell} to={`/messages/${encodeURIComponent(o.threadId)}`} aria-label={label} title={label}><ChatIcon /><span className={styles.chatLabel}>{t('order.chat.short')}</span></Link>;
   if (o.role === 'seller') return null;
   return (
     <>
-      <button type="button" className={styles.chatCell} onClick={() => open(o.listing.id)} disabled={busy} aria-busy={busy} aria-label={label} title={label}><ChatIcon /></button>
+      <button type="button" className={styles.chatCell} onClick={() => open(o.listing.id)} disabled={busy} aria-busy={busy} aria-label={label} title={label}><ChatIcon /><span className={styles.chatLabel}>{t('order.chat.short')}</span></button>
       {error !== null && <div className={styles.chatError}><FormMessage kind="error">{errorText(error, t, lang)}</FormMessage></div>}
     </>
   );
@@ -265,7 +265,7 @@ function PayPanel({ o, t, lang, onPay }: { o: OrderView; t: T; lang: Lang; onPay
   const total = formatMoney(BigInt(o.total), lang);
   // one sequence: how you get it, what you pay, pay (the numbers say where the buyer is; the step not yet reached is quiet)
   return (
-    <section aria-labelledby="pay-title" className={styles.panel}>
+    <section aria-labelledby="pay-title" className={`${styles.panel} ${styles.early}`}>
       <h2 id="pay-title">{t('pay.title')}</h2>
       {message && <FormMessage kind="error">{message}</FormMessage>}
       <ol className={styles.flow}>

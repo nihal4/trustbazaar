@@ -79,7 +79,7 @@
   "actions.request.lapsed.buyer": "Your cancellation request was not answered in time.",
   "actions.request.lapsed.seller": "The buyer's cancellation request was not answered in time.",
   "handover.title": "Meetup handover",
-  "handover.status.arranging": "Agree on a place and time to meet.",
+  "handover.status.arranging": "No place and time agreed yet.",
   "handover.status.agreed": "A place and time are agreed.",
   "handover.status.completed": "The item was handed over.",
   "handover.status.locked": "The handover code is locked.",
@@ -324,7 +324,7 @@
   "order.steps.payment": "Payment",
   "order.steps.handover": "Handover",
   "order.steps.handover_courier": "Delivery",
-  "order.steps.done": "Product confirmed, seller paid",
+  "order.steps.done": "Seller paid",
   "order.steps.state.done": "(done)",
   "order.steps.state.current": "(now)",
   "order.steps.state.next": "(still to come)",
@@ -461,5 +461,9 @@
   "dispute.not_yet": "You can open a dispute once the item has been handed over or sent, or the seller's deadline has passed.",
   "order.next.label": "Next steps and the other party",
   "order.party.verified": "Identity verified",
-  "order.party.since": "Since {year}"
+  "order.party.since": "Member since {year}",
+  "order.fact.status": "Status",
+  "order.fact.role": "Role",
+  "order.fact.listing": "Listing",
+  "order.chat.short": "Message"
 }

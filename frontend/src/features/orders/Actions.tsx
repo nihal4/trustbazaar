@@ -114,7 +114,7 @@ export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang:
         )}
         {allowed.includes('request') && open !== 'request' && (
           <div className={styles.actionCell}>
-            <button type="button" className={styles.secondary} onClick={() => setOpen('request')}>{t('actions.ask_cancel')}</button>
+            <button type="button" className={`${styles.secondary} ${styles.quiet}`} onClick={() => setOpen('request')}>{t('actions.ask_cancel')}</button>
           </div>
         )}
         {allowed.includes('cancel') && open !== 'cancel' && (
