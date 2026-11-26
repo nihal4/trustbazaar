@@ -70,7 +70,6 @@
   "signin.title": "Sign in",
   "signin.link": "Sign in",
   "signin.login": "Mobile number or e-mail",
-  "signin.login_hint": "The mobile number or e-mail address of your account.",
   "signin.submit": "Sign in",
   "signin.failed": "The number, e-mail or password is not correct.",
   "signin.too_many": "Too many attempts. Wait until the button is available again.",
@@ -206,8 +205,6 @@
   "account.privacy_link": "Your data and closing your account",
   "human_check.note": "Protected by a short check in your browser. No puzzles.",
   "signin.welcome": "Welcome back.",
-  "side.promise_title": "Your money waits with us",
-  "side.promise_text": "The seller is paid only after the buyer confirms they have the item.",
   "signin.continue": "Continue",
   "signin.change_login": "Change",
   "signin.login_missing": "Enter your mobile number or e-mail address.",
@@ -225,5 +222,6 @@
   "email_code.turn_off": "Turn off the e-mail code",
   "email_code.turn_on": "Turn on the e-mail code",
   "email_code.turned_off": "The code by e-mail is off.",
-  "email_code.turned_on": "The code by e-mail is on."
+  "email_code.turned_on": "The code by e-mail is on.",
+  "signin.login_hint": "The mobile number or e-mail address of your account."
 }

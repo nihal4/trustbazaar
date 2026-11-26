@@ -110,22 +110,6 @@
   text-wrap: pretty;
 }
 
-.stageNote {
-  display: grid;
-  gap: 0.125rem;
-  margin: 1.25rem 0 0;
-  padding-top: 0.875rem;
-  border-top: 1px solid var(--tb-line);
-  color: var(--tb-muted);
-  font-size: 0.875rem;
-  line-height: 1.45;
-}
-
-.stageNote strong {
-  color: var(--tb-text);
-  font-weight: 600;
-}
-
 @media (max-width: 32.5rem) {
   .stageStep {
     padding: 1.25rem 1.125rem 1.125rem;

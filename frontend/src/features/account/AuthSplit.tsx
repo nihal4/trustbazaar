@@ -38,7 +38,6 @@ function useFrame(content: RefObject<HTMLDivElement>) {
 }
 
 export function AuthSplit({ children, stepKey = 'step' }: { children: ReactNode; stepKey?: string }) {
-  const { t } = useAccountT();
   const face = useRef<HTMLDivElement>(null);
   const slab = useRef<HTMLDivElement>(null);
   const f = useFrame(face);
@@ -60,7 +59,6 @@ export function AuthSplit({ children, stepKey = 'step' }: { children: ReactNode;
       <div ref={slab} className={styles.stageCard} style={style}>
         <div ref={face} key={stepKey} className={styles.stageStep}>
           {children}
-          <p className={styles.stageNote}><strong>{t('side.promise_title')}</strong><span>{t('side.promise_text')}</span></p>
         </div>
       </div>
     </div>

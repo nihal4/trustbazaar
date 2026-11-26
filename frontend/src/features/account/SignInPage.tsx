@@ -154,7 +154,7 @@ export function Component() {
         </p>
         {message && <FormMessage kind="error">{message}</FormMessage>}
         <form onSubmit={toPassword} noValidate>
-          <TextField id="signin-login" label={t('signin.login')} hint={t('signin.login_hint')} value={login} onChange={setLogin}
+          <TextField id="signin-login" label={t('signin.login')} value={login} onChange={setLogin}
             autoComplete="username" autoFocus />
           <SubmitButton busy={false}>{t('signin.continue')}</SubmitButton>
         </form>

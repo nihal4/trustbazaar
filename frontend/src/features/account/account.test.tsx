@@ -415,7 +415,7 @@ describe('sign-in and registration layout', () => {
     const note = screen.getByText('Protected by a short check in your browser. No puzzles.');
     expect(button.compareDocumentPosition(note) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Create an account' }).getAttribute('href')).toBe(`/register?next=${encodeURIComponent('/orders')}`);
-    expect(screen.getByText('Your money waits with us')).toBeTruthy();
+    expect(screen.queryByText('Your money waits with us')).toBeNull();                  // no advertising on the sign-in page
   });
 
   it('FR-ACC-12 with the default second step a code is asked after the password, sent to the e-mail (masked); the box remembers the device; a new code can be asked for after the wait', async () => {
