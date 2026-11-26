@@ -62,6 +62,8 @@ export interface HandoverView {
   suggestions: MeetupPoint[];
   /** the buyer's, while the handover is open */
   code: string | null;
+  /** the seller's: how many photos of the item were added at this handover (U10-23) */
+  photoCount?: number | null;
   /** the buyer's: an item with a device identifier is checked before the code is shown (U10-23) */
   deviceCheck?: { required: boolean; matched: boolean; last4: string; attemptsLeft: number } | null;
   /** the seller's */

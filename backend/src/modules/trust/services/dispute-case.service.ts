@@ -144,6 +144,8 @@ export class DisputeCaseService implements OnModuleInit {
       chat: thread ? { threadId: thread, path: `/staff/cases/dispute/${disputeId}/threads/${thread}` } : null,
       history: history.map((h) => ({ from: h.from_status, to: h.to_status, actor: h.actor, reason: h.reason, at: h.at.toISOString() })),
       statements: statements.map((s) => ({ party: s.party, text: s.text, at: s.at.toISOString() })),
+      // U10-23: the seller's photos of the item at the meetup, with the time the server received them (null link once purged)
+      handoverPhotos: await this.handoverPhotos(d.order_id, staff, reason, ctx),
       evidence: await Promise.all(evidence.map(async (e) => ({
         id: e.id, party: e.party, mime: e.mime, size: e.byte_size, at: e.at.toISOString(), link: e.storage_key ? await this.vault.signedLink(e.storage_key, staff, reason, ctx) : null,
       }))),
@@ -209,6 +211,11 @@ export class DisputeCaseService implements OnModuleInit {
     const d = await this.assigned(staffId, disputeId);
     if (d.status !== 'under_review') throw new Problem('validation-failed', { errors: [{ field: 'dispute', reason: 'not-in-this-state' }] });
     this.validate(d, dec);
+    // U10-23 (Decisions log): a meetup order whose code was entered is refunded only after the item is back (a swap or a self-inflicted fault then gains nothing)
+    if (d.item_kind !== 'game_account' && (dec.outcome === 'full_refund' || dec.outcome === 'partial_refund')) {
+      const order = await this.orders.getOrderForParty(d.order_id, d.buyer_id);
+      if (order.fulfilment === 'self_pickup' && order.deliveryEventAt !== null) throw new Problem('validation-failed', { errors: [{ field: 'outcome', reason: 'return-first' }] });
+    }
     if (BigInt(d.amount_collected) >= FOUR_EYES_POISHA) {
       const approval = await this.approvals.propose({
         action: 'dispute.outcome_20000', targetType: 'dispute', targetId: disputeId, reason: dec.reason, requiredRole: 'operator', byStaffId: staffId,
@@ -326,6 +333,11 @@ export class DisputeCaseService implements OnModuleInit {
       await m.query(`INSERT INTO disputes.outbox (event_type, aggregate_id, payload) VALUES ('disputes.dispute.decided', $1, $2)`,
         [disputeId, JSON.stringify({ orderId, outcome: 'refund_after_return', status: 'decided' })]);
     });
+  }
+
+  private async handoverPhotos(orderId: string, staff: Principal, reason: string | undefined, ctx: CallContext) {
+    const rows = (await this.db.query(`SELECT id, storage_key, at FROM delivery.handover_photos WHERE order_id = $1 ORDER BY at`, [orderId])) as { id: string; storage_key: string | null; at: Date }[];
+    return Promise.all(rows.map(async (p) => ({ id: p.id, at: p.at.toISOString(), link: p.storage_key ? await this.vault.signedLink(p.storage_key, staff, reason, ctx) : null })));
   }
 
   private async assigned(staffId: string, disputeId: string): Promise<CaseRow> {

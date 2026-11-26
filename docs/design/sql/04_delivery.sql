@@ -839,3 +839,16 @@ CREATE INDEX device_checks_order ON delivery.device_checks (order_id, at);
 CREATE TRIGGER device_checks_append_only BEFORE UPDATE OR DELETE ON delivery.device_checks FOR EACH ROW EXECUTE FUNCTION identity.forbid_change();
 GRANT SELECT, INSERT ON delivery.device_checks TO tb_app;
 GRANT USAGE ON SEQUENCE delivery.device_checks_id_seq TO tb_app;
+
+-- U10-23: the seller's photos of the item at the meetup, before the code is entered; encrypted, with the time the server received them (evidence for a later dispute).
+CREATE TABLE delivery.handover_photos (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id     uuid         NOT NULL REFERENCES orders.orders(id),
+  seller_id    uuid         NOT NULL REFERENCES identity.users(id),
+  storage_key  varchar(300) UNIQUE,
+  sha256       bytea        NOT NULL CHECK (octet_length(sha256) = 32),
+  at           timestamptz  NOT NULL DEFAULT now()
+);
+CREATE INDEX handover_photos_order ON delivery.handover_photos (order_id, at);
+CREATE TRIGGER handover_photos_append_only BEFORE UPDATE OR DELETE ON delivery.handover_photos FOR EACH ROW EXECUTE FUNCTION identity.forbid_change();
+GRANT SELECT, INSERT ON delivery.handover_photos TO tb_app;

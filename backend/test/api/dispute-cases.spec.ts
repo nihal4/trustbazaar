@@ -51,9 +51,9 @@ describe('dispute cases: claim, case file, request for information, decision, re
     const [{ id }] = await fx.query<{ id: string }>(
       `INSERT INTO orders.orders (kind, listing_id, item_kind, buyer_id, seller_id, quantity, unit_price, item_price, fulfilment, delivery_fee, total,
           listing_snapshot, commission_bps, delivery_margin_bps, params_version, payment_due_at, status, paid_at, fulfilment_step, fulfilment_due_at,
-          fulfilment_done_at, delivery_event_at, delivery_event_source)
-       VALUES ('fixed_price', $1, 'physical', $2, $3, 1, $4, $4, 'self_pickup', 0, $4, '{"title":"Camera"}', 500, 1000, 1, now(), 'paid', now(),
-          'meetup_handover', now() + interval '3 days', now(), now(), 'handover_code') RETURNING id`, [listingId, buyer.userId, seller.userId, price]);
+          fulfilment_done_at, delivery_event_at, delivery_event_source, delivery_quote_id)
+       VALUES ('fixed_price', $1, 'physical', $2, $3, 1, $4, $4, 'courier', 0, $4, '{"title":"Camera"}', 500, 1000, 1, now(), 'paid', now(),
+          'courier_pickup', now() + interval '3 days', now(), now(), 'courier_delivered', gen_random_uuid()) RETURNING id`, [listingId, buyer.userId, seller.userId, price]);
     await fx.query(`INSERT INTO payments.attempts (purpose, order_id, payer_id, provider, amount, status, expires_at, confirmed_at) VALUES ('order', $1, $2, 'bkash', $3, 'succeeded', now(), now())`, [id, buyer.userId, price]);
     await fx.query(`INSERT INTO orders.escrows (order_id, release_policy, amount_collected, dispute_window_ends_at, auto_release_at) VALUES ($1, 'standard', $2, now() + interval '3 days', now() + interval '5 days')`, [id, price]);
     const [{ id: thread }] = await fx.query<{ id: string }>(`INSERT INTO chat.threads (listing_id, buyer_id, seller_id) VALUES ($1, $2, $3) RETURNING id`, [listingId, buyer.userId, seller.userId]);
@@ -89,7 +89,7 @@ describe('dispute cases: claim, case file, request for information, decision, re
     const r = await a.call('GET', `/staff/disputes/${c.disputeId}/case-file`);
     expect(r.status).toBe(200);
     const file = (await r.json()) as Record<string, unknown> & { outcomes: Record<string, unknown>; history: { to: string }[]; statements: unknown[]; chat: { path: string } };
-    expect(Object.keys(file).sort()).toEqual(['chat', 'context', 'dispute', 'escrow', 'evidence', 'fulfilment', 'game', 'history', 'order', 'outcomes', 'parties', 'statements']);
+    expect(Object.keys(file).sort()).toEqual(['chat', 'context', 'dispute', 'escrow', 'evidence', 'fulfilment', 'game', 'handoverPhotos', 'history', 'order', 'outcomes', 'parties', 'statements']);
     expect(file.game).toBeNull(); // a physical item
     expect(file.outcomes).toMatchObject({ release: { refunded: '0', sellerPayout: '1425000' }, fullRefund: { refunded: '1500000', sellerPayout: '0' } });
     expect(file.history.map((h) => h.to)).toEqual(['open', 'under_review']);
@@ -167,6 +167,7 @@ describe('dispute cases: claim, case file, request for information, decision, re
 
   it('FR-DSP-06 outcome (d) waits for the item: the escrow stays frozen until the seller records it back, then the buyer is refunded', async () => {
     const c = await disputeUnderReview();
+    await fx.query(`UPDATE orders.orders SET fulfilment = 'self_pickup', delivery_quote_id = NULL, fulfilment_step = 'meetup_handover', delivery_event_source = 'handover_code' WHERE id = $1`, [c.orderId]); // a meetup order is returned by meetup
     const op = await operator();
     await op.call('POST', `/staff/cases/dispute/${c.disputeId}/claim`);
     expect(await errors(await op.call('POST', `/staff/disputes/${c.disputeId}/decision`, { outcome: 'refund_after_return', reason }))).toEqual([{ field: 'returnPayer', reason: 'required' }]);
@@ -179,6 +180,7 @@ describe('dispute cases: claim, case file, request for information, decision, re
 
     // or Unit 4 reports the courier return delivered
     const d = await disputeUnderReview();
+    await fx.query(`UPDATE orders.orders SET fulfilment = 'self_pickup', delivery_quote_id = NULL, fulfilment_step = 'meetup_handover', delivery_event_source = 'handover_code' WHERE id = $1`, [d.orderId]);
     await op.call('POST', `/staff/cases/dispute/${d.disputeId}/claim`);
     await op.call('POST', `/staff/disputes/${d.disputeId}/decision`, { outcome: 'refund_after_return', reason, returnPayer: 'buyer' });
     const delivered = event('delivery.return.delivered', d.orderId, { direction: 'return', status: 'delivered' });
@@ -186,5 +188,14 @@ describe('dispute cases: claim, case file, request for information, decision, re
     await consume(delivered); // redelivered: nothing more
     expect([(await dispute(d.disputeId)).status, await escrow(d.orderId)]).toEqual(['decided', 'refunded']);
     await consume(event('delivery.return.delivered', randomUUID(), { direction: 'return' })); // a return without a dispute: ignored
+  });
+  it('FR-DSP-06 U10-23 on a meetup order whose code was entered a refund is decided only as a refund after the return; a release is still possible', async () => {
+    const c = await disputeUnderReview();
+    await fx.query(`UPDATE orders.orders SET fulfilment = 'self_pickup', delivery_quote_id = NULL, fulfilment_step = 'meetup_handover', delivery_event_source = 'handover_code' WHERE id = $1`, [c.orderId]);
+    const op = await operator();
+    await op.call('POST', `/staff/cases/dispute/${c.disputeId}/claim`);
+    expect(await errors(await op.call('POST', `/staff/disputes/${c.disputeId}/decision`, { outcome: 'full_refund', reason }))).toEqual([{ field: 'outcome', reason: 'return-first' }]);
+    expect(await errors(await op.call('POST', `/staff/disputes/${c.disputeId}/decision`, { outcome: 'partial_refund', reason, itemRefund: '500000' }))).toEqual([{ field: 'outcome', reason: 'return-first' }]);
+    expect((await op.call('POST', `/staff/disputes/${c.disputeId}/decision`, { outcome: 'release', reason })).status).toBe(200);
   });
 });

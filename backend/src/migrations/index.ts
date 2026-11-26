@@ -37,6 +37,7 @@ import { TermsAcceptances1793491200036 } from './1793491200036-terms-acceptances
 import { DisputeMessages1793491200037 } from './1793491200037-dispute-messages';
 import { DisputeChatReads1793491200038 } from './1793491200038-dispute-chat-reads';
 import { DeviceIdentifier1793491200039 } from './1793491200039-device-identifier';
+import { HandoverPhotos1793491200040 } from './1793491200040-handover-photos';
 
 // The migrations in the order they run: the seven units in unit order, then 09_integration (I-60).
 // Add a new migration at the end; never reorder or edit an applied one.
@@ -80,4 +81,5 @@ export const MIGRATIONS = [
   DisputeMessages1793491200037, // U10-23: the dispute chat of each party with TrustBazaar (Decisions log)
   DisputeChatReads1793491200038, // U10-23: when each party last opened its dispute chat (Decisions log)
   DeviceIdentifier1793491200039, // U10-23: a device's identifier at listing (hash and last four) and its check at the meetup (Decisions log)
+  HandoverPhotos1793491200040, // U10-23: the seller's photos of the item at the handover (Decisions log)
 ];

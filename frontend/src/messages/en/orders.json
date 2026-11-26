@@ -584,5 +584,9 @@
   "handover.device_label": "IMEI or serial number shown on the device (dial *#06# on a phone)",
   "handover.device_check": "Check",
   "handover.device_wrong": "This number does not match the listing. Do not accept this device. Tries left: {n}.",
-  "handover.device_locked": "Too many wrong numbers. Do not accept this device: ask the seller to cancel."
+  "handover.device_locked": "Too many wrong numbers. Do not accept this device: ask the seller to cancel.",
+  "handover.photos_label": "Photos of the item",
+  "handover.photo_add": "Add a photo of the item (before you enter the code)",
+  "handover.photo_hint": "Show the item working, in the buyer's hands. It is kept as evidence if a dispute follows.",
+  "handover.photo_invalid": "{name} cannot be used. Choose a JPEG, PNG or WebP photo of at most 10 MB."
 }

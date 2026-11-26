@@ -180,6 +180,23 @@ function SellerCode({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: T; la
       void queryClient.invalidateQueries({ queryKey: handoverKey(o.id) });
     },
   });
+  // U10-23: photos of the item taken at the meetup, before the code; they are evidence for a later dispute
+  const photo = useMutation({
+    mutationFn: (f: File) => {
+      const form = new FormData();
+      form.set('file', f, f.name);
+      return api.post(`/orders/${encodeURIComponent(o.id)}/handover-photos`, form);
+    },
+    onSuccess: () => { setMessage(null); void queryClient.invalidateQueries({ queryKey: handoverKey(o.id) }); },
+    onError: (e) => setMessage(errorText(e, t, lang)),
+  });
+  const picked = (list: FileList | null, input: HTMLInputElement) => {
+    const f = list?.[0];
+    input.value = '';
+    if (!f) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(f.type) || f.size > 10_485_760) return setMessage(t('handover.photo_invalid', { name: f.name }));
+    photo.mutate(f);
+  };
   const submit = (e: FormEvent) => {
     e.preventDefault();
     const c = toAsciiDigits(code).replace(/\s+/g, '');
@@ -194,6 +211,12 @@ function SellerCode({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: T; la
       <h3>{t('handover.enter_title')}</h3>
       <p>{t('handover.enter_note')}</p>
       {message && <FormMessage kind="error">{message}</FormMessage>}
+      <dl className={styles.statusGrid}>
+        <div><dt>{t('handover.photos_label')}</dt><dd>{toLocalDigits(String(h.photoCount ?? 0), lang)} / 3</dd></div>
+      </dl>
+      <label htmlFor="handover-photo">{t('handover.photo_add')}</label>
+      <input id="handover-photo" type="file" accept="image/jpeg,image/png,image/webp" disabled={photo.isPending || (h.photoCount ?? 0) >= 3} onChange={(e) => picked(e.target.files, e.target)} />
+      <p className={styles.hint}>{t('handover.photo_hint')}</p>
       <label htmlFor="handover-code">{t('handover.code_field')}</label>
       <input id="handover-code" inputMode="numeric" autoComplete="off" value={code} maxLength={16} onChange={(e) => setCode(e.target.value)}
         aria-describedby="handover-attempts" />

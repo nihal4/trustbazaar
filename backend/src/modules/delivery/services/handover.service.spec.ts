@@ -61,7 +61,7 @@ function setup(o: { proposals?: Record<string, unknown>[]; handover?: HRow | nul
   const params = { current: async () => ({ get: () => 5 }) };
   const config = { secrets: { handoverKey: { reveal: () => KEY } } };
   const clock = { now: () => new Date('2026-11-02T12:00:00Z') };
-  const svc = new HandoverService(db as never, points as never, orders as never, identity as never, audit as never, params as never, config as never, clock as never);
+  const svc = new HandoverService(db as never, points as never, orders as never, identity as never, audit as never, params as never, config as never, clock as never, { store: jest.fn(), erase: jest.fn() } as never);
   return { svc, db, query, calls, points, orders, audit };
 }
 

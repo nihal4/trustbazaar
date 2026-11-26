@@ -71,7 +71,12 @@ describe('meetup handover', () => {
       expect({ path, status: r.status }).toEqual({ path, status });
       return (await r.json()) as T;
     };
-    return { userId, call, json };
+    const upload = (path: string, bytes: Buffer, type: string) => {
+      const form = new FormData();
+      form.set('file', new Blob([new Uint8Array(bytes)], { type }), 'photo');
+      return fetch(t.url(path), { method: 'POST', headers: { ...fx.headers(sid, userId, 'user'), 'x-forwarded-for': ip }, body: form });
+    };
+    return { userId, call, json, upload };
   }
   type View = {
     status: string; role: string; dueAt: string; code: string | null; attemptsLeft: number | null;
@@ -213,6 +218,23 @@ describe('meetup handover', () => {
     const locked = await paidOrder({ serial: 'SN12345678' });
     for (let i = 0; i < 5; i++) expect((await locked.buyer.call('POST', `/orders/${locked.id}/device-check`, { value: 'WRONG12345' })).status).toBe(200);
     expect(await reason(await locked.buyer.call('POST', `/orders/${locked.id}/device-check`, { value: 'SN12345678' }))).toMatchObject({ reason: 'locked' });
+  });
+
+  it('FR-DLV-06 U10-23 the seller adds photos of the item before the code: images only, at most three, the seller only, while the handover is open; the seller\'s view counts them', async () => {
+    const o = await paidOrder();
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+    const sharp = require('sharp') as typeof import('sharp').default;
+    const png = await sharp({ create: { width: 200, height: 150, channels: 3, background: '#a77' } }).png().toBuffer();
+    const send = (who: { upload: (path: string, bytes: Buffer, type: string) => Promise<Response> }, bytes = png, type = 'image/png') => who.upload(`/orders/${o.id}/handover-photos`, bytes, type);
+    expect(await (await send(o.seller)).json()).toEqual({ count: 1 });
+    expect(await reason(await send(o.buyer))).toMatchObject({ reason: 'seller-only' });
+    expect(await reason(await send(o.seller, Buffer.from('%PDF-1.4'), 'application/pdf'))).toMatchObject({ reason: 'type' });
+    await send(o.seller); await send(o.seller);
+    expect(await reason(await send(o.seller))).toMatchObject({ reason: 'too-many' });
+    const view = (await (await o.seller.call('GET', `/orders/${o.id}/handover`)).json()) as { photoCount: number | null };
+    expect(view.photoCount).toBe(3);
+    expect(((await (await o.buyer.call('GET', `/orders/${o.id}/handover`)).json()) as { photoCount: number | null }).photoCount).toBeNull();
+    expect((await fx.query(`SELECT 1 FROM delivery.handover_photos WHERE order_id = $1 AND storage_key IS NOT NULL`, [o.id])).length).toBe(3);
   });
 
   it('FR-DLV-06 the seller\'s correct entry of the buyer\'s code completes the handover and is the delivery event, in one transaction', async () => {

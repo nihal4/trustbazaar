@@ -241,6 +241,7 @@ describe('negative authorisation (SEC-SDL-09)', () => {
       'POST /orders/:id/game/takeover-steps/:step': { path: `/orders/${order}/game/takeover-steps/password_changed` },
       'GET /orders/:id/handover': { path: `/orders/${order}/handover` },
       'POST /orders/:id/handover-code': { path: `/orders/${order}/handover-code`, body: { code: '123456' } },
+      'POST /orders/:id/handover-photos': { path: `/orders/${order}/handover-photos`, form: { file: image } },
       'POST /orders/:id/device-check': { path: `/orders/${order}/device-check`, body: { value: '352099001761481' } },
       'POST /orders/:id/meetup-proposals': { path: `/orders/${order}/meetup-proposals`, body: { meetAt: new Date(Date.now() + 86_400_000).toISOString() } },
       'POST /orders/:id/meetup-proposals/:pid/accept': { path: `/orders/${order}/meetup-proposals/${randomUUID()}/accept` },

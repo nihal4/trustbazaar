@@ -210,6 +210,16 @@ describe('the meetup handover (Unit 4)', () => {
     expect(be.called('POST /orders/o-1/device-check').map((c) => c.body)).toEqual([{ value: '352099001761480' }, { value: '352099001761481' }]);
   });
 
+  it('FR-DLV-06 U10-23 the seller adds a photo of the item before entering the code; other files are refused before upload', async () => {
+    const be = backend({ 'POST /orders/o-1/handover-photos': json(201, { count: 1 }) }, { order: order({ role: 'seller' }), handover: handover({ role: 'seller', code: null, photoCount: 0, attemptsLeft: 5 } as never) });
+    renderApp('/orders/o-1', be);
+    const input = await screen.findByLabelText('Add a photo of the item (before you enter the code)');
+    fireEvent.change(input, { target: { files: [new File([new Uint8Array(10)], 'x.pdf', { type: 'application/pdf' })] } });
+    expect(await screen.findByText(/x\.pdf cannot be used/)).toBeTruthy();
+    fireEvent.change(input, { target: { files: [new File([new Uint8Array(10)], 'item.jpg', { type: 'image/jpeg' })] } });
+    await waitFor(() => expect(be.called('POST /orders/o-1/handover-photos')).toHaveLength(1));
+  });
+
   it('FR-DLV-06 the seller enters the code only after the handover, sees the attempts left, and a wrong code says how many remain', async () => {
     const be = backend({
       'POST /orders/o-1/handover-code': [

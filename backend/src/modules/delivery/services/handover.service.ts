@@ -8,6 +8,7 @@ import { Problem } from '../../../kernel/http/problems';
 import { AUDIT_SERVICE, AuditServicePort, IDENTITY_QUERY, IdentityQuery } from '../../identity/ports';
 import { FULFILMENT_ORDERS, FulfilmentOrders } from '../adapters/orders';
 import { deviceDigest } from '../../../kernel/device-identifier';
+import { FILE_VAULT, FileVaultPort } from '../../identity/ports';
 import { codeMatches, deriveCode } from './handover-code';
 import { mapUrl, MeetupPointsService, pointView, type PointView } from './meetup-points.service';
 import { announceNewIssues } from './outbox';
@@ -52,6 +53,8 @@ export interface HandoverView {
    * `required`, whether it `matched`, and the last four characters the listing showed. Null for an item without one.
    */
   deviceCheck: { required: boolean; matched: boolean; last4: string; attemptsLeft: number } | null;
+  /** seller only: how many photos of the item the seller has added at this handover (U10-23) */
+  photoCount: number | null;
   /** seller only */
   attemptsLeft: number | null;
   completedAt: string | null;
@@ -59,6 +62,8 @@ export interface HandoverView {
 }
 
 const ACTIVE: HandoverStatus[] = ['arranging', 'agreed'];
+/** U10-23: photos the seller may add to one handover. */
+export const MAX_HANDOVER_PHOTOS = 3;
 /** U10-23: wrong tries of the device check before it is locked (a mistyped digit is allowed). */
 const DEVICE_TRIES = 5;
 
@@ -79,6 +84,7 @@ export class HandoverService {
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
     @Inject(TB_CONFIG) private readonly config: TbConfig,
     @Inject(CLOCK) private readonly clock: Clock,
+    @Inject(FILE_VAULT) private readonly vault: FileVaultPort,
   ) {}
 
   // ---------------------------------------------------------------- created and closed by events (section 6.1, 6.5)
@@ -140,6 +146,7 @@ export class HandoverService {
       // the code is shown only once the device is checked, when the item has an identifier
       code: buyer && open && (!device || device.matched) ? deriveCode(this.config.secrets.handoverKey.reveal(), orderId, h.code_version) : null,
       deviceCheck: device ? { required: true, matched: device.matched, last4: device.last4, attemptsLeft: device.attemptsLeft } : null,
+      photoCount: buyer ? null : ((await this.db.query(`SELECT count(*)::int AS n FROM delivery.handover_photos WHERE order_id = $1`, [orderId])) as { n: number }[])[0]?.n ?? 0,
       attemptsLeft: buyer ? null : Math.max(0, maxWrong - h.wrong_entries),
       completedAt: h.completed_at?.toISOString() ?? null,
       lockedAt: h.locked_at?.toISOString() ?? null,
@@ -170,6 +177,30 @@ export class HandoverService {
     const matched = deviceDigest(this.config.secrets.handoverKey.reveal(), typed).toString('hex') === id.digest;
     await this.db.query(`INSERT INTO delivery.device_checks (order_id, user_id, matched) VALUES ($1, $2, $3)`, [orderId, userId, matched]);
     return { matched, attemptsLeft: matched ? state.attemptsLeft : state.attemptsLeft - 1 };
+  }
+
+  /**
+   * POST /orders/{id}/handover-photos (U10-23): the seller's photo of the item at the meetup, before the code is entered: re-encoded without metadata, kept
+   * encrypted with the time the server received it, at most MAX_HANDOVER_PHOTOS an order; evidence for a later dispute.
+   */
+  async addPhoto(userId: string, orderId: string, file: { buffer: Buffer; mimetype: string } | undefined): Promise<{ count: number }> {
+    const h = await this.party(this.db.manager, orderId, userId);
+    if (h.seller_id !== userId) throw new Problem('forbidden', { errors: [{ field: 'file', reason: 'seller-only' }] });
+    if (!ACTIVE.includes(h.status)) throw new Problem('validation-failed', { errors: [{ field: 'handover', reason: 'closed' }] });
+    if (!file || !/^image\/(jpeg|png|webp)$/.test(file.mimetype)) throw new Problem('validation-failed', { errors: [{ field: 'file', reason: 'type' }] });
+    return this.db.transaction(async (m) => {
+      await m.query(`SELECT 1 FROM delivery.handovers WHERE order_id = $1 FOR UPDATE`, [orderId]);
+      const [{ n }] = (await m.query(`SELECT count(*)::int AS n FROM delivery.handover_photos WHERE order_id = $1`, [orderId])) as { n: number }[];
+      if (n >= MAX_HANDOVER_PHOTOS) throw new Problem('validation-failed', { errors: [{ field: 'file', reason: 'too-many' }] });
+      const stored = await this.vault.store({ purpose: 'dispute_evidence', ownerId: userId, bytes: new Uint8Array(file.buffer) });
+      try {
+        await m.query(`INSERT INTO delivery.handover_photos (order_id, seller_id, storage_key, sha256) VALUES ($1, $2, $3, decode($4, 'hex'))`, [orderId, userId, stored.key, stored.sha256]);
+      } catch (err) {
+        await this.vault.erase(stored.key).catch(() => undefined);
+        throw err;
+      }
+      return { count: n + 1 };
+    });
   }
 
   /** Both parties' saved approximate locations (I-24); with one missing, the points nearest the other. */
