@@ -161,14 +161,30 @@ export class FilesController {
   async serve(@Param('token') token: string, @Req() req: Request, @Res() res: Response): Promise<void> {
     if (token.length > 1200) throw new Problem('link-invalid');
     const { bytes, mime } = await this.review.serve(token, (req.cookies ?? {}) as Record<string, string | undefined>);
+    const video = mime.startsWith('video/');
     res.set({
       'Content-Type': mime,
       'Cache-Control': 'no-store',
       'X-Content-Type-Options': 'nosniff',
-      'Content-Security-Policy': "sandbox; default-src 'none'",
-      // the only non-image file is a data export (U7-11), a ZIP
-      'Content-Disposition': mime.startsWith('image/') ? 'inline' : 'attachment; filename="trustbazaar-data.zip"',
+      // a video document plays itself: media-src 'self' (a picture or a ZIP needs nothing)
+      'Content-Security-Policy': video ? "sandbox; default-src 'none'; media-src 'self'" : "sandbox; default-src 'none'",
+      // a picture or a video is shown; the other file is a data export (U7-11), a ZIP
+      'Content-Disposition': mime.startsWith('image/') || video ? 'inline' : 'attachment; filename="trustbazaar-data.zip"',
+      ...(video ? { 'Accept-Ranges': 'bytes' } : {}),
     });
+    // Safari and iOS ask a video for byte ranges (206)
+    const range = video ? /^bytes=(\d*)-(\d*)$/.exec(req.header('range') ?? '') : null;
+    if (range && (range[1] !== '' || range[2] !== '')) {
+      const size = bytes.length;
+      const start = range[1] === '' ? Math.max(0, size - Number(range[2])) : Number(range[1]);
+      const end = range[1] === '' || range[2] === '' ? size - 1 : Math.min(Number(range[2]), size - 1);
+      if (start > end || start >= size) {
+        res.status(416).set('Content-Range', `bytes */${size}`).end();
+        return;
+      }
+      res.status(206).set({ 'Content-Range': `bytes ${start}-${end}/${size}`, 'Content-Length': String(end - start + 1) }).end(bytes.subarray(start, end + 1));
+      return;
+    }
     res.status(200).end(bytes);
   }
 }

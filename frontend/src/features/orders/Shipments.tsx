@@ -4,14 +4,15 @@
 // the pickup address while the shipment is preparing, and confirms a returned item has arrived.
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { formatMoney } from '../../lib/money.js';
-import { formatDateTime } from '../../lib/time.js';
+import { formatMoney, toLocalDigits } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
 import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
 import { FRESHNESS } from '../../shared/query';
+import { Popup } from '../../shared/Popup';
+import { DateCells } from '../../shared/Moment';
 import { SimulatedBanner } from '../../shared/SimulatedBanner';
 import { AddressForm, useAddresses } from './Courier';
 import { orderKey, shipmentsKey, type OrderView, type SavedAddress, type Shipment } from './model';
@@ -45,34 +46,43 @@ function ShipmentCard({ o, s, t, lang }: { o: OrderView; s: Shipment; t: T; lang
   const seller = o.role === 'seller';
   return (
     <article className={styles.shipment} aria-label={t(`shipments.direction.${s.direction}`)}>
-      <h3>{t(`shipments.direction.${s.direction}`)}: {t(`shipments.status.${s.status}`)}</h3>
-      {s.simulated && <p className={styles.tag}>{t('shipments.simulated')}</p>}
-      <dl className={styles.facts}>
-        <dt>{t('shipments.fee')}</dt><dd>{formatMoney(BigInt(s.fee), lang)}</dd>
-        <dt>{t('shipments.cash')}</dt><dd>{t('shipments.no_cash')}</dd>
-        {s.consignmentId && <><dt>{t('shipments.consignment')}</dt><dd className={styles.wrap}>{s.consignmentId}</dd></>}
-        {s.pickupDueAt && <><dt>{t('shipments.pickup_due')}</dt><dd>{formatDateTime(Date.parse(s.pickupDueAt), lang)}</dd></>}
-        {s.failedAttempts > 0 && <><dt>{t('shipments.failed_attempts')}</dt><dd>{s.failedAttempts}</dd></>}
+      <h3 className={styles.srOnly}>{t(`shipments.direction.${s.direction}`)}: {t(`shipments.status.${s.status}`)}</h3>
+      <dl className={styles.shipFacts}>
+        <div className={styles.statusCell}><dt>{t(`shipments.direction.${s.direction}`)}</dt><dd>{t(`shipments.status.${s.status}`)}</dd></div>
+        <div><dt>{t('shipments.fee')}</dt><dd>{formatMoney(BigInt(s.fee), lang)}</dd></div>
+        {s.consignmentId && <div><dt>{t('shipments.consignment')}</dt><dd className={styles.wrap}>{s.consignmentId}</dd></div>}
+        {s.pickupDueAt && <div><dt>{t('shipments.pickup_due')}</dt><dd><DateCells at={Date.parse(s.pickupDueAt)} t={t} lang={lang} label={false} /></dd></div>}
+        {s.failedAttempts > 0 && <div><dt>{t('shipments.failed_attempts')}</dt><dd>{toLocalDigits(String(s.failedAttempts), lang)}</dd></div>}
         {s.myAddress && (
-          <>
+          <div className={styles.wideCell}>
             <dt>{t('shipments.my_address')}</dt>
             <dd>{[s.myAddress.contactName, s.myAddress.line1, s.myAddress.line2, s.myAddress.landmark, areaName(s.myAddress.area, lang)].filter(Boolean).join(', ')}</dd>
-          </>
+          </div>
         )}
-        <dt>{t(seller ? 'shipments.buyer_district' : 'shipments.seller_district')}</dt>
-        <dd>{s.other.district ?? t('shipments.district_unknown')}</dd>
+        {s.other.district && <div><dt>{t(seller ? 'shipments.buyer_district' : 'shipments.seller_district')}</dt><dd>{s.other.district}</dd></div>}
       </dl>
       {seller && s.direction === 'forward' && s.needsPickupAddress && <PickupAddress o={o} t={t} lang={lang} />}
       {seller && s.direction === 'return' && s.status !== 'cancelled' && <ReturnReceived o={o} t={t} lang={lang} />}
-      {s.history.length > 0 && (
-        <details>
-          <summary>{t('shipments.history')}</summary>
-          <ol className={styles.history}>
-            {s.history.map((h, i) => <li key={i}>{formatDateTime(Date.parse(h.at), lang)}: {t(`shipments.status.${h.to}`)}</li>)}
-          </ol>
-        </details>
-      )}
     </article>
+  );
+}
+
+/** The status history of the shipment: one cell in the rail that opens it as a ruled list in a popup. */
+export function ShipmentHistory({ items, t, lang }: { items: Shipment[]; t: T; lang: Lang }) {
+  const [open, setOpen] = useState(false);
+  const s = items.find((x) => x.history.length > 0);
+  if (!s) return null;
+  return (
+    <div className={styles.historyCell}>
+      <button type="button" className={`${styles.secondary} ${styles.cellButton}`} onClick={() => setOpen(true)}>{t('shipments.history')}</button>
+      {open && (
+        <Popup id={`history-${s.id}`} title={t('shipments.history')} closeLabel={t('actions.back')} onClose={() => setOpen(false)}>
+          <ol className={styles.ruledList} role="list">
+            {s.history.map((h, i) => <li key={i}><span>{t(`shipments.status.${h.to}`)}</span><DateCells at={Date.parse(h.at)} t={t} lang={lang} label={false} /></li>)}
+          </ol>
+        </Popup>
+      )}
+    </div>
   );
 }
 
@@ -110,11 +120,15 @@ function PickupAddress({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
           ))}
         </fieldset>
       )}
-      <div className={styles.buttons}>
+      <div className={styles.cellRow}>
         {selected && <button type="button" className={styles.primary} disabled={set.isPending} onClick={() => set.mutate(selected)}>{t('shipments.pickup_use')}</button>}
-        {!adding && <button type="button" className={styles.secondary} onClick={() => setAdding(true)}>{t('address.add')}</button>}
+        <button type="button" className={styles.secondary} onClick={() => setAdding(true)}>{t('address.add')}</button>
       </div>
-      {adding && <AddressForm kind="pickup" t={t} lang={lang} onSaved={(a) => { setAdding(false); setChosen(a.id); }} onCancel={() => setAdding(false)} />}
+      {adding && (
+        <Popup id="address-pickup-popup" title={t('address.new.pickup')} closeLabel={t('actions.back')} onClose={() => setAdding(false)}>
+          <AddressForm kind="pickup" t={t} lang={lang} onSaved={(a) => { setAdding(false); setChosen(a.id); }} onCancel={() => setAdding(false)} />
+        </Popup>
+      )}
     </div>
   );
 }

@@ -6,7 +6,10 @@ import { collectRows, DataExportSource } from '../../../kernel/privacy/data-expo
 // reports the user filed, ratings given and received, sanctions, strikes and the public trust summary. Staff ids,
 // internal notes on reports and fraud signals are left out; evidence files are not included.
 const Q = {
-  disputes: `SELECT to_jsonb(d) - '{assigned_to,decided_by,approval_id}'::text[] AS r FROM disputes.disputes d WHERE buyer_id = $1 OR seller_id = $1 ORDER BY opened_at, id`,
+  // the buyer's description is not given to the seller (U10-23), so the seller's export does not carry it either
+  disputes: `SELECT (to_jsonb(d) - '{assigned_to,decided_by,approval_id}'::text[]) - (CASE WHEN d.seller_id = $1 THEN 'description' ELSE '' END) AS r
+               FROM disputes.disputes d WHERE buyer_id = $1 OR seller_id = $1 ORDER BY opened_at, id`,
+  disputeMessages: `SELECT jsonb_build_object('disputeId', m.dispute_id, 'template', m.template, 'params', m.params, 'at', m.at) AS r FROM disputes.messages m WHERE m.user_id = $1 ORDER BY m.at, m.id`,
   disputeStatements: `SELECT jsonb_build_object('disputeId', s.dispute_id, 'party', s.party, 'text', s.text, 'at', s.at) AS r
                         FROM disputes.statements s JOIN disputes.disputes d ON d.id = s.dispute_id
                        WHERE s.purged_at IS NULL AND ((s.party = 'buyer' AND d.buyer_id = $1) OR (s.party = 'seller' AND d.seller_id = $1)) ORDER BY s.at, s.id`,

@@ -48,6 +48,9 @@ export function fulfilmentRefusal(f: Fulfilment, options: Fulfilment[], shipsCou
   return null;
 }
 
+/** The current version of each terms text (U10-23); the web client sends the version it showed. Raise one when its wording changes. */
+const TERMS_VERSION = { handover_code: 1, courier: 1, dispute: 1 } as const;
+
 @Injectable()
 export class OrderService implements OrdersPort {
   constructor(
@@ -209,12 +212,23 @@ export class OrderService implements OrdersPort {
 
   // ---------------------------------------------------------------- my orders
 
-  async list(userId: string, role: 'buyer' | 'seller', cursor: string | undefined) {
+  /**
+   * The stage tabs of the orders list (U10-23): one rule, used by the list and mirrored by the web client's progress.
+   *  orders: waiting for payment, or paid and not yet handed over or sent; on_the_way: paid, and the seller has handed over or sent it
+   *  (the buyer has it or it is coming), until it is closed; completed: closed, refunded or cancelled.
+   */
+  private static readonly STAGE_SQL: Record<'orders' | 'on_the_way' | 'completed', string> = {
+    orders: `(status = 'awaiting_payment' OR (status = 'paid' AND fulfilment_done_at IS NULL AND delivery_event_at IS NULL))`,
+    on_the_way: `(status = 'paid' AND (fulfilment_done_at IS NOT NULL OR delivery_event_at IS NOT NULL))`,
+    completed: `(status IN ('closed', 'cancelled'))`,
+  };
+
+  async list(userId: string, role: 'buyer' | 'seller', cursor: string | undefined, stage?: 'orders' | 'on_the_way' | 'completed') {
     const after = decodeCursor(cursor);
     const column = role === 'seller' ? 'seller_id' : 'buyer_id';
     const rows: { id: string; cursor_at: string }[] = await this.db.query(
       `SELECT id, ${cursorAt('created_at')} AS cursor_at FROM orders.orders
-       WHERE ${column} = $1 AND ($2::timestamptz IS NULL OR (created_at, id) < ($2::timestamptz, $3::uuid))
+       WHERE ${column} = $1 ${stage ? `AND ${OrderService.STAGE_SQL[stage]}` : ''} AND ($2::timestamptz IS NULL OR (created_at, id) < ($2::timestamptz, $3::uuid))
        ORDER BY created_at DESC, id DESC LIMIT ${PAGE + 1}`,
       [userId, after?.at ?? null, after?.id ?? null],
     );
@@ -277,6 +291,27 @@ export class OrderService implements OrdersPort {
     return fee;
   }
 
+  /**
+   * U10-23 (Decisions log): the buyer's acceptance of the terms shown before the handover code, courier delivery or a dispute, kept
+   * as proof (who, order, which terms, which version, when). Only the buyer of the order accepts; anyone else gets not-found (SEC-SDL-09).
+   */
+  async recordTerms(userId: string, orderId: string, kind: 'handover_code' | 'courier' | 'dispute', version: number): Promise<{ acceptedAt: string }> {
+    const order = await this.getOrderForParty(orderId, userId);
+    if (order.role !== 'buyer') throw new Problem('not-found');
+    // the proof is only as good as what the server checks: the current version of the terms, and a step the order is really at
+    if (version !== TERMS_VERSION[kind]) throw new Problem('validation-failed', { errors: [{ field: 'version', reason: 'outdated' }] });
+    const now = kind === 'courier' ? order.status === 'awaiting_payment' && (order.fulfilment === null || order.fulfilment === 'courier')
+      : kind === 'handover_code' ? order.status === 'paid' && order.fulfilment === 'self_pickup'
+        : order.status === 'paid';
+    if (!now) throw new Problem('validation-failed', { errors: [{ field: 'kind', reason: 'not-now' }] });
+    const [again] = (await this.db.query(`SELECT accepted_at FROM orders.terms_acceptances WHERE order_id = $1 AND user_id = $2 AND kind = $3 AND terms_version = $4 ORDER BY accepted_at LIMIT 1`, [orderId, userId, kind, version])) as { accepted_at: Date }[];
+    if (again) return { acceptedAt: again.accepted_at.toISOString() }; // accepted before: the first time stays the proof
+    const [row] = (await this.db.query(
+      `INSERT INTO orders.terms_acceptances (order_id, user_id, kind, terms_version) VALUES ($1, $2, $3, $4) RETURNING accepted_at`, [orderId, userId, kind, version],
+    )) as { accepted_at: Date }[];
+    return { acceptedAt: row.accepted_at.toISOString() };
+  }
+
   private async view(m: EntityManager, orderId: string, userId: string): Promise<OrderView> {
     const o = await m.getRepository(Order).findOneBy({ id: orderId });
     if (!o || (o.buyerId !== userId && o.sellerId !== userId)) throw new Problem('not-found'); // SEC-SDL-09
@@ -284,10 +319,13 @@ export class OrderService implements OrdersPort {
     const [req] = await m.getRepository(CancellationRequest).find({ where: { orderId }, order: { createdAt: 'DESC' }, take: 1 });
     const snap = o.listingSnapshot as ListingSnapshot;
     const iso = (d: Date | null) => d?.toISOString() ?? null;
+    // the other party's public name, for the orders list and the receipt (Decisions log, U10-23)
+    const otherId = o.buyerId === userId ? o.sellerId : o.buyerId;
+    const other = await this.identity.getPublicProfile(otherId).then((p) => ({ id: otherId, displayName: p.displayName, verified: p.verified, joinMonth: p.joinMonth }), () => ({ id: otherId, displayName: '', verified: false, joinMonth: '' }));
     return {
       id: o.id, kind: o.kind, role: o.buyerId === userId ? 'buyer' : 'seller', status: o.status,
       listing: { id: o.listingId, title: snap.title, itemKind: o.itemKind, photoKey: snap.photoKeys?.[0] ?? null },
-      buyerId: o.buyerId, sellerId: o.sellerId, quantity: o.quantity,
+      buyerId: o.buyerId, sellerId: o.sellerId, counterparty: other, quantity: o.quantity,
       unitPrice: o.unitPrice, itemPrice: o.itemPrice, deliveryFee: o.deliveryFee, total: o.total,
       fulfilment: o.fulfilment, fulfilmentOptions: optionsOf(snap),
       paymentDueAt: o.paymentDueAt.toISOString(), paidAt: iso(o.paidAt), fulfilmentStep: o.fulfilmentStep,

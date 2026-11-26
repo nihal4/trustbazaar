@@ -5,7 +5,6 @@ import { fakeBackend, json, problem, renderApp, standInMe, type Call } from '../
 import type { DisputeSummary, DisputeView } from './Disputes';
 import type { OrderView } from './model';
 import type { OrderRatings, RatingView } from './Ratings';
-import libEn from '../../lib/messages/en.json';
 
 // Disputes and ratings on the order view (docs/design/08_frontend.pdf section 7.7; Unit 7; U8-09): only the types
 // allowed now, a description of at least 20 characters, up to 10 images, confirm.open_dispute; the dispute's status,
@@ -47,6 +46,7 @@ function backend(answers: Record<string, Answer | Answer[]> = {}, o: { order?: O
     'GET /orders/o-1/handover': json(200, { orderId: 'o-1', role: 'buyer', status: 'completed', dueAt: iso(0), proposals: [], agreed: null, suggestions: [], code: null, attemptsLeft: null, completedAt: iso(-HOUR), lockedAt: null }),
     'GET /orders/o-1/disputes': () => json(200, { items: o.disputes?.() ?? [] })(),
     'GET /orders/o-1/dispute-types': json(200, { types: ['not_as_described', 'damaged', 'other'], openDisputeId: null }),
+    'POST /orders/o-1/terms-acceptances': json(201, { acceptedAt: iso(0) }),
     'GET /orders/o-1/ratings': () => json(200, o.ratings?.() ?? { canRate: false, rateUntil: null, mine: null, received: null })(),
     ...answers,
   });
@@ -72,16 +72,23 @@ describe('disputes', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
     expect(await screen.findByText('Describe the problem in at least 20 characters.')).toBeTruthy();
     fireEvent.change(screen.getByLabelText('Describe the problem'), { target: { value: '  The shade is cracked and the switch does not work.  ' } });
-    const files = screen.getByLabelText(/^Photos \(optional, up to 10/);
+    const files = screen.getByLabelText(/^Photos and videos \(optional, up to 10/);
     fireEvent.change(files, { target: { files: [image('a.pdf', 'application/pdf')] } });
-    expect(await screen.findByText('a.pdf cannot be used. Choose a JPEG, PNG or WebP image of at most 10 MB.')).toBeTruthy();
+    expect(await screen.findByText('a.pdf cannot be used. Choose a JPEG, PNG or WebP photo of at most 10 MB, or an MP4, MOV or WebM video of at most 50 MB.')).toBeTruthy();
     fireEvent.change(files, { target: { files: [image('1.jpg'), image('2.png', 'image/png'), image('3.webp', 'image/webp')] } });
-    expect(screen.getByText('Photos chosen: 3')).toBeTruthy();
+    expect(screen.getByText('Files chosen: 3')).toBeTruthy();
+    // at most two videos
+    fireEvent.change(files, { target: { files: [image('a.mp4', 'video/mp4'), image('b.mp4', 'video/mp4'), image('c.webm', 'video/webm')] } });
+    expect(await screen.findByText('Choose at most 2 videos.')).toBeTruthy();
+    fireEvent.change(files, { target: { files: [image('1.jpg'), image('2.png', 'image/png'), image('3.webp', 'image/webp')] } });
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText(libEn['confirm.open_dispute'])).toBeTruthy();
+    expect(within(dialog).getByText(/Opening a dispute freezes the payment until TrustBazaar decides/)).toBeTruthy();
+    expect((within(dialog).getByRole('button', { name: 'Open the dispute' }) as HTMLButtonElement).disabled).toBe(true); // the terms must be accepted first
+    fireEvent.click(within(dialog).getByRole('checkbox'));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Open the dispute' }));
-    expect(await screen.findByRole('heading', { name: 'Dispute: The item arrived damaged' })).toBeTruthy();
+    await waitFor(() => expect(be.called('POST /orders/o-1/terms-acceptances').map((c) => c.body)).toEqual([{ kind: 'dispute', version: 1 }])); // kept before the dispute opens
+    expect(await screen.findByRole('heading', { name: 'Dispute' })).toBeTruthy(); // the dispute slot of the rail
     expect(await screen.findByText('The dispute is open, but these photos could not be added: 2.png. You can add them below.')).toBeTruthy();
     const opened = be.called('POST /orders/o-1/disputes');
     expect(opened).toHaveLength(1);
@@ -102,26 +109,40 @@ describe('disputes', () => {
     expect(be.called('GET /orders/o-1/dispute-types')).toHaveLength(0);
   });
 
-  it('FR-DSP-04 the seller finds the dispute on the order, sees the response deadline as a countdown, and responds', async () => {
-    let d = dispute({ role: 'seller' });
+  it('FR-DSP-04 the seller finds the dispute in the slot of the order: its state and the response deadline as a countdown, a chat with TrustBazaar, no text of the buyer', async () => {
+    const d = dispute({ role: 'seller', description: null });
+    renderApp('/orders/o-1', backend({ 'GET /disputes/d-1': json(200, d) }, { order: order({ role: 'seller', escrow: { ...order().escrow!, state: 'frozen_disputed' } }), disputes: () => [{ ...summary(d), unseen: 2 }] }));
+    const panel = (await screen.findByRole('heading', { name: 'Dispute' })).closest('section')!;
+    expect(within(panel).getByText('2 new messages')).toBeTruthy(); // TrustBazaar's messages the seller has not read
+    expect(within(panel).getByText('Status').nextElementSibling?.textContent).toBe('Sent');
+    expect(within(panel).getByText('The seller must respond by').nextElementSibling?.textContent).toMatch(/^Time left1 day 2[23] h/);
+    expect(within(panel).getByRole('link', { name: /^Open dispute chat/ }).getAttribute('href')).toBe('/disputes/d-1');
+    expect(screen.queryByText(/The shade is cracked/)).toBeNull(); // the buyer's words are never shown to the seller
+    expect(screen.queryByRole('button', { name: 'Withdraw the dispute' })).toBeNull(); // the buyer's only
+  });
+
+  it('FR-DSP-04 the dispute chat is a messenger: TrustBazaar tells the seller about the complaint, the seller writes in the box at the bottom, Enter sends', async () => {
+    let chat = { role: 'seller', status: 'open', items: [{ from: 'trustbazaar', template: 'dispute.opened_seller', params: { listing_title: 'Desk lamp', hours: 48 }, at: iso(-HOUR), unseen: true }] };
     const be = backend({
-      'GET /disputes/d-1': () => json(200, d)(),
+      'GET /disputes/d-1': json(200, dispute({ role: 'seller', description: null })),
+      'GET /disputes/d-1/chat': () => json(200, chat)(),
+      'POST /disputes/d-1/chat/seen': json(200, { seenAt: iso(0) }),
       'POST /disputes/d-1/statements': (c) => {
-        d = dispute({ role: 'seller', status: 'under_review', decisionTargetAt: iso(72 * HOUR), statements: [{ party: 'seller', text: (c.body as { text: string }).text, at: iso(0) }] });
+        chat = { role: 'seller', status: 'under_review', items: [...chat.items, { from: 'you', text: (c.body as { text: string }).text, at: iso(0) } as never] };
         return json(201, { status: 'under_review' })();
       },
-    }, { order: order({ role: 'seller', escrow: { ...order().escrow!, state: 'frozen_disputed' } }), disputes: () => [summary(d)] });
-    renderApp('/orders/o-1', be);
-    const panel = (await screen.findByRole('heading', { name: 'Dispute: The item arrived damaged' })).closest('section')!;
-    expect(within(panel).getByText('The buyer opened a dispute. Please respond before the deadline.')).toBeTruthy();
-    expect(within(panel).getByText('The seller must respond by').nextElementSibling?.textContent).toMatch(/\(in 1 day 2[23] h\)$/);
-    expect(within(panel).getByText('Your first statement is your response. TrustBazaar then reviews the dispute.')).toBeTruthy();
-    fireEvent.change(within(panel).getByLabelText('Your response'), { target: { value: ' It was packed well; see my photos. ' } });
-    fireEvent.click(within(panel).getByRole('button', { name: 'Send the response' }));
-    expect(await screen.findByText('TrustBazaar is reviewing the dispute.')).toBeTruthy();
+    });
+    renderApp('/disputes/d-1', be);
+    expect(await screen.findByRole('heading', { name: 'Dispute chat' })).toBeTruthy();
+    expect(screen.getByText('A complaint was filed about Desk lamp. Please send your cause or defence within 48 hours.')).toBeTruthy();
+    await waitFor(() => expect(be.called('POST /disputes/d-1/chat/seen')).toHaveLength(1)); // opening the chat marks TrustBazaar's messages as seen
+    const box = screen.getByRole('textbox', { name: 'Write a message' });
+    expect((screen.getByRole('button', { name: 'Send' }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.change(box, { target: { value: ' It was packed well; see my photos. ' } });
+    fireEvent.keyDown(box, { key: 'Enter' });
+    expect(await screen.findByText('It was packed well; see my photos.')).toBeTruthy();
     expect(be.called('POST /disputes/d-1/statements')[0].body).toEqual({ text: 'It was packed well; see my photos.' });
-    expect(screen.getByText('TrustBazaar aims to decide by')).toBeTruthy();
-    expect(screen.getByText('You')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Go to the order' }).getAttribute('href')).toBe('/orders/o-1');
     expect(screen.queryByRole('button', { name: 'Withdraw the dispute' })).toBeNull(); // the buyer's only
   });
 
@@ -132,43 +153,50 @@ describe('disputes', () => {
       statements: [{ party: 'seller', text: null, at: iso(-2 * HOUR) }],
     });
     renderApp('/orders/o-1', backend({ 'GET /disputes/d-1': json(200, d) }, { order: closed({ escrow: { ...order().escrow!, state: 'partially_refunded' } }), disputes: () => [summary(d)] }));
-    expect(await screen.findByText('The buyer is refunded ৳500 of the item price; the rest goes to the seller.')).toBeTruthy();
-    expect(screen.getByText('Reason: The shade was cracked; the lamp works.')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Photo 1' }).getAttribute('href')).toBe('https://tb.test/api/v1/files/v/abc');
-    expect(screen.getByText('Photo 2 (removed)')).toBeTruthy();
-    expect(screen.getByText('(removed after the retention period)')).toBeTruthy();
-    expect(screen.queryByLabelText('Add a statement')).toBeNull();
+    expect(await screen.findByText('Decided')).toBeTruthy();
+    expect(screen.getByText('The buyer is refunded ৳500 of the item price; the rest goes to the seller.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Add a photo or video' })).toBeNull(); // nothing more can be added after the decision
+    expect(screen.queryByRole('button', { name: 'Withdraw the dispute' })).toBeNull();
   });
 
-  it('FR-DSP-10 withdrawing states that the seller is then paid automatically on the release time', async () => {
+  it('FR-DSP-10 the buyer withdraws from the dispute chat; the seller is then paid automatically on the release time', async () => {
     let d = dispute();
     const be = backend({
       'GET /disputes/d-1': () => json(200, d)(),
+      'GET /disputes/d-1/chat': () => json(200, { role: 'buyer', status: d.status, items: [] })(),
       'POST /disputes/d-1/withdraw': () => { d = dispute({ status: 'withdrawn', withdrawnAt: iso(0) }); return json(200, { status: 'withdrawn' })(); },
-    }, { disputes: () => [summary(d)] });
-    renderApp('/orders/o-1', be);
+    });
+    renderApp('/disputes/d-1', be);
     fireEvent.click(await screen.findByRole('button', { name: 'Withdraw the dispute' }));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText(/^Withdrawing ends this dispute for good\. The seller is then paid automatically on .+ unless you open a different kind of dispute\.$/)).toBeTruthy();
     expect(within(dialog).queryByText(/\{at\}/)).toBeNull();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Withdraw' }));
-    expect(await screen.findByText('You withdrew this dispute.')).toBeTruthy();
+    expect((await screen.findAllByText('Withdrawn')).length).toBeGreaterThan(0); // the status, and the head of the chat
     expect(be.called('POST /disputes/d-1/withdraw')).toHaveLength(1);
+    expect(screen.queryByRole('textbox', { name: 'Write a message' })).toBeNull(); // no more messages once it is withdrawn
   });
 
-  it('CP-33 a party adds a photo to a live dispute; other files are refused before upload', async () => {
-    const be = backend({ 'GET /disputes/d-1': json(200, dispute()), 'POST /disputes/d-1/evidence': json(201, { evidenceId: 'e-9' }) }, { disputes: () => [summary(dispute())] });
-    renderApp('/orders/o-1', be);
-    const input = await screen.findByLabelText('Add a photo (up to 10 more)');
+  it('CP-33 a party adds a photo or video with the paperclip of the chat; other files are refused before upload', async () => {
+    const be = backend({
+      'GET /disputes/d-1': json(200, dispute()), 'GET /disputes/d-1/chat': json(200, { role: 'buyer', status: 'open', items: [] }),
+      'POST /disputes/d-1/evidence': json(201, { evidenceId: 'e-9' }),
+    });
+    renderApp('/disputes/d-1', be);
+    const input = await screen.findByLabelText('Add a photo or video');
     fireEvent.change(input, { target: { files: [image('big.jpg', 'image/jpeg', 10_485_761)] } });
-    expect(await screen.findByText('big.jpg cannot be used. Choose a JPEG, PNG or WebP image of at most 10 MB.')).toBeTruthy();
+    expect(await screen.findByText('big.jpg cannot be used. Choose a JPEG, PNG or WebP photo of at most 10 MB, or an MP4, MOV or WebM video of at most 50 MB.')).toBeTruthy();
     fireEvent.change(input, { target: { files: [image('seal.jpg')] } });
     await waitFor(() => expect(be.called('POST /disputes/d-1/evidence')).toHaveLength(1));
+    fireEvent.change(input, { target: { files: [image('unboxing.mp4', 'video/mp4', 20_000_000)] } });
+    await waitFor(() => expect(be.called('POST /disputes/d-1/evidence')).toHaveLength(2));
+    fireEvent.change(input, { target: { files: [image('huge.mp4', 'video/mp4', 52_428_801)] } });
+    expect(await screen.findByText(/huge.mp4 cannot be used/)).toBeTruthy();
   });
 
-  it('FR-DSP-07 /disputes/:id shows one dispute with a link to its order', async () => {
-    renderApp('/disputes/d-1', backend({ 'GET /disputes/d-1': json(200, dispute()), 'GET /disputes/d-404': problem(404, 'not-found') }));
-    expect(await screen.findByRole('heading', { name: 'Dispute: The item arrived damaged' })).toBeTruthy();
+  it('FR-DSP-07 /disputes/:id is the dispute chat, with a link to its order', async () => {
+    renderApp('/disputes/d-1', backend({ 'GET /disputes/d-1': json(200, dispute()), 'GET /disputes/d-1/chat': json(200, { role: 'buyer', status: 'open', items: [] }), 'GET /disputes/d-404': problem(404, 'not-found') }));
+    expect(await screen.findByRole('heading', { name: 'Dispute chat' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Go to the order' }).getAttribute('href')).toBe('/orders/o-1');
     cleanup();
     renderApp('/disputes/d-404', backend({ 'GET /disputes/d-404': problem(404, 'not-found') }));

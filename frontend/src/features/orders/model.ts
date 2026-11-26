@@ -12,6 +12,8 @@ export interface OrderView {
   listing: { id: string; title: string; itemKind: 'physical' | 'game_account'; photoKey: string | null };
   /** The chat thread of the order's buyer and seller, null until they have written (Decisions log, U8-13). */
   threadId: string | null;
+  /** The other party: the seller to the buyer, the buyer to the seller (public display name only). */
+  counterparty?: { id: string; displayName: string; verified?: boolean; joinMonth?: string };
   quantity: number;
   itemPrice: string;
   deliveryFee: string;
@@ -102,6 +104,8 @@ export const handoverKey = (id: string) => ['orders', id, 'handover'] as const;
 export const shipmentsKey = (id: string) => ['orders', id, 'shipments'] as const;
 export const addressesKey = ['me', 'addresses'] as const;
 export const areasKey = ['delivery', 'areas'] as const;
-export const ordersKey = (role: 'buyer' | 'seller') => ['orders', { role }] as const;
+export type OrderStage = 'orders' | 'on_the_way' | 'completed';
+export const ORDER_STAGES: OrderStage[] = ['orders', 'on_the_way', 'completed'];
+export const ordersKey = (role: 'buyer' | 'seller', stage: OrderStage = 'orders') => ['orders', { role, stage }] as const;
 
 export const ms = (s: string | null | undefined): number | null => (s ? Date.parse(s) : null);

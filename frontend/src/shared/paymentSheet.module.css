@@ -1,0 +1,50 @@
+/* The payment sheet (U10-23): a sheet rising from the bottom over a blurred page, in the ruled look of the rest of the app: rules and dividers, no outlined or
+   filled boxes; the amount is Figtree 600; the one vermilion voice is the Pay button and the rule on top; green only for the payment that is complete. */
+.sheet { position: fixed; inset: auto 0 0 0; margin: 0 auto; width: min(34rem, 100%); max-width: 100%; max-height: 92svh; padding: 0; border: 0; border-top: 2px solid var(--tb-hot); border-radius: 0; background: var(--tb-sheet); color: var(--tb-text); overflow: auto; }
+.sheet::backdrop { background: rgb(5 9 8 / 0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+@media (prefers-reduced-motion: no-preference) {
+  .sheet[open] { animation: sheetUp 260ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .sheet[open]::backdrop { animation: backdropIn 260ms ease-out; }
+  @keyframes sheetUp { from { transform: translateY(100%); } }
+  @keyframes backdropIn { from { opacity: 0; } }
+}
+.inner { padding: 0.75rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom)); display: grid; gap: 0.75rem; }
+.grab { width: 3rem; height: 3px; margin: 0 auto 0.25rem; background: var(--tb-border); }
+.title { margin: 0.25rem 0 0; font-family: var(--tb-font-display); font-weight: var(--tb-display-weight); font-size: 1.625rem; line-height: 1.15; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.lead { margin: 0; color: var(--tb-muted); line-height: 1.5; text-wrap: pretty; }
+.methods { list-style: none; margin: 0.25rem 0 0; padding: 0; border-top: 1px solid var(--tb-line); }
+.methods li { border-bottom: 1px solid var(--tb-line); }
+.method { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 1rem; align-items: center; width: 100%; min-height: 64px; padding: 0.5rem 0; border: 0; background: none; color: var(--tb-text); font: inherit; text-align: left; cursor: pointer; }
+.method:hover { background: var(--tb-surface); }
+.method:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
+.methodName { font-weight: 700; font-size: 1.0625rem; }
+.methodNote { grid-column: 1; color: var(--tb-muted); font-size: 0.875rem; }
+.method svg { grid-column: 2; grid-row: 1 / span 2; color: var(--tb-muted); }
+.form { display: grid; gap: 0.875rem; }
+.field { display: grid; gap: 0.25rem; }
+.field > span { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; color: var(--tb-muted); font-size: 0.875rem; font-weight: 600; }
+.field input { min-height: 48px; padding: 0 0.25rem; border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; background: none; color: var(--tb-text); font: inherit; font-size: 1.125rem; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.field input::placeholder { color: var(--tb-muted); opacity: 0.7; }
+.field input:focus-visible { outline: 2px solid transparent; border-bottom-color: var(--tb-hot); box-shadow: inset 0 -2px 0 var(--tb-hot); }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.brand { color: var(--tb-text); font-size: 0.875rem; font-weight: 700; letter-spacing: 0; }
+.pay { min-height: 52px; padding: 0 1.5rem; border: 0; border-radius: 6px; background: var(--tb-action); color: var(--tb-action-text); font: inherit; font-weight: 700; font-size: 1.0625rem; cursor: pointer; transition: background 140ms; }
+.pay:hover:not(:disabled) { background: var(--tb-hot-hover); }
+.pay:disabled { opacity: 0.45; cursor: not-allowed; }
+.pay:focus-visible { outline: 2px solid var(--tb-text); outline-offset: 3px; }
+.quiet { justify-self: center; min-height: 44px; padding: 0 0.5rem; border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; background: none; color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
+.quiet:hover { border-bottom-color: var(--tb-hot); }
+.quiet:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+.center { display: grid; gap: 0.75rem; justify-items: center; text-align: center; padding-block: 0.5rem; }
+.center .title { margin-top: 0; }
+.bar { position: relative; width: min(18rem, 100%); height: 3px; margin-top: 0.75rem; background: var(--tb-line); overflow: hidden; }
+.bar span { position: absolute; inset: 0 auto 0 0; width: 40%; background: var(--tb-hot); }
+@media (prefers-reduced-motion: no-preference) { .bar span { animation: sweep 1s ease-in-out infinite; } @keyframes sweep { from { transform: translateX(-100%); } to { transform: translateX(250%); } } }
+@media (prefers-reduced-motion: reduce) { .bar span { width: 100%; opacity: 0.6; } }
+.tick { color: var(--tb-protect); }
+@media (prefers-reduced-motion: no-preference) { .tick circle { stroke-dasharray: 132; stroke-dashoffset: 132; animation: draw 500ms ease-out forwards; } .tick path { stroke-dasharray: 40; stroke-dashoffset: 40; animation: draw 360ms 380ms ease-out forwards; } @keyframes draw { to { stroke-dashoffset: 0; } } }
+.amount { margin: 0; font-family: var(--tb-font); font-weight: 600; font-size: 2.5rem; line-height: 1.05; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+.ask { margin: 0.5rem 0 0; padding-top: 0.75rem; border-top: 1px solid var(--tb-line); width: 100%; font-weight: 600; text-wrap: balance; }
+.answer { display: grid; gap: 0.5rem; width: 100%; }
+.fine { margin: 0; color: var(--tb-muted); font-size: 0.8125rem; text-wrap: pretty; }
+@media (forced-colors: active) { .sheet { border-top-color: CanvasText; } .field input:focus-visible { outline: 2px solid Highlight; } .tick { color: Highlight; } }

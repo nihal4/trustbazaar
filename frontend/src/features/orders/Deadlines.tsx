@@ -2,7 +2,7 @@
 // 7.5 (2); NFR-USE-08; U8-06): the payment window, the fulfilment deadline, the agreed meetup time, the end of the
 // dispute window and the automatic release (or, for a game account, the end of the protection period). The dispute's
 // own deadlines are on the dispute tab (U8-09).
-import { formatDeadline } from '../../lib/time.js';
+import { Moment } from '../../shared/Moment';
 import { useServerNow } from '../../shared/clock';
 import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
@@ -32,14 +32,16 @@ export function Deadlines({ o, h, t, lang }: { o: OrderView; h: HandoverView | n
   const now = useServerNow();
   const list = deadlinesOf(o, h);
   if (list.length === 0) return null;
+  const soon = (d: Deadline) => d.at - now < 3_600_000 && d.at > now;
+  // every deadline is a ruled cell, label over value (in the Meetup handover it is the first row of its grid; otherwise the head of the rail)
   return (
-    <section aria-labelledby="deadlines-title">
-      <h2 id="deadlines-title">{t('deadlines.title')}</h2>
-      <dl className={styles.deadlines}>
+    <section aria-labelledby="deadlines-title" className={styles.deadlineWrap}>
+      <h2 id="deadlines-title" className={styles.srOnly}>{t('deadlines.title')}</h2>
+      <dl className={styles.deadlineGrid}>
         {list.map((d) => (
-          <div key={d.key} className={d.at - now < 3_600_000 && d.at > now ? styles.urgent : undefined}>
+          <div key={d.key} className={soon(d) ? styles.urgent : undefined}>
             <dt>{t(d.key)}</dt>
-            <dd>{formatDeadline(d.at, now, lang)}</dd>
+            <dd><Moment at={d.at} now={now} t={t} lang={lang} /></dd>
           </div>
         ))}
       </dl>

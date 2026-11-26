@@ -25,6 +25,8 @@ export interface OrderView {
   listing: { id: string; title: string; itemKind: 'physical' | 'game_account'; photoKey: string | null };
   buyerId: string;
   sellerId: string;
+  /** The other party in this order (the seller to the buyer, the buyer to the seller): the public display name only. */
+  counterparty: { id: string; displayName: string; verified: boolean; joinMonth: string };
   quantity: number;
   unitPrice: string;
   itemPrice: string;

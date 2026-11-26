@@ -40,6 +40,11 @@ export class OrdersQuery {
   @IsIn(['buyer', 'seller'])
   role?: 'buyer' | 'seller';
 
+  /** U10-23: the stage tab of the orders list. */
+  @IsOptional()
+  @IsIn(['orders', 'on_the_way', 'completed'])
+  stage?: 'orders' | 'on_the_way' | 'completed';
+
   @IsOptional()
   @IsString()
   @MaxLength(100)
@@ -148,4 +153,31 @@ export class StaffReasonDto {
 export class BankAccountDecisionDto extends StaffReasonDto {
   @IsIn(['approve', 'reject'])
   decision!: 'approve' | 'reject';
+}
+
+/** U10-23: the buyer's default payment method, as a label only: never a card number, a code or a PIN. */
+export class SavedPaymentMethodDto {
+  @IsIn(['card', 'bkash', 'nagad'])
+  kind!: 'card' | 'bkash' | 'nagad';
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(24)
+  @Matches(/^[A-Za-z][A-Za-z ]*$/)
+  brand?: string;
+
+  @IsString()
+  @Matches(/^[0-9]{4}$/)
+  last4!: string;
+}
+
+/** U10-23: the terms the buyer accepted, and their version. */
+export class TermsAcceptanceDto {
+  @IsIn(['handover_code', 'courier', 'dispute'])
+  kind!: 'handover_code' | 'courier' | 'dispute';
+
+  @IsInt()
+  @Min(1)
+  @Max(999)
+  version!: number;
 }

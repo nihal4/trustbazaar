@@ -27,7 +27,7 @@ function backend(o: { l?: Record<string, unknown>; signedIn?: boolean; create?: 
     'GET /me/notification-preferences': json(200, { language: 'en', emailTransactional: true }),
     [`GET /listings/${ID}`]: json(200, listing(o.l)),
     'POST /orders': o.create ?? json(201, { id: 'o-1' }),
-    'GET /orders/o-1': json(200, { id: 'o-1', status: 'awaiting_payment', role: 'buyer', listing: { id: ID, title: 'Desk lamp' } }),
+    'GET /orders/o-1': json(200, { id: 'o-1', status: 'awaiting_payment', role: 'buyer', total: '300000', listing: { id: ID, title: 'Desk lamp' } }),
   });
 }
 
@@ -35,16 +35,18 @@ describe('checkout', () => {
   it('FR-FIX-01 the summary beside the choices holds the total, the button and the payment promise (Daylight design)', async () => {
     renderApp(`/checkout/${ID}`, backend());
     const summary = await screen.findByRole('complementary', { name: 'Summary' });
-    expect(within(summary).getByText('Total to pay: ৳1,500')).toBeTruthy();
+    expect(within(summary).getByText('৳1,500')).toBeTruthy();            // the total, named once
     expect(within(summary).getByRole('button', { name: 'Continue to payment' }).getAttribute('form')).toBe('checkout-form');
     expect(within(summary).getByText('Your money waits with us')).toBeTruthy();
   });
 
-  it('NFR-USE-07 the summary is the counterfoil: the total in figures and in words, how the money moves, the button (AC-ORD-1)', async () => {
+  it('NFR-USE-07 the summary is a ruled column: the total once, how the money moves in order (none of it has happened yet), the button (AC-ORD-1)', async () => {
     renderApp(`/checkout/${ID}`, backend(), 'bn');
     const summary = await screen.findByRole('complementary', { name: 'সারসংক্ষেপ' });
-    expect(within(summary).getByText('এক হাজার পাঁচ শত টাকা মাত্র')).toBeTruthy();
-    expect(within(summary).getAllByRole('listitem')).toHaveLength(3);
+    expect(within(summary).getAllByText('৳১,৫০০').length).toBeGreaterThan(0);
+    const steps = within(summary).getAllByRole('listitem');
+    expect(steps).toHaveLength(3);
+    expect(steps.some((li) => li.getAttribute('aria-current') === 'step')).toBe(false);   // nothing is paid or held at checkout: no step is marked
     expect(screen.queryByText('The seller is paid only after you confirm you have the item.')).toBeNull();
   });
 
@@ -55,10 +57,15 @@ describe('checkout', () => {
     expect(screen.getByText('Price for one: ৳1,500')).toBeTruthy();
     expect((screen.getByLabelText('Pick it up from the seller (no delivery fee)') as HTMLInputElement).checked).toBe(true);
     fireEvent.change(screen.getByLabelText('Quantity'), { target: { value: '২' } });
-    expect(screen.getByText('Total to pay: ৳3,000')).toBeTruthy();
+    expect(screen.getByText('৳3,000')).toBeTruthy();                      // two units: the total changes
     const button = screen.getByRole('button', { name: 'Continue to payment' });
     fireEvent.click(button);
     fireEvent.click(button);
+    // a pickup order is paid right here: the payment sheet rises over the checkout, with the order's own total
+    const sheet = await screen.findByRole('dialog');
+    expect(within(sheet).getByRole('heading', { name: 'Pay ৳3,000' })).toBeTruthy();
+    expect(doc.router.state.location.pathname).toBe(`/checkout/${ID}`);
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Cancel' }));          // leaving the sheet goes on to the order's page, still unpaid
     await waitFor(() => expect(doc.router.state.location.pathname).toBe('/orders/o-1'));
     const sent = be.called('POST /orders');
     expect(sent).toHaveLength(1);

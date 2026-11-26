@@ -61,7 +61,10 @@ function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; ve
   };
   const db = { ...manager, manager, transaction: (cb: (m: typeof manager) => unknown) => cb(manager) };
   const listings = { reserve: jest.fn(async () => o.reserve ?? true), snapshot: jest.fn(async () => o.snap ?? snapshot()) };
-  const identity = { getPrincipal: jest.fn(async () => ({ verifiedAt: o.verifiedAt === undefined ? new Date('2026-01-01') : o.verifiedAt })) };
+  const identity = {
+    getPrincipal: jest.fn(async () => ({ verifiedAt: o.verifiedAt === undefined ? new Date('2026-01-01') : o.verifiedAt })),
+    getPublicProfile: jest.fn(async (id: string) => ({ id, displayName: `Name of ${id}`, verified: true, joinMonth: '2025-03' })),
+  };
   const audit = { record: jest.fn(async () => undefined) };
   const values = parameterValues({ ...PARAMS, 'CP-36': o.cp36 ?? true });
   const params = { current: async () => ({ ...values, version: 7 }), switchOn: async () => o.switchOn ?? true } as unknown as ConfigPort;
@@ -182,11 +185,22 @@ describe('OrderService', () => {
     const s = setup();
     const { order } = await s.svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined);
     s.escrows.rows.push({ orderId: order.id, state: 'held', releasePolicy: 'standard', amountCollected: '1000000', amountRefunded: '0', disputeWindowEndsAt: null, autoReleaseAt: NOW });
-    expect(await s.svc.getOrderForParty(order.id, 'S')).toMatchObject({ role: 'seller', escrow: { state: 'held', autoReleaseAt: NOW.toISOString() } });
+    expect(await s.svc.getOrderForParty(order.id, 'S')).toMatchObject({ role: 'seller', counterparty: { id: 'B', displayName: 'Name of B', verified: true, joinMonth: '2025-03' }, escrow: { state: 'held', autoReleaseAt: NOW.toISOString() } });
     expect(await problemOf(s.svc.getOrderForParty(order.id, 'X'))).toEqual(['not-found']);
     expect((await s.svc.getOrderForParty(order.id, 'B')).cancellationRequest).toBeNull();
     s.cancellations.rows.push({ id: 'C1', orderId: order.id, status: 'pending', reason: 'Wrong model', createdAt: NOW });
     expect((await s.svc.getOrderForParty(order.id, 'B')).cancellationRequest).toEqual({ id: 'C1', status: 'pending', reason: 'Wrong model', createdAt: NOW.toISOString() });
+  });
+
+  it('IF-UI-05 the stage tabs filter on the server, so every tab pages on its own: orders, on the way, completed', async () => {
+    const s = setup({ rows: [] });
+    await s.svc.list('B', 'buyer', undefined, 'orders');
+    await s.svc.list('B', 'buyer', undefined, 'on_the_way');
+    await s.svc.list('B', 'buyer', undefined, 'completed');
+    const sql = s.manager.query.mock.calls.map((c: unknown[]) => String(c[0]));
+    expect(sql[0]).toContain(`status = 'awaiting_payment'`);
+    expect(sql[1]).toContain('fulfilment_done_at IS NOT NULL');
+    expect(sql[2]).toContain(`'closed', 'cancelled'`);
   });
 
   it('IF-UI-05 my orders in pages of 50 with a cursor', async () => {
@@ -252,7 +266,7 @@ describe('OrdersController', () => {
     await c.fulfilment('o', { fulfilment: 'self_pickup' }, user);
     await c.receipt('o', user);
     expect(statements.receipt).toHaveBeenCalledWith('o', 'B');
-    expect(svc.list).toHaveBeenCalledWith('B', 'buyer', undefined);
+    expect(svc.list).toHaveBeenCalledWith('B', 'buyer', undefined, undefined);
     expect(svc.getOrderPage).toHaveBeenCalledWith('o', 'B');
     expect(svc.chooseFulfilment).toHaveBeenCalledWith('B', 'o', 'self_pickup', undefined);
     expect(() => c.view('o', { type: 'staff', staffId: 's', sessionId: 's', role: 'operator' })).toThrow(Problem);

@@ -233,7 +233,7 @@ export class KycReviewService implements OnModuleInit {
     if (v) {
       const bytes = await this.vault.open(v.purpose, v.fileId, v.storageKey, v.wrappedDek).catch(() => null);
       if (!bytes) throw new Problem('link-invalid');
-      return { bytes, mime: mimeOf(v.purpose) };
+      return { bytes, mime: mimeOf(v.purpose, bytes) };
     }
     const [f] = await this.db.query(`SELECT id, storage_key, wrapped_dek FROM identity.kyc_files WHERE id = $1 AND erased_at IS NULL`, [c.f]);
     if (!f) throw new Problem('link-invalid');

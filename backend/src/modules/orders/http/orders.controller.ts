@@ -6,7 +6,7 @@ import { Problem } from '../../../kernel/http/problems';
 import { EscrowService } from '../services/escrow.service';
 import { OrderService } from '../services/order.service';
 import { StatementService } from '../services/statement.service';
-import { CancellationDecisionDto, CancellationDto, CheckoutDto, FulfilmentDto, OrdersQuery } from './orders.dto';
+import { CancellationDecisionDto, CancellationDto, CheckoutDto, FulfilmentDto, OrdersQuery, TermsAcceptanceDto } from './orders.dto';
 
 // The buyer's side of the orders API (docs/design/02_orders_payments.pdf section 3.1), U2-02. "Party to
 // order" and "Buyer" are SignedIn here plus the check in OrderService, which answers not-found to anyone
@@ -42,7 +42,7 @@ export class OrdersController {
   @SignedIn()
   @Get()
   list(@Query() q: OrdersQuery, @CurrentPrincipal() p: Principal) {
-    return this.orders.list(userOf(p), q.role ?? 'buyer', q.cursor);
+    return this.orders.list(userOf(p), q.role ?? 'buyer', q.cursor, q.stage);
   }
 
   /** IF-UI-05: the order, its escrow and every deadline (I-52). */
@@ -95,6 +95,14 @@ export class OrderActionsController {
   async releaseEarly(@Id('id') id: string, @CurrentPrincipal() p: Principal) {
     await this.escrow.releaseEarly(userOf(p), id);
     return this.orders.getOrderForParty(id, userOf(p));
+  }
+
+  /** U10-23: the buyer's acceptance of the terms shown before the handover code, courier delivery or a dispute, kept as proof. */
+  @SignedIn()
+  @Post(':id/terms-acceptances')
+  @HttpCode(201)
+  acceptTerms(@Id('id') id: string, @Body() dto: TermsAcceptanceDto, @CurrentPrincipal() p: Principal) {
+    return this.orders.recordTerms(userOf(p), id, dto.kind, dto.version);
   }
 
   /** FR-PAY-09: the buyer asks to cancel before the delivery event. */

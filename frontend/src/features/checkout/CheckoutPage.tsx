@@ -18,9 +18,11 @@ import { FormMessage } from '../../shared/form';
 import { useT } from '../../shared/language/Language';
 import { useMe } from '../../shared/me';
 import { isApiError, problemName } from '../../shared/problems';
-import { amountInWords } from '../../shared/amountWords';
-import { Counterfoil } from '../../shared/Counterfoil';
+import { EscrowSteps } from '../../shared/EscrowSteps';
 import { FRESHNESS } from '../../shared/query';
+import { PaymentSheet } from '../../shared/PaymentSheet';
+import enOrders from '../../messages/en/orders.json';
+import bnOrders from '../../messages/bn/orders.json';
 import { SimulatedBanner } from '../../shared/SimulatedBanner';
 import en from '../../messages/en/checkout.json';
 import bn from '../../messages/bn/checkout.json';
@@ -56,6 +58,7 @@ export function Component() {
   const [quantity, setQuantity] = useState('1');
   const [error, setError] = useState<string | null>(null);
   const [method, setMethod] = useState<'self_pickup' | 'courier' | null>(null);
+  const [paying, setPaying] = useState<string | null>(null);
 
   // a guest is sent to sign in, returning here (section 3.3)
   useEffect(() => {
@@ -73,7 +76,8 @@ export function Component() {
     // courier is chosen on the order page with its quote; the order is created without a method (Unit 2, FR-DLV-02)
     mutationFn: ({ q, f }: { q: number; f: 'self_pickup' | 'courier' | 'game_account' }) =>
       api.post('/orders', { listingId, quantity: q, ...(f === 'self_pickup' ? { fulfilment: 'self_pickup' } : {}) }, { idempotent: true }) as Promise<{ id: string }>,
-    onSuccess: (o) => void navigate(`/orders/${encodeURIComponent(o.id)}`),
+    // paying: a pickup order is paid right here, in the payment sheet; courier needs the address and quote on the order page, a game account its key
+    onSuccess: (o, v) => (v.f === 'self_pickup' ? setPaying(o.id) : void navigate(`/orders/${encodeURIComponent(o.id)}`)),
     onError: (e) => {
       const name = problemName(e);
       setError(name === 'not-available' ? t('checkout.unavailable')
@@ -175,20 +179,30 @@ export function Component() {
         </div>
         {!blocked && (
           <aside className={styles.summary} aria-labelledby="summary-title">
-            <Counterfoil stubCopy={false} amount={total ?? undefined}
-              amountWords={sum !== null && chosen !== 'courier' ? amountInWords(sum, lang) : undefined}
-              stub={<>
-                <h2 id="summary-title" className={styles.stubHeading}>{t('checkout.summary')}</h2>
-                {total && <p className={styles.total}>{t(chosen === 'courier' ? 'checkout.total_plus_delivery' : 'checkout.total', { total })}</p>}
-              </>}
-              title={<p>{t('checkout.promise.title')}</p>}
-              stages={(['in', 'held', 'out'] as const).map((key, i) => ({ key, label: t(`checkout.counterfoil.${key}`), state: i === 0 ? 'done' as const : i === 1 ? 'current' as const : 'next' as const }))}>
-              <button type="submit" form="checkout-form" className={styles.primary} disabled={create.isPending}>{t('checkout.continue')}</button>
-              <p className={styles.hint}>{t('checkout.reserve_note')}</p>
-            </Counterfoil>
+            <h2 id="summary-title" className={styles.summaryLabel}>{t('checkout.summary')}</h2>
+            {total && <p className={styles.summaryAmount}>{total}</p>}
+            {total && chosen === 'courier' && <p className={styles.hint}>{t('checkout.total_plus_delivery', { total })}</p>}
+            <p><strong>{t('checkout.promise.title')}</strong></p>
+            <div className={styles.steps}>
+              <EscrowSteps current={null} label={t('checkout.steps_label')} labels={[t('checkout.counterfoil.in'), t('checkout.counterfoil.held'), t('checkout.counterfoil.out')]} />
+            </div>
+            <button type="submit" form="checkout-form" className={styles.primary} disabled={create.isPending}>{t('checkout.continue')}</button>
+            <p className={styles.hint}>{t('checkout.reserve_note')}</p>
           </aside>
         )}
       </div>
+      {paying && <PayHost id={paying} onDone={() => void navigate(`/orders/${encodeURIComponent(paying)}`)} />}
     </div>
   );
+}
+
+/** The payment sheet over the checkout, once the order exists: its total comes from the order itself. Closing it without paying, or paying, goes on to the order's page. */
+function PayHost({ id, onDone }: { id: string; onDone: () => void }) {
+  const { t, lang } = useT({ en: enOrders, bn: bnOrders });
+  const api = useApi();
+  const key = ['orders', id] as const; // the order page's own key, so the paid order is already there when it opens
+  const order = useQuery({ queryKey: key, queryFn: ({ signal }) => api.get(`/orders/${encodeURIComponent(id)}`, { signal }) as Promise<{ id: string; total: string }>, staleTime: 0, retry: false });
+  useEffect(() => { if (order.isError) onDone(); }, [order.isError, onDone]);
+  if (!order.data) return <p role="status" className={styles.visuallyHidden}>{t('shell.loading')}</p>;
+  return <PaymentSheet order={{ id: order.data.id, total: order.data.total, key }} t={t} lang={lang} onClose={onDone} onPaid={onDone} />;
 }

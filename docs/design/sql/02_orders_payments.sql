@@ -328,6 +328,19 @@ CREATE TABLE payments.payout_accounts (
 -- one usable (or pending) payout account per seller
 CREATE UNIQUE INDEX payout_account_one_current ON payments.payout_accounts (user_id)
   WHERE status IN ('pending_review', 'cooling_off', 'active');
+
+-- The buyer's default payment method (U10-23, Decisions log): only what is needed to show it again, never the card number, the
+-- security code, the wallet PIN or a full wallet number. One row a user; clearing it sets cleared_at (no DELETE is granted).
+CREATE TABLE payments.saved_payment_methods (
+  user_id     uuid PRIMARY KEY REFERENCES identity.users(id),
+  kind        varchar(8)  NOT NULL CHECK (kind IN ('card', 'bkash', 'nagad')),
+  brand       varchar(24),                                   -- a card's brand, such as Visa
+  last4       char(4)     NOT NULL CHECK (last4 ~ '^[0-9]{4}$'),
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  updated_at  timestamptz NOT NULL DEFAULT now(),
+  cleared_at  timestamptz,
+  CONSTRAINT brand_only_card CHECK (brand IS NULL OR kind = 'card')
+);
 -- FR-TNS-08 (U7-09): accounts paid out to the same wallet or bank account are linked
 CREATE INDEX payout_account_wallet ON payments.payout_accounts (wallet_e164) WHERE wallet_e164 IS NOT NULL;
 CREATE INDEX payout_account_bidx ON payments.payout_accounts (account_number_bidx) WHERE account_number_bidx IS NOT NULL;
@@ -551,3 +564,16 @@ REVOKE UPDATE ON orders.escrow_history, payments.journal_entries, payments.journ
                  payments.settlements, payments.ledger_accounts FROM tb_app;
 GRANT SELECT ON payments.revenue_log TO tb_app;
 GRANT EXECUTE ON FUNCTION payments.split(bigint, bigint, bigint, boolean, int, int) TO tb_app;
+
+-- U10-23 (Decisions log, 2026-11-26): the buyer's acceptance of the terms shown before the handover code, courier delivery or opening a dispute.
+CREATE TABLE orders.terms_acceptances (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id      uuid        NOT NULL REFERENCES orders.orders(id),
+  user_id       uuid        NOT NULL REFERENCES identity.users(id),
+  kind          varchar(16) NOT NULL CHECK (kind IN ('handover_code', 'courier', 'dispute')),
+  terms_version smallint    NOT NULL CHECK (terms_version BETWEEN 1 AND 999),
+  accepted_at   timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX terms_acceptances_order ON orders.terms_acceptances (order_id, kind);
+CREATE TRIGGER terms_acceptances_append_only BEFORE UPDATE OR DELETE ON orders.terms_acceptances FOR EACH ROW EXECUTE FUNCTION identity.forbid_change();
+GRANT SELECT, INSERT ON orders.terms_acceptances TO tb_app;
