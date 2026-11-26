@@ -219,8 +219,8 @@ export function Component() {
 
 /** One height for the card in every step of sign-in (cells): set from the tallest step, so the card never grows or shrinks and no step has a void; a narrow
  *  screen wraps more lines and needs more. */
-const headFor = (vw: number) => (vw < 520 ? 5 : 4);
-const rowsFor = (vw: number) => headFor(vw) + 7 + 2;                 // the heading band, the form's seven rows, the foot's two
+const headFor = (vw: number) => (vw < 520 ? 6 : 5);
+const rowsFor = (vw: number) => headFor(vw) + 8 + 2;                 // the heading band, the form band's eight cells, the foot's two
 
 /** The line under the field where a refusal or a notice is said (U10-25): a place of its own, kept free, so a message does not move anything. */
 function Slot({ message, ok = false }: { message: string | null; ok?: boolean }) {
