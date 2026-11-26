@@ -18,6 +18,7 @@ export function Component() {
   const { t, lang } = useAccountT();
   const { vw } = useViewport();
   const rows = rowsFor(vw);
+  const head = headFor(vw);
   const api = useApi();
   const afterSignIn = useAfterSignIn();
   const [params] = useSearchParams();
@@ -114,7 +115,7 @@ export function Component() {
   if (step === 'mfa') {
     const email = method === 'email';
     return (
-      <AuthSplit stepKey="code" rows={rows} headCells={4}
+      <AuthSplit stepKey="code" rows={rows} headCells={head}
         head={<><h1>{t(email ? 'signin.email_title' : 'signin.mfa_title')}</h1><p className={styles.lead}>{email ? t('signin.email_text', { email: hint }) : t('signin.mfa_text')}</p></>}
         foot={(
           <div className={styles.footLinks}>
@@ -178,7 +179,7 @@ export function Component() {
 
   if (step === 'login') {
     return (
-      <AuthSplit stepKey="login" rows={rows} headCells={2} head={<h1>{t('signin.title')}</h1>} foot={toRegister}>
+      <AuthSplit stepKey="login" rows={rows} headCells={head} head={<h1>{t('signin.title')}</h1>} foot={toRegister}>
         <form onSubmit={toPassword} noValidate className={styles.stepForm}>
           <div className={styles.fieldGroup}>
             <TextField id="signin-login" label={t('signin.login')} value={login} onChange={setLogin}
@@ -192,7 +193,7 @@ export function Component() {
   }
 
   return (
-    <AuthSplit stepKey="password" rows={rows} headCells={3} foot={toRegister}
+    <AuthSplit stepKey="password" rows={rows} headCells={head} foot={toRegister}
       head={(
         <>
           <h1>{t('signin.title')}</h1>
@@ -218,7 +219,8 @@ export function Component() {
 
 /** One height for the card in every step of sign-in (cells): set from the tallest step, so the card never grows or shrinks and no step has a void; a narrow
  *  screen wraps more lines and needs more. */
-const rowsFor = (vw: number) => (vw < 360 ? 17 : vw < 520 ? 16 : 15);
+const headFor = (vw: number) => (vw < 520 ? 5 : 4);
+const rowsFor = (vw: number) => headFor(vw) + 7 + 2;                 // the heading band, the form's seven rows, the foot's two
 
 /** The line under the field where a refusal or a notice is said (U10-25): a place of its own, kept free, so a message does not move anything. */
 function Slot({ message, ok = false }: { message: string | null; ok?: boolean }) {

@@ -40,7 +40,7 @@ function useFrame(content: RefObject<HTMLDivElement>, rows: number, stepKey: str
   const width = cols * cell;
   // a flow whose steps differ in height (sign-in: the number, the password, the code, each with or without an error) gives its card one height for all of
   // them (`rows`), so the card never grows or shrinks as the steps change; a step taller than that still fits
-  const height = Math.max(cell * rows, Math.ceil((inner + 2) / cell) * cell);
+  const height = bands > 0 ? cell * rows : Math.max(cell * rows, Math.ceil((inner + 2) / cell) * cell);
   const leftCell = Math.max(1, Math.round((total - cols) / 2));
   const top = Math.max(cell * 2, Math.round((vh - height) / 2 / cell) * cell);
   const hole = useMemo<Hole>(() => ({ x: leftCell, y: top / cell, w: cols, h: height / cell }), [leftCell, top, cols, height, cell]);
@@ -74,7 +74,7 @@ export function AuthSplit({ children, stepKey = 'step', rows = 8, head, headCell
   }, [stepKey]);
 
   // one pixel more each way, so the frame's right and bottom hairlines lie on the grid's lines (which run on the cell's far edge)
-  const style: CSSProperties & Record<string, string | number> = { marginLeft: f.left, width: f.width + 1, minHeight: f.height + 1, '--cell': `${f.cell}px` };
+  const style: CSSProperties & Record<string, string | number> = { marginLeft: f.left, width: f.width + 1, minHeight: f.height + 2, '--cell': `${f.cell}px` };
   return (
     <div className={styles.stage} style={{ paddingTop: f.top, paddingBottom: f.cell * 3 }}>
       <GridCanvas cell={f.cell} hole={f.hole} />

@@ -1,12 +1,12 @@
 // The page behind sign-in and registration (U10-25, redesign v3): the ruled grid of the site as a field of hairline cells drawn on a canvas, dense towards
 // the top right and thinning out in steps towards the bottom left. It is alive but stays lines: a slow wave of light runs along the hairlines, the cells
 // under the pointer light their outline in the hot colour and fade back behind it like a trail, and a tap or each step of the form sends a ring of light
-// across the lines. Now and then, in a random place, a block of cells flickers on and spells TRUST over BAZAAR (gridArt.ts), stays a moment and flickers out
-// again; up to two at a time, never mostly under the card in the middle. The card is a
+// across the lines. Now and then, in a random place clear of the card, small boxes (half a cell) flicker on and spell TRUST over BAZAAR (gridArt.ts), stay a
+// moment and flicker out again; up to two at a time. The card is a
 // ruled frame whose edges lie on the grid's lines (AuthSplit). Hidden from readers, takes no clicks. With "reduce motion" it is drawn once and still, with
 // the name in the corner.
 import { useEffect, useRef } from 'react';
-import { nameArt, type Picture } from './gridArt';
+import { nameArt } from './gridArt';
 
 export const GRID_PULSE = 'tb-grid-pulse';
 /** Sends a ring across the grid from a point of the window (a step of the form, a tap). */
@@ -75,47 +75,47 @@ export function GridCanvas({ cell, hole }: { cell: number; hole: Hole | null }) 
       }
     };
 
-    // the pictures: each appearance is a picture, a place and a time; a cell's own moment inside the flicker comes from its place
-    interface Shown { pic: Picture; x: number; y: number; t0: number; hold: number }
+    // the name: each appearance is a place and a time. Its boxes are half a grid cell (16 px), so TRUST over BAZAAR is 368 by 176 px and fits beside, above or
+    // below the card; it starts on a grid line (an even number of half cells) and is never placed over the card or over another appearance.
+    interface Shown { x: number; y: number; t0: number; hold: number }
     const shown: Shown[] = [];
-    let nextAt = 400;
-    const nameWidth = nameArt().w;
-    const pool = [nameArt()];
+    let nextAt = 300;
+    const name = nameArt();
+    const half = cell / 2;
     const paintCell = (x: number, y: number, kind: 'o' | 'w', alpha: number) => {
       if (alpha <= 0.01) return;
       const rgb = kind === 'o' ? hotRgb : lightRgb;
-      g.fillStyle = `rgba(${rgb},${alpha * (kind === 'o' ? 0.2 : 0.14)})`;
-      g.fillRect(x * cell + 1.5, y * cell + 1.5, cell - 1, cell - 1);
-      g.strokeStyle = `rgba(${rgb},${alpha * (kind === 'o' ? 0.95 : 0.8)})`;
+      g.fillStyle = `rgba(${rgb},${alpha * (kind === 'o' ? 0.22 : 0.16)})`;
+      g.fillRect(x * half + 1.5, y * half + 1.5, half - 1, half - 1);
+      g.strokeStyle = `rgba(${rgb},${alpha * (kind === 'o' ? 0.95 : 0.85)})`;
       g.lineWidth = 1;
-      g.strokeRect(x * cell + 0.5, y * cell + 0.5, cell, cell);
+      g.strokeRect(x * half + 0.5, y * half + 0.5, half, half);
     };
-    const overlap = (a: { x: number; y: number; w: number; h: number }, b: { x: number; y: number; w: number; h: number }) =>
-      Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+    const overlap = (a2: { x: number; y: number; w: number; h: number }, b2: { x: number; y: number; w: number; h: number }) =>
+      Math.max(0, Math.min(a2.x + a2.w, b2.x + b2.w) - Math.max(a2.x, b2.x)) * Math.max(0, Math.min(a2.y + a2.h, b2.y + b2.h) - Math.max(a2.y, b2.y));
     const spawn = (now: number) => {
-      const pic = pool[Math.floor(Math.random() * pool.length)];
-      const vr = Math.ceil(window.innerHeight / cell);
-      if (pic.w > cols - 1 || pic.h > vr) return;
-      for (let tries = 0; tries < 14; tries++) {
-        const x = Math.floor(Math.random() * (cols - pic.w)), y = Math.floor(Math.random() * Math.max(1, vr - pic.h));
-        const box = { x, y, w: pic.w, h: pic.h };
-        const under = hole ? overlap(box, hole) / (pic.w * pic.h) : 0;
-        if (under > 0.12 || shown.some((s2) => overlap(box, { x: s2.x, y: s2.y, w: s2.pic.w, h: s2.pic.h }) > 0)) continue;
-        shown.push({ pic, x, y, t0: now, hold: 3000 + Math.random() * 1200 });
+      const hcols = cols * 2, hrows = Math.ceil(window.innerHeight / half);
+      if (name.w > hcols - 2 || name.h > hrows - 2) return;
+      const card = hole ? { x: hole.x * 2 - 2, y: hole.y * 2 - 2, w: hole.w * 2 + 4, h: hole.h * 2 + 4 } : null;   // a margin of a cell round the card
+      for (let tries = 0; tries < 60; tries++) {
+        const x = 2 * Math.floor(Math.random() * ((hcols - name.w) / 2)), y = 2 * Math.floor(Math.random() * ((hrows - name.h) / 2));
+        const box = { x, y, w: name.w, h: name.h };
+        if ((card && overlap(box, card) > 0) || shown.some((s2) => overlap(box, { x: s2.x - 2, y: s2.y - 2, w: name.w + 4, h: name.h + 4 }) > 0)) continue;
+        shown.push({ x, y, t0: now, hold: 3200 + Math.random() * 1600 });
         return;
       }
     };
     const flick = (q: number) => (Math.floor(q * 6) % 2 === 0 ? 1 : 0.2);
     const drawArt = (t: number) => {
       if (reduce) {
-        if (cols > nameWidth + 2) for (const cl of pool[0].cells) paintCell(cl.x + 1, cl.y + 1, cl.k, 1);
+        for (const cl of name.cells) paintCell(cl.x + 2, cl.y + 2, cl.k, 1);
         return;
       }
-      if (t >= nextAt && shown.length < MAX_AT_ONCE) { spawn(t); nextAt = t + 700 + Math.random() * 1300; }
+      if (t >= nextAt && shown.length < MAX_AT_ONCE) { spawn(t); nextAt = t + 900 + Math.random() * 1500; }
       for (let i = shown.length - 1; i >= 0; i--) if (t - shown[i].t0 > FADE + shown[i].hold + FADE) shown.splice(i, 1);
       for (const s2 of shown) {
         const age = t - s2.t0;
-        for (const cl of s2.pic.cells) {
+        for (const cl of name.cells) {
           const d = (((Math.imul(cl.x + s2.x, 73856093) ^ Math.imul(cl.y + s2.y, 19349663)) >>> 0) % 1000) / 1000 * (FADE * 0.5);
           const qIn = (age - d) / (FADE * 0.5);
           let a2: number;
