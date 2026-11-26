@@ -9,7 +9,8 @@ import { DevMailbox } from './dev-mailbox';
 // same interfaces; an unknown mode is refused at start.
 export interface EmailAdapter {
   readonly simulated: boolean;
-  send(to: string, subject: string, text: string): Promise<{ ref: string }>;
+  /** `html` is the same message in the one HTML layout; the text part always goes with it */
+  send(to: string, subject: string, text: string, html?: string): Promise<{ ref: string }>;
 }
 export interface SmsAdapter {
   readonly simulated: boolean;
@@ -28,8 +29,8 @@ export class LogEmailAdapter implements EmailAdapter {
   private readonly log = new Logger('EmailAdapter');
   constructor(private readonly mailbox: DevMailbox, private readonly clock: Clock) {}
 
-  async send(to: string, subject: string, text: string): Promise<{ ref: string }> {
-    await this.mailbox.put({ channel: 'email', to, subject, text }, this.clock.now());
+  async send(to: string, subject: string, text: string, html?: string): Promise<{ ref: string }> {
+    await this.mailbox.put({ channel: 'email', to, subject, text, html }, this.clock.now());
     this.log.log(`[simulated email] to ${maskAddress(to)}`);
     return { ref: ref('email') };
   }
@@ -53,8 +54,8 @@ export class SmtpEmailAdapter implements EmailAdapter {
   private readonly log = new Logger('EmailAdapter');
   constructor(private readonly transport: Pick<Transporter, 'sendMail'>, private readonly from: string) {}
 
-  async send(to: string, subject: string, text: string): Promise<{ ref: string }> {
-    const info = await this.transport.sendMail({ from: this.from, to, subject, text });
+  async send(to: string, subject: string, text: string, html?: string): Promise<{ ref: string }> {
+    const info = await this.transport.sendMail({ from: this.from, to, subject, text, ...(html ? { html } : {}) });
     this.log.log(`[email] to ${maskAddress(to)}`);
     return { ref: String(info.messageId ?? 'smtp') };
   }

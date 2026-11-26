@@ -104,7 +104,8 @@ export class IdentityFixtures {
   }
 
   /** A user who can sign in: a real Argon2id password, and optionally TOTP with recovery codes. */
-  async account(o: { password?: string; mfa?: boolean; status?: 'active' | 'suspended' | 'closed'; weakHash?: boolean; kyc?: string } = {}) {
+  /** `emailTwoStep` is off unless a test asks for it, so the many tests that sign in with the password alone keep doing so (U10-25); the tests of the step turn it on. */
+  async account(o: { password?: string; mfa?: boolean; status?: 'active' | 'suspended' | 'closed'; weakHash?: boolean; kyc?: string; emailTwoStep?: boolean } = {}) {
     const password = o.password ?? `pw-${randomUUID()}`;
     const params = o.weakHash ? { ...ARGON2_PARAMS, memoryCost: 4096, timeCost: 1 } : ARGON2_PARAMS;
     const hash = await argon2.hash(password, params);
@@ -115,9 +116,9 @@ export class IdentityFixtures {
       local = drawn;
       return this.db.query(
         `INSERT INTO identity.users (display_name, phone_e164, phone_verified_at, email, email_verified_at, password_hash,
-                                     password_single_factor_ok, mfa_enabled, adult_confirmed_at, kyc_status, account_status, closed_at)
-         VALUES ('Signer', $1, now(), $2, now(), $3, true, $4, now(), $7, $5, $6) RETURNING id`,
-        [`+88${drawn}`, email, hash, o.mfa === true, o.status ?? 'active', closed ? new Date() : null, o.kyc ?? 'verified'],
+                                     password_single_factor_ok, mfa_enabled, adult_confirmed_at, kyc_status, account_status, closed_at, email_two_step)
+         VALUES ('Signer', $1, now(), $2, now(), $3, true, $4, now(), $7, $5, $6, $8) RETURNING id`,
+        [`+88${drawn}`, email, hash, o.mfa === true, o.status ?? 'active', closed ? new Date() : null, o.kyc ?? 'verified', o.emailTwoStep === true],
       );
     });
     const phone = `+88${local}`;

@@ -123,6 +123,104 @@ describe('sign-in and sessions', () => {
     });
   });
 
+  describe('the second step by e-mail (U10-25)', () => {
+    const codeFor = (email: string) => {
+      const sent = (t.app.get<ForwardedNotifications>(NOTIFICATIONS)).sent.filter((m) => m.to.toLowerCase() === email.toLowerCase() && m.template === 'otp_signin_email');
+      return sent[sent.length - 1]?.vars.code as string;
+    };
+
+    it('FR-ACC-12 after the password a code goes to the verified e-mail; a wrong code fails, the right one starts the session; the session is not there before', async () => {
+      const a = await fx.account({ emailTwoStep: true });
+      const b = browser();
+      const r = await signIn(b, a.phone, a.password);
+      expect(r.status).toBe(200);
+      expect(await r.json()).toEqual({ mfaRequired: true, method: 'email', emailHint: expect.stringMatching(/^a\*\*\*.@tb\.test$/i), resendAfter: 60 });
+      expect((await b.get('/auth/sessions')).status).toBe(401);
+      const code = codeFor(a.email);
+      expect(code).toMatch(/^\d{6}$/);
+      const wrong = code === '000000' ? '111111' : '000000';
+      expect(await problem(await b.post('/auth/signin/mfa', { code: wrong }))).toMatchObject({ status: 401, type: '/problems/mfa-failed' });
+      expect((await b.post('/auth/signin/mfa', { code })).status).toBe(204);
+      expect((await b.get('/auth/sessions')).status).toBe(200);
+      const actions = (await fx.query<{ action: string }>(`SELECT action FROM audit.events WHERE actor_id = $1 ORDER BY chain_pos`, [a.userId])).map((x) => x.action);
+      expect(actions).toEqual(['identity.signin.code_sent', 'identity.mfa.failed', 'identity.signin.succeeded']);
+    });
+
+    it('FR-ACC-12 the password is checked first: a wrong password sends no code', async () => {
+      const a = await fx.account({ emailTwoStep: true });
+      expect((await signIn(browser(), a.phone, 'not the password')).status).toBe(401);
+      expect(codeFor(a.email)).toBeUndefined();
+    });
+
+    it('FR-ACC-12 five wrong codes end the sign-in; a code works once; a resend waits 60 seconds and replaces the code', async () => {
+      const a = await fx.account({ emailTwoStep: true });
+      const b = browser();
+      await signIn(b, a.phone, a.password);
+      const first = codeFor(a.email);
+      expect((await b.post('/auth/signin/mfa/resend', {})).status).toBe(429); // too soon
+      const bad = first === '123456' ? '654321' : '123456';
+      for (let i = 0; i < 5; i++) expect((await b.post('/auth/signin/mfa', { code: bad })).status).toBe(401);
+      expect(await problem(await b.post('/auth/signin/mfa', { code: first }))).toMatchObject({ status: 401, type: '/problems/session-ended' });
+      // a fresh sign-in; the code used once cannot be used again
+      const c = browser();
+      await signIn(c, a.phone, a.password);
+      const code = codeFor(a.email);
+      expect((await c.post('/auth/signin/mfa', { code })).status).toBe(204);
+      const d = browser();
+      await signIn(d, a.phone, a.password);
+      expect((await d.post('/auth/signin/mfa', { code })).status).toBe(401);
+    });
+
+    it('FR-ACC-12 a member with an authenticator app is asked for its code, not an e-mail code', async () => {
+      const a = await fx.account({ mfa: true, emailTwoStep: true });
+      const b = browser();
+      const r = await signIn(b, a.phone, a.password);
+      expect(await r.json()).toEqual({ mfaRequired: true });
+      expect(codeFor(a.email)).toBeUndefined();
+      expect((await b.post('/auth/signin/mfa', { code: totp(a.totpSecret!) })).status).toBe(204);
+    });
+
+    it('FR-ACC-12 a member without a verified e-mail address, or who turned the step off, signs in with the password alone', async () => {
+      const a = await fx.account({ emailTwoStep: true });
+      await fx.query(`UPDATE identity.users SET email_verified_at = NULL WHERE id = $1`, [a.userId]);
+      expect((await signIn(browser(), a.phone, a.password)).status).toBe(204);
+      const o = await fx.account({ emailTwoStep: false });
+      expect((await signIn(browser(), o.phone, o.password)).status).toBe(204);
+      expect(codeFor(a.email)).toBeUndefined();
+    });
+
+    it('FR-ACC-12 remember this device: only after a passed code with the box ticked, 30 days, on that browser only; the password alone never grants it', async () => {
+      const a = await fx.account({ emailTwoStep: true });
+      const b = browser();
+      await signIn(b, a.phone, a.password);
+      expect((await b.post('/auth/signin/mfa', { code: codeFor(a.email), remember: true })).status).toBe(204);
+      const [{ days }] = await fx.query<{ days: number }>(`SELECT round(extract(epoch FROM (trusted_until - now())) / 86400)::int AS days FROM identity.known_devices WHERE user_id = $1`, [a.userId]);
+      expect(days).toBe(30);
+      // the same browser signs in again with the password alone; another browser is asked
+      await b.post('/auth/signout', {});
+      expect((await signIn(b, a.phone, a.password)).status).toBe(204);
+      expect((await signIn(browser(), a.phone, a.password)).status).toBe(200);
+      // a code without the box ticked grants nothing
+      const o = await fx.account({ emailTwoStep: true });
+      const c = browser();
+      await signIn(c, o.phone, o.password);
+      await c.post('/auth/signin/mfa', { code: codeFor(o.email) });
+      expect(await fx.query(`SELECT 1 FROM identity.known_devices WHERE user_id = $1 AND trusted_until IS NOT NULL`, [o.userId])).toHaveLength(0);
+      expect(await fx.query(`SELECT 1 FROM audit.events WHERE actor_id = $1 AND action = 'identity.device.trusted'`, [a.userId])).toHaveLength(1);
+    });
+
+    it('FR-ACC-12 a changed password ends the remembered devices; signing out everywhere does too', async () => {
+      const a = await fx.account({ emailTwoStep: true });
+      const b = browser();
+      await signIn(b, a.phone, a.password);
+      await b.post('/auth/signin/mfa', { code: codeFor(a.email), remember: true });
+      await fx.query(`UPDATE identity.users SET password_hash = password_hash || '' WHERE id = $1`, [a.userId]); // no change: still remembered
+      expect(await fx.query(`SELECT 1 FROM identity.known_devices WHERE user_id = $1 AND trusted_until IS NOT NULL`, [a.userId])).toHaveLength(1);
+      expect((await b.post('/auth/sessions/end-others', {})).status).toBeLessThan(300);
+      expect(await fx.query(`SELECT 1 FROM identity.known_devices WHERE user_id = $1 AND trusted_until IS NOT NULL`, [a.userId])).toHaveLength(0);
+    });
+  });
+
   describe('second factor', () => {
     it('FR-ACC-06 with MFA the password step answers 200 mfaRequired, and the TOTP code completes sign-in', async () => {
       const a = await fx.account({ mfa: true });

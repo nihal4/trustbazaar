@@ -132,6 +132,23 @@ export class AccountController {
     return this.mfa.confirm(userOf(p).userId, dto.code, ctxOf(req));
   }
 
+  /** U10-25: the e-mail code at sign-in, on by default: turned on again with no step-up, ... */
+  @SignedIn()
+  @Post('me/security/email-code/enable')
+  @HttpCode(200)
+  enableEmailCode(@CurrentPrincipal() p: Principal, @Req() req: Request) {
+    return this.contacts.setEmailTwoStep(userOf(p).userId, true, ctxOf(req));
+  }
+
+  /** ... and turned off only after step-up. */
+  @SignedIn()
+  @StepUp('mfa.disable')
+  @Post('me/security/email-code/disable')
+  @HttpCode(200)
+  disableEmailCode(@CurrentPrincipal() p: Principal, @Req() req: Request) {
+    return this.contacts.setEmailTwoStep(userOf(p).userId, false, ctxOf(req));
+  }
+
   /** SEC-AUTH-01: turn MFA off (step-up, a current TOTP code, and a 15-character password if needed). */
   @SignedIn()
   @StepUp('mfa.disable')

@@ -210,5 +210,20 @@
   "side.promise_text": "The seller is paid only after the buyer confirms they have the item.",
   "signin.continue": "Continue",
   "signin.change_login": "Change",
-  "signin.login_missing": "Enter your mobile number or e-mail address."
+  "signin.login_missing": "Enter your mobile number or e-mail address.",
+  "signin.email_title": "Check your e-mail",
+  "signin.email_text": "We sent a 6-digit code to {email}. It is valid for 10 minutes.",
+  "signin.remember": "Remember this device for 30 days",
+  "signin.resend": "Send the code again",
+  "signin.resend_wait": "Send again in {seconds} s",
+  "signin.resent": "A new code was sent.",
+  "email_code.title": "Code by e-mail at sign-in",
+  "email_code.on": "On. After your password, we send a 6-digit code to your e-mail address each time you sign in from a device we do not remember.",
+  "email_code.off": "Off. You sign in with your password alone. We recommend turning this on.",
+  "email_code.app_instead": "You use an authenticator app, so its code is asked instead of an e-mail code.",
+  "email_code.verify_first": "Confirm your e-mail address first; until then no code is asked.",
+  "email_code.turn_off": "Turn off the e-mail code",
+  "email_code.turn_on": "Turn on the e-mail code",
+  "email_code.turned_off": "The code by e-mail is off.",
+  "email_code.turned_on": "The code by e-mail is on."
 }

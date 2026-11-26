@@ -45,6 +45,7 @@ export function totp(secret: string, at = Date.now()): string {
 export async function signInMember(page: Page, who: { local: string; password: string }) {
   await page.goto('/signin');
   await page.getByLabel('Mobile number or e-mail').fill(who.local);
+  await page.getByRole('button', { name: 'Continue' }).click();                 // the password is asked after the number or e-mail (U10-25)
   await page.getByLabel('Password', { exact: true }).fill(who.password);
   await page.getByRole('button', { name: 'Sign in' }).click();
   await page.waitForURL((u) => !u.pathname.startsWith('/signin'));

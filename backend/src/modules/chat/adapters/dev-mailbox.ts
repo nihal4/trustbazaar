@@ -16,6 +16,8 @@ export interface MailboxEntry {
   to: string;
   subject: string | null;
   text: string;
+  /** the HTML version of an e-mail (U10-25), to look at the layout in development */
+  html?: string;
   simulated: true;
 }
 

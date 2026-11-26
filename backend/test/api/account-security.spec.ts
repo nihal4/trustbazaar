@@ -78,6 +78,20 @@ describe('step-up, passwords and contact changes', () => {
       expect((await change(grant)).status).toBe(403); // used up
     });
 
+    it('FR-ACC-12 turning the e-mail code at sign-in off needs step-up; turning it on again does not; /me says which it is', async () => {
+      const { a, b } = await signedIn();
+      await fx.query(`UPDATE identity.users SET email_two_step = true WHERE id = $1`, [a.userId]);
+      expect(((await (await b.get('/me')).json()) as { emailTwoStep: boolean }).emailTwoStep).toBe(true);
+      expect((await problem(await b.post('/me/security/email-code/disable', {}))).type).toBe('/problems/step-up-required');
+      const grant = await stepUp(b, a.phone, 'mfa.disable');
+      expect((await b.post('/me/security/email-code/disable', {}, { 'x-step-up': grant })).status).toBe(200);
+      expect(((await (await b.get('/me')).json()) as { emailTwoStep: boolean }).emailTwoStep).toBe(false);
+      expect((await b.post('/me/security/email-code/enable', {})).status).toBe(200);
+      expect(((await (await b.get('/me')).json()) as { emailTwoStep: boolean }).emailTwoStep).toBe(true);
+      const actions = (await fx.query<{ action: string }>(`SELECT action FROM audit.events WHERE actor_id = $1 AND action LIKE 'identity.email_two_step.%' ORDER BY chain_pos`, [a.userId])).map((x) => x.action);
+      expect(actions).toEqual(['identity.email_two_step.disabled', 'identity.email_two_step.enabled']);
+    });
+
     it('SEC-AUTH-08 a grant from another session does not work', async () => {
       const { a, b } = await signedIn();
       const other = browser();

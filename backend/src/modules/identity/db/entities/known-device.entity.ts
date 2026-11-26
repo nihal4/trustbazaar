@@ -20,4 +20,8 @@ export class KnownDevice {
 
   @Column({ type: 'timestamptz', name: 'last_seen_at' })
   lastSeenAt!: Date;
+
+  /** U10-25: 'remember this device' until this time; null when not remembered */
+  @Column({ type: 'timestamptz', name: 'trusted_until', nullable: true })
+  trustedUntil!: Date | null;
 }

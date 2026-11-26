@@ -17,6 +17,8 @@ export interface Me {
   kycStatus: KycStatus;
   accountStatus: AccountStatus;
   mfaEnabled: boolean;
+  /** a code by e-mail at each sign-in from a device that is not remembered (FR-ACC-12) */
+  emailTwoStep?: boolean;
 }
 
 export const ME_KEY = ['me'] as const;

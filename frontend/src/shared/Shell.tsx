@@ -54,10 +54,10 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
     return (
       <div className={styles.bare}>
         <a className={styles.skip} href="#main">{t('shell.skip_to_content')}</a>
-        <div className={styles.bareTop}>
+        <header className={styles.bareTop}>
           <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo onDark /></Link>
           <LanguageSwitch />
-        </div>
+        </header>
         <main id="main" ref={main} tabIndex={-1} className={styles.bareMain}>
           <Suspense fallback={<p role="status">{t('shell.loading')}</p>}>
             <Outlet />

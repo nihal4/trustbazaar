@@ -100,6 +100,7 @@ CREATE TABLE identity.users (
   password_single_factor_ok   boolean NOT NULL,              -- length >= 15 when set (SEC-AUTH-01)
   password_changed_at         timestamptz NOT NULL DEFAULT now(),
   mfa_enabled                 boolean NOT NULL DEFAULT false,
+  email_two_step              boolean NOT NULL DEFAULT true,     -- U10-25: a code by e-mail at each sign-in from a device that is not remembered; off only after step-up
   kyc_status                  identity.kyc_status NOT NULL DEFAULT 'unsubmitted',
   kyc_status_changed_at       timestamptz NOT NULL DEFAULT now(),
   account_status              identity.account_status NOT NULL DEFAULT 'active',
@@ -243,10 +244,19 @@ CREATE TABLE identity.known_devices (
   label           varchar(80),            -- e.g. "Chrome on Android"
   first_seen_at   timestamptz NOT NULL DEFAULT now(),
   last_seen_at    timestamptz NOT NULL DEFAULT now(),
+  trusted_until   timestamptz,            -- U10-25: 'remember this device' after a passed second factor (30 days); cleared on a password change or reset, sign-out everywhere, a new e-mail
   UNIQUE (user_id, device_key_hash)
 );
 -- FR-TNS-08 (U7-09): accounts signed in from the same browser share its key; the linked-account check looks them up
 CREATE INDEX known_devices_key ON identity.known_devices (device_key_hash);
+-- U10-25: a changed password or e-mail address ends every 'remember this device' of the member, whatever path changed it
+CREATE FUNCTION identity.clear_device_trust() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  UPDATE identity.known_devices SET trusted_until = NULL WHERE user_id = NEW.id AND trusted_until IS NOT NULL;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER users_clear_device_trust AFTER UPDATE OF password_hash, email ON identity.users FOR EACH ROW
+  WHEN (OLD.password_hash IS DISTINCT FROM NEW.password_hash OR OLD.email IS DISTINCT FROM NEW.email) EXECUTE FUNCTION identity.clear_device_trust();
 
 CREATE TABLE identity.sessions (
   id                   uuid PRIMARY KEY DEFAULT gen_random_uuid(),   -- "sid" claim of the access token

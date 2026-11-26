@@ -5,7 +5,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useApi } from '../../shared/api';
 import { untilAfter, useSecondsLeft } from '../../shared/countdown';
-import { FormMessage, SubmitButton, TextField } from '../../shared/form';
+import { CheckboxField, FormMessage, SubmitButton, TextField } from '../../shared/form';
 import { isApiError, problemName } from '../../shared/problems';
 import { toAsciiDigits } from '../../lib/money.js';
 import { digits, otherError, retryAfter, useAccountT, useAfterSignIn } from './common';
@@ -28,6 +28,13 @@ export function Component() {
   const [message, setMessage] = useState<string | null>(null);
   const [waitUntil, setWaitUntil] = useState<number | null>(null);
   const waitFor = useSecondsLeft(waitUntil);
+  // the second step: an authenticator code, or (the default) a code sent to the e-mail address; 'remember this device' skips it for 30 days
+  const [method, setMethod] = useState<'totp' | 'email'>('totp');
+  const [hint, setHint] = useState('');
+  const [remember, setRemember] = useState(false);
+  const [resendUntil, setResendUntil] = useState<number | null>(null);
+  const resendIn = useSecondsLeft(resendUntil);
+  const [resending, setResending] = useState(false);
 
   const refused = (err: unknown, failedText: string) => {
     const wait = retryAfter(err);
@@ -44,8 +51,12 @@ export function Component() {
     setBusy(true);
     setMessage(null);
     try {
-      const r: { mfaRequired?: boolean } | null = await api.post('/auth/signin', { login: normaliseLogin(login), password });
+      const r: { mfaRequired?: boolean; method?: 'email'; emailHint?: string; resendAfter?: number } | null = await api.post('/auth/signin', { login: normaliseLogin(login), password });
       if (r?.mfaRequired) {
+        setMethod(r.method === 'email' ? 'email' : 'totp');
+        setHint(r.emailHint ?? '');
+        setResendUntil(r.method === 'email' ? untilAfter(r.resendAfter ?? 60) : null);
+        setCode('');
         setStep('mfa');
         setBusy(false);
         return;
@@ -63,7 +74,7 @@ export function Component() {
     setBusy(true);
     setMessage(null);
     try {
-      await api.post('/auth/signin/mfa', { code: toAsciiDigits(code).trim() });
+      await api.post('/auth/signin/mfa', { code: toAsciiDigits(code).trim(), remember });
       await afterSignIn(next);
     } catch (err) {
       if (problemName(err) === 'mfa-failed' || isApiError(err, 400) || retryAfter(err) !== null) refused(err, t('signin.mfa_failed'));
@@ -77,19 +88,46 @@ export function Component() {
     }
   };
 
+  const resend = async () => {
+    if (resending || resendIn > 0) return;
+    setResending(true);
+    setMessage(null);
+    try {
+      const r = (await api.post('/auth/signin/mfa/resend', {})) as { resendAfter?: number } | null;
+      setResendUntil(untilAfter(r?.resendAfter ?? 60));
+      setCode('');
+      setMessage(t('signin.resent'));
+    } catch (err) {
+      const wait = retryAfter(err);
+      if (wait !== null) setResendUntil(untilAfter(wait));
+      else if (isApiError(err, 401)) { setStep('login'); setCode(''); setPassword(''); setMessage(t('signin.mfa_restart')); }
+      else setMessage(otherError(err, t, lang));
+    }
+    setResending(false);
+  };
+
   const button = waitFor > 0 ? t('wait.seconds', { seconds: digits(waitFor, lang) }) : null;
 
   if (step === 'mfa') {
+    const email = method === 'email';
     return (
       <AuthSplit>
-        <h1>{t('signin.mfa_title')}</h1>
-        <p className={styles.lead}>{t('signin.mfa_text')}</p>
-        {message && <FormMessage kind="error">{message}</FormMessage>}
+        <h1>{t(email ? 'signin.email_title' : 'signin.mfa_title')}</h1>
+        <p className={styles.lead}>{email ? t('signin.email_text', { email: hint }) : t('signin.mfa_text')}</p>
+        {message && <FormMessage kind={message === t('signin.resent') ? 'success' : 'error'}>{message}</FormMessage>}
         <form onSubmit={submitCode} noValidate>
           <TextField id="signin-code" label={t('code.label')} value={code} onChange={setCode}
-            autoComplete="one-time-code" maxLength={40} autoFocus />
+            autoComplete="one-time-code" inputMode={email ? 'numeric' : undefined} maxLength={40} autoFocus />
+          <CheckboxField id="signin-remember" label={t('signin.remember')} checked={remember} onChange={setRemember} />
           <SubmitButton busy={busy} disabled={waitFor > 0}>{button ?? t('signin.submit')}</SubmitButton>
         </form>
+        {email && (
+          <p>
+            <button type="button" className={styles.link} disabled={resending || resendIn > 0} onClick={() => void resend()}>
+              {resendIn > 0 ? t('signin.resend_wait', { seconds: digits(resendIn, lang) }) : t('signin.resend')}
+            </button>
+          </p>
+        )}
         <p><button type="button" className={styles.link} onClick={() => { setStep('login'); setMessage(null); }}>
           {t('signin.back')}
         </button></p>

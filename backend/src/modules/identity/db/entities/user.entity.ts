@@ -34,6 +34,10 @@ export class User {
   @Column({ type: 'boolean', name: 'mfa_enabled' })
   mfaEnabled!: boolean;
 
+  /** U10-25: a code by e-mail at each sign-in from a device that is not remembered */
+  @Column({ type: 'boolean', name: 'email_two_step' })
+  emailTwoStep!: boolean;
+
   @Column({ type: 'enum', name: 'kyc_status', enum: KYC_STATUS, enumName: 'kyc_status' })
   kycStatus!: KycStatus;
 

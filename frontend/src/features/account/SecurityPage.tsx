@@ -7,7 +7,7 @@ import { useApi } from '../../shared/api';
 import { AccountTabs } from '../../shared/AccountTabs';
 import { untilAfter, untilServerTime, useSecondsLeft } from '../../shared/countdown';
 import { FormMessage, SubmitButton, TextField } from '../../shared/form';
-import { ME_KEY } from '../../shared/me';
+import { ME_KEY, useMe } from '../../shared/me';
 import { isApiError, problemName } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { StepUpCancelled } from '../../shared/stepUp';
@@ -49,6 +49,7 @@ export function Component() {
       <h1>{t('security.title')}</h1>
       <Sessions list={sessions.data ?? []} error={sessions.isError ? sessions.error : null} />
       <PasswordChange />
+      <EmailCodeSetting />
       <MfaSettings sessionsKey={SESSIONS_KEY} />
       <PhoneChange />
       <EmailChange />
@@ -306,6 +307,46 @@ function EmailChange() {
           type="email" autoComplete="email" />
         <SubmitButton busy={busy}>{t('contact.email_submit')}</SubmitButton>
       </form>
+    </section>
+  );
+}
+
+/** FR-ACC-12: the code by e-mail at each sign-in, on by default; turning it off is behind step-up, turning it on is not. */
+function EmailCodeSetting() {
+  const { t, lang } = useAccountT();
+  const api = useApi();
+  const queryClient = useQueryClient();
+  const me = useMe();
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
+  if (!me.data) return null;
+  const on = me.data.emailTwoStep !== false;
+  const change = async () => {
+    if (busy) return;
+    setBusy(true);
+    setMessage(null);
+    try {
+      const r = on
+        ? await withStepUp(() => api.post('/me/security/email-code/disable', {}, { stepUpAction: 'mfa.disable' }))
+        : await api.post('/me/security/email-code/enable', {});
+      if (r !== 'cancelled') {
+        await queryClient.invalidateQueries({ queryKey: ME_KEY });
+        setMessage({ kind: 'success', text: t(on ? 'email_code.turned_off' : 'email_code.turned_on') });
+      }
+    } catch (err) {
+      setMessage({ kind: 'error', text: otherError(err, t, lang) });
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <section aria-labelledby="email-code-title" className={styles.section}>
+      <h2 id="email-code-title">{t('email_code.title')}</h2>
+      <p>{t(on ? 'email_code.on' : 'email_code.off')}</p>
+      {on && me.data.mfaEnabled && <p className={styles.hint}>{t('email_code.app_instead')}</p>}
+      {on && !me.data.mfaEnabled && !me.data.emailVerified && <p className={styles.hint}>{t('email_code.verify_first')}</p>}
+      {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
+      <p><button type="button" className={styles.secondary} disabled={busy} onClick={() => void change()}>{t(on ? 'email_code.turn_off' : 'email_code.turn_on')}</button></p>
     </section>
   );
 }

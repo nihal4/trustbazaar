@@ -20,6 +20,11 @@ export class MfaDto {
   @Length(6, 40)
   @Matches(/^[0-9A-Za-z -]+$/)
   code!: string;
+
+  /** U10-25: 'remember this device' for 30 days, after this second factor. */
+  @IsOptional()
+  @IsBoolean()
+  remember?: boolean;
 }
 
 export const OTP_CHANNELS = ['sms', 'email', 'both'] as const;

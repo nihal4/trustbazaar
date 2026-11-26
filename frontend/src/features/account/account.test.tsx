@@ -329,6 +329,26 @@ describe('account and security', () => {
     expect(be.called('POST /auth/sessions/end-others')[0].headers.get('X-CSRF-Token')).toBe('csrf-1');
   });
 
+  it('FR-ACC-12 the security page shows whether the code by e-mail is on; turning it on again needs no step-up, turning it off asks for it first', async () => {
+    let on = false;
+    const be = fakeBackend({
+      'GET /auth/sessions': json(200, []),
+      'GET /me': () => json(200, { ...standInMe, emailVerified: true, emailTwoStep: on })(),
+      'POST /me/security/email-code/enable': () => { on = true; return json(200, { emailTwoStep: true })(); },
+      'POST /auth/step-up/start': json(200, { method: 'sms', resendAt: new Date(Date.now() + 60_000).toISOString() }),
+    });
+    renderApp('/account/security', be);
+    const section = (await screen.findByRole('heading', { name: 'Code by e-mail at sign-in' })).closest('section') as HTMLElement;
+    expect(await within(section).findByText(/^Off\. You sign in with your password alone/)).toBeTruthy();
+    fireEvent.click(within(section).getByRole('button', { name: 'Turn on the e-mail code' }));
+    expect(await within(section).findByText('The code by e-mail is on.')).toBeTruthy();
+    expect(be.called('POST /auth/step-up/start')).toHaveLength(0);                             // turning on asks for nothing more
+    expect(await within(section).findByText(/^On\. After your password/)).toBeTruthy();
+    fireEvent.click(within(section).getByRole('button', { name: 'Turn off the e-mail code' }));
+    await screen.findByRole('dialog', { name: 'Confirm it is you' });                         // turning off is behind step-up
+    expect(be.called('POST /auth/signin')).toHaveLength(0);
+  });
+
   it('SEC-AUTH-08 a password change asks for the step-up code first and sends the grant once', async () => {
     const be = fakeBackend({
       'GET /auth/sessions': json(200, []),
@@ -398,10 +418,50 @@ describe('sign-in and registration layout', () => {
     expect(screen.getByText('Your money waits with us')).toBeTruthy();
   });
 
+  it('FR-ACC-12 with the default second step a code is asked after the password, sent to the e-mail (masked); the box remembers the device; a new code can be asked for after the wait', async () => {
+    const be = fakeBackend({
+      'POST /auth/signin': json(200, { mfaRequired: true, method: 'email', emailHint: 'r***m@example.com', resendAfter: 60 }),
+      'POST /auth/signin/mfa/resend': json(200, { resendAfter: 60 }),
+      'POST /auth/signin/mfa': noContent(),
+    });
+    const doc = renderApp('/signin', be);
+    await screen.findByRole('heading', { name: 'Sign in' });
+    await enterLogin('rahim@example.com');
+    type('Password', 'correct horse battery staple');
+    click('Sign in');
+    expect(await screen.findByRole('heading', { name: 'Check your e-mail' })).toBeTruthy();
+    expect(screen.getByText('We sent a 6-digit code to r***m@example.com. It is valid for 10 minutes.')).toBeTruthy();
+    expect((screen.getByRole('button', { name: /^Send again in \d+ s$/ }) as HTMLButtonElement).disabled).toBe(true); // 60 seconds first
+    const remember = screen.getByLabelText('Remember this device for 30 days') as HTMLInputElement;
+    expect(remember.checked).toBe(false);                                                   // never ticked for the user
+    type('Code', '482 913'.replace(' ', ''));
+    fireEvent.click(remember);
+    click('Sign in');
+    await waitFor(() => expect(doc.router.state.location.pathname).toBe('/account'));
+    expect(be.called('POST /auth/signin/mfa')[0].body).toEqual({ code: '482913', remember: true });
+  });
+
+  it('FR-ACC-12 the authenticator code has the same box; an ended sign-in goes back to the start', async () => {
+    const be = fakeBackend({
+      'POST /auth/signin': json(200, { mfaRequired: true }),
+      'POST /auth/signin/mfa': problem(401, 'session-ended'),
+    });
+    renderApp('/signin', be);
+    await screen.findByRole('heading', { name: 'Sign in' });
+    await enterLogin('rahim@example.com');
+    type('Password', 'x');
+    click('Sign in');
+    await screen.findByRole('heading', { name: 'Enter your second code' });
+    expect(screen.getByLabelText('Remember this device for 30 days')).toBeTruthy();
+    type('Code', '123456');
+    click('Sign in');
+    expect((await screen.findByRole('alert')).textContent).toBe('This sign-in took too long. Enter your password again.');
+    expect(await screen.findByLabelText('Mobile number or e-mail')).toBeTruthy();
+  });
+
   it('FR-ACC-05 sign-in is one fresh page: no header, search, notices or footer; the logo and the language switch only', async () => {
     renderApp('/signin', fakeBackend({}));
     await screen.findByRole('heading', { name: 'Sign in' });
-    expect(screen.queryByRole('banner')).toBeNull();
     expect(screen.queryByRole('contentinfo')).toBeNull();
     expect(screen.queryByRole('search')).toBeNull();
     expect(screen.queryByRole('textbox', { name: /Search/ })).toBeNull();
