@@ -9,7 +9,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { formatMoney } from '../../lib/money.js';
+import { formatMoney, toLocalDigits } from '../../lib/money.js';
+import { ChatIcon, Tick } from '../../shared/icons';
 import { formatCountdown, formatDateTime } from '../../lib/time.js';
 import { useApi } from '../../shared/api';
 import { useOpenThread } from '../../shared/chat';
@@ -91,6 +92,9 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
   const game = useGame(o);
   const ratings = useOrderRatings(o);
   const awaiting = o.status === 'awaiting_payment';
+  // while a meetup is being arranged, its place-and-time and cancel actions sit inside the Meetup handover block, above the code
+  const handoverOpen = handover.data !== undefined && (handover.data.status === 'arranging' || handover.data.status === 'agreed');
+  const actions = handover.data ? <Actions bare o={o} t={t} lang={lang} extra={<ProposeForm o={o} h={handover.data} t={t} lang={lang} />} /> : null;
   return (
     <div className={styles.page}>
       {(awaiting || attempt) && <SimulatedBanner kind="payment" />}
@@ -127,9 +131,9 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
       {ratings.data && <Ratings o={o} r={ratings.data} t={t} lang={lang} />}
       </div>
       <aside className={styles.rail} aria-label={t('order.next.label')}>
-      {handover.data && <Handover o={o} h={handover.data} t={t} lang={lang} />}
+      {handover.data && <Handover o={o} h={handover.data} t={t} lang={lang} after={handoverOpen ? actions : undefined} />}
       {handover.isError && <FormMessage kind="error">{errorText(handover.error, t, lang)}</FormMessage>}
-      <Actions o={o} t={t} lang={lang} extra={handover.data && (handover.data.status === 'arranging' || handover.data.status === 'agreed') ? <ProposeForm o={o} h={handover.data} t={t} lang={lang} /> : undefined} />
+      {!handoverOpen && !handover.isLoading && <Actions o={o} t={t} lang={lang} />}
       <PartyCard o={o} t={t} lang={lang} />
       </aside>
       </div>
@@ -190,19 +194,26 @@ function Money({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
   );
 }
 
-/** The other party in the rail, as on the listing page: the round initial, the name, and the way to write to them. */
+/** The other party in the rail, as the seller row of the listing page: the badge, the name with the verified mark, since when, and a chat cell. */
 function PartyCard({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
-  const name = o.counterparty?.displayName;
-  if (!name) return null;
+  const c = o.counterparty;
+  if (!c?.displayName) return null;
   const which = o.role === 'buyer' ? 'seller' : 'buyer';
+  const initials = c.displayName.trim().split(/\s+/).slice(0, 2).map((w) => [...w][0] ?? '').join('').toUpperCase();
   return (
-    <section aria-labelledby="party-title" className={styles.partyCard}>
+    <section aria-labelledby="party-title" className={styles.party}>
       <h2 id="party-title" className={styles.partyHead}>{t(`order.party.${which}`)}</h2>
       <div className={styles.partyRow}>
-        <span className={styles.avatar} aria-hidden="true">{Array.from(name)[0]?.toUpperCase()}</span>
-        <strong className={styles.partyName}>{name}</strong>
+        <span className={styles.avatar} aria-hidden="true">{initials}</span>
+        <div className={styles.partyInfo}>
+          <p className={styles.partyLine}>
+            <strong>{c.displayName}</strong>
+            {c.verified === true && <span className={styles.tick} title={t('order.party.verified')}><Tick /><span className={styles.srOnly}>{t('order.party.verified')}</span></span>}
+          </p>
+          {c.joinMonth && <p className={styles.partySince}>{t('order.party.since', { year: toLocalDigits(c.joinMonth.slice(0, 4), lang) })}</p>}
+        </div>
+        <OrderChat o={o} t={t} lang={lang} />
       </div>
-      <div className={styles.partyMsg}><OrderChat o={o} t={t} lang={lang} /></div>
     </section>
   );
 }
@@ -211,12 +222,12 @@ function PartyCard({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
 function OrderChat({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
   const { open, busy, error } = useOpenThread();
   const label = t(o.role === 'buyer' ? 'order.message_seller' : 'order.message_buyer');
-  if (o.threadId) return <p><Link to={`/messages/${encodeURIComponent(o.threadId)}`}>{label}</Link></p>;
-  if (o.role === 'seller') return <p className={styles.hint}>{t('order.chat_none')}</p>;
+  if (o.threadId) return <Link className={styles.chatCell} to={`/messages/${encodeURIComponent(o.threadId)}`} aria-label={label} title={label}><ChatIcon /></Link>;
+  if (o.role === 'seller') return null;
   return (
     <>
-      {error !== null && <FormMessage kind="error">{errorText(error, t, lang)}</FormMessage>}
-      <p><button type="button" className={styles.secondary} onClick={() => open(o.listing.id)} disabled={busy} aria-busy={busy}>{label}</button></p>
+      <button type="button" className={styles.chatCell} onClick={() => open(o.listing.id)} disabled={busy} aria-busy={busy} aria-label={label} title={label}><ChatIcon /></button>
+      {error !== null && <div className={styles.chatError}><FormMessage kind="error">{errorText(error, t, lang)}</FormMessage></div>}
     </>
   );
 }

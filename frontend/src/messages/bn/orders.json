@@ -459,5 +459,7 @@
   "order.party.seller": "বিক্রেতা",
   "order.party.buyer": "ক্রেতা",
   "dispute.not_yet": "পণ্য হস্তান্তর বা পাঠানো হলে, অথবা বিক্রেতার সময়সীমা পার হলে আপনি বিরোধ খুলতে পারবেন।",
-  "order.next.label": "পরবর্তী ধাপ ও অপর পক্ষ"
+  "order.next.label": "পরবর্তী ধাপ ও অপর পক্ষ",
+  "order.party.verified": "পরিচয় যাচাই করা হয়েছে",
+  "order.party.since": "{year} থেকে"
 }

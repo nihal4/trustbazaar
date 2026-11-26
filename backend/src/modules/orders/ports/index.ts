@@ -26,7 +26,7 @@ export interface OrderView {
   buyerId: string;
   sellerId: string;
   /** The other party in this order (the seller to the buyer, the buyer to the seller): the public display name only. */
-  counterparty: { id: string; displayName: string };
+  counterparty: { id: string; displayName: string; verified: boolean; joinMonth: string };
   quantity: number;
   unitPrice: string;
   itemPrice: string;

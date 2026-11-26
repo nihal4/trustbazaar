@@ -459,5 +459,7 @@
   "order.party.seller": "Seller",
   "order.party.buyer": "Buyer",
   "dispute.not_yet": "You can open a dispute once the item has been handed over or sent, or the seller's deadline has passed.",
-  "order.next.label": "Next steps and the other party"
+  "order.next.label": "Next steps and the other party",
+  "order.party.verified": "Identity verified",
+  "order.party.since": "Since {year}"
 }

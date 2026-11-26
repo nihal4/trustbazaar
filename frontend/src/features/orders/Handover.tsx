@@ -4,7 +4,7 @@
 // the attempts left before the lock. Proposals: a suggested public point (with a map link) or a place of the parties'
 // own (a name and an optional pin from the device's position, never a map link, shown with a safety notice; Decisions
 // log, U4-03). Times are Dhaka time.
-import { useRef, useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toAsciiDigits, toLocalDigits } from '../../lib/money.js';
 import { formatDateTime } from '../../lib/time.js';
@@ -46,7 +46,7 @@ export function dhakaInput(value: string): string | null {
 /** The code digit by digit, so it can be read aloud ("4 8 1 9 0 2"). */
 export const spaced = (code: string, lang: Lang) => toLocalDigits(code.split('').join(' '), lang);
 
-export function Handover({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: T; lang: Lang }) {
+export function Handover({ o, h, t, lang, after }: { o: OrderView; h: HandoverView; t: T; lang: Lang; after?: ReactNode }) {
   const open = h.status === 'arranging' || h.status === 'agreed';
   return (
     <section aria-labelledby="handover-title" className={styles.panel}>
@@ -55,6 +55,7 @@ export function Handover({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: 
       {h.status === 'completed' && h.completedAt && <p>{t('handover.completed_at', { at: formatDateTime(Date.parse(h.completedAt), lang) })}</p>}
       {h.status === 'locked' && <FormMessage kind="error">{t('handover.locked')}</FormMessage>}
       {h.agreed && <Agreed a={h.agreed} t={t} lang={lang} />}
+      {after}
       {open && h.role === 'buyer' && h.code && <BuyerCode code={h.code} t={t} lang={lang} />}
       {open && h.role === 'seller' && <SellerCode o={o} h={h} t={t} lang={lang} />}
       {open && <Proposals o={o} h={h} t={t} lang={lang} />}

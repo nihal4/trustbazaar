@@ -194,58 +194,52 @@
 .journeyList .flowNext h3 { color: var(--tb-muted); }
 .srOnly { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-/* spacing and grid (review): the receipt link sits clear of the progress; the handover block is a grid, not a stack of loose lines */
+/* the receipt link keeps clear of the progress line; the handover code is a grid */
 .receiptLink { margin-block: 0.25rem 1.75rem; }
-.moneyPanel > nav, .moneyPanel > ol, .moneyPanel > div:last-child { margin-top: 0.5rem; }
-.code { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, max-content)); gap: 0.75rem 1rem; align-items: center; margin-block: 0; }
-.code > h3, .code > p, .code > .hint { grid-column: 1 / -1; margin: 0; }
+.code { display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-block: 0; }
+.code > h3, .code > p, .code > .hint { margin: 0; }
 .code > h3 { font-size: 1.125rem; }
 .code > .codeDigits { justify-self: start; }
-.panel { display: grid; gap: 1rem; justify-items: start; }
-.panel > h2 { margin: 0; }
-.panel > p { margin: 0; }
-.panel > .code + p { margin: 0; }
-
-/* the title breaks only between words; the other party in a box of its own; the actions in one ruled grid */
+.code button { width: 100%; }
 .headText h1 { overflow-wrap: break-word; text-wrap: balance; }
-.party { display: flex; align-items: center; gap: 0.875rem; margin: 0 0 1.25rem; padding: 0.875rem 0; border-block: 1px solid var(--tb-line); }
-.avatar { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; flex: none; border-radius: 50%; background: var(--tb-sheet); border: 1px solid var(--tb-border); font-weight: 600; }
-.partyText { display: grid; gap: 0.125rem; min-width: 0; }
-.partyRole { color: var(--tb-muted); font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.06em; }
-.partyText strong { overflow-wrap: anywhere; }
-.actionGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); border-top: 1px solid var(--tb-line); }
-.actionGrid > * { padding: 1rem 0; border-bottom: 1px solid var(--tb-line); }
-.actionGrid > form { grid-column: 1 / -1; }
-.actionCell { display: flex; align-items: center; }
-.panel { justify-items: stretch; }
-.panel > button { justify-self: start; }
-.actionGrid { width: 100%; }
 
-/* the page in two columns from 60rem, as the listing page: the story on the left, what to do next in a rail that stays in view */
-.page { max-width: 72rem; }
+/* the page in two columns from 60rem, as the listing page: the story on the left, a rail that stays in view on the right (meetup handover with its two actions, then the code, then the other party) */
+.page { max-width: none; }
 .cols { display: grid; gap: 1.5rem; }
 .main, .rail { min-width: 0; }
-.rail { display: grid; gap: 0; align-content: start; border-top: 2px solid var(--tb-hot); }
-.rail > section { margin-block: 0; padding: 1.25rem 0; border-top: 0; border-bottom: 1px solid var(--tb-line); }
-.rail > section + section { border-top: 0; }
-.rail h2 { font-size: 1.125rem; margin: 0; }
+.rail { display: grid; align-content: start; border-top: 2px solid var(--tb-hot); }
+.rail > section { margin-block: 0; padding: 1.25rem 0; border: 0; border-bottom: 1px solid var(--tb-line); border-radius: 0; background: none; display: grid; gap: 1rem; }
+.rail h2, .rail h3 { margin: 0; font-size: 1.125rem; }
+.rail p { margin: 0; }
 @media (min-width: 60rem) {
-  .cols { grid-template-columns: minmax(0, 1fr) 22rem; gap: 3rem; align-items: start; }
+  .cols { grid-template-columns: minmax(0, 1fr) 24rem; gap: 3rem; align-items: start; }
   .rail { position: sticky; top: 5.75rem; }
 }
-.rail .actionGrid { grid-template-columns: 1fr 1fr; }
-.rail .actionGrid > * { padding-inline: 0; }
-.rail .actionGrid > * + * { padding-left: 1rem; border-left: 1px solid var(--tb-line); }
-.rail .actionGrid button { width: 100%; }
-.rail .code { grid-template-columns: 1fr; }
-.rail .code button { width: 100%; }
+
+/* the actions are ruled cells, not boxed buttons: the whole cell is the button, hairlines between (as the chat cell of the listing page) */
+.bare { display: grid; gap: 1rem; }
+.actionGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); border-block: 1px solid var(--tb-line); }
+.actionGrid > * + * { border-left: 1px solid var(--tb-line); }
+.actionGrid > form { grid-column: 1 / -1; border-left: 0; }
+.actionCell { display: flex; }
+.actionCell > button, .actionGrid button.secondary { flex: 1; min-height: 56px; padding: 0.5rem 0.75rem; border: 0; border-radius: 0; background: none; color: var(--tb-text); font: inherit; font-weight: 600; text-align: center; cursor: pointer; transition: color 140ms, background 140ms; }
+.actionGrid button.secondary:hover:not(:disabled), .actionCell > button:hover:not(:disabled) { color: var(--tb-hot); background: var(--tb-surface); }
+.actionGrid button.secondary:focus-visible, .actionCell > button:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
+.actionGrid button.primary { flex: 1; min-height: 56px; }
+
+/* the other party: the seller row of the listing page */
 .partyHead { color: var(--tb-muted); font-size: 0.8125rem !important; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
-.partyRow { display: grid; grid-template-columns: 4rem minmax(0, 1fr); align-items: stretch; margin-top: 0.75rem; border-block: 1px solid var(--tb-line); min-height: 4.5rem; }
-.partyRow .avatar { width: auto; height: auto; margin: 0.4rem 0.75rem 0.4rem 0; border: 0; border-radius: 4px; background: var(--tb-surface); }
-.partyName { align-self: center; padding-left: 0.875rem; border-left: 1px solid var(--tb-line); overflow-wrap: anywhere; }
-.partyMsg p { margin: 0; }
-.partyMsg { padding-top: 0.75rem; }
-.partyMsg button, .partyMsg a { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; }
-.partyMsg a { border: 1px solid var(--tb-border); border-radius: 8px; color: var(--tb-text); font-weight: 600; text-decoration: none; }
-.page { max-width: none; }
-@media (min-width: 60rem) { .cols { grid-template-columns: minmax(0, 1fr) 24rem; } }
+.partyRow { --av: 64px; display: grid; grid-template-columns: calc(var(--av) + 14px) minmax(0, 1fr) auto; min-height: calc(var(--av) + 16px); border-block: 1px solid var(--tb-line); }
+.partyRow > * { display: flex; align-items: center; padding: 0.75rem 0.875rem; }
+.partyRow > * + *:not(.chatError) { border-left: 1px solid var(--tb-line); }
+.avatar { display: grid; place-items: center; width: var(--av); align-self: stretch; margin: 7px; padding: 0; box-sizing: border-box; border: 0; border-radius: 4px; background: var(--tb-surface); color: var(--tb-text); font-weight: 600; font-size: 1.125rem; }
+.partyInfo { flex-direction: column; align-items: flex-start; justify-content: center; gap: 0.125rem; min-width: 0; }
+.partyLine { display: flex; align-items: center; gap: 0.5rem; overflow-wrap: anywhere; }
+.partySince { color: var(--tb-muted); font-size: 0.875rem; }
+.tick { display: inline-flex; color: var(--tb-protect); }
+.tick svg { width: 20px; height: 20px; }
+.chatCell { justify-content: center; min-width: 56px; border: 0; background: none; color: var(--tb-text); cursor: pointer; text-decoration: none; transition: color 140ms, background 140ms; }
+.chatCell:hover:not(:disabled) { color: var(--tb-hot); background: var(--tb-surface); }
+.chatCell:disabled { opacity: 0.6; cursor: not-allowed; }
+.chatCell:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
+.chatError { grid-column: 1 / -1; border-left: 0 !important; padding: 0 0 0.75rem; }

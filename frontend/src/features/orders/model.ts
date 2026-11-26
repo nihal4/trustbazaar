@@ -13,7 +13,7 @@ export interface OrderView {
   /** The chat thread of the order's buyer and seller, null until they have written (Decisions log, U8-13). */
   threadId: string | null;
   /** The other party: the seller to the buyer, the buyer to the seller (public display name only). */
-  counterparty?: { id: string; displayName: string };
+  counterparty?: { id: string; displayName: string; verified?: boolean; joinMonth?: string };
   quantity: number;
   itemPrice: string;
   deliveryFee: string;

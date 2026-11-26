@@ -32,7 +32,7 @@ export function actionsOf(o: OrderView): Action[] {
   return pending ? ['accept', 'decline', 'cancel'] : ['cancel'];
 }
 
-export function Actions({ o, t, lang, extra }: { o: OrderView; t: T; lang: Lang; extra?: ReactNode }) {
+export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang: Lang; extra?: ReactNode; bare?: boolean }) {
   const api = useApi();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState<Action | null>(null);
@@ -87,9 +87,10 @@ export function Actions({ o, t, lang, extra }: { o: OrderView; t: T; lang: Lang;
   };
 
   if (allowed.length === 0 && !request && !extra) return null;
+  const Wrap = bare ? 'div' : 'section';
   return (
-    <section aria-labelledby="actions-title" className={styles.panel}>
-      <h2 id="actions-title">{t('actions.title')}</h2>
+    <Wrap {...(bare ? { className: styles.bare } : { 'aria-labelledby': 'actions-title', className: styles.panel })}>
+      {!bare && <h2 id="actions-title">{t('actions.title')}</h2>}
       {message && <FormMessage kind="error">{message}</FormMessage>}
       {request && <RequestStatus o={o} t={t} />}
       {allowed.length === 0 && !extra && <p className={styles.hint}>{t('actions.none')}</p>}
@@ -155,7 +156,7 @@ export function Actions({ o, t, lang, extra }: { o: OrderView; t: T; lang: Lang;
           <p>{t('confirm.seller_cancel', { amount: refund })}</p>
         </ConfirmDialog>
       )}
-    </section>
+    </Wrap>
   );
 }
 

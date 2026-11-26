@@ -297,7 +297,7 @@ export class OrderService implements OrdersPort {
     const iso = (d: Date | null) => d?.toISOString() ?? null;
     // the other party's public name, for the orders list and the receipt (Decisions log, U10-23)
     const otherId = o.buyerId === userId ? o.sellerId : o.buyerId;
-    const other = await this.identity.getPublicProfile(otherId).then((p) => ({ id: otherId, displayName: p.displayName }), () => ({ id: otherId, displayName: '' }));
+    const other = await this.identity.getPublicProfile(otherId).then((p) => ({ id: otherId, displayName: p.displayName, verified: p.verified, joinMonth: p.joinMonth }), () => ({ id: otherId, displayName: '', verified: false, joinMonth: '' }));
     return {
       id: o.id, kind: o.kind, role: o.buyerId === userId ? 'buyer' : 'seller', status: o.status,
       listing: { id: o.listingId, title: snap.title, itemKind: o.itemKind, photoKey: snap.photoKeys?.[0] ?? null },
