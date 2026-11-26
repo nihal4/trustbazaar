@@ -5,7 +5,8 @@ import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
 import { EMAIL_CODE_SECONDS, MFA_TICKET_SECONDS, SignInService } from '../services/signin.service';
 import { SessionService, SessionSummary } from '../services/session.service';
-import { MfaDto, SignInDto } from './auth.dto';
+import { LoginCheckService } from '../services/login-check.service';
+import { LoginCheckDto, MfaDto, SignInDto } from './auth.dto';
 import { cookie, ctxOf } from './request';
 import { clearSessionCookies, DEVICE_COOKIE, MFA_COOKIE, REFRESH_COOKIE, setMfaCookie, setSessionCookies } from './session-cookies';
 
@@ -20,7 +21,17 @@ export class AuthController {
   constructor(
     private readonly signin: SignInService,
     private readonly sessions: SessionService,
+    private readonly loginCheck: LoginCheckService,
   ) {}
+
+  /** FR-ACC-13 (U10-25): is it a mobile number or an e-mail address, and can that e-mail's domain receive mail? Never reads an account. */
+  @Public()
+  @RateLimit('login-check')
+  @Post('login-check')
+  @HttpCode(200)
+  check(@Body() dto: LoginCheckDto) {
+    return this.loginCheck.check(dto.login);
+  }
 
   /** FR-ACC-05: 204 with the session's cookies, or 200 {mfaRequired} with an MFA ticket cookie. */
   @Public()

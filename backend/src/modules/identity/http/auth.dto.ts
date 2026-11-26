@@ -14,6 +14,13 @@ export class SignInDto {
   password!: string;
 }
 
+/** U10-25: what the sign-in page typed in its first step. */
+export class LoginCheckDto {
+  @IsString()
+  @MaxLength(254)
+  login!: string;
+}
+
 export class MfaDto {
   /** A 6-digit TOTP code, or a recovery code. */
   @IsString()

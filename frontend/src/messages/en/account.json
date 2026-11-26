@@ -207,7 +207,6 @@
   "signin.welcome": "Welcome back.",
   "signin.continue": "Continue",
   "signin.change_login": "Change",
-  "signin.login_missing": "Enter your mobile number or e-mail address.",
   "signin.email_title": "Check your e-mail",
   "signin.email_text": "We sent a 6-digit code to {email}. It is valid for 10 minutes.",
   "signin.remember": "Remember this device for 30 days",
@@ -223,5 +222,7 @@
   "email_code.turn_on": "Turn on the e-mail code",
   "email_code.turned_off": "The code by e-mail is off.",
   "email_code.turned_on": "The code by e-mail is on.",
-  "signin.login_hint": "The mobile number or e-mail address of your account."
+  "signin.login_hint": "The mobile number or e-mail address of your account.",
+  "signin.login_invalid": "Enter a valid mobile number or e-mail address.",
+  "signin.email_domain": "Nothing can be delivered to {domain}. Check the part after the @."
 }

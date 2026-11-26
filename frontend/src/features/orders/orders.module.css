@@ -23,7 +23,7 @@
 .choice div { display: flex; align-items: center; gap: var(--tb-space-2); min-height: 44px; }
 .choice button { min-height: 44px; padding: 0 1.25rem; font: inherit; font-weight: 600; border: 1px solid var(--tb-border); border-radius: var(--tb-radius-control); background: var(--tb-sheet); cursor: pointer; }
 .choice input[type='radio'] { width: 20px; height: 20px; accent-color: var(--tb-accent); }
-.primary { min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-radius-control); background: var(--tb-accent); color: var(--tb-accent-text); border: 0; font: inherit; font-weight: 600; cursor: pointer; }
+.primary { min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-btn-radius); background: var(--tb-btn-bg); color: var(--tb-btn-fg); border: 1px solid var(--tb-btn-line); font: inherit; font-weight: 600; cursor: pointer; }
 .primary:disabled { opacity: 0.6; }
 .error { color: var(--tb-error); font-weight: 600; }
 .secondary { min-height: 44px; padding: 0 1.25rem; border: 1px solid var(--tb-border); border-radius: var(--tb-radius-control); background: var(--tb-bg); color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
@@ -66,7 +66,7 @@
 .game { border-top: 1px solid var(--tb-line); padding-top: 1rem; margin-top: 1rem; }
 .disclosure { border-radius: var(--tb-radius-panel); background: var(--tb-error-bg); border: 1px solid var(--tb-error-line); color: var(--tb-text); padding: 0.875rem 1rem; }
 .check { display: flex; align-items: center; gap: var(--tb-space-2); min-height: 44px; }
-.primaryLink { display: inline-flex; align-items: center; min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-radius-control); background: var(--tb-accent); color: var(--tb-accent-text); font-weight: 600; text-decoration: none; }
+.primaryLink { display: inline-flex; align-items: center; min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-btn-radius); background: var(--tb-btn-bg); color: var(--tb-btn-fg); border: 1px solid var(--tb-btn-line); font-weight: 600; text-decoration: none; }
 
 /* ---- redesign v3 (U10-23): the order screens in the ruled look of the home, the listing and the room: hairlines and dividers, no outlined or filled boxes
    (buttons and images keep theirs); one vermilion rule on top of the money panel ---- */

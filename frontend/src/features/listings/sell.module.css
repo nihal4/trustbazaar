@@ -36,7 +36,7 @@
 .check { display: flex; align-items: center; gap: 0.75rem; min-height: 44px; }
 .choice label, .check label { min-width: 0; overflow-wrap: anywhere; font-weight: 500; }
 .buttons { display: flex; flex-wrap: wrap; gap: 0.625rem; margin-block: 0.5rem 0; }
-.primary { min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-radius-control); background: var(--tb-accent); color: var(--tb-accent-text); border: 0; font: inherit; font-weight: 600; cursor: pointer; }
+.primary { min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-btn-radius); background: var(--tb-btn-bg); color: var(--tb-btn-fg); border: 1px solid var(--tb-btn-line); font: inherit; font-weight: 600; cursor: pointer; }
 .primary:disabled { opacity: 0.6; }
 .secondary { min-height: 44px; padding: 0 1.125rem; border: 1px solid var(--tb-border); border-radius: var(--tb-radius-control); background: var(--tb-bg); color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
 .errors { border-radius: var(--tb-radius-panel); background: var(--tb-error-bg); border: 1px solid var(--tb-error-line); color: var(--tb-error-text); padding: 0.625rem 1rem; }

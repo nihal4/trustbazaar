@@ -78,7 +78,7 @@
 .closed { margin: 0.75rem 0; font-weight: 600; }
 .offer { border: 1px solid var(--tb-accent); border-radius: var(--tb-radius-panel); background: var(--tb-accent-wash); padding: 0.75rem 1rem; font-weight: 400; margin-bottom: 1rem; }
 
-.primary, .primaryLink { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-radius-control); background: var(--tb-accent); color: var(--tb-accent-text); border: 0; font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; }
+.primary, .primaryLink { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-btn-radius); background: var(--tb-btn-bg); color: var(--tb-btn-fg); border: 1px solid var(--tb-btn-line); font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; }
 .primary:disabled { opacity: 0.6; }
 .actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .actions button { min-height: 44px; padding: 0 1.25rem; font: inherit; border-radius: var(--tb-radius-control); }

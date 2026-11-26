@@ -1,10 +1,10 @@
 // The page behind sign-in and registration (U10-25, redesign v3): the ruled grid of the site as a field of hairline cells drawn on a canvas, dense towards
 // the top right and thinning out in steps towards the bottom left. It is alive but stays lines: a slow wave of light runs along the hairlines, the cells
 // under the pointer light their outline in the hot colour and fade back behind it like a trail, and a tap or each step of the form sends a ring of light
-// across the lines. Where there is room (the wide layout: the animation on the left, the card on the right) a block of cells spells TRUST over BAZAAR,
-// then dissolves, cell by cell with a flicker, into a phone, the taka sign, a bag, a camera and a shield, and back to the name (gridArt.ts). The card is a
-// ruled frame whose edges lie on the grid's lines (AuthSplit). Fixed rules, no random numbers. Hidden from readers, takes no clicks. With "reduce motion"
-// it is drawn once and still, with the name.
+// across the lines. Now and then, in a random place, a block of cells flickers on and spells TRUST over BAZAAR or forms a phone, the taka sign, a bag, a
+// camera or a shield (gridArt.ts), stays a moment and flickers out again; up to three at a time, never mostly under the card in the middle. The card is a
+// ruled frame whose edges lie on the grid's lines (AuthSplit). Hidden from readers, takes no clicks. With "reduce motion" it is drawn once and still, with
+// the name in the corner.
 import { useEffect, useRef } from 'react';
 import { nameArt, pictureArt, type Picture } from './gridArt';
 
@@ -13,12 +13,10 @@ export const GRID_PULSE = 'tb-grid-pulse';
 export const pulseGrid = (x: number, y: number) => window.dispatchEvent(new CustomEvent(GRID_PULSE, { detail: { x, y } }));
 
 const REACH = 170;          // pixels from the pointer within which tiles react
-/** Where the pictures go, in cells of the stage: the left of the first of them, its top, and the width of the room. */
-export interface ArtBox { x0: number; y0: number; cols: number }
-// how long each picture stays, and how long the change between two takes (the cells change one by one inside it)
-const HOLD_NAME = 3400;
-const HOLD_PICTURE = 1900;
-const CHANGE = 1000;
+/** The cells the card covers: the pictures are placed away from them. */
+export interface Hole { x: number; y: number; w: number; h: number }
+const FADE = 800;                // a picture flickers on over this long, and out again
+const MAX_AT_ONCE = 3;
 
 const jitter = (c: number, r: number) => Math.abs((c * 73856093) ^ (r * 19349663)) % 3;
 
@@ -30,7 +28,7 @@ const parse = (v: string, fallback: Rgb): Rgb => {
 const mix = (a: Rgb, b: Rgb, k: number): Rgb => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
 const css = (c: Rgb, k = 1) => `rgb(${Math.round(c[0] * k)},${Math.round(c[1] * k)},${Math.round(c[2] * k)})`;
 
-export function GridCanvas({ cell, art }: { cell: number; art: ArtBox | null }) {
+export function GridCanvas({ cell, hole }: { cell: number; hole: Hole | null }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -77,20 +75,12 @@ export function GridCanvas({ cell, art }: { cell: number; art: ArtBox | null }) 
       }
     };
 
-    // the pictures, placed on the cells of the stage; the name first, then each picture in turn
-    const frames: Picture[] = [];
-    const place = (pic: Picture): Picture => art ? { ...pic, cells: pic.cells.map((cl) => ({ ...cl, x: cl.x + art.x0 + Math.floor((art.cols - pic.w) / 2), y: cl.y + art.y0 })) } : pic;
-    let named = false;
-    if (art) {
-      const name = nameArt();
-      if (art.cols >= name.w) { frames.push(place(name)); named = true; }
-      for (const pic of pictureArt()) frames.push(place(pic));
-    }
-    const lengths = frames.map((_, i) => (named && i === 0 ? HOLD_NAME : HOLD_PICTURE));
-    const cycle = lengths.reduce((a2, b2) => a2 + b2, 0);
-    const keyOf = (x: number, y: number) => y * 4096 + x;
-    const mapOf = (pic: Picture) => new Map(pic.cells.map((cl) => [keyOf(cl.x, cl.y), cl.k] as const));
-    const maps = frames.map(mapOf);
+    // the pictures: each appearance is a picture, a place and a time; a cell's own moment inside the flicker comes from its place
+    interface Shown { pic: Picture; x: number; y: number; t0: number; hold: number }
+    const shown: Shown[] = [];
+    let nextAt = 400;
+    const nameWidth = nameArt().w;
+    const pool = [nameArt(), ...pictureArt()];
     const paintCell = (x: number, y: number, kind: 'o' | 'w', alpha: number) => {
       if (alpha <= 0.01) return;
       const rgb = kind === 'o' ? hotRgb : lightRgb;
@@ -100,31 +90,43 @@ export function GridCanvas({ cell, art }: { cell: number; art: ArtBox | null }) 
       g.lineWidth = 1;
       g.strokeRect(x * cell + 0.5, y * cell + 0.5, cell, cell);
     };
-    const drawArt = (t: number) => {
-      if (reduce) { for (const [k, kind] of maps[0]) paintCell(k % 4096, Math.floor(k / 4096), kind, 1); return; }
-      let at = t % cycle, idx = 0;
-      while (at >= lengths[idx]) { at -= lengths[idx]; idx++; }
-      const prevIdx = (idx + frames.length - 1) % frames.length;
-      const now = maps[idx], before = maps[prevIdx];
-      // inside the change, each cell has its own moment (from its place, not from chance): it flickers in or out
-      const wave2 = (x: number, y: number) => ((Math.imul(x, 73856093) ^ Math.imul(y, 19349663)) >>> 0) % 1000 / 1000;
-      const state = (x: number, y: number, present: boolean, p: number) => {
-        const q = (p - wave2(x, y) * (CHANGE * 0.55)) / (CHANGE * 0.4);
-        if (q <= 0) return present ? 0 : 1;
-        if (q >= 1) return present ? 1 : 0;
-        const blink = Math.floor(q * 6) % 2 === 0 ? 1 : 0.2;
-        return (present ? q : 1 - q) * blink;
-      };
-      const seen = new Set<number>();
-      for (const [k, kind] of now) {
-        const x = k % 4096, y = Math.floor(k / 4096);
-        seen.add(k);
-        paintCell(x, y, kind, at < CHANGE && !before.has(k) ? state(x, y, true, at) : 1);
+    const overlap = (a: { x: number; y: number; w: number; h: number }, b: { x: number; y: number; w: number; h: number }) =>
+      Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+    const spawn = (now: number) => {
+      const pic = pool[Math.floor(Math.random() * pool.length)];
+      const vr = Math.ceil(window.innerHeight / cell);
+      if (pic.w > cols - 1 || pic.h > vr) return;
+      for (let tries = 0; tries < 14; tries++) {
+        const x = Math.floor(Math.random() * (cols - pic.w)), y = Math.floor(Math.random() * Math.max(1, vr - pic.h));
+        const box = { x, y, w: pic.w, h: pic.h };
+        const under = hole ? overlap(box, hole) / (pic.w * pic.h) : 0;
+        if (under > 0.12 || shown.some((s2) => overlap(box, { x: s2.x, y: s2.y, w: s2.pic.w, h: s2.pic.h }) > 0)) continue;
+        shown.push({ pic, x, y, t0: now, hold: pic === pool[0] ? 3000 : 1900 + Math.random() * 900 });
+        return;
       }
-      if (at < CHANGE) for (const [k, kind] of before) {
-        if (seen.has(k)) continue;
-        const x = k % 4096, y = Math.floor(k / 4096);
-        paintCell(x, y, kind, state(x, y, false, at));
+    };
+    const flick = (q: number) => (Math.floor(q * 6) % 2 === 0 ? 1 : 0.2);
+    const drawArt = (t: number) => {
+      if (reduce) {
+        if (cols > nameWidth + 2) for (const cl of pool[0].cells) paintCell(cl.x + 1, cl.y + 1, cl.k, 1);
+        return;
+      }
+      if (t >= nextAt && shown.length < MAX_AT_ONCE) { spawn(t); nextAt = t + 700 + Math.random() * 1300; }
+      for (let i = shown.length - 1; i >= 0; i--) if (t - shown[i].t0 > FADE + shown[i].hold + FADE) shown.splice(i, 1);
+      for (const s2 of shown) {
+        const age = t - s2.t0;
+        for (const cl of s2.pic.cells) {
+          const d = (((Math.imul(cl.x + s2.x, 73856093) ^ Math.imul(cl.y + s2.y, 19349663)) >>> 0) % 1000) / 1000 * (FADE * 0.5);
+          const qIn = (age - d) / (FADE * 0.5);
+          let a2: number;
+          if (qIn <= 0) a2 = 0;
+          else if (qIn < 1) a2 = qIn * flick(qIn);
+          else {
+            const qOut = (age - FADE - s2.hold - d) / (FADE * 0.5);
+            a2 = qOut <= 0 ? 1 : qOut < 1 ? (1 - qOut) * flick(qOut) : 0;
+          }
+          paintCell(s2.x + cl.x, s2.y + cl.y, cl.k, a2);
+        }
       }
     };
 
@@ -171,7 +173,7 @@ export function GridCanvas({ cell, art }: { cell: number; art: ArtBox | null }) 
           g.lineWidth = 1;
         }
       }
-      if (frames.length > 0) drawArt(t);
+      drawArt(t);
       // retire the rings that have run their course
       while (pulses.length && (t - pulses[0].t0) / 1000 > 1.6) pulses.shift();
     };
@@ -230,7 +232,7 @@ export function GridCanvas({ cell, art }: { cell: number; art: ArtBox | null }) 
       window.removeEventListener(GRID_PULSE, onPulse);
       document.removeEventListener('visibilitychange', visible);
     };
-  }, [cell, art]);
+  }, [cell, hole]);
 
   return <canvas ref={ref} aria-hidden="true" data-grid-canvas />;
 }

@@ -9,7 +9,7 @@ import { CheckboxField, FormMessage, SubmitButton, TextField } from '../../share
 import { isApiError, problemName } from '../../shared/problems';
 import { toAsciiDigits } from '../../lib/money.js';
 import { digits, otherError, retryAfter, useAccountT, useAfterSignIn } from './common';
-import { normaliseLogin } from './input';
+import { loginProblem, normaliseLogin } from './input';
 import { AuthSplit, HumanCheckNote } from './AuthSplit';
 import styles from './account.module.css';
 
@@ -137,9 +137,29 @@ export function Component() {
 
   // the first step asks for the number or e-mail only; Enter shows the password. Nothing is asked of the server here, so the page never tells which
   // accounts exist (SEC-AUTH-05); the password step keeps the login in the form (hidden) so a password manager still pairs the two.
-  const toPassword = (ev: FormEvent) => {
+  const toPassword = async (ev: FormEvent) => {
     ev.preventDefault();
-    if (!login.trim()) { setMessage(t('signin.login_missing')); return; }
+    if (busy) return;
+    // nothing leaves the page unless it is a mobile number or an e-mail of a valid form; an e-mail is then asked about its domain (FR-ACC-13), which reads
+    // no account: 'nihal@examle.com' is turned back here, with no sign-in tried
+    if (loginProblem(login)) { setMessage(t('signin.login_invalid')); return; }
+    const entered = login.trim();
+    if (entered.includes('@')) {
+      setBusy(true);
+      setMessage(null);
+      try {
+        const r = (await api.post('/auth/login-check', { login: normaliseLogin(entered) })) as { ok: boolean; reason?: string } | null;
+        if (r && r.ok === false) {
+          setMessage(r.reason === 'domain' ? t('signin.email_domain', { domain: entered.slice(entered.lastIndexOf('@') + 1) }) : t('signin.login_invalid'));
+          setBusy(false);
+          return;
+        }
+      } catch (err) {
+        if (isApiError(err, 429)) { setMessage(otherError(err, t, lang)); setBusy(false); return; }
+        // a check that cannot be answered does not stop the sign-in
+      }
+      setBusy(false);
+    }
     setMessage(null);
     setStep('password');
   };
@@ -156,7 +176,7 @@ export function Component() {
         <form onSubmit={toPassword} noValidate>
           <TextField id="signin-login" label={t('signin.login')} value={login} onChange={setLogin}
             autoComplete="username" autoFocus />
-          <SubmitButton busy={false}>{t('signin.continue')}</SubmitButton>
+          <SubmitButton busy={busy}>{t('signin.continue')}</SubmitButton>
         </form>
         <HumanCheckNote />
       </AuthSplit>

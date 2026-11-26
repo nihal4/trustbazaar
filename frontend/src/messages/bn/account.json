@@ -207,7 +207,6 @@
   "signin.welcome": "আবার স্বাগতম।",
   "signin.continue": "এগিয়ে যান",
   "signin.change_login": "বদলান",
-  "signin.login_missing": "আপনার মোবাইল নম্বর বা ই-মেইল ঠিকানা লিখুন।",
   "signin.email_title": "আপনার ই-মেইল দেখুন",
   "signin.email_text": "আমরা {email} ঠিকানায় একটি ৬ অঙ্কের কোড পাঠিয়েছি। কোডটি ১০ মিনিট বৈধ।",
   "signin.remember": "এই ডিভাইস ৩০ দিন মনে রাখুন",
@@ -223,5 +222,7 @@
   "email_code.turn_on": "ই-মেইলের কোড চালু করুন",
   "email_code.turned_off": "ই-মেইলে কোড বন্ধ হয়েছে।",
   "email_code.turned_on": "ই-মেইলে কোড চালু হয়েছে।",
-  "signin.login_hint": "আপনার অ্যাকাউন্টের মোবাইল নম্বর বা ই-মেইল ঠিকানা।"
+  "signin.login_hint": "আপনার অ্যাকাউন্টের মোবাইল নম্বর বা ই-মেইল ঠিকানা।",
+  "signin.login_invalid": "একটি সঠিক মোবাইল নম্বর (01XXXXXXXXX) বা ই-মেইল ঠিকানা লিখুন।",
+  "signin.email_domain": "{domain} ঠিকানায় কিছু পৌঁছানো যায় না। @ চিহ্নের পরের অংশটি দেখুন।"
 }

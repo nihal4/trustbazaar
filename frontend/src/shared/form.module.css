@@ -87,10 +87,10 @@
 .primary {
   min-height: 48px;
   padding: 0 1.75rem;
-  border: 0;
-  border-radius: var(--tb-radius-pill);
-  background: var(--tb-accent);
-  color: var(--tb-accent-text);
+  border: 1px solid var(--tb-btn-line);
+  border-radius: var(--tb-btn-radius);
+  background: var(--tb-btn-bg);
+  color: var(--tb-btn-fg);
   font: inherit;
   font-weight: 600;
   font-size: 1.0625rem;
@@ -102,8 +102,14 @@
   outline-offset: 3px;
 }
 
+.primary:hover:not(:disabled) {
+  background: var(--tb-btn-bg-hover);
+}
+
 .primary:disabled {
-  background: var(--tb-muted);
+  background: transparent;
+  border-color: var(--tb-muted);
+  color: var(--tb-muted);
   cursor: not-allowed;
 }
 

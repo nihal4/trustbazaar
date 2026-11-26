@@ -28,7 +28,7 @@
 .choice div:has(input:checked) { border-color: var(--tb-accent); background: var(--tb-accent-wash); }
 .choice input { width: 20px; height: 20px; accent-color: var(--tb-accent); flex: none; margin: 0; }
 .buttons { display: flex; flex-wrap: wrap; gap: 0.625rem; margin-block: 0.5rem; }
-.primary { min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-radius-control); background: var(--tb-accent); color: var(--tb-accent-text); border: 0; font: inherit; font-weight: 600; cursor: pointer; }
+.primary { min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-btn-radius); background: var(--tb-btn-bg); color: var(--tb-btn-fg); border: 1px solid var(--tb-btn-line); font: inherit; font-weight: 600; cursor: pointer; }
 .primary:disabled { opacity: 0.6; }
 .secondary { align-self: flex-start; min-height: 44px; padding: 0 1.125rem; border: 1px solid var(--tb-border); border-radius: var(--tb-radius-control); background: var(--tb-bg); color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
 .stubHeading { margin: 0; font-size: 0.9375rem; font-weight: 600; overflow-wrap: anywhere; }

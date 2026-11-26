@@ -86,7 +86,7 @@ This unit is designed first because every other unit depends on it. Every reques
 \subsection{Requirements covered}
 The unit implements the requirements below; Appendix~\ref{app:trace} maps each one to the design element that satisfies it.
 \begin{itemize}[nosep]
-  \item \textbf{Functional:} FR-ACC-01 to FR-ACC-12; FR-KYC-01 to FR-KYC-12; FR-TNS-06; FR-OPS-03 to FR-OPS-07 (staff accounts, four-eyes approval, conflicts, staff action logging); FR-PRV-01, FR-PRV-02, FR-PRV-04, FR-PRV-05; FR-NTF-06 (as event source).
+  \item \textbf{Functional:} FR-ACC-01 to FR-ACC-13; FR-KYC-01 to FR-KYC-12; FR-TNS-06; FR-OPS-03 to FR-OPS-07 (staff accounts, four-eyes approval, conflicts, staff action logging); FR-PRV-01, FR-PRV-02, FR-PRV-04, FR-PRV-05; FR-NTF-06 (as event source).
   \item \textbf{Security:} SEC-AUTH-01 to SEC-AUTH-12; SEC-SES-01 to SEC-SES-07; SEC-ACC-01 to SEC-ACC-06; SEC-DAT-01 to SEC-DAT-09 and SEC-DAT-11; SEC-INP-04 (KYC uploads); SEC-ABU-01, SEC-ABU-03 (authentication limits); SEC-LOG-01 to SEC-LOG-05.
   \item \textbf{Other:} IF-UI-01, IF-UI-02, IF-UI-09 (staff views); IF-SW-05, IF-SW-06; NFR-USE-02; DR-01, DR-02, DR-09, DR-10.
 \end{itemize}
@@ -260,6 +260,7 @@ POST & /\allowbreak auth/\allowbreak register/\allowbreak resend & Public & otp-
 POST & /\allowbreak auth/\allowbreak email/\allowbreak verify & Public & token & Verify e-mail link (FR-ACC-02) \\
 POST & /\allowbreak auth/\allowbreak signin & Public & signin & Password step (FR-ACC-05) \\
 POST & /\allowbreak auth/\allowbreak signin/\allowbreak mfa & MFA ticket & otp-verify & Second factor (FR-ACC-06) \\
+POST & /\allowbreak auth/\allowbreak login-check & Public & login-check & Form of the number or e-mail and the e-mail's domain; never an account (FR-ACC-13) \\
 POST & /\allowbreak auth/\allowbreak signin/\allowbreak mfa/\allowbreak resend & MFA ticket & otp-verify & A new e-mail code for this sign-in, 60 seconds apart, three in all (FR-ACC-12) \\
 POST & /\allowbreak auth/\allowbreak refresh & Refresh cookie & refresh & Rotate tokens (SEC-SES-02) \\
 POST & /\allowbreak auth/\allowbreak signout & SignedIn & --- & End this session (SEC-SES-05) \\
@@ -630,6 +631,8 @@ Further rules:
 \subsection{The second step by e-mail and remembered devices}
 \label{sec:signin-email-code}
 FR-ACC-12 makes a code by e-mail the default second step. After the password is right (never before, so nobody can fill an inbox without it), and unless the browser is remembered, the system looks at the user: with an authenticator app (\texttt{mfa\_enabled}) the ticket asks for that code as before; otherwise, if \texttt{email\_two\_step} is on (the default for every account) and the e-mail address is verified, it sends a six-digit code (\texttt{otp\_signin\_email}) and returns \texttt{200} with \texttt{method: email}, a masked address and the 60-second gap before a resend; otherwise the session starts at once. The ticket is the existing one (\texttt{mfa:ticket} in Redis, only its hash as the key) and carries the keyed hash of the code, the attempts (five) and the sends (three); the code is valid 10 minutes and a new send replaces it. \texttt{POST /auth/signin/mfa} takes the code and an optional \texttt{remember}. A user turns the step off with \texttt{POST /me/security/email-code/disable} after step-up, and on again without it; a member with no verified e-mail address is not asked, and the screens say so.
+
+Before the password is asked, the sign-in page sends the first entry to \texttt{POST /auth/login-check} (FR-ACC-13): a mobile number or an e-mail address of a valid form, and for an e-mail a lookup of its domain's MX (or address) records, kept in Redis for six hours when the domain exists and fifteen minutes when it does not, and not kept when the lookup cannot be answered (then the sign-in goes on). The answer is \texttt{ok} or a reason, \texttt{format} or \texttt{domain}; no account is read, so the answer is the same whether or not one exists.
 
 ``Remember this device'' sets \texttt{known\_devices.trusted\_until} to 30 days ahead, only in the session created by a passed second factor with the box ticked, for the device of that session. The sign-in checks the device cookie against it before asking for any second factor. The database trigger \texttt{identity.clear\_device\_trust} clears it for the user whenever \texttt{password\_hash} or \texttt{email} changes, whatever path made the change, and \texttt{SessionService.endAllIn} clears it whenever the user's sessions are ended together (sign-out everywhere, a password change, a suspension). Sending a code, a trusted device and the step being turned on or off are audit events.
 

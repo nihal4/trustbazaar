@@ -459,14 +459,37 @@ describe('sign-in and registration layout', () => {
     expect(await screen.findByLabelText('Mobile number or e-mail')).toBeTruthy();
   });
 
-  it('FR-ACC-05 sign-in is one fresh page: no header, search, notices or footer; the logo and the language switch only', async () => {
+  it('FR-ACC-05 sign-in is one fresh page: no header, search, notices, footer or logo; the language switch only', async () => {
     renderApp('/signin', fakeBackend({}));
     await screen.findByRole('heading', { name: 'Sign in' });
     expect(screen.queryByRole('contentinfo')).toBeNull();
     expect(screen.queryByRole('search')).toBeNull();
     expect(screen.queryByRole('textbox', { name: /Search/ })).toBeNull();
     expect(screen.queryByText('Sell an item')).toBeNull();
-    expect(screen.getByRole('link', { name: /TrustBazaar|Home/i })).toBeTruthy();
+  });
+
+  it('FR-ACC-13 an entry that is not a mobile number or an e-mail of a valid form is turned back on the page: nothing is sent; an e-mail whose domain cannot receive mail is turned back after the check, with no sign-in tried', async () => {
+    const be = fakeBackend({
+      'POST /auth/login-check': (c) => json(200, (c.body as { login: string }).login.endsWith('@examle.com') ? { ok: false, reason: 'domain' } : { ok: true })(),
+    });
+    renderApp('/signin', be);
+    await screen.findByRole('heading', { name: 'Sign in' });
+    for (const bad of ['c', 'nihal', 'nihal@', 'nihal@gmail', 'a b@c.com', '1234', 'nihal@@gmail.com', '.nihal@gmail.com', 'nihal@-gmail.com']) {
+      type('Mobile number or e-mail', bad);
+      click('Continue');
+      expect((await screen.findByRole('alert')).textContent).toBe('Enter a valid mobile number or e-mail address.');
+      expect(screen.queryByLabelText('Password')).toBeNull();                                // it did not move on
+    }
+    expect(be.called('POST /auth/login-check')).toHaveLength(0);                             // and nothing was sent
+    type('Mobile number or e-mail', 'nihal@examle.com');
+    click('Continue');
+    expect((await screen.findByRole('alert')).textContent).toBe('Nothing can be delivered to examle.com. Check the part after the @.');
+    expect(screen.queryByLabelText('Password')).toBeNull();
+    expect(be.called('POST /auth/signin')).toHaveLength(0);                                  // the sign-in was never tried
+    type('Mobile number or e-mail', 'nihal@gmail.com');
+    click('Continue');
+    expect(await screen.findByLabelText('Password')).toBeTruthy();
+    type('Password', 'x');
   });
 
   it('FR-ACC-05 the password asks for itself after the number or e-mail; Change goes back; the eye shows and hides what was typed', async () => {
@@ -474,7 +497,7 @@ describe('sign-in and registration layout', () => {
     await screen.findByRole('heading', { name: 'Sign in' });
     expect(screen.queryByLabelText('Password')).toBeNull();                       // not before the first step
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
-    expect((await screen.findByRole('alert')).textContent).toBe('Enter your mobile number or e-mail address.');
+    expect((await screen.findByRole('alert')).textContent).toBe('Enter a valid mobile number or e-mail address.');
     await enterLogin('rahim@example.com');
     expect(screen.getByText('rahim@example.com')).toBeTruthy();
     const field = screen.getByLabelText('Password') as HTMLInputElement;

@@ -123,6 +123,19 @@ describe('sign-in and sessions', () => {
     });
   });
 
+  describe('the check before the password (U10-25)', () => {
+    it('FR-ACC-13 a number or an e-mail of a valid form passes, anything else fails on its form, and no account is read: the same answer for a real login and an unknown one', async () => {
+      const a = await fx.account();
+      const b = browser();
+      const answer = async (login: string) => (await b.post('/auth/login-check', { login })).json();
+      expect(await answer(a.local)).toEqual({ ok: true });
+      expect(await answer('01799999999')).toEqual({ ok: true });                               // no account has it, and the answer is the same
+      for (const bad of ['c', 'nihal@', 'a@b', '12345']) expect(await answer(bad)).toEqual({ ok: false, reason: 'format' });
+      const audit = await fx.query(`SELECT 1 FROM audit.events WHERE action LIKE 'identity.signin.%' AND object_id = $1`, [a.userId]);
+      expect(audit).toHaveLength(0);                                                           // nothing was tried on the account
+    });
+  });
+
   describe('the second step by e-mail (U10-25)', () => {
     const codeFor = (email: string) => {
       const sent = (t.app.get<ForwardedNotifications>(NOTIFICATIONS)).sent.filter((m) => m.to.toLowerCase() === email.toLowerCase() && m.template === 'otp_signin_email');

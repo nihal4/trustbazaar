@@ -63,7 +63,7 @@
 .nav { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; }
 .capture .nav { margin-top: 0; }
 .primary, .secondary { min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-radius-control); cursor: pointer; font: inherit; font-weight: 600; }
-.primary { border: 0; background: var(--tb-accent); color: var(--tb-accent-text); }
+.primary { border: 1px solid var(--tb-btn-line); background: var(--tb-btn-bg); color: var(--tb-btn-fg); }
 .primary:disabled { background: var(--tb-muted); cursor: not-allowed; }
 .secondary { border: 1.5px solid var(--tb-border); background: var(--tb-bg); color: var(--tb-text); }
 .secondary:disabled { color: var(--tb-muted); cursor: not-allowed; }

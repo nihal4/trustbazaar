@@ -9,7 +9,6 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-do
 import { Button } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { BellIcon, ChatIcon, HomeIcon, OrdersIcon, PlusIcon, SearchIcon, UserIcon } from './icons';
-import { gridCell, useViewport } from './gridCell';
 import { Logo } from './Logo';
 import { useLanguage } from './language/Language';
 import { LanguageSwitch } from './language/LanguageSwitch';
@@ -51,15 +50,11 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
   // Phones get the tab bar instead of the header's links; decided once on the first render, so nothing jumps.
   const phone = useMediaQuery('(max-width: 47.99em)', false, { getInitialValueInEffect: false });
   const tabs = accountLinks && phone;
-  const { vw } = useViewport();
   if (accountLinks && BARE_PATHS.has(pathname)) {
-    const cell = gridCell(vw);
     return (
       <div className={styles.bare}>
         <a className={styles.skip} href="#main">{t('shell.skip_to_content')}</a>
         <header className={styles.bareTop}>
-          {/* the logo stands in a ruled frame on the grid: whole cells in its place and height, the hot rule on top, so it is the first thing seen */}
-          <Link className={styles.bareBrand} to={home.path} aria-label={t('shell.home_link')} style={{ left: cell, top: cell, height: cell * 2, ['--cell' as string]: `${cell}px` }}><Logo onDark /></Link>
           <LanguageSwitch />
         </header>
         <main id="main" ref={main} tabIndex={-1} className={styles.bareMain}>
