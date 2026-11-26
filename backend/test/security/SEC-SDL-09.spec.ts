@@ -206,6 +206,7 @@ describe('negative authorisation (SEC-SDL-09)', () => {
       'POST /disputes/:id/chat/seen': { path: `/disputes/${dispute}/chat/seen` },
       'POST /disputes/:id/evidence': { path: `/disputes/${dispute}/evidence`, form: { file: image } },
       'POST /disputes/:id/return-received': { path: `/disputes/${dispute}/return-received` },
+      'POST /disputes/:id/return-check': { path: `/disputes/${dispute}/return-check`, body: { value: 'SN-0000-1111' } },
       'POST /disputes/:id/statements': { path: `/disputes/${dispute}/statements`, body: { text: 'This is my statement about the lamp.' } },
       'POST /disputes/:id/withdraw': { path: `/disputes/${dispute}/withdraw` },
       'PATCH /listings/:id': { path: `/listings/${draft}`, body: { title: 'A different lamp' } },

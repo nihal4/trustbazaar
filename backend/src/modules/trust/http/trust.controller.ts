@@ -82,6 +82,30 @@ export class OutcomePreviewQuery {
   itemRefund!: string;
 }
 
+export class ReturnCheckDto {
+  @IsString()
+  @Length(6, 40)
+  value!: string;
+}
+
+export class ResolveReturnDto {
+  @IsIn(['refund', 'release'])
+  outcome!: 'refund' | 'release';
+
+  @IsString()
+  @Length(20, 2000)
+  reason!: string;
+}
+
+export class BuyerFindingDto {
+  @IsIn(['false_claim', 'swap'])
+  finding!: 'false_claim' | 'swap';
+
+  @IsString()
+  @Length(20, 2000)
+  reason!: string;
+}
+
 export class InfoRequestDto {
   @IsString()
   @Length(10, 2000)
@@ -489,6 +513,30 @@ export class TrustController {
     const r = await this.cases.decide(staffOf(p), id, dto, ctx(req));
     if (r.status === 'proposed') res.status(202);
     return r;
+  }
+
+  /** U10-23, FR-TNS-10: the seller checks the identifier of the item taken back. */
+  @SignedIn()
+  @Post('disputes/:id/return-check')
+  @HttpCode(200)
+  returnCheck(@Id('id') id: string, @Body() dto: ReturnCheckDto, @CurrentPrincipal() p: Principal) {
+    return this.cases.returnCheck(userOf(p), id, dto.value);
+  }
+
+  /** U10-23, FR-TNS-10: an operator closes a dispute that awaits a return which is stuck (a mismatch, or the target has passed). */
+  @Staff('operator')
+  @Post('staff/disputes/:id/resolve-return')
+  @HttpCode(200)
+  resolveReturn(@Id('id') id: string, @Body() dto: ResolveReturnDto, @CurrentPrincipal() p: Principal) {
+    return this.cases.resolveReturn(staffOf(p), id, dto.outcome, dto.reason);
+  }
+
+  /** U10-23, FR-TNS-10: an operator's finding of a buyer's bad faith on a decided dispute: a buyer strike, and a suspension of buying for a swap. */
+  @Staff('operator')
+  @Post('staff/disputes/:id/buyer-finding')
+  @HttpCode(200)
+  buyerFinding(@Id('id') id: string, @Body() dto: BuyerFindingDto, @CurrentPrincipal() p: Principal) {
+    return this.cases.buyerFinding(staffOf(p), id, dto.finding, dto.reason);
   }
 
   /** Outcome (d): the seller records that the returned item has arrived; the buyer's refund follows. */

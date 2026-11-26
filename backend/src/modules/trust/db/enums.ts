@@ -31,5 +31,5 @@ export type SanctionKind = (typeof SANCTION_KIND)[number];
 export const SIGNAL_STATUS = ['open', 'dismissed', 'actioned'] as const;
 export type SignalStatus = (typeof SIGNAL_STATUS)[number];
 
-export const STRIKE_REASON = ['unilateral_cancel', 'missed_deadline', 'dispute_lost'] as const;
+export const STRIKE_REASON = ['unilateral_cancel', 'missed_deadline', 'dispute_lost', 'buyer_false_claim', 'buyer_swap'] as const;
 export type StrikeReason = (typeof STRIKE_REASON)[number];

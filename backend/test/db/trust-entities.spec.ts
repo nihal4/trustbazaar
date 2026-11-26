@@ -9,7 +9,7 @@ import { IdentityFixtures } from '../support/identity';
 // scripts/generate_entities.py --schemas disputes,trust,staff ...). Reads pg_catalog as tb_app.
 // trust.profile_summary is a view, read with SQL; it has no entity.
 describe('disputes, trust and staff entities', () => {
-  entityChecks({ label: 'disputes, trust and staff', schemas: ['disputes', 'trust', 'staff'], entities: ENTITIES, tables: 17 });
+  entityChecks({ label: 'disputes, trust and staff', schemas: ['disputes', 'trust', 'staff'], entities: ENTITIES, tables: 19 });
 
   let fx: IdentityFixtures;
   beforeAll(async () => {

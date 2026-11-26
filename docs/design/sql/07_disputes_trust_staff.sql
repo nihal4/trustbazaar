@@ -759,3 +759,23 @@ CREATE TABLE disputes.chat_reads (
   PRIMARY KEY (dispute_id, user_id)
 );
 GRANT SELECT, INSERT, UPDATE ON disputes.chat_reads TO tb_app;
+
+-- U10-23 (FR-TNS-10): the return check, an operator's finding of a buyer's bad faith, and the buyer's strikes.
+ALTER TYPE trust.strike_reason ADD VALUE IF NOT EXISTS 'buyer_false_claim';
+ALTER TYPE trust.strike_reason ADD VALUE IF NOT EXISTS 'buyer_swap';
+CREATE TABLE disputes.return_checks (
+  id          bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  dispute_id  uuid        NOT NULL REFERENCES disputes.disputes(id),
+  user_id     uuid        NOT NULL REFERENCES identity.users(id),
+  matched     boolean     NOT NULL,
+  at          timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE disputes.buyer_findings (
+  dispute_id  uuid PRIMARY KEY REFERENCES disputes.disputes(id),
+  finding     varchar(16) NOT NULL CHECK (finding IN ('false_claim', 'swap')),
+  staff_id    uuid        NOT NULL REFERENCES identity.staff_accounts(id),
+  reason      text        NOT NULL CHECK (length(btrim(reason)) >= 20),
+  at          timestamptz NOT NULL DEFAULT now()
+);
+-- trust.record_strike now counts only seller reasons; trust.record_buyer_strike counts only buyer reasons and suspends buying (see migration 1793491200041);
+-- disputes.return_rejected closes a dispute awaiting a return whose returned item was not the item sold.

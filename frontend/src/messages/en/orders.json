@@ -588,5 +588,10 @@
   "handover.photos_label": "Photos of the item",
   "handover.photo_add": "Add a photo of the item (before you enter the code)",
   "handover.photo_hint": "Show the item working, in the buyer's hands. It is kept as evidence if a dispute follows.",
-  "handover.photo_invalid": "{name} cannot be used. Choose a JPEG, PNG or WebP photo of at most 10 MB."
+  "handover.photo_invalid": "{name} cannot be used. Choose a JPEG, PNG or WebP photo of at most 10 MB.",
+  "dispute.msg.dispute.return_refunded.buyer": "TrustBazaar closed the return: the item is counted as returned and you are refunded.",
+  "dispute.msg.dispute.return_refunded.seller": "TrustBazaar closed the return: the item is counted as returned and the buyer is refunded.",
+  "dispute.msg.dispute.return_rejected.buyer": "TrustBazaar checked the return: the item that came back is not the item sold, so the payment goes to the seller.",
+  "dispute.msg.dispute.return_rejected.seller": "TrustBazaar checked the return: the item that came back is not the item sold, so you are paid.",
+  "dispute.msg.dispute.buyer_finding.buyer": "TrustBazaar found that this dispute was not made in good faith. A strike was recorded on your account. More findings can suspend buying and bidding."
 }
