@@ -94,7 +94,7 @@ describe('the seller dashboard', () => {
     expect(within(statements).getByText('Your payout').nextElementSibling?.textContent).toBe('৳1,425.00');
   });
 
-  it('NFR-USE-07 a statement is a payout\'s counterfoil: the payout in figures and words, and the postmark once it was sent (AC-SEL-2)', async () => {
+  it('NFR-USE-07 a statement is a ruled line: the order, the payout as the one figure, the breakdown, and the day the payout was sent as plain text (AC-SEL-2)', async () => {
     const sentAt = '2026-11-20T20:00:00Z';                           // 21 November in Dhaka
     renderApp('/seller', backend({
       'GET /me/payouts': json(200, { items: [{ id: 'p-1', orderId: 'o-7', amount: '142500', status: 'sent', simulated: false, createdAt: iso(-HOUR), sentAt }], nextCursor: null }),
@@ -104,9 +104,9 @@ describe('the seller dashboard', () => {
       }),
     }));
     const statement = await screen.findByRole('article', { name: 'Book shelf' });
-    expect(await within(statement).findByText('One thousand four hundred and twenty-five taka only')).toBeTruthy();
+    expect(within(statement).getByText('Your payout').nextElementSibling?.textContent).toBe('৳1,425.00');
     expect(within(statement).getByRole('heading', { name: 'Book shelf' })).toBeTruthy();
-    expect(await within(statement).findByText('21 Nov 2026')).toBeTruthy();
+    expect(await within(statement).findByText(/21 Nov 2026/)).toBeTruthy();
   });
 
   it('FR-KYC-07 a member who is not verified is told why the seller screens are refused', async () => {

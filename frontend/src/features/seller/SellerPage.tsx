@@ -11,8 +11,7 @@ import { useApi } from '../../shared/api';
 import { useServerNow } from '../../shared/clock';
 import { signInPath } from '../../shared/document';
 import { errorText } from '../../shared/errors';
-import { amountInWords } from '../../shared/amountWords';
-import { Counterfoil, postmarkDate } from '../../shared/Counterfoil';
+import { postmarkDate } from '../../shared/postmark';
 import { FormMessage } from '../../shared/form';
 import type { T } from '../../shared/language/catalogue';
 import { useT } from '../../shared/language/Language';
@@ -164,8 +163,7 @@ function Payouts({ t, lang }: { t: T; lang: Lang }) {
                 {' · '}{formatDateTime(Date.parse(p.sentAt ?? p.createdAt), lang)}
               </p>
             </div>
-            {p.status === 'sent' && p.sentAt && <span className={styles.stamp} aria-hidden="true">{postmarkDate(p.sentAt, lang)}</span>}
-          </li>
+                      </li>
         ))}
       </ul>
     </section>
@@ -201,13 +199,13 @@ function Statements({ t, lang }: { t: T; lang: Lang }) {
       {statements.isSuccess && items.length === 0 && <p className={styles.hint}>{t('seller.statements_none')}</p>}
       {items.map((s) => (
         <article key={s.orderId} aria-label={s.title ?? s.orderId}>
-          {/* a statement is the counterfoil of a payout (docs/design/10_visual_v2.md, AC-SEL-2): the stub keeps the
-              day it settled and the postmark once the payout was sent; the form the order's title, the payout in
-              figures and words, and the breakdown */}
-          <Counterfoil amount={formatMoney(BigInt(s.sellerPayout), lang)} amountWords={amountInWords(s.sellerPayout, lang)}
-            postmark={s.payout && sentAt.has(s.payout.id) ? postmarkDate(sentAt.get(s.payout.id)!, lang) : undefined}
-            stub={<p className={styles.stubNote}>{t('seller.settled', { at: formatDateTime(Date.parse(s.settledAt), lang) })}</p>}
-            title={<h3 className={styles.stubHeading}><Link to={`/orders/${encodeURIComponent(s.orderId)}`}>{s.title ?? t('seller.untitled')}</Link></h3>}>
+          {/* a statement is a ruled line: the order, the payout as the one big figure, then the breakdown on hairlines; the day the payout was sent is
+              plain text (U10-24) */}
+          <div className={styles.stmtHead}>
+            <h3 className={styles.stubHeading}><Link to={`/orders/${encodeURIComponent(s.orderId)}`}>{s.title ?? t('seller.untitled')}</Link></h3>
+            <p className={styles.stubNote}>{t('seller.settled', { at: formatDateTime(Date.parse(s.settledAt), lang) })}</p>
+          </div>
+          <p className={styles.figure} aria-hidden="true">{formatMoney(BigInt(s.sellerPayout), lang)}</p>
           <dl className={styles.breakdown}>
             <dt>{t('seller.line.collected')}</dt><dd>{money(s.amountCollected)}</dd>
             <dt>{t('seller.line.item')}</dt><dd>{money(s.itemPrice)}</dd>
@@ -216,8 +214,7 @@ function Statements({ t, lang }: { t: T; lang: Lang }) {
             {s.refundTotal !== '0' && <><dt>{t('seller.line.refund')}</dt><dd>−{money(s.refundTotal)}</dd></>}
             <dt className={styles.total}>{t('seller.line.payout')}</dt><dd className={styles.total}>{money(s.sellerPayout)}</dd>
           </dl>
-          {s.payout && <p className={styles.hint}>{t('seller.statement_payout', { status: t(`seller.payout.${s.payout.status}`) })}</p>}
-          </Counterfoil>
+          {s.payout && <p className={styles.hint}>{t('seller.statement_payout', { status: t(`seller.payout.${s.payout.status}`) })}{s.payout && sentAt.has(s.payout.id) ? ` · ${postmarkDate(sentAt.get(s.payout.id)!, lang)}` : ''}</p>}
         </article>
       ))}
       {statements.hasNextPage && <button type="button" className={styles.secondary} onClick={() => void statements.fetchNextPage()}>{t('seller.more')}</button>}
