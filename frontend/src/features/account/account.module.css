@@ -60,6 +60,7 @@
   box-shadow: inset 0 2px 0 var(--tb-hot);            /* the one hot rule, drawn inside the first hairline so the frame's lines stay on the grid */
   display: flex;
   flex-direction: column;
+  overflow: clip;                                    /* a step slides in inside the frame; the bands' rules never leave it */
   animation: frameDraw 620ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
@@ -404,6 +405,7 @@
   padding: 0;
   display: grid;
   grid-template-rows: calc(var(--head) * var(--cell)) minmax(0, 1fr) calc(var(--foot) * var(--cell));
+  grid-template-columns: minmax(0, 1fr);             /* a long word never widens the bands past the card */
 }
 
 .bandHead {
@@ -577,4 +579,21 @@
   color: var(--tb-muted);
   cursor: not-allowed;
   text-decoration-style: dotted;
+}
+
+/* the Bangla heading does not break inside a word (ই-মেইল), and the figures of a countdown keep one width so a link does not tremble as it counts */
+:lang(bn) .bandHead h1 {
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  hyphens: none;
+}
+
+.link,
+.footLinks,
+.bandBody > form > button {
+  font-variant-numeric: tabular-nums;
+}
+
+.footLinks .link {
+  white-space: nowrap;
 }

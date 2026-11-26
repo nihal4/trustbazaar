@@ -273,3 +273,16 @@ div.error > :first-child {
   outline: 2px solid var(--tb-focus, var(--tb-accent));
   outline-offset: -2px;
 }
+
+/* busy is not off: while an answer is awaited the main button keeps its look, with the progress cursor; only a lockout (disabled without busy) goes grey */
+.primary[aria-busy='true']:disabled {
+  background: var(--tb-btn-bg);
+  border-color: var(--tb-btn-line);
+  color: var(--tb-btn-fg);
+  cursor: progress;
+}
+
+/* the eye's glyph stands on the field's right edge, the box keeps its 44 px */
+.eye {
+  justify-items: end;
+}

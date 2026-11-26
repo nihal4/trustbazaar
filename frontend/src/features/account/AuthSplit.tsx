@@ -42,7 +42,8 @@ function useFrame(content: RefObject<HTMLDivElement>, rows: number, stepKey: str
   // them (`rows`), so the card never grows or shrinks as the steps change; a step taller than that still fits
   const height = bands > 0 ? cell * rows : Math.max(cell * rows, Math.ceil((inner + 2) / cell) * cell);
   const leftCell = Math.max(1, Math.round((total - cols) / 2));
-  const top = Math.max(cell * 2, Math.round((vh - height) / 2 / cell) * cell);
+  // under the language switch (it is 44 px high at 20 px): on a phone the card starts below it with a clear gap
+  const top = Math.max(cell * (vw < 520 ? 3 : 2), Math.round((vh - height) / 2 / cell) * cell);
   const hole = useMemo<Hole>(() => ({ x: leftCell, y: top / cell, w: cols, h: height / cell }), [leftCell, top, cols, height, cell]);
   return { cell, width, height, left: leftCell * cell, top, hole };
 }
@@ -63,6 +64,7 @@ export function AuthSplit({ children, stepKey = 'step', rows = 8, head, headCell
   const slab = useRef<HTMLDivElement>(null);
   const banded = head !== undefined;
   const f = useFrame(face, rows, stepKey, banded ? headCells + footCells : 0);
+  const { vw } = useViewport();
   const first = useRef(true);
 
   // the grid answers each step: a ring runs out from the middle of the slab (and on arrival, after the slab has risen)
@@ -76,7 +78,7 @@ export function AuthSplit({ children, stepKey = 'step', rows = 8, head, headCell
   // one pixel more each way, so the frame's right and bottom hairlines lie on the grid's lines (which run on the cell's far edge)
   const style: CSSProperties & Record<string, string | number> = { marginLeft: f.left, width: f.width + 1, minHeight: f.height + 2, '--cell': `${f.cell}px` };
   return (
-    <div className={styles.stage} style={{ paddingTop: f.top, paddingBottom: f.cell * 3 }}>
+    <div className={styles.stage} style={{ paddingTop: f.top, paddingBottom: f.cell * (vw < 520 ? 1 : 3) }}>
       <GridCanvas cell={f.cell} hole={f.hole} />
       <div ref={slab} className={styles.stageCard} style={style}>
         {banded ? (

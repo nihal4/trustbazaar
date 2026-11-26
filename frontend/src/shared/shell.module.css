@@ -451,3 +451,15 @@
 }
 
 .bareMain:focus { outline: none; }
+
+/* on the fresh page the language switch is a line, not a filled box (the ruled grid rule) */
+.bareTop .langSwitch {
+  background: none;
+  border: 1px solid var(--tb-border);
+  border-radius: 0;
+}
+
+.bareTop .langSwitch:hover {
+  border-color: var(--tb-hot);
+  background: none;
+}

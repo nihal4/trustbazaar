@@ -1,10 +1,9 @@
-// The page behind sign-in and registration (U10-25, redesign v3): the ruled grid of the site as a field of hairline cells drawn on a canvas, dense towards
-// the top right and thinning out in steps towards the bottom left. It is alive but stays lines: a slow wave of light runs along the hairlines, the cells
-// under the pointer light their outline in the hot colour and fade back behind it like a trail, and a tap or each step of the form sends a ring of light
-// across the lines. Now and then, in a random place clear of the card, small boxes (half a cell) flicker on and spell TRUST over BAZAAR (gridArt.ts), stay a
-// moment and flicker out again; up to two at a time. The card is a
-// ruled frame whose edges lie on the grid's lines (AuthSplit). Hidden from readers, takes no clicks. With "reduce motion" it is drawn once and still, with
-// the name in the corner.
+// The page behind sign-in and registration (U10-25, redesign v3): the ruled grid of the site as a field of hairline cells drawn on a canvas over the whole
+// stage. It is alive but stays lines: a slow wave of light runs along the hairlines, the cells under the pointer light their outline in the hot colour and
+// fade back behind it like a trail, and a tap or each step of the form sends a ring of light across the lines. Now and then, in a random place clear of the
+// card, the edges and the language switch, small boxes (half a cell) flicker on and spell TRUST over BAZAAR (gridArt.ts), stay a moment and flicker out
+// again; up to two at a time. The card is a ruled frame whose edges lie on the grid's lines (AuthSplit). Hidden from readers, takes no clicks. With "reduce
+// motion" it is drawn once and still: the name once, where it fits clear of the card, or not at all.
 import { useEffect, useRef } from 'react';
 import { nameArt } from './gridArt';
 
@@ -18,7 +17,6 @@ export interface Hole { x: number; y: number; w: number; h: number }
 const FADE = 800;                // a picture flickers on over this long, and out again
 const MAX_AT_ONCE = 2;
 
-const jitter = (c: number, r: number) => Math.abs((c * 73856093) ^ (r * 19349663)) % 3;
 
 type Rgb = [number, number, number];
 const parse = (v: string, fallback: Rgb): Rgb => {
@@ -65,20 +63,15 @@ export function GridCanvas({ cell, hole }: { cell: number; hole: Hole | null }) 
       cols = Math.ceil(w / cell) + 1; rows = Math.ceil(h / cell) + 1;
       heat = new Float32Array(cols * rows);
       present = new Uint8Array(cols * rows);
-      // dense in the top right, thinning in steps towards the bottom left: a tile exists while its distance from that corner is under a limit, measured on
-      // the first screen so a long page does not fill up
-      const vr = Math.ceil(window.innerHeight / cell);
-      const limit = Math.max(cols, vr) * 1.18;
-      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-        const fromRight = cols - 1 - c;
-        present[r * cols + c] = fromRight * 0.7 + r * 0.85 + jitter(c, r) * 1.1 < limit ? 1 : 0;
-      }
+      // the whole stage is ruled: a thinning edge left a void under the first screen of a tall page such as registration
+      present.fill(1);
     };
 
     // the name: each appearance is a place and a time. Its boxes are half a grid cell (16 px), so TRUST over BAZAAR is 368 by 176 px and fits beside, above or
     // below the card; it starts on a grid line (an even number of half cells) and is never placed over the card or over another appearance.
     interface Shown { x: number; y: number; t0: number; hold: number }
     const shown: Shown[] = [];
+    let still: Shown | null = null;
     let nextAt = 300;
     const name = nameArt();
     const half = cell / 2;
@@ -97,18 +90,22 @@ export function GridCanvas({ cell, hole }: { cell: number; hole: Hole | null }) 
       const hcols = cols * 2, hrows = Math.ceil(window.innerHeight / half);
       if (name.w > hcols - 2 || name.h > hrows - 2) return;
       const card = hole ? { x: hole.x * 2 - 2, y: hole.y * 2 - 2, w: hole.w * 2 + 4, h: hole.h * 2 + 4 } : null;   // a margin of a cell round the card
+      // away from the screen's edges (a cell in) and from the language switch at the top right (about 4 by 3 cells)
+      const chip = { x: hcols - 8, y: 0, w: 8, h: 6 };
       for (let tries = 0; tries < 60; tries++) {
-        const x = 2 * Math.floor(Math.random() * ((hcols - name.w) / 2)), y = 2 * Math.floor(Math.random() * ((hrows - name.h) / 2));
+        const x = 2 + 2 * Math.floor(Math.random() * ((hcols - name.w - 2) / 2)), y = 2 + 2 * Math.floor(Math.random() * ((hrows - name.h - 2) / 2));
         const box = { x, y, w: name.w, h: name.h };
-        if ((card && overlap(box, card) > 0) || shown.some((s2) => overlap(box, { x: s2.x - 2, y: s2.y - 2, w: name.w + 4, h: name.h + 4 }) > 0)) continue;
-        shown.push({ x, y, t0: now, hold: 3200 + Math.random() * 1600 });
+        if (overlap(box, chip) > 0 || (card && overlap(box, card) > 0) || shown.some((s2) => overlap(box, { x: s2.x - 2, y: s2.y - 2, w: name.w + 4, h: name.h + 4 }) > 0)) continue;
+        if (reduce) still = { x, y, t0: now, hold: 0 };
+        else shown.push({ x, y, t0: now, hold: 3200 + Math.random() * 1600 });
         return;
       }
     };
     const flick = (q: number) => (Math.floor(q * 6) % 2 === 0 ? 1 : 0.2);
     const drawArt = (t: number) => {
       if (reduce) {
-        for (const cl of name.cells) paintCell(cl.x + 2, cl.y + 2, cl.k, 1);
+        if (!still) spawn(t);
+        if (still) { const st = still as Shown; for (const cl of name.cells) paintCell(st.x + cl.x, st.y + cl.y, cl.k, 1); }
         return;
       }
       if (t >= nextAt && shown.length < MAX_AT_ONCE) { spawn(t); nextAt = t + 900 + Math.random() * 1500; }

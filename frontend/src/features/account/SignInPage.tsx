@@ -239,7 +239,8 @@ export function Component() {
 const headFor = (vw: number, bangla: boolean) => (vw < 360 ? (bangla ? 8 : 7) : vw < 520 ? (bangla ? 7 : 6) : 5);
 const rowsFor = (vw: number, bangla: boolean) => headFor(vw, bangla) + 8 + 2;                 // the heading band, the form band's eight cells, the foot's two
 
-/** The line under the field where a refusal or a notice is said (U10-25). Its two regions are always in the page (a region that appears with its text is
+/** The line under the field where a refusal or a notice is said (U10-25). It takes its own height out of the room the form shares out (a few pixels: it
+ *  does not keep an empty place, which made the gaps uneven). Its two regions are always in the page (a region that appears with its text is
  *  often not announced): a refusal is an alert, a notice is a status; the message has an id the field points to. */
 function Slot({ message, ok = false, id }: { message: string | null; ok?: boolean; id: string }) {
   return (
