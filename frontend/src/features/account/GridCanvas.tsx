@@ -1,20 +1,26 @@
 // The page behind sign-in and registration (U10-25, redesign v3): the ruled grid of the site as a field of hairline cells drawn on a canvas, dense towards
-// the top right and thinning out in steps towards the bottom left. It is alive but stays lines: a slow wave of light runs along the hairlines, single
-// cells flash their outline now and then, the cells under the pointer light their outline in the hot colour and fade back behind it like a trail, and a
-// tap or each step of the form sends a ring of light across the lines from where it happened. The sign-in card is a ruled frame whose edges lie on the
-// grid's lines (AuthSplit snaps it to whole cells). From a fixed rule, no random numbers. Hidden from readers, takes no clicks. With "reduce motion" it
-// is drawn once and still.
+// the top right and thinning out in steps towards the bottom left. It is alive but stays lines: a slow wave of light runs along the hairlines, the cells
+// under the pointer light their outline in the hot colour and fade back behind it like a trail, and a tap or each step of the form sends a ring of light
+// across the lines. Where there is room (the wide layout: the animation on the left, the card on the right) a block of cells spells TRUST over BAZAAR,
+// then dissolves, cell by cell with a flicker, into a phone, the taka sign, a bag, a camera and a shield, and back to the name (gridArt.ts). The card is a
+// ruled frame whose edges lie on the grid's lines (AuthSplit). Fixed rules, no random numbers. Hidden from readers, takes no clicks. With "reduce motion"
+// it is drawn once and still, with the name.
 import { useEffect, useRef } from 'react';
+import { nameArt, pictureArt, type Picture } from './gridArt';
 
 export const GRID_PULSE = 'tb-grid-pulse';
 /** Sends a ring across the grid from a point of the window (a step of the form, a tap). */
 export const pulseGrid = (x: number, y: number) => window.dispatchEvent(new CustomEvent(GRID_PULSE, { detail: { x, y } }));
 
 const REACH = 170;          // pixels from the pointer within which tiles react
-const LIT = [[2, 2], [3, 3], [5, 2], [1, 6], [6, 5], [4, 8], [9, 1], [8, 6], [11, 3], [7, 9]];
+/** Where the pictures go, in cells of the stage: the left of the first of them, its top, and the width of the room. */
+export interface ArtBox { x0: number; y0: number; cols: number }
+// how long each picture stays, and how long the change between two takes (the cells change one by one inside it)
+const HOLD_NAME = 3400;
+const HOLD_PICTURE = 1900;
+const CHANGE = 1000;
 
 const jitter = (c: number, r: number) => Math.abs((c * 73856093) ^ (r * 19349663)) % 3;
-const phaseOf = (c: number, r: number) => (Math.abs((c * 2654435761) ^ (r * 40503)) % 1000) / 1000;
 
 type Rgb = [number, number, number];
 const parse = (v: string, fallback: Rgb): Rgb => {
@@ -24,7 +30,7 @@ const parse = (v: string, fallback: Rgb): Rgb => {
 const mix = (a: Rgb, b: Rgb, k: number): Rgb => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
 const css = (c: Rgb, k = 1) => `rgb(${Math.round(c[0] * k)},${Math.round(c[1] * k)},${Math.round(c[2] * k)})`;
 
-export function GridCanvas({ cell }: { cell: number }) {
+export function GridCanvas({ cell, art }: { cell: number; art: ArtBox | null }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -49,7 +55,6 @@ export function GridCanvas({ cell }: { cell: number }) {
     let w = 0, h = 0, cols = 0, rows = 0, dpr = 1;
     let heat = new Float32Array(0);
     let present = new Uint8Array(0);
-    let lit = new Uint8Array(0);
     const pointer = { x: -1e4, y: -1e4, on: false };
     const pulses: { x: number; y: number; t0: number }[] = [];
     let raf = 0, last = 0;
@@ -62,7 +67,6 @@ export function GridCanvas({ cell }: { cell: number }) {
       cols = Math.ceil(w / cell) + 1; rows = Math.ceil(h / cell) + 1;
       heat = new Float32Array(cols * rows);
       present = new Uint8Array(cols * rows);
-      lit = new Uint8Array(cols * rows);
       // dense in the top right, thinning in steps towards the bottom left: a tile exists while its distance from that corner is under a limit, measured on
       // the first screen so a long page does not fill up
       const vr = Math.ceil(window.innerHeight / cell);
@@ -71,7 +75,57 @@ export function GridCanvas({ cell }: { cell: number }) {
         const fromRight = cols - 1 - c;
         present[r * cols + c] = fromRight * 0.7 + r * 0.85 + jitter(c, r) * 1.1 < limit ? 1 : 0;
       }
-      for (const [lc, lr] of LIT) { const c = cols - 1 - lc; if (c >= 0 && lr < rows) lit[lr * cols + c] = 1; }
+    };
+
+    // the pictures, placed on the cells of the stage; the name first, then each picture in turn
+    const frames: Picture[] = [];
+    const place = (pic: Picture): Picture => art ? { ...pic, cells: pic.cells.map((cl) => ({ ...cl, x: cl.x + art.x0 + Math.floor((art.cols - pic.w) / 2), y: cl.y + art.y0 })) } : pic;
+    let named = false;
+    if (art) {
+      const name = nameArt();
+      if (art.cols >= name.w) { frames.push(place(name)); named = true; }
+      for (const pic of pictureArt()) frames.push(place(pic));
+    }
+    const lengths = frames.map((_, i) => (named && i === 0 ? HOLD_NAME : HOLD_PICTURE));
+    const cycle = lengths.reduce((a2, b2) => a2 + b2, 0);
+    const keyOf = (x: number, y: number) => y * 4096 + x;
+    const mapOf = (pic: Picture) => new Map(pic.cells.map((cl) => [keyOf(cl.x, cl.y), cl.k] as const));
+    const maps = frames.map(mapOf);
+    const paintCell = (x: number, y: number, kind: 'o' | 'w', alpha: number) => {
+      if (alpha <= 0.01) return;
+      const rgb = kind === 'o' ? hotRgb : lightRgb;
+      g.fillStyle = `rgba(${rgb},${alpha * (kind === 'o' ? 0.2 : 0.14)})`;
+      g.fillRect(x * cell + 1.5, y * cell + 1.5, cell - 1, cell - 1);
+      g.strokeStyle = `rgba(${rgb},${alpha * (kind === 'o' ? 0.95 : 0.8)})`;
+      g.lineWidth = 1;
+      g.strokeRect(x * cell + 0.5, y * cell + 0.5, cell, cell);
+    };
+    const drawArt = (t: number) => {
+      if (reduce) { for (const [k, kind] of maps[0]) paintCell(k % 4096, Math.floor(k / 4096), kind, 1); return; }
+      let at = t % cycle, idx = 0;
+      while (at >= lengths[idx]) { at -= lengths[idx]; idx++; }
+      const prevIdx = (idx + frames.length - 1) % frames.length;
+      const now = maps[idx], before = maps[prevIdx];
+      // inside the change, each cell has its own moment (from its place, not from chance): it flickers in or out
+      const wave2 = (x: number, y: number) => ((Math.imul(x, 73856093) ^ Math.imul(y, 19349663)) >>> 0) % 1000 / 1000;
+      const state = (x: number, y: number, present: boolean, p: number) => {
+        const q = (p - wave2(x, y) * (CHANGE * 0.55)) / (CHANGE * 0.4);
+        if (q <= 0) return present ? 0 : 1;
+        if (q >= 1) return present ? 1 : 0;
+        const blink = Math.floor(q * 6) % 2 === 0 ? 1 : 0.2;
+        return (present ? q : 1 - q) * blink;
+      };
+      const seen = new Set<number>();
+      for (const [k, kind] of now) {
+        const x = k % 4096, y = Math.floor(k / 4096);
+        seen.add(k);
+        paintCell(x, y, kind, at < CHANGE && !before.has(k) ? state(x, y, true, at) : 1);
+      }
+      if (at < CHANGE) for (const [k, kind] of before) {
+        if (seen.has(k)) continue;
+        const x = k % 4096, y = Math.floor(k / 4096);
+        paintCell(x, y, kind, state(x, y, false, at));
+      }
     };
 
     const draw = (t: number) => {
@@ -93,18 +147,16 @@ export function GridCanvas({ cell }: { cell: number }) {
         const i = r * cols + c;
         if (!present[i]) continue;
         const cx = c * cell + cell / 2, cy = r * cell + cell / 2;
-        let wave = 0, pop = 0, ring = 0;
+        let wave = 0, ring = 0;
         if (!reduce) {
           wave = 0.5 + 0.5 * Math.sin(c * 0.5 + r * 0.32 - t / 620);                                       // a slow wave along the lines
-          pop = Math.max(0, Math.sin(t / 1050 + phaseOf(c, r) * 6.2832) - 0.97) * 30;                       // now and then one cell flashes
           for (const p of pulses) {
             const age = (t - p.t0) / 1000;
             const d = Math.hypot(cx - p.x, cy - p.y);
             ring += Math.exp(-(((d - age * 760) / 70) ** 2)) * Math.max(0, 1 - age / 1.5);                  // a ring running out from the point
           }
         }
-        const breathe = lit[i] ? (reduce ? 1 : 0.4 + 0.6 * Math.sin(t / 900 + c + r) ** 2) : 0;
-        const v = Math.min(1, Math.max(heat[i], breathe * 0.7, Math.min(1, pop) * 0.6, Math.min(1, ring) * 0.45));
+        const v = Math.min(1, Math.max(heat[i], Math.min(1, ring) * 0.45));
         const x = c * cell + 0.5, y = r * cell + 0.5;
         if (wave > 0.55) {                                                                                   // the wave: a pale light on the hairlines
           g.strokeStyle = `rgba(${lightRgb},${(wave - 0.55) * 0.22})`;
@@ -119,6 +171,7 @@ export function GridCanvas({ cell }: { cell: number }) {
           g.lineWidth = 1;
         }
       }
+      if (frames.length > 0) drawArt(t);
       // retire the rings that have run their course
       while (pulses.length && (t - pulses[0].t0) / 1000 > 1.6) pulses.shift();
     };
@@ -177,7 +230,7 @@ export function GridCanvas({ cell }: { cell: number }) {
       window.removeEventListener(GRID_PULSE, onPulse);
       document.removeEventListener('visibilitychange', visible);
     };
-  }, [cell]);
+  }, [cell, art]);
 
   return <canvas ref={ref} aria-hidden="true" data-grid-canvas />;
 }

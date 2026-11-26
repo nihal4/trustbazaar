@@ -437,7 +437,7 @@
   z-index: 3;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 1rem;
   padding: 1.25rem clamp(1rem, 4vw, 3rem);
 }
@@ -451,3 +451,27 @@
 }
 
 .bareMain:focus { outline: none; }
+
+.bareBrand {
+  position: absolute;
+  z-index: 3;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: calc(var(--cell) * 0.6);
+  background: var(--tb-bg);
+  border: 1px solid var(--tb-border);
+  border-top: 2px solid var(--tb-hot);
+  color: var(--tb-text);
+  text-decoration: none;
+}
+
+.bareBrand img {
+  height: calc(var(--cell) * 1.15);
+  width: auto;
+}
+
+.bareBrand:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: 3px;
+}
