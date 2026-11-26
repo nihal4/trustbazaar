@@ -69,7 +69,7 @@ export class HandoverController {
 
   /** U10-23: the seller's photo of the item at the meetup (an image, at most 10 MB), evidence for a later dispute. */
   @SignedIn()
-  @RateLimit('handover-code')
+  @RateLimit('handover-photo')
   @Post('orders/:id/handover-photos')
   @HttpCode(201)
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 10_485_760, files: 1, fields: 0, parts: 1 } }))

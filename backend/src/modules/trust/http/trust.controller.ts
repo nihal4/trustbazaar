@@ -4,7 +4,7 @@ import { Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsIn, IsInt, IsOptional, IsString, IsUUID, Length, Matches, Max, MaxLength, Min, ValidateNested } from 'class-validator';
 import type { Request, Response } from 'express';
 import { correlationId } from '../../../kernel/http/correlation';
-import { Public, SignedIn, Staff, StepUp } from '../../../kernel/http/policies';
+import { Public, RateLimit, SignedIn, Staff, StepUp } from '../../../kernel/http/policies';
 import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
 import { REPORT_CATEGORY, SANCTION_KIND, SanctionKind } from '../db/enums';
@@ -345,6 +345,7 @@ export class TrustController {
 
   /** Evidence: one image or video (multipart field file); at most CP-33 per dispute. */
   @SignedIn()
+  @RateLimit('dispute-evidence')
   @Post('disputes/:id/evidence')
   @HttpCode(201)
   @UseInterceptors(FileInterceptor('file', {

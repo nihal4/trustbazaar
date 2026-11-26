@@ -153,6 +153,12 @@ export class DisputeService implements DisputeCommands {
         [o.orderId, facts.buyerId, facts.sellerId, facts.itemKind, o.type, description, view.itemPrice, view.escrow?.amountCollected ?? view.total, windowOk, sellerWindow, o.by],
       )) as { id: string }[];
       await this.escrow.freezeForDispute(o.orderId, id, tx); // FR-DSP-02: no automatic release from here
+      if (o.by === 'system') {
+        // a dispute the system opens (Unit 5, a game account) never runs afterOpen: the parties' chats get the same two messages inside this transaction
+        const hours = Math.round((await this.params.current()).ms('CP-20') / 3_600_000);
+        await recordMessage(tx, id, facts.sellerId, 'dispute.opened_seller', { listing_title: view.listing.title, hours }, `dispute:${id}:opened`);
+        await recordMessage(tx, id, facts.buyerId, 'dispute.opened_buyer', { listing_title: view.listing.title }, `dispute:${id}:opened`);
+      }
       return id;
     } catch (err) {
       throw problemOf(err) ?? err;
