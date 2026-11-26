@@ -12,7 +12,7 @@ export const GRID_PULSE = 'tb-grid-pulse';
 /** Sends a ring across the grid from a point of the window (a step of the form, a tap). */
 export const pulseGrid = (x: number, y: number) => window.dispatchEvent(new CustomEvent(GRID_PULSE, { detail: { x, y } }));
 
-const REACH = 170;          // pixels from the pointer within which tiles react
+const REACH = 130;          // pixels from the pointer within which tiles react
 /** The cells the card covers: the pictures are placed away from them. */
 export interface Hole { x: number; y: number; w: number; h: number }
 const FADE = 800;                // a picture flickers on over this long, and out again
@@ -167,7 +167,7 @@ export function GridCanvas({ cell, hole }: { cell: number; hole: Hole | null }) 
         if (v > 0.03) {
           g.fillStyle = `rgba(${hotRgb},${v * 0.09})`;
           g.fillRect(x + 1, y + 1, cell - 1, cell - 1);
-          g.strokeStyle = `rgba(${hotRgb},${0.2 + v * 0.8})`;
+          g.strokeStyle = `rgba(${hotRgb},${0.15 + v * 0.7})`;
           g.lineWidth = v > 0.6 ? 1.5 : 1;
           g.strokeRect(x, y, cell, cell);
           g.lineWidth = 1;

@@ -9,21 +9,26 @@ import { GridCanvas, pulseGrid, type Hole } from './GridCanvas';
 import styles from './account.module.css';
 
 /** The frame on the grid: the cell size, the card's width and place in whole cells (in the middle), its height rounded up to whole cells, and the cells it covers. */
-function useFrame(content: RefObject<HTMLDivElement>, rows: number) {
+function useFrame(content: RefObject<HTMLDivElement>, rows: number, stepKey: string) {
   const { vw, vh } = useViewport();
   const [inner, setInner] = useState(0);
   useLayoutEffect(() => {
     const el = content.current;
     if (!el) return;
-    const read = () => setInner(el.offsetHeight);
+    // the step's natural height: its flow plus the step's own padding (which keeps the foot's place); the step itself stretches to the card, so it is not read
+    const read = () => {
+      const pad = el.parentElement ? getComputedStyle(el.parentElement) : null;
+      setInner(el.offsetHeight + (pad ? parseFloat(pad.paddingTop) + parseFloat(pad.paddingBottom) : 0));
+    };
     read();
     const watch = typeof ResizeObserver === 'function' ? new ResizeObserver(read) : null;
     watch?.observe(el);
     return () => watch?.disconnect();
-  }, [content]);
+  // each step is a new element (the key restarts its slide), so the measure follows the step
+  }, [content, stepKey]);
   const cell = CELL;
   const total = Math.floor(vw / cell);
-  const cols = vw < 520 ? Math.max(8, Math.min(11, total - 1)) : Math.min(CARD_COLS, total - 2);
+  const cols = vw < 520 ? Math.max(8, Math.min(11, total - 2)) : Math.min(CARD_COLS, total - 2);
   const width = cols * cell;
   // a flow whose steps differ in height (sign-in: the number, the password, the code, each with or without an error) gives its card one height for all of
   // them (`rows`), so the card never grows or shrinks as the steps change; a step taller than that still fits
@@ -37,7 +42,7 @@ function useFrame(content: RefObject<HTMLDivElement>, rows: number) {
 export function AuthSplit({ children, stepKey = 'step', rows = 8 }: { children: ReactNode; stepKey?: string; rows?: number }) {
   const face = useRef<HTMLDivElement>(null);
   const slab = useRef<HTMLDivElement>(null);
-  const f = useFrame(face, rows);
+  const f = useFrame(face, rows, stepKey);
   const first = useRef(true);
 
   // the grid answers each step: a ring runs out from the middle of the slab (and on arrival, after the slab has risen)
@@ -54,8 +59,8 @@ export function AuthSplit({ children, stepKey = 'step', rows = 8 }: { children: 
     <div className={styles.stage} style={{ paddingTop: f.top, paddingBottom: f.cell * 3 }}>
       <GridCanvas cell={f.cell} hole={f.hole} />
       <div ref={slab} className={styles.stageCard} style={style}>
-        <div ref={face} key={stepKey} className={styles.stageStep}>
-          {children}
+        <div key={stepKey} className={styles.stageStep}>
+          <div ref={face} className={styles.stepFlow}>{children}</div>
         </div>
       </div>
     </div>

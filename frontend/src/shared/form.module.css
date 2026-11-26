@@ -85,6 +85,7 @@
 }
 
 .primary {
+  transition: background-color 120ms ease, border-color 120ms ease;
   min-height: 48px;
   padding: 0 1.75rem;
   border: 1px solid var(--tb-btn-line);
@@ -104,6 +105,11 @@
 
 .primary:hover:not(:disabled) {
   background: var(--tb-btn-bg-hover);
+}
+
+.primary:active:not(:disabled) {
+  background: var(--tb-btn-bg-hover);
+  border-color: var(--tb-btn-fg);
 }
 
 .primary:disabled {
@@ -149,13 +155,22 @@ div.error > :first-child {
   margin-top: 0;
 }
 
-/* U10-25 (redesign v3): in the dark user app a field is a ruled line, not a box: a hairline underline, the hot-colour line on focus */
+/* U10-25 (redesign v3): in the dark user app a field is a ruled line, not a box: a hairline underline, the hot-colour line on focus; its text starts on the
+   label's own edge; the caret and the selection are the hot colour; a browser's autofill does not paint its own box over the line */
 :root[data-theme='dark'] .field input {
   border: 0;
   border-bottom: 1px solid var(--tb-border);
   border-radius: 0;
   background: none;
-  padding-inline: 0.25rem;
+  padding-inline: 0;
+  caret-color: var(--tb-hot);
+  transition: border-color 120ms ease;
+}
+
+:root[data-theme='dark'] .field input::selection,
+:root[data-theme='dark'] .field label::selection {
+  background: rgba(255, 107, 53, 0.35);
+  color: var(--tb-text);
 }
 
 :root[data-theme='dark'] .field input:focus-visible {
@@ -167,6 +182,60 @@ div.error > :first-child {
 :root[data-theme='dark'] .field input[aria-invalid='true'] {
   border: 0;
   border-bottom: 2px solid var(--tb-error);
+}
+
+:root[data-theme='dark'] .field input:-webkit-autofill,
+:root[data-theme='dark'] .field input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--tb-text);
+  caret-color: var(--tb-hot);
+  box-shadow: 0 0 0 1000px var(--tb-bg) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/* a box to tick: square, a hairline, a vermilion square inside when ticked; the row is 44 px high to tap */
+:root[data-theme='dark'] .checkbox {
+  align-items: center;
+  min-height: 44px;
+}
+
+:root[data-theme='dark'] .checkbox input {
+  appearance: none;
+  display: grid;
+  place-content: center;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  border: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: none;
+  cursor: pointer;
+  transition: border-color 120ms ease;
+}
+
+:root[data-theme='dark'] .checkbox input::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background: var(--tb-hot);
+  transform: scale(0);
+  transition: transform 120ms ease;
+}
+
+:root[data-theme='dark'] .checkbox input:checked {
+  border-color: var(--tb-hot);
+}
+
+:root[data-theme='dark'] .checkbox input:checked::after {
+  transform: scale(1);
+}
+
+:root[data-theme='dark'] .checkbox input:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: 2px;
+}
+
+:root[data-theme='dark'] .checkbox label {
+  cursor: pointer;
 }
 
 /* the eye of a password field (U10-25): inside the field's right edge, 44 px to tap */
