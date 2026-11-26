@@ -350,17 +350,12 @@ BEGIN
     UPDATE disputes.evidence SET storage_key = NULL, purged_at = now() WHERE dispute_id = d.id AND purged_at IS NULL;
     UPDATE disputes.statements SET text = NULL, purged_at = now() WHERE dispute_id = d.id AND purged_at IS NULL;
     UPDATE disputes.disputes SET purged_at = now() WHERE id = d.id;
-    -- U10-23: the seller's handover photos of the order (delivery.handover_photos, file 04) go with the last of its disputes
+    -- U10-23: the order's handover photos (Unit 4's) go with the last of its disputes; the retention job hands the order to Unit 4
     IF NOT EXISTS (SELECT 1 FROM disputes.disputes x WHERE x.order_id = d.order_id AND x.purged_at IS NULL) THEN
-      RETURN QUERY SELECT h.storage_key FROM delivery.handover_photos h WHERE h.order_id = d.order_id AND h.storage_key IS NOT NULL;
-      UPDATE delivery.handover_photos SET storage_key = NULL, purged_at = now() WHERE order_id = d.order_id AND purged_at IS NULL;
+      RETURN NEXT 'order:' || d.order_id::text;
     END IF;
   END LOOP;
 END $$;
--- the photos may change only by that purge, as dispute evidence does
-ALTER TABLE delivery.handover_photos ADD COLUMN purged_at timestamptz, ADD CONSTRAINT handover_photo_purged CHECK ((purged_at IS NULL) = (storage_key IS NOT NULL));
-DROP TRIGGER handover_photos_append_only ON delivery.handover_photos;
-CREATE TRIGGER handover_photos_append_only BEFORE UPDATE OR DELETE ON delivery.handover_photos FOR EACH ROW EXECUTE FUNCTION disputes.content_purge_only('storage_key');
 
 -- =====================================================================
 -- TRUST & SAFETY (FR-TNS, FR-REV)

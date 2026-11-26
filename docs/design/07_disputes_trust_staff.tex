@@ -448,6 +448,12 @@ A strike is stored once per order and reason, so a repeated event adds nothing. 
 
 Unit~3's bidder strikes for unpaid auction wins (CP-12) are a different thing: they restrict bidding, are kept by Unit~3, and do not count here.
 
+\subsection{A buyer who acts in bad faith, and the check of a returned item}
+\label{sec:buyerfinding}
+FR-TNS-10 gives a buyer a strike only on an operator's finding, never for losing, withdrawing or being refunded. The finding is made for a decided dispute of the operator's own case, once for each dispute, with a reason of at least 20 characters (\texttt{disputes.buyer\_findings}, append-only). It is of one of two kinds: a \emph{false claim}, only when the outcome was a release and the seller was paid in full; or a \emph{swap}, only when the seller's check of the returned item found that it was not the item sold. A swap suspends buying and bidding at once, pending review, and opens a \texttt{blacklist\_review} signal (FR-TNS-06); two findings in 365 days suspend buying and bidding automatically, pending review. \texttt{trust.\allowbreak record\_strike} counts the seller reasons only and \texttt{trust.\allowbreak record\_buyer\_strike} the buyer reasons only, so a buyer strike never suspends selling.
+
+For a meetup return of an item with a device identifier, the seller checks the returned item (\texttt{POST /disputes/\{id\}/return-check}) before recording its return; one check for each dispute, only the result is kept (\texttt{disputes.return\_checks}). A mismatch opens a \texttt{return\_mismatch} signal and blocks the seller's own recording. An operator closes such a dispute, or any dispute whose return has passed its decision target, with \texttt{POST /staff/disputes/\{id\}/resolve-return}: \texttt{refund} completes the return, \texttt{release} rejects it and pays the seller (\texttt{disputes.return\_rejected}).
+
 \subsection{A seller who recovers a sold game account}
 \label{sec:gam18}
 When an operator confirms that a seller recovered a sold account (FR-GAM-18), either by deciding a \texttt{seller\_recovery} dispute for the buyer or by actioning a report after release, the console runs three steps:

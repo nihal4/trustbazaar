@@ -3,6 +3,7 @@ import { DataSource, EntityManager } from 'typeorm';
 import type { OutboxEvent } from '../../../kernel/events/event-bus';
 import { Problem } from '../../../kernel/http/problems';
 import { NOTIFIER, Notifier } from '../../chat/ports';
+import { DELIVERY_COMMANDS, DeliveryCommands } from '../../delivery/ports';
 import {
   Approval, APPROVAL_SERVICE, ApprovalServicePort, AUDIT_SERVICE, AuditServicePort, CallContext, FILE_VAULT, FileVaultPort, IDENTITY_QUERY, IdentityQuery,
   STAFF_QUERY, StaffQuery,
@@ -36,6 +37,7 @@ export class PrivacyService implements OnModuleInit {
     @Inject(AUDIT_SERVICE) private readonly audit: AuditServicePort,
     @Inject(FILE_VAULT) private readonly vault: FileVaultPort,
     @Inject(NOTIFIER) private readonly notifier: Notifier,
+    @Inject(DELIVERY_COMMANDS) private readonly delivery: DeliveryCommands,
   ) {}
 
   onModuleInit(): void {
@@ -113,7 +115,10 @@ export class PrivacyService implements OnModuleInit {
 
   /** The retention job (daily; I-63): purges dispute case files past CASE_FILE_RETENTION; returns the files erased. */
   async purgeCaseFiles(after: string = CASE_FILE_RETENTION): Promise<number> {
-    const keys = ((await this.db.query(`SELECT disputes.purge_due($1::interval) AS key`, [after])) as { key: string }[]).map((r) => r.key);
+    const rows = ((await this.db.query(`SELECT disputes.purge_due($1::interval) AS key`, [after])) as { key: string }[]).map((r) => r.key);
+    // 'order:<id>' names an order whose disputes are all purged: Unit 4 empties its handover photos (U10-23); the other rows are evidence files
+    const keys = rows.filter((k) => !k.startsWith('order:'));
+    for (const k of rows.filter((x) => x.startsWith('order:'))) keys.push(...(await this.delivery.purgeHandoverPhotos(k.slice('order:'.length))));
     let erased = 0;
     for (const key of keys) {
       try {

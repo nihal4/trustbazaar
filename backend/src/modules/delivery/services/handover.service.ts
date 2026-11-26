@@ -183,6 +183,11 @@ export class HandoverService {
    * POST /orders/{id}/handover-photos (U10-23): the seller's photo of the item at the meetup, before the code is entered: re-encoded without metadata, kept
    * encrypted with the time the server received it, at most MAX_HANDOVER_PHOTOS an order; evidence for a later dispute.
    */
+  /** I-63 (U10-23): the retention job's call for an order whose disputes are all purged; the file keys come back to be erased from the FileVault. */
+  async purgePhotos(orderId: string): Promise<string[]> {
+    return ((await this.db.query(`SELECT delivery.purge_photos($1) AS key`, [orderId])) as { key: string }[]).map((r) => r.key);
+  }
+
   async addPhoto(userId: string, orderId: string, file: { buffer: Buffer; mimetype: string } | undefined): Promise<{ count: number }> {
     const h = await this.party(this.db.manager, orderId, userId);
     if (h.seller_id !== userId) throw new Problem('forbidden', { errors: [{ field: 'file', reason: 'seller-only' }] });
