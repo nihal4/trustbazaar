@@ -243,3 +243,10 @@
 .chatCell:disabled { opacity: 0.6; cursor: not-allowed; }
 .chatCell:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
 .chatError { grid-column: 1 / -1; border-left: 0 !important; padding: 0 0 0.75rem; }
+
+/* alignment (review): the title sits in the left column so the rail starts at the top beside it; the title is smaller */
+.head { margin-top: 0; margin-bottom: 0.5rem; }
+.headText h1 { font-size: clamp(1.25rem, 1.05rem + 0.7vw, 1.625rem); }
+.cols { margin-top: var(--tb-space-3); }
+.main > .moneyPanel { margin-top: 1rem; }
+.rail { margin-top: 0; }

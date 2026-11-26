@@ -7,6 +7,7 @@ import { useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatMoney } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
+import { Popup } from '../../shared/Popup';
 import { ConfirmDialog } from '../../shared/ConfirmDialog';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
@@ -123,7 +124,8 @@ export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang:
         )}
       </div>
 
-      {needsReason && (
+      {needsReason && !confirming && (
+        <Popup id="action-reason" title={t(open === 'request' ? 'actions.ask_cancel' : 'actions.seller_cancel')} closeLabel={t('actions.back')} busy={act.isPending} onClose={() => { setOpen(null); setReason(''); setMessage(null); }}>
         <form onSubmit={submitReason} noValidate className={styles.form}>
           <p>{t(open === 'request' ? 'actions.ask_cancel_note' : 'actions.seller_cancel_note')}</p>
           <label htmlFor="action-reason">{t('actions.reason')}</label>
@@ -133,6 +135,7 @@ export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang:
             <button type="button" className={styles.secondary} onClick={() => { setOpen(null); setReason(''); setMessage(null); }}>{t('actions.back')}</button>
           </div>
         </form>
+        </Popup>
       )}
 
       {open === 'confirm' && (

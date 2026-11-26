@@ -98,6 +98,8 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
   return (
     <div className={styles.page}>
       {(awaiting || attempt) && <SimulatedBanner kind="payment" />}
+      <div className={styles.cols}>
+      <div className={styles.main}>
       <header className={styles.head}>
         <span className={styles.thumb}>
           {o.listing.photoKey && <img src={`/api/v1/listing-photos/${encodeURIComponent(o.listing.photoKey)}?size=thumb`} alt="" width={88} height={88} />}
@@ -111,8 +113,6 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
           </p>
         </div>
       </header>
-      <div className={styles.cols}>
-      <div className={styles.main}>
       <Money o={o} t={t} lang={lang} />
       {attempt && <Return o={o} failed={failed} waited={waited} t={t} />}
       <Journey o={o} h={handover.data ?? null} shipments={shipments.data?.items ?? []} t={t} />

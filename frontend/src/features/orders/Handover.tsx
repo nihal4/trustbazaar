@@ -4,6 +4,7 @@
 // the attempts left before the lock. Proposals: a suggested public point (with a map link) or a place of the parties'
 // own (a name and an optional pin from the device's position, never a map link, shown with a safety notice; Decisions
 // log, U4-03). Times are Dhaka time.
+import { Popup } from '../../shared/Popup';
 import { useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toAsciiDigits, toLocalDigits } from '../../lib/money.js';
@@ -251,12 +252,13 @@ export function ProposeForm({ o, h, t, lang }: { o: OrderView; h: HandoverView; 
     };
     propose.mutate(body);
   };
-  if (!shown) {
-    return <div className={styles.actionCell}><button type="button" className={styles.secondary} onClick={() => setShown(true)}>{t(h.agreed ? 'handover.propose_other' : 'handover.propose')}</button></div>;
-  }
+  const button = <div className={styles.actionCell}><button type="button" className={styles.secondary} onClick={() => setShown(true)}>{t(h.agreed ? 'handover.propose_other' : 'handover.propose')}</button></div>;
+  if (!shown) return button;
   return (
+    <>
+    {button}
+    <Popup id="propose" title={t('handover.propose')} closeLabel={t('actions.back')} busy={propose.isPending} onClose={() => setShown(false)}>
     <form onSubmit={submit} noValidate className={styles.form}>
-      <h3>{t('handover.propose')}</h3>
       {message && <FormMessage kind="error">{message}</FormMessage>}
       <fieldset className={styles.choice}>
         <legend>{t('handover.where')}</legend>
@@ -293,5 +295,7 @@ export function ProposeForm({ o, h, t, lang }: { o: OrderView; h: HandoverView; 
         <button type="button" className={styles.secondary} onClick={() => setShown(false)}>{t('actions.back')}</button>
       </div>
     </form>
+    </Popup>
+    </>
   );
 }
