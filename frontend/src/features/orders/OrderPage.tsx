@@ -107,12 +107,8 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
           </p>
         </div>
       </header>
-      {o.counterparty && o.counterparty.displayName && (
-        <p className={styles.party}>
-          <span className={styles.avatar} aria-hidden="true">{Array.from(o.counterparty.displayName)[0]?.toUpperCase()}</span>
-          <span className={styles.partyText}><span className={styles.partyRole}>{t(`order.party.${o.role === 'buyer' ? 'seller' : 'buyer'}`)}</span><strong>{o.counterparty.displayName}</strong></span>
-        </p>
-      )}
+      <div className={styles.cols}>
+      <div className={styles.main}>
       <Money o={o} t={t} lang={lang} />
       {attempt && <Return o={o} failed={failed} waited={waited} t={t} />}
       <Journey o={o} h={handover.data ?? null} shipments={shipments.data?.items ?? []} t={t} />
@@ -123,16 +119,20 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
           onPaid={() => { setSheet(false); void queryClient.invalidateQueries({ queryKey: orderKey(o.id) }); }} />
       )}
       {o.cancelledAt && o.cancelReason && CANCEL_REASONS.includes(o.cancelReason) && <p className={styles.hint}>{t(`order.cancel_reason.${o.cancelReason}`)}</p>}
-      {handover.data && <Handover o={o} h={handover.data} t={t} lang={lang} />}
-      {handover.isError && <FormMessage kind="error">{errorText(handover.error, t, lang)}</FormMessage>}
       {shipments.data && <Shipments o={o} items={shipments.data.items} t={t} lang={lang} />}
       {shipments.isError && <FormMessage kind="error">{errorText(shipments.error, t, lang)}</FormMessage>}
       {game.data && o.status !== 'awaiting_payment' && <GameTab o={o} g={game.data} t={t} lang={lang} />}
       {game.isError && o.status !== 'awaiting_payment' && <FormMessage kind="error">{errorText(game.error, t, lang)}</FormMessage>}
-      <Actions o={o} t={t} lang={lang} extra={handover.data && (handover.data.status === 'arranging' || handover.data.status === 'agreed') ? <ProposeForm o={o} h={handover.data} t={t} lang={lang} /> : undefined} />
       {disputes.data && <Disputes o={o} items={disputes.data.items} t={t} lang={lang} />}
-      <OrderChat o={o} t={t} lang={lang} />
       {ratings.data && <Ratings o={o} r={ratings.data} t={t} lang={lang} />}
+      </div>
+      <aside className={styles.rail} aria-label={t('order.next.label')}>
+      {handover.data && <Handover o={o} h={handover.data} t={t} lang={lang} />}
+      {handover.isError && <FormMessage kind="error">{errorText(handover.error, t, lang)}</FormMessage>}
+      <Actions o={o} t={t} lang={lang} extra={handover.data && (handover.data.status === 'arranging' || handover.data.status === 'agreed') ? <ProposeForm o={o} h={handover.data} t={t} lang={lang} /> : undefined} />
+      <PartyCard o={o} t={t} lang={lang} />
+      </aside>
+      </div>
     </div>
   );
 }
@@ -186,6 +186,23 @@ function Money({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
         <EscrowSteps current={current} label={t('order.steps.label')} labels={[label('payment'), label('handover'), label('done')]}
           stateWords={{ done: t('order.steps.state.done'), current: t('order.steps.state.current'), next: t('order.steps.state.next') }} />
       )}
+    </section>
+  );
+}
+
+/** The other party in the rail, as on the listing page: the round initial, the name, and the way to write to them. */
+function PartyCard({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
+  const name = o.counterparty?.displayName;
+  if (!name) return null;
+  const which = o.role === 'buyer' ? 'seller' : 'buyer';
+  return (
+    <section aria-labelledby="party-title" className={styles.partyCard}>
+      <h2 id="party-title" className={styles.partyHead}>{t(`order.party.${which}`)}</h2>
+      <div className={styles.partyRow}>
+        <span className={styles.avatar} aria-hidden="true">{Array.from(name)[0]?.toUpperCase()}</span>
+        <strong className={styles.partyName}>{name}</strong>
+      </div>
+      <div className={styles.partyMsg}><OrderChat o={o} t={t} lang={lang} /></div>
     </section>
   );
 }

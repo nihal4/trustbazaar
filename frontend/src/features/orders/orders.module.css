@@ -220,3 +220,32 @@
 .panel { justify-items: stretch; }
 .panel > button { justify-self: start; }
 .actionGrid { width: 100%; }
+
+/* the page in two columns from 60rem, as the listing page: the story on the left, what to do next in a rail that stays in view */
+.page { max-width: 72rem; }
+.cols { display: grid; gap: 1.5rem; }
+.main, .rail { min-width: 0; }
+.rail { display: grid; gap: 0; align-content: start; border-top: 2px solid var(--tb-hot); }
+.rail > section { margin-block: 0; padding: 1.25rem 0; border-top: 0; border-bottom: 1px solid var(--tb-line); }
+.rail > section + section { border-top: 0; }
+.rail h2 { font-size: 1.125rem; margin: 0; }
+@media (min-width: 60rem) {
+  .cols { grid-template-columns: minmax(0, 1fr) 22rem; gap: 3rem; align-items: start; }
+  .rail { position: sticky; top: 5.75rem; }
+}
+.rail .actionGrid { grid-template-columns: 1fr 1fr; }
+.rail .actionGrid > * { padding-inline: 0; }
+.rail .actionGrid > * + * { padding-left: 1rem; border-left: 1px solid var(--tb-line); }
+.rail .actionGrid button { width: 100%; }
+.rail .code { grid-template-columns: 1fr; }
+.rail .code button { width: 100%; }
+.partyHead { color: var(--tb-muted); font-size: 0.8125rem !important; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+.partyRow { display: grid; grid-template-columns: 4rem minmax(0, 1fr); align-items: stretch; margin-top: 0.75rem; border-block: 1px solid var(--tb-line); min-height: 4.5rem; }
+.partyRow .avatar { width: auto; height: auto; margin: 0.4rem 0.75rem 0.4rem 0; border: 0; border-radius: 4px; background: var(--tb-surface); }
+.partyName { align-self: center; padding-left: 0.875rem; border-left: 1px solid var(--tb-line); overflow-wrap: anywhere; }
+.partyMsg p { margin: 0; }
+.partyMsg { padding-top: 0.75rem; }
+.partyMsg button, .partyMsg a { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; }
+.partyMsg a { border: 1px solid var(--tb-border); border-radius: 8px; color: var(--tb-text); font-weight: 600; text-decoration: none; }
+.page { max-width: none; }
+@media (min-width: 60rem) { .cols { grid-template-columns: minmax(0, 1fr) 24rem; } }
