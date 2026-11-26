@@ -146,6 +146,37 @@ describe('disputes', () => {
     expect(screen.queryByRole('button', { name: 'Withdraw the dispute' })).toBeNull(); // the buyer's only
   });
 
+  it('FR-TNS-10 the seller records a returned item: the number of the item is checked first, a mismatch is final and goes to TrustBazaar, a match opens the record button', async () => {
+    let step = { manual: true, last4: '5678', check: 'none' };
+    const be = backend({
+      'GET /disputes/d-1': () => json(200, dispute({ role: 'seller', status: 'awaiting_return', description: null, returnStep: step } as Partial<DisputeView>))(),
+      'GET /disputes/d-1/chat': json(200, { role: 'seller', status: 'awaiting_return', items: [] }),
+      'POST /disputes/d-1/return-check': (c) => { const ok = (c.body as { value: string }).value === 'SN-1234-5678'; step = { ...step, check: ok ? 'matched' : 'mismatch' }; return json(200, { matched: ok })(); },
+      'POST /disputes/d-1/return-received': json(200, { status: 'decided' }),
+    });
+    renderApp('/disputes/d-1', be);
+    expect(await screen.findByRole('heading', { name: 'The item comes back' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'I have the item back' })).toBeNull(); // not before the check
+    fireEvent.click(screen.getByRole('button', { name: 'Check the item' }));
+    fireEvent.change(await screen.findByLabelText(/serial number|identifier|IMEI/i), { target: { value: 'SN-1234-5678' } });
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^Check/ }));
+    await waitFor(() => expect(be.called('POST /disputes/d-1/return-check')[0].body).toEqual({ value: 'SN-1234-5678' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'I have the item back' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Record the return' }));
+    await waitFor(() => expect(be.called('POST /disputes/d-1/return-received')).toHaveLength(1));
+  });
+
+  it('FR-TNS-10 after a mismatch the seller cannot record the return; the page says TrustBazaar decides', async () => {
+    const be = backend({
+      'GET /disputes/d-1': json(200, dispute({ role: 'seller', status: 'awaiting_return', description: null, returnStep: { manual: true, last4: '5678', check: 'mismatch' } } as Partial<DisputeView>)),
+      'GET /disputes/d-1/chat': json(200, { role: 'seller', status: 'awaiting_return', items: [] }),
+    });
+    renderApp('/disputes/d-1', be);
+    expect(await screen.findByText(/does not match the item sold/)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'I have the item back' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Check the item' })).toBeNull();
+  });
+
   it('FR-DSP-07 after the decision both see the outcome and its reason; the photos are behind signed links', async () => {
     const d = dispute({
       status: 'decided', outcome: { kind: 'partial_refund', itemRefund: '50000', reason: 'The shade was cracked; the lamp works.', decidedAt: iso(-HOUR) },

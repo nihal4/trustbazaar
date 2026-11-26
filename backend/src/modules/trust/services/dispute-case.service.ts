@@ -240,7 +240,7 @@ export class DisputeCaseService implements OnModuleInit {
     if (d.status !== 'awaiting_return') throw new Problem('validation-failed', { errors: [{ field: 'dispute', reason: 'not-in-this-state' }] });
     // U10-23 (FR-TNS-10): an item with a device identifier is taken back only after the seller has checked it is the one sold
     if (await this.orders.deviceIdentifier(d.order_id)) {
-      const [ok] = (await this.db.query(`SELECT 1 FROM disputes.return_checks WHERE dispute_id = $1 AND matched`, [d.id])) as unknown[];
+      const [ok] = (await this.db.query(`SELECT 1 FROM disputes.return_checks WHERE dispute_id = $1 AND matched AND NOT EXISTS (SELECT 1 FROM disputes.return_checks x WHERE x.dispute_id = $1 AND NOT x.matched)`, [d.id])) as unknown[];
       if (!ok) throw new Problem('validation-failed', { errors: [{ field: 'dispute', reason: 'return-check-needed' }] });
     }
     await this.completeReturn(d.id, d.order_id);
@@ -257,6 +257,9 @@ export class DisputeCaseService implements OnModuleInit {
     if (d.status !== 'awaiting_return') throw new Problem('validation-failed', { errors: [{ field: 'dispute', reason: 'not-in-this-state' }] });
     const id = await this.orders.deviceIdentifier(d.order_id);
     if (!id) throw new Problem('validation-failed', { errors: [{ field: 'value', reason: 'no-device' }] });
+    // a mismatch is final: the seller cannot try other numbers until one fits; only an operator closes the dispute from there
+    const [past] = (await this.db.query(`SELECT 1 FROM disputes.return_checks WHERE dispute_id = $1`, [d.id])) as unknown[];
+    if (past) throw new Problem('validation-failed', { errors: [{ field: 'value', reason: 'already-checked' }] });
     const matched = deviceDigest(this.config.secrets.handoverKey.reveal(), typed).toString('hex') === id.digest;
     await this.db.query(`INSERT INTO disputes.return_checks (dispute_id, user_id, matched) VALUES ($1, $2, $3)`, [d.id, sellerId, matched]);
     if (!matched) {

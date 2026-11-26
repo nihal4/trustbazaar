@@ -214,9 +214,13 @@ describe('dispute cases: claim, case file, request for information, decision, re
     const op = await operator();
     await op.call('POST', `/staff/cases/dispute/${c.disputeId}/claim`);
     expect((await op.call('POST', `/staff/disputes/${c.disputeId}/decision`, { outcome: 'refund_after_return', reason, returnPayer: 'seller' })).status).toBe(200);
+    expect(((await (await c.seller.call('GET', `/disputes/${c.disputeId}`)).json()) as { returnStep: unknown }).returnStep).toEqual({ manual: true, last4: '5678', check: 'none' });
+    expect((await (await c.buyer.call('GET', `/disputes/${c.disputeId}`)).json() as { returnStep: unknown }).returnStep).toBeNull();
     expect(await errors(await c.seller.call('POST', `/disputes/${c.disputeId}/return-received`))).toEqual([{ field: 'dispute', reason: 'return-check-needed' }]);
     expect((await c.buyer.call('POST', `/disputes/${c.disputeId}/return-check`, { value: 'SN-1234-5678' })).status).toBe(404); // the seller's
     expect(await (await c.seller.call('POST', `/disputes/${c.disputeId}/return-check`, { value: 'OTHER-UNIT-99' })).json()).toEqual({ matched: false });
+    expect(((await (await c.seller.call('GET', `/disputes/${c.disputeId}`)).json()) as { returnStep: { check: string } }).returnStep.check).toBe('mismatch');
+    expect(await errors(await c.seller.call('POST', `/disputes/${c.disputeId}/return-check`, { value: 'SN-1234-5678' }))).toEqual([{ field: 'value', reason: 'already-checked' }]); // final: the right number now does not help
     expect((await fx.query(`SELECT 1 FROM trust.signals WHERE kind = 'return_mismatch' AND source_ref = $1`, [c.disputeId])).length).toBe(1);
     expect(await errors(await c.seller.call('POST', `/disputes/${c.disputeId}/return-received`))).toEqual([{ field: 'dispute', reason: 'return-check-needed' }]); // still blocked
     expect((await op.call('POST', `/staff/disputes/${c.disputeId}/resolve-return`, { outcome: 'release', reason: 'short' })).status).toBe(400);

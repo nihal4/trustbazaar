@@ -16,6 +16,7 @@ import { isApiError } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { formatMoney, toLocalDigits } from '../../lib/money.js';
 import { orderKey, type OrderView } from './model';
+import { ReturnStep } from './ReturnStep';
 import { disputesKey, MAX_VIDEOS, usableEvidence, useDispute, Withdraw } from './Disputes';
 import en from '../../messages/en/orders.json';
 import bn from '../../messages/bn/orders.json';
@@ -139,6 +140,7 @@ export function Component() {
           <div><dt>{t('dispute.opened_label')}</dt><dd><DateCells at={Date.parse(d.openedAt)} t={t} lang={lang} label={false} /></dd></div>
         </dl>
         {live && d.role === 'buyer' && d.status !== 'awaiting_return' && <Withdraw d={d} o={order.data ?? null} t={t} lang={lang} />}
+        {live && d.role === 'seller' && d.status === 'awaiting_return' && <ReturnStep d={d} t={t} lang={lang} />}
         <p className={styles.hint}>{t('dispute.chat_intro')}</p>
       </aside>
       <section className={styles.dcMain} aria-label={t('dispute.chat_title')}>

@@ -31,6 +31,8 @@ export interface DisputeView {
   openedAt: string; sellerDueAt: string; infoDueAt: string | null; reviewStartedAt: string | null; decisionTargetAt: string | null;
   outcome: null | { kind: 'release' | 'full_refund' | 'partial_refund' | 'refund_after_return'; itemRefund: string | null; reason: string | null; decidedAt: string | null };
   withdrawnAt: string | null;
+  /** the seller's step while the item comes back (U10-23) */
+  returnStep?: { manual: boolean; last4: string | null; check: 'none' | 'matched' | 'mismatch' } | null;
   statements: { party: 'buyer' | 'seller'; text: string | null; at: string }[];
   evidence: { id: string; mime: string; size: number; at: string; link: { url: string; expiresAt: string } | null }[];
 }
