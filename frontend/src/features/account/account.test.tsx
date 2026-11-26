@@ -185,7 +185,7 @@ describe('sign in', () => {
     const [id, nonce] = second.headers.get('X-Human-Proof')!.split(':');
     expect(id).toBe('c-1');
     expect(createHash('sha256').update(`5e1f:${nonce}`).digest()[0]).toBe(0);
-    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.queryByText(/not correct|too long|wrong/i)).toBeNull();                      // no refusal is shown (the alert region itself is always there)
   });
 
   it('SEC-AUTH-04 the growing delay is a countdown on the button', async () => {
@@ -433,7 +433,7 @@ describe('sign-in and registration layout', () => {
     click('Sign in');
     expect(await screen.findByRole('heading', { name: 'Check your e-mail' })).toBeTruthy();
     expect(screen.getByText('We sent a 6-digit code to r***m@example.com. It is valid for 10 minutes.')).toBeTruthy();
-    expect((screen.getByRole('button', { name: /^Send again in \d+ s$/ }) as HTMLButtonElement).disabled).toBe(true); // 60 seconds first
+    expect(screen.getByRole('button', { name: /^Send again in \d+ s$/ }).getAttribute('aria-disabled')).toBe('true'); // 60 seconds first
     const remember = screen.getByLabelText('Remember this device for 30 days') as HTMLInputElement;
     expect(remember.checked).toBe(false);                                                   // never ticked for the user
     type('Code', '482 913'.replace(' ', ''));
@@ -457,7 +457,7 @@ describe('sign-in and registration layout', () => {
     expect(screen.getByLabelText('Remember this device for 30 days')).toBeTruthy();
     type('Code', '123456');
     click('Sign in');
-    expect((await screen.findByRole('alert')).textContent).toBe('This sign-in took too long. Enter your password again.');
+    expect(await screen.findByText('This sign-in took too long. Enter your password again.')).toBeTruthy();
     expect(await screen.findByLabelText('Mobile number or e-mail')).toBeTruthy();
   });
 
@@ -492,6 +492,28 @@ describe('sign-in and registration layout', () => {
     click('Continue');
     expect(await screen.findByLabelText('Password')).toBeTruthy();
     type('Password', 'x');
+  });
+
+  it('FR-ACC-05 each step is a history entry: Back goes from the password to the number; a message is tied to its field (invalid, described by the heading and the message) and said in an alert region that is always there; the tab names the step', async () => {
+    const be = fakeBackend({ 'POST /auth/login-check': json(200, { ok: true }), 'POST /auth/signin': problem(401, 'signin-failed') });
+    const doc = renderApp('/signin', be);
+    await screen.findByRole('heading', { name: 'Sign in' });
+    expect(document.title).toBe('Sign in – TrustBazaar');
+    expect(document.querySelectorAll('[role="alert"]').length).toBeGreaterThan(0);               // there before any message
+    type('Mobile number or e-mail', 'c');
+    click('Continue');
+    const field = screen.getByLabelText('Mobile number or e-mail');
+    await screen.findByText('Enter a valid mobile number or e-mail address.');
+    expect(field.getAttribute('aria-invalid')).toBe('true');
+    expect(field.getAttribute('aria-describedby')).toBe('signin-head signin-message');
+    await enterLogin('rahim@example.com');
+    type('Password', 'wrong');
+    click('Sign in');
+    await screen.findByText('The number, e-mail or password is not correct.');
+    expect(screen.getByLabelText('Password').getAttribute('aria-invalid')).toBe('true');
+    doc.router.navigate(-1);                                                                      // the browser's Back
+    expect(await screen.findByLabelText('Mobile number or e-mail')).toBeTruthy();
+    expect(screen.queryByLabelText('Password')).toBeNull();
   });
 
   it('FR-ACC-05 the password asks for itself after the number or e-mail; Change goes back; the eye shows and hides what was typed', async () => {

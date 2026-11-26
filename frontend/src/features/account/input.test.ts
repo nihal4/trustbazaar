@@ -3,7 +3,7 @@ import { placeholders } from '../../lib/i18n.js';
 import en from '../../messages/en/account.json';
 import bn from '../../messages/bn/account.json';
 import { readLinkToken } from './linkToken';
-import { bangladeshiMobile, inOtherDocument, normaliseLogin, passwordLengthProblem, safeNext } from './input';
+import { bangladeshiMobile, inOtherDocument, loginProblem, normaliseLogin, passwordLengthProblem, safeNext } from './input';
 
 describe('mobile numbers', () => {
   it.each([
@@ -80,5 +80,12 @@ describe('the account catalogues', () => {
 
   it('SEC-INP-03 no message contains markup', () => {
     for (const [k, v] of [...Object.entries(E), ...Object.entries(B)]) expect(v, k).not.toMatch(/[<>]|&\w+;/);
+  });
+});
+
+describe('the first entry of sign-in', () => {
+  it('FR-ACC-13 only a mobile number or an e-mail of a valid form passes; markup, spaces and slips do not', () => {
+    for (const ok of ['01712345678', '+880 1712-345678', 'rahim@example.com', 'r.a+tag@mail.example.co.uk']) expect(loginProblem(ok)).toBeNull();
+    for (const bad of ['', 'c', 'nihal', 'nihal@', '@x.com', 'a@b', 'a b@c.com', '<b>a</b>@x.com', 'a@x.c0m', '.a@x.com', 'a..b@x.com', 'a@-x.com', 'a@x..com']) expect(loginProblem(bad)).toBe('invalid');
   });
 });

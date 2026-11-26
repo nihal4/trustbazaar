@@ -17,7 +17,6 @@
   "money.refunded.seller": "The buyer was refunded {amount} on {at}. You receive nothing for this order.",
   "money.partially_refunded.buyer": "You were refunded {amount} on {at}. The rest was paid to the seller.",
   "money.partially_refunded.seller": "The buyer was refunded {amount} on {at}. You were paid the rest.",
-
   "confirm.confirm_receipt": "Releasing payment pays the seller {amount} now and ends your right to dispute this order.",
   "confirm.release_early": "Releasing early pays the seller {amount} now. You can no longer dispute if the seller takes the account back, even before {at}.",
   "confirm.open_dispute": "Opening a dispute freezes the payment until TrustBazaar decides. You can withdraw it before the decision, but not open the same kind of dispute again.",
@@ -27,10 +26,8 @@
   "confirm.proxy_bid": "TrustBazaar will bid for you up to {amount}, only as much as needed to keep you in the lead. Every bid it places is binding.",
   "confirm.buy_now": "You will pay {amount} in total: item {item} and delivery {delivery}. The money is held until the item is delivered.",
   "confirm.share_handover_code": "Give this code to the seller only after you have checked the item. Entering it counts as delivery.",
-
   "sim.payment": "Test mode: no real money is moved. Payments are simulated.",
   "sim.courier": "Test mode: this shipment is simulated. No courier will collect it.",
-
   "error.network": "We could not reach TrustBazaar. Check your connection and try again.",
   "error.rate_limited": "Too many attempts. Try again in {seconds} seconds.",
   "error.session_ended": "You have been signed out. Sign in again to continue.",
@@ -38,5 +35,6 @@
   "error.forbidden": "You are not allowed to do this.",
   "error.not_found": "This page or item no longer exists.",
   "error.conflict": "This changed while you were looking at it. The page has been refreshed.",
-  "error.generic": "Something went wrong on our side. If you contact us, quote reference {ref}."
+  "error.generic": "Something went wrong on our side. If you contact us, quote reference {ref}.",
+  "error.generic_noref": "Something went wrong on our side. Please try again in a moment."
 }

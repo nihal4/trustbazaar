@@ -223,5 +223,6 @@
   "email_code.turned_on": "The code by e-mail is on.",
   "signin.login_hint": "The mobile number or e-mail address of your account.",
   "signin.login_invalid": "Enter a valid mobile number or e-mail address.",
-  "signin.email_domain": "Nothing can be delivered to {domain}. Check the part after the @."
+  "signin.email_domain": "Nothing can be delivered to {domain}. Check the part after the @.",
+  "signin.working": "Checking…"
 }

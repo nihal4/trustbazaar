@@ -548,3 +548,33 @@
   border-top: 0;
   padding-top: 0;
 }
+
+/* targets of 44 px (U10-25 review): the links and the small buttons of the card reach 44 px without changing the line they stand in */
+.link {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 0.5rem;
+  margin-inline: -0.5rem;
+}
+
+.lead .link {
+  min-height: 0;
+  padding: 0.75rem 0.5rem;
+  margin: -0.75rem -0.5rem;
+}
+
+.footNote a {
+  padding: 0.8125rem 0.5rem;
+  margin: -0.8125rem -0.5rem;
+}
+
+.bandHead .lead {
+  overflow-wrap: anywhere;
+}
+
+.link[aria-disabled='true'] {
+  color: var(--tb-muted);
+  cursor: not-allowed;
+  text-decoration-style: dotted;
+}

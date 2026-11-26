@@ -13,6 +13,6 @@ export function errorText(error: unknown, t: T, lang: Lang): string {
   if (key === 'error.rate_limited') {
     return t(key, { seconds: toLocalDigits(String(error.retryAfter ?? 60), lang) });
   }
-  if (key === 'error.generic') return t(key, { ref: error.correlationId ?? '-' });
+  if (key === 'error.generic') return error.correlationId ? t(key, { ref: error.correlationId }) : t('error.generic_noref');
   return t(key);
 }
