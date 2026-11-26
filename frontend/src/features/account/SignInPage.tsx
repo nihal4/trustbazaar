@@ -111,7 +111,7 @@ export function Component() {
   if (step === 'mfa') {
     const email = method === 'email';
     return (
-      <AuthSplit>
+      <AuthSplit stepKey="code">
         <h1>{t(email ? 'signin.email_title' : 'signin.mfa_title')}</h1>
         <p className={styles.lead}>{email ? t('signin.email_text', { email: hint }) : t('signin.mfa_text')}</p>
         {message && <FormMessage kind={message === t('signin.resent') ? 'success' : 'error'}>{message}</FormMessage>}
@@ -146,7 +146,7 @@ export function Component() {
 
   if (step === 'login') {
     return (
-      <AuthSplit>
+      <AuthSplit stepKey="login">
         <h1>{t('signin.title')}</h1>
         <p className={styles.lead}>
           {t('signin.welcome')} {t('signin.no_account')}{' '}
@@ -164,7 +164,7 @@ export function Component() {
   }
 
   return (
-    <AuthSplit>
+    <AuthSplit stepKey="password">
       <h1>{t('signin.title')}</h1>
       <p className={styles.lead}>
         <span className={styles.who}>{login.trim()}</span>{' '}

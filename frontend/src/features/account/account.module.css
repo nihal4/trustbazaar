@@ -30,19 +30,20 @@
   text-underline-offset: 3px;
 }
 
-/* sign-in and registration: the whole screen is the field of squares; the form is one ruled card in the middle */
+/* sign-in and registration: the whole screen is the field of raised tiles (GridCanvas); the form is one raised slab on it (AuthSplit snaps its place
+   and size to whole tiles and draws its sides); each step slides in as a new face */
 .stage {
-  display: grid;
-  justify-items: center;
-  gap: 1rem;
+  position: relative;
   width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
 .stage canvas {
-  position: fixed;
+  position: absolute;
   inset: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
   z-index: 0;
 }
@@ -50,39 +51,70 @@
 .stageCard {
   position: relative;
   z-index: 1;
-  width: min(26rem, 100%);
+  box-sizing: border-box;
   min-width: 0;
-  padding: 2rem 2rem 1.75rem;
-  background: var(--tb-bg);
-  border: 1px solid var(--tb-line);
+  max-width: calc(100vw - 8px);
+  background: var(--tb-surface);
+  border: 1px solid color-mix(in srgb, var(--tb-border) 55%, transparent);
   border-top: 2px solid var(--tb-hot);
+  /* the slab's top face is its own box, lifted up and to the left by the depth of its sides; the sides are the box-shadow set in AuthSplit */
+  transform: translate(calc(var(--depth) * -1), calc(var(--depth) * -1));
+  animation: slabRise 560ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
 }
 
-.stageCard h1 {
+@keyframes slabRise {
+  from { transform: translate(0, 0); opacity: 0.2; }
+  to { transform: translate(calc(var(--depth) * -1), calc(var(--depth) * -1)); opacity: 1; }
+}
+
+.stageStep {
+  padding: 1.75rem 2rem 1.5rem;
+  animation: stepIn 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes stepIn {
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: none; }
+}
+
+.stageStep h1 {
   margin: 0 0 0.5rem;
   font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem);
   line-height: 1.1;
   letter-spacing: -0.035em;
   font-weight: 600;
+  text-wrap: balance;
 }
 
-:lang(bn) .stageCard h1 {
+:lang(bn) .stageStep h1 {
   letter-spacing: 0;
   line-height: 1.35;
 }
 
-.stageCard .lead {
-  padding-bottom: 1.25rem;
+.stageStep .lead {
+  margin: 0 0 1.25rem;
+  padding-bottom: 1rem;
   border-bottom: 1px solid var(--tb-line);
+  text-wrap: pretty;
 }
 
-.stageCard form > button[type='submit'] {
+.stageStep .lead a {
+  white-space: nowrap;
+}
+
+.stageStep form > button[type='submit'] {
   width: 100%;
 }
 
+.stageStep p {
+  text-wrap: pretty;
+}
+
 .stageNote {
+  display: grid;
+  gap: 0.125rem;
   margin: 1.25rem 0 0;
-  padding-top: 1rem;
+  padding-top: 0.875rem;
   border-top: 1px solid var(--tb-line);
   color: var(--tb-muted);
   font-size: 0.875rem;
@@ -94,9 +126,16 @@
   font-weight: 600;
 }
 
-@media (max-width: 30rem) {
-  .stageCard {
-    padding: 1.5rem 1.25rem;
+@media (max-width: 32.5rem) {
+  .stageStep {
+    padding: 1.25rem 1.125rem 1.125rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stageCard,
+  .stageStep {
+    animation: none;
   }
 }
 

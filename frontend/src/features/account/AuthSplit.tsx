@@ -1,19 +1,73 @@
-// The fresh page of sign-in and registration (U10-25, redesign v3): the whole screen is the animated, pointer-aware field of hairline squares
-// (GridCanvas) and the form sits in the middle in one ruled card, with the payment promise in a ruled line under it. The page has no header, search,
-// notices or footer (shared/Shell.tsx, BARE_PATHS); the logo and the language switch are in its corners.
-import type { ReactNode } from 'react';
+// The fresh page of sign-in and registration (U10-25, redesign v3): the whole screen is the small raised tiles of GridCanvas, and the form stands on that
+// grid as one raised slab: its footprint is a whole number of tiles, in whole tiles from the edges, and its sides are drawn in the same direction and
+// colours as the tiles'. A step of the form (the password, the code) is a new face of the slab: it slides in and a ring runs out across the grid.
+// The page has no header, search, notices or footer (shared/Shell.tsx, BARE_PATHS); the logo and the language switch are in its corners.
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import { useAccountT } from './common';
-import { GridCanvas } from './GridCanvas';
+import { GridCanvas, pulseGrid } from './GridCanvas';
 import styles from './account.module.css';
 
-export function AuthSplit({ children }: { children: ReactNode }) {
+const SIDE = '#070c0b';
+
+/** The slab's frame on the grid: the tile size, the width and the place in whole tiles, the height rounded up to whole tiles, and the depth of its sides. */
+function useFrame(content: RefObject<HTMLDivElement>) {
+  const [vw, setVw] = useState(() => (typeof window === 'undefined' ? 1280 : window.innerWidth));
+  const [vh, setVh] = useState(() => (typeof window === 'undefined' ? 800 : window.innerHeight));
+  const [inner, setInner] = useState(0);
+  useEffect(() => {
+    const on = () => { setVw(window.innerWidth); setVh(window.innerHeight); };
+    window.addEventListener('resize', on);
+    return () => window.removeEventListener('resize', on);
+  }, []);
+  useLayoutEffect(() => {
+    const el = content.current;
+    if (!el) return;
+    const read = () => setInner(el.offsetHeight);
+    read();
+    const watch = typeof ResizeObserver === 'function' ? new ResizeObserver(read) : null;
+    watch?.observe(el);
+    return () => watch?.disconnect();
+  }, [content]);
+  const small = vw < 520;
+  const cell = small ? 32 : 44;
+  const depth = small ? 8 : 13;
+  const cols = small ? Math.max(8, Math.min(11, Math.floor(vw / cell) - 1)) : 12;
+  const width = cols * cell;
+  const height = Math.max(cell * 7, Math.ceil((inner + 2) / cell) * cell);
+  const left = Math.max(cell, Math.round((vw - width) / 2 / cell) * cell);
+  const topFree = Math.round((vh - height) / 2 / cell) * cell;
+  const top = Math.max(cell * 2, topFree);
+  return { cell, depth, width, height, left, top };
+}
+
+export function AuthSplit({ children, stepKey = 'step' }: { children: ReactNode; stepKey?: string }) {
   const { t } = useAccountT();
+  const face = useRef<HTMLDivElement>(null);
+  const slab = useRef<HTMLDivElement>(null);
+  const f = useFrame(face);
+  const first = useRef(true);
+
+  // the grid answers each step: a ring runs out from the middle of the slab (and on arrival, after the slab has risen)
+  useEffect(() => {
+    const send = () => { const b = slab.current?.getBoundingClientRect(); if (b) pulseGrid(b.left + b.width / 2, b.top + b.height / 2); };
+    if (first.current) { first.current = false; const id = window.setTimeout(send, 380); return () => window.clearTimeout(id); }
+    send();
+    return undefined;
+  }, [stepKey]);
+
+  const sides = Array.from({ length: f.depth }, (_, i) => `${i + 1}px ${i + 1}px 0 ${SIDE}`).join(', ');
+  const style: CSSProperties & Record<string, string | number> = {
+    marginLeft: f.left, width: f.width, minHeight: f.height, boxShadow: `${sides}, ${f.depth + 6}px ${f.depth + 10}px 34px rgba(0,0,0,0.55)`,
+    '--depth': `${f.depth}px`,
+  };
   return (
-    <div className={styles.stage}>
-      <GridCanvas />
-      <div className={styles.stageCard}>
-        {children}
-        <p className={styles.stageNote}><strong>{t('side.promise_title')}</strong> {t('side.promise_text')}</p>
+    <div className={styles.stage} style={{ paddingTop: f.top, paddingBottom: f.cell * 3 }}>
+      <GridCanvas cell={f.cell} />
+      <div ref={slab} className={styles.stageCard} style={style}>
+        <div ref={face} key={stepKey} className={styles.stageStep}>
+          {children}
+          <p className={styles.stageNote}><strong>{t('side.promise_title')}</strong><span>{t('side.promise_text')}</span></p>
+        </div>
       </div>
     </div>
   );

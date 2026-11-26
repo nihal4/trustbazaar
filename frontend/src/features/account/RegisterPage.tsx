@@ -139,7 +139,7 @@ export function Component() {
 
   if (started) {
     return (
-      <AuthSplit>
+      <AuthSplit stepKey="confirm">
         <h1>{t('register.code_title')}</h1>
         <p className={styles.lead}>{t('register.code_sent_email', { email: started.email })}</p>
         {message && <FormMessage kind="error">{message}</FormMessage>}
@@ -162,7 +162,7 @@ export function Component() {
 
   const summary: SummaryItem[] = (Object.entries(errors) as [Field, string][]).map(([f, m]) => ({ id: `register-${f}`, message: m }));
   return (
-    <AuthSplit>
+    <AuthSplit stepKey="details">
       <h1>{t('register.title')}</h1>
       <p className={styles.lead}>
         {t('register.have_account')}{' '}
