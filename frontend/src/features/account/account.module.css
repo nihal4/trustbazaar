@@ -54,17 +54,17 @@
   box-sizing: border-box;
   min-width: 0;
   max-width: calc(100vw - 8px);
-  background: var(--tb-surface);
-  border: 1px solid color-mix(in srgb, var(--tb-border) 55%, transparent);
+  /* not a filled box: the ground's own colour, so the grid does not run behind the text, framed by hairlines that lie on the grid's lines, one hot rule on top */
+  background: var(--tb-bg);
+  border: 1px solid var(--tb-border);
   border-top: 2px solid var(--tb-hot);
-  /* the slab's top face is its own box, lifted up and to the left by the depth of its sides; the sides are the box-shadow set in AuthSplit */
-  transform: translate(calc(var(--depth) * -1), calc(var(--depth) * -1));
-  animation: slabRise 560ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+  animation: frameDraw 620ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-@keyframes slabRise {
-  from { transform: translate(0, 0); opacity: 0.2; }
-  to { transform: translate(calc(var(--depth) * -1), calc(var(--depth) * -1)); opacity: 1; }
+/* the frame is drawn from the top down, as a ruled line is */
+@keyframes frameDraw {
+  from { clip-path: inset(0 0 100% 0); }
+  to { clip-path: inset(0 0 -1px 0); }
 }
 
 .stageStep {
