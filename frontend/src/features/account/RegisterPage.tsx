@@ -10,7 +10,7 @@ import { toAsciiDigits } from '../../lib/money.js';
 import { digits, otherError, passwordReasonText, rejectedPasswordReason, retryAfter, useAccountT, useAfterSignIn } from './common';
 import { bangladeshiMobile, isSixDigits, looksLikeEmail, passwordLengthProblem, PASSWORD } from './input';
 import { LEGAL_VERSIONS } from './legal';
-import { AuthSplit, HumanCheckNote } from './AuthSplit';
+import { AuthSplit } from './AuthSplit';
 import { PrivacyNotice } from './PrivacyNotice';
 import styles from './account.module.css';
 
@@ -191,7 +191,6 @@ export function Component() {
         <CheckboxField id="register-accept" label={t('register.accept')} checked={accept} onChange={setAccept} error={errors.accept} />
         <SubmitButton busy={busy} disabled={waitFor > 0}>{waitText ?? t('register.submit')}</SubmitButton>
       </form>
-      <HumanCheckNote />
     </AuthSplit>
   );
 }

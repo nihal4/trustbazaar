@@ -396,32 +396,95 @@
   white-space: nowrap;
 }
 
-/* the steps of sign-in share one skeleton (U10-25): the heading, the line, the field with its own place for a message, a row for what belongs to the step
-   (the way to a forgotten password, the box to remember the device, nothing), the button, and a foot at the bottom of the card; each place keeps its height
-   whether it is used or not, so the card has one height for every step and no step has a void */
-.stageStep {
-  position: relative;
-  flex: 1 0 auto;                                    /* the step fills the card, so the foot sits on the card's bottom whatever the step's height */
+/* the card of sign-in is three ruled bands (U10-25): the heading, the form and the foot. The bands' edges lie on the grid's lines (their heights are whole
+   cells, set in `--head` and `--foot`), so the page's grid seems to run on through the card; the free room in the form band is shared out evenly between the
+   parts of the form. Each band keeps its own place whether it is full or not, so the card has one height for every step. */
+.banded {
+  flex: 1 0 auto;                                    /* the step fills the card, so the bands share the card's whole height */
+  padding: 0;
+  display: grid;
+  grid-template-rows: calc(var(--head) * var(--cell)) minmax(0, 1fr) calc(var(--foot) * var(--cell));
+}
+
+.bandHead {
   box-sizing: border-box;
-  padding-bottom: 4.5rem;                            /* the foot's place */
+  padding: 0 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
 }
 
-.stageStep .lead {
-  min-height: 3rem;                                  /* two lines: the code step needs them; the others use one */
+.bandHead h1 {
+  margin: 0;
 }
 
-.stepForm {
+.bandHead .lead {
+  margin: 0.125rem 0 0;
+  padding: 0;
+  border: 0;
+  min-height: 0;
+}
+
+.bandBody {
+  box-sizing: border-box;
+  padding: 0 2rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-top: 1px solid var(--tb-line);
+}
+
+.bandBody > form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.fieldGroup {
   display: flex;
   flex-direction: column;
 }
 
-.stepForm > div:first-child {
-  margin-bottom: 0;
+.fieldGroup > div:first-child {
+  margin-bottom: 0;                                  /* the field's own margin: the space between the parts is shared out by the form */
+}
+
+.bandFoot {
+  box-sizing: border-box;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid var(--tb-line);
+  text-align: center;
+}
+
+.footNote {
+  margin: 0;
+  color: var(--tb-muted);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  text-wrap: balance;
+}
+
+.footNote a {
+  color: var(--tb-accent);
+  font-weight: 600;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.footLinks {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
 }
 
 .slot {
-  min-height: 2.25rem;                               /* a message of up to two lines */
-  padding-top: 0.375rem;
+  min-height: 2.25rem;                               /* a message of up to two lines, said under the field in a place of its own */
 }
 
 .slot p {
@@ -444,7 +507,6 @@
   min-height: 2.5rem;
   display: flex;
   align-items: center;
-  margin-bottom: 0.5rem;
 }
 
 .extra > div {
@@ -460,35 +522,16 @@
   text-underline-offset: 3px;
 }
 
-.foot {
-  position: absolute;
-  left: 2rem;
-  right: 2rem;
-  bottom: 1.25rem;
-  padding-top: 0.875rem;
-  border-top: 1px solid var(--tb-line);
-}
-
-.foot .humanCheck {
-  margin: 0;
-}
-
-.footLinks {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
+@media (max-width: 32.5rem) {
+  .bandHead,
+  .bandBody,
+  .bandFoot {
+    padding-inline: 1.125rem;
+  }
 }
 
 /* registration: the privacy notice follows the line under the heading, so it does not draw a second rule of its own */
 .stageStep .notice {
   border-top: 0;
   padding-top: 0;
-}
-
-/* the foot on a narrow card keeps the card's own side padding (after the base rule, so it wins) */
-@media (max-width: 32.5rem) {
-  .foot {
-    left: 1.125rem;
-    right: 1.125rem;
-  }
 }

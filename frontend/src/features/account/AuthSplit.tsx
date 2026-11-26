@@ -3,20 +3,28 @@
 // on top. A step of the form (the password, the code) slides in and a ring of light runs out along the grid's lines.
 // The page has no header, search, notices or footer (shared/Shell.tsx, BARE_PATHS); the logo and the language switch are in its corners.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
-import { useAccountT } from './common';
 import { CARD_COLS, CELL, useViewport } from '../../shared/gridCell';
 import { GridCanvas, pulseGrid, type Hole } from './GridCanvas';
 import styles from './account.module.css';
 
 /** The frame on the grid: the cell size, the card's width and place in whole cells (in the middle), its height rounded up to whole cells, and the cells it covers. */
-function useFrame(content: RefObject<HTMLDivElement>, rows: number, stepKey: string) {
+function useFrame(content: RefObject<HTMLDivElement>, rows: number, stepKey: string, bands: number) {
   const { vw, vh } = useViewport();
   const [inner, setInner] = useState(0);
   useLayoutEffect(() => {
     const el = content.current;
     if (!el) return;
-    // the step's natural height: its flow plus the step's own padding (which keeps the foot's place); the step itself stretches to the card, so it is not read
+    // the step's natural height. A banded step (heading band, form band, foot band): the heading and foot bands in whole cells (`bands`), the form's own
+    // parts and a least gap of 10 px around each; the form band itself stretches to the card, so only its parts are read. Any other step: its flow plus the
+    // step's own padding (the step stretches to the card too).
     const read = () => {
+      if (bands > 0) {
+        const form = el.querySelector('form') ?? el;
+        const parts = Array.from(form.children) as HTMLElement[];
+        const sum = parts.reduce((n, c) => n + c.offsetHeight, 0);
+        setInner(bands * CELL + sum + (parts.length + 1) * 10);
+        return;
+      }
       const pad = el.parentElement ? getComputedStyle(el.parentElement) : null;
       setInner(el.offsetHeight + (pad ? parseFloat(pad.paddingTop) + parseFloat(pad.paddingBottom) : 0));
     };
@@ -25,7 +33,7 @@ function useFrame(content: RefObject<HTMLDivElement>, rows: number, stepKey: str
     watch?.observe(el);
     return () => watch?.disconnect();
   // each step is a new element (the key restarts its slide), so the measure follows the step
-  }, [content, stepKey]);
+  }, [content, stepKey, bands]);
   const cell = CELL;
   const total = Math.floor(vw / cell);
   const cols = vw < 520 ? Math.max(8, Math.min(11, total - 2)) : Math.min(CARD_COLS, total - 2);
@@ -39,10 +47,22 @@ function useFrame(content: RefObject<HTMLDivElement>, rows: number, stepKey: str
   return { cell, width, height, left: leftCell * cell, top, hole };
 }
 
-export function AuthSplit({ children, stepKey = 'step', rows = 8 }: { children: ReactNode; stepKey?: string; rows?: number }) {
+interface Props {
+  children: ReactNode;
+  stepKey?: string;
+  rows?: number;
+  /** A banded card (sign-in): the heading, the foot and their heights in whole cells; the children are the form between them. */
+  head?: ReactNode;
+  headCells?: number;
+  foot?: ReactNode;
+  footCells?: number;
+}
+
+export function AuthSplit({ children, stepKey = 'step', rows = 8, head, headCells = 3, foot, footCells = 2 }: Props) {
   const face = useRef<HTMLDivElement>(null);
   const slab = useRef<HTMLDivElement>(null);
-  const f = useFrame(face, rows, stepKey);
+  const banded = head !== undefined;
+  const f = useFrame(face, rows, stepKey, banded ? headCells + footCells : 0);
   const first = useRef(true);
 
   // the grid answers each step: a ring runs out from the middle of the slab (and on arrival, after the slab has risen)
@@ -54,22 +74,23 @@ export function AuthSplit({ children, stepKey = 'step', rows = 8 }: { children: 
   }, [stepKey]);
 
   // one pixel more each way, so the frame's right and bottom hairlines lie on the grid's lines (which run on the cell's far edge)
-  const style: CSSProperties = { marginLeft: f.left, width: f.width + 1, minHeight: f.height + 1 };
+  const style: CSSProperties & Record<string, string | number> = { marginLeft: f.left, width: f.width + 1, minHeight: f.height + 1, '--cell': `${f.cell}px` };
   return (
     <div className={styles.stage} style={{ paddingTop: f.top, paddingBottom: f.cell * 3 }}>
       <GridCanvas cell={f.cell} hole={f.hole} />
       <div ref={slab} className={styles.stageCard} style={style}>
-        <div key={stepKey} className={styles.stageStep}>
-          <div ref={face} className={styles.stepFlow}>{children}</div>
-        </div>
+        {banded ? (
+          <div key={stepKey} className={`${styles.stageStep} ${styles.banded}`} style={{ '--head': headCells, '--foot': footCells } as CSSProperties}>
+            <div className={styles.bandHead}>{head}</div>
+            <div ref={face} className={styles.bandBody}>{children}</div>
+            <div className={styles.bandFoot}>{foot}</div>
+          </div>
+        ) : (
+          <div key={stepKey} className={styles.stageStep}>
+            <div ref={face} className={styles.stepFlow}>{children}</div>
+          </div>
+        )}
       </div>
     </div>
   );
-}
-
-/** The line under the main button of sign-in and registration (AC-ACC-2): the human check is a short proof of work
- *  in the browser (SEC-ABU-02, shared/humanCheck.ts), never a puzzle. */
-export function HumanCheckNote() {
-  const { t } = useAccountT();
-  return <p className={styles.humanCheck}>{t('human_check.note')}</p>;
 }

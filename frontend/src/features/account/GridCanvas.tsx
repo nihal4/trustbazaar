@@ -1,12 +1,12 @@
 // The page behind sign-in and registration (U10-25, redesign v3): the ruled grid of the site as a field of hairline cells drawn on a canvas, dense towards
 // the top right and thinning out in steps towards the bottom left. It is alive but stays lines: a slow wave of light runs along the hairlines, the cells
 // under the pointer light their outline in the hot colour and fade back behind it like a trail, and a tap or each step of the form sends a ring of light
-// across the lines. Now and then, in a random place, a block of cells flickers on and spells TRUST over BAZAAR or forms a phone, the taka sign, a bag, a
-// camera or a shield (gridArt.ts), stays a moment and flickers out again; up to three at a time, never mostly under the card in the middle. The card is a
+// across the lines. Now and then, in a random place, a block of cells flickers on and spells TRUST over BAZAAR (gridArt.ts), stays a moment and flickers out
+// again; up to two at a time, never mostly under the card in the middle. The card is a
 // ruled frame whose edges lie on the grid's lines (AuthSplit). Hidden from readers, takes no clicks. With "reduce motion" it is drawn once and still, with
 // the name in the corner.
 import { useEffect, useRef } from 'react';
-import { nameArt, pictureArt, type Picture } from './gridArt';
+import { nameArt, type Picture } from './gridArt';
 
 export const GRID_PULSE = 'tb-grid-pulse';
 /** Sends a ring across the grid from a point of the window (a step of the form, a tap). */
@@ -16,7 +16,7 @@ const REACH = 130;          // pixels from the pointer within which tiles react
 /** The cells the card covers: the pictures are placed away from them. */
 export interface Hole { x: number; y: number; w: number; h: number }
 const FADE = 800;                // a picture flickers on over this long, and out again
-const MAX_AT_ONCE = 3;
+const MAX_AT_ONCE = 2;
 
 const jitter = (c: number, r: number) => Math.abs((c * 73856093) ^ (r * 19349663)) % 3;
 
@@ -80,7 +80,7 @@ export function GridCanvas({ cell, hole }: { cell: number; hole: Hole | null }) 
     const shown: Shown[] = [];
     let nextAt = 400;
     const nameWidth = nameArt().w;
-    const pool = [nameArt(), ...pictureArt()];
+    const pool = [nameArt()];
     const paintCell = (x: number, y: number, kind: 'o' | 'w', alpha: number) => {
       if (alpha <= 0.01) return;
       const rgb = kind === 'o' ? hotRgb : lightRgb;
@@ -101,7 +101,7 @@ export function GridCanvas({ cell, hole }: { cell: number; hole: Hole | null }) 
         const box = { x, y, w: pic.w, h: pic.h };
         const under = hole ? overlap(box, hole) / (pic.w * pic.h) : 0;
         if (under > 0.12 || shown.some((s2) => overlap(box, { x: s2.x, y: s2.y, w: s2.pic.w, h: s2.pic.h }) > 0)) continue;
-        shown.push({ pic, x, y, t0: now, hold: pic === pool[0] ? 3000 : 1900 + Math.random() * 900 });
+        shown.push({ pic, x, y, t0: now, hold: 3000 + Math.random() * 1200 });
         return;
       }
     };

@@ -409,13 +409,15 @@ describe('account and security', () => {
 });
 
 describe('sign-in and registration layout', () => {
-  it('SEC-ABU-02 sign-in says, under its button, that it is protected by a check in the browser without puzzles (AC-ACC-2)', async () => {
+  it('FR-ACC-05 sign-in carries no notice about its human check, and the way to an account is in the foot of the card, after the form (AC-ACC-2, as changed 2026-11-27)', async () => {
     renderApp('/signin?next=%2Forders', fakeBackend({}));
     const button = await screen.findByRole('button', { name: 'Continue' });
-    const note = screen.getByText('Protected by a short check in your browser. No puzzles.');
-    expect(button.compareDocumentPosition(note) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Create an account' }).getAttribute('href')).toBe(`/register?next=${encodeURIComponent('/orders')}`);
-    expect(screen.queryByText('Your money waits with us')).toBeNull();                  // no advertising on the sign-in page
+    expect(screen.queryByText('Protected by a short check in your browser. No puzzles.')).toBeNull();
+    const link = screen.getByRole('link', { name: 'Create an account' });
+    expect(link.getAttribute('href')).toBe(`/register?next=${encodeURIComponent('/orders')}`);
+    expect(button.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();   // after the button, not above the field
+    expect(screen.getByText(/^Welcome back\. New to TrustBazaar\?/)).toBeTruthy();
+    expect(screen.queryByText('Your money waits with us')).toBeNull();                              // no advertising on the sign-in page
   });
 
   it('FR-ACC-12 with the default second step a code is asked after the password, sent to the e-mail (masked); the box remembers the device; a new code can be asked for after the wait', async () => {
@@ -514,10 +516,10 @@ describe('sign-in and registration layout', () => {
     expect(screen.queryByLabelText('Password')).toBeNull();                        // the password is asked again, not kept
   });
 
-  it('SEC-ABU-02 registration has the same note, and errors stand under their field (AC-ACC-2)', async () => {
+  it('SEC-ABU-02 registration has no notice about its human check either, and errors stand under their field (AC-ACC-2)', async () => {
     renderApp('/register', fakeBackend({}));
     await screen.findByRole('heading', { name: 'Create your account' });
-    expect(screen.getByText('Protected by a short check in your browser. No puzzles.')).toBeTruthy();
+    expect(screen.queryByText('Protected by a short check in your browser. No puzzles.')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
     await screen.findByRole('alert');
     const input = screen.getByLabelText('Display name');

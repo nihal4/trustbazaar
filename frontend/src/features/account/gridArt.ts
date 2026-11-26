@@ -1,6 +1,5 @@
-// The pictures the grid draws on the sign-in page (U10-25): cells, not drawings. The name TRUST and BAZAAR in a 3 by 5 letter face, then a phone, the taka
-// sign, a shopping bag, a camera and a shield with a tick, each on an 11 by 11 grid of cells. Each picture is a list of cell offsets and a kind: 'o' is
-// drawn in the hot colour, 'w' in the pale colour of the logotype's "bazaar". Fixed data, no random numbers.
+// What the grid draws on the sign-in page (U10-25): cells, not drawings. Only the name: TRUST over BAZAAR in a 3 by 5 letter face. A picture is a list of cell
+// offsets and a kind: 'o' is drawn in the hot colour, 'w' in the pale colour of the logotype's "bazaar". Fixed data.
 export interface Cell { x: number; y: number; k: 'o' | 'w' }
 export interface Picture { cells: Cell[]; w: number; h: number }
 
@@ -35,27 +34,3 @@ export function nameArt(): Picture {
   return { cells: [...a.cells.map((c) => ({ ...c, x: c.x + shift })), ...b.cells], w: b.w, h: 11 };
 }
 
-const PICTURES: string[][] = [
-  [ // a phone
-    '..#######..', '..#.....#..', '..#.....#..', '..#.....#..', '..#.....#..', '..#.....#..',
-    '..#.....#..', '..#.....#..', '..#.....#..', '..#..#..#..', '..#######..',
-  ],
-  [ // the taka sign
-    '.#########.', '....#......', '.#########.', '....#......', '....#......', '....#......',
-    '....#......', '....#...#..', '.....#..#..', '......###..', '...........',
-  ],
-  [ // a shopping bag
-    '....###....', '...#...#...', '...#...#...', '.#########.', '.#.......#.', '.#.......#.',
-    '.#.......#.', '.#.......#.', '.#.......#.', '.#.......#.', '.#########.',
-  ],
-  [ // a camera
-    '...........', '...###.....', '.#########.', '.#.......#.', '.#..###..#.', '.#.#...#.#.',
-    '.#.#...#.#.', '.#..###..#.', '.#.......#.', '.#########.', '...........',
-  ],
-  [ // a shield with a tick
-    '.#########.', '.#.......#.', '.#.....#.#.', '.#....#..#.', '.#.#.#...#.', '.#..#....#.',
-    '..#.....#..', '..#.....#..', '...#...#...', '....#.#....', '.....#.....',
-  ],
-];
-
-export const pictureArt = (): Picture[] => PICTURES.map((rows) => ({ cells: fromRows(rows, 'o'), w: 11, h: 11 }));
