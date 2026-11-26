@@ -27,6 +27,8 @@ export interface ListingView {
   noVisibleDefects: boolean | null;
   fulfilmentOptions: 'pickup_only' | 'courier_only' | 'pickup_or_courier' | null;
   district: string | null;
+  /** the last four characters of the device's identifier (IMEI, serial number); the identifier itself is never shown (U10-23) */
+  serialLast4?: string | null;
   price: string | null;
   quantity: { total: number; available: number };
   currentlyReserved: boolean;

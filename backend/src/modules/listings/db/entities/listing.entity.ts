@@ -49,6 +49,14 @@ export class Listing {
   @Column({ type: 'numeric', name: 'approx_lng', nullable: true })
   approxLng!: string | null;
 
+  /** a keyed hash of the device's identifier (IMEI, serial number), for the check at the meetup; never selected by default, never shown (U10-23) */
+  @Column({ type: 'bytea', name: 'serial_hmac', nullable: true, select: false })
+  serialHmac!: Buffer | null;
+
+  /** the last four characters of that identifier: the only part ever shown */
+  @Column({ type: 'varchar', name: 'serial_last4', length: 4, nullable: true })
+  serialLast4!: string | null;
+
   @Column({ type: 'bigint', nullable: true })
   price!: string | null;
 

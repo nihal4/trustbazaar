@@ -7,6 +7,7 @@ import { CONFIG_PORT, ConfigPort } from '../../../kernel/config-port';
 import { Problem } from '../../../kernel/http/problems';
 import { AUDIT_SERVICE, AuditServicePort, IDENTITY_QUERY, IdentityQuery } from '../../identity/ports';
 import { FULFILMENT_ORDERS, FulfilmentOrders } from '../adapters/orders';
+import { deviceDigest } from '../../../kernel/device-identifier';
 import { codeMatches, deriveCode } from './handover-code';
 import { mapUrl, MeetupPointsService, pointView, type PointView } from './meetup-points.service';
 import { announceNewIssues } from './outbox';
@@ -46,6 +47,11 @@ export interface HandoverView {
   suggestions: PointView[];
   /** buyer only, while the handover is open: the code and its instruction key (section 6.4) */
   code: string | null;
+  /**
+   * U10-23: an item with a device identifier (a phone's IMEI, a laptop's serial number) is checked by the buyer at the meetup before the code is shown:
+   * `required`, whether it `matched`, and the last four characters the listing showed. Null for an item without one.
+   */
+  deviceCheck: { required: boolean; matched: boolean; last4: string; attemptsLeft: number } | null;
   /** seller only */
   attemptsLeft: number | null;
   completedAt: string | null;
@@ -53,6 +59,8 @@ export interface HandoverView {
 }
 
 const ACTIVE: HandoverStatus[] = ['arranging', 'agreed'];
+/** U10-23: wrong tries of the device check before it is locked (a mistyped digit is allowed). */
+const DEVICE_TRIES = 5;
 
 const ownPlace = (name: string, lat: string | null, lng: string | null): OwnPlaceView => {
   const la = lat === null ? null : Number(lat);
@@ -120,6 +128,7 @@ export class HandoverService {
     const agreed = items.find((p) => p.id === h.agreed_proposal_id && p.status === 'accepted') ?? null;
     const open = ACTIVE.includes(h.status);
     const maxWrong = (await this.params.current()).get<number>('CP-45');
+    const device = buyer && open ? await this.deviceState(orderId, h.buyer_id) : null;
     return {
       orderId,
       role: buyer ? 'buyer' : 'seller',
@@ -128,11 +137,39 @@ export class HandoverService {
       proposals: items,
       agreed: agreed ? { point: agreed.point, place: agreed.place, meetAt: agreed.meetAt } : null,
       suggestions: open ? await this.suggestions(h) : [],
-      code: buyer && open ? deriveCode(this.config.secrets.handoverKey.reveal(), orderId, h.code_version) : null,
+      // the code is shown only once the device is checked, when the item has an identifier
+      code: buyer && open && (!device || device.matched) ? deriveCode(this.config.secrets.handoverKey.reveal(), orderId, h.code_version) : null,
+      deviceCheck: device ? { required: true, matched: device.matched, last4: device.last4, attemptsLeft: device.attemptsLeft } : null,
       attemptsLeft: buyer ? null : Math.max(0, maxWrong - h.wrong_entries),
       completedAt: h.completed_at?.toISOString() ?? null,
       lockedAt: h.locked_at?.toISOString() ?? null,
     };
+  }
+
+  /** U10-23: whether the item has a device identifier, whether the buyer has matched it, and how many tries are left. */
+  private async deviceState(orderId: string, buyerId: string): Promise<{ matched: boolean; last4: string; attemptsLeft: number } | null> {
+    const id = await this.orders.deviceIdentifier(orderId);
+    if (!id) return null;
+    const rows = (await this.db.query(`SELECT matched FROM delivery.device_checks WHERE order_id = $1 AND user_id = $2`, [orderId, buyerId])) as { matched: boolean }[];
+    return { matched: rows.some((r) => r.matched), last4: id.last4, attemptsLeft: Math.max(0, DEVICE_TRIES - rows.filter((r) => !r.matched).length) };
+  }
+
+  /**
+   * POST /orders/{id}/device-check (U10-23): the buyer types the identifier the device shows (*#06# on a phone); the server compares its keyed hash with the
+   * listing's. Only the result is kept. A few wrong tries are allowed (a mistyped digit), then the check is locked: the buyer asks the seller to cancel.
+   */
+  async checkDevice(userId: string, orderId: string, typed: string): Promise<{ matched: boolean; attemptsLeft: number }> {
+    const h = await this.party(this.db.manager, orderId, userId);
+    if (h.buyer_id !== userId) throw new Problem('forbidden', { errors: [{ field: 'value', reason: 'buyer-only' }] });
+    if (!ACTIVE.includes(h.status)) throw new Problem('validation-failed', { errors: [{ field: 'handover', reason: 'closed' }] });
+    const id = await this.orders.deviceIdentifier(orderId);
+    if (!id) throw new Problem('validation-failed', { errors: [{ field: 'value', reason: 'no-device' }] });
+    const state = (await this.deviceState(orderId, userId))!;
+    if (state.matched) return { matched: true, attemptsLeft: state.attemptsLeft };
+    if (state.attemptsLeft <= 0) throw new Problem('validation-failed', { errors: [{ field: 'value', reason: 'locked' }] });
+    const matched = deviceDigest(this.config.secrets.handoverKey.reveal(), typed).toString('hex') === id.digest;
+    await this.db.query(`INSERT INTO delivery.device_checks (order_id, user_id, matched) VALUES ($1, $2, $3)`, [orderId, userId, matched]);
+    return { matched, attemptsLeft: matched ? state.attemptsLeft : state.attemptsLeft - 1 };
   }
 
   /** Both parties' saved approximate locations (I-24); with one missing, the points nearest the other. */

@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import {
-  ArrayMaxSize, ArrayMinSize, IsBoolean, IsIn, IsInt, IsISO8601, IsNumber, IsOptional, IsString, IsUUID, Matches, Max, MaxLength, Min, ValidateNested,
+  ArrayMaxSize, ArrayMinSize, IsBoolean, IsIn, IsInt, IsISO8601, IsNumber, IsOptional, IsString, IsUUID, Length, Matches, Max, MaxLength, Min, ValidateNested,
 } from 'class-validator';
 
 // Unit 4 requests (docs/design/04_delivery.pdf section 3.1; U4-02). Money in poisha, as strings of digits.
@@ -161,6 +161,13 @@ export class ProposalDto {
   @IsString()
   @MaxLength(400)
   note?: string;
+}
+
+/** U10-23: the identifier the device shows (an IMEI, a serial number), typed by the buyer at the meetup. */
+export class DeviceCheckDto {
+  @IsString()
+  @Length(6, 40)
+  value!: string;
 }
 
 export class CodeDto {

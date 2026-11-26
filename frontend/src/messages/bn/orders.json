@@ -578,5 +578,11 @@
   "dispute.sent_video": "আপনি একটি ভিডিও পাঠিয়েছেন",
   "dispute.msg.dispute.review_started.buyer": "সময়ের মধ্যে জবাব আসেনি। ট্রাস্টবাজার এখন হাতে থাকা প্রমাণের ভিত্তিতে অভিযোগটি যাচাই করছে।",
   "dispute.msg.dispute.review_started.seller": "সময়ের মধ্যে জবাব আসেনি। ট্রাস্টবাজার এখন হাতে থাকা প্রমাণের ভিত্তিতে অভিযোগটি যাচাই করছে।",
-  "dispute.state.open.seller": "উত্তর দিন"
+  "dispute.state.open.seller": "উত্তর দিন",
+  "handover.device_title": "ডিভাইসটি যাচাই করুন",
+  "handover.device_listing": "বিজ্ঞাপন অনুযায়ী শেষ অংশ",
+  "handover.device_label": "ডিভাইসে দেখানো IMEI বা সিরিয়াল নম্বর (ফোনে *#06# ডায়াল করুন)",
+  "handover.device_check": "যাচাই করুন",
+  "handover.device_wrong": "নম্বরটি বিজ্ঞাপনের সঙ্গে মেলে না। এই ডিভাইসটি নেবেন না। আর চেষ্টা বাকি: {n}।",
+  "handover.device_locked": "অনেকবার ভুল নম্বর দেওয়া হয়েছে। এই ডিভাইসটি নেবেন না: বিক্রেতাকে অর্ডার বাতিল করতে বলুন।"
 }

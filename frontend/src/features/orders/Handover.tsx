@@ -62,7 +62,7 @@ export function Handover({ o, h, t, lang, after, before }: { o: OrderView; h: Ha
       {h.status === 'locked' && <FormMessage kind="error">{t('handover.locked')}</FormMessage>}
       {h.agreed && <Agreed a={h.agreed} t={t} lang={lang} />}
       {after}
-      {open && h.role === 'buyer' && h.code && <BuyerCode order={o.id} code={h.code} t={t} lang={lang} />}
+      {open && h.role === 'buyer' && (h.code || h.deviceCheck) && <BuyerCode order={o.id} code={h.code} device={h.deviceCheck ?? null} t={t} lang={lang} />}
       {open && h.role === 'seller' && <SellerCode o={o} h={h} t={t} lang={lang} />}
       {open && <Proposals o={o} h={h} t={t} lang={lang} />}
     </section>
@@ -96,8 +96,9 @@ function Agreed({ a, t, lang }: { a: NonNullable<HandoverView['agreed']>; t: T; 
 }
 
 /** The buyer's code: first the terms in a popup (check the item properly, what giving the code means), and only on agreeing the code in a second popup. */
-function BuyerCode({ order, code, t, lang }: { order: string; code: string; t: T; lang: Lang }) {
-  const [step, setStep] = useState<'closed' | 'terms' | 'code'>('closed');
+function BuyerCode({ order, code, device, t, lang }: { order: string; code: string | null; device: NonNullable<HandoverView['deviceCheck']> | null; t: T; lang: Lang }) {
+  const [step, setStep] = useState<'closed' | 'terms' | 'device' | 'code'>('closed');
+  const needsDevice = device !== null && !device.matched;
   return (
     <>
     <div className={styles.code}>
@@ -107,18 +108,56 @@ function BuyerCode({ order, code, t, lang }: { order: string; code: string; t: T
     </div>
     {step === 'terms' && (
       <Terms id="code-terms" t={t} lang={lang} order={order} kind="handover_code" title={t('handover.terms_title')} intro={t('handover.terms_intro')} prefix="handover.terms" count={7}
-        check={t('handover.terms_check')} agree={t('handover.agree_show')} back={t('actions.back')} onAgree={() => setStep('code')} onClose={() => setStep('closed')} />
+        check={t('handover.terms_check')} agree={t('handover.agree_show')} back={t('actions.back')} onAgree={() => setStep(needsDevice ? 'device' : 'code')} onClose={() => setStep('closed')} />
     )}
+    {step === 'device' && device && <DeviceCheck order={order} device={device} t={t} lang={lang} onMatched={() => setStep('code')} onClose={() => setStep('closed')} />}
     {step === 'code' && (
       <Popup id="code-show" title={t('handover.code_title')} closeLabel={t('handover.hide_code')} onClose={() => setStep('closed')}>
         <p className={styles.codeNote}>{t('confirm.share_handover_code')}</p>
-        <p className={`${styles.codeDigits} ${styles.codeCentre}`}>{spaced(code, lang)}</p>
+        <p className={`${styles.codeDigits} ${styles.codeCentre}`}>{code ? spaced(code, lang) : t('shell.loading')}</p>
         <div className={styles.popupButtons}>
           <button type="button" className={styles.secondary} onClick={() => setStep('closed')}>{t('handover.close_code')}</button>
         </div>
       </Popup>
     )}
     </>
+  );
+}
+
+/** U10-23: before the code, the buyer types the identifier the device shows (*#06# on a phone); the server compares it with the listing's. */
+function DeviceCheck({ order, device, t, lang, onMatched, onClose }: { order: string; device: NonNullable<HandoverView['deviceCheck']>; t: T; lang: Lang; onMatched: () => void; onClose: () => void }) {
+  const api = useApi();
+  const queryClient = useQueryClient();
+  const [value, setValue] = useState('');
+  const [left, setLeft] = useState(device.attemptsLeft);
+  const [wrong, setWrong] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const check = useMutation({
+    mutationFn: () => api.post(`/orders/${encodeURIComponent(order)}/device-check`, { value: value.trim() }) as Promise<{ matched: boolean; attemptsLeft: number }>,
+    onSuccess: (r) => {
+      setLeft(r.attemptsLeft);
+      if (r.matched) { void queryClient.invalidateQueries({ queryKey: handoverKey(order) }); onMatched(); } else { setWrong(true); setMessage(null); }
+    },
+    onError: (e) => setMessage(problemName(e) === 'validation-failed' && left <= 0 ? t('handover.device_locked') : errorText(e, t, lang)),
+  });
+  const locked = left <= 0;
+  return (
+    <Popup id="device-check" title={t('handover.device_title')} closeLabel={t('actions.back')} busy={check.isPending} onClose={onClose}>
+      <form className={styles.form} noValidate onSubmit={(e) => { e.preventDefault(); if (value.trim().length >= 6 && !locked) check.mutate(); }}>
+        {wrong && !locked && <FormMessage kind="error">{t('handover.device_wrong', { n: toLocalDigits(String(left), lang) })}</FormMessage>}
+        {locked && <FormMessage kind="error">{t('handover.device_locked')}</FormMessage>}
+        {message && <FormMessage kind="error">{message}</FormMessage>}
+        <dl className={styles.statusGrid}>
+          <div><dt>{t('handover.device_listing')}</dt><dd>•••• {device.last4}</dd></div>
+        </dl>
+        <label htmlFor="device-value">{t('handover.device_label')}</label>
+        <input id="device-value" value={value} maxLength={40} autoComplete="off" disabled={locked} onChange={(e) => setValue(e.target.value)} />
+        <div className={styles.popupButtons}>
+          <button type="submit" className={styles.primary} disabled={check.isPending || locked || value.trim().length < 6}>{t('handover.device_check')}</button>
+          <button type="button" className={styles.secondary} disabled={check.isPending} onClick={onClose}>{t('actions.back')}</button>
+        </div>
+      </form>
+    </Popup>
   );
 }
 

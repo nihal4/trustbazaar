@@ -239,6 +239,26 @@ describe('listings', () => {
     expect(ok.status).toBe(200);
   });
 
+  it('FR-LST-02 U10-23 a device identifier is kept as a hash and its last four characters: only those are shown, a draft may change or clear it, a published listing may not', async () => {
+    const u = await member();
+    const l = await draft(u, { serial: '35-209900 176148 1' });
+    expect(l).toMatchObject({ serialLast4: '1481' });
+    expect(JSON.stringify(l)).not.toContain('352099001761481');
+    const [row] = await fx.query<{ serial_last4: string; kept: boolean }>(`SELECT serial_last4, serial_hmac IS NOT NULL AS kept FROM listings.listings WHERE id = $1`, [l.id]);
+    expect(row).toEqual({ serial_last4: '1481', kept: true });
+    expect(await errorsOf(await u.call('PATCH', `/listings/${l.id}`, { serial: 'ab' }))).toEqual(['serial:format']);
+    expect((await (await u.call('PATCH', `/listings/${l.id}`, { serial: '' })).json()).serialLast4).toBeNull();
+    expect((await (await u.call('PATCH', `/listings/${l.id}`, { serial: 'SN-ABCD-9999' })).json()).serialLast4).toBe('9999');
+    for (let i = 0; i < 2; i++) expect((await photo(u, l.id)).status).toBe(201);
+    expect((await u.call('POST', `/listings/${l.id}/publish`, {})).status).toBe(200);
+    expect(await errorsOf(await u.call('PATCH', `/listings/${l.id}`, { serial: 'OTHER-12345' }))).toEqual(['serial:fixed-after-publication']);
+    const snap = await t.app.get<ListingsPort>(LISTINGS_PORT).snapshot(l.id);
+    expect(snap).toMatchObject({ serialLast4: '9999' });
+    expect(snap.serialDigest).toMatch(/^[0-9a-f]{64}$/);
+    const publicView = await (await u.call('GET', `/listings/${l.id}`)).json();
+    expect(JSON.stringify(publicView)).not.toMatch(/serialDigest|serial_hmac|serialHmac/);
+  });
+
   it('FR-LST-12 a published listing is active, announced once and in its history', async () => {
     const u = await member();
     const id = await active(u);

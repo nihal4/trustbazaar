@@ -70,6 +70,8 @@ export interface OrdersPort {
    * not-found for an unknown order.
    */
   lockForFulfilment(orderId: string, tx: EntityManager): Promise<FulfilmentFacts>;
+  /** U10-23: the device identifier of the order's item as it was at the sale: a keyed hash (never shown) and the last four characters; null for an item without one. */
+  deviceIdentifier(orderId: string): Promise<{ digest: string; last4: string } | null>;
 }
 
 export type FulfilmentStep = 'meetup_handover' | 'courier_pickup' | 'credentials_delivered';

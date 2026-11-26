@@ -288,6 +288,7 @@ function Details({ l, t, lang }: { l: ListingView; t: T; lang: Lang }) {
         {l.condition && <div><dt>{t('listing.condition')}</dt><dd>{t(`listing.condition.${l.condition}`)}</dd></div>}
         {l.fulfilmentOptions && <div><dt>{t('listing.fulfilment')}</dt><dd>{t(`listing.fulfilment.${l.fulfilmentOptions}`)}</dd></div>}
         {l.district && <div><dt>{t('listing.district')}</dt><dd>{l.district}</dd></div>}
+        {l.serialLast4 && <div><dt>{t('listing.serial')}</dt><dd>•••• {l.serialLast4}</dd></div>}
         {l.noVisibleDefects !== null && <div className={styles.wide}><dd>{l.noVisibleDefects ? t('listing.no_visible_defects') : t('listing.defects_in_photos')}</dd></div>}
       </dl>
     </section>

@@ -189,5 +189,9 @@
   "sell.steps.state.current": "(now)",
   "sell.steps.state.next": "(still to come)",
   "sell.cover": "Cover",
-  "sell.add_photos_formats": "JPEG, PNG or WebP"
+  "sell.add_photos_formats": "JPEG, PNG or WebP",
+  "sell.field.serial": "IMEI or serial number (optional)",
+  "sell.serial_hint": "Buyers see only the last 4 characters. At the meetup the buyer types the number the device shows, so a swapped device is caught.",
+  "sell.serial_saved": "Saved: it ends in {last4}. Type a new number to replace it.",
+  "sell.need.serial": "The IMEI or serial number must be 6 to 30 letters and digits."
 }

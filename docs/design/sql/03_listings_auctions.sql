@@ -639,3 +639,10 @@ GRANT DELETE ON listings.screening_terms TO tb_app;   -- operators delete terms 
 REVOKE UPDATE ON listings.clarifications, listings.status_history, listings.stock_moves FROM tb_app;
 GRANT SELECT ON listings.searchable TO tb_app;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA listings, auctions TO tb_app;
+
+-- U10-23 (Decisions log, 2026-11-26): the identifier of a device (IMEI, serial number) at listing: a keyed hash for the check at the meetup, and its last four characters (the only part shown).
+ALTER TABLE listings.listings
+  ADD COLUMN serial_hmac  bytea,
+  ADD COLUMN serial_last4 varchar(4),
+  ADD CONSTRAINT serial_last4_form CHECK (serial_last4 IS NULL OR serial_last4 ~ '^[A-Z0-9]{4}$'),
+  ADD CONSTRAINT serial_both_or_none CHECK ((serial_hmac IS NULL) = (serial_last4 IS NULL));

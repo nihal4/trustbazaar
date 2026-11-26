@@ -199,6 +199,11 @@ export class OrderService implements OrdersPort {
     });
   }
 
+  async deviceIdentifier(orderId: string): Promise<{ digest: string; last4: string } | null> {
+    const [row] = (await this.db.query(`SELECT listing_snapshot->>'serialDigest' AS digest, listing_snapshot->>'serialLast4' AS last4 FROM orders.orders WHERE id = $1`, [orderId])) as { digest: string | null; last4: string | null }[];
+    return row?.digest && row.last4 ? { digest: row.digest, last4: row.last4 } : null;
+  }
+
   async lockForFulfilment(orderId: string, tx: EntityManager): Promise<FulfilmentFacts> {
     const o = await tx.getRepository(Order).findOne({ where: { id: orderId }, lock: { mode: 'pessimistic_write' } });
     if (!o) throw new Problem('not-found');

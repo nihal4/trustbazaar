@@ -158,5 +158,6 @@
   "room.col_amount": "Bid",
   "room.col_time": "Time",
   "room.feed_caption": "The last 10 bids, newest first",
-  "room.back_short": "Back to the listing"
+  "room.back_short": "Back to the listing",
+  "listing.serial": "IMEI / serial number"
 }

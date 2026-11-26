@@ -826,3 +826,16 @@ GRANT USAGE ON SCHEMA delivery TO tb_app;
 GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA delivery TO tb_app;
 REVOKE UPDATE ON delivery.code_entries, delivery.shipment_history, delivery.fare_tables, delivery.fare_rows FROM tb_app;
 GRANT DELETE ON delivery.provider_events TO tb_app;                         -- retention CP-32
+
+-- U10-23: the buyer's check of the device at the meetup: only the result is kept, never the number typed.
+CREATE TABLE delivery.device_checks (
+  id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  order_id   uuid        NOT NULL REFERENCES orders.orders(id),
+  user_id    uuid        NOT NULL REFERENCES identity.users(id),
+  matched    boolean     NOT NULL,
+  at         timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX device_checks_order ON delivery.device_checks (order_id, at);
+CREATE TRIGGER device_checks_append_only BEFORE UPDATE OR DELETE ON delivery.device_checks FOR EACH ROW EXECUTE FUNCTION identity.forbid_change();
+GRANT SELECT, INSERT ON delivery.device_checks TO tb_app;
+GRANT USAGE ON SEQUENCE delivery.device_checks_id_seq TO tb_app;

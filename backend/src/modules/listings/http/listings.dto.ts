@@ -66,6 +66,12 @@ class ItemDetailsDto {
   @Max(9999)
   quantity?: number;
 
+  /** U10-23: the device's identifier (a phone's IMEI, a laptop's serial number): kept as a hash and its last four characters; '' clears it. Drafts only. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  serial?: string;
+
   /** Defaults to the seller's saved area (I-24). */
   @IsOptional()
   @ValidateNested()

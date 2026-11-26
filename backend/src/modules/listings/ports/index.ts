@@ -37,6 +37,9 @@ export interface ListingSnapshot {
   /** The storage keys of the photos shown, in order (served at /api/v1/listing-photos/{key}). */
   photoKeys: string[];
   capturedAt: string;
+  /** U10-23: a keyed hash of the device's identifier and its last four characters, for the meetup check; the hash is never shown */
+  serialDigest?: string | null;
+  serialLast4?: string | null;
 }
 
 /**

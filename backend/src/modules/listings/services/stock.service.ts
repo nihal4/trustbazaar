@@ -60,7 +60,10 @@ export class StockService implements ListingsPort, OnModuleInit {
       m.getRepository(ListingPhoto).find({ where: { listingId }, order: { position: 'ASC' } }),
       m.getRepository(Clarification).find({ where: { listingId }, order: { createdAt: 'ASC', id: 'ASC' } }),
     ]);
+    // the device identifier's keyed hash travels in the order's snapshot (never shown) for the check at the meetup (U10-23)
+    const [dev] = (await m.query(`SELECT encode(serial_hmac, 'hex') AS digest, serial_last4 FROM listings.listings WHERE id = $1`, [listingId])) as { digest: string | null; serial_last4: string | null }[];
     return {
+      serialDigest: dev?.digest ?? null, serialLast4: dev?.serial_last4 ?? null,
       listingId: l.id, sellerId: l.sellerId, itemKind: l.itemKind, saleFormat: l.saleFormat, status: l.status,
       category: { id: category.id, slug: category.slug, nameEn: category.nameEn, nameBn: category.nameBn },
       title: l.title, description: l.description, condition: l.condition, noVisibleDefects: l.noVisibleDefects,

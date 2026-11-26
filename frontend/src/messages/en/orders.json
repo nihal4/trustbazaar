@@ -578,5 +578,11 @@
   "dispute.sent_video": "You sent a video",
   "dispute.msg.dispute.review_started.buyer": "The seller did not answer in time. TrustBazaar is now reviewing the dispute on the proof it has.",
   "dispute.msg.dispute.review_started.seller": "The seller did not answer in time. TrustBazaar is now reviewing the dispute on the proof it has.",
-  "dispute.state.open.seller": "Reply needed"
+  "dispute.state.open.seller": "Reply needed",
+  "handover.device_title": "Check the device",
+  "handover.device_listing": "The listing says it ends in",
+  "handover.device_label": "IMEI or serial number shown on the device (dial *#06# on a phone)",
+  "handover.device_check": "Check",
+  "handover.device_wrong": "This number does not match the listing. Do not accept this device. Tries left: {n}.",
+  "handover.device_locked": "Too many wrong numbers. Do not accept this device: ask the seller to cancel."
 }

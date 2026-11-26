@@ -189,5 +189,9 @@
   "sell.steps.state.current": "(এখন)",
   "sell.steps.state.next": "(বাকি আছে)",
   "sell.cover": "প্রচ্ছদ",
-  "sell.add_photos_formats": "জেপিইজি, পিএনজি বা ওয়েবপি"
+  "sell.add_photos_formats": "জেপিইজি, পিএনজি বা ওয়েবপি",
+  "sell.field.serial": "IMEI বা সিরিয়াল নম্বর (ঐচ্ছিক)",
+  "sell.serial_hint": "ক্রেতারা শুধু শেষ ৪টি অক্ষর দেখেন। সাক্ষাতে ক্রেতা ডিভাইসে দেখানো নম্বরটি লেখেন, তাই বদলে দেওয়া ডিভাইস ধরা পড়ে।",
+  "sell.serial_saved": "সংরক্ষিত: শেষ অংশ {last4}। বদলাতে নতুন নম্বর লিখুন।",
+  "sell.need.serial": "IMEI বা সিরিয়াল নম্বর ৬ থেকে ৩০টি অক্ষর ও অঙ্কের হতে হবে।"
 }

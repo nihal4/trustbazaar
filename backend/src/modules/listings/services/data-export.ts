@@ -6,7 +6,7 @@ import { collectRows, DataExportSource } from '../../../kernel/privacy/data-expo
 // details, not the files) and status history, and as a bidder their bids, second-chance offers, strikes and bidding
 // restrictions. Staff ids are left out.
 const Q = {
-  listings: `SELECT to_jsonb(l) AS r FROM listings.listings l WHERE seller_id = $1 ORDER BY created_at, id`,
+  listings: `SELECT to_jsonb(l) - 'serial_hmac' AS r FROM listings.listings l WHERE seller_id = $1 ORDER BY created_at, id`,
   clarifications: `SELECT to_jsonb(c) AS r FROM listings.clarifications c JOIN listings.listings l ON l.id = c.listing_id WHERE l.seller_id = $1 ORDER BY c.created_at, c.id`,
   photos: `SELECT to_jsonb(p) - 'storage_key' AS r FROM listings.listing_photos p JOIN listings.listings l ON l.id = p.listing_id WHERE l.seller_id = $1 ORDER BY p.listing_id, p.position`,
   listingHistory: `SELECT to_jsonb(h) - 'actor_id' AS r FROM listings.status_history h JOIN listings.listings l ON l.id = h.listing_id WHERE l.seller_id = $1 ORDER BY h.at, h.id`,

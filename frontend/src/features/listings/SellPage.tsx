@@ -154,6 +154,7 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
   const [description, setDescription] = useState(l?.description ?? '');
   const [condition, setCondition] = useState<string>(l?.condition ?? '');
   const [noDefects, setNoDefects] = useState(l?.noVisibleDefects ?? false);
+  const [serial, setSerial] = useState('');
   const [fulfilment, setFulfilment] = useState<string>(l?.fulfilmentOptions ?? 'pickup_only');
   const [weight, setWeight] = useState<string>(l?.weightClass ?? '');
   const [size, setSize] = useState<string>(l?.sizeClass ?? '');
@@ -220,6 +221,7 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
     const q = Number(quantity);
     if (saleFormat === 'fixed_price' && !game && !(Number.isInteger(q) && q >= 1 && q <= 9999)) problems.push(t('sell.need.quantity'));
     if (!l && !game && !area) problems.push(t('sell.need.area'));
+    if (serial.trim() !== '' && !/^[A-Z0-9]{6,30}$/.test(serial.replace(/[\s-]/g, '').toUpperCase())) problems.push(t('sell.need.serial'));
     setErrors(problems);
     if (problems.length || sending.current) return;
     const body: Record<string, unknown> = {
@@ -227,6 +229,7 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
       title: title.trim(), description: description.trim(),
       ...(game ? {} : {
         condition, noVisibleDefects: noDefects,
+        ...(serial.trim() !== '' ? { serial: serial.trim() } : {}),
         fulfilmentOptions: fulfilment, weightClass: courier ? weight : null, sizeClass: courier ? size : null,
       }),
       ...(saleFormat === 'fixed_price' ? { price: String(poisha), quantity: game ? 1 : q } : {}),
@@ -303,6 +306,13 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
             <label htmlFor="no-defects">{t('sell.no_defects')}</label>
           </div>
           {!noDefects && <p className={styles.hint}>{t('sell.defects_hint')}</p>}
+          {!game && draft && ['mobile-phones', 'laptops-computers'].includes(categories.data?.find((c) => String(c.id) === categoryId)?.slug ?? '') && (
+            <>
+              <label htmlFor="serial">{t('sell.field.serial')}</label>
+              <input id="serial" value={serial} maxLength={40} autoComplete="off" inputMode="text" aria-describedby="serial-hint" onChange={(e) => setSerial(e.target.value)} />
+              <p id="serial-hint" className={styles.hint}>{l?.serialLast4 ? t('sell.serial_saved', { last4: l.serialLast4 }) : t('sell.serial_hint')}</p>
+            </>
+          )}
           <label htmlFor="fulfilment">{t('sell.field.fulfilmentOptions')}</label>
           <select id="fulfilment" value={fulfilment} onChange={(e) => setFulfilment(e.target.value)}>
             {FULFILMENT.map((f) => <option key={f} value={f}>{t(`sell.fulfilment.${f}`)}</option>)}
