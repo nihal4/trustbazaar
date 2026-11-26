@@ -1,4 +1,6 @@
 import { Area } from './area.entity';
+import { DeviceCheck } from './device-check.entity';
+import { HandoverPhoto } from './handover-photo.entity';
 import { HandoverCodeEntry } from './handover-code-entry.entity';
 import { FareRow } from './fare-row.entity';
 import { FareTable } from './fare-table.entity';
@@ -14,6 +16,8 @@ import { ShipmentStatusChange } from './shipment-status-change.entity';
 import { Shipment } from './shipment.entity';
 
 export { Area } from './area.entity';
+export { DeviceCheck } from './device-check.entity';
+export { HandoverPhoto } from './handover-photo.entity';
 export { HandoverCodeEntry } from './handover-code-entry.entity';
 export { FareRow } from './fare-row.entity';
 export { FareTable } from './fare-table.entity';
@@ -31,6 +35,8 @@ export { Shipment } from './shipment.entity';
 // Every table of the schemas delivery, for TypeOrmModule.forFeature.
 export const ENTITIES = [
   Area,
+  DeviceCheck,
+  HandoverPhoto,
   HandoverCodeEntry,
   FareRow,
   FareTable,

@@ -21,7 +21,7 @@ export interface EditableListing {
   status: 'draft' | 'pending_review' | 'active' | 'sold' | 'ended_unsold' | 'cancelled' | 'removed';
   category: { id: number; nameEn: string; nameBn: string }; title: string; description: string;
   condition: string | null; noVisibleDefects: boolean; fulfilmentOptions: string | null; weightClass: string | null; sizeClass: string | null;
-  price: string | null; quantity: { total: number; available: number }; locked: boolean;
+  price: string | null; quantity: { total: number; available: number }; locked: boolean; serialLast4?: string | null;
   photos: { id: string; position: number; url: string; thumbUrl: string; showsDefects: boolean }[];
   clarifications: { id: string; body: string; at: string }[];
   own?: { area: { district: string; lat: number; lng: number } | null; updatedAt: string };

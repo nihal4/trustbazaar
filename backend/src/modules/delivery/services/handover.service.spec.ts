@@ -54,13 +54,14 @@ function setup(o: { proposals?: Record<string, unknown>[]; handover?: HRow | nul
     lockForFulfilment: jest.fn(async () => ({ orderId: ORDER, status: 'paid', fulfilment: 'self_pickup', buyerId: 'B', sellerId: 'S', ...o.facts })),
     recordFulfilmentStep: jest.fn(async () => undefined),
     recordDeliveryEvent: jest.fn(async () => undefined),
+    deviceIdentifier: jest.fn(async () => null), // an item without a device identifier
   };
   const identity = { getApproxArea: jest.fn(async () => (o.area === undefined ? { district: 'Sylhet', lat: 24.9, lng: 91.85 } : o.area)) };
   const audit = { record: jest.fn(async () => undefined) };
   const params = { current: async () => ({ get: () => 5 }) };
   const config = { secrets: { handoverKey: { reveal: () => KEY } } };
   const clock = { now: () => new Date('2026-11-02T12:00:00Z') };
-  const svc = new HandoverService(db as never, points as never, orders as never, identity as never, audit as never, params as never, config as never, clock as never);
+  const svc = new HandoverService(db as never, points as never, orders as never, identity as never, audit as never, params as never, config as never, clock as never, { store: jest.fn(), erase: jest.fn() } as never);
   return { svc, db, query, calls, points, orders, audit };
 }
 

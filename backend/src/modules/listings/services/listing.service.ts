@@ -1,6 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, QueryFailedError } from 'typeorm';
+import { TbConfig } from '../../../kernel/config/config';
+import { TB_CONFIG } from '../../../kernel/config/config.provider';
 import { CONFIG_PORT, ConfigPort } from '../../../kernel/config-port';
+import { deviceDigest, deviceLast4, isDeviceId } from '../../../kernel/device-identifier';
 import { cursorAt, decodeCursor, encodeCursor } from '../../../kernel/http/cursor';
 import { IdempotencyKeys } from '../../../kernel/http/idempotency';
 import { Problem } from '../../../kernel/http/problems';
@@ -98,7 +101,15 @@ export class ListingService {
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
     @Inject(LISTING_PRO_STATUS) private readonly pro: ProStatusQuery,
     @Inject(RELISTING_DISPUTES) private readonly disputes: DisputeQueries,
+    @Inject(TB_CONFIG) private readonly config: TbConfig,
   ) {}
+
+  /** U10-23: the columns for a device identifier: a keyed hash and the last four characters; '' clears; a value that is not an identifier is refused. */
+  private serialColumns(serial: string): { serialHmac: Buffer | null; serialLast4: string | null } {
+    if (serial.trim() === '') return { serialHmac: null, serialLast4: null };
+    if (!isDeviceId(serial)) throw new Problem('validation-failed', { errors: [{ field: 'serial', reason: 'format' }] });
+    return { serialHmac: deviceDigest(this.config.secrets.handoverKey.reveal(), serial), serialLast4: deviceLast4(serial) };
+  }
 
   // ---------------------------------------------------------------- categories (FR-LST-10)
 
@@ -131,7 +142,7 @@ export class ListingService {
           const errors = fieldErrors(f, await m.getRepository(Category).findOneBy({ id: f.categoryId }));
           if (errors.length) throw new Problem('validation-failed', { errors });
           const { identifiers } = await m.getRepository(Listing).insert({
-            ...f, sellerId: userId, quantityAvailable: f.quantityTotal, status: 'draft',
+            ...f, ...(dto.serial !== undefined ? this.serialColumns(dto.serial) : {}), sellerId: userId, quantityAvailable: f.quantityTotal, status: 'draft',
           });
           const listingId = identifiers[0].id as string;
           await this.history(m, listingId, null, 'draft', userId, 'created');
@@ -170,7 +181,7 @@ export class ListingService {
         const errors = fieldErrors(f, await m.getRepository(Category).findOneBy({ id: f.categoryId }));
         if (errors.length) throw new Problem('validation-failed', { errors });
         // unlocked: nothing is reserved or sold yet, so every unit is available
-        await m.getRepository(Listing).update({ id }, { ...f, quantityAvailable: f.quantityTotal - l.quantityReserved - l.quantitySold });
+        await m.getRepository(Listing).update({ id }, { ...f, ...(dto.serial !== undefined ? this.serialColumns(dto.serial) : {}), quantityAvailable: f.quantityTotal - l.quantityReserved - l.quantitySold });
       })
       .catch(fromDatabase);
     return this.view(id, { userId });
@@ -420,6 +431,7 @@ export class ListingService {
       weightClass: l.weightClass,
       sizeClass: l.sizeClass,
       district: l.areaDistrict, // FR-LST-06: only the district is shown
+      serialLast4: l.serialLast4, // U10-23: the last four characters of the device's identifier; the identifier itself is never kept or shown
       price: l.price,
       quantity: { total: l.quantityTotal, available: l.quantityAvailable },
       currentlyReserved: l.quantityAvailable === 0 && l.quantityReserved > 0,

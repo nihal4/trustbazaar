@@ -106,15 +106,12 @@
 .head { margin-top: var(--tb-space-3); }
 .rowAmount { margin: 0; font-family: var(--tb-font); font-weight: 600; font-size: 1.125rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .row.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 1.5rem; align-items: start; }
-.rowMain { min-width: 0; }
-.rowMain p { margin: var(--tb-space-1) 0 0; }
 .rowAmount { padding-top: 0.5rem; }
 @media (max-width: 30rem) { .row.row { grid-template-columns: minmax(0, 1fr); } .rowAmount { grid-row: 1; padding-top: 0; font-size: 1.0625rem; } }
 
 /* The orders list as a ruled grid (U10-23): a small photo, the item, its status, the other party, the money and the receipt; bought and cancelled kept in
    their own sections. No boxes: hairline rules between rows; the photo is the only framed thing (an image). */
 .ordersSection { margin-top: var(--tb-space-4); }
-.sectionTitle { display: flex; align-items: baseline; gap: 0.625rem; margin: 0 0 var(--tb-space-1); font-family: var(--tb-font-display); font-weight: var(--tb-display-weight); font-size: 1.25rem; letter-spacing: -0.01em; }
 .count { color: var(--tb-muted); font-family: var(--tb-font); font-weight: 600; font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
 .gridHead, .gridRow { display: grid; grid-template-columns: 4rem minmax(0, 2.2fr) minmax(0, 1.4fr) minmax(0, 1.2fr) minmax(5.5rem, auto) 10.5rem; gap: 0 1.25rem; align-items: center; }
 .gridHead { padding-block: 0.5rem; border-top: 2px solid var(--tb-hot); border-bottom: 1px solid var(--tb-line); color: var(--tb-muted); font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
@@ -174,14 +171,8 @@
 .flowNext h3 { color: var(--tb-muted); }
 .flow p { margin: 0.25rem 0; }
 .flow .breakdown { max-width: 26rem; margin: 0 0 0.5rem; }
-.chosenRow { font-weight: 600; }
-.optionRows { border-top: 1px solid var(--tb-line); }
-.optionRow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.5rem 1.5rem; align-items: center; padding: 0.875rem 0; border-bottom: 1px solid var(--tb-line); }
-.optionRow:last-child { border-bottom: 0; }
-.optionRow > .courier { grid-column: 1 / -1; }
-.optionRow strong { font-weight: 700; }
 .courier h3 { font-size: 1rem; margin: 0 0 0.25rem; }
-.courier .secondary, .optionRow button { min-height: 44px; }
+.courier .secondary { min-height: 44px; }
 .flow .primary { margin-top: 0.75rem; }
 
 /* the journey of a paid order (U10-23) */
@@ -269,15 +260,6 @@
 /* the money panel keeps a hairline on top: the vermilion rule belongs to the rail */
 .moneyPanel { border-top: 1px solid var(--tb-line); }
 
-/* the deadline: always in view at the head of the rail */
-.spot { display: grid; gap: 0.25rem; padding: 1rem 0 1.25rem 1rem; border-left: 3px solid var(--tb-hot); }
-.spotHead { margin: 0; color: var(--tb-muted); font-size: 0.8125rem; font-weight: 600; }
-.spotWhat { margin: 0; color: var(--tb-muted); }
-.spotWhen { margin: 0; font-size: 1.25rem; font-weight: 600; line-height: 1.25; font-variant-numeric: tabular-nums; text-wrap: balance; }
-.spot .deadlines { margin-top: 0.75rem; }
-.spot.urgent .spotWhen { color: var(--tb-hot); }
-.rail > .spot { border-bottom: 1px solid var(--tb-line); }
-
 /* the journey: plain numbers on hairlines, no outlined circles */
 .flowNo, .journeyList .flowNo { width: 1.5rem; height: auto; border: 0; border-radius: 0; font-size: 0.9375rem; font-weight: 600; }
 .flowNow .flowNo { color: var(--tb-hot); }
@@ -308,14 +290,6 @@
 /* the popup: map links quiet, Back a plain underlined link */
 .choice a { color: var(--tb-muted); text-decoration: underline; text-underline-offset: 3px; }
 .form .buttons .secondary { border: 0; background: none; text-decoration: underline; text-underline-offset: 3px; min-width: 0; }
-.spot .deadlines { margin-top: 0.25rem; gap: 0; }
-.spot .deadlines > div { padding: 0.625rem 0; }
-.spot .deadlines > div:first-child dd { font-size: 1.25rem; font-weight: 600; line-height: 1.25; text-wrap: balance; }
-.spot .deadlines > div:first-child dt { color: var(--tb-muted); }
-.spot .deadlines .urgent dd { color: var(--tb-hot); }
-.rail > section.spot { gap: 0.25rem; padding: 1rem 0 1.25rem 1rem; border-left: 3px solid var(--tb-hot); background: var(--tb-surface); }
-.rail > section.spot .spotHead { color: var(--tb-muted); }
-.spot .deadlines > div:first-child dd { font-size: 1.125rem; text-wrap: pretty; }
 
 /* review: both columns scroll together (the rail is not sticky); deadlines are the first grid row of the Meetup handover */
 .deadlineGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); margin: 0; border: 1px solid var(--tb-line); }
@@ -328,7 +302,6 @@
 /* no filled orange boxes: orange border, low-opacity wash, sharp edges */
 .primary, .primaryLink, .actionGrid button.primary, .rail button.primary { background: color-mix(in srgb, var(--tb-hot) 10%, transparent); color: var(--tb-text); border: 1px solid var(--tb-hot); border-radius: 0; }
 .primary:hover:not(:disabled), .primaryLink:hover { background: color-mix(in srgb, var(--tb-hot) 18%, transparent); }
-.rail > section.spot { background: none; }
 
 /* the facts under the title as a full grid */
 .facts { border: 1px solid var(--tb-line); }
@@ -366,12 +339,6 @@
 /* the code popup: the note and the digits centred (the trailing letter-space is cancelled so the digits sit truly in the middle) */
 .codeNote { text-align: center; text-wrap: balance; margin: 0; }
 .codeCentre { display: block; width: 100%; box-sizing: border-box; margin: 0; padding: 1rem 0 1rem 0.2em; text-align: center; font-size: 3rem; }
-
-/* ---- review fixes (impeccable) ---- */
-/* the rail's heading rule must not shrink the deadline label */
-.rail .spotHead { font-size: 0.8125rem; }
-/* no side stripe: the deadline block is a plain ruled block */
-.rail > section.spot, .spot { border-left: 0; padding-left: 0; }
 /* the code digits fit a 360 px phone */
 .codeCentre { font-size: clamp(1.5rem, 8.5vw, 3rem); white-space: nowrap; }
 .codeNote, .terms li, .accept { line-height: var(--tb-line-height, 1.5); }
@@ -414,11 +381,6 @@
 .rail .flow { margin: 0; }
 .rail .flow > li { padding: 1rem 0; }
 .rail .flow h3 { font-size: 1rem; margin-bottom: 0.5rem; }
-.rail .optionRows { border-top: 0; }
-.rail .optionRow { grid-template-columns: 1fr; gap: 0.625rem; padding: 0.75rem 0; }
-.optionRow > button { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 52px; padding: 0.5rem 0.75rem; border: 1px solid var(--tb-line); border-radius: 0; background: none; color: var(--tb-text); font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
-.optionRow > button::after { content: ''; width: 0.5rem; height: 0.5rem; margin-left: 0.75rem; border: solid currentColor; border-width: 1.5px 1.5px 0 0; transform: rotate(45deg); flex: none; }
-.optionRow > button:hover:not(:disabled) { color: var(--tb-hot); background: var(--tb-surface); }
 .rail .courier { display: grid; gap: 0.75rem; border-top: 0; padding-top: 0; margin-top: 0; }
 .rail .courier > div { display: grid; gap: 0.5rem; }
 .rail .flow .primary, .rail .courier .primary { width: 100%; }
@@ -453,7 +415,6 @@ input[type='file']:hover::file-selector-button { background: var(--tb-surface); 
 .rail .deadlineGrid { grid-template-columns: 1fr; }
 .rail .deadlineGrid > div { padding: 0.875rem 1rem; gap: 0.25rem; }
 .rail .deadlineGrid dd { font-size: 1rem; line-height: 1.4; }
-.msgHead { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
 .statements > li.mine { border-left: 0; background: color-mix(in srgb, var(--tb-hot) 6%, transparent); padding-inline: 0.875rem; }
 .statements > li { padding-inline: 0.875rem; }
 
@@ -464,17 +425,6 @@ input[type='file']:hover::file-selector-button { background: var(--tb-surface); 
 .breakdownGrid dd { margin: 0; font-weight: 600; font-size: 1.125rem; font-variant-numeric: tabular-nums; }
 .previewBlock { margin-block: var(--tb-space-3); }
 .previewBlock > h2 { margin: 0 0 0.75rem; font-size: 1.25rem; }
-.previewGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1px; border: 1px solid var(--tb-line); background: var(--tb-line); }
-.previewCol { padding: 1rem 1.125rem 0.5rem; background: var(--tb-bg); }
-.previewCol > h3 { margin: 0 0 0.5rem; font-size: 1rem; color: var(--tb-muted); font-weight: 600; }
-.previewList { list-style: none; margin: 0; padding: 0; }
-.previewList > li { display: grid; grid-template-columns: 1.5rem minmax(0, 1fr); gap: 0.5rem; padding: 0.875rem 0; border-top: 1px solid var(--tb-line); }
-.previewList > li:first-child { border-top: 0; }
-.previewStep { margin: 0; font-weight: 600; }
-.previewList p.hint, .protectGrid p.hint { margin: 0.25rem 0 0; font-size: 0.9375rem; line-height: var(--tb-line-height, 1.5); text-wrap: pretty; }
-.protectGrid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 1px; border: 1px solid var(--tb-line); background: var(--tb-line); }
-.protectGrid > li { display: grid; align-content: start; gap: 0.125rem; padding: 1rem 1.125rem; background: var(--tb-bg); }
-.protectGrid .flowNo { color: var(--tb-protect); margin-bottom: 0.25rem; }
 @media (max-width: 30rem) { .breakdownGrid { grid-template-columns: 1fr; } }
 /* the breakdown has four cells, the total marked; the preview and protection blocks are gone */
 .breakdownGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 0.75rem; }
@@ -483,8 +433,8 @@ input[type='file']:hover::file-selector-button { background: var(--tb-surface); 
 @media (max-width: 20rem) { .breakdownGrid { grid-template-columns: 1fr; } }
 
 /* ---- review: lines, not boxes. Open at the sides: hairlines above and below, hairlines between cells; the choice in one step; the fee and the deadlines as grid cells ---- */
-.facts, .deadlineGrid, .shipFacts, .breakdownGrid, .previewGrid, .cellRow, .popupButtons, .actions { border-inline: 0; }
-.cellButton, .optionRow > button { border-inline: 0; padding-inline: 0; }
+.facts, .deadlineGrid, .shipFacts, .breakdownGrid, .cellRow, .popupButtons, .actions { border-inline: 0; }
+.cellButton { border-inline: 0; padding-inline: 0; }
 .cellButton + .cellButton { margin-top: -1px; }
 .facts > div:first-child, .deadlineGrid > div:first-child, .shipFacts > div:first-child, .breakdownGrid > div:first-child { padding-left: 0; }
 .deadlineGrid > div, .shipFacts > div, .breakdownGrid > div { background: transparent; }
@@ -514,8 +464,7 @@ input[type='file']::file-selector-button { border-inline: 0; padding-inline: 0; 
 .payRow > div { display: grid; gap: 0.125rem; align-content: center; padding: 0.75rem 0; }
 .payRow > div span { color: var(--tb-muted); font-size: 0.8125rem; }
 .payRow > div strong { font-size: 1.25rem; font-variant-numeric: tabular-nums; }
-.payRow > .primary, .payOff { min-height: 56px; align-self: stretch; display: flex; align-items: center; justify-content: center; border: 0; border-left: 1px solid var(--tb-line); }
-.payOff { color: var(--tb-muted); opacity: 0.6; font-weight: 600; }
+.payRow > .primary { min-height: 56px; align-self: stretch; display: flex; align-items: center; justify-content: center; border: 0; border-left: 1px solid var(--tb-line); }
 /* the quote as two ruled cells in the courier popup */
 .quoteBlock { display: grid; gap: 0.75rem; }
 .quoteGrid { display: grid; grid-template-columns: 1fr 1fr; margin: 0; border-block: 1px solid var(--tb-line); }
@@ -629,3 +578,6 @@ input[type='file'].fileHidden { position: absolute; width: 1px; height: 1px; mar
 .chosenGrid > dl { margin: 0; }
 .chosenGrid > dl > div { padding: 0.75rem 0; }
 .choice a { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 0.25rem; }
+
+.returnStep { border-top: 1px solid var(--tb-line); padding-top: 12px; display: grid; gap: 8px; }
+.returnStep h2 { font-size: 1rem; margin: 0; }

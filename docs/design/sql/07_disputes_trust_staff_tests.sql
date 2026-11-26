@@ -319,8 +319,8 @@ SELECT pg_temp.expect_fail('a statement''s text cannot be rewritten',
 SELECT pg_temp.expect_fail('a statement cannot be emptied without the purge stamp',
  $q$UPDATE disputes.statements SET text = NULL WHERE dispute_id = '$q$ || :'d1' || $q$'$q$, 'append-only');
 SELECT pg_temp.ok('I-63 nothing is purged before the retention ends', NOT EXISTS (SELECT disputes.purge_due('2 years')));
-SELECT pg_temp.ok('I-63 at the end of retention the evidence keys are handed back for erasure',
-  (SELECT count(*) = 10 AND bool_and(k LIKE 'ev-%') FROM disputes.purge_due('-1 second') AS k));
+SELECT pg_temp.ok('I-63 at the end of retention the evidence keys are handed back for erasure, and the order whose disputes are all purged is named for its handover photos (U10-23)',
+  (SELECT count(*) FILTER (WHERE k LIKE 'ev-%') = 10 AND bool_and(k LIKE 'ev-%' OR k LIKE 'order:%') FROM disputes.purge_due('-1 second') AS k));
 SELECT pg_temp.ok('I-63 the statements and evidence keep their rows but lose their content; the dispute and its decision stay',
   NOT EXISTS (SELECT 1 FROM disputes.statements WHERE dispute_id = :'d1' AND (text IS NOT NULL OR purged_at IS NULL))
   AND NOT EXISTS (SELECT 1 FROM disputes.evidence WHERE dispute_id = :'d1' AND (storage_key IS NOT NULL OR purged_at IS NULL))

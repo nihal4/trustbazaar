@@ -113,6 +113,7 @@ function setup(o: { query?: (sql: string, params: unknown[]) => unknown[]; param
     idempotency as unknown as IdempotencyKeys, identity as unknown as IdentityQuery, params,
     { isPro: jest.fn(async () => o.pro === true) } as never,
     { disputedListings: jest.fn(async () => []) } as never,
+    { secrets: { handoverKey: { reveal: () => 'test-handover-key' } } } as never,
   );
   const cat = (id: number, itemKind = 'physical', prohibited = false) =>
     f.repo(Category).rows.push({ id, slug: `c${id}`, nameEn: 'Phones', nameBn: 'ফোন', itemKind, prohibited, parentId: null, sortOrder: id });

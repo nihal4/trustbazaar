@@ -153,6 +153,12 @@ export class DisputeService implements DisputeCommands {
         [o.orderId, facts.buyerId, facts.sellerId, facts.itemKind, o.type, description, view.itemPrice, view.escrow?.amountCollected ?? view.total, windowOk, sellerWindow, o.by],
       )) as { id: string }[];
       await this.escrow.freezeForDispute(o.orderId, id, tx); // FR-DSP-02: no automatic release from here
+      if (o.by === 'system') {
+        // a dispute the system opens (Unit 5, a game account) never runs afterOpen: the parties' chats get the same two messages inside this transaction
+        const hours = Math.round((await this.params.current()).ms('CP-20') / 3_600_000);
+        await recordMessage(tx, id, facts.sellerId, 'dispute.opened_seller', { listing_title: view.listing.title, hours }, `dispute:${id}:opened`);
+        await recordMessage(tx, id, facts.buyerId, 'dispute.opened_buyer', { listing_title: view.listing.title }, `dispute:${id}:opened`);
+      }
       return id;
     } catch (err) {
       throw problemOf(err) ?? err;
@@ -199,7 +205,16 @@ export class DisputeService implements DisputeCommands {
       `SELECT id, storage_key, mime, byte_size, at FROM disputes.evidence WHERE dispute_id = $1 AND party = $2 ORDER BY at`, [disputeId, role],
     )) as { id: string; storage_key: string | null; mime: string; byte_size: number; at: Date }[];
     const iso = (x: Date | null) => (x ? x.toISOString() : null);
+    // U10-23 (FR-TNS-10): the seller's step while the item is on its way back: a meetup return is recorded by the seller, after the identifier check if the item has one
+    let returnStep: { manual: boolean; last4: string | null; check: 'none' | 'matched' | 'mismatch' } | null = null;
+    if (role === 'seller' && d.status === 'awaiting_return') {
+      const o = await this.orders.getOrderForParty(d.order_id, viewer.userId);
+      const dev = await this.orders.deviceIdentifier(d.order_id);
+      const checks = (await this.db.query(`SELECT matched FROM disputes.return_checks WHERE dispute_id = $1`, [disputeId])) as { matched: boolean }[];
+      returnStep = { manual: o.fulfilment === 'self_pickup', last4: dev?.last4 ?? null, check: checks.some((c) => c.matched) ? 'matched' : checks.length > 0 ? 'mismatch' : 'none' };
+    }
     return {
+      returnStep,
       id: d.id, orderId: d.order_id, role, type: d.type, status: d.status, description: role === 'buyer' ? d.description : null,
       openedAt: d.opened_at.toISOString(), sellerDueAt: d.seller_due_at.toISOString(), infoDueAt: iso(d.info_due_at),
       reviewStartedAt: iso(d.review_started_at), decisionTargetAt: iso(d.decision_target_at),

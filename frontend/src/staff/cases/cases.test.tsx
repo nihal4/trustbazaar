@@ -92,6 +92,34 @@ describe('a dispute', () => {
     });
   });
 
+  it('FR-TNS-10 a return that is stuck after a mismatch: the check is shown, the decision forms are gone, and the operator closes it with a reason as a rejected return', async () => {
+    const f = caseFile();
+    const stuck = { ...f, dispute: { ...f.dispute, status: 'awaiting_return' }, returnCheck: { checks: [{ matched: false, at: iso(-HOUR) }], canResolve: true, finding: null, findings: [] } };
+    const be = backend({ [`GET /staff/disputes/${ID}/case-file`]: json(200, stuck), [`POST /staff/disputes/${ID}/resolve-return`]: json(200, { status: 'decided' }) });
+    open(`/staff/disputes/${ID}`, be);
+    expect(await screen.findByText(/did NOT match the listing/)).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Decide the dispute' })).toBeNull();
+    const closing = form('Close the return');
+    fireEvent.click(within(closing).getByLabelText('Not the item sold: pay the seller'));
+    await act(closing, 'The returned phone has another IMEI than the one sold.', 'Close the return');
+    expect(await screen.findByText('The return is closed.')).toBeTruthy();
+    expect(be.called(`POST /staff/disputes/${ID}/resolve-return`)[0].body).toEqual({ outcome: 'release', reason: 'The returned phone has another IMEI than the one sold.' });
+  });
+
+  it('FR-TNS-10 a finding about the buyer after the dispute is decided: only the kinds the server offers, a reason of 20 characters, and the answer says when buying is suspended', async () => {
+    const f = caseFile();
+    const decided = { ...f, dispute: { ...f.dispute, status: 'decided' }, returnCheck: { checks: [], canResolve: false, finding: null, findings: ['false_claim'] } };
+    const be = backend({ [`GET /staff/disputes/${ID}/case-file`]: json(200, decided), [`POST /staff/disputes/${ID}/buyer-finding`]: json(200, { strike: true, suspended: true }) });
+    open(`/staff/disputes/${ID}`, be);
+    await screen.findByRole('heading', { name: 'Finding about the buyer' });
+    const rec = form('Finding about the buyer');
+    expect(within(rec).queryByLabelText(/A swap/)).toBeNull();
+    fireEvent.click(within(rec).getByLabelText(/A false claim/));
+    await act(rec, 'The buyer broke the item himself; the handover video shows it working.', 'Record the finding');
+    expect(await screen.findByText("The finding is recorded and the buyer's buying is suspended.")).toBeTruthy();
+    expect(be.called(`POST /staff/disputes/${ID}/buyer-finding`)[0].body).toEqual({ finding: 'false_claim', reason: 'The buyer broke the item himself; the handover video shows it working.' });
+  });
+
   it('FR-DSP-06 CP-30 at BDT 20,000 or more the form says so and the decision becomes a proposal; an unclaimed case says to claim it', async () => {
     const be = backend({
       [`GET /staff/disputes/${ID}/case-file`]: json(200, caseFile({ fourEyes: true, amount: '2500000' })),

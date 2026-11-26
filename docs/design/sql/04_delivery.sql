@@ -826,3 +826,48 @@ GRANT USAGE ON SCHEMA delivery TO tb_app;
 GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA delivery TO tb_app;
 REVOKE UPDATE ON delivery.code_entries, delivery.shipment_history, delivery.fare_tables, delivery.fare_rows FROM tb_app;
 GRANT DELETE ON delivery.provider_events TO tb_app;                         -- retention CP-32
+
+-- U10-23: the buyer's check of the device at the meetup: only the result is kept, never the number typed.
+CREATE TABLE delivery.device_checks (
+  id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  order_id   uuid        NOT NULL REFERENCES orders.orders(id),
+  user_id    uuid        NOT NULL REFERENCES identity.users(id),
+  matched    boolean     NOT NULL,
+  at         timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX device_checks_order ON delivery.device_checks (order_id, at);
+CREATE TRIGGER device_checks_append_only BEFORE UPDATE OR DELETE ON delivery.device_checks FOR EACH ROW EXECUTE FUNCTION identity.forbid_change();
+GRANT SELECT, INSERT ON delivery.device_checks TO tb_app;
+GRANT USAGE ON SEQUENCE delivery.device_checks_id_seq TO tb_app;
+
+-- U10-23: the seller's photos of the item at the meetup, before the code is entered; encrypted, with the time the server received them (evidence for a later dispute).
+CREATE TABLE delivery.handover_photos (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id     uuid         NOT NULL REFERENCES orders.orders(id),
+  seller_id    uuid         NOT NULL REFERENCES identity.users(id),
+  storage_key  varchar(300) UNIQUE,
+  sha256       bytea        NOT NULL CHECK (octet_length(sha256) = 32),
+  at           timestamptz  NOT NULL DEFAULT now()
+);
+CREATE INDEX handover_photos_order ON delivery.handover_photos (order_id, at);
+-- I-63 (U10-23): purged with the last dispute of the order (disputes.purge_due names the order, the retention job calls delivery.purge_photos): the file
+-- key is emptied once and the purge stamped; nothing else may change.
+ALTER TABLE delivery.handover_photos ADD COLUMN purged_at timestamptz, ADD CONSTRAINT handover_photo_purged CHECK ((purged_at IS NULL) = (storage_key IS NOT NULL));
+CREATE FUNCTION delivery.purge_guard() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF TG_OP = 'UPDATE' AND OLD.purged_at IS NULL AND NEW.purged_at IS NOT NULL AND NEW.storage_key IS NULL
+     AND to_jsonb(NEW) - 'storage_key' - 'purged_at' = to_jsonb(OLD) - 'storage_key' - 'purged_at' THEN
+    RETURN NEW;
+  END IF;
+  RAISE EXCEPTION 'table %.% is append-only', TG_TABLE_SCHEMA, TG_TABLE_NAME USING ERRCODE = 'insufficient_privilege';
+END $$;
+CREATE TRIGGER handover_photos_append_only BEFORE UPDATE OR DELETE ON delivery.handover_photos FOR EACH ROW EXECUTE FUNCTION delivery.purge_guard();
+CREATE FUNCTION delivery.purge_photos(p_order uuid) RETURNS SETOF varchar LANGUAGE plpgsql
+  SECURITY DEFINER SET search_path = pg_catalog, pg_temp AS $$
+BEGIN
+  RETURN QUERY SELECT h.storage_key FROM delivery.handover_photos h WHERE h.order_id = p_order AND h.storage_key IS NOT NULL;
+  UPDATE delivery.handover_photos SET storage_key = NULL, purged_at = now() WHERE order_id = p_order AND purged_at IS NULL;
+END $$;
+REVOKE ALL ON FUNCTION delivery.purge_photos(uuid) FROM PUBLIC;
+
+GRANT SELECT, INSERT ON delivery.handover_photos TO tb_app;

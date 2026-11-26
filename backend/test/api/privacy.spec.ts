@@ -95,7 +95,7 @@ describe('privacy: lawful disclosure and case-file retention', () => {
     expect((await user.call('POST', '/staff/disclosures', request(user.userId))).status).toBe(401);
   });
 
-  it('I-63 two years after a dispute closes, its statements\' text and evidence files go; the dispute and its outcome stay', async () => {
+  it('I-63 two years after a dispute closes, its statements\' text, evidence files and the seller\'s handover photos go; the dispute and its outcome stay', async () => {
     const [buyer, seller] = [await member(), await member()];
     const [{ id: listingId }] = await fx.query<{ id: string }>(
       `INSERT INTO listings.listings (seller_id, item_kind, sale_format, category_id, title, description, condition, no_visible_defects,
@@ -118,6 +118,7 @@ describe('privacy: lawful disclosure and case-file retention', () => {
     const link = before.evidence[0].link.url;
     expect((await buyer.open(link)).status).toBe(200);
 
+    await fx.query(`INSERT INTO delivery.handover_photos (order_id, seller_id, storage_key, sha256) VALUES ($1, $2, 'dispute_evidence/handover-photo-test', decode(repeat('ab', 32), 'hex'))`, [orderId, seller.userId]);
     const privacy = t.app.get(PrivacyService);
     await privacy.purgeCaseFiles(); // two years: a live dispute is never purged, nor a recent one
     expect(await fx.query(`SELECT purged_at FROM disputes.disputes WHERE id = $1`, [disputeId])).toEqual([{ purged_at: null }]);
@@ -126,6 +127,8 @@ describe('privacy: lawful disclosure and case-file retention', () => {
     expect(await fx.query(`SELECT text, purged_at IS NOT NULL AS purged FROM disputes.statements WHERE dispute_id = $1`, [disputeId])).toEqual([{ text: null, purged: true }]);
     expect(await fx.query(`SELECT storage_key, mime, purged_at IS NOT NULL AS purged FROM disputes.evidence WHERE dispute_id = $1`, [disputeId])).toEqual([{ storage_key: null, mime: 'image/jpeg', purged: true }]);
     expect((await buyer.open(link)).status).not.toBe(200); // the file itself is erased
+    // U10-23: the seller's handover photos of the order go with the last of its disputes (the row stays, the key is emptied)
+    expect(await fx.query(`SELECT storage_key, purged_at IS NOT NULL AS purged FROM delivery.handover_photos WHERE order_id = $1`, [orderId])).toEqual([{ storage_key: null, purged: true }]);
     expect(await fx.query(`SELECT status, purged_at IS NOT NULL AS purged, description FROM disputes.disputes WHERE id = $1`, [disputeId]))
       .toEqual([{ status: 'withdrawn', purged: true, description: 'The lamp arrived with a cracked shade.' }]);
     const view = (await (await buyer.call('GET', `/disputes/${disputeId}`)).json()) as { statements: { text: string | null }[]; evidence: { link: unknown }[] };

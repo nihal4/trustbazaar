@@ -35,6 +35,10 @@ export class DeliveryPorts implements DeliveryPort, DeliveryCommands, DeliveryQu
     return this.shipments.bookReturn(orderId, quoteId, payer, tx);
   }
 
+  purgeHandoverPhotos(orderId: string): Promise<string[]> {
+    return this.handovers.purgePhotos(orderId);
+  }
+
   unlockHandoverCode(orderId: string, staffId: string, reason: string): Promise<void> {
     return this.handovers.unlockHandoverCode(orderId, staffId, reason);
   }

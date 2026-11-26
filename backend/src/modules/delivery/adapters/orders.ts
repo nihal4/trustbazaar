@@ -17,6 +17,8 @@ export interface FulfilmentOrders {
   recordCourierCost: EscrowCommands['recordCourierCost'];
   /** U4-04: the shipments view checks the caller is the order's buyer or seller (not-found otherwise) */
   getOrderForParty(orderId: string, userId: string): Promise<OrderView>;
+  /** U10-23: the item's device identifier (a keyed hash and its last four characters), for the check at the meetup */
+  deviceIdentifier(orderId: string): Promise<{ digest: string; last4: string } | null>;
   /** U4-05: the order's status, close time and open dispute, for address erasure (DV-30) */
   getEscrow(orderId: string): Promise<EscrowView>;
 }
@@ -43,6 +45,10 @@ export class ForwardedFulfilmentOrders implements FulfilmentOrders {
 
   recordCourierCost(...a: Parameters<EscrowCommands['recordCourierCost']>): Promise<void> {
     return this.modules.get<EscrowCommands>(ESCROW_COMMANDS, { strict: false }).recordCourierCost(...a);
+  }
+
+  deviceIdentifier(orderId: string): Promise<{ digest: string; last4: string } | null> {
+    return this.modules.get<OrdersPort>(ORDERS_PORT, { strict: false }).deviceIdentifier(orderId);
   }
 
   getOrderForParty(orderId: string, userId: string): Promise<OrderView> {

@@ -50,6 +50,8 @@ export interface DeliveryCommands {
    * shipment id.
    */
   bookReturn(orderId: string, quoteId: string, payer: 'buyer' | 'seller', tx: EntityManager): Promise<string>;
+  /** I-63 (U10-23): empties the keys of an order's handover photos and returns them, to be erased from the FileVault; the order's last dispute was purged. */
+  purgeHandoverPhotos(orderId: string): Promise<string[]>;
   /** After a lock (CP-45): a new code version, the count reset; audited with the reason. */
   unlockHandoverCode(orderId: string, staffId: string, reason: string): Promise<void>;
   /** Section 7.11: resolves an open issue with a reason of at least 10 characters; audited. */

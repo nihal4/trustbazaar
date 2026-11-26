@@ -190,6 +190,36 @@ describe('the meetup handover (Unit 4)', () => {
     expect(spaced('481902', 'bn')).toBe('৪ ৮ ১ ৯ ০ ২');
   });
 
+  it('FR-DLV-06 U10-23 an item with a device identifier: after the terms the buyer types the device\'s number; a wrong one is refused with the tries left; the right one shows the code', async () => {
+    let h = handover({ code: null, deviceCheck: { required: true, matched: false, last4: '1481', attemptsLeft: 5 } } as never);
+    const be = backend({
+      'POST /orders/o-1/device-check': [json(200, { matched: false, attemptsLeft: 4 }), () => { h = handover({ deviceCheck: { required: true, matched: true, last4: '1481', attemptsLeft: 4 } } as never); return json(200, { matched: true, attemptsLeft: 4 })(); }],
+    }, { handover: () => h });
+    renderApp('/orders/o-1', be);
+    fireEvent.click(await screen.findByRole('button', { name: 'Show code' }));
+    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('button', { name: 'I agree, show the code' }));
+    const box = await screen.findByLabelText(/IMEI or serial number shown on the device/);
+    expect(screen.getByText('•••• 1481')).toBeTruthy();
+    fireEvent.change(box, { target: { value: '352099001761480' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Check' }));
+    expect(await screen.findByText(/does not match the listing\. Do not accept this device\. Tries left: 4/)).toBeTruthy();
+    fireEvent.change(box, { target: { value: '352099001761481' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Check' }));
+    expect(await screen.findByText('4 8 1 9 0 2')).toBeTruthy(); // the code, once the device matched
+    expect(be.called('POST /orders/o-1/device-check').map((c) => c.body)).toEqual([{ value: '352099001761480' }, { value: '352099001761481' }]);
+  });
+
+  it('FR-DLV-06 U10-23 the seller adds a photo of the item before entering the code; other files are refused before upload', async () => {
+    const be = backend({ 'POST /orders/o-1/handover-photos': json(201, { count: 1 }) }, { order: order({ role: 'seller' }), handover: handover({ role: 'seller', code: null, photoCount: 0, attemptsLeft: 5 } as never) });
+    renderApp('/orders/o-1', be);
+    const input = await screen.findByLabelText('Add a photo of the item (before you enter the code)');
+    fireEvent.change(input, { target: { files: [new File([new Uint8Array(10)], 'x.pdf', { type: 'application/pdf' })] } });
+    expect(await screen.findByText(/x\.pdf cannot be used/)).toBeTruthy();
+    fireEvent.change(input, { target: { files: [new File([new Uint8Array(10)], 'item.jpg', { type: 'image/jpeg' })] } });
+    await waitFor(() => expect(be.called('POST /orders/o-1/handover-photos')).toHaveLength(1));
+  });
+
   it('FR-DLV-06 the seller enters the code only after the handover, sees the attempts left, and a wrong code says how many remain', async () => {
     const be = backend({
       'POST /orders/o-1/handover-code': [

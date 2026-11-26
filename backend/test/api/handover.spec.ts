@@ -1,6 +1,9 @@
 import { randomInt, randomUUID } from 'crypto';
 import { DataSource } from 'typeorm';
 import { CLOCK } from '../../src/kernel/clock';
+import { TbConfig } from '../../src/kernel/config/config';
+import { TB_CONFIG } from '../../src/kernel/config/config.provider';
+import { deviceDigest, deviceLast4 } from '../../src/kernel/device-identifier';
 import { CONFIG_PORT } from '../../src/kernel/config-port';
 import { OutboxDispatcher } from '../../src/kernel/events/outbox-dispatcher';
 import { REDIS } from '../../src/kernel/redis.provider';
@@ -68,7 +71,12 @@ describe('meetup handover', () => {
       expect({ path, status: r.status }).toEqual({ path, status });
       return (await r.json()) as T;
     };
-    return { userId, call, json };
+    const upload = (path: string, bytes: Buffer, type: string) => {
+      const form = new FormData();
+      form.set('file', new Blob([new Uint8Array(bytes)], { type }), 'photo');
+      return fetch(t.url(path), { method: 'POST', headers: { ...fx.headers(sid, userId, 'user'), 'x-forwarded-for': ip }, body: form });
+    };
+    return { userId, call, json, upload };
   }
   type View = {
     status: string; role: string; dueAt: string; code: string | null; attemptsLeft: number | null;
@@ -76,17 +84,18 @@ describe('meetup handover', () => {
   };
 
   /** A self-pickup order paid as a confirmed payment leaves it, with Unit 2's orders.order.paid delivered. */
-  async function paidOrder(o: { fulfilment?: 'self_pickup' | 'courier'; dueIn?: string } = {}) {
+  async function paidOrder(o: { fulfilment?: 'self_pickup' | 'courier'; dueIn?: string; serial?: string } = {}) {
     const buyer = await member({ lat: BASE.lat + 0.006, lng: BASE.lng - 0.004 });
     const seller = await member({ lat: BASE.lat - 0.004, lng: BASE.lng + 0.006 });
     const fulfilment = o.fulfilment ?? 'self_pickup';
     const [{ id, due }] = await fx.query<{ id: string; due: Date }>(
       `INSERT INTO orders.orders (kind, listing_id, item_kind, buyer_id, seller_id, quantity, unit_price, item_price, fulfilment, delivery_quote_id, delivery_fee, total,
           listing_snapshot, commission_bps, delivery_margin_bps, params_version, payment_due_at, status, paid_at, fulfilment_step, fulfilment_due_at)
-       VALUES ('fixed_price', $1, 'physical', $2, $3, 1, 1000000, 1000000, $4, $5, $6, $7, '{"title":"Item"}', 500, 1000, 1, now(), 'paid', now(), $8, now() + $9::interval)
+       VALUES ('fixed_price', $1, 'physical', $2, $3, 1, 1000000, 1000000, $4, $5, $6, $7, $10::jsonb, 500, 1000, 1, now(), 'paid', now(), $8, now() + $9::interval)
        RETURNING id, fulfilment_due_at AS due`,
       [randomUUID(), buyer.userId, seller.userId, fulfilment, fulfilment === 'courier' ? randomUUID() : null, fulfilment === 'courier' ? 15000 : 0,
-       fulfilment === 'courier' ? 1015000 : 1000000, fulfilment === 'courier' ? 'courier_pickup' : 'meetup_handover', o.dueIn ?? '7 days'],
+       fulfilment === 'courier' ? 1015000 : 1000000, fulfilment === 'courier' ? 'courier_pickup' : 'meetup_handover', o.dueIn ?? '7 days',
+       JSON.stringify(o.serial ? { title: 'Item', serialDigest: deviceDigest(t.app.get<TbConfig>(TB_CONFIG).secrets.handoverKey.reveal(), o.serial).toString('hex'), serialLast4: deviceLast4(o.serial) } : { title: 'Item' })],
     );
     await fx.query(`INSERT INTO payments.attempts (purpose, order_id, payer_id, provider, amount, status, expires_at, confirmed_at) VALUES ('order', $1, $2, 'bkash', 1000000, 'succeeded', now(), now())`, [id, buyer.userId]);
     await fx.query(`INSERT INTO orders.escrows (order_id, release_policy, amount_collected) VALUES ($1, 'standard', 1000000)`, [id]);
@@ -184,6 +193,48 @@ describe('meetup handover', () => {
     expect((await o.buyer.call('POST', `/orders/${o.id}/meetup-proposals`, { pointId: points[0], placeName: 'Cafe', meetAt: inHours(7) })).status).toBe(400);
     expect((await o.buyer.call('POST', `/orders/${o.id}/meetup-proposals`, { meetAt: inHours(7) })).status).toBe(400);
     expect((await o.buyer.call('POST', `/orders/${o.id}/meetup-proposals`, { placeName: 'Abroad', placeLat: 40, placeLng: 91, meetAt: inHours(7) })).status).toBe(400);
+  });
+
+  it('FR-DLV-06 U10-23 an item with a device identifier: the buyer\'s code is withheld until the device he types matches the listing; wrong tries are counted and locked; only the buyer checks; no number is kept', async () => {
+    const o = await paidOrder({ serial: '35-209900 176148 1' });
+    type View = { code: string | null; deviceCheck: { required: boolean; matched: boolean; last4: string; attemptsLeft: number } | null };
+    const view = async (who: { call: (m: string, p: string) => Promise<Response> }) => (await (await who.call('GET', `/orders/${o.id}/handover`)).json()) as View;
+    const before = await view(o.buyer);
+    expect(before).toMatchObject({ code: null, deviceCheck: { required: true, matched: false, last4: '1481', attemptsLeft: 5 } });
+    expect((await view(o.seller)).deviceCheck).toBeNull(); // the seller is not asked
+    expect(await reason(await o.seller.call('POST', `/orders/${o.id}/device-check`, { value: '352099001761481' }))).toMatchObject({ reason: 'buyer-only' });
+    // a wrong number, then the right one (spaces and dashes do not matter)
+    expect(await (await o.buyer.call('POST', `/orders/${o.id}/device-check`, { value: '352099001761480' })).json()).toEqual({ matched: false, attemptsLeft: 4 });
+    expect((await view(o.buyer)).code).toBeNull();
+    expect(await (await o.buyer.call('POST', `/orders/${o.id}/device-check`, { value: '35 2099 0017 61481' })).json()).toEqual({ matched: true, attemptsLeft: 4 });
+    const after = await view(o.buyer);
+    expect(after.code).toMatch(/^[0-9]{6}$/);
+    expect(after.deviceCheck).toMatchObject({ matched: true });
+    // only the result is kept, never the number
+    expect((await fx.query<{ matched: boolean }>(`SELECT matched FROM delivery.device_checks WHERE order_id = $1 ORDER BY id`, [o.id])).map((r) => r.matched)).toEqual([false, true]);
+    // an item without an identifier needs no check; five wrong tries lock the check
+    const plain = await paidOrder();
+    expect(await reason(await plain.buyer.call('POST', `/orders/${plain.id}/device-check`, { value: '352099001761481' }))).toMatchObject({ reason: 'no-device' });
+    const locked = await paidOrder({ serial: 'SN12345678' });
+    for (let i = 0; i < 5; i++) expect((await locked.buyer.call('POST', `/orders/${locked.id}/device-check`, { value: 'WRONG12345' })).status).toBe(200);
+    expect(await reason(await locked.buyer.call('POST', `/orders/${locked.id}/device-check`, { value: 'SN12345678' }))).toMatchObject({ reason: 'locked' });
+  });
+
+  it('FR-DLV-06 U10-23 the seller adds photos of the item before the code: images only, at most three, the seller only, while the handover is open; the seller\'s view counts them', async () => {
+    const o = await paidOrder();
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+    const sharp = require('sharp') as typeof import('sharp').default;
+    const png = await sharp({ create: { width: 200, height: 150, channels: 3, background: '#a77' } }).png().toBuffer();
+    const send = (who: { upload: (path: string, bytes: Buffer, type: string) => Promise<Response> }, bytes = png, type = 'image/png') => who.upload(`/orders/${o.id}/handover-photos`, bytes, type);
+    expect(await (await send(o.seller)).json()).toEqual({ count: 1 });
+    expect(await reason(await send(o.buyer))).toMatchObject({ reason: 'seller-only' });
+    expect(await reason(await send(o.seller, Buffer.from('%PDF-1.4'), 'application/pdf'))).toMatchObject({ reason: 'type' });
+    await send(o.seller); await send(o.seller);
+    expect(await reason(await send(o.seller))).toMatchObject({ reason: 'too-many' });
+    const view = (await (await o.seller.call('GET', `/orders/${o.id}/handover`)).json()) as { photoCount: number | null };
+    expect(view.photoCount).toBe(3);
+    expect(((await (await o.buyer.call('GET', `/orders/${o.id}/handover`)).json()) as { photoCount: number | null }).photoCount).toBeNull();
+    expect((await fx.query(`SELECT 1 FROM delivery.handover_photos WHERE order_id = $1 AND storage_key IS NOT NULL`, [o.id])).length).toBe(3);
   });
 
   it('FR-DLV-06 the seller\'s correct entry of the buyer\'s code completes the handover and is the delivery event, in one transaction', async () => {

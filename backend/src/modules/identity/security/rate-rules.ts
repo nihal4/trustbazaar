@@ -46,6 +46,9 @@ export const RATE_RULES: Record<string, Limit[]> = {
   'delivery-quote': [{ per: 'principal', limit: 30, windowSeconds: 60 * 60 }],
   // Unit 4 (DV-28): handover-code entries per seller per minute (U4-03); CP-45 also locks the code after 5 wrong ones.
   'handover-code': [{ per: 'principal', limit: 10, windowSeconds: 60 }],
+  // U10-23: a file sent to a dispute (a photo or a video of up to 50 MB is buffered before it is checked) and the seller's photos at a handover
+  'dispute-evidence': [{ per: 'principal', limit: 30, windowSeconds: 60 * 60 }],
+  'handover-photo': [{ per: 'principal', limit: 20, windowSeconds: 60 * 60 }],
   // CP-35, read from ConfigPort; 60 is only a fallback should the parameter be missing.
   search: [{ per: 'ip', limit: 60, windowSeconds: 60, cp: { code: 'CP-35', field: 'search_per_min' } }],
 };

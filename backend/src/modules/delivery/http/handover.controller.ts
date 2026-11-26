@@ -1,9 +1,10 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { RateLimit, SignedIn, Staff } from '../../../kernel/http/policies';
 import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
 import { HandoverService } from '../services/handover.service';
-import { CodeDto, ProposalDto, ReasonDto } from './delivery.dto';
+import { CodeDto, DeviceCheckDto, ProposalDto, ReasonDto } from './delivery.dto';
 
 // Meetup handover (docs/design/04_delivery.pdf section 3.1; FR-DLV-03 to FR-DLV-06; U4-03). "Buyer or seller" is
 // SignedIn here plus HandoverService's check, which answers not-found to anyone else (SEC-SDL-09). The code appears
@@ -55,6 +56,25 @@ export class HandoverController {
   @HttpCode(200)
   withdraw(@Id('id') id: string, @Id('pid') pid: string, @CurrentPrincipal() p: Principal) {
     return this.handovers.withdraw(userOf(p).userId, id, pid);
+  }
+
+  /** U10-23: the buyer checks the device's identifier against the listing's before the code is shown (an item with an identifier only). */
+  @SignedIn()
+  @RateLimit('handover-code')
+  @Post('orders/:id/device-check')
+  @HttpCode(200)
+  deviceCheck(@Id('id') id: string, @Body() dto: DeviceCheckDto, @CurrentPrincipal() p: Principal) {
+    return this.handovers.checkDevice(userOf(p).userId, id, dto.value);
+  }
+
+  /** U10-23: the seller's photo of the item at the meetup (an image, at most 10 MB), evidence for a later dispute. */
+  @SignedIn()
+  @RateLimit('handover-photo')
+  @Post('orders/:id/handover-photos')
+  @HttpCode(201)
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 10_485_760, files: 1, fields: 0, parts: 1 } }))
+  photo(@Id('id') id: string, @UploadedFile() file: { buffer: Buffer; mimetype: string } | undefined, @CurrentPrincipal() p: Principal) {
+    return this.handovers.addPhoto(userOf(p).userId, id, file);
   }
 
   /** FR-DLV-06: the seller enters the buyer's code; a correct code is the delivery event. DV-28: 10 a minute. */

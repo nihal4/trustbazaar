@@ -1,6 +1,10 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { DataSource, EntityManager, QueryFailedError } from 'typeorm';
+import { TbConfig } from '../../../kernel/config/config';
+import { TB_CONFIG } from '../../../kernel/config/config.provider';
 import { CONFIG_PORT, ConfigPort } from '../../../kernel/config-port';
+import { deviceDigest } from '../../../kernel/device-identifier';
+import { SanctionService } from './sanction.service';
 import type { OutboxEvent } from '../../../kernel/events/event-bus';
 import { disputeOfKey, recordMessage } from './dispute-messages';
 import { Problem } from '../../../kernel/http/problems';
@@ -73,6 +77,8 @@ export class DisputeCaseService implements OnModuleInit {
     @Inject(AUDIT_SERVICE) private readonly audit: AuditServicePort,
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
     @Inject(GAME_ACCOUNT_QUERIES) private readonly games: GameAccountQueries,
+    @Inject(TB_CONFIG) private readonly config: TbConfig,
+    private readonly sanctions: SanctionService,
   ) {}
 
   onModuleInit(): void {
@@ -125,7 +131,20 @@ export class DisputeCaseService implements OnModuleInit {
     const iso = (x: Date | null) => (x ? x.toISOString() : null);
     const thread = await this.chat.threadFor(order.listing.id, d.buyer_id);
     const game = d.item_kind === 'game_account' ? await this.gameEvidence(d.order_id, staff, reason, ctx, who) : null;
+    // U10-23 (FR-TNS-10): the seller's return check, whether an operator may close a stuck return, and which buyer findings may still be recorded
+    const checks = (await this.db.query(`SELECT matched, at FROM disputes.return_checks WHERE dispute_id = $1 ORDER BY id`, [disputeId])) as { matched: boolean; at: Date }[];
+    const [finding] = (await this.db.query(`SELECT finding, reason, at FROM disputes.buyer_findings WHERE dispute_id = $1`, [disputeId])) as { finding: string; reason: string; at: Date }[];
+    const [{ outcome }] = (await this.db.query(`SELECT outcome FROM disputes.disputes WHERE id = $1`, [disputeId])) as { outcome: string | null }[];
+    const mismatch = checks.some((c) => !c.matched);
+    const overdue = d.decision_target_at !== null && d.decision_target_at.getTime() < Date.now();
+    const findings: string[] = d.status !== 'decided' || d.item_kind === 'game_account' || finding ? [] : [...(outcome === 'release' ? ['false_claim'] : []), ...(mismatch ? ['swap'] : [])];
     return {
+      returnCheck: {
+        checks: checks.map((c) => ({ matched: c.matched, at: c.at.toISOString() })),
+        canResolve: d.status === 'awaiting_return' && (mismatch || overdue),
+        finding: finding ? { finding: finding.finding, reason: finding.reason, at: finding.at.toISOString() } : null,
+        findings,
+      },
       dispute: {
         id: d.id, type: d.type, status: d.status, description: d.description, openedAt: d.opened_at.toISOString(), sellerDueAt: d.seller_due_at.toISOString(),
         infoDueAt: iso(d.info_due_at), reviewStartedAt: iso(d.review_started_at), decisionTargetAt: iso(d.decision_target_at),
@@ -144,6 +163,8 @@ export class DisputeCaseService implements OnModuleInit {
       chat: thread ? { threadId: thread, path: `/staff/cases/dispute/${disputeId}/threads/${thread}` } : null,
       history: history.map((h) => ({ from: h.from_status, to: h.to_status, actor: h.actor, reason: h.reason, at: h.at.toISOString() })),
       statements: statements.map((s) => ({ party: s.party, text: s.text, at: s.at.toISOString() })),
+      // U10-23: the seller's photos of the item at the meetup, with the time the server received them (null link once purged)
+      handoverPhotos: await this.handoverPhotos(d.order_id, staff, reason, ctx),
       evidence: await Promise.all(evidence.map(async (e) => ({
         id: e.id, party: e.party, mime: e.mime, size: e.byte_size, at: e.at.toISOString(), link: e.storage_key ? await this.vault.signedLink(e.storage_key, staff, reason, ctx) : null,
       }))),
@@ -209,6 +230,11 @@ export class DisputeCaseService implements OnModuleInit {
     const d = await this.assigned(staffId, disputeId);
     if (d.status !== 'under_review') throw new Problem('validation-failed', { errors: [{ field: 'dispute', reason: 'not-in-this-state' }] });
     this.validate(d, dec);
+    // U10-23 (Decisions log): a meetup order whose code was entered is refunded only after the item is back (a swap or a self-inflicted fault then gains nothing)
+    if (d.item_kind !== 'game_account' && (dec.outcome === 'full_refund' || dec.outcome === 'partial_refund')) {
+      const order = await this.orders.getOrderForParty(d.order_id, d.buyer_id);
+      if (order.fulfilment === 'self_pickup' && order.deliveryEventAt !== null) throw new Problem('validation-failed', { errors: [{ field: 'outcome', reason: 'return-first' }] });
+    }
     if (BigInt(d.amount_collected) >= FOUR_EYES_POISHA) {
       const approval = await this.approvals.propose({
         action: 'dispute.outcome_20000', targetType: 'dispute', targetId: disputeId, reason: dec.reason, requiredRole: 'operator', byStaffId: staffId,
@@ -225,8 +251,105 @@ export class DisputeCaseService implements OnModuleInit {
     const [d] = (await this.db.query(`SELECT id, order_id, seller_id, status FROM disputes.disputes WHERE id = $1`, [disputeId])) as { id: string; order_id: string; seller_id: string; status: string }[];
     if (!d || d.seller_id !== sellerId) throw new Problem('not-found');
     if (d.status !== 'awaiting_return') throw new Problem('validation-failed', { errors: [{ field: 'dispute', reason: 'not-in-this-state' }] });
+    // U10-23 (FR-TNS-10): an item with a device identifier is taken back only after the seller has checked it is the one sold
+    if (await this.orders.deviceIdentifier(d.order_id)) {
+      const [ok] = (await this.db.query(`SELECT 1 FROM disputes.return_checks WHERE dispute_id = $1 AND matched AND NOT EXISTS (SELECT 1 FROM disputes.return_checks x WHERE x.dispute_id = $1 AND NOT x.matched)`, [d.id])) as unknown[];
+      if (!ok) throw new Problem('validation-failed', { errors: [{ field: 'dispute', reason: 'return-check-needed' }] });
+    }
     await this.completeReturn(d.id, d.order_id);
     return { status: 'decided' };
+  }
+
+  /**
+   * POST /disputes/{id}/return-check (U10-23, FR-TNS-10): the seller types the identifier of the item taken back; a mismatch is kept, opens a flagged-activity
+   * signal for the operators, and blocks the seller's own return-received (only an operator can then close the dispute, see resolveReturn). Only the result is kept.
+   */
+  async returnCheck(sellerId: string, disputeId: string, typed: string): Promise<{ matched: boolean }> {
+    const [d] = (await this.db.query(`SELECT id, order_id, seller_id, status FROM disputes.disputes WHERE id = $1`, [disputeId])) as { id: string; order_id: string; seller_id: string; status: string }[];
+    if (!d || d.seller_id !== sellerId) throw new Problem('not-found');
+    if (d.status !== 'awaiting_return') throw new Problem('validation-failed', { errors: [{ field: 'dispute', reason: 'not-in-this-state' }] });
+    const id = await this.orders.deviceIdentifier(d.order_id);
+    if (!id) throw new Problem('validation-failed', { errors: [{ field: 'value', reason: 'no-device' }] });
+    // a mismatch is final: the seller cannot try other numbers until one fits; only an operator closes the dispute from there
+    const [past] = (await this.db.query(`SELECT 1 FROM disputes.return_checks WHERE dispute_id = $1`, [d.id])) as unknown[];
+    if (past) throw new Problem('validation-failed', { errors: [{ field: 'value', reason: 'already-checked' }] });
+    const matched = deviceDigest(this.config.secrets.handoverKey.reveal(), typed).toString('hex') === id.digest;
+    await this.db.query(`INSERT INTO disputes.return_checks (dispute_id, user_id, matched) VALUES ($1, $2, $3)`, [d.id, sellerId, matched]);
+    if (!matched) {
+      await this.db.query(
+        `INSERT INTO trust.signals (kind, source_ref, subject_user, detail) VALUES ('return_mismatch', $1, $2, $3) ON CONFLICT (kind, source_ref) DO NOTHING`,
+        [d.id, sellerId, JSON.stringify({ disputeId: d.id, orderId: d.order_id })],
+      );
+    }
+    return { matched };
+  }
+
+  /**
+   * POST /staff/disputes/{id}/resolve-return (U10-23, FR-TNS-10): the way out of `awaiting_return` for an operator, so a refund can never hang on the seller:
+   * allowed when the seller's check found a mismatch, or the decision target has passed. `refund` completes the return (the buyer is refunded);
+   * `release` rejects it (the returned item was not the item sold: the seller is paid). The assigned operator, with a reason; audited.
+   */
+  async resolveReturn(staffId: string, disputeId: string, outcome: 'refund' | 'release', reason: string, ctx: CallContext = {}): Promise<{ status: 'decided' }> {
+    const text = reason.normalize('NFC').trim();
+    if (text.length < 20) throw new Problem('validation-failed', { errors: [{ field: 'reason', reason: 'too-short' }] });
+    const d = await this.assigned(staffId, disputeId);
+    if (d.status !== 'awaiting_return') throw new Problem('validation-failed', { errors: [{ field: 'dispute', reason: 'not-in-this-state' }] });
+    const [bad] = (await this.db.query(`SELECT 1 FROM disputes.return_checks WHERE dispute_id = $1 AND NOT matched`, [disputeId])) as unknown[];
+    const overdue = d.decision_target_at !== null && d.decision_target_at.getTime() < Date.now();
+    if (!bad && !overdue) throw new Problem('validation-failed', { errors: [{ field: 'dispute', reason: 'return-not-stuck' }] });
+    if (outcome === 'refund') {
+      await this.completeReturn(d.id, d.order_id);
+    } else {
+      await this.db.transaction(async (m) => {
+        await this.orders.lockForFulfilment(d.order_id, m); // DC-14
+        await m.query(`SELECT disputes.return_rejected($1, $2)`, [d.id, staffId]);
+        await this.escrow.applyDisputeOutcome(d.order_id, d.id, { kind: 'release' }, m);
+      });
+    }
+    await this.audit.record({ actorType: 'staff', actorId: staffId, action: 'disputes.dispute.return_resolved', objectType: 'dispute', objectId: disputeId, after: { outcome }, reason: text }, this.db.manager);
+    for (const user of [d.buyer_id, d.seller_id]) await recordMessage(this.db, disputeId, user, outcome === 'refund' ? 'dispute.return_refunded' : 'dispute.return_rejected', {}, `dispute:${disputeId}:return-resolved`);
+    return { status: 'decided' };
+  }
+
+  /**
+   * POST /staff/disputes/{id}/buyer-finding (U10-23, FR-TNS-10): an operator's finding that the buyer acted in bad faith. Only on a decided dispute of this
+   * operator's case, once a dispute, with a reason; never for losing a dispute alone. `false_claim` needs the seller to have been paid in full (outcome
+   * release); `swap` needs a return check that found the returned item was not the one sold. A finding gives a buyer strike; at two in 365 days, or
+   * at once for a swap, buying and bidding are suspended pending review (a swap also goes to the operators as a blacklist review signal, FR-TNS-06).
+   */
+  async buyerFinding(staffId: string, disputeId: string, finding: 'false_claim' | 'swap', reason: string, ctx: CallContext = {}): Promise<{ strike: boolean; suspended: boolean }> {
+    const text = reason.normalize('NFC').trim();
+    if (text.length < 20) throw new Problem('validation-failed', { errors: [{ field: 'reason', reason: 'too-short' }] });
+    const d = await this.assigned(staffId, disputeId);
+    if (d.status !== 'decided' || d.item_kind === 'game_account') throw new Problem('validation-failed', { errors: [{ field: 'dispute', reason: 'not-in-this-state' }] });
+    const [out] = (await this.db.query(`SELECT outcome, last_reason FROM disputes.disputes WHERE id = $1`, [disputeId])) as { outcome: string | null; last_reason: string | null }[];
+    if (finding === 'false_claim' && out.outcome !== 'release') throw new Problem('validation-failed', { errors: [{ field: 'finding', reason: 'seller-not-paid-in-full' }] });
+    if (finding === 'swap') {
+      const [bad] = (await this.db.query(`SELECT 1 FROM disputes.return_checks WHERE dispute_id = $1 AND NOT matched`, [disputeId])) as unknown[];
+      if (!bad) throw new Problem('validation-failed', { errors: [{ field: 'finding', reason: 'no-return-mismatch' }] });
+    }
+    await this.staff.assertNoConflict(staffId, [d.buyer_id]);
+    let suspended = false;
+    try {
+      await this.db.transaction(async (m) => {
+        await m.query(`INSERT INTO disputes.buyer_findings (dispute_id, finding, staff_id, reason) VALUES ($1, $2, $3, $4)`, [disputeId, finding, staffId, text]);
+        const [{ s }] = (await m.query(`SELECT trust.record_buyer_strike($1, $2::trust.strike_reason, $3, interval '365 days', 2) AS s`, [d.buyer_id, finding === 'swap' ? 'buyer_swap' : 'buyer_false_claim', d.order_id])) as { s: boolean }[];
+        suspended = s;
+        if (finding === 'swap') {
+          await m.query(`INSERT INTO trust.signals (kind, source_ref, subject_user, detail) VALUES ('blacklist_review', $1, $2, $3) ON CONFLICT (kind, source_ref) DO NOTHING`, [disputeId, d.buyer_id, JSON.stringify({ disputeId, orderId: d.order_id, finding })]);
+        }
+      });
+    } catch (err) {
+      if (err instanceof QueryFailedError && (err.driverError as { code?: string }).code === '23505') throw new Problem('validation-failed', { errors: [{ field: 'dispute', reason: 'finding-exists' }] });
+      throw err;
+    }
+    if (finding === 'swap' && !suspended) {
+      await this.sanctions.apply(staffId, d.buyer_id, { kind: 'buying_suspended', reason: `Buyer finding (swap) on dispute ${disputeId}: ${text}`.slice(0, 500), related: { type: 'dispute', id: disputeId } }, ctx).catch(() => undefined);
+      suspended = true;
+    }
+    await this.audit.record({ actorType: 'staff', actorId: staffId, action: 'disputes.dispute.buyer_finding', objectType: 'dispute', objectId: disputeId, after: { finding, suspended }, reason: text }, this.db.manager);
+    await recordMessage(this.db, disputeId, d.buyer_id, 'dispute.buyer_finding', { finding }, `dispute:${disputeId}:buyer-finding`);
+    return { strike: true, suspended };
   }
 
   /** delivery.return.delivered (Unit 4): the item is back with the seller; ignored unless a dispute awaits it. */
@@ -326,6 +449,11 @@ export class DisputeCaseService implements OnModuleInit {
       await m.query(`INSERT INTO disputes.outbox (event_type, aggregate_id, payload) VALUES ('disputes.dispute.decided', $1, $2)`,
         [disputeId, JSON.stringify({ orderId, outcome: 'refund_after_return', status: 'decided' })]);
     });
+  }
+
+  private async handoverPhotos(orderId: string, staff: Principal, reason: string | undefined, ctx: CallContext) {
+    const rows = (await this.db.query(`SELECT id, storage_key, at FROM delivery.handover_photos WHERE order_id = $1 ORDER BY at`, [orderId])) as { id: string; storage_key: string | null; at: Date }[];
+    return Promise.all(rows.map(async (p) => ({ id: p.id, at: p.at.toISOString(), link: p.storage_key ? await this.vault.signedLink(p.storage_key, staff, reason, ctx) : null })));
   }
 
   private async assigned(staffId: string, disputeId: string): Promise<CaseRow> {

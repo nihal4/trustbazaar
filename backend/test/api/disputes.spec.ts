@@ -256,4 +256,11 @@ describe('disputes: opening, statements, evidence, withdrawal', () => {
     const part = await o.buyer.call('GET', url.replace(/^https?:\/\/[^/]+/, ''), undefined, { range: 'bytes=0-99' });
     expect([part.status, part.headers.get('content-range'), part.headers.get('content-disposition'), (await part.arrayBuffer()).byteLength]).toEqual([206, 'bytes 0-99/5000', 'inline', 100]);
   });
+  it('SEC-ABU-01 U10-23 a file sent to a dispute is rate limited per user: after 30 an hour the route answers 429, whatever the file', async () => {
+    const o = await deliveredOrder(3, 'courier');
+    const { disputeId } = (await (await o.buyer.call('POST', `/orders/${o.id}/disputes`, { type: 'damaged', description: describeIt })).json()) as { disputeId: string };
+    const statuses: number[] = [];
+    for (let i = 0; i < 31; i++) statuses.push((await o.buyer.upload(`/disputes/${disputeId}/evidence`, Buffer.from('%PDF-1.4'), 'application/pdf')).status);
+    expect([statuses[0], statuses[29], statuses[30]]).toEqual([400, 400, 429]);
+  });
 });
