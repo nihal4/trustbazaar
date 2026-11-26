@@ -31,6 +31,13 @@ describe('the check before the password', () => {
     expect(asked).toEqual(['examle.com', 'example.com']);                           // one lookup for each domain
   });
 
+  it('FR-ACC-13 while no mail is really sent (log mode) the reserved .test domain passes without a lookup; with real mail it is looked up like any other', async () => {
+    const { r, asked } = resolver({ 'trustbazaar.test': 'no' });
+    expect(await new LoginCheckService(r, memory(), { emailMode: 'log' }).check('seller@trustbazaar.test')).toEqual({ ok: true });
+    expect(asked).toEqual([]);
+    expect(await new LoginCheckService(r, memory(), { emailMode: 'smtp' }).check('seller@trustbazaar.test')).toEqual({ ok: false, reason: 'domain' });
+  });
+
   it('FR-ACC-13 a lookup that cannot be answered lets the sign-in go on, and is not kept', async () => {
     const { r, asked } = resolver({});
     const c = new LoginCheckService(r, memory());

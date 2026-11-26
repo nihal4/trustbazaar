@@ -2,6 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { domainToASCII } from 'url';
 import { promises as dns } from 'dns';
 import type Redis from 'ioredis';
+import { TbConfig } from '../../../kernel/config/config';
+import { TB_CONFIG } from '../../../kernel/config/config.provider';
 import { REDIS } from '../../../kernel/redis.provider';
 import { normaliseLogin } from './signin.service';
 
@@ -46,6 +48,7 @@ export class LoginCheckService {
   constructor(
     @Inject(DOMAIN_RESOLVER) private readonly resolver: DomainResolver,
     @Inject(REDIS) private readonly redis: Redis,
+    @Inject(TB_CONFIG) private readonly config?: Pick<TbConfig, 'emailMode'>,
   ) {}
 
   async check(login: string): Promise<LoginCheck> {
@@ -56,6 +59,9 @@ export class LoginCheckService {
     const labels = domain.split('.');
     if (!domain || labels.length < 2 || !/^[a-z0-9.-]+$/.test(domain) || !/^[a-z]{2,}$/.test(labels[labels.length - 1])
       || labels.some((l) => l.length === 0 || l.length > 63 || l.startsWith('-') || l.endsWith('-'))) return { ok: false, reason: 'format' };
+    // while no mail is really sent (EMAIL_MODE=log: the development and demonstration set-ups), whether the domain can receive mail does not matter, and
+    // the reserved .test domain the demonstration accounts use never could
+    if (this.config?.emailMode === 'log' && domain.endsWith('.test')) return { ok: true };
     const key = `dns:mail-domain:${domain}`;
     let state = (await this.redis.get(key)) as DomainState | null;
     if (!state) {
