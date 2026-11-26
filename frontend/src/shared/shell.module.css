@@ -418,3 +418,33 @@
 
 /* the "test mode" strip on payment screens: a ruled band with a warning line above and below, not a filled box */
 .notice { margin: var(--tb-space-3) 0; padding: var(--tb-space-2) 0; background: none; border: 0; border-block: 1px solid var(--tb-warning-border); border-radius: 0; }
+
+/* U10-25: the fresh page of sign-in and registration: the logo and the language switch in the corners, the page in the middle, nothing else */
+.bare {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--tb-bg);
+  color: var(--tb-text);
+}
+
+.bareTop {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem clamp(1rem, 4vw, 3rem);
+}
+
+.bareMain {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 0.5rem 1rem 2.5rem;
+}
+
+.bareMain:focus { outline: none; }

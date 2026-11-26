@@ -11,6 +11,12 @@ afterEach(cleanup);
 
 const type = (label: string | RegExp, value: string) => fireEvent.change(screen.getByLabelText(label), { target: { value } });
 const click = (name: string | RegExp) => fireEvent.click(screen.getByRole('button', { name }));
+/** sign-in is two steps: the number or e-mail first, then (after Continue or Enter) the password */
+const enterLogin = async (value: string, label: string | RegExp = 'Mobile number or e-mail', cont = 'Continue', password: string | RegExp = 'Password') => {
+  type(label, value);
+  fireEvent.click(screen.getByRole('button', { name: cont }));
+  await screen.findByLabelText(password);
+};
 const tick = (cb: () => void) => act(async () => { cb(); await Promise.resolve(); });
 
 describe('register', () => {
@@ -152,7 +158,7 @@ describe('sign in', () => {
     });
     renderApp('/signin', be);
     await screen.findByRole('heading', { name: 'Sign in' });
-    type('Mobile number or e-mail', 'nobody@example.com');
+    await enterLogin('nobody@example.com');
     type('Password', 'whatever');
     click('Sign in');
     const first = (await screen.findByRole('alert')).textContent;
@@ -169,7 +175,7 @@ describe('sign in', () => {
     });
     renderApp('/signin', be);
     await screen.findByRole('heading', { name: 'Sign in' });
-    type('Mobile number or e-mail', 'rahim@example.com');
+    await enterLogin('rahim@example.com');
     type('Password', 'correct horse');
     click('Sign in');
     await waitFor(() => expect(be.called('POST /auth/signin')).toHaveLength(2));
@@ -186,7 +192,7 @@ describe('sign in', () => {
     const be = fakeBackend({ 'POST /auth/signin': problem(429, 'rate-limited', {}, { 'Retry-After': '42' }) });
     renderApp('/signin', be, 'bn');
     await screen.findByRole('heading', { name: 'সাইন ইন' });
-    type('মোবাইল নম্বর বা ই-মেইল', '01712345678');
+    await enterLogin('01712345678', 'মোবাইল নম্বর বা ই-মেইল', 'এগিয়ে যান', 'পাসওয়ার্ড');
     type('পাসওয়ার্ড', 'whatever');
     fireEvent.click(screen.getByRole('button', { name: 'সাইন ইন' }));
     const button = await screen.findByRole('button', { name: /৪২ সেকেন্ড পরে/ });
@@ -200,7 +206,7 @@ describe('sign in', () => {
     });
     const doc = renderApp('/signin?next=%2Faccount%2Fsecurity', be);
     await screen.findByRole('heading', { name: 'Sign in' });
-    type('Mobile number or e-mail', '+880 1712-345678');
+    await enterLogin('+880 1712-345678');
     type('Password', 'correct horse battery staple');
     click('Sign in');
     await screen.findByRole('heading', { name: 'Enter your second code' });
@@ -217,7 +223,7 @@ describe('sign in', () => {
     const be = fakeBackend({ 'POST /auth/signin': noContent() });
     const doc = renderApp(`/signin?next=${encodeURIComponent('//evil.example/phish')}`, be);
     await screen.findByRole('heading', { name: 'Sign in' });
-    type('Mobile number or e-mail', 'rahim@example.com');
+    await enterLogin('rahim@example.com');
     type('Password', 'x');
     click('Sign in');
     await waitFor(() => expect(doc.router.state.location.pathname).toBe('/account'));
@@ -385,11 +391,44 @@ describe('account and security', () => {
 describe('sign-in and registration layout', () => {
   it('SEC-ABU-02 sign-in says, under its button, that it is protected by a check in the browser without puzzles (AC-ACC-2)', async () => {
     renderApp('/signin?next=%2Forders', fakeBackend({}));
-    const button = await screen.findByRole('button', { name: 'Sign in' });
+    const button = await screen.findByRole('button', { name: 'Continue' });
     const note = screen.getByText('Protected by a short check in your browser. No puzzles.');
     expect(button.compareDocumentPosition(note) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Create an account' }).getAttribute('href')).toBe(`/register?next=${encodeURIComponent('/orders')}`);
     expect(screen.getByText('Your money waits with us')).toBeTruthy();
+  });
+
+  it('FR-ACC-05 sign-in is one fresh page: no header, search, notices or footer; the logo and the language switch only', async () => {
+    renderApp('/signin', fakeBackend({}));
+    await screen.findByRole('heading', { name: 'Sign in' });
+    expect(screen.queryByRole('banner')).toBeNull();
+    expect(screen.queryByRole('contentinfo')).toBeNull();
+    expect(screen.queryByRole('search')).toBeNull();
+    expect(screen.queryByRole('textbox', { name: /Search/ })).toBeNull();
+    expect(screen.queryByText('Sell an item')).toBeNull();
+    expect(screen.getByRole('link', { name: /TrustBazaar|Home/i })).toBeTruthy();
+  });
+
+  it('FR-ACC-05 the password asks for itself after the number or e-mail; Change goes back; the eye shows and hides what was typed', async () => {
+    renderApp('/signin', fakeBackend({}));
+    await screen.findByRole('heading', { name: 'Sign in' });
+    expect(screen.queryByLabelText('Password')).toBeNull();                       // not before the first step
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    expect((await screen.findByRole('alert')).textContent).toBe('Enter your mobile number or e-mail address.');
+    await enterLogin('rahim@example.com');
+    expect(screen.getByText('rahim@example.com')).toBeTruthy();
+    const field = screen.getByLabelText('Password') as HTMLInputElement;
+    expect(field.type).toBe('password');
+    type('Password', 'correct horse');
+    const eye = screen.getByRole('button', { name: 'Show password' });
+    expect(eye.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(eye);
+    expect(field.type).toBe('text');
+    expect(field.value).toBe('correct horse');
+    expect(screen.getByRole('button', { name: 'Hide password' }).getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(screen.getByRole('button', { name: 'Change' }));
+    expect(((await screen.findByLabelText('Mobile number or e-mail')) as HTMLInputElement).value).toBe('rahim@example.com');
+    expect(screen.queryByLabelText('Password')).toBeNull();                        // the password is asked again, not kept
   });
 
   it('SEC-ABU-02 registration has the same note, and errors stand under their field (AC-ACC-2)', async () => {

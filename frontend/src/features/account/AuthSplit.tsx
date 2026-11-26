@@ -1,21 +1,19 @@
-// The split layout of sign-in and registration (U10-25, redesign v3): the form on the left on ruled fields; from 60rem a field of hairline squares on
-// the right (GridField) with the payment promise in one ruled cell at its foot. On phones it is the form only (the side is not displayed).
+// The fresh page of sign-in and registration (U10-25, redesign v3): the whole screen is the animated, pointer-aware field of hairline squares
+// (GridCanvas) and the form sits in the middle in one ruled card, with the payment promise in a ruled line under it. The page has no header, search,
+// notices or footer (shared/Shell.tsx, BARE_PATHS); the logo and the language switch are in its corners.
 import type { ReactNode } from 'react';
 import { useAccountT } from './common';
-import { GridField } from './GridField';
+import { GridCanvas } from './GridCanvas';
 import styles from './account.module.css';
 
 export function AuthSplit({ children }: { children: ReactNode }) {
   const { t } = useAccountT();
   return (
-    <div className={styles.split}>
-      <div className={styles.splitForm}>{children}</div>
-      <div className={styles.splitSide}>
-        <GridField />
-        <div className={styles.sideNote}>
-          <p className={styles.sideTitle}>{t('side.promise_title')}</p>
-          <p>{t('side.promise_text')}</p>
-        </div>
+    <div className={styles.stage}>
+      <GridCanvas />
+      <div className={styles.stageCard}>
+        {children}
+        <p className={styles.stageNote}><strong>{t('side.promise_title')}</strong> {t('side.promise_text')}</p>
       </div>
     </div>
   );

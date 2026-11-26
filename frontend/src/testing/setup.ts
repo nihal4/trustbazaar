@@ -7,3 +7,8 @@ if (typeof window !== 'undefined' && !window.matchMedia) {
     addEventListener: () => {}, removeEventListener: () => {}, dispatchEvent: () => false,
   }) as MediaQueryList;
 }
+
+// jsdom has no canvas: say so quietly (null, as a browser without canvas answers) instead of logging "Not implemented" for every page that draws one.
+if (typeof HTMLCanvasElement !== 'undefined') {
+  HTMLCanvasElement.prototype.getContext = (() => null) as unknown as HTMLCanvasElement['getContext'];
+}

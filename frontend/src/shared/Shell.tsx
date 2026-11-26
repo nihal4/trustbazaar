@@ -32,6 +32,9 @@ export interface ShellProps {
   exit?: { href: string; labelKey: string };
 }
 
+/** U10-25: sign-in, registration and the pages of a forgotten password or a link are one fresh page: no header, search, notices, footer or tab bar. */
+const BARE_PATHS = new Set(['/signin', '/register', '/reset', '/reset-password', '/verify-email']);
+
 export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps) {
   const { t } = useLanguage();
   const main = useRef<HTMLElement>(null);
@@ -47,6 +50,22 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
   // Phones get the tab bar instead of the header's links; decided once on the first render, so nothing jumps.
   const phone = useMediaQuery('(max-width: 47.99em)', false, { getInitialValueInEffect: false });
   const tabs = accountLinks && phone;
+  if (accountLinks && BARE_PATHS.has(pathname)) {
+    return (
+      <div className={styles.bare}>
+        <a className={styles.skip} href="#main">{t('shell.skip_to_content')}</a>
+        <div className={styles.bareTop}>
+          <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo onDark /></Link>
+          <LanguageSwitch />
+        </div>
+        <main id="main" ref={main} tabIndex={-1} className={styles.bareMain}>
+          <Suspense fallback={<p role="status">{t('shell.loading')}</p>}>
+            <Outlet />
+          </Suspense>
+        </main>
+      </div>
+    );
+  }
   return (
     <div className={styles.page}>
       <a className={styles.skip} href="#main">{t('shell.skip_to_content')}</a>

@@ -1,7 +1,8 @@
 // Form parts that keep the accessibility rules of section 7 in one place: every field has a visible
 // label; hints and errors are tied to the field; errors are also listed in a summary at the top,
 // which takes focus and links to each field.
-import { useEffect, useRef, type InputHTMLAttributes, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type InputHTMLAttributes, type ReactNode } from 'react';
+import { useLanguage } from './language/Language';
 import styles from './form.module.css';
 
 type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'id' | 'value' | 'onChange'>;
@@ -17,13 +18,35 @@ interface FieldProps extends InputProps {
 
 export function TextField({ id, label, value, onChange, hint, error, ...input }: FieldProps) {
   const described = [hint ? `${id}-hint` : '', error ? `${id}-error` : ''].filter(Boolean).join(' ') || undefined;
+  const isPassword = input.type === 'password';
   return (
     <div className={styles.field}>
       <label htmlFor={id}>{label}</label>
       {hint && <p id={`${id}-hint`} className={styles.hint}>{hint}</p>}
-      <input id={id} value={value} onChange={(e) => onChange(e.target.value)}
-        aria-invalid={error ? true : undefined} aria-describedby={described} {...input} />
+      {isPassword
+        ? <PasswordInput id={id} value={value} onChange={onChange} invalid={Boolean(error)} described={described} input={input} />
+        : <input id={id} value={value} onChange={(e) => onChange(e.target.value)}
+          aria-invalid={error ? true : undefined} aria-describedby={described} {...input} />}
       {error && <p id={`${id}-error`} className={styles.error}>{error}</p>}
+    </div>
+  );
+}
+
+/** A password field with an eye: the button shows or hides what was typed (U10-25); a toggle, not a link, with its state in aria-pressed. */
+function PasswordInput({ id, value, onChange, invalid, described, input }: { id: string; value: string; onChange: (v: string) => void; invalid: boolean; described?: string; input: InputProps }) {
+  const { t } = useLanguage();
+  const [shown, setShown] = useState(false);
+  return (
+    <div className={styles.passwordWrap}>
+      <input id={id} value={value} onChange={(e) => onChange(e.target.value)} aria-invalid={invalid ? true : undefined} aria-describedby={described}
+        {...input} type={shown ? 'text' : 'password'} autoCapitalize="off" autoCorrect="off" spellCheck={false} />
+      <button type="button" className={styles.eye} aria-pressed={shown} aria-label={t(shown ? 'form.hide_password' : 'form.show_password')} onClick={() => setShown((v) => !v)}>
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" />
+          <circle cx="12" cy="12" r="3" />
+          {shown && <path d="M4 20 20 4" />}
+        </svg>
+      </button>
     </div>
   );
 }

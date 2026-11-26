@@ -207,5 +207,8 @@
   "human_check.note": "Protected by a short check in your browser. No puzzles.",
   "signin.welcome": "Welcome back.",
   "side.promise_title": "Your money waits with us",
-  "side.promise_text": "The seller is paid only after the buyer confirms they have the item."
+  "side.promise_text": "The seller is paid only after the buyer confirms they have the item.",
+  "signin.continue": "Continue",
+  "signin.change_login": "Change",
+  "signin.login_missing": "Enter your mobile number or e-mail address."
 }

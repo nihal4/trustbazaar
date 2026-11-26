@@ -49,5 +49,7 @@
   "shell.footer.help": "সহায়তা",
   "shell.language.changing": "ভাষা বদলানো হচ্ছে",
   "shell.promise_bar_short": "নিশ্চিত না করা পর্যন্ত টাকা নিরাপদ",
-  "shell.footer.language": "ভাষা"
+  "shell.footer.language": "ভাষা",
+  "form.show_password": "পাসওয়ার্ড দেখান",
+  "form.hide_password": "পাসওয়ার্ড লুকান"
 }

@@ -49,5 +49,7 @@
   "shell.footer.help": "Help",
   "shell.language.changing": "Changing language",
   "shell.promise_bar_short": "Money held until you confirm",
-  "shell.footer.language": "Language"
+  "shell.footer.language": "Language",
+  "form.show_password": "Show password",
+  "form.hide_password": "Hide password"
 }

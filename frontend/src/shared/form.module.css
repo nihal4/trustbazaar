@@ -162,3 +162,39 @@ div.error > :first-child {
   border: 0;
   border-bottom: 2px solid var(--tb-error);
 }
+
+/* the eye of a password field (U10-25): inside the field's right edge, 44 px to tap */
+.passwordWrap {
+  position: relative;
+  display: flex;
+  max-width: 32rem;
+}
+
+.passwordWrap input {
+  padding-right: 3rem;
+}
+
+.eye {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  color: var(--tb-muted);
+  cursor: pointer;
+}
+
+.eye:hover,
+.eye[aria-pressed='true'] {
+  color: var(--tb-text);
+}
+
+.eye:focus-visible {
+  outline: 2px solid var(--tb-focus, var(--tb-accent));
+  outline-offset: -2px;
+}

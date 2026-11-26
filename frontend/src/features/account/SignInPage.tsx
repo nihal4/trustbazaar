@@ -20,7 +20,7 @@ export function Component() {
   const [params] = useSearchParams();
   const next = params.get('next');
 
-  const [step, setStep] = useState<'password' | 'mfa'>('password');
+  const [step, setStep] = useState<'login' | 'password' | 'mfa'>('login');
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
@@ -68,7 +68,7 @@ export function Component() {
     } catch (err) {
       if (problemName(err) === 'mfa-failed' || isApiError(err, 400) || retryAfter(err) !== null) refused(err, t('signin.mfa_failed'));
       else if (isApiError(err, 401)) {           // the sign-in ticket has ended: start again
-        setStep('password');
+        setStep('login');
         setCode('');
         setPassword('');
         setMessage(t('signin.mfa_restart'));
@@ -90,9 +90,37 @@ export function Component() {
             autoComplete="one-time-code" maxLength={40} autoFocus />
           <SubmitButton busy={busy} disabled={waitFor > 0}>{button ?? t('signin.submit')}</SubmitButton>
         </form>
-        <p><button type="button" className={styles.link} onClick={() => { setStep('password'); setMessage(null); }}>
+        <p><button type="button" className={styles.link} onClick={() => { setStep('login'); setMessage(null); }}>
           {t('signin.back')}
         </button></p>
+      </AuthSplit>
+    );
+  }
+
+  // the first step asks for the number or e-mail only; Enter shows the password. Nothing is asked of the server here, so the page never tells which
+  // accounts exist (SEC-AUTH-05); the password step keeps the login in the form (hidden) so a password manager still pairs the two.
+  const toPassword = (ev: FormEvent) => {
+    ev.preventDefault();
+    if (!login.trim()) { setMessage(t('signin.login_missing')); return; }
+    setMessage(null);
+    setStep('password');
+  };
+
+  if (step === 'login') {
+    return (
+      <AuthSplit>
+        <h1>{t('signin.title')}</h1>
+        <p className={styles.lead}>
+          {t('signin.welcome')} {t('signin.no_account')}{' '}
+          <Link to={next ? `/register?next=${encodeURIComponent(next)}` : '/register'}>{t('register.link')}</Link>
+        </p>
+        {message && <FormMessage kind="error">{message}</FormMessage>}
+        <form onSubmit={toPassword} noValidate>
+          <TextField id="signin-login" label={t('signin.login')} hint={t('signin.login_hint')} value={login} onChange={setLogin}
+            autoComplete="username" autoFocus />
+          <SubmitButton busy={false}>{t('signin.continue')}</SubmitButton>
+        </form>
+        <HumanCheckNote />
       </AuthSplit>
     );
   }
@@ -101,15 +129,14 @@ export function Component() {
     <AuthSplit>
       <h1>{t('signin.title')}</h1>
       <p className={styles.lead}>
-        {t('signin.welcome')} {t('signin.no_account')}{' '}
-        <Link to={next ? `/register?next=${encodeURIComponent(next)}` : '/register'}>{t('register.link')}</Link>
+        <span className={styles.who}>{login.trim()}</span>{' '}
+        <button type="button" className={styles.link} onClick={() => { setStep('login'); setPassword(''); setMessage(null); }}>{t('signin.change_login')}</button>
       </p>
       {message && <FormMessage kind="error">{message}</FormMessage>}
       <form onSubmit={submitPassword} noValidate>
-        <TextField id="signin-login" label={t('signin.login')} hint={t('signin.login_hint')} value={login} onChange={setLogin}
-          autoComplete="username" />
+        <input type="text" name="username" autoComplete="username" value={login} readOnly tabIndex={-1} aria-hidden="true" className={styles.srOnly} />
         <TextField id="signin-password" label={t('field.password')} value={password} onChange={setPassword}
-          type="password" autoComplete="current-password" />
+          type="password" autoComplete="current-password" autoFocus />
         <p className={styles.forgot}><Link to="/reset">{t('signin.forgot')}</Link></p>
         <SubmitButton busy={busy} disabled={waitFor > 0}>{button ?? t('signin.submit')}</SubmitButton>
       </form>
