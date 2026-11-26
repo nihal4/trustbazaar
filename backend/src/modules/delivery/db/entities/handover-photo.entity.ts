@@ -21,4 +21,8 @@ export class HandoverPhoto {
 
   @Column({ type: 'timestamptz' })
   at!: Date;
+
+  /** I-63: set once, when the file is purged with the last dispute of the order */
+  @Column({ type: 'timestamptz', name: 'purged_at', nullable: true })
+  purgedAt!: Date | null;
 }

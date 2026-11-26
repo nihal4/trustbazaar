@@ -343,15 +343,24 @@ CREATE FUNCTION disputes.purge_due(p_after interval) RETURNS SETOF varchar LANGU
   SECURITY DEFINER SET search_path = pg_catalog, pg_temp AS $$
 DECLARE d record;
 BEGIN
-  FOR d IN SELECT id FROM disputes.disputes
+  FOR d IN SELECT id, order_id FROM disputes.disputes
             WHERE purged_at IS NULL AND status IN ('decided', 'withdrawn') AND coalesce(decided_at, withdrawn_at) < now() - p_after
             ORDER BY coalesce(decided_at, withdrawn_at) LIMIT 200 FOR UPDATE SKIP LOCKED LOOP
     RETURN QUERY SELECT e.storage_key FROM disputes.evidence e WHERE e.dispute_id = d.id AND e.storage_key IS NOT NULL;
     UPDATE disputes.evidence SET storage_key = NULL, purged_at = now() WHERE dispute_id = d.id AND purged_at IS NULL;
     UPDATE disputes.statements SET text = NULL, purged_at = now() WHERE dispute_id = d.id AND purged_at IS NULL;
     UPDATE disputes.disputes SET purged_at = now() WHERE id = d.id;
+    -- U10-23: the seller's handover photos of the order (delivery.handover_photos, file 04) go with the last of its disputes
+    IF NOT EXISTS (SELECT 1 FROM disputes.disputes x WHERE x.order_id = d.order_id AND x.purged_at IS NULL) THEN
+      RETURN QUERY SELECT h.storage_key FROM delivery.handover_photos h WHERE h.order_id = d.order_id AND h.storage_key IS NOT NULL;
+      UPDATE delivery.handover_photos SET storage_key = NULL, purged_at = now() WHERE order_id = d.order_id AND purged_at IS NULL;
+    END IF;
   END LOOP;
 END $$;
+-- the photos may change only by that purge, as dispute evidence does
+ALTER TABLE delivery.handover_photos ADD COLUMN purged_at timestamptz, ADD CONSTRAINT handover_photo_purged CHECK ((purged_at IS NULL) = (storage_key IS NOT NULL));
+DROP TRIGGER handover_photos_append_only ON delivery.handover_photos;
+CREATE TRIGGER handover_photos_append_only BEFORE UPDATE OR DELETE ON delivery.handover_photos FOR EACH ROW EXECUTE FUNCTION disputes.content_purge_only('storage_key');
 
 -- =====================================================================
 -- TRUST & SAFETY (FR-TNS, FR-REV)
