@@ -30,7 +30,7 @@ import { CourierChoice } from './Courier';
 import { Deadlines } from './Deadlines';
 import { Disputes, useOrderDisputes } from './Disputes';
 import { GamePrepare, gameReady, GameTab, useGame } from './Game';
-import { Handover, useHandover } from './Handover';
+import { Handover, ProposeForm, useHandover } from './Handover';
 import { Journey } from './Journey';
 import { orderKey, type OrderView } from './model';
 import { moneyText } from './moneyText';
@@ -107,6 +107,12 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
           </p>
         </div>
       </header>
+      {o.counterparty && o.counterparty.displayName && (
+        <p className={styles.party}>
+          <span className={styles.avatar} aria-hidden="true">{Array.from(o.counterparty.displayName)[0]?.toUpperCase()}</span>
+          <span className={styles.partyText}><span className={styles.partyRole}>{t(`order.party.${o.role === 'buyer' ? 'seller' : 'buyer'}`)}</span><strong>{o.counterparty.displayName}</strong></span>
+        </p>
+      )}
       <Money o={o} t={t} lang={lang} />
       {attempt && <Return o={o} failed={failed} waited={waited} t={t} />}
       <Journey o={o} h={handover.data ?? null} shipments={shipments.data?.items ?? []} t={t} />
@@ -123,7 +129,7 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
       {shipments.isError && <FormMessage kind="error">{errorText(shipments.error, t, lang)}</FormMessage>}
       {game.data && o.status !== 'awaiting_payment' && <GameTab o={o} g={game.data} t={t} lang={lang} />}
       {game.isError && o.status !== 'awaiting_payment' && <FormMessage kind="error">{errorText(game.error, t, lang)}</FormMessage>}
-      <Actions o={o} t={t} lang={lang} />
+      <Actions o={o} t={t} lang={lang} extra={handover.data && (handover.data.status === 'arranging' || handover.data.status === 'agreed') ? <ProposeForm o={o} h={handover.data} t={t} lang={lang} /> : undefined} />
       {disputes.data && <Disputes o={o} items={disputes.data.items} t={t} lang={lang} />}
       <OrderChat o={o} t={t} lang={lang} />
       {ratings.data && <Ratings o={o} r={ratings.data} t={t} lang={lang} />}

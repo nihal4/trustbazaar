@@ -455,5 +455,8 @@
   "journey.courier.open.seller": "The parcel has arrived. The buyer checks it and confirms, or reports a problem.",
   "journey.courier.release": "Money released to the seller",
   "journey.courier.release.buyer": "Confirm you have the item, or TrustBazaar releases the money after the dispute window.",
-  "journey.courier.release.seller": "The money is released after the buyer's dispute window."
+  "journey.courier.release.seller": "The money is released after the buyer's dispute window.",
+  "order.party.seller": "Seller",
+  "order.party.buyer": "Buyer",
+  "dispute.not_yet": "You can open a dispute once the item has been handed over or sent, or the seller's deadline has passed."
 }

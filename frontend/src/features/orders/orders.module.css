@@ -205,3 +205,18 @@
 .panel > h2 { margin: 0; }
 .panel > p { margin: 0; }
 .panel > .code + p { margin: 0; }
+
+/* the title breaks only between words; the other party in a box of its own; the actions in one ruled grid */
+.headText h1 { overflow-wrap: break-word; text-wrap: balance; }
+.party { display: flex; align-items: center; gap: 0.875rem; margin: 0 0 1.25rem; padding: 0.875rem 0; border-block: 1px solid var(--tb-line); }
+.avatar { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; flex: none; border-radius: 50%; background: var(--tb-sheet); border: 1px solid var(--tb-border); font-weight: 600; }
+.partyText { display: grid; gap: 0.125rem; min-width: 0; }
+.partyRole { color: var(--tb-muted); font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.partyText strong { overflow-wrap: anywhere; }
+.actionGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); border-top: 1px solid var(--tb-line); }
+.actionGrid > * { padding: 1rem 0; border-bottom: 1px solid var(--tb-line); }
+.actionGrid > form { grid-column: 1 / -1; }
+.actionCell { display: flex; align-items: center; }
+.panel { justify-items: stretch; }
+.panel > button { justify-self: start; }
+.actionGrid { width: 100%; }

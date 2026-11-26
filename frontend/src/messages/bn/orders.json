@@ -455,5 +455,8 @@
   "journey.courier.open.seller": "পার্সেল পৌঁছেছে। ক্রেতা দেখে নিশ্চিত করবেন, নয়তো সমস্যা জানাবেন।",
   "journey.courier.release": "বিক্রেতাকে টাকা ছাড়",
   "journey.courier.release.buyer": "পণ্য পেয়েছেন নিশ্চিত করুন, নইলে বিরোধের সময় শেষে ট্রাস্টবাজার টাকা ছাড়বে।",
-  "journey.courier.release.seller": "ক্রেতার বিরোধের সময় শেষে টাকা ছাড়া হবে।"
+  "journey.courier.release.seller": "ক্রেতার বিরোধের সময় শেষে টাকা ছাড়া হবে।",
+  "order.party.seller": "বিক্রেতা",
+  "order.party.buyer": "ক্রেতা",
+  "dispute.not_yet": "পণ্য হস্তান্তর বা পাঠানো হলে, অথবা বিক্রেতার সময়সীমা পার হলে আপনি বিরোধ খুলতে পারবেন।"
 }

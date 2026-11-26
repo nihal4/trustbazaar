@@ -3,7 +3,7 @@
 // checks again (an `order-state` answer refreshes the order). Buyer: confirm receipt after the delivery event, or ask
 // to cancel before it. Seller: answer a cancellation request, or cancel (a full refund and a strike). Opening a dispute
 // is the dispute part of the order view (Disputes.tsx, U8-09); early release is the game-account screens' (U8-07).
-import { useRef, useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatMoney } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
@@ -32,7 +32,7 @@ export function actionsOf(o: OrderView): Action[] {
   return pending ? ['accept', 'decline', 'cancel'] : ['cancel'];
 }
 
-export function Actions({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
+export function Actions({ o, t, lang, extra }: { o: OrderView; t: T; lang: Lang; extra?: ReactNode }) {
   const api = useApi();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState<Action | null>(null);
@@ -86,28 +86,39 @@ export function Actions({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
     else setConfirming(true);
   };
 
-  if (allowed.length === 0 && !request) return null;
+  if (allowed.length === 0 && !request && !extra) return null;
   return (
     <section aria-labelledby="actions-title" className={styles.panel}>
       <h2 id="actions-title">{t('actions.title')}</h2>
       {message && <FormMessage kind="error">{message}</FormMessage>}
       {request && <RequestStatus o={o} t={t} />}
-      {allowed.length === 0 && <p className={styles.hint}>{t('actions.none')}</p>}
-      <div className={styles.buttons}>
+      {allowed.length === 0 && !extra && <p className={styles.hint}>{t('actions.none')}</p>}
+      <div className={styles.actionGrid}>
+        {extra}
         {allowed.includes('confirm') && (
-          <button type="button" className={styles.primary} onClick={() => setOpen('confirm')} disabled={act.isPending}>{t('actions.confirm_receipt')}</button>
+          <div className={styles.actionCell}>
+            <button type="button" className={styles.primary} onClick={() => setOpen('confirm')} disabled={act.isPending}>{t('actions.confirm_receipt')}</button>
+          </div>
         )}
         {allowed.includes('accept') && (
-          <button type="button" className={styles.primary} onClick={() => setOpen('accept')} disabled={act.isPending}>{t('actions.accept_request')}</button>
+          <div className={styles.actionCell}>
+            <button type="button" className={styles.primary} onClick={() => setOpen('accept')} disabled={act.isPending}>{t('actions.accept_request')}</button>
+          </div>
         )}
         {allowed.includes('decline') && (
-          <button type="button" className={styles.secondary} onClick={() => run('decline')} disabled={act.isPending}>{t('actions.decline_request')}</button>
+          <div className={styles.actionCell}>
+            <button type="button" className={styles.secondary} onClick={() => run('decline')} disabled={act.isPending}>{t('actions.decline_request')}</button>
+          </div>
         )}
         {allowed.includes('request') && open !== 'request' && (
-          <button type="button" className={styles.secondary} onClick={() => setOpen('request')}>{t('actions.ask_cancel')}</button>
+          <div className={styles.actionCell}>
+            <button type="button" className={styles.secondary} onClick={() => setOpen('request')}>{t('actions.ask_cancel')}</button>
+          </div>
         )}
         {allowed.includes('cancel') && open !== 'cancel' && (
-          <button type="button" className={styles.secondary} onClick={() => setOpen('cancel')}>{t('actions.seller_cancel')}</button>
+          <div className={styles.actionCell}>
+            <button type="button" className={styles.secondary} onClick={() => setOpen('cancel')}>{t('actions.seller_cancel')}</button>
+          </div>
         )}
       </div>
 

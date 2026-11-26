@@ -68,12 +68,17 @@ export function Disputes({ o, items, t, lang }: { o: OrderView; items: DisputeSu
   const dispute = useDispute(latest?.id ?? null);
   // said after the opening form is gone: which photos did not follow the new dispute
   const [notice, setNotice] = useState<string | null>(null);
+  // a dispute is for what came (or did not come): only once the item is handed over or sent, or the seller's deadline has passed
+  const now = useServerNow();
+  const received = o.deliveryEventAt !== null || (o.fulfilmentDueAt !== null && Date.parse(o.fulfilmentDueAt) < now);
   return (
     <>
       {notice && <FormMessage kind="error">{notice}</FormMessage>}
       {dispute.data && <DisputePanel d={dispute.data} o={o} t={t} lang={lang} />}
       {dispute.isError && <FormMessage kind="error">{errorText(dispute.error, t, lang)}</FormMessage>}
-      {o.role === 'buyer' && !live && o.status === 'paid' && <OpenDispute o={o} t={t} lang={lang} onOpened={setNotice} />}
+      {o.role === 'buyer' && !live && o.status === 'paid' && (received
+        ? <OpenDispute o={o} t={t} lang={lang} onOpened={setNotice} />
+        : <p className={styles.hint}>{t('dispute.not_yet')}</p>)}
     </>
   );
 }

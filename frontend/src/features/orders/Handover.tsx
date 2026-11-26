@@ -58,7 +58,6 @@ export function Handover({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: 
       {open && h.role === 'buyer' && h.code && <BuyerCode code={h.code} t={t} lang={lang} />}
       {open && h.role === 'seller' && <SellerCode o={o} h={h} t={t} lang={lang} />}
       {open && <Proposals o={o} h={h} t={t} lang={lang} />}
-      {open && <ProposeForm o={o} h={h} t={t} lang={lang} />}
     </section>
   );
 }
@@ -206,7 +205,7 @@ function Proposals({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: T; lan
   );
 }
 
-function ProposeForm({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: T; lang: Lang }) {
+export function ProposeForm({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: T; lang: Lang }) {
   const api = useApi();
   const queryClient = useQueryClient();
   const [shown, setShown] = useState(false);
@@ -252,7 +251,7 @@ function ProposeForm({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: T; l
     propose.mutate(body);
   };
   if (!shown) {
-    return <p><button type="button" className={styles.secondary} onClick={() => setShown(true)}>{t(h.agreed ? 'handover.propose_other' : 'handover.propose')}</button></p>;
+    return <div className={styles.actionCell}><button type="button" className={styles.secondary} onClick={() => setShown(true)}>{t(h.agreed ? 'handover.propose_other' : 'handover.propose')}</button></div>;
   }
   return (
     <form onSubmit={submit} noValidate className={styles.form}>
