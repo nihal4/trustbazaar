@@ -92,7 +92,7 @@ describe('dispute cases: claim, case file, request for information, decision, re
     const r = await a.call('GET', `/staff/disputes/${c.disputeId}/case-file`);
     expect(r.status).toBe(200);
     const file = (await r.json()) as Record<string, unknown> & { outcomes: Record<string, unknown>; history: { to: string }[]; statements: unknown[]; chat: { path: string } };
-    expect(Object.keys(file).sort()).toEqual(['chat', 'context', 'dispute', 'escrow', 'evidence', 'fulfilment', 'game', 'handoverPhotos', 'history', 'order', 'outcomes', 'parties', 'statements']);
+    expect(Object.keys(file).sort()).toEqual(['chat', 'context', 'dispute', 'escrow', 'evidence', 'fulfilment', 'game', 'handoverPhotos', 'history', 'order', 'outcomes', 'parties', 'returnCheck', 'statements']);
     expect(file.game).toBeNull(); // a physical item
     expect(file.outcomes).toMatchObject({ release: { refunded: '0', sellerPayout: '1425000' }, fullRefund: { refunded: '1500000', sellerPayout: '0' } });
     expect(file.history.map((h) => h.to)).toEqual(['open', 'under_review']);
@@ -223,6 +223,8 @@ describe('dispute cases: claim, case file, request for information, decision, re
     expect(await errors(await c.seller.call('POST', `/disputes/${c.disputeId}/return-check`, { value: 'SN-1234-5678' }))).toEqual([{ field: 'value', reason: 'already-checked' }]); // final: the right number now does not help
     expect((await fx.query(`SELECT 1 FROM trust.signals WHERE kind = 'return_mismatch' AND source_ref = $1`, [c.disputeId])).length).toBe(1);
     expect(await errors(await c.seller.call('POST', `/disputes/${c.disputeId}/return-received`))).toEqual([{ field: 'dispute', reason: 'return-check-needed' }]); // still blocked
+    const file = async (id: string) => ((await (await op.call('GET', `/staff/disputes/${id}/case-file`)).json()) as { returnCheck: { canResolve: boolean; findings: string[]; checks: { matched: boolean }[] } }).returnCheck;
+    expect(await file(c.disputeId)).toMatchObject({ canResolve: true, findings: [], checks: [{ matched: false }] });
     expect((await op.call('POST', `/staff/disputes/${c.disputeId}/resolve-return`, { outcome: 'release', reason: 'short' })).status).toBe(400);
     expect((await op.call('POST', `/staff/disputes/${c.disputeId}/resolve-return`, { outcome: 'release', reason: 'The returned unit has another serial number than the one sold.' })).status).toBe(200);
     expect([(await dispute(c.disputeId)).status, await escrow(c.orderId)]).toEqual(['decided', 'released']);

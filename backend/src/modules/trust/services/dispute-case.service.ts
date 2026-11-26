@@ -131,7 +131,20 @@ export class DisputeCaseService implements OnModuleInit {
     const iso = (x: Date | null) => (x ? x.toISOString() : null);
     const thread = await this.chat.threadFor(order.listing.id, d.buyer_id);
     const game = d.item_kind === 'game_account' ? await this.gameEvidence(d.order_id, staff, reason, ctx, who) : null;
+    // U10-23 (FR-TNS-10): the seller's return check, whether an operator may close a stuck return, and which buyer findings may still be recorded
+    const checks = (await this.db.query(`SELECT matched, at FROM disputes.return_checks WHERE dispute_id = $1 ORDER BY id`, [disputeId])) as { matched: boolean; at: Date }[];
+    const [finding] = (await this.db.query(`SELECT finding, reason, at FROM disputes.buyer_findings WHERE dispute_id = $1`, [disputeId])) as { finding: string; reason: string; at: Date }[];
+    const [{ outcome }] = (await this.db.query(`SELECT outcome FROM disputes.disputes WHERE id = $1`, [disputeId])) as { outcome: string | null }[];
+    const mismatch = checks.some((c) => !c.matched);
+    const overdue = d.decision_target_at !== null && d.decision_target_at.getTime() < Date.now();
+    const findings: string[] = d.status !== 'decided' || d.item_kind === 'game_account' || finding ? [] : [...(outcome === 'release' ? ['false_claim'] : []), ...(mismatch ? ['swap'] : [])];
     return {
+      returnCheck: {
+        checks: checks.map((c) => ({ matched: c.matched, at: c.at.toISOString() })),
+        canResolve: d.status === 'awaiting_return' && (mismatch || overdue),
+        finding: finding ? { finding: finding.finding, reason: finding.reason, at: finding.at.toISOString() } : null,
+        findings,
+      },
       dispute: {
         id: d.id, type: d.type, status: d.status, description: d.description, openedAt: d.opened_at.toISOString(), sellerDueAt: d.seller_due_at.toISOString(),
         infoDueAt: iso(d.info_due_at), reviewStartedAt: iso(d.review_started_at), decisionTargetAt: iso(d.decision_target_at),
