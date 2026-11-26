@@ -213,7 +213,6 @@
 .rail p { margin: 0; }
 @media (min-width: 60rem) {
   .cols { grid-template-columns: minmax(0, 1fr) 24rem; gap: 3rem; align-items: start; }
-  .rail { position: sticky; top: 5.75rem; }
 }
 
 /* the actions are ruled cells, not boxed buttons: the whole cell is the button, hairlines between (as the chat cell of the listing page) */
@@ -317,3 +316,316 @@
 .rail > section.spot { gap: 0.25rem; padding: 1rem 0 1.25rem 1rem; border-left: 3px solid var(--tb-hot); background: var(--tb-surface); }
 .rail > section.spot .spotHead { color: var(--tb-muted); }
 .spot .deadlines > div:first-child dd { font-size: 1.125rem; text-wrap: pretty; }
+
+/* review: both columns scroll together (the rail is not sticky); deadlines are the first grid row of the Meetup handover */
+.deadlineGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); margin: 0; border: 1px solid var(--tb-line); }
+.deadlineGrid > div { display: grid; gap: 0.125rem; padding: 0.75rem 0.875rem; }
+.deadlineGrid > div + div { border-left: 1px solid var(--tb-line); }
+.deadlineGrid dt { color: var(--tb-muted); font-size: 0.8125rem; }
+.deadlineGrid dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.deadlineGrid .urgent dd { color: var(--tb-hot); }
+
+/* no filled orange boxes: orange border, low-opacity wash, sharp edges */
+.primary, .primaryLink, .actionGrid button.primary, .rail button.primary { background: color-mix(in srgb, var(--tb-hot) 10%, transparent); color: var(--tb-text); border: 1px solid var(--tb-hot); border-radius: 0; }
+.primary:hover:not(:disabled), .primaryLink:hover { background: color-mix(in srgb, var(--tb-hot) 18%, transparent); }
+.rail > section.spot { background: none; }
+
+/* the facts under the title as a full grid */
+.facts { border: 1px solid var(--tb-line); }
+.facts > div, .facts > div:first-child { padding: 0.75rem 1rem; }
+.page .deadlineWrap { margin: 0; padding: 0; border: 0; display: block; }
+
+/* review: every button is sharp; popup forms laid out on one left edge, ruled rows, buttons as a two-cell grid; the terms as a numbered ruled list */
+.secondary, .primary, .primaryLink, .choice button, .receiptLink, .form button { border-radius: 0; }
+.form { gap: 0.375rem; }
+.form > label, .choice legend { margin: 0.75rem 0 0.125rem; padding: 0; color: var(--tb-muted); font-size: 0.875rem; font-weight: 600; }
+.choice { margin: 0; }
+.choice legend { float: left; width: 100%; margin-top: 0; }
+.choice legend + * { clear: both; }
+.choice > div { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.75rem; padding: 0.25rem 0; }
+.choice > div label { flex: 1 1 auto; min-width: 0; margin: 0; color: var(--tb-text); font-size: 1rem; font-weight: 500; }
+.form input, .form select, .form textarea { padding-left: 0; width: 100%; box-sizing: border-box; }
+.form input[type='radio'] { width: 20px; min-height: 0; flex: none; }
+.form > .hint { margin: 0; font-size: 0.875rem; }
+.popupButtons { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--tb-line); margin-top: 0.75rem; }
+.popupButtons > button { min-height: 56px; border: 0; }
+.popupButtons > button + button { border-left: 1px solid var(--tb-line); background: none; text-decoration: none; color: var(--tb-text); }
+.popupButtons > button:only-child { grid-column: 1 / -1; }
+.popupButtons > .secondary:hover { background: var(--tb-surface); }
+.form .popupButtons .secondary { text-decoration: none; }
+.terms { list-style: none; counter-reset: t; margin: 0; padding: 0; border-top: 1px solid var(--tb-line); }
+.terms li { counter-increment: t; display: grid; grid-template-columns: 1.75rem minmax(0, 1fr); padding: 0.75rem 0; border-bottom: 1px solid var(--tb-line); line-height: 1.5; text-wrap: pretty; }
+.terms li::before { content: counter(t); color: var(--tb-hot); font-weight: 600; font-variant-numeric: tabular-nums; }
+/* a popup's own buttons are never stretched by the page's rules */
+.code > button { width: 100%; }
+.code button { width: auto; }
+.code > button.primary { width: 100%; }
+.accept { display: grid; grid-template-columns: 1.5rem minmax(0, 1fr); gap: 0.75rem; align-items: start; padding: 0.875rem 0; border-bottom: 1px solid var(--tb-line); font-weight: 600; line-height: 1.45; cursor: pointer; }
+.accept input { width: 1.25rem; height: 1.25rem; margin: 0.125rem 0 0; accent-color: var(--tb-hot); }
+.popupButtons > button:disabled { opacity: 0.45; cursor: not-allowed; }
+/* the code popup: the note and the digits centred (the trailing letter-space is cancelled so the digits sit truly in the middle) */
+.codeNote { text-align: center; text-wrap: balance; margin: 0; }
+.codeCentre { display: block; width: 100%; box-sizing: border-box; margin: 0; padding: 1rem 0 1rem 0.2em; text-align: center; font-size: 3rem; }
+
+/* ---- review fixes (impeccable) ---- */
+/* the rail's heading rule must not shrink the deadline label */
+.rail .spotHead { font-size: 0.8125rem; }
+/* no side stripe: the deadline block is a plain ruled block */
+.rail > section.spot, .spot { border-left: 0; padding-left: 0; }
+/* the code digits fit a 360 px phone */
+.codeCentre { font-size: clamp(1.5rem, 8.5vw, 3rem); white-space: nowrap; }
+.codeNote, .terms li, .accept { line-height: var(--tb-line-height, 1.5); }
+/* popup button grid: no stray orange border, air inside the cells, stacked on phones */
+.popupButtons > button, .popupButtons > button.primary { border: 0; padding: 0.75rem 1rem; }
+.popupButtons > button + button { border-left: 1px solid var(--tb-line); }
+.popupButtons { position: sticky; bottom: 0; background: var(--tb-sheet); }
+@media (max-width: 30rem) {
+  .popupButtons { grid-template-columns: 1fr; }
+  .popupButtons > button + button { border-left: 0; border-top: 1px solid var(--tb-line); }
+}
+/* the primary keeps its orange wash on hover inside the action grid */
+.actionGrid button.primary:hover:not(:disabled) { background: color-mix(in srgb, var(--tb-hot) 18%, transparent); color: var(--tb-text); }
+/* ruled cells with a hairline between them however they wrap (a 1 px gap over the rule colour), and the popup dialog is not a cell */
+.deadlineGrid, .actionGrid { gap: 1px; background: var(--tb-line); }
+.deadlineGrid { border: 1px solid var(--tb-line); }
+.actionGrid { border-block: 1px solid var(--tb-line); }
+.deadlineGrid > div, .actionGrid > .actionCell { background: var(--tb-bg); border-left: 0; }
+.deadlineGrid > div + div, .actionGrid > * + * { border-left: 0; }
+.actionGrid > form { background: var(--tb-bg); }
+.form p > .secondary { background: none; }
+/* phones: the gap of the column stack must not add to the section margins */
+@media (max-width: 59.99rem) { .cols { gap: 0; } }
+
+/* ---- review round 3: the pay panel in the rail, buttons that open popups are ruled cells, the shipment as a grid, ruled lists, file inputs ---- */
+/* a button that opens a popup: a full-width ruled cell with a chevron, as the cells of the action grid */
+.cellButton { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 52px; padding: 0.5rem 0.75rem; border: 1px solid var(--tb-line); border-radius: 0; background: none; color: var(--tb-text); font: inherit; font-weight: 600; text-align: left; cursor: pointer; transition: color 140ms, background 140ms; }
+.cellButton::after { content: ''; width: 0.5rem; height: 0.5rem; margin-left: 0.75rem; border: solid currentColor; border-width: 1.5px 1.5px 0 0; transform: rotate(45deg); flex: none; }
+.cellButton:hover:not(:disabled) { color: var(--tb-hot); background: var(--tb-surface); }
+.cellButton:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
+.cellButton:disabled { opacity: 0.45; cursor: not-allowed; }
+/* two buttons side by side as ruled cells, not sticky */
+.cellRow { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid var(--tb-line); }
+.cellRow > button { min-height: 52px; border: 0; border-radius: 0; background: none; color: var(--tb-text); font-weight: 600; }
+.cellRow > button + button { border-left: 1px solid var(--tb-line); }
+.cellRow > button:hover:not(:disabled) { background: var(--tb-surface); }
+.cellRow > button.primary { background: color-mix(in srgb, var(--tb-hot) 10%, transparent); }
+/* the pay panel inside the rail */
+.rail > section.early { padding: 1.25rem 0; border: 0; border-bottom: 1px solid var(--tb-line); gap: 0.5rem; }
+.rail .flow { margin: 0; }
+.rail .flow > li { padding: 1rem 0; }
+.rail .flow h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+.rail .optionRows { border-top: 0; }
+.rail .optionRow { grid-template-columns: 1fr; gap: 0.625rem; padding: 0.75rem 0; }
+.optionRow > button { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 52px; padding: 0.5rem 0.75rem; border: 1px solid var(--tb-line); border-radius: 0; background: none; color: var(--tb-text); font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
+.optionRow > button::after { content: ''; width: 0.5rem; height: 0.5rem; margin-left: 0.75rem; border: solid currentColor; border-width: 1.5px 1.5px 0 0; transform: rotate(45deg); flex: none; }
+.optionRow > button:hover:not(:disabled) { color: var(--tb-hot); background: var(--tb-surface); }
+.rail .courier { display: grid; gap: 0.75rem; border-top: 0; padding-top: 0; margin-top: 0; }
+.rail .courier > div { display: grid; gap: 0.5rem; }
+.rail .flow .primary, .rail .courier .primary { width: 100%; }
+.rail .breakdown { max-width: none; }
+/* the shipment as ruled cells, label over value */
+.shipment { display: grid; gap: 0.75rem; margin-top: 0; padding-top: 1rem; border-top: 1px solid var(--tb-line); }
+.shipment h3 { margin: 0; font-size: 1.125rem; }
+.shipFacts { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 1px; margin: 0; border: 1px solid var(--tb-line); background: var(--tb-line); }
+.shipFacts > div { display: grid; gap: 0.125rem; align-content: start; padding: 0.75rem 0.875rem; background: var(--tb-bg); }
+.shipFacts dt { color: var(--tb-muted); font-size: 0.8125rem; }
+.shipFacts dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.shipFacts .wideCell { grid-column: 1 / -1; }
+.shipment .tag { justify-self: start; }
+/* ruled lists: evidence, statements, status history */
+.ruledList, .statements { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--tb-line); }
+.ruledList > li, .statements > li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.25rem 1rem; padding: 0.75rem 0; margin: 0; border-bottom: 1px solid var(--tb-line); }
+.statements > li { display: grid; gap: 0.25rem; }
+.ruledList a { display: inline; min-height: 0; font-weight: 600; }
+/* the dispute panel: quieter headings, one rhythm */
+.main .panel h3 { margin: 1.25rem 0 0.5rem; font-size: 1rem; }
+.main .panel > p { margin: 0.5rem 0; }
+/* file inputs: the browser button as a sharp ruled cell */
+input[type='file'] { width: 100%; padding: 0.5rem 0; border: 0; color: var(--tb-muted); font: inherit; font-size: 0.9375rem; }
+input[type='file']::file-selector-button { margin-right: 0.875rem; padding: 0.625rem 1rem; border: 1px solid var(--tb-line); border-radius: 0; background: none; color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
+input[type='file']:hover::file-selector-button { background: var(--tb-surface); color: var(--tb-hot); }
+.form input[type='file'] { padding: 0.5rem 0; border-bottom: 0; }
+/* the popup form fits a popup */
+.popupButtons { position: static; }
+.inner .popupButtons, [class*='inner'] .popupButtons { position: sticky; }
+
+/* ---- dispute round: compact panel, the conversation as its own section, the deadlines in the rail as ruled rows ---- */
+.rail .deadlineGrid { grid-template-columns: 1fr; }
+.rail .deadlineGrid > div { padding: 0.875rem 1rem; gap: 0.25rem; }
+.rail .deadlineGrid dd { font-size: 1rem; line-height: 1.4; }
+.msgHead { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.statements > li.mine { border-left: 0; background: color-mix(in srgb, var(--tb-hot) 6%, transparent); padding-inline: 0.875rem; }
+.statements > li { padding-inline: 0.875rem; }
+
+/* ---- awaiting payment: the left column as a ruled grid (breakdown, what happens next, protection); the actions are in the rail ---- */
+.breakdownGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; margin: 0 0 var(--tb-space-3); border: 1px solid var(--tb-line); background: var(--tb-line); }
+.breakdownGrid > div { display: grid; gap: 0.25rem; padding: 0.875rem 1rem; background: var(--tb-bg); }
+.breakdownGrid dt { color: var(--tb-muted); font-size: 0.8125rem; }
+.breakdownGrid dd { margin: 0; font-weight: 600; font-size: 1.125rem; font-variant-numeric: tabular-nums; }
+.previewBlock { margin-block: var(--tb-space-3); }
+.previewBlock > h2 { margin: 0 0 0.75rem; font-size: 1.25rem; }
+.previewGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1px; border: 1px solid var(--tb-line); background: var(--tb-line); }
+.previewCol { padding: 1rem 1.125rem 0.5rem; background: var(--tb-bg); }
+.previewCol > h3 { margin: 0 0 0.5rem; font-size: 1rem; color: var(--tb-muted); font-weight: 600; }
+.previewList { list-style: none; margin: 0; padding: 0; }
+.previewList > li { display: grid; grid-template-columns: 1.5rem minmax(0, 1fr); gap: 0.5rem; padding: 0.875rem 0; border-top: 1px solid var(--tb-line); }
+.previewList > li:first-child { border-top: 0; }
+.previewStep { margin: 0; font-weight: 600; }
+.previewList p.hint, .protectGrid p.hint { margin: 0.25rem 0 0; font-size: 0.9375rem; line-height: var(--tb-line-height, 1.5); text-wrap: pretty; }
+.protectGrid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 1px; border: 1px solid var(--tb-line); background: var(--tb-line); }
+.protectGrid > li { display: grid; align-content: start; gap: 0.125rem; padding: 1rem 1.125rem; background: var(--tb-bg); }
+.protectGrid .flowNo { color: var(--tb-protect); margin-bottom: 0.25rem; }
+@media (max-width: 30rem) { .breakdownGrid { grid-template-columns: 1fr; } }
+/* the breakdown has four cells, the total marked; the preview and protection blocks are gone */
+.breakdownGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 0.75rem; }
+.breakdownGrid .totalCell dd { color: var(--tb-hot); }
+@media (max-width: 40rem) { .breakdownGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 20rem) { .breakdownGrid { grid-template-columns: 1fr; } }
+
+/* ---- review: lines, not boxes. Open at the sides: hairlines above and below, hairlines between cells; the choice in one step; the fee and the deadlines as grid cells ---- */
+.facts, .deadlineGrid, .shipFacts, .breakdownGrid, .previewGrid, .cellRow, .popupButtons, .actions { border-inline: 0; }
+.cellButton, .optionRow > button { border-inline: 0; padding-inline: 0; }
+.cellButton + .cellButton { margin-top: -1px; }
+.facts > div:first-child, .deadlineGrid > div:first-child, .shipFacts > div:first-child, .breakdownGrid > div:first-child { padding-left: 0; }
+.deadlineGrid > div, .shipFacts > div, .breakdownGrid > div { background: transparent; }
+.deadlineGrid, .shipFacts, .breakdownGrid, .quoteGrid { background: none; gap: 0; }
+.deadlineGrid > div + div, .shipFacts > div + div, .breakdownGrid > div + div, .quoteGrid > div + div { border-left: 1px solid var(--tb-line); }
+.rail .deadlineGrid > div + div { border-left: 0; border-top: 1px solid var(--tb-line); }
+.rail .deadlineGrid { gap: 0; }
+input[type='file']::file-selector-button { border-inline: 0; padding-inline: 0; margin-right: 1rem; }
+/* the delivery choice: two ruled rows, the whole row is the button */
+.choiceGrid { display: grid; border-block: 1px solid var(--tb-line); }
+.choiceCell { display: grid; gap: 0.125rem; padding: 0.875rem 1.75rem 0.875rem 0; border: 0; border-radius: 0; background: none; color: var(--tb-text); font: inherit; text-align: left; cursor: pointer; position: relative; transition: color 140ms, background 140ms; }
+.choiceCell + .choiceCell { border-top: 1px solid var(--tb-line); }
+.choiceCell strong { font-weight: 600; }
+.choiceCell span { color: var(--tb-muted); font-size: 0.875rem; }
+.choiceCell::after { content: ''; position: absolute; right: 0.25rem; top: 50%; width: 0.5rem; height: 0.5rem; margin-top: -0.25rem; border: solid currentColor; border-width: 1.5px 1.5px 0 0; transform: rotate(45deg); }
+.choiceCell:hover:not(:disabled) { color: var(--tb-hot); }
+.choiceCell:hover:not(:disabled) span { color: inherit; }
+.choiceCell:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+.choiceCell:disabled { opacity: 0.45; cursor: not-allowed; }
+.chosenGrid { display: grid; grid-template-columns: minmax(0, 1fr) auto; margin: 0; border-block: 1px solid var(--tb-line); }
+.chosenGrid > div { display: grid; gap: 0.125rem; padding: 0.75rem 0; }
+.chosenGrid dt { color: var(--tb-muted); font-size: 0.8125rem; }
+.chosenGrid dd { margin: 0; font-weight: 600; }
+.changeCell { align-self: stretch; padding: 0 0 0 1rem; border: 0; border-left: 1px solid var(--tb-line); border-radius: 0; background: none; color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
+.changeCell:hover:not(:disabled) { color: var(--tb-hot); }
+.payRow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); align-items: stretch; border-block: 1px solid var(--tb-line); }
+.payRow > div { display: grid; gap: 0.125rem; align-content: center; padding: 0.75rem 0; }
+.payRow > div span { color: var(--tb-muted); font-size: 0.8125rem; }
+.payRow > div strong { font-size: 1.25rem; font-variant-numeric: tabular-nums; }
+.payRow > .primary, .payOff { min-height: 56px; align-self: stretch; display: flex; align-items: center; justify-content: center; border: 0; border-left: 1px solid var(--tb-line); }
+.payOff { color: var(--tb-muted); opacity: 0.6; font-weight: 600; }
+/* the quote as two ruled cells in the courier popup */
+.quoteBlock { display: grid; gap: 0.75rem; }
+.quoteGrid { display: grid; grid-template-columns: 1fr 1fr; margin: 0; border-block: 1px solid var(--tb-line); }
+.quoteGrid > div { display: grid; gap: 0.125rem; padding: 0.75rem 0.875rem; }
+.quoteGrid > div:first-child { padding-left: 0; }
+.quoteGrid dt { color: var(--tb-muted); font-size: 0.8125rem; }
+.quoteGrid dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+/* times as cells inside the grids */
+.deadlineGrid dd, .shipFacts dd, .quoteGrid dd { margin-top: 0.25rem; }
+.deadlineGrid > div { padding: 0.875rem 1rem; }
+.rail .deadlineGrid > div { padding-inline: 0; }
+.agreed > div { margin-top: 0.5rem; }
+.ruledList > li > div { margin-left: auto; }
+
+/* the paid courier order: the shipment as a strip of cells and the journey right under it without its own title */
+.shipFacts .statusCell dd { color: var(--tb-protect); }
+.journeyBare { margin-top: 0; }
+.journeyBare .journeyList { border-top: 0; }
+.shipment { padding-top: 0; border-top: 0; }
+.panel > .shipment:first-of-type { margin-top: 0.5rem; }
+.rail > .historyCell { padding: 0; border-bottom: 1px solid var(--tb-line); }
+.rail > .historyCell .cellButton { border: 0; min-height: 56px; }
+/* the handover's status and its agreed place and time as ruled cells */
+.statusGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); margin: 0; border-block: 1px solid var(--tb-line); }
+.statusGrid > div { display: grid; gap: 0.25rem; align-content: start; padding: 0.75rem 0; }
+.statusGrid > div + div { padding-left: 1rem; border-left: 1px solid var(--tb-line); }
+.statusGrid dt { color: var(--tb-muted); font-size: 0.8125rem; }
+.statusGrid dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.statusGrid dd .hint { font-weight: 400; }
+.rail .statusGrid { grid-template-columns: 1fr; }
+.rail .statusGrid > div + div { padding-left: 0; border-left: 0; border-top: 1px solid var(--tb-line); }
+.cellLink { text-decoration: none; }
+
+/* ---- the dispute chat as a messenger: rows from TrustBazaar on the left, yours on the right, the box at the bottom ---- */
+/* the count of new messages on the chat cell */
+.badge { margin-left: auto; padding: 0 0.5rem; min-width: 1.5rem; border-radius: 999px; background: var(--tb-hot); color: var(--tb-accent-text, #0a0e0d); font-size: 0.8125rem; font-weight: 700; line-height: 1.5rem; text-align: center; font-variant-numeric: tabular-nums; }
+
+/* the thread is a scrolling frame of its own and the box under it does not move; a new message scrolls the frame, not the page */
+
+/* the real cause of the sideways scrollbar: the page-wide rule width:100% on file inputs also reached the hidden input of the chat; it is hidden for good here */
+input[type='file'].fileHidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; opacity: 0; }
+/* the chat side by side: TrustBazaar's messages on the left, yours on the right, as bubbles with sharp edges (a wash, no outline) */
+
+/* ---- the dispute chat, built like a messenger page: information and status on the left, the conversation on the right (ruled, sharp, our theme) ---- */
+.dcPage { display: grid; grid-template-columns: minmax(15rem, 21rem) minmax(0, 1fr); height: calc(100svh - 9rem); min-height: 30rem; margin-block: 1rem; border-block: 1px solid var(--tb-line); }
+.dcSide { display: grid; align-content: start; gap: 0.75rem; padding: 1rem 1.5rem 1rem 0; border-right: 1px solid var(--tb-line); overflow-y: auto; }
+.dcSide h1 { margin: 0; font-size: 1.5rem; letter-spacing: -0.02em; }
+.dcBack { color: var(--tb-text); text-underline-offset: 3px; }
+.dcFacts { display: grid; margin: 0; border-block: 1px solid var(--tb-line); }
+.dcFacts > div { display: grid; gap: 0.25rem; padding: 0.75rem 0; }
+.dcFacts > div + div { border-top: 1px solid var(--tb-line); }
+.dcFacts dt { color: var(--tb-muted); font-size: 0.8125rem; }
+.dcFacts dd { margin: 0; font-weight: 600; }
+.dcMain { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; min-width: 0; min-height: 0; }
+.dcHead { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--tb-line); }
+.dcHead span { color: var(--tb-muted); font-size: 0.875rem; }
+.dcThread { display: flex; flex-direction: column; gap: 0.5rem; min-height: 0; padding: 1rem 1.25rem; overflow-y: auto; overscroll-behavior: contain; }
+.dcThread:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -2px; }
+.dcEmpty { margin: auto; color: var(--tb-muted); }
+.dcDay { display: flex; justify-content: center; margin: 0.75rem 0 0.25rem; }
+.dcRow { display: flex; justify-content: flex-start; }
+.dcRow.dcMine { justify-content: flex-end; }
+.dcBubble { max-width: min(34rem, 78%); padding: 0.5rem 0.75rem 0.375rem; border-radius: 0; background: var(--tb-surface); }
+.dcMine .dcBubble { background: color-mix(in srgb, var(--tb-hot) 12%, transparent); }
+.dcBubble p { margin: 0; overflow-wrap: break-word; line-height: var(--tb-line-height, 1.5); white-space: pre-wrap; text-wrap: pretty; }
+.dcBubble a { color: var(--tb-text); font-weight: 600; text-underline-offset: 3px; }
+.dcTime { display: flex; justify-content: flex-end; margin-top: 0.125rem; }
+.dcComposer { display: grid; gap: 0.375rem; padding: 0.625rem 1.25rem 0.75rem; border-top: 1px solid var(--tb-line); }
+.dcBar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: end; border-bottom: 1px solid var(--tb-line); }
+.dcInput { min-height: 48px; max-height: 8rem; padding: 0.75rem 0.75rem; border: 0; border-radius: 0; background: none; color: var(--tb-text); font: inherit; resize: none; field-sizing: content; }
+.dcInput:focus-visible { outline: 0; box-shadow: inset 0 -2px 0 var(--tb-hot); }
+.dcAttach { display: grid; place-items: center; width: 48px; height: 48px; color: var(--tb-muted); cursor: pointer; }
+.dcAttach:hover { color: var(--tb-hot); }
+.dcSend { min-height: 48px; padding: 0 1.25rem; border: 0; border-left: 1px solid var(--tb-line); border-radius: 0; background: color-mix(in srgb, var(--tb-hot) 10%, transparent); color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
+.dcSend:disabled { background: none; color: var(--tb-muted); opacity: 0.6; cursor: not-allowed; }
+.dcSend:hover:not(:disabled) { background: color-mix(in srgb, var(--tb-hot) 18%, transparent); }
+.dcClosed { margin: 0; padding: 0.875rem 1.25rem; border-top: 1px solid var(--tb-line); color: var(--tb-muted); }
+@media (max-width: 47.99rem) {
+  .dcPage { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); height: auto; }
+  .dcSide { padding: 0 0 1rem; border-right: 0; border-bottom: 1px solid var(--tb-line); }
+  .dcMain { height: 70svh; min-height: 24rem; }
+}
+
+/* ---- review round (impeccable, before the PR) ---- */
+/* grids whose cells wrap: a rule above and below, a hairline above and left of each cell inside (an inset shadow), nothing at the open sides */
+.actionGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; background: none; border-block: 1px solid var(--tb-line); overflow: hidden; }
+.actionGrid > .actionCell, .actionGrid > form { background: none; box-shadow: -1px -1px 0 var(--tb-line); border-left: 0; }
+.actionGrid > .actionCell:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.shipFacts, .breakdownGrid, .quoteGrid { gap: 0; background: none; border-inline: 0; overflow: hidden; }
+.shipFacts > div, .breakdownGrid > div, .quoteGrid > div { box-shadow: -1px -1px 0 var(--tb-line); border-left: 0; padding-left: 1rem; }
+.shipFacts > div + div, .breakdownGrid > div + div, .quoteGrid > div + div { border-left: 0; }
+.deadlineGrid { overflow: hidden; }
+/* the attach control shows keyboard focus (the real input is clipped) */
+.dcBar:has(.fileHidden:focus-visible) .dcAttach { outline: 2px solid var(--tb-hot); outline-offset: -4px; color: var(--tb-hot); }
+/* the chat page on a phone: the facts in one row, the chat fills the screen */
+@media (max-width: 47.99rem) {
+  .dcFacts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .dcFacts > div { padding: 0.5rem 0.5rem 0.5rem 0; }
+  .dcFacts > div + div { border-top: 0; border-left: 1px solid var(--tb-line); padding-left: 0.5rem; }
+  .dcMain { height: calc(100svh - 9rem); min-height: 22rem; }
+}
+.dcBack { display: inline-flex; align-items: center; min-height: 44px; }
+.dcPage { grid-template-columns: minmax(17rem, 21rem) minmax(0, 1fr); }
+:lang(bn) .dcSide h1 { letter-spacing: 0; line-height: 1.4; }
+/* the seller types the buyer's code: a field in our theme */
+.code input { width: 100%; min-height: 56px; padding: 0 0.25rem; border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; background: none; color: var(--tb-text); font: inherit; font-size: 1.5rem; letter-spacing: 0.15em; font-variant-numeric: tabular-nums; }
+.code input:focus-visible { outline: 2px solid transparent; box-shadow: inset 0 -2px 0 var(--tb-hot); }
+/* a status is not always good news: the colour is the text colour, the hot one is for what needs an action */
+.facts .status { color: var(--tb-text); }
+/* the change cell beside the chosen delivery, a map link with a touch target */
+.chosenGrid > dl { margin: 0; }
+.chosenGrid > dl > div { padding: 0.75rem 0; }
+.choice a { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 0.25rem; }

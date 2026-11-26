@@ -46,15 +46,15 @@ export function journeyOf(o: OrderView, h: HandoverView | null, shipments: Shipm
   return { kind: 'pickup', steps };
 }
 
-export function Journey({ o, h, shipments, t }: { o: OrderView; h: HandoverView | null; shipments: Shipment[]; t: T }) {
+export function Journey({ o, h, shipments, t, bare = false }: { o: OrderView; h: HandoverView | null; shipments: Shipment[]; t: T; bare?: boolean }) {
   const j = journeyOf(o, h, shipments);
   if (!j) return null;
   const s = shipments.find((x) => x.direction === 'forward');
   const who = s ? courierName(s.provider, t) : t('journey.courier');
   const role = o.role;
   return (
-    <section aria-labelledby="journey-title" className={styles.journey}>
-      <h2 id="journey-title">{t(j.kind === 'courier' ? 'journey.title_courier' : 'journey.title_pickup')}</h2>
+    <section aria-labelledby="journey-title" className={bare ? `${styles.journey} ${styles.journeyBare}` : styles.journey}>
+      <h2 id="journey-title" className={bare ? styles.srOnly : undefined}>{t(j.kind === 'courier' ? 'journey.title_courier' : 'journey.title_pickup')}</h2>
       <ol className={styles.journeyList}>
         {j.steps.map((st, i) => (
           <li key={st.key} className={st.state === 'done' ? styles.flowDone : st.state === 'now' ? styles.flowNow : styles.flowNext} aria-current={st.state === 'now' ? 'step' : undefined}>
@@ -63,7 +63,7 @@ export function Journey({ o, h, shipments, t }: { o: OrderView; h: HandoverView 
               {t(`journey.${j.kind}.${st.key}`, { courier: who })}
               <span className={styles.srOnly}> {t(`journey.state.${st.state}`)}</span>
             </h3>
-            {st.state === 'now' && <p className={styles.journeyDo}>{t(`journey.${j.kind}.${st.key}.${role}`, { courier: who })}</p>}
+            {st.state === 'now' && !bare && <p className={styles.journeyDo}>{t(`journey.${j.kind}.${st.key}.${role}`, { courier: who })}</p>}
           </li>
         ))}
       </ol>

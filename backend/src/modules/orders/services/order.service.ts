@@ -48,6 +48,9 @@ export function fulfilmentRefusal(f: Fulfilment, options: Fulfilment[], shipsCou
   return null;
 }
 
+/** The current version of each terms text (U10-23); the web client sends the version it showed. Raise one when its wording changes. */
+const TERMS_VERSION = { handover_code: 1, courier: 1, dispute: 1 } as const;
+
 @Injectable()
 export class OrderService implements OrdersPort {
   constructor(
@@ -286,6 +289,27 @@ export class OrderService implements OrdersPort {
       fulfilment: 'courier', deliveryQuoteId: quoteId, deliveryFee: fee.toString(), total: (itemPrice + fee).toString(),
     });
     return fee;
+  }
+
+  /**
+   * U10-23 (Decisions log): the buyer's acceptance of the terms shown before the handover code, courier delivery or a dispute, kept
+   * as proof (who, order, which terms, which version, when). Only the buyer of the order accepts; anyone else gets not-found (SEC-SDL-09).
+   */
+  async recordTerms(userId: string, orderId: string, kind: 'handover_code' | 'courier' | 'dispute', version: number): Promise<{ acceptedAt: string }> {
+    const order = await this.getOrderForParty(orderId, userId);
+    if (order.role !== 'buyer') throw new Problem('not-found');
+    // the proof is only as good as what the server checks: the current version of the terms, and a step the order is really at
+    if (version !== TERMS_VERSION[kind]) throw new Problem('validation-failed', { errors: [{ field: 'version', reason: 'outdated' }] });
+    const now = kind === 'courier' ? order.status === 'awaiting_payment' && (order.fulfilment === null || order.fulfilment === 'courier')
+      : kind === 'handover_code' ? order.status === 'paid' && order.fulfilment === 'self_pickup'
+        : order.status === 'paid';
+    if (!now) throw new Problem('validation-failed', { errors: [{ field: 'kind', reason: 'not-now' }] });
+    const [again] = (await this.db.query(`SELECT accepted_at FROM orders.terms_acceptances WHERE order_id = $1 AND user_id = $2 AND kind = $3 AND terms_version = $4 ORDER BY accepted_at LIMIT 1`, [orderId, userId, kind, version])) as { accepted_at: Date }[];
+    if (again) return { acceptedAt: again.accepted_at.toISOString() }; // accepted before: the first time stays the proof
+    const [row] = (await this.db.query(
+      `INSERT INTO orders.terms_acceptances (order_id, user_id, kind, terms_version) VALUES ($1, $2, $3, $4) RETURNING accepted_at`, [orderId, userId, kind, version],
+    )) as { accepted_at: Date }[];
+    return { acceptedAt: row.accepted_at.toISOString() };
   }
 
   private async view(m: EntityManager, orderId: string, userId: string): Promise<OrderView> {

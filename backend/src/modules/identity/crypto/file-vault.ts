@@ -11,12 +11,13 @@ import { TB_CONFIG } from '../../../kernel/config/config.provider';
 // row, never on the volume. Files are written under random names with mode 0600 to the purpose's volume.
 // Erasing deletes the file; the caller sets wrapped_dek to NULL (crypto-shredding).
 // Stored form: 12-byte IV | ciphertext | 16-byte tag. Wrapped key: 1-byte KEK version | IV | key | tag.
-export type FilePurpose = 'kyc' | 'ownership_proof' | 'dispute_evidence' | 'chat_image' | 'data_export';
+export type FilePurpose = 'kyc' | 'ownership_proof' | 'dispute_evidence' | 'dispute_video' | 'chat_image' | 'data_export';
 // One Compose volume per purpose (docker-compose.yml): /srv/files/kyc, proofs, evidence, chat, exports.
 export const PURPOSE_FOLDER: Record<FilePurpose, string> = {
   kyc: 'kyc',
   ownership_proof: 'proofs',
   dispute_evidence: 'evidence',
+  dispute_video: 'evidence',
   chat_image: 'chat',
   data_export: 'exports',
 };

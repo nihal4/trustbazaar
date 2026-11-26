@@ -6,7 +6,6 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { formatMoney } from '../../lib/money.js';
-import { formatCountdown, formatDateTime } from '../../lib/time.js';
 import { useApi } from '../../shared/api';
 import { useServerNow } from '../../shared/clock';
 import { errorText } from '../../shared/errors';
@@ -16,6 +15,9 @@ import type { Lang } from '../../shared/language/lang';
 import { problemName } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { addressesKey, areasKey, orderKey, type Area, type OrderView, type Quote, type SavedAddress } from './model';
+import { Popup } from '../../shared/Popup';
+import { TimeLeft } from '../../shared/Moment';
+import { Terms } from './Terms';
 import styles from './orders.module.css';
 
 export function useAddresses() {
@@ -67,7 +69,7 @@ export function AddressForm({ kind, t, lang, onSaved, onCancel }: {
   const p = `address-${kind}`;
   return (
     <form onSubmit={submit} noValidate className={styles.form} aria-labelledby={`${p}-title`}>
-      <h4 id={`${p}-title`}>{t(`address.new.${kind}`)}</h4>
+      <h4 id={`${p}-title`} className={styles.srOnly}>{t(`address.new.${kind}`)}</h4>
       <p className={styles.hint}>{t('address.private')}</p>
       {message && <FormMessage kind="error">{message}</FormMessage>}
       <label htmlFor={`${p}-label`}>{t('address.label')}</label>
@@ -83,7 +85,7 @@ export function AddressForm({ kind, t, lang, onSaved, onCancel }: {
       <input id={`${p}-landmark`} value={landmark} maxLength={120} onChange={(e) => setLandmark(e.target.value)} />
       <label htmlFor={`${p}-contact`}>{t('address.contact')}</label>
       <input id={`${p}-contact`} value={contactName} maxLength={80} autoComplete="name" onChange={(e) => setContactName(e.target.value)} />
-      <div className={styles.buttons}>
+      <div className={styles.popupButtons}>
         <button type="submit" className={styles.primary} disabled={save.isPending}>{t('address.save')}</button>
         <button type="button" className={styles.secondary} onClick={onCancel}>{t('actions.back')}</button>
       </div>
@@ -91,7 +93,7 @@ export function AddressForm({ kind, t, lang, onSaved, onCancel }: {
   );
 }
 
-export function CourierChoice({ o, t, lang, disabled }: { o: OrderView; t: T; lang: Lang; disabled: boolean }) {
+export function CourierChoice({ o, t, lang, disabled, onDone }: { o: OrderView; t: T; lang: Lang; disabled: boolean; onDone?: () => void }) {
   const api = useApi();
   const queryClient = useQueryClient();
   const now = useServerNow();
@@ -100,6 +102,7 @@ export function CourierChoice({ o, t, lang, disabled }: { o: OrderView; t: T; la
   const [adding, setAdding] = useState(false);
   const [quote, setQuote] = useState<Quote | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [terms, setTerms] = useState(false);
   const failed = (e: unknown) => {
     const name = problemName(e);
     setMessage(name === 'courier-unavailable' ? t('courier.unavailable') : name === 'feature-off' ? t('courier.off') : errorText(e, t, lang));
@@ -111,8 +114,8 @@ export function CourierChoice({ o, t, lang, disabled }: { o: OrderView; t: T; la
   });
   const choose = useMutation({
     mutationFn: (q: Quote) => api.put(`/orders/${encodeURIComponent(o.id)}/fulfilment`, { fulfilment: 'courier', quoteId: q.id }) as Promise<OrderView>,
-    onSuccess: (next) => queryClient.setQueryData(orderKey(o.id), next),
-    onError: (e) => { setQuote(null); failed(e); },
+    onSuccess: (next) => { queryClient.setQueryData(orderKey(o.id), next); setTerms(false); onDone?.(); },
+    onError: (e) => { setQuote(null); setTerms(false); failed(e); },
   });
   const drops = (addresses.data?.items ?? []).filter((a) => a.kind === 'dropoff');
   const selected = chosen ?? drops[0]?.id ?? null;
@@ -120,7 +123,6 @@ export function CourierChoice({ o, t, lang, disabled }: { o: OrderView; t: T; la
   const expired = quote !== null && left <= 0;
   return (
     <div className={styles.courier}>
-      <h3>{t('courier.title')}</h3>
       {message && <FormMessage kind="error">{message}</FormMessage>}
       {drops.length > 0 && (
         <fieldset className={styles.choice}>
@@ -133,21 +135,30 @@ export function CourierChoice({ o, t, lang, disabled }: { o: OrderView; t: T; la
           ))}
         </fieldset>
       )}
-      {!adding && <p><button type="button" className={styles.secondary} onClick={() => setAdding(true)}>{t('address.add')}</button></p>}
-      {adding && <AddressForm kind="dropoff" t={t} lang={lang} onSaved={(a) => { setAdding(false); setChosen(a.id); setQuote(null); }} onCancel={() => setAdding(false)} />}
+      <button type="button" className={`${styles.secondary} ${styles.cellButton}`} onClick={() => setAdding(true)}>{t('address.add')}</button>
+      {adding && (
+        <Popup id="address-dropoff-popup" title={t('address.new.dropoff')} closeLabel={t('actions.back')} onClose={() => setAdding(false)}>
+          <AddressForm kind="dropoff" t={t} lang={lang} onSaved={(a) => { setAdding(false); setChosen(a.id); setQuote(null); }} onCancel={() => setAdding(false)} />
+        </Popup>
+      )}
       {selected && !quote && (
-        <button type="button" className={styles.secondary} disabled={disabled || ask.isPending} onClick={() => ask.mutate(selected)}>{t('courier.get_quote')}</button>
+        <button type="button" className={`${styles.secondary} ${styles.cellButton}`} disabled={disabled || ask.isPending} onClick={() => ask.mutate(selected)}>{t('courier.get_quote')}</button>
       )}
       {quote && (
-        <div>
-          <p>{t('courier.fee', { fee: formatMoney(BigInt(quote.fee), lang) })}</p>
-          <p className={expired ? styles.error : styles.hint}>
-            {expired ? t('courier.quote_expired') : t('courier.quote_valid', { left: formatCountdown(left, lang).text, at: formatDateTime(Date.parse(quote.expiresAt), lang) })}
-          </p>
+        <div className={styles.quoteBlock}>
+          <dl className={styles.quoteGrid}>
+            <div><dt>{t('courier.fee_label')}</dt><dd>{formatMoney(BigInt(quote.fee), lang)}</dd></div>
+            <div><dt>{t('courier.valid_label')}</dt><dd><TimeLeft at={Date.parse(quote.expiresAt)} now={now} t={t} lang={lang} label={false} /></dd></div>
+          </dl>
           {expired
-            ? <button type="button" className={styles.secondary} disabled={disabled || ask.isPending} onClick={() => selected && ask.mutate(selected)}>{t('courier.requote')}</button>
-            : <button type="button" disabled={disabled || choose.isPending} onClick={() => choose.mutate(quote)}>{t('courier.choose', { fee: formatMoney(BigInt(quote.fee), lang) })}</button>}
+            ? <button type="button" className={`${styles.secondary} ${styles.cellButton}`} disabled={disabled || ask.isPending} onClick={() => selected && ask.mutate(selected)}>{t('courier.requote')}</button>
+            : <button type="button" className={`${styles.secondary} ${styles.cellButton}`} disabled={disabled || choose.isPending} onClick={() => setTerms(true)}>{t('courier.choose', { fee: formatMoney(BigInt(quote.fee), lang) })}</button>}
         </div>
+      )}
+      {terms && quote && (
+        <Terms id="courier-terms" t={t} lang={lang} order={o.id} kind="courier" title={t('courier.terms_title')} intro={t('courier.terms_intro')} prefix="courier.terms" count={8}
+          check={t('courier.terms_check')} agree={t('courier.agree')} back={t('actions.back')} busy={choose.isPending}
+          onAgree={() => choose.mutate(quote)} onClose={() => setTerms(false)} />
       )}
     </div>
   );

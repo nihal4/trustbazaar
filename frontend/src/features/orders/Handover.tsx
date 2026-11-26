@@ -5,6 +5,8 @@
 // own (a name and an optional pin from the device's position, never a map link, shown with a safety notice; Decisions
 // log, U4-03). Times are Dhaka time.
 import { Popup } from '../../shared/Popup';
+import { DateCells } from '../../shared/Moment';
+import { Terms } from './Terms';
 import { useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toAsciiDigits, toLocalDigits } from '../../lib/money.js';
@@ -47,17 +49,20 @@ export function dhakaInput(value: string): string | null {
 /** The code digit by digit, so it can be read aloud ("4 8 1 9 0 2"). */
 export const spaced = (code: string, lang: Lang) => toLocalDigits(code.split('').join(' '), lang);
 
-export function Handover({ o, h, t, lang, after }: { o: OrderView; h: HandoverView; t: T; lang: Lang; after?: ReactNode }) {
+export function Handover({ o, h, t, lang, after, before }: { o: OrderView; h: HandoverView; t: T; lang: Lang; after?: ReactNode; before?: ReactNode }) {
   const open = h.status === 'arranging' || h.status === 'agreed';
   return (
     <section aria-labelledby="handover-title" className={styles.panel}>
       <h2 id="handover-title">{t('handover.title')}</h2>
-      <p><strong>{t(`handover.status.${h.status}`)}</strong></p>
-      {h.status === 'completed' && h.completedAt && <p>{t('handover.completed_at', { at: formatDateTime(Date.parse(h.completedAt), lang) })}</p>}
+      {before}
+      <dl className={styles.statusGrid}>
+        <div><dt>{t('handover.status_label')}</dt><dd>{t(`handover.state.${h.status}`)}</dd></div>
+        {h.status === 'completed' && h.completedAt && <div><dt>{t('handover.done_label')}</dt><dd><DateCells at={Date.parse(h.completedAt)} t={t} lang={lang} label={false} /></dd></div>}
+      </dl>
       {h.status === 'locked' && <FormMessage kind="error">{t('handover.locked')}</FormMessage>}
       {h.agreed && <Agreed a={h.agreed} t={t} lang={lang} />}
       {after}
-      {open && h.role === 'buyer' && h.code && <BuyerCode code={h.code} t={t} lang={lang} />}
+      {open && h.role === 'buyer' && h.code && <BuyerCode order={o.id} code={h.code} t={t} lang={lang} />}
       {open && h.role === 'seller' && <SellerCode o={o} h={h} t={t} lang={lang} />}
       {open && <Proposals o={o} h={h} t={t} lang={lang} />}
     </section>
@@ -83,29 +88,37 @@ function Where({ point, place, t, lang }: { point: MeetupPoint | null; place: Ow
 
 function Agreed({ a, t, lang }: { a: NonNullable<HandoverView['agreed']>; t: T; lang: Lang }) {
   return (
-    <div className={styles.agreed}>
-      <h3>{t('handover.agreed')}</h3>
-      <p><Where point={a.point} place={a.place} t={t} lang={lang} /></p>
-      <p>{t('handover.at', { at: formatDateTime(Date.parse(a.meetAt), lang) })}</p>
-    </div>
+    <dl className={styles.statusGrid}>
+      <div><dt>{t('handover.place_label')}</dt><dd><Where point={a.point} place={a.place} t={t} lang={lang} /></dd></div>
+      <div><dt>{t('handover.when_label')}</dt><dd><DateCells at={Date.parse(a.meetAt)} t={t} lang={lang} label={false} /></dd></div>
+    </dl>
   );
 }
 
-function BuyerCode({ code, t, lang }: { code: string; t: T; lang: Lang }) {
-  const [shown, setShown] = useState(false);
+/** The buyer's code: first the terms in a popup (check the item properly, what giving the code means), and only on agreeing the code in a second popup. */
+function BuyerCode({ order, code, t, lang }: { order: string; code: string; t: T; lang: Lang }) {
+  const [step, setStep] = useState<'closed' | 'terms' | 'code'>('closed');
   return (
+    <>
     <div className={styles.code}>
       <h3>{t('handover.code_title')}</h3>
       <p>{t('confirm.share_handover_code')}</p>
-      {shown
-        ? (
-          <>
-            <p className={styles.codeDigits} aria-label={t('handover.code_label', { code: spaced(code, lang) })}>{spaced(code, lang)}</p>
-            <button type="button" className={styles.secondary} onClick={() => setShown(false)}>{t('handover.hide_code')}</button>
-          </>
-        )
-        : <button type="button" className={styles.primary} onClick={() => setShown(true)}>{t('handover.show_code')}</button>}
+      <button type="button" className={styles.primary} onClick={() => setStep('terms')}>{t('handover.show_code')}</button>
     </div>
+    {step === 'terms' && (
+      <Terms id="code-terms" t={t} lang={lang} order={order} kind="handover_code" title={t('handover.terms_title')} intro={t('handover.terms_intro')} prefix="handover.terms" count={7}
+        check={t('handover.terms_check')} agree={t('handover.agree_show')} back={t('actions.back')} onAgree={() => setStep('code')} onClose={() => setStep('closed')} />
+    )}
+    {step === 'code' && (
+      <Popup id="code-show" title={t('handover.code_title')} closeLabel={t('handover.hide_code')} onClose={() => setStep('closed')}>
+        <p className={styles.codeNote}>{t('confirm.share_handover_code')}</p>
+        <p className={`${styles.codeDigits} ${styles.codeCentre}`}>{spaced(code, lang)}</p>
+        <div className={styles.popupButtons}>
+          <button type="button" className={styles.secondary} onClick={() => setStep('closed')}>{t('handover.close_code')}</button>
+        </div>
+      </Popup>
+    )}
+    </>
   );
 }
 
@@ -177,7 +190,7 @@ function Proposals({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: T; lan
         <div className={styles.proposal}>
           <h3>{t(current.byMe ? 'handover.your_proposal' : 'handover.their_proposal')}</h3>
           <p><Where point={current.point} place={current.place} t={t} lang={lang} /></p>
-          <p>{t('handover.at', { at: formatDateTime(Date.parse(current.meetAt), lang) })}</p>
+          <dl className={styles.statusGrid}><div><dt>{t('handover.when_label')}</dt><dd><DateCells at={Date.parse(current.meetAt)} t={t} lang={lang} label={false} /></dd></div></dl>
           {current.note && <p>{t('handover.note_shown', { note: current.note })}</p>}
           <div className={styles.buttons}>
             {current.byMe
@@ -290,7 +303,7 @@ export function ProposeForm({ o, h, t, lang }: { o: OrderView; h: HandoverView; 
       <p id="meet-at-hint" className={styles.hint}>{t('handover.when_hint', { due: formatDateTime(Date.parse(h.dueAt), lang) })}</p>
       <label htmlFor="meet-note">{t('handover.note')}</label>
       <input id="meet-note" value={note} maxLength={200} onChange={(e) => setNote(e.target.value)} />
-      <div className={styles.buttons}>
+      <div className={styles.popupButtons}>
         <button type="submit" className={styles.primary} disabled={propose.isPending}>{t('handover.send_proposal')}</button>
         <button type="button" className={styles.secondary} onClick={() => setShown(false)}>{t('actions.back')}</button>
       </div>

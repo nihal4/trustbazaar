@@ -92,7 +92,7 @@ export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang:
   return (
     <Wrap {...(bare ? { className: styles.bare } : { 'aria-labelledby': 'actions-title', className: styles.panel })}>
       {!bare && <h2 id="actions-title">{t('actions.title')}</h2>}
-      {message && <FormMessage kind="error">{message}</FormMessage>}
+      {message && !needsReason && <FormMessage kind="error">{message}</FormMessage>}
       {request && <RequestStatus o={o} t={t} />}
       {allowed.length === 0 && !extra && <p className={styles.hint}>{t('actions.none')}</p>}
       <div className={styles.actionGrid}>
@@ -127,10 +127,11 @@ export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang:
       {needsReason && !confirming && (
         <Popup id="action-reason" title={t(open === 'request' ? 'actions.ask_cancel' : 'actions.seller_cancel')} closeLabel={t('actions.back')} busy={act.isPending} onClose={() => { setOpen(null); setReason(''); setMessage(null); }}>
         <form onSubmit={submitReason} noValidate className={styles.form}>
+          {message && <FormMessage kind="error">{message}</FormMessage>}
           <p>{t(open === 'request' ? 'actions.ask_cancel_note' : 'actions.seller_cancel_note')}</p>
           <label htmlFor="action-reason">{t('actions.reason')}</label>
-          <textarea id="action-reason" value={reason} maxLength={500} rows={3} onChange={(e) => setReason(e.target.value)} />
-          <div className={styles.buttons}>
+          <textarea id="action-reason" aria-invalid={!reasonOk && !!message} value={reason} maxLength={500} rows={3} onChange={(e) => setReason(e.target.value)} />
+          <div className={styles.popupButtons}>
             <button type="submit" className={styles.primary} disabled={act.isPending}>{t(open === 'request' ? 'actions.send_request' : 'actions.continue')}</button>
             <button type="button" className={styles.secondary} onClick={() => { setOpen(null); setReason(''); setMessage(null); }}>{t('actions.back')}</button>
           </div>

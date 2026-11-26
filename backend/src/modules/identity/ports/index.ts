@@ -150,7 +150,7 @@ export interface RateLimiterPort {
   define(rule: string, limit: number, windowSeconds: number): void;
 }
 
-export type FilePurpose = 'kyc' | 'ownership_proof' | 'dispute_evidence' | 'chat_image' | 'data_export';
+export type FilePurpose = 'kyc' | 'ownership_proof' | 'dispute_evidence' | 'dispute_video' | 'chat_image' | 'data_export';
 
 export interface StoredFile {
   /** Opaque; the caller keeps it in its own row. It names the file and carries its wrapped key. */

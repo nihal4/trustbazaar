@@ -40,7 +40,7 @@ describe('staff queues', () => {
     const sid = await fx.session({ staffId });
     return { staffId, call: call(fx.headers(sid, staffId, 'staff')) };
   }
-  /** A dispute under review on a delivered meetup order (the seller has responded). */
+  /** A dispute under review on a delivered courier order (the seller has responded). */
   async function dispute() {
     const [buyer, seller] = [await member(), await member()];
     const [{ id: listingId }] = await fx.query<{ id: string }>(
@@ -51,9 +51,9 @@ describe('staff queues', () => {
     const [{ id: orderId }] = await fx.query<{ id: string }>(
       `INSERT INTO orders.orders (kind, listing_id, item_kind, buyer_id, seller_id, quantity, unit_price, item_price, fulfilment, delivery_fee, total,
           listing_snapshot, commission_bps, delivery_margin_bps, params_version, payment_due_at, status, paid_at, fulfilment_step, fulfilment_due_at,
-          fulfilment_done_at, delivery_event_at, delivery_event_source)
-       VALUES ('fixed_price', $1, 'physical', $2, $3, 1, 300000, 300000, 'self_pickup', 0, 300000, '{"title":"Kettle"}', 500, 1000, 1, now(), 'paid', now(),
-          'meetup_handover', now() + interval '3 days', now(), now(), 'handover_code') RETURNING id`, [listingId, buyer.userId, seller.userId]);
+          fulfilment_done_at, delivery_event_at, delivery_event_source, delivery_quote_id)
+       VALUES ('fixed_price', $1, 'physical', $2, $3, 1, 300000, 300000, 'courier', 0, 300000, '{"title":"Kettle"}', 500, 1000, 1, now(), 'paid', now(),
+          'courier_pickup', now() + interval '3 days', now(), now(), 'courier_delivered', gen_random_uuid()) RETURNING id`, [listingId, buyer.userId, seller.userId]);
     await fx.query(`INSERT INTO payments.attempts (purpose, order_id, payer_id, provider, amount, status, expires_at, confirmed_at) VALUES ('order', $1, $2, 'bkash', 300000, 'succeeded', now(), now())`, [orderId, buyer.userId]);
     await fx.query(`INSERT INTO orders.escrows (order_id, release_policy, amount_collected, dispute_window_ends_at, auto_release_at) VALUES ($1, 'standard', 300000, now() + interval '3 days', now() + interval '5 days')`, [orderId]);
     const { disputeId } = (await (await buyer.call('POST', `/orders/${orderId}/disputes`, { type: 'damaged', description: 'The kettle leaks from the base when filled.' })).json()) as { disputeId: string };

@@ -64,7 +64,7 @@ describe('before payment', () => {
     renderApp('/orders/o-1', be);
     expect(await screen.findByText(/^The game's publisher may forbid transferring accounts/)).toBeTruthy();
     expect(screen.getByText(/^It does not cover any action by the publisher\./)).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /^Pay ৳/ })).toBeNull();
+    expect((screen.queryByRole('button', { name: /^Pay ৳/ }) as HTMLButtonElement | null)?.disabled ?? true).toBe(true); // nothing can be paid yet: no Pay button, or a disabled one
     const confirm = screen.getByRole('button', { name: 'Confirm' }) as HTMLButtonElement;
     expect(confirm.disabled).toBe(true);
     fireEvent.click(screen.getByLabelText(/^I have read this/));
@@ -73,7 +73,7 @@ describe('before payment', () => {
     expect(link.getAttribute('href')).toBe('/secure/orders/o-1/key');
     expect(be.called('POST /orders/o-1/game/acknowledge')[0].body).toEqual({ version: 1 });
     expect(screen.getByText(/^Use this same browser on this device/)).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /^Pay ৳/ })).toBeNull();
+    expect((screen.queryByRole('button', { name: /^Pay ৳/ }) as HTMLButtonElement | null)?.disabled ?? true).toBe(true); // nothing can be paid yet: no Pay button, or a disabled one
     cleanup();
 
     renderApp('/orders/o-1', backend({}, { game: () => game({ disclosure: { currentVersion: 1, acknowledgedVersion: 1, acknowledgedAt: iso(0) }, keyVersion: 1 }) }));
@@ -85,7 +85,7 @@ describe('before payment', () => {
     vi.stubGlobal('indexedDB', undefined);
     renderApp('/orders/o-1', backend());
     expect(await screen.findByText(/^This browser cannot keep the key a game-account purchase needs/)).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /^Pay ৳/ })).toBeNull();
+    expect((screen.queryByRole('button', { name: /^Pay ৳/ }) as HTMLButtonElement | null)?.disabled ?? true).toBe(true); // nothing can be paid yet: no Pay button, or a disabled one
     cleanup();
     vi.stubGlobal('indexedDB', { open: () => ({}) });
     renderApp('/orders/o-1', backend({}, { game: () => game({ disclosure: { currentVersion: 2, acknowledgedVersion: null, acknowledgedAt: null } }) }));

@@ -9,7 +9,8 @@ import type { EntityManager } from 'typeorm';
 
 /** Used by Unit 7 for decisions and reports (FR-TNS-09): one notice, once per dedupe key. */
 export interface Notifier {
-  notify(userId: string, template: string, params: Record<string, string | number | boolean>, dedupeKey: string): Promise<void>;
+  /** `subject` is the object the notice leads to (a dispute notice leads to the dispute chat). */
+  notify(userId: string, template: string, params: Record<string, string | number | boolean>, dedupeKey: string, subject?: { type: 'order' | 'dispute'; id: string }): Promise<void>;
 }
 export const NOTIFIER = Symbol('NOTIFIER');
 

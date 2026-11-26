@@ -11,6 +11,7 @@ import { JournalLine } from './journal-line.entity';
 import { LedgerAccount } from './ledger-account.entity';
 import { PayoutAccount } from './payout-account.entity';
 import { SavedPaymentMethod } from './saved-payment-method.entity';
+import { TermsAcceptance } from './terms-acceptance.entity';
 import { Payout } from './payout.entity';
 import { PaymentProviderEvent } from './payment-provider-event.entity';
 import { ReconciliationIssue } from './reconciliation-issue.entity';
@@ -35,6 +36,7 @@ export { PaymentProviderEvent } from './payment-provider-event.entity';
 export { ReconciliationIssue } from './reconciliation-issue.entity';
 export { Refund } from './refund.entity';
 export { SavedPaymentMethod } from './saved-payment-method.entity';
+export { TermsAcceptance } from './terms-acceptance.entity';
 export { Settlement } from './settlement.entity';
 export { Subscription } from './subscription.entity';
 
@@ -57,6 +59,7 @@ export const ENTITIES = [
   ReconciliationIssue,
   Refund,
   SavedPaymentMethod,
+  TermsAcceptance,
   Settlement,
   Subscription,
 ];

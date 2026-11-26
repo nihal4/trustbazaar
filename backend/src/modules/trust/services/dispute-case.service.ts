@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { DataSource, EntityManager, QueryFailedError } from 'typeorm';
 import { CONFIG_PORT, ConfigPort } from '../../../kernel/config-port';
 import type { OutboxEvent } from '../../../kernel/events/event-bus';
+import { disputeOfKey, recordMessage } from './dispute-messages';
 import { Problem } from '../../../kernel/http/problems';
 import type { Principal } from '../../../kernel/http/principal';
 import { CHAT_COMMANDS, ChatCommands, NOTIFIER, Notifier } from '../../chat/ports';
@@ -196,7 +197,7 @@ export class DisputeCaseService implements OnModuleInit {
     }
     const [{ info_due_at }] = (await this.db.query(`SELECT info_due_at FROM disputes.disputes WHERE id = $1`, [disputeId])) as { info_due_at: Date }[];
     const view = await this.orders.getOrderForParty(d.order_id, d.seller_id);
-    await this.tell(d.seller_id, 'dispute.info_requested', { listing_title: view.listing.title, hours: 24 }, `dispute:${disputeId}:info:${info_due_at.toISOString()}`);
+    await this.tell(d.seller_id, 'dispute.info_requested', { listing_title: view.listing.title, hours: 24 }, `dispute:${disputeId}:info:${info_due_at.toISOString()}`, { note: text.slice(0, 1000) }); // the operator's question is in the chat, not in the notice
     return { status: 'awaiting_seller', infoDueAt: info_due_at.toISOString() };
   }
 
@@ -247,8 +248,11 @@ export class DisputeCaseService implements OnModuleInit {
       if (thread) await this.chat.release(thread, 'dispute', e.aggregateId);
     }
     const params = { listing_title: view.listing.title };
-    await this.notifier.notify(d.buyer_id, 'dispute.decided', params, `dispute:${e.aggregateId}:decided:${d.status}`);
-    await this.notifier.notify(d.seller_id, 'dispute.decided', params, `dispute:${e.aggregateId}:decided:${d.status}`);
+    const [o] = (await this.db.query(`SELECT outcome, item_refund FROM disputes.disputes WHERE id = $1`, [e.aggregateId])) as { outcome: string | null; item_refund: string | null }[];
+    for (const user of [d.buyer_id, d.seller_id]) {
+      await recordMessage(this.db, e.aggregateId, user, 'dispute.decided', { ...params, outcome: o?.outcome ?? null, itemRefund: o?.item_refund ?? null, status: d.status }, `dispute:${e.aggregateId}:decided:${d.status}`);
+      await this.notifier.notify(user, 'dispute.decided', params, `dispute:${e.aggregateId}:decided:${d.status}`, { type: 'dispute', id: e.aggregateId });
+    }
   }
 
   // ------------------------------------------------------------------ the decision
@@ -336,8 +340,10 @@ export class DisputeCaseService implements OnModuleInit {
     return d;
   }
 
-  private async tell(userId: string, template: string, params: Record<string, string | number>, key: string): Promise<void> {
-    await this.notifier.notify(userId, template, params, key).catch((err: Error) => this.log.warn(`notice ${template} to ${userId}: ${err.message}`));
+  private async tell(userId: string, template: string, params: Record<string, string | number>, key: string, chatExtra: Record<string, string | number> = {}): Promise<void> {
+    const dispute = disputeOfKey(key);
+    if (dispute) await recordMessage(this.db, dispute, userId, template, { ...params, ...chatExtra }, key);
+    await this.notifier.notify(userId, template, params, key, dispute ? { type: 'dispute', id: dispute } : undefined).catch((err: Error) => this.log.warn(`notice ${template} to ${userId}: ${err.message}`));
   }
 }
 

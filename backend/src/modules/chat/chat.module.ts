@@ -76,8 +76,8 @@ import { ChatDataExport } from './services/data-export';
       provide: NOTIFIER,
       inject: [NotificationService],
       useFactory: (n: NotificationService): Notifier => ({
-        notify: async (userId, template, params, key) => {
-          const id = await n.create(userId, template, params, key);
+        notify: async (userId, template, params, key, subject) => {
+          const id = await n.create(userId, template, params, key, subject);
           if (id) await n.push(userId, id);
         },
       }),

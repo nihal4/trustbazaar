@@ -170,3 +170,14 @@ export class SavedPaymentMethodDto {
   @Matches(/^[0-9]{4}$/)
   last4!: string;
 }
+
+/** U10-23: the terms the buyer accepted, and their version. */
+export class TermsAcceptanceDto {
+  @IsIn(['handover_code', 'courier', 'dispute'])
+  kind!: 'handover_code' | 'courier' | 'dispute';
+
+  @IsInt()
+  @Min(1)
+  @Max(999)
+  version!: number;
+}

@@ -11,7 +11,6 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { formatMoney, toLocalDigits } from '../../lib/money.js';
 import { ChatIcon, Tick } from '../../shared/icons';
-import { formatCountdown, formatDateTime } from '../../lib/time.js';
 import { useApi } from '../../shared/api';
 import { useOpenThread } from '../../shared/chat';
 import { useServerNow } from '../../shared/clock';
@@ -29,17 +28,18 @@ import { SimulatedBanner } from '../../shared/SimulatedBanner';
 import { Actions } from './Actions';
 import { CourierChoice } from './Courier';
 import { Deadlines } from './Deadlines';
-import { Disputes, useOrderDisputes } from './Disputes';
+import { DisputeSlot, useOrderDisputes } from './Disputes';
 import { GamePrepare, gameReady, GameTab, useGame } from './Game';
 import { Handover, ProposeForm, useHandover } from './Handover';
-import { Journey } from './Journey';
+import { Breakdown } from './Summary';
 import { orderKey, type OrderView } from './model';
-import { moneyText } from './moneyText';
+import { moneyLine } from './moneyText';
 import { RETURN_POLL_MS, RETURN_WAIT_MS } from './payment';
 import { downloadReceipt, hasReceipt } from './receipt';
+import { Popup } from '../../shared/Popup';
 import { PaymentSheet } from '../../shared/PaymentSheet';
 import { Ratings, useOrderRatings } from './Ratings';
-import { Shipments, useShipments } from './Shipments';
+import { ShipmentHistory, Shipments, useShipments } from './Shipments';
 import en from '../../messages/en/orders.json';
 import bn from '../../messages/bn/orders.json';
 import styles from './orders.module.css';
@@ -73,13 +73,13 @@ export function Component() {
   }, [attempt, failed, since]);
 
   if (order.isPending) return <p role="status">{t('shell.loading')}</p>;
-  if (order.isError) {
+  if (order.isError && !order.data) {
     if (isApiError(order.error, 401)) {
       return <p><Link to={signInPath(`/orders/${id}`)}>{t('order.sign_in')}</Link></p>;
     }
     return isApiError(order.error, 404) ? <h1>{t('order.not_found')}</h1> : <FormMessage kind="error">{errorText(order.error, t, lang)}</FormMessage>;
   }
-  return <OrderBody o={order.data} attempt={attempt} failed={failed} waited={waited} t={t} lang={lang} />;
+  return <OrderBody o={order.data!} attempt={attempt} failed={failed} waited={waited} t={t} lang={lang} />;
 }
 
 function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; attempt: string | null; failed: boolean; waited: boolean; t: T; lang: Lang }) {
@@ -94,7 +94,6 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
   const awaiting = o.status === 'awaiting_payment';
   // while a meetup is being arranged, its place-and-time and cancel actions sit inside the Meetup handover block, above the code
   const handoverOpen = handover.data !== undefined && (handover.data.status === 'arranging' || handover.data.status === 'agreed');
-  const actions = handover.data ? <Actions bare o={o} t={t} lang={lang} extra={<ProposeForm o={o} h={handover.data} t={t} lang={lang} />} /> : null;
   return (
     <div className={styles.page}>
       {(awaiting || attempt) && <SimulatedBanner kind="payment" />}
@@ -114,26 +113,30 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
         </dl>
       </header>
       <Money o={o} t={t} lang={lang} />
+      <div className={styles.early}>
       {attempt && <Return o={o} failed={failed} waited={waited} t={t} />}
-      <Journey o={o} h={handover.data ?? null} shipments={shipments.data?.items ?? []} t={t} />
-      {awaiting && o.role === 'buyer' && <PayPanel o={o} t={t} lang={lang} onPay={() => setSheet(true)} />}
+      <Breakdown o={o} t={t} lang={lang} />
       {sheet && (
         <PaymentSheet order={{ id: o.id, total: o.total, key: orderKey(o.id) }} t={t} lang={lang} onReceipt={(p) => { const paid = p as OrderView; downloadReceipt(paid, t, lang, paid.counterparty?.displayName || null); }} onClose={() => setSheet(false)}
           onPaid={() => { setSheet(false); void queryClient.invalidateQueries({ queryKey: orderKey(o.id) }); }} />
       )}
       {o.cancelledAt && o.cancelReason && CANCEL_REASONS.includes(o.cancelReason) && <p className={styles.hint}>{t(`order.cancel_reason.${o.cancelReason}`)}</p>}
-      {shipments.data && <Shipments o={o} items={shipments.data.items} t={t} lang={lang} />}
+      </div>
       {shipments.isError && <FormMessage kind="error">{errorText(shipments.error, t, lang)}</FormMessage>}
       {game.data && o.status !== 'awaiting_payment' && <GameTab o={o} g={game.data} t={t} lang={lang} />}
       {game.isError && o.status !== 'awaiting_payment' && <FormMessage kind="error">{errorText(game.error, t, lang)}</FormMessage>}
-      {disputes.data && <Disputes o={o} items={disputes.data.items} t={t} lang={lang} />}
       {ratings.data && <Ratings o={o} r={ratings.data} t={t} lang={lang} />}
       </div>
       <aside className={styles.rail} aria-label={t('order.next.label')}>
-      <Deadlines o={o} h={handover.data ?? null} t={t} lang={lang} />
-      {handover.data && <Handover o={o} h={handover.data} t={t} lang={lang} after={handoverOpen ? actions : undefined} />}
+      {/* the same slots in every state: 1 how it gets to the buyer (pay, meetup or courier), 2 deadlines, 3 shipment history, 4 what can be done, 5 dispute, 6 the other party */}
+      {awaiting && o.role === 'buyer' && <PayPanel o={o} t={t} lang={lang} onPay={() => setSheet(true)} />}
+      {handover.data && <Handover o={o} h={handover.data} t={t} lang={lang} />}
       {handover.isError && <FormMessage kind="error">{errorText(handover.error, t, lang)}</FormMessage>}
-      {!handoverOpen && !handover.isLoading && <Actions o={o} t={t} lang={lang} />}
+      {shipments.data && o.fulfilment === 'courier' && <Shipments o={o} items={shipments.data.items} t={t} lang={lang} />}
+      {!handover.isLoading && <Deadlines o={o} h={handover.data ?? null} t={t} lang={lang} />}
+      {shipments.data && <ShipmentHistory items={shipments.data.items} t={t} lang={lang} />}
+      {!handover.isLoading && <Actions o={o} t={t} lang={lang} extra={handoverOpen && handover.data ? <ProposeForm o={o} h={handover.data} t={t} lang={lang} /> : undefined} />}
+      {disputes.data && <DisputeSlot o={o} items={disputes.data.items} t={t} lang={lang} />}
       <PartyCard o={o} t={t} lang={lang} />
       </aside>
       </div>
@@ -178,7 +181,7 @@ function Money({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
     <section aria-labelledby="money-title" className={styles.moneyPanel}>
       <h2 id="money-title" className={styles.moneyLabel}>{t('order.counterfoil.stub')}</h2>
       <p className={styles.moneyAmount}>{formatMoney(BigInt(o.total), lang)}</p>
-      <p className={styles.money}>{o.status === 'awaiting_payment' && o.role === 'buyer' ? t('order.counterfoil.unpaid') : moneyText(o, t, lang)}</p>
+      <p className={styles.money}>{o.status === 'awaiting_payment' && o.role === 'buyer' ? t('order.counterfoil.unpaid') : moneyLine(o, t, lang)}</p>
       {out && <p className={styles.hint}>{t('order.money_out_on', { date: out })}</p>}
       {hasReceipt(o) && (
         <button type="button" className={styles.receiptLink} onClick={() => downloadReceipt(o, t, lang, o.counterparty?.displayName || null)}>
@@ -247,70 +250,61 @@ function PayPanel({ o, t, lang, onPay }: { o: OrderView; t: T; lang: Lang; onPay
   const queryClient = useQueryClient();
   const now = useServerNow();
   const [message, setMessage] = useState<string | null>(null);
-  const due = Date.parse(o.paymentDueAt);
-  const over = due <= now;
+  const [changing, setChanging] = useState(false);
+  const [courier, setCourier] = useState(false);
+  const over = Date.parse(o.paymentDueAt) <= now;
   // a game account is paid only once the disclosure is acknowledged and the key exists (Unit 5, checkout_ready)
   const game = useGame(o);
   const isGame = o.fulfilment === 'game_account';
   const blockedByGame = isGame && !gameReady(game.data);
-  const line = (p: string) => formatMoney(BigInt(p), lang, { decimals: 'always' });
-
-  const choose = useMutation({
+  const meet = useMutation({
     mutationFn: () => api.put(`/orders/${encodeURIComponent(o.id)}/fulfilment`, { fulfilment: 'self_pickup' }) as Promise<OrderView>,
-    onSuccess: (next) => queryClient.setQueryData(orderKey(o.id), next),
+    onSuccess: (next) => { queryClient.setQueryData(orderKey(o.id), next); setChanging(false); },
     onError: (e) => setMessage(errorText(e, t, lang)),
   });
   const ready = !!o.fulfilment && !over && !blockedByGame;
-
+  const choosing = !o.fulfilment || changing;
   const total = formatMoney(BigInt(o.total), lang);
-  // one sequence: how you get it, what you pay, pay (the numbers say where the buyer is; the step not yet reached is quiet)
+  // one step: how do you want it? Meeting the seller is chosen at once; courier asks for the address and the fee in a popup
   return (
     <section aria-labelledby="pay-title" className={`${styles.panel} ${styles.early}`}>
       <h2 id="pay-title">{t('pay.title')}</h2>
       {message && <FormMessage kind="error">{message}</FormMessage>}
-      <ol className={styles.flow}>
-        <li className={o.fulfilment ? styles.flowDone : styles.flowNow}>
-          <h3><span className={styles.flowNo} aria-hidden="true">1</span>{t('pay.fulfilment')}</h3>
-          {!o.fulfilment ? (
-            <div className={styles.optionRows}>
-              {o.fulfilmentOptions.includes('self_pickup') && (
-                <div className={styles.optionRow}>
-                  <div><strong>{t('pay.pickup_title')}</strong><p className={styles.hint}>{t('pay.pickup_note')}</p></div>
-                  <button type="button" disabled={choose.isPending || over} onClick={() => choose.mutate()}>{t('pay.self_pickup')}</button>
-                </div>
-              )}
-              {o.fulfilmentOptions.includes('courier') && (
-                <div className={styles.optionRow}>
-                  <CourierChoice o={o} t={t} lang={lang} disabled={over} />
-                </div>
-              )}
-            </div>
-          ) : (
-            <p className={styles.chosenRow}>{t(`pay.chosen.${o.fulfilment}`)}</p>
+      {choosing && !isGame ? (
+        <div className={styles.choiceGrid} role="group" aria-label={t('pay.fulfilment')}>
+          {o.fulfilmentOptions.includes('self_pickup') && (
+            <button type="button" className={styles.choiceCell} disabled={meet.isPending || over} onClick={() => meet.mutate()}>
+              <strong>{t('pay.opt.meet')}</strong><span>{t('pay.opt.meet.note')}</span>
+            </button>
           )}
-          {isGame && game.data && <GamePrepare o={o} g={game.data} t={t} lang={lang} disabled={over} />}
-          {isGame && game.isError && <FormMessage kind="error">{errorText(game.error, t, lang)}</FormMessage>}
-        </li>
-        <li className={o.fulfilment ? styles.flowDone : styles.flowNext}>
-          <h3><span className={styles.flowNo} aria-hidden="true">2</span>{t('pay.step_total')}</h3>
-          <dl className={styles.breakdown}>
-            <dt>{t('pay.item')}</dt><dd>{line(o.itemPrice)}</dd>
-            <dt>{t('pay.delivery')}</dt><dd>{line(o.deliveryFee)}</dd>
-            <dt className={styles.total}>{t('pay.total')}</dt><dd className={styles.total}>{line(o.total)}</dd>
-          </dl>
-          <p className={styles.hint}>{t('pay.fee_note')}</p>
-        </li>
-        <li className={ready ? styles.flowNow : styles.flowNext}>
-          <h3><span className={styles.flowNo} aria-hidden="true">3</span>{t('pay.step_pay')}</h3>
-          <p className={over ? styles.error : styles.hint}>
-            {over ? t('pay.window_over') : t('pay.window', { left: formatCountdown(due - now, lang).text, at: formatDateTime(due, lang) })}
-          </p>
-          <p className={styles.hint}>{t('pay.held_note')}</p>
-          {ready ? (
-            <button type="button" className={styles.primary} onClick={onPay}>{t('pay.pay', { total })}</button>
-          ) : !over && <p className={styles.hint}>{t(blockedByGame ? 'pay.step_game_first' : 'pay.choose_fulfilment')}</p>}
-        </li>
-      </ol>
+          {o.fulfilmentOptions.includes('courier') && (
+            <button type="button" className={styles.choiceCell} disabled={over} onClick={() => setCourier(true)}>
+              <strong>{t('pay.opt.courier')}</strong><span>{t('pay.opt.courier.note')}</span>
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className={styles.chosenGrid}>
+          <dl><div><dt>{t('pay.delivery')}</dt><dd>{t(`pay.chosen.${o.fulfilment}`)}</dd></div></dl>
+          {!isGame && <button type="button" className={styles.changeCell} disabled={over} onClick={() => setChanging(true)}>{t('pay.change')}</button>}
+        </div>
+      )}
+      {courier && (
+        <Popup id="courier-popup" title={t('courier.title')} closeLabel={t('actions.back')} onClose={() => setCourier(false)}>
+          <CourierChoice o={o} t={t} lang={lang} disabled={over} onDone={() => { setCourier(false); setChanging(false); }} />
+        </Popup>
+      )}
+      {isGame && game.data && <GamePrepare o={o} g={game.data} t={t} lang={lang} disabled={over} />}
+      {isGame && game.isError && <FormMessage kind="error">{errorText(game.error, t, lang)}</FormMessage>}
+      {!over && !ready && <p id="pay-why" className={styles.hint}>{t(blockedByGame ? 'pay.step_game_first' : 'pay.choose_fulfilment')}</p>}
+      {over ? <p className={styles.error}>{t('pay.window_over')}</p> : (
+        <div className={styles.payRow}>
+          <div><span>{t('pay.total')}</span><strong>{total}</strong></div>
+          {ready
+            ? <button type="button" className={styles.primary} onClick={onPay}>{t('pay.pay', { total })}</button>
+            : <button type="button" className={styles.primary} disabled aria-describedby="pay-why">{t('pay.pay', { total })}</button>}
+        </div>
+      )}
     </section>
   );
 }

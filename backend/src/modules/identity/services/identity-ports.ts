@@ -25,7 +25,7 @@ import { KycReviewService } from './kyc-review.service';
 import { publish } from './outbox';
 import { RequestContext, SessionService } from './session.service';
 import { StaffService } from './staff.service';
-import { mimeOf, parseVaultKey } from './vault-key';
+import { mimeOf, parseVaultKey, videoKind } from './vault-key';
 
 // The implementations behind Unit 1's ports (ports/index.ts; U1-08). Each adapts the unit's services to the
 // interfaces of the design, so other units never depend on the services themselves (DC-1).
@@ -297,7 +297,10 @@ export class FileVaultPortAdapter implements FileVaultPort {
 
   async store(f: { purpose: FilePurpose; ownerId: string; bytes: Uint8Array }): Promise<StoredFile> {
     let bytes: Buffer = Buffer.from(f.bytes);
-    if (f.purpose !== 'data_export') {
+    if (f.purpose === 'dispute_video') {
+      // a video cannot be re-encoded here; it is accepted only when its first bytes say MP4/QuickTime or WebM, and kept encrypted as it is
+      if (!videoKind(bytes)) throw new Problem('validation-failed', { errors: [{ field: 'file', reason: 'unreadable' }] });
+    } else if (f.purpose !== 'data_export') {
       try {
         bytes = (await reencodeImage(bytes)).jpeg;
       } catch (e) {
@@ -309,7 +312,7 @@ export class FileVaultPortAdapter implements FileVaultPort {
     return {
       key: `v1.${f.purpose}.${fileId}.${s.storageKey}.${s.wrappedDek.toString('base64url')}`,
       sha256: s.sha256.toString('hex'),
-      mime: mimeOf(f.purpose),
+      mime: mimeOf(f.purpose, bytes),
       size: s.size,
     };
   }

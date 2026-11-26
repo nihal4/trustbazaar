@@ -58,11 +58,14 @@ describe('paying for an order', () => {
     renderApp('/orders/o-1', backend());
     const panel = (await screen.findByRole('heading', { name: 'Pay for your order' })).closest('section')!;
     expect(screen.getByText(libEn['sim.payment'])).toBeTruthy();
-    expect(within(panel).getByText('Item').nextElementSibling?.textContent).toBe('৳1,500.00');
-    expect(within(panel).getByText('Delivery').nextElementSibling?.textContent).toBe('৳0.00');
-    expect(within(panel).getByText('Total').nextElementSibling?.textContent).toBe('৳1,500.00');
-    expect(within(panel).getByText("TrustBazaar's fee is paid by the seller. You pay only the total shown.")).toBeTruthy();
-    expect(within(panel).getByText(/^Pay within (15:00|14:5\d) \(by .+\)\.$/)).toBeTruthy();
+    // what the buyer pays is the left column's breakdown (ruled cells), the window and the pay button are in the panel
+    const lines = (await screen.findByRole('heading', { name: 'Order summary' })).closest('section')!;
+    expect(within(lines).getByText('Item').nextElementSibling?.textContent).toBe('৳1,500.00');
+    expect(within(lines).getByText('Delivery').nextElementSibling?.textContent).toBe('৳0.00');
+    expect(within(lines).getByText('Total').nextElementSibling?.textContent).toBe('৳1,500.00');
+    expect(within(lines).getByText("TrustBazaar's fee is paid by the seller. You pay only the total shown.")).toBeTruthy();
+    expect(within(panel).getByText('Total').nextElementSibling?.textContent).toBe('৳1,500'); // the pay row; the deadline is a cell of the Deadlines grid
+    expect(screen.getByText('Pay by').nextElementSibling?.textContent).toMatch(/^Time left(15:00|14:5\d)/);
   });
 
   const openSheet = async () => {
@@ -126,21 +129,21 @@ describe('paying for an order', () => {
     let current = order({ kind: 'auction', fulfilment: null });
     const be = backend({ order: () => current, fulfil: () => { current = order({ kind: 'auction' }); return json(200, current)(); } });
     renderApp('/orders/o-1', be);
-    expect(await screen.findByText('Choose how you get the item before paying.')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /^Pay / })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Pick it up from the seller (no delivery fee)' }));
+    expect(await screen.findByRole('button', { name: /Meet the seller/ })).toBeTruthy();
+    expect((screen.queryByRole('button', { name: /^Pay / }) as HTMLButtonElement | null)?.disabled ?? true).toBe(true); // nothing can be paid yet: no Pay button, or a disabled one
+    fireEvent.click(screen.getByRole('button', { name: /Meet the seller/ }));
     expect(await screen.findByRole('button', { name: 'Pay ৳1,500' })).toBeTruthy();
     expect(be.called('PUT /orders/o-1/fulfilment')[0].body).toEqual({ fulfilment: 'self_pickup' });
     cleanup();
     renderApp('/orders/o-1', backend({ order: order({ kind: 'auction', fulfilment: null, fulfilmentOptions: ['courier'] }) }));
-    expect(await screen.findByRole('heading', { name: 'Courier delivery' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Pick it up from the seller (no delivery fee)' })).toBeNull();
+    expect(await screen.findByRole('button', { name: /Courier to my address/ })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Meet the seller/ })).toBeNull();
   });
 
   it('FR-PAY-01 after the window has passed nothing can be paid', async () => {
     renderApp('/orders/o-1', backend({ order: order({ paymentDueAt: new Date(Date.now() - 1000).toISOString() }) }));
     expect(await screen.findByText('The time to pay has ended.')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /^Pay / })).toBeNull();
+    expect((screen.queryByRole('button', { name: /^Pay / }) as HTMLButtonElement | null)?.disabled ?? true).toBe(true); // nothing can be paid yet: no Pay button, or a disabled one
   });
 });
 
@@ -151,7 +154,7 @@ describe('the return from the provider', () => {
     expect(await screen.findByText('Checking your payment with the provider…')).toBeTruthy();
     expect(await screen.findByText('Payment received. Your money is held by TrustBazaar until you have the item.', {}, { timeout: 8000 })).toBeTruthy();
     expect(screen.getByText(libEn['sim.payment'])).toBeTruthy();
-    expect(screen.getByText(/^Your payment of ৳1,500 is held by TrustBazaar\./)).toBeTruthy();
+    expect(screen.getByText(/^Held by TrustBazaar\. If the seller misses the deadline/)).toBeTruthy();
   }, 15_000);
 
   it('FR-PAY-02 a failed payment says nothing was charged and offers to pay again', async () => {
@@ -178,7 +181,7 @@ describe('the return from the provider', () => {
 describe('the order page', () => {
   it('NFR-USE-07 a paid order says where the money is; the seller is never offered to pay', async () => {
     renderApp('/orders/o-1', backend({ order: paid() }));
-    expect(await screen.findByText(/^Your payment of ৳1,500 is held by TrustBazaar\. The seller must hand the item over by/)).toBeTruthy();
+    expect(await screen.findByText(/^Held by TrustBazaar\. If the seller misses the deadline, you are refunded in full\./)).toBeTruthy();
     expect(screen.queryByText(libEn['sim.payment'])).toBeNull();
     cleanup();
     renderApp('/orders/o-1', backend({ order: order({ role: 'seller' }) }));

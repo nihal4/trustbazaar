@@ -10,7 +10,7 @@ import { Problem } from '../../../kernel/http/problems';
 import { REPORT_CATEGORY, SANCTION_KIND, SanctionKind } from '../db/enums';
 import type { DisputeType, ReportCategory } from '../ports';
 import { DecisionOutcome, DisputeCaseService } from '../services/dispute-case.service';
-import { DisputeService, MAX_EVIDENCE_BYTES } from '../services/dispute.service';
+import { DisputeService, EVIDENCE_MIME, EVIDENCE_VIDEO_MIME, MAX_EVIDENCE_VIDEO_BYTES } from '../services/dispute.service';
 import { PrivacyService } from '../services/privacy.service';
 import { EvidencePackService } from '../services/evidence-pack.service';
 import { QueueName, QUEUES, QueueService } from '../services/queue.service';
@@ -320,6 +320,21 @@ export class TrustController {
     return this.disputes.view(asUser(p), id);
   }
 
+  /** U10-23: the party's chat with TrustBazaar about the dispute. */
+  @SignedIn()
+  @Get('disputes/:id/chat')
+  disputeChat(@Id('id') id: string, @CurrentPrincipal() p: Principal) {
+    return this.disputes.messages(asUser(p), id);
+  }
+
+  /** U10-23: the party has read its dispute chat. */
+  @SignedIn()
+  @Post('disputes/:id/chat/seen')
+  @HttpCode(200)
+  disputeChatSeen(@Id('id') id: string, @CurrentPrincipal() p: Principal) {
+    return this.disputes.markSeen(userOf(p), id);
+  }
+
   /** FR-DSP-04: a statement; the seller's first while it is expected is the response. */
   @SignedIn()
   @Post('disputes/:id/statements')
@@ -328,11 +343,15 @@ export class TrustController {
     return this.disputes.statement(userOf(p), id, dto.text);
   }
 
-  /** Evidence: one image (multipart field file); at most CP-33 per dispute. */
+  /** Evidence: one image or video (multipart field file); at most CP-33 per dispute. */
   @SignedIn()
   @Post('disputes/:id/evidence')
   @HttpCode(201)
-  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_EVIDENCE_BYTES, files: 1, fields: 0, parts: 1 } }))
+  @UseInterceptors(FileInterceptor('file', {
+    limits: { fileSize: MAX_EVIDENCE_VIDEO_BYTES, files: 1, fields: 0, parts: 1 },
+    // a type that is not evidence is refused before the body is buffered
+    fileFilter: (_req, f, cb) => ([...EVIDENCE_MIME, ...EVIDENCE_VIDEO_MIME] as string[]).includes(f.mimetype) ? cb(null, true) : cb(new Problem('validation-failed', { errors: [{ field: 'file', reason: 'type' }] }), false),
+  }))
   evidence(@Id('id') id: string, @UploadedFile() file: { buffer: Buffer; mimetype: string; size: number } | undefined, @CurrentPrincipal() p: Principal) {
     if (!file) throw new Problem('validation-failed', { errors: [{ field: 'file', reason: 'required' }] });
     return this.disputes.evidence(userOf(p), id, file);

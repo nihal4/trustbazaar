@@ -34,6 +34,7 @@ export function subjectPath(s: Subject | null): string | null {
     case 'payout': return '/account/payout';
     case 'account': return '/account/security';
     case 'thread': return `/messages/${id}`;   // a chat notice opens the conversation (U8-13)
+    case 'dispute': return `/disputes/${id}`;   // a dispute notice opens the dispute chat (U10-23)
     default: return null;   // a refund is shown on its order, which the notice text names
   }
 }

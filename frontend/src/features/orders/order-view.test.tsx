@@ -59,6 +59,7 @@ function backend(answers: Answers = {}, o: { order?: OrderView | (() => OrderVie
     'GET /orders/o-1/handover': () => json(200, value(o.handover ?? handover()))(),
     'GET /orders/o-1/shipments': json(200, { items: [] }),
     'GET /me/addresses': json(200, { items: [] }),
+    'POST /orders/o-1/terms-acceptances': json(201, { acceptedAt: iso(0) }),
     'GET /delivery/areas': json(200, { items: [area] }),
     ...answers,
   });
@@ -73,8 +74,8 @@ describe('the order view: money, deadlines and actions', () => {
     await waitFor(() => expect(within(deadlines).getByText('Meetup')).toBeTruthy());
     const rows = within(deadlines).getAllByRole('definition').map((d) => d.textContent);
     expect(rows).toHaveLength(2); // the meetup comes before the fulfilment deadline
-    expect(rows[0]).toMatch(/\(in 1 day 2 h\)$|\(in 1 day 1 h\)$/);
-    expect(rows[1]).toMatch(/\(in 2 days 0 h\)$|\(in 1 day 23 h\)$/);
+    expect(rows[0]).toMatch(/^Time left1 day [12] h/); // the time left as cells, then the date it falls on
+    expect(rows[1]).toMatch(/^Time left(2 days 0|1 day 23) h/);
     expect(within(deadlines).getAllByRole('term').map((d) => d.textContent)).toEqual(['Meetup', 'The seller must hand over or send the item by']);
   });
 
@@ -177,8 +178,14 @@ describe('the meetup handover (Unit 4)', () => {
     expect(await screen.findByText(libEn['confirm.share_handover_code'])).toBeTruthy();
     expect(screen.queryByText('4 8 1 9 0 2')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Show code' }));
-    expect(screen.getByText('4 8 1 9 0 2').getAttribute('aria-label')).toBe('Handover code: 4 8 1 9 0 2');
-    fireEvent.click(screen.getByRole('button', { name: 'Hide code' }));
+    // the terms come first; the code is not shown until the buyer agrees
+    expect(screen.getByText(/You alone are responsible for checking the item/)).toBeTruthy();
+    expect(screen.queryByText('4 8 1 9 0 2')).toBeNull();
+    expect((screen.getByRole('button', { name: 'I agree, show the code' }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('button', { name: 'I agree, show the code' }));
+    expect(await screen.findByText('4 8 1 9 0 2')).toBeTruthy(); // after the acceptance is kept
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(screen.queryByText('4 8 1 9 0 2')).toBeNull();
     expect(spaced('481902', 'bn')).toBe('৪ ৮ ১ ৯ ০ ২');
   });
@@ -219,7 +226,8 @@ describe('the meetup handover (Unit 4)', () => {
     expect(within(proposal).queryByRole('link')).toBeNull(); // never a map link for a user's own place
     expect(within(proposal).getByText('Note: Near the gate')).toBeTruthy();
     fireEvent.click(within(proposal).getByRole('button', { name: 'Accept' }));
-    expect(await screen.findByRole('heading', { name: 'Agreed meetup' })).toBeTruthy();
+    expect(await screen.findByText('Place', { selector: 'dt' })).toBeTruthy(); // the agreed place and time are ruled cells
+    expect(screen.getByText('Agreed', { selector: 'dd' })).toBeTruthy();
     expect(be.called('POST /orders/o-1/meetup-proposals/q-1/accept')).toHaveLength(1);
 
     cleanup();
@@ -305,12 +313,13 @@ describe('courier delivery and shipments (Unit 4)', () => {
     renderApp('/orders/o-1', backend({ 'GET /orders/o-1/shipments': json(200, { items: [shipment()] }) }, { order: courierOrder() }));
     const panel = (await screen.findByRole('heading', { name: 'Delivery' })).closest('section')!;
     expect(within(panel).getByText(libEn['sim.courier'])).toBeTruthy();
-    expect(within(panel).getByText('To the buyer: Booked with the courier')).toBeTruthy();
-    expect(within(panel).getByText('Simulated shipment')).toBeTruthy();
-    expect(within(panel).getByText('None. The item is already paid for.')).toBeTruthy();
+    expect(within(panel).getByText('To the buyer: Booked with the courier')).toBeTruthy(); // for assistive technology; the strip shows it as a cell
+    expect(within(panel).getByText('To the buyer', { selector: 'dt' }).nextElementSibling?.textContent).toBe('Booked with the courier');
     expect(within(panel).getByText('Rahim, House 12, Road 5, Dhanmondi, Dhaka')).toBeTruthy();
     expect(within(panel).getByText("Seller's district").nextElementSibling?.textContent).toBe('Khulna');
-    expect(within(panel).getAllByRole('listitem').map((l) => l.textContent)).toEqual([expect.stringMatching(/: Preparing$/), expect.stringMatching(/: Booked with the courier$/)]);
+    // the status history opens in a popup
+    fireEvent.click(screen.getByRole('button', { name: 'Status history' })); // a cell in the rail
+    expect(within(await screen.findByRole('dialog')).getAllByRole('listitem').map((l) => l.textContent)).toEqual([expect.stringMatching(/^Preparing/), expect.stringMatching(/^Booked with the courier/)]);
     expect(screen.queryByRole('heading', { name: 'Meetup handover' })).toBeNull();
   });
 
@@ -362,17 +371,24 @@ describe('courier delivery and shipments (Unit 4)', () => {
       'PUT /orders/o-1/fulfilment': () => { current = { ...current, fulfilment: 'courier', deliveryFee: '9000', total: '159000' }; return json(200, current)(); },
     }, { order: () => current });
     renderApp('/orders/o-1', be);
-    expect(await screen.findByRole('heading', { name: 'Courier delivery' })).toBeTruthy();
+    fireEvent.click(await screen.findByRole('button', { name: /Courier to my address/ })); // the courier details open in a popup
+    expect(await screen.findByRole('dialog')).toBeTruthy();
     fireEvent.click(await screen.findByRole('button', { name: 'Get the delivery fee' }));
     expect(await screen.findByText('Courier delivery is unavailable right now. Please try again shortly, or pick the item up.')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Get the delivery fee' }));
-    expect(await screen.findByText('Delivery fee: ৳90')).toBeTruthy();
-    expect(screen.getByText(/^This fee holds for (10:00|9:5\d) \(until .+\)\.$/)).toBeTruthy();
+    expect(await screen.findByText('Delivery fee')).toBeTruthy();
+    expect(screen.getByText('Delivery fee').nextElementSibling?.textContent).toBe('৳90');
+    expect(screen.getByText('Valid for').nextElementSibling?.textContent).toMatch(/^(10:00|9:5\d)/);
     expect(be.called('POST /delivery/quotes')[1].body).toEqual({ listingId: 'l-1', quantity: 1, addressId: 'a-1' });
     fireEvent.click(screen.getByRole('button', { name: 'Use courier delivery (৳90)' }));
+    // the courier terms come first; courier is not chosen until the buyer accepts them
+    expect(be.called('PUT /orders/o-1/fulfilment')).toHaveLength(0);
+    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('button', { name: 'I agree, use courier delivery' }));
     expect(await screen.findByRole('button', { name: 'Pay ৳1,590' })).toBeTruthy();
     expect(be.called('PUT /orders/o-1/fulfilment')[0].body).toEqual({ fulfilment: 'courier', quoteId: 'qt-1' });
-    expect(screen.getByText('A courier will deliver the item to your address.')).toBeTruthy();
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull()); // the courier popup and the terms close once courier is chosen
+    expect(screen.getByText('Courier')).toBeTruthy();
   });
 });
 
@@ -435,7 +451,9 @@ describe('the list of orders', () => {
     renderApp('/orders/o-1', backend(), 'bn');
     expect(await screen.findByRole('heading', { name: 'সাক্ষাতে হস্তান্তর' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'কোড দেখুন' }));
-    expect(screen.getByText('৪ ৮ ১ ৯ ০ ২')).toBeTruthy();
+    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('button', { name: 'আমি রাজি, কোড দেখান' }));
+    expect(await screen.findByText('৪ ৮ ১ ৯ ০ ২')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'সময়সীমা' })).toBeTruthy();
   });
 });

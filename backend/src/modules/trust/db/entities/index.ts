@@ -1,5 +1,7 @@
 import { Dispute } from './dispute.entity';
 import { DisputeEvidence } from './dispute-evidence.entity';
+import { DisputeMessage } from './dispute-message.entity';
+import { DisputeChatRead } from './dispute-chat-read.entity';
 import { DisputeStatusChange } from './dispute-status-change.entity';
 import { DisputesOutboxEvent } from './disputes-outbox-event.entity';
 import { DisputeStatement } from './dispute-statement.entity';
@@ -16,6 +18,8 @@ import { TrustStrike } from './trust-strike.entity';
 
 export { Dispute } from './dispute.entity';
 export { DisputeEvidence } from './dispute-evidence.entity';
+export { DisputeMessage } from './dispute-message.entity';
+export { DisputeChatRead } from './dispute-chat-read.entity';
 export { DisputeStatusChange } from './dispute-status-change.entity';
 export { DisputesOutboxEvent } from './disputes-outbox-event.entity';
 export { DisputeStatement } from './dispute-statement.entity';
@@ -34,6 +38,8 @@ export { TrustStrike } from './trust-strike.entity';
 export const ENTITIES = [
   Dispute,
   DisputeEvidence,
+  DisputeMessage,
+  DisputeChatRead,
   DisputeStatusChange,
   DisputesOutboxEvent,
   DisputeStatement,

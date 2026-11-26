@@ -32,6 +32,10 @@ import { IdentityErasure1793491200031 } from './1793491200031-identity-erasure';
 import { DataExport1793491200032 } from './1793491200032-data-export';
 import { LinkedAccounts1793491200033 } from './1793491200033-linked-accounts';
 import { SavedPaymentMethods1793491200034 } from './1793491200034-saved-payment-methods';
+import { DisputeVideo1793491200035 } from './1793491200035-dispute-video';
+import { TermsAcceptances1793491200036 } from './1793491200036-terms-acceptances';
+import { DisputeMessages1793491200037 } from './1793491200037-dispute-messages';
+import { DisputeChatReads1793491200038 } from './1793491200038-dispute-chat-reads';
 
 // The migrations in the order they run: the seven units in unit order, then 09_integration (I-60).
 // Add a new migration at the end; never reorder or edit an applied one.
@@ -70,4 +74,8 @@ export const MIGRATIONS = [
   DataExport1793491200032, // U7-11: export_requests.file_key widened; the privacy.export_ready notice (Decisions log)
   LinkedAccounts1793491200033, // U7-09: the device-key and payout lookups of the linked-account check (Decisions log)
   SavedPaymentMethods1793491200034, // U10-23: the buyer's default payment method, masked (Decisions log)
+  DisputeVideo1793491200035, // U10-23: dispute evidence may be a video, up to 50 MB (Decisions log)
+  TermsAcceptances1793491200036, // U10-23: the buyer's acceptance of the handover, courier and dispute terms, kept (Decisions log)
+  DisputeMessages1793491200037, // U10-23: the dispute chat of each party with TrustBazaar (Decisions log)
+  DisputeChatReads1793491200038, // U10-23: when each party last opened its dispute chat (Decisions log)
 ];

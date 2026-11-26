@@ -1,8 +1,10 @@
 // <ConfirmDialog> (section 8.4): every action that moves money, ends a right or cannot be undone states its
 // consequence with the real amounts and times, and the confirm button names the action and its amount rather
-// than saying "OK". Native <dialog>: focus moves in, Escape cancels, focus returns to the opener.
-import { useEffect, useRef, type ReactNode } from 'react';
-import styles from './shell.module.css';
+// than saying "OK". It is a Popup (the sheet over a blurred page, as every other popup): focus moves in, Escape and
+// the close button cancel, focus returns to the opener.
+import type { ReactNode } from 'react';
+import { Popup, PopupActions } from './Popup';
+import styles from './popup.module.css';
 
 export interface ConfirmDialogProps {
   id: string;
@@ -17,26 +19,13 @@ export interface ConfirmDialogProps {
 }
 
 export function ConfirmDialog({ id, title, children, confirmLabel, cancelLabel, busy = false, onConfirm, onCancel }: ConfirmDialogProps) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  const opener = useRef<Element | null>(null);
-  useEffect(() => {
-    opener.current = document.activeElement;
-    const d = dialog.current;
-    if (d && typeof d.showModal === 'function' && !d.open) d.showModal();
-    else d?.setAttribute('open', '');
-    return () => {
-      if (opener.current instanceof HTMLElement) opener.current.focus();
-    };
-  }, []);
   return (
-    <dialog ref={dialog} className={styles.dialog} aria-labelledby={`${id}-title`} aria-describedby={`${id}-body`}
-      onCancel={(e) => { e.preventDefault(); if (!busy) onCancel(); }}>
-      <h2 id={`${id}-title`}>{title}</h2>
-      <div id={`${id}-body`}>{children}</div>
-      <div className={styles.dialogActions}>
-        <button type="button" onClick={onConfirm} disabled={busy} aria-busy={busy} autoFocus>{confirmLabel}</button>
-        <button type="button" onClick={onCancel} disabled={busy}>{cancelLabel}</button>
-      </div>
-    </dialog>
+    <Popup id={id} title={title} closeLabel={cancelLabel} decorativeClose describedBy={`${id}-body`} busy={busy} onClose={onCancel}>
+      <div id={`${id}-body`} className={styles.body}>{children}</div>
+      <PopupActions>
+        <button type="button" onClick={onConfirm} disabled={busy} aria-busy={busy}>{confirmLabel}</button>
+        <button type="button" onClick={onCancel} disabled={busy} data-autofocus>{cancelLabel}</button>
+      </PopupActions>
+    </Popup>
   );
 }

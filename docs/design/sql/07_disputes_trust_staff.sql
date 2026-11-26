@@ -160,8 +160,8 @@ CREATE TABLE disputes.evidence (
   party        disputes.party NOT NULL,
   storage_key  varchar(300) UNIQUE,                -- Unit 1 FileVault key, evidence purpose (encrypted; U7-03); NULL once purged (U7-07)
   sha256       bytea NOT NULL CHECK (octet_length(sha256) = 32),
-  mime         varchar(30) NOT NULL CHECK (mime IN ('image/jpeg', 'image/png', 'image/webp', 'application/pdf')),
-  byte_size    integer NOT NULL CHECK (byte_size BETWEEN 1 AND 10485760),     -- CP-33
+  mime         varchar(30) NOT NULL CHECK (mime IN ('image/jpeg', 'image/png', 'image/webp', 'application/pdf', 'video/mp4', 'video/webm')),
+  byte_size    integer NOT NULL CHECK (byte_size BETWEEN 1 AND 52428800),     -- CP-33: a photo 10 MB (the service); a video 50 MB (U10-23)
   at           timestamptz NOT NULL DEFAULT now(),
   purged_at    timestamptz,
   CONSTRAINT evidence_purged CHECK ((purged_at IS NULL) = (storage_key IS NOT NULL))
@@ -733,3 +733,29 @@ GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA disputes, trust, staff TO t
 REVOKE UPDATE ON disputes.history, disputes.statements, disputes.evidence, trust.strikes,
                  staff.config_versions, staff.config_values FROM tb_app;
 GRANT SELECT ON trust.profile_summary TO tb_app;
+
+-- U10-23 (Decisions log, 2026-11-26): the dispute chat. The parties never write to each other; each has a chat with TrustBazaar: its own statements and
+-- what TrustBazaar sent it, kept as the notice template and its parameters.
+CREATE TABLE disputes.messages (
+  id          bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  dispute_id  uuid         NOT NULL REFERENCES disputes.disputes(id),
+  user_id     uuid         NOT NULL REFERENCES identity.users(id),
+  template    varchar(60)  NOT NULL,
+  params      jsonb        NOT NULL DEFAULT '{}',
+  key         varchar(160) NOT NULL,
+  at          timestamptz  NOT NULL DEFAULT now(),
+  UNIQUE (user_id, key)
+);
+CREATE INDEX messages_dispute_user ON disputes.messages (dispute_id, user_id, at);
+CREATE TRIGGER messages_append_only BEFORE UPDATE OR DELETE ON disputes.messages FOR EACH ROW EXECUTE FUNCTION identity.forbid_change();
+GRANT SELECT, INSERT ON disputes.messages TO tb_app;
+GRANT USAGE ON SEQUENCE disputes.messages_id_seq TO tb_app;
+
+-- U10-23: when each party last opened its dispute chat (the count of unseen messages on the order page)
+CREATE TABLE disputes.chat_reads (
+  dispute_id  uuid        NOT NULL REFERENCES disputes.disputes(id),
+  user_id     uuid        NOT NULL REFERENCES identity.users(id),
+  seen_at     timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (dispute_id, user_id)
+);
+GRANT SELECT, INSERT, UPDATE ON disputes.chat_reads TO tb_app;

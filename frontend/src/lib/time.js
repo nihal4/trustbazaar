@@ -31,6 +31,19 @@ export function formatDateTime(ms, lang = 'en') {
 }
 
 /**
+ * The parts of a time, for showing a date as ruled cells: weekday, day, month, year, "h:mm" and the day period, in Dhaka time with local digits.
+ * @param {number} ms epoch milliseconds @param {'en'|'bn'} lang
+ */
+export function dateParts(ms, lang = 'en') {
+  const d = new Date(ms);
+  const pm = Number(hourIn.format(d)) >= 12;
+  const parts = fmt[lang].formatToParts(d);
+  const get = (/** @type {string} */ t) => toLocalDigits(parts.find((p) => p.type === t)?.value ?? '', lang);
+  const period = lang === 'bn' ? (pm ? 'অপরাহ্ণ' : 'পূর্বাহ্ণ') : pm ? 'PM' : 'AM';
+  return { weekday: get('weekday'), day: get('day'), month: get('month'), year: get('year'), time: `${get('hour')}:${get('minute')}`, period };
+}
+
+/**
  * Countdown text. Above a day: days and hours; above an hour: hours and minutes; below: m:ss.
  * @param {number} ms remaining milliseconds @param {'en'|'bn'} lang
  * @returns {{text: string, ended: boolean, urgent: boolean}}
