@@ -172,7 +172,7 @@ export function Component() {
   // the foot of the first two steps: the way to an account, in the words the page already had
   const toRegister = (
     <p className={styles.footNote}>
-      {t('signin.welcome')} {t('signin.no_account')}{' '}
+      {t('signin.no_account')}{' '}
       <Link to={next ? `/register?next=${encodeURIComponent(next)}` : '/register'}>{t('register.link')}</Link>
     </p>
   );

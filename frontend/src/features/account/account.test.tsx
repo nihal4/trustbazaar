@@ -416,7 +416,7 @@ describe('sign-in and registration layout', () => {
     const link = screen.getByRole('link', { name: 'Create an account' });
     expect(link.getAttribute('href')).toBe(`/register?next=${encodeURIComponent('/orders')}`);
     expect(button.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();   // after the button, not above the field
-    expect(screen.getByText(/^Welcome back\. New to TrustBazaar\?/)).toBeTruthy();
+    expect(screen.getByText(/^New to TrustBazaar\?/)).toBeTruthy();                                      // not 'welcome back' and 'new' in one breath
     expect(screen.queryByText('Your money waits with us')).toBeNull();                              // no advertising on the sign-in page
   });
 
