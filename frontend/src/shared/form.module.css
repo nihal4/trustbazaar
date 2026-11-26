@@ -142,3 +142,23 @@ div.success > :first-child,
 div.error > :first-child {
   margin-top: 0;
 }
+
+/* U10-25 (redesign v3): in the dark user app a field is a ruled line, not a box: a hairline underline, the hot-colour line on focus */
+:root[data-theme='dark'] .field input {
+  border: 0;
+  border-bottom: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: none;
+  padding-inline: 0.25rem;
+}
+
+:root[data-theme='dark'] .field input:focus-visible {
+  outline: 0;
+  border-bottom-color: var(--tb-hot);
+  box-shadow: inset 0 -2px 0 var(--tb-hot);
+}
+
+:root[data-theme='dark'] .field input[aria-invalid='true'] {
+  border: 0;
+  border-bottom: 2px solid var(--tb-error);
+}

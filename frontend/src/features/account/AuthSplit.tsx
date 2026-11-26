@@ -1,9 +1,8 @@
-// The split layout of sign-in and registration (Daylight design, docs/design/10_visual.md, section 7.8, AC-ACC-1):
-// the form on the left; from 60rem a peach-cream side on the right with the payment promise as a price tag hanging
-// on a laptop. On phones it is the form only (the side is not displayed).
+// The split layout of sign-in and registration (U10-25, redesign v3): the form on the left on ruled fields; from 60rem a field of hairline squares on
+// the right (GridField) with the payment promise in one ruled cell at its foot. On phones it is the form only (the side is not displayed).
 import type { ReactNode } from 'react';
 import { useAccountT } from './common';
-import laptop from './signin-laptop.webp';
+import { GridField } from './GridField';
 import styles from './account.module.css';
 
 export function AuthSplit({ children }: { children: ReactNode }) {
@@ -12,12 +11,10 @@ export function AuthSplit({ children }: { children: ReactNode }) {
     <div className={styles.split}>
       <div className={styles.splitForm}>{children}</div>
       <div className={styles.splitSide}>
-        <div className={styles.sideStage}>
-          <img src={laptop} alt="" width={440} height={361} />
-          <div className={styles.sideTag}>
-            <p className={styles.sideTitle}>{t('side.promise_title')}</p>
-            <p>{t('side.promise_text')}</p>
-          </div>
+        <GridField />
+        <div className={styles.sideNote}>
+          <p className={styles.sideTitle}>{t('side.promise_title')}</p>
+          <p>{t('side.promise_text')}</p>
         </div>
       </div>
     </div>
