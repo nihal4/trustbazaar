@@ -3,15 +3,14 @@
 // The reference ChatThread (lib/live.js) keeps the messages in order: a live chat.message is appended if it is the
 // next number, a gap or a reconnection fetches the missing ones (IF-COM-02), and our own message, shown as
 // "Sending…" with its client id, is confirmed when the server's copy arrives. Block and report are on the thread.
-import { Fragment, useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChatThread } from '../../lib/live.js';
-import { toLocalDigits } from '../../lib/money.js';
+
 import { dateParts } from '../../lib/time.js';
 import { useApi, type Api } from '../../shared/api';
-import { ConfirmDialog } from '../../shared/ConfirmDialog';
-import { Popup, PopupActions } from '../../shared/Popup';
+
 import { THREADS_UNREAD_KEY } from '../../shared/notifications';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
@@ -25,43 +24,21 @@ import { isApiError, problemName } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import en from '../../messages/en/chat.json';
 import bn from '../../messages/bn/chat.json';
-import {
-  fetchMessages,
-  fetchThreads,
-  hasWebAddress,
-  knownFlags,
-  newClientId,
-  THREADS_KEY,
-  toChatMessage,
-  type ChatMessage,
-  type LiveMessage,
-  type ThreadSummary,
-} from './model';
+import { fetchMessages, fetchThreads, newClientId, THREADS_KEY, toChatMessage, type ChatMessage, type LiveMessage, type ThreadSummary } from './model';
 import styles from './chat.module.css';
 
+import { ThreadActions } from './ThreadActions';
+import { MessageItem } from './MessageItem';
+import { Dock } from './Dock';
+import { chatError, stroke } from './threadParts';
+
 const CATALOGUES = { en, bn };
-/** DV-40 */
-export const MAX_TEXT = 2000;
-const MAX_CAPTION = 300;
-const stroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
 const BackIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
     <path d="M15 5 L8 12 L15 19" {...stroke} />
   </svg>
 );
-const SendIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-    <path d="M4 12 L20 4 L14 20 L11 13 Z M11 13 L20 4" {...stroke} />
-  </svg>
-);
-const ClipIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-    <path d="M20 11 L12 19 a5 5 0 0 1 -7 -7 L13 4 a3.5 3.5 0 0 1 5 5 L10 17 a2 2 0 0 1 -3 -3 L14 7" {...stroke} />
-  </svg>
-);
 const initialOf = (name: string) => (Array.from(name.trim())[0] ?? '?').toUpperCase();
-const CATEGORIES = ['fraudulent', 'counterfeit', 'prohibited', 'misrepresented', 'abusive'] as const;
-type Category = (typeof CATEGORIES)[number];
 
 /** The thread's summary from the thread list (there is no GET /threads/{id}): the newest pages first. */
 async function findThread(api: Api, id: string, signal?: AbortSignal): Promise<ThreadSummary | null> {
@@ -74,14 +51,6 @@ async function findThread(api: Api, id: string, signal?: AbortSignal): Promise<T
     cursor = page.nextCursor;
   }
   return null;
-}
-
-/** A chat-specific message for the problems the chat answers, else the generic one. */
-function chatError(e: unknown, t: T, lang: Lang): string {
-  const name = problemName(e);
-  if (name === 'blocked') return t('error.blocked');
-  if (name === 'thread-closed') return t('error.thread_closed');
-  return errorText(e, t, lang);
 }
 
 export function Component() {
@@ -353,368 +322,5 @@ function Conversation({ id, t, lang }: { id: string; t: T; lang: Lang }) {
         )}
       </div>
     </div>
-  );
-}
-
-function MessageItem({
-  m,
-  role,
-  threadId,
-  mark,
-  t,
-  lang,
-}: {
-  m: ChatMessage;
-  role: 'buyer' | 'seller' | null;
-  threadId: string;
-  mark: 'read' | 'delivered' | null;
-  t: T;
-  lang: Lang;
-}) {
-  const flags = knownFlags(m.flags);
-  return (
-    <li className={`${styles.message} ${m.fromMe ? styles.mine : styles.theirs}`}>
-      <span className={styles.sender}>{m.fromMe ? t('thread.you') : null}</span>
-      {m.removed ? (
-        <p className={styles.muted}>{t('thread.removed')}</p>
-      ) : (
-        <>
-          {m.kind === 'image' &&
-            (m.image ? (
-              <img className={styles.image} src={m.image.url} alt={m.caption ?? t('thread.image_alt')} loading="lazy" />
-            ) : (
-              <p className={styles.muted}>{t('thread.image_loading')}</p>
-            ))}
-          {m.kind === 'image' && m.caption && <p className={styles.text}>{m.caption}</p>}
-          {m.kind === 'text' && <p className={styles.text}>{m.text}</p>}
-          {hasWebAddress(m.text ?? m.caption) && <p className={styles.linkWarning}>{t('thread.link_warning')}</p>}
-        </>
-      )}
-      {flags.map((f) => (
-        <p key={f} className={styles.flag} role="note">
-          {t(`flag.${f}`)}
-          {f === 'credentials' && role === 'seller' && <> {t('flag.credentials_seller')}</>}
-        </p>
-      ))}
-      <div className={styles.foot}>
-        {!m.fromMe && !m.removed && <ReportForm threadId={threadId} seq={m.seq} t={t} lang={lang} />}
-        <span className={styles.time}>
-          {(() => {
-            const p = dateParts(Date.parse(m.at), lang);
-            return (
-              <>
-                <span className={styles.visuallyHidden}>{`${p.weekday}, ${p.day} ${p.month} ${p.year}, `}</span>
-                {`${p.time} ${p.period}`}
-              </>
-            );
-          })()}
-          {mark && <> · {t(`thread.${mark}`)}</>}
-        </span>
-      </div>
-    </li>
-  );
-}
-
-/** The foot of the conversation: attach, a field that grows with what is typed (Enter sends, Shift+Enter breaks the line), and the round send button.
- *  FR-CHT-03: one photo with an optional caption; Unit 6 checks it and removes its metadata. A chosen photo waits in a panel above the bar. */
-function Dock({ threadId, t, lang, onSend, onSent }: { threadId: string; t: T; lang: Lang; onSend: (text: string) => void; onSent: () => void }) {
-  const api = useApi();
-  const [text, setText] = useState('');
-  const field = useRef<HTMLTextAreaElement>(null);
-  const length = [...text.normalize('NFC')].length;
-  const tooLong = length > MAX_TEXT;
-  const [file, setFile] = useState<File | null>(null);
-  const [caption, setCaption] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const clientId = useRef<string | null>(null);
-  const input = useRef<HTMLInputElement>(null);
-  const grow = () => {
-    const el = field.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = `${Math.min(el.scrollHeight, 144)}px`;
-  };
-  const submit = (ev?: FormEvent) => {
-    ev?.preventDefault();
-    const body = text.trim();
-    if (!body || tooLong) return;
-    onSend(body);
-    setText('');
-    requestAnimationFrame(grow);
-  };
-  const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-      e.preventDefault();
-      submit();
-    }
-  };
-  const reset = () => {
-    setFile(null);
-    setCaption('');
-    clientId.current = null;
-    if (input.current) input.current.value = '';
-  };
-  const sendPhoto = (ev: FormEvent) => {
-    ev.preventDefault();
-    if (!file || busy) return;
-    clientId.current ??= newClientId(); // the same id for a resend of this photo
-    const form = new FormData();
-    form.set('clientId', clientId.current);
-    if (caption.trim()) form.set('caption', caption.trim());
-    form.set('image', file);
-    setBusy(true);
-    setError(null);
-    api
-      .post(`/threads/${encodeURIComponent(threadId)}/images`, form)
-      .then(
-        () => {
-          reset();
-          onSent();
-        },
-        (e: unknown) => setError(chatError(e, t, lang)),
-      )
-      .finally(() => setBusy(false));
-  };
-  return (
-    <div className={styles.dock}>
-      {file && (
-        <form className={styles.photoPanel} onSubmit={sendPhoto} noValidate>
-          <p className={styles.fileName}>{file.name}</p>
-          <label htmlFor="chat-caption">{t('thread.caption')}</label>
-          <input id="chat-caption" type="text" maxLength={MAX_CAPTION} value={caption} onChange={(e) => setCaption(e.target.value)} />
-          {error && <FormMessage kind="error">{error}</FormMessage>}
-          <div className={styles.buttons}>
-            <button type="submit" className={styles.primary} disabled={busy} aria-busy={busy}>
-              {busy ? t('thread.sending') : t('thread.send_photo')}
-            </button>
-            <button type="button" className={styles.secondary} onClick={reset} disabled={busy}>
-              {t('thread.cancel_photo')}
-            </button>
-          </div>
-        </form>
-      )}
-      <div className={styles.bar}>
-        <div className={styles.attach}>
-          <label htmlFor="chat-photo" className={styles.iconBtn} title={t('thread.photo')}>
-            <ClipIcon />
-            <span className={styles.visuallyHidden}>{t('thread.photo')}</span>
-          </label>
-          <input
-            id="chat-photo"
-            ref={input}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              setFile(e.target.files?.[0] ?? null);
-              clientId.current = null;
-            }}
-          />
-        </div>
-        <form className={styles.composer} onSubmit={submit} noValidate>
-          <label htmlFor="chat-text" className={styles.visuallyHidden}>
-            {t('thread.label')}
-          </label>
-          <textarea
-            id="chat-text"
-            ref={field}
-            className={styles.field}
-            rows={1}
-            value={text}
-            aria-describedby="chat-hint chat-count"
-            aria-invalid={tooLong || undefined}
-            onChange={(e) => {
-              setText(e.target.value);
-              grow();
-            }}
-            onKeyDown={onKey}
-          />
-          <button type="submit" className={styles.sendBtn} disabled={!text.trim() || tooLong}>
-            <SendIcon />
-            <span className={styles.visuallyHidden}>{t('thread.send')}</span>
-          </button>
-        </form>
-      </div>
-      <p id="chat-hint" className={`${styles.hint} ${styles.dockNote}`}>
-        {t('thread.hint')}
-      </p>
-      <p
-        id="chat-count"
-        className={tooLong ? `${styles.error} ${styles.dockNote}` : length > MAX_TEXT - 200 ? `${styles.hint} ${styles.dockNote}` : styles.visuallyHidden}
-      >
-        {tooLong
-          ? t('thread.too_long', { max: toLocalDigits(String(MAX_TEXT), lang) })
-          : t('thread.counter', { count: toLocalDigits(String(length), lang), max: toLocalDigits(String(MAX_TEXT), lang) })}
-      </p>
-    </div>
-  );
-}
-
-/** FR-CHT-08 and FR-CHT-06: block with its consequence stated first (section 8.4), and report the thread. */
-function ThreadActions({ threadId, other, t, lang }: { threadId: string; other: { id: string; displayName: string }; t: T; lang: Lang }) {
-  const api = useApi();
-  const [confirming, setConfirming] = useState(false);
-  const [blocked, setBlocked] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<Note | null>(null);
-  const name = other.displayName;
-  const path = `/blocks/${encodeURIComponent(other.id)}`;
-  const block = () => {
-    setBusy(true);
-    api
-      .post(path, {})
-      .then(
-        () => {
-          setBlocked(true);
-          setMessage({ kind: 'success', text: t('thread.blocked_done', { name }) });
-        },
-        (e: unknown) => setMessage({ kind: 'error', text: errorText(e, t, lang) }),
-      )
-      .finally(() => {
-        setBusy(false);
-        setConfirming(false);
-      });
-  };
-  const unblock = () => {
-    setBusy(true);
-    api
-      .del(path)
-      .then(
-        () => {
-          setBlocked(false);
-          setMessage({ kind: 'success', text: t('thread.unblocked_done', { name }) });
-        },
-        (e: unknown) => setMessage({ kind: 'error', text: errorText(e, t, lang) }),
-      )
-      .finally(() => setBusy(false));
-  };
-  return (
-    <section aria-label={t('thread.actions')} className={styles.actionsWrap}>
-      <div className={styles.actions}>
-        {blocked ? (
-          <button type="button" className={styles.secondary} onClick={unblock} disabled={busy}>
-            {t('thread.unblock', { name })}
-          </button>
-        ) : (
-          <button type="button" className={styles.secondary} onClick={() => setConfirming(true)} disabled={busy}>
-            {t('thread.block', { name })}
-          </button>
-        )}
-        <ReportForm threadId={threadId} seq={null} t={t} lang={lang} onNote={setMessage} />
-      </div>
-      {message && (
-        <div className={styles.actionNote}>
-          <FormMessage kind={message.kind}>{message.text}</FormMessage>
-        </div>
-      )}
-      {confirming && (
-        <ConfirmDialog
-          id="block-confirm"
-          title={t('confirm.block.title', { name })}
-          confirmLabel={t('confirm.block.confirm', { name })}
-          cancelLabel={t('confirm.cancel')}
-          busy={busy}
-          onConfirm={block}
-          onCancel={() => setConfirming(false)}
-        >
-          <p>{t('confirm.block.body', { name })}</p>
-        </ConfirmDialog>
-      )}
-    </section>
-  );
-}
-
-/** A report of the thread (seq null) or of one of the other party's messages, to the report queue (Unit 7). It opens in a popup over the page;
- *  the answer after it closes is given by the caller (`onNote`, for the thread) or under the button (for a message). */
-type Note = { kind: 'error' | 'success' | 'info'; text: string };
-function ReportForm({ threadId, seq, t, lang, onNote }: { threadId: string; seq: number | null; t: T; lang: Lang; onNote?: (n: Note | null) => void }) {
-  const api = useApi();
-  const [open, setOpen] = useState(false);
-  const [category, setCategory] = useState<Category | null>(null);
-  const [text, setText] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<Note | null>(null);
-  const base = seq === null ? 'report-thread' : `report-${seq}`;
-  // inside the popup an error stays in the popup; what is said after it closes goes to the caller or under the button
-  const said = (n: Note | null) => (onNote ? onNote(n) : setMessage(n));
-  const submit = (ev: FormEvent) => {
-    ev.preventDefault();
-    if (!category) {
-      setMessage({ kind: 'error', text: t('report.choose') });
-      return;
-    }
-    setBusy(true);
-    api
-      .post(`/threads/${encodeURIComponent(threadId)}/reports`, {
-        category,
-        ...(seq !== null ? { messageSeq: seq } : {}),
-        ...(text.trim() ? { text: text.trim() } : {}),
-      })
-      .then(
-        () => {
-          setOpen(false);
-          setMessage(null);
-          said({ kind: 'success', text: t('report.sent') });
-        },
-        (e: unknown) => {
-          if (problemName(e) === 'feature-off') {
-            setOpen(false);
-            setMessage(null);
-            said({ kind: 'info', text: t('report.unavailable') });
-          } else setMessage({ kind: 'error', text: errorText(e, t, lang) });
-        },
-      )
-      .finally(() => setBusy(false));
-  };
-  return (
-    <>
-      {!open && !onNote && message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
-      <button
-        type="button"
-        className={styles.linkButton}
-        onClick={() => {
-          setOpen(true);
-          setMessage(null);
-          said(null);
-        }}
-      >
-        {t(seq === null ? 'report.thread' : 'report.message')}
-      </button>
-      {open && (
-        <Popup
-          id={base}
-          title={t(seq === null ? 'report.title_thread' : 'report.title_message')}
-          closeLabel={t('report.cancel')}
-          busy={busy}
-          onClose={() => setOpen(false)}
-        >
-          <form className={styles.report} onSubmit={submit} noValidate>
-            <fieldset>
-              <legend className={styles.visuallyHidden}>{t(seq === null ? 'report.title_thread' : 'report.title_message')}</legend>
-              <p className={styles.hint}>{t('report.category')}</p>
-              {CATEGORIES.map((c) => (
-                <div key={c}>
-                  <input id={`${base}-${c}`} type="radio" name={base} checked={category === c} onChange={() => setCategory(c)} />
-                  <label htmlFor={`${base}-${c}`}>{t(`report.category.${c}`)}</label>
-                </div>
-              ))}
-            </fieldset>
-            <label className={styles.fieldLabel} htmlFor={`${base}-text`}>
-              {t('report.text')}
-            </label>
-            <textarea id={`${base}-text`} rows={3} maxLength={MAX_TEXT} value={text} onChange={(e) => setText(e.target.value)} />
-            {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
-            <PopupActions>
-              <button type="submit" disabled={busy} aria-busy={busy}>
-                {t('report.send')}
-              </button>
-              <button type="button" onClick={() => setOpen(false)} disabled={busy}>
-                {t('report.cancel')}
-              </button>
-            </PopupActions>
-          </form>
-        </Popup>
-      )}
-    </>
   );
 }

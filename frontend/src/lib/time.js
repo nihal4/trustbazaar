@@ -7,10 +7,28 @@ import { toLocalDigits } from './money.js';
 export const TZ = 'Asia/Dhaka';
 
 const fmt = {
-  en: new Intl.DateTimeFormat('en-GB', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
-    hour: 'numeric', minute: '2-digit', hour12: true, numberingSystem: 'latn' }),
-  bn: new Intl.DateTimeFormat('bn-BD', { timeZone: TZ, weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
-    hour: 'numeric', minute: '2-digit', hour12: true, numberingSystem: 'beng' }),
+  en: new Intl.DateTimeFormat('en-GB', {
+    timeZone: TZ,
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    numberingSystem: 'latn',
+  }),
+  bn: new Intl.DateTimeFormat('bn-BD', {
+    timeZone: TZ,
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    numberingSystem: 'beng',
+  }),
 };
 const hourIn = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: 'numeric', hourCycle: 'h23' });
 
@@ -51,7 +69,10 @@ export function dateParts(ms, lang = 'en') {
 export function formatCountdown(ms, lang = 'en') {
   if (ms <= 0) return { text: lang === 'bn' ? 'শেষ হয়েছে' : 'Ended', ended: true, urgent: false };
   const s = Math.ceil(ms / 1000);
-  const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  const d = Math.floor(s / 86400),
+    h = Math.floor((s % 86400) / 3600),
+    m = Math.floor((s % 3600) / 60),
+    sec = s % 60;
   const p2 = (/** @type {number} */ n) => String(n).padStart(2, '0');
   let text;
   if (d >= 1) text = lang === 'bn' ? `${d} দিন ${h} ঘণ্টা` : `${d} ${d === 1 ? 'day' : 'days'} ${h} h`;
@@ -100,13 +121,25 @@ export class ServerClock {
   #add(s) {
     this.samples.push(s);
     if (this.samples.length > this.window) this.samples.shift();
-    let lo = -Infinity, hi = Infinity;
-    for (const x of this.samples) { lo = Math.max(lo, x.lo); hi = Math.min(hi, x.hi); }
-    if (lo > hi) { this.samples = [s]; lo = s.lo; hi = s.hi; }
+    let lo = -Infinity,
+      hi = Infinity;
+    for (const x of this.samples) {
+      lo = Math.max(lo, x.lo);
+      hi = Math.min(hi, x.hi);
+    }
+    if (lo > hi) {
+      this.samples = [s];
+      lo = s.lo;
+      hi = s.hi;
+    }
     this.estimate = Number.isFinite(hi) ? (lo + hi) / 2 : lo;
   }
   /** offset in ms to add to the device clock */
-  get offset() { return this.estimate; }
+  get offset() {
+    return this.estimate;
+  }
   /** the server's current time, estimated */
-  now() { return this.local() + this.estimate; }
+  now() {
+    return this.local() + this.estimate;
+  }
 }

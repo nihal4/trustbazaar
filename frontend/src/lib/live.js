@@ -7,7 +7,9 @@
  * @typedef {{seq: number, price: number, endAt: number, serverTime: number}} AuctionState
  */
 export class AuctionFeed {
-  constructor() { /** @type {AuctionState | null} */ this.state = null; }
+  constructor() {
+    /** @type {AuctionState | null} */ this.state = null;
+  }
   /** @param {AuctionState} s @returns {boolean} whether the view must update */
   apply(s) {
     if (this.state && s.seq <= this.state.seq) return false;
@@ -27,12 +29,17 @@ export class ChatThread {
     this.needsResync = false;
   }
   /** @param {string} text @param {string} clientMsgId a random id kept for the resends of one message */
-  send(text, clientMsgId) { this.pending.set(clientMsgId, { clientMsgId, text }); }
+  send(text, clientMsgId) {
+    this.pending.set(clientMsgId, { clientMsgId, text });
+  }
 
   /** a message pushed over the socket @param {ChatMessage} m */
   receive(m) {
-    if (m.seq <= this.lastSeq) return;                  // already have it
-    if (m.seq > this.lastSeq + 1) { this.needsResync = true; return; }   // gap: fetch ?after=lastSeq
+    if (m.seq <= this.lastSeq) return; // already have it
+    if (m.seq > this.lastSeq + 1) {
+      this.needsResync = true;
+      return;
+    } // gap: fetch ?after=lastSeq
     this.#append(m);
   }
 

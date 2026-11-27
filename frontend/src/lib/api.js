@@ -10,7 +10,7 @@
 //  * errors are RFC 9457 problem documents with a correlationId (DC-3, SEC-INP-06).
 
 const STATE_CHANGING = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
-const REFRESH_MARK = 'tb.refreshedAt';     // a time, not a secret: when some tab last refreshed
+const REFRESH_MARK = 'tb.refreshedAt'; // a time, not a secret: when some tab last refreshed
 
 export class ApiError extends Error {
   /**
@@ -63,9 +63,18 @@ export function readCookie(cookieHeader, name) {
  * @param {(ms: number) => Promise<void>} [o.sleep]
  */
 export function createApi({
-  base = '/api/v1', fetch: f = globalThis.fetch.bind(globalThis), cookies = () => document.cookie,
-  locks = globalThis.navigator?.locks, store = globalThis.localStorage, stepUp, onSignedOut = () => {},
-  probePath = '/me', csrfCookie = '__Host-tb_csrf', refreshPath = '/auth/refresh', now = () => Date.now(), sleep = (ms) => new Promise((r) => setTimeout(r, ms)),
+  base = '/api/v1',
+  fetch: f = globalThis.fetch.bind(globalThis),
+  cookies = () => document.cookie,
+  locks = globalThis.navigator?.locks,
+  store = globalThis.localStorage,
+  stepUp,
+  onSignedOut = () => {},
+  probePath = '/me',
+  csrfCookie = '__Host-tb_csrf',
+  refreshPath = '/auth/refresh',
+  now = () => Date.now(),
+  sleep = (ms) => new Promise((r) => setTimeout(r, ms)),
 } = {}) {
   /** @type {Promise<boolean> | null} one refresh at a time inside this tab */
   let inFlight = null;
@@ -79,20 +88,31 @@ export function createApi({
         // with a delay, so a missing mark proves nothing. The probe asks the cookie jar itself.
         const mark = Number(store?.getItem(REFRESH_MARK + refreshPath) ?? 0);
         if (mark >= failedAt) return true;
-        const probe = await f(base + probePath, { method: 'GET', credentials: 'same-origin',
-          headers: { Accept: 'application/json' } }).catch(() => null);
+        const probe = await f(base + probePath, { method: 'GET', credentials: 'same-origin', headers: { Accept: 'application/json' } }).catch(() => null);
         if (probe?.ok) return true;
         for (let attempt = 0; attempt < 2; attempt++) {
-          const r = await f(base + refreshPath, { method: 'POST', credentials: 'same-origin',
-            headers: { 'X-CSRF-Token': readCookie(cookies(), csrfCookie) ?? '' } });
-          if (r.status === 204 || r.ok) { store?.setItem(REFRESH_MARK + refreshPath, String(now())); return true; }
-          if (r.status === 409) { await sleep(300); continue; }   // rotated a moment ago by another tab
+          const r = await f(base + refreshPath, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'X-CSRF-Token': readCookie(cookies(), csrfCookie) ?? '' },
+          });
+          if (r.status === 204 || r.ok) {
+            store?.setItem(REFRESH_MARK + refreshPath, String(now()));
+            return true;
+          }
+          if (r.status === 409) {
+            await sleep(300);
+            continue;
+          } // rotated a moment ago by another tab
           return false;
         }
         return false;
       };
       inFlight = (locks ? locks.request('tb-refresh', run) : run())
-        .then((ok) => /** @type {boolean} */ (ok)).finally(() => { inFlight = null; });
+        .then((ok) => /** @type {boolean} */ (ok))
+        .finally(() => {
+          inFlight = null;
+        });
     }
     return inFlight;
   }
@@ -125,8 +145,13 @@ export function createApi({
       const sentAt = now();
       let res;
       try {
-        res = await f(base + path, { method, headers, credentials: 'same-origin', signal,
-          body: body === undefined ? undefined : form ? body : JSON.stringify(body) });
+        res = await f(base + path, {
+          method,
+          headers,
+          credentials: 'same-origin',
+          signal,
+          body: body === undefined ? undefined : form ? body : JSON.stringify(body),
+        });
       } catch (e) {
         if (/** @type {any} */ (e)?.name === 'AbortError') throw e;
         throw new ApiError(0, { title: 'network' });
@@ -134,9 +159,9 @@ export function createApi({
       if (res.status === 401) {
         if (!refreshed) {
           refreshed = true;
-          if (await refresh(sentAt)) continue;    // same headers, so the same Idempotency-Key
+          if (await refresh(sentAt)) continue; // same headers, so the same Idempotency-Key
         }
-        onSignedOut();                            // refresh refused, or still 401 after it
+        onSignedOut(); // refresh refused, or still 401 after it
       }
       if (res.status === 204) return null;
       const text = await res.text();

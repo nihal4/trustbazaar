@@ -3,7 +3,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { qrPath } from './QrCode';
-import { groupSecret } from './MfaSettings';
+import { groupSecret } from './mfaShared';
 
 const URI = 'otpauth://totp/TrustBazaar:rahim%40example.com?secret=JBSWY3DPEHPK3PXP&issuer=TrustBazaar';
 
@@ -49,7 +49,7 @@ describe('where the QR library may be used', () => {
       .filter((f) => /from ['"]qrcode-generator['"]|import\(['"]qrcode-generator['"]\)/.test(readFileSync(f, 'utf8')))
       .map((f) => relative(src, f));
     expect(importers).toEqual(['features/account/QrCode.tsx']);
-    const mfa = readFileSync(join(src, 'features/account/MfaSettings.tsx'), 'utf8');
+    const mfa = readFileSync(join(src, 'features/account/mfaShared.tsx'), 'utf8');
     expect(mfa).toMatch(/lazy\(\(\) => import\('\.\/QrCode'\)\)/);
     expect(mfa).not.toMatch(/^import .* from '\.\/QrCode'/m);
   });

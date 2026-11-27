@@ -4,31 +4,30 @@
 // answer to a bid; AuctionFeed keeps only the newest by seq, so a message arriving late never shows an older state.
 // The countdown runs on the server's clock. The bidder's own maximum and lead come from my-status, shown only to
 // them; after the close, the winner's order and a second-chance offer come from there too (Decisions log, U3-05).
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useNavigate } from 'react-router-dom';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { formatMoney, parseTaka, toLocalDigits } from '../../lib/money.js';
-import { formatDateTime, formatDeadline } from '../../lib/time.js';
-import { ApiError } from '../../lib/api.js';
-import { useApi } from '../../shared/api';
-import { serverClock, useServerNow } from '../../shared/clock';
-import { ConfirmDialog } from '../../shared/ConfirmDialog';
+import { Link } from 'react-router-dom';
+
+import { toLocalDigits } from '../../lib/money.js';
+import { formatDateTime } from '../../lib/time.js';
+
+import { serverClock } from '../../shared/clock';
+
 import { signInPath } from '../../shared/document';
-import { errorText } from '../../shared/errors';
-import { FormMessage } from '../../shared/form';
+
 import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
-import { problemName } from '../../shared/problems';
+
 import { Countdown } from './Countdown';
 import { useAuctionLive } from './useAuctionLive';
-import { myStatusKey, type AuctionState, type BidResult, type MyStatus } from './model';
+import { type AuctionState, type MyStatus } from './model';
 import styles from './listings.module.css';
-import { Button } from '../../shared/ui';
+
+import { BidForm } from './AuctionBidForm';
+import { money } from './auctionShared';
+import { Offer } from './AuctionOffer';
 
 export { GUEST_POLL_MS, SIGNED_IN_POLL_MS, CLOSING_POLL_MS } from './useAuctionLive';
-
-const money = (p: string | bigint, lang: Lang) => formatMoney(p, lang);
 
 export function AuctionPanel({
   initial,
@@ -278,186 +277,6 @@ export function AuctionPanel({
   );
 }
 
-const amountError = (reason: string, t: T) => t(`auction.amount.${reason}`);
-
-/** The bid form, with its checks, its confirmation and its single send. The auction room passes `quick`: amounts (in poisha) that fill the field and
- *  go through the same checks and the same confirmation dialog; nothing is sent by pressing one. */
-export function BidForm({
-  id,
-  state,
-  mine,
-  t,
-  lang,
-  onPlaced,
-  onRefused,
-  quick = [],
-  quickHint,
-}: {
-  id: string;
-  state: AuctionState;
-  mine: MyStatus | undefined;
-  t: T;
-  lang: Lang;
-  onPlaced: (r: BidResult, sentAt: number) => void;
-  onRefused: () => void;
-  quick?: bigint[];
-  quickHint?: string;
-}) {
-  const api = useApi();
-  const [amount, setAmount] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ kind: 'success' | 'info' | 'error'; text: string } | null>(null);
-  const [confirming, setConfirming] = useState<bigint | null>(null);
-  const leading = mine?.leading === true;
-  // "You are leading at ..." was true when the bid was placed: once another bid overtakes it, it is removed, so the panel
-  // never says both that and "You have been outbid" (U8-11)
-  useEffect(() => {
-    if (!leading) setResult((r) => (r?.kind === 'success' ? null : r));
-  }, [leading]);
-  // sent once (section 4.2): a second click before the button shows as disabled sends nothing
-  const sending = useRef(false);
-  const send = (maximum: bigint) => {
-    if (sending.current) return;
-    sending.current = true;
-    place.mutate(maximum, {
-      onSettled: () => {
-        sending.current = false;
-      },
-    });
-  };
-
-  const place = useMutation({
-    mutationFn: async (maximum: bigint) => {
-      const sentAt = Date.now();
-      const r = (await api.post(`/auctions/${encodeURIComponent(id)}/bids`, { maximum: String(maximum) }, { idempotent: true })) as BidResult;
-      return { r, sentAt };
-    },
-    onSuccess: ({ r, sentAt }) => {
-      setConfirming(null);
-      setAmount('');
-      onPlaced(r, sentAt);
-      const price = money(r.state.price ?? r.state.startPrice, lang);
-      setResult(
-        r.outcome === 'leading'
-          ? { kind: 'success', text: t('auction.result.leading', { price }) }
-          : r.outcome === 'raised_own_max'
-            ? { kind: 'success', text: t('auction.result.raised_own_max', { amount: money(r.yourMaximum, lang) }) }
-            : { kind: 'info', text: t('auction.result.outbid', { price }) },
-      );
-    },
-    onError: (e) => {
-      setConfirming(null);
-      setResult({ kind: 'error', text: refusalText(e, t, lang) });
-      onRefused();
-    },
-  });
-
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    check(amount);
-  };
-  const check = (text: string) => {
-    setResult(null);
-    const p = parseTaka(text);
-    if (!p.ok) return setError(amountError(p.reason, t));
-    // explained before sending: below the minimum, or not above one's own maximum (the server decides in the end)
-    if (leading && mine?.yourMaximum && p.poisha <= BigInt(mine.yourMaximum)) return setError(t('auction.refused.max_not_higher'));
-    if (!leading && state.minimumBid && p.poisha < BigInt(state.minimumBid)) {
-      return setError(t('auction.below_minimum', { amount: money(state.minimumBid, lang) }));
-    }
-    setError(null);
-    setConfirming(p.poisha);
-  };
-
-  const label = leading ? t('auction.raise_label') : t('auction.amount_label');
-  return (
-    <form onSubmit={submit} noValidate className={styles.bid}>
-      {quick.length > 0 && (
-        <div className={styles.quickBids} role="group" aria-label={t('room.quick')}>
-          {quick.map((q) => {
-            const text = (q / 100n).toString();
-            return (
-              <button
-                type="button"
-                key={text}
-                className={styles.quickBid}
-                onClick={() => {
-                  setAmount(text);
-                  check(text);
-                }}
-              >
-                {money(q, lang)}
-              </button>
-            );
-          })}
-        </div>
-      )}
-      {quick.length > 0 && quickHint && <p className={styles.quickHint}>{quickHint}</p>}
-      {state.minimumBid && !leading && (
-        <p>
-          <strong>{t('auction.minimum', { amount: money(state.minimumBid, lang) })}</strong>
-        </p>
-      )}
-      {result && <FormMessage kind={result.kind}>{result.text}</FormMessage>}
-      <label htmlFor="bid-amount" className={styles.visuallyHidden}>
-        {label}
-      </label>
-      <input
-        id="bid-amount"
-        type="text"
-        inputMode="decimal"
-        autoComplete="off"
-        value={amount}
-        maxLength={20}
-        placeholder={t('auction.amount_placeholder')}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={error ? 'bid-amount-error' : undefined}
-        onChange={(e) => setAmount(e.target.value)}
-      />
-      {error && (
-        <p id="bid-amount-error" role="alert" className={styles.fieldError}>
-          {error}
-        </p>
-      )}
-      <Button variant="primary" type="submit" disabled={place.isPending}>
-        {leading ? t('auction.raise') : t('auction.place_bid')}
-      </Button>
-      {confirming !== null && (
-        <ConfirmDialog
-          id="bid-confirm"
-          title={t('auction.confirm_title')}
-          busy={place.isPending}
-          confirmLabel={t('auction.confirm_button', { amount: money(confirming, lang) })}
-          cancelLabel={t('auction.cancel')}
-          onConfirm={() => send(confirming)}
-          onCancel={() => setConfirming(null)}
-        >
-          <p>{t('confirm.place_bid', { amount: money(confirming, lang) })}</p>
-          {(!state.minimumBid || confirming > BigInt(state.minimumBid) || leading) && <p>{t('confirm.proxy_bid', { amount: money(confirming, lang) })}</p>}
-          <p aria-live="polite">{t('auction.price_now', { amount: money(state.price ?? state.startPrice, lang) })}</p>
-          {state.minimumBid && !leading && confirming < BigInt(state.minimumBid) && (
-            <p className={styles.fieldError}>{t('auction.below_minimum', { amount: money(state.minimumBid, lang) })}</p>
-          )}
-        </ConfirmDialog>
-      )}
-    </form>
-  );
-}
-
-/** A refused bid in words (Decisions log, U3-04: 422 bid-refused with a stable reason; 409 auction-busy). */
-export function refusalText(e: unknown, t: T, lang: Lang): string {
-  const name = problemName(e);
-  if (name === 'auction-busy') return t('auction.busy');
-  if (name === 'transaction-not-allowed') return t('auction.not_allowed');
-  if (name === 'bid-refused' && e instanceof ApiError && Array.isArray(e.errors)) {
-    const r = e.errors[0] as { reason?: string; minimum?: string; until?: string };
-    if (r?.reason === 'below_minimum' && r.minimum) return t('auction.refused.below_minimum', { amount: money(r.minimum, lang) });
-    if (r?.reason === 'bidder_restricted') return t('auction.refused.bidder_restricted', { until: r.until ? formatDateTime(Date.parse(r.until), lang) : '-' });
-    if (r?.reason && ['max_not_higher', 'auction_ended', 'auction_not_open', 'seller_cannot_bid'].includes(r.reason)) return t(`auction.refused.${r.reason}`);
-  }
-  return errorText(e, t, lang);
-}
-
 function Closed({ state, t, lang, mine }: { state: AuctionState; t: T; lang: Lang; mine: MyStatus | undefined }) {
   return (
     <div className={styles.closed}>
@@ -477,74 +296,6 @@ function Closed({ state, t, lang, mine }: { state: AuctionState; t: T; lang: Lan
         </p>
       )}
       {mine?.secondChanceOffer && <Offer auctionId={state.auctionId} offer={mine.secondChanceOffer} t={t} lang={lang} />}
-    </div>
-  );
-}
-
-/** FR-AUC-15: the offered bidder accepts (an order to pay within CP-11) or declines. */
-function Offer({ auctionId, offer, t, lang }: { auctionId: string; offer: NonNullable<MyStatus['secondChanceOffer']>; t: T; lang: Lang }) {
-  const api = useApi();
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  const now = useServerNow();
-  const [confirming, setConfirming] = useState(false);
-  const [message, setMessage] = useState<{ kind: 'error' | 'info'; text: string } | null>(null);
-  const decide = useMutation({
-    mutationFn: (decision: 'accept' | 'decline') =>
-      api.post(`/auctions/${encodeURIComponent(auctionId)}/second-chance/${encodeURIComponent(offer.id)}/decision`, { decision }) as Promise<{
-        status: 'accepted' | 'declined';
-        orderId: string | null;
-      }>,
-    onSuccess: (r) => {
-      setConfirming(false);
-      if (r.status === 'accepted' && r.orderId) void navigate(`/orders/${encodeURIComponent(r.orderId)}`);
-      else setMessage({ kind: 'info', text: t('auction.offer.declined') });
-      void queryClient.invalidateQueries({ queryKey: myStatusKey(auctionId) });
-    },
-    onError: (e) => {
-      setConfirming(false);
-      setMessage({ kind: 'error', text: problemName(e) === 'offer-closed' ? t('auction.offer.closed') : errorText(e, t, lang) });
-      void queryClient.invalidateQueries({ queryKey: myStatusKey(auctionId) });
-    },
-  });
-  const sending = useRef(false);
-  const send = (decision: 'accept' | 'decline') => {
-    if (sending.current) return;
-    sending.current = true;
-    decide.mutate(decision, {
-      onSettled: () => {
-        sending.current = false;
-      },
-    });
-  };
-  const price = money(offer.price, lang);
-  return (
-    <div className={styles.offer} role="region" aria-labelledby="offer-title">
-      <h3 id="offer-title">{t('auction.offer.title')}</h3>
-      <p>{t('auction.offer.body', { price })}</p>
-      <p>{t('auction.offer.deadline', { at: formatDeadline(Date.parse(offer.expiresAt), now, lang) })}</p>
-      {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
-      <div className={styles.actions}>
-        <Button variant="primary" type="button" disabled={decide.isPending} onClick={() => setConfirming(true)}>
-          {t('auction.offer.accept', { price })}
-        </Button>
-        <button type="button" disabled={decide.isPending} onClick={() => send('decline')}>
-          {t('auction.offer.decline')}
-        </button>
-      </div>
-      {confirming && (
-        <ConfirmDialog
-          id="offer-confirm"
-          title={t('auction.offer.confirm_title')}
-          busy={decide.isPending}
-          confirmLabel={t('auction.offer.accept', { price })}
-          cancelLabel={t('auction.cancel')}
-          onConfirm={() => send('accept')}
-          onCancel={() => setConfirming(false)}
-        >
-          <p>{t('auction.offer.confirm', { price })}</p>
-        </ConfirmDialog>
-      )}
     </div>
   );
 }
