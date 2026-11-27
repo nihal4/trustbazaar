@@ -6,4 +6,8 @@ export const USER_COOKIES = { access: '__Host-tb_at', csrf: '__Host-tb_csrf' } a
 export const STAFF_COOKIES = { access: '__Host-tb_sat', csrf: '__Host-tb_scsrf' } as const;
 export type CookieSet = typeof USER_COOKIES | typeof STAFF_COOKIES;
 
-export const cookiesFor = (policy: Policy | undefined): CookieSet => (policy?.kind === 'staff' ? STAFF_COOKIES : USER_COOKIES);
+/** The staff sign-in is a public route (there is no session yet), but it belongs to the staff cookies: a member's session in the same browser is not read there (I-51). */
+export const isStaffRoute = (policy: Policy | undefined, path: string | undefined): boolean =>
+  policy?.kind === 'staff' || (policy?.kind === 'public' && /\/staff\/auth\//.test(path ?? ''));
+
+export const cookiesFor = (policy: Policy | undefined, path?: string): CookieSet => (isStaffRoute(policy, path) ? STAFF_COOKIES : USER_COOKIES);

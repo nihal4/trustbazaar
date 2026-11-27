@@ -42,7 +42,7 @@ export class RateLimitGuard implements CanActivate {
     for (const l of limits) {
       let subject = `ip:${req.ip}`;
       if (l.per === 'principal') {
-        const token = req.cookies?.[cookiesFor(policyOf(this.reflector, ctx)).access];
+        const token = req.cookies?.[cookiesFor(policyOf(this.reflector, ctx), req.path).access];
         const claims = typeof token === 'string' ? verifyAccessToken(this.config.keys.jwt, token, this.clock.now()) : null;
         if (claims) subject = `${claims.pt}:${claims.sub}`;
       }

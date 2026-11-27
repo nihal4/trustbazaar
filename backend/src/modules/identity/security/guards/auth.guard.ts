@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Problem } from '../../../../kernel/http/problems';
-import { cookiesFor } from '../cookies';
+import { cookiesFor, isStaffRoute } from '../cookies';
 import { SessionAuthenticator } from '../session-auth';
 import { policyOf, requestOf } from './policy-of';
 
@@ -19,10 +19,10 @@ export class AuthGuard implements CanActivate {
     const policy = policyOf(this.reflector, ctx);
     if (!policy || policy.kind === 'credential') return true; // PolicyGuard refuses a missing policy
     const req = requestOf(ctx);
-    const cookies = cookiesFor(policy);
+    const cookies = cookiesFor(policy, req.path);
     req.tbCookies = cookies;
     const token = req.cookies?.[cookies.access];
-    const principal = await this.sessions.authenticate(typeof token === 'string' ? token : undefined, policy.kind === 'staff' ? 'staff' : 'user');
+    const principal = await this.sessions.authenticate(typeof token === 'string' ? token : undefined, isStaffRoute(policy, req.path) ? 'staff' : 'user');
     if (principal === null || principal === 'expired') {
       if (policy.kind === 'public') return true; // guests
       throw new Problem('session-ended');
