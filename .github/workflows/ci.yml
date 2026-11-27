@@ -20,6 +20,18 @@ jobs:
       - run: npm run lint                                   # NFR-MNT-07: no ESLint errors
       - run: node --test ../scripts/audit-check.test.mjs && node ../scripts/audit-check.mjs  # SEC-SDL-04: high and critical, with the documented exceptions of audit-exceptions.json (P0-10)
       - run: npm test -- --coverage                         # NFR-MNT-03: thresholds in the test configuration
+      - run: node ../scripts/health-ratchet.mjs             # U11-02: ESLint, Stylelint, knip and jscpd numbers may go down, never up (health-baseline.json)
+
+  visual:                                                   # U11-02: every main screen as a picture, compared with the baselines (frontend/e2e/visual)
+    runs-on: ubuntu-24.04
+    container: mcr.microsoft.com/playwright:v1.63.0-noble   # the version of @playwright/test: the same fonts and rendering as where the baselines were made
+    continue-on-error: true                                 # advisory until the baselines are confirmed on this runner (made on arm64; if the pixels differ, make them with --platform linux/amd64), then it becomes required (U11-12)
+    defaults: { run: { working-directory: frontend } }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright test -c e2e/visual/visual.config.ts
 
   database:                                                 # the design's database rules, on PostgreSQL 15
     runs-on: ubuntu-24.04

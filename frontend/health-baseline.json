@@ -1,0 +1,35 @@
+{
+  "eslint": {
+    "warning:sonarjs/no-nested-conditional": 75,
+    "warning:sonarjs/no-nested-template-literals": 16,
+    "warning:sonarjs/cognitive-complexity": 9,
+    "warning:jsx-a11y/no-static-element-interactions": 1,
+    "warning:jsx-a11y/no-noninteractive-tabindex": 3,
+    "warning:jsx-a11y/no-autofocus": 15,
+    "warning:sonarjs/no-duplicate-string": 3,
+    "warning:jsx-a11y/label-has-associated-control": 1,
+    "warning:jsx-a11y/no-redundant-roles": 3,
+    "warning:jsx-a11y/no-noninteractive-element-interactions": 3,
+    "warning:jsx-a11y/interactive-supports-focus": 1,
+    "warning:jsx-a11y/click-events-have-key-events": 3
+  },
+  "stylelint": {
+    "warning:scale-unlimited/declaration-strict-value": 43,
+    "warning:color-hex-length": 6,
+    "warning:import-notation": 11,
+    "warning:no-duplicate-selectors": 240,
+    "warning:property-no-deprecated": 24,
+    "warning:value-keyword-case": 11,
+    "warning:color-function-alias-notation": 17,
+    "warning:length-zero-no-unit": 2,
+    "warning:declaration-block-no-duplicate-properties": 1
+  },
+  "knip": {
+    "exports": 43,
+    "types": 20
+  },
+  "jscpd": {
+    "clones": 7,
+    "duplicatedLines": 113
+  }
+}

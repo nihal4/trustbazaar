@@ -20,7 +20,11 @@
     "deps": "depcruise src --config .dependency-cruiser.cjs",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build",
-    "health": "npm run lint --silent; npm run lint:css --silent; npm run dup --silent; npm run unused --silent; npm run deps --silent"
+    "health": "npm run lint --silent; npm run lint:css --silent; npm run dup --silent; npm run unused --silent; npm run deps --silent",
+    "visual": "sh e2e/visual/run.sh",
+    "visual:update": "sh e2e/visual/run.sh --update-snapshots",
+    "health:ratchet": "node ../scripts/health-ratchet.mjs",
+    "health:baseline": "node ../scripts/health-ratchet.mjs --update"
   },
   "dependencies": {
     "@fontsource-variable/figtree": "5.3.0",

@@ -1,0 +1,284 @@
+{
+  "recordedAt": "2026-11-27T11:40:41.397Z",
+  "path": "/",
+  "answers": {
+    "GET /categories": {
+      "status": 200,
+      "body": [
+        {
+          "id": 29,
+          "parentId": null,
+          "slug": "game-accounts",
+          "nameEn": "Game accounts",
+          "nameBn": "গেম অ্যাকাউন্ট",
+          "itemKind": "game_account",
+          "selectable": true
+        },
+        {
+          "id": 1,
+          "parentId": null,
+          "slug": "mobile-phones",
+          "nameEn": "Mobile phones",
+          "nameBn": "মোবাইল ফোন",
+          "itemKind": "physical",
+          "selectable": true
+        },
+        {
+          "id": 2,
+          "parentId": null,
+          "slug": "laptops-computers",
+          "nameEn": "Laptops and computers",
+          "nameBn": "ল্যাপটপ ও কম্পিউটার",
+          "itemKind": "physical",
+          "selectable": true
+        },
+        {
+          "id": 3,
+          "parentId": null,
+          "slug": "electronics",
+          "nameEn": "Electronics",
+          "nameBn": "ইলেকট্রনিক্স",
+          "itemKind": "physical",
+          "selectable": true
+        },
+        {
+          "id": 4,
+          "parentId": null,
+          "slug": "fashion",
+          "nameEn": "Fashion",
+          "nameBn": "ফ্যাশন",
+          "itemKind": "physical",
+          "selectable": true
+        },
+        {
+          "id": 5,
+          "parentId": null,
+          "slug": "home-furniture",
+          "nameEn": "Home and furniture",
+          "nameBn": "ঘর ও আসবাব",
+          "itemKind": "physical",
+          "selectable": true
+        },
+        {
+          "id": 6,
+          "parentId": null,
+          "slug": "books",
+          "nameEn": "Books",
+          "nameBn": "বই",
+          "itemKind": "physical",
+          "selectable": true
+        },
+        {
+          "id": 7,
+          "parentId": null,
+          "slug": "sports",
+          "nameEn": "Sports and fitness",
+          "nameBn": "খেলাধুলা ও ফিটনেস",
+          "itemKind": "physical",
+          "selectable": true
+        }
+      ]
+    },
+    "GET /search?sort=newest": {
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "62328fd3-0309-4a84-81b3-30946b0265c0",
+            "title": "OnePlus Nord CE 3, 128 GB, Grey",
+            "itemKind": "physical",
+            "saleFormat": "fixed_price",
+            "condition": "used",
+            "district": "Dhaka",
+            "price": "2100000",
+            "thumbUrl": "/api/v1/listing-photos/4430c7915f089ca9846fd8031023d438?size=thumb",
+            "distanceKm": null,
+            "featured": false,
+            "currentlyReserved": true,
+            "auction": null
+          },
+          {
+            "id": "84a3d62e-dfa7-446e-b521-b093e3912188",
+            "title": "Xiaomi Redmi Note 12, 128 GB, Blue",
+            "itemKind": "physical",
+            "saleFormat": "fixed_price",
+            "condition": "used",
+            "district": "Dhaka",
+            "price": "1550000",
+            "thumbUrl": "/api/v1/listing-photos/979051b0fde9fcb50e4f155a871ed956?size=thumb",
+            "distanceKm": null,
+            "featured": false,
+            "currentlyReserved": false,
+            "auction": null
+          },
+          {
+            "id": "56eb1022-2d29-4562-b6d8-e1d9eef92902",
+            "title": "Sony WH-1000XM4 headphones, black, boxed",
+            "itemKind": "physical",
+            "saleFormat": "auction",
+            "condition": "like_new",
+            "district": "Dhaka",
+            "price": "1200000",
+            "thumbUrl": "/api/v1/listing-photos/8a1c8b7cff7b375a2944202f9fb1939e?size=thumb",
+            "distanceKm": null,
+            "featured": false,
+            "currentlyReserved": false,
+            "auction": {
+              "endAt": "2026-11-28T18:00:24.476Z",
+              "bidCount": 0,
+              "reserveMet": true
+            }
+          },
+          {
+            "id": "3bc6be43-87e1-4455-ab76-11e3fd749ff1",
+            "title": "Samsung Galaxy S21 FE, 128 GB, Graphite",
+            "itemKind": "physical",
+            "saleFormat": "auction",
+            "condition": "used",
+            "district": "Dhaka",
+            "price": "2244000",
+            "thumbUrl": "/api/v1/listing-photos/a04168ccc384a76e88cfd95fda7ba121?size=thumb",
+            "distanceKm": null,
+            "featured": false,
+            "currentlyReserved": false,
+            "auction": {
+              "endAt": "2026-11-28T18:00:24.220Z",
+              "bidCount": 2,
+              "reserveMet": true
+            }
+          },
+          {
+            "id": "38e2d192-3536-4d39-8648-0def53bc82f1",
+            "title": "Sony WH-1000XM4 noise-cancelling headphones (live demo)",
+            "itemKind": "physical",
+            "saleFormat": "auction",
+            "condition": "like_new",
+            "district": "Dhaka",
+            "price": "1200000",
+            "thumbUrl": "/api/v1/listing-photos/a189187abdc58b58edefb4263c91e220?size=thumb",
+            "distanceKm": null,
+            "featured": false,
+            "currentlyReserved": false,
+            "auction": {
+              "endAt": "2026-11-28T14:59:07.262Z",
+              "bidCount": 1,
+              "reserveMet": true
+            }
+          },
+          {
+            "id": "acc2ec0f-f9e9-4b72-bb4f-ffb890c69318",
+            "title": "Samsung Galaxy S21, 256 GB, Phantom Grey (live demo)",
+            "itemKind": "physical",
+            "saleFormat": "auction",
+            "condition": "used",
+            "district": "Dhaka",
+            "price": "2244000",
+            "thumbUrl": "/api/v1/listing-photos/08cd04c17a5df3c95b68980bfeb1ecc2?size=thumb",
+            "distanceKm": null,
+            "featured": false,
+            "currentlyReserved": false,
+            "auction": {
+              "endAt": "2026-11-28T14:59:07.063Z",
+              "bidCount": 2,
+              "reserveMet": true
+            }
+          }
+        ],
+        "nextCursor": null,
+        "featured": [],
+        "sort": "newest"
+      }
+    },
+    "GET /search?saleFormat=auction&sort=ending_soon": {
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "acc2ec0f-f9e9-4b72-bb4f-ffb890c69318",
+            "title": "Samsung Galaxy S21, 256 GB, Phantom Grey (live demo)",
+            "itemKind": "physical",
+            "saleFormat": "auction",
+            "condition": "used",
+            "district": "Dhaka",
+            "price": "2244000",
+            "thumbUrl": "/api/v1/listing-photos/08cd04c17a5df3c95b68980bfeb1ecc2?size=thumb",
+            "distanceKm": null,
+            "featured": false,
+            "currentlyReserved": false,
+            "auction": {
+              "endAt": "2026-11-28T14:59:07.063Z",
+              "bidCount": 2,
+              "reserveMet": true
+            }
+          },
+          {
+            "id": "38e2d192-3536-4d39-8648-0def53bc82f1",
+            "title": "Sony WH-1000XM4 noise-cancelling headphones (live demo)",
+            "itemKind": "physical",
+            "saleFormat": "auction",
+            "condition": "like_new",
+            "district": "Dhaka",
+            "price": "1200000",
+            "thumbUrl": "/api/v1/listing-photos/a189187abdc58b58edefb4263c91e220?size=thumb",
+            "distanceKm": null,
+            "featured": false,
+            "currentlyReserved": false,
+            "auction": {
+              "endAt": "2026-11-28T14:59:07.262Z",
+              "bidCount": 1,
+              "reserveMet": true
+            }
+          },
+          {
+            "id": "3bc6be43-87e1-4455-ab76-11e3fd749ff1",
+            "title": "Samsung Galaxy S21 FE, 128 GB, Graphite",
+            "itemKind": "physical",
+            "saleFormat": "auction",
+            "condition": "used",
+            "district": "Dhaka",
+            "price": "2244000",
+            "thumbUrl": "/api/v1/listing-photos/a04168ccc384a76e88cfd95fda7ba121?size=thumb",
+            "distanceKm": null,
+            "featured": false,
+            "currentlyReserved": false,
+            "auction": {
+              "endAt": "2026-11-28T18:00:24.220Z",
+              "bidCount": 2,
+              "reserveMet": true
+            }
+          },
+          {
+            "id": "56eb1022-2d29-4562-b6d8-e1d9eef92902",
+            "title": "Sony WH-1000XM4 headphones, black, boxed",
+            "itemKind": "physical",
+            "saleFormat": "auction",
+            "condition": "like_new",
+            "district": "Dhaka",
+            "price": "1200000",
+            "thumbUrl": "/api/v1/listing-photos/8a1c8b7cff7b375a2944202f9fb1939e?size=thumb",
+            "distanceKm": null,
+            "featured": false,
+            "currentlyReserved": false,
+            "auction": {
+              "endAt": "2026-11-28T18:00:24.476Z",
+              "bidCount": 0,
+              "reserveMet": true
+            }
+          }
+        ],
+        "nextCursor": null,
+        "featured": [],
+        "sort": "ending_soon"
+      }
+    },
+    "GET /me": {
+      "status": 401,
+      "body": {
+        "type": "/problems/session-ended",
+        "title": "Your session has ended. Please sign in again.",
+        "status": 401,
+        "correlationId": "bc85b900-9a36-4a44-82ef-b7a393d82d13"
+      }
+    }
+  }
+}
