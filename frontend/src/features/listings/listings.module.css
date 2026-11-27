@@ -48,38 +48,9 @@
   font-size: 1.3125rem;
   letter-spacing: -0.02em;
 }
-
-.crumb {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--tb-space-2);
-  align-items: center;
-  margin: 0;
-  font-size: var(--tb-text-md);
-  color: var(--tb-muted);
-}
-.title {
-  margin: 0;
-  font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2rem);
-  line-height: 1.15;
-  letter-spacing: -0.03em;
-  font-weight: 600;
-  overflow-wrap: anywhere;
-}
 :lang(bn) .title {
   letter-spacing: 0;
   line-height: 1.35;
-  font-weight: 600;
-}
-.kind {
-  display: inline-flex;
-  align-items: center;
-  min-height: 26px;
-  padding: 0 var(--tb-space-2-5);
-  border-radius: var(--tb-radius-control);
-  background: var(--tb-accent-soft);
-  color: var(--tb-accent-strong);
-  font-size: var(--tb-text-xs);
   font-weight: 600;
 }
 .muted {
@@ -91,27 +62,6 @@
   margin: 0;
   line-height: 1.65;
 }
-
-.badge {
-  position: absolute;
-  left: 12px;
-  top: 12px;
-  background: var(--tb-sheet);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-  padding: 3px 10px;
-  font-size: var(--tb-text-xs);
-  font-weight: 600;
-}
-
-.clarifications {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-3);
-}
 .clarifications li {
   border-radius: var(--tb-radius-panel);
   background: var(--tb-surface);
@@ -120,21 +70,6 @@
 .clarifications .muted {
   margin: var(--tb-space-1-5) 0 0;
   font-size: var(--tb-text-sm);
-}
-
-.notice {
-  margin: 0;
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-surface);
-  padding: var(--tb-space-3) var(--tb-space-4);
-  font-weight: 500;
-}
-.risk {
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-error-bg);
-  border: 1px solid var(--tb-error-line);
-  padding: var(--tb-space-4) var(--tb-space-4-5);
-  color: var(--tb-text);
 }
 .risk h2 {
   margin: 0 0 var(--tb-space-2);
@@ -145,14 +80,6 @@
   margin: var(--tb-space-1-5) 0 0;
   line-height: 1.5;
 }
-
-.bigPrice {
-  font-size: 2.25rem;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-}
 :lang(bn) .bigPrice {
   letter-spacing: 0;
 }
@@ -160,12 +87,6 @@
 .sellerRow p {
   margin: 0;
   font-size: var(--tb-text-sm);
-}
-.sellerName {
-  color: var(--tb-text);
-  font-weight: 600;
-  text-decoration: none;
-  overflow-wrap: anywhere;
 }
 .sellerName:hover {
   text-decoration: underline;
@@ -430,15 +351,29 @@
   }
 }
 .crumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0;
+  font-size: var(--tb-text-md);
+  color: var(--tb-muted);
   gap: var(--tb-space-1) var(--tb-space-3);
 }
 .kind {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 var(--tb-space-2-5);
+  font-size: var(--tb-text-xs);
+  font-weight: 600;
   border-radius: var(--tb-radius-panel);
   background: none;
   border: 1px solid var(--tb-line);
   color: var(--tb-muted);
 }
 .notice {
+  margin: 0;
+  font-weight: 500;
   border-radius: 0;
   background: none;
   border: 0;
@@ -446,6 +381,7 @@
   padding: var(--tb-space-3) 0;
 }
 .risk {
+  color: var(--tb-text);
   border-radius: 0;
   background: none;
   border: 0;
@@ -456,6 +392,13 @@
 
 /* photos: square frames between hairlines */
 .badge {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  border: 1px solid var(--tb-border);
+  padding: 3px 10px;
+  font-size: var(--tb-text-xs);
+  font-weight: 600;
   border-radius: var(--tb-radius-panel);
   background: var(--tb-bg);
 }
@@ -496,6 +439,11 @@
   margin: 0 0 var(--tb-space-3);
 }
 .clarifications {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
   gap: 0;
 }
 .clarifications li {
@@ -760,6 +708,9 @@
   font-variant-numeric: tabular-nums;
 }
 .bigPrice {
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
   font-family: var(--tb-font);
   font-weight: var(--tb-display-weight);
   font-size: var(--tb-text-headline);
@@ -999,6 +950,9 @@
   border-bottom: 1px solid var(--tb-hot);
 }
 .title {
+  margin: 0;
+  font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2rem);
+  overflow-wrap: anywhere;
   font-family: var(--tb-font-display);
   font-weight: var(--tb-display-weight);
   letter-spacing: -0.02em;
@@ -1006,6 +960,10 @@
   text-wrap: balance;
 }
 .sellerName {
+  color: var(--tb-text);
+  font-weight: 600;
+  text-decoration: none;
+  overflow-wrap: anywhere;
   min-height: 44px;
   min-width: 44px;
   margin-block: -8px;
@@ -1866,10 +1824,6 @@ body:has(.bidBar) {
   font-size: var(--tb-text-sm);
   font-weight: 700;
 }
-.roomStat {
-  display: flex;
-  flex-direction: column;
-}
 @media (max-width: 47.99em) {
   .roomHead {
     grid-template-columns: auto minmax(0, 1fr);
@@ -2012,12 +1966,6 @@ body:has(.bidBar) {
     grid-column: 1 / -1;
   }
 }
-
-/* ---- room review fixes ---- */
-.roomStats {
-  display: flex;
-  gap: var(--tb-space-6);
-}
 .standing {
   margin-top: var(--tb-space-1-5);
   padding: var(--tb-space-1-5) 0;
@@ -2087,13 +2035,6 @@ body:has(.bidBar) {
 }
 
 /* ---- the room and the bar as grids (owner's review) ---- */
-/* time left: ruled cells, number over unit */
-.countGrid {
-  display: inline-grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(2.75rem, auto);
-  width: max-content;
-}
 .countCell {
   display: flex;
   flex-direction: column;
@@ -2128,12 +2069,9 @@ body:has(.bidBar) {
 .barBody > .barCell {
   justify-content: center;
 }
-/* the header of the room: the time and the number of bidders sit in one row of cells */
-.roomStats {
-  align-items: stretch;
-  gap: var(--tb-space-4);
-}
 .roomStat {
+  display: flex;
+  flex-direction: column;
   gap: var(--tb-space-1);
 }
 .quickBid {
@@ -2175,11 +2113,6 @@ body:has(.bidBar) {
   .roomControls .bid > .primary {
     border-radius: 0 0 4px 4px;
   }
-}
-/* Sit this one out and Back to the listing: two visible cells */
-.roomActions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
 }
 .roomAction {
   display: flex;
@@ -2260,7 +2193,12 @@ body:has(.bidBar) {
 
 /* ---- ruled, not boxed (owner's review): the home page's language is hairlines and dividers, never an outlined rounded box ---- */
 /* time left and bidders: cells divided by vertical hairlines, no outline */
+/* time left: ruled cells, number over unit */
 .countGrid {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(2.75rem, auto);
+  width: max-content;
   border: 0;
   border-radius: 0;
   overflow: visible;
@@ -2333,7 +2271,10 @@ body:has(.bidBar) {
   }
 }
 /* Sit this one out | Back to the listing: two cells between rules with one divider */
+/* Sit this one out and Back to the listing: two visible cells */
 .roomActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   border: 0;
   border-block: 1px solid var(--tb-border);
   border-radius: 0;
@@ -2477,7 +2418,11 @@ body:has(.bidBar) {
     padding-bottom: var(--tb-space-2);
   }
 }
+
+/* ---- room review fixes ---- */
+/* the header of the room: the time and the number of bidders sit in one row of cells */
 .roomStats {
+  display: flex;
   align-items: flex-end;
   gap: 0;
   justify-self: end;
