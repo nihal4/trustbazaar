@@ -18,7 +18,8 @@ import { EscrowSteps } from '../../shared/EscrowSteps';
 import { GlowGround } from './GlowGround';
 import { Journey, SafeBento } from './HomeSections';
 import { ListingCard } from './ListingCard';
-import type { Category, SearchPage } from './SearchPage';
+import type { SearchPage } from './SearchPage';
+import type { Category } from './searchShared';
 import styles from './home.module.css';
 
 const CATALOGUES = { en, bn };

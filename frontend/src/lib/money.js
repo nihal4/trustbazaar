@@ -3,7 +3,7 @@
 // Display: taka sign first, lakh grouping (12,34,567), Bangla digits in Bangla (NFR-USE-04).
 
 const BN = '০১২৩৪৫৬৭৮৯';
-const MAX_POISHA = 10n ** 13n;            // BDT 100 billion: a sanity bound only; business limits are the server's
+const MAX_POISHA = 10n ** 13n; // BDT 100 billion: a sanity bound only; business limits are the server's
 
 /** @param {string} s @param {'en'|'bn'} lang */
 export function toLocalDigits(s, lang) {
@@ -20,7 +20,10 @@ function groupLakh(digits) {
   if (digits.length <= 3) return digits;
   let rest = digits.slice(0, -3);
   const parts = [digits.slice(-3)];
-  while (rest.length > 2) { parts.unshift(rest.slice(-2)); rest = rest.slice(0, -2); }
+  while (rest.length > 2) {
+    parts.unshift(rest.slice(-2));
+    rest = rest.slice(0, -2);
+  }
   if (rest) parts.unshift(rest);
   return parts.join(',');
 }
@@ -62,7 +65,10 @@ export function formatMoney(poisha, lang = 'en', { decimals = 'auto', sign = fal
  * @returns {{ok: true, poisha: bigint} | {ok: false, reason: 'empty'|'format'|'decimals'|'too_large'}}
  */
 export function parseTaka(input) {
-  let s = toAsciiDigits(String(input)).trim().replace(/^(৳|tk\.?|bdt)\s*/i, '').replace(/\s+/g, '');
+  let s = toAsciiDigits(String(input))
+    .trim()
+    .replace(/^(৳|tk\.?|bdt)\s*/i, '')
+    .replace(/\s+/g, '');
   if (s === '') return { ok: false, reason: 'empty' };
   if (/^\d+\.\d{3,}$/.test(s.replace(/,/g, ''))) return { ok: false, reason: 'decimals' };
   // commas only as separators between digit groups (both 1,234,567 and 12,34,567 are accepted)

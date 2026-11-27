@@ -6,7 +6,7 @@
     "warning:jsx-a11y/no-static-element-interactions": 1,
     "warning:jsx-a11y/no-noninteractive-tabindex": 3,
     "warning:jsx-a11y/no-autofocus": 15,
-    "warning:sonarjs/no-duplicate-string": 3,
+    "warning:sonarjs/no-duplicate-string": 2,
     "warning:jsx-a11y/label-has-associated-control": 1,
     "warning:jsx-a11y/no-redundant-roles": 3,
     "warning:jsx-a11y/no-noninteractive-element-interactions": 3,

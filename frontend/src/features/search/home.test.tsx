@@ -3,7 +3,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, configure, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { fakeBackend, json, renderApp, renderDocument, type Call } from '../../testing/app';
 import { searchRoutes } from './routes';
-import type { Category, SearchCard } from './SearchPage';
+import type { SearchCard } from './SearchPage';
+import type { Category } from './searchShared';
 
 // The home page and the search page's chips in the Daylight design (docs/design/10_visual.md, sections 7.1 and 7.2;
 // U10-03): the search goes to /search, categories link to their results, auctions ending soonest, featured listings

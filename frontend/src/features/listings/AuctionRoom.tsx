@@ -18,7 +18,7 @@ import type { Lang } from '../../shared/language/lang';
 import { useMe } from '../../shared/me';
 import { isApiError } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
-import { BidForm } from './AuctionPanel';
+import { BidForm } from './AuctionBidForm';
 import { Countdown } from './Countdown';
 import { TitleParts } from './TitleParts';
 import { listingKey, type ListingView } from './model';

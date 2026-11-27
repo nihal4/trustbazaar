@@ -64,6 +64,14 @@ export function renderMoney(t, d, lang) {
 }
 
 /** every key describeMoney can return, for the catalogue test */
-export const MONEY_KEYS = ['awaiting_payment', 'cancelled_unpaid', 'held_before_delivery', 'held_protection',
-  'held_after_delivery', 'frozen', 'released', 'refunded', 'partially_refunded']
-  .flatMap((s) => [`money.${s}.buyer`, `money.${s}.seller`]);
+export const MONEY_KEYS = [
+  'awaiting_payment',
+  'cancelled_unpaid',
+  'held_before_delivery',
+  'held_protection',
+  'held_after_delivery',
+  'frozen',
+  'released',
+  'refunded',
+  'partially_refunded',
+].flatMap((s) => [`money.${s}.buyer`, `money.${s}.seller`]);

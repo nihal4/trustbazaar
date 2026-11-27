@@ -12,7 +12,11 @@
  */
 export function checkProviderRedirect(target, allowedHosts, origin) {
   let u;
-  try { u = new URL(target, origin); } catch { return null; }
+  try {
+    u = new URL(target, origin);
+  } catch {
+    return null;
+  }
   if (u.origin === origin) return u.pathname.startsWith('/') && !u.pathname.startsWith('//') ? u : null;
   if (u.protocol !== 'https:') return null;
   if (u.username || u.password) return null;

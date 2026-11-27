@@ -3,7 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, configure, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { placeholders } from '../../lib/i18n.js';
 import { fakeBackend, json, problem, renderApp, standInMe, type Call } from '../../testing/app';
-import { categoryTree, searchQuery, type Category, type SearchCard } from './SearchPage';
+import { searchQuery, type SearchCard } from './SearchPage';
+import { categoryTree, type Category } from './searchShared';
 import en from '../../messages/en/search.json';
 import bn from '../../messages/bn/search.json';
 

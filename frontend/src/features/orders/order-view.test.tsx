@@ -6,7 +6,7 @@ import { actionsOf } from './Actions';
 import { deadlinesOf } from './Deadlines';
 import { postmarkOf } from './OrderPage';
 import { orderProgress, stepsOf } from './progress';
-import { dhakaInput, spaced } from './Handover';
+import { dhakaInput, spaced } from './handoverShared';
 import type { HandoverView, MeetupPoint, OrderView, SavedAddress, Shipment } from './model';
 import libEn from '../../lib/messages/en.json';
 
