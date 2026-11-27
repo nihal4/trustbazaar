@@ -53,6 +53,19 @@ describe('the Daylight colours', () => {
     expect(contrast(t[fg], t[bg])).toBeGreaterThanOrEqual(min);
   });
 
+  it('NFR-USE-06 text on the vermilion keeps at least 4.5:1 in both themes (a count on a badge, U11-04)', () => {
+    const css = read('shared/tokens.css');
+    const block = (selector: RegExp) =>
+      Object.fromEntries(
+        [...(selector.exec(css)?.[1] ?? '').matchAll(/--([\w-]+):\s*([^;]+);/g)].map((m) => [m[1].replace(/^tb-/, ''), m[2].trim().toLowerCase()]),
+      );
+    const light = { ...t, ...block(/:root\[data-theme='light'\]\s*\{([^}]*)\}/) };
+    const hero = { ...t, ...block(/:not\(:root\)\[data-theme='dark'\]\s*\{([^}]*)\}/) };
+    expect(contrast(t['hot-text'], t.hot)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(light['hot-text'], light.hot)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(hero['hot-text'], hero.hot)).toBeGreaterThanOrEqual(4.5);
+  });
+
   it('NFR-USE-06 the ink-navy, the text and the control border are the redesign v3 values', () => {
     expect([t.accent, t.text, t.muted, t.border, t.surface, t.line, t.error]).toEqual([
       '#0f1720',

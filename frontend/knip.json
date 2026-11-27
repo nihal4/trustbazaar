@@ -1,6 +1,15 @@
 {
   "$schema": "https://unpkg.com/knip@latest/schema.json",
-  "entry": ["src/entries/*.tsx", "src/secure/main.ts", "src/**/*.test.{ts,tsx}", "src/**/*.stories.tsx", "e2e/**/*.{ts,mjs}", "scripts/*.mjs", "public/*.js"],
+  "entry": [
+    "src/entries/*.tsx",
+    "src/secure/main.ts",
+    "src/**/*.test.{ts,tsx}",
+    "src/**/*.stories.tsx",
+    "e2e/**/*.{ts,mjs}",
+    "scripts/*.mjs",
+    "public/*.js",
+    "src/shared/ui/index.ts"
+  ],
   "project": ["src/**/*.{ts,tsx,js}", "e2e/**/*.{ts,mjs}"],
   "ignoreDependencies": ["@fontsource/noto-sans-bengali", "@fontsource-variable/geist", "chrome-launcher", "lighthouse", "@axe-core/playwright"],
   "ignoreBinaries": ["playwright"]

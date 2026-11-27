@@ -4,7 +4,8 @@ import { cleanup, configure, fireEvent, screen, waitFor, within } from '@testing
 import { fakeBackend, json, problem, renderApp, standInMe, type Call } from '../../testing/app';
 import { actionsOf } from './Actions';
 import { deadlinesOf } from './Deadlines';
-import { postmarkOf, stepsOf } from './OrderPage';
+import { postmarkOf } from './OrderPage';
+import { orderProgress, stepsOf } from './progress';
 import { dhakaInput, spaced } from './Handover';
 import type { HandoverView, MeetupPoint, OrderView, SavedAddress, Shipment } from './model';
 import libEn from '../../lib/messages/en.json';
@@ -692,6 +693,20 @@ describe("the order's counterfoil (money-order world, U10-14)", () => {
     expect(states(order({ status: 'paid', deliveryEventAt: '2026-11-02T10:00:00Z' }))).toBe('done done current');
     expect(states(order({ status: 'closed' }))).toBe('done done done');
     expect(stepsOf(order({ status: 'cancelled' }))).toEqual([]);
+  });
+
+  it('NFR-USE-07 the progress names where the money is and the key of each label, the same for the buyer and the seller', () => {
+    for (const role of ['buyer', 'seller'] as const) {
+      expect(orderProgress(order({ role, status: 'awaiting_payment' }))).toEqual({
+        current: 'in',
+        labels: ['order.steps.payment', 'order.steps.handover_held', 'order.steps.done'],
+      });
+      expect(orderProgress(order({ role, status: 'paid', deliveryEventAt: null })).current).toBe('held');
+      expect(orderProgress(order({ role, status: 'paid', deliveryEventAt: null })).labels[0]).toBe('order.steps.payment_done');
+      expect(orderProgress(order({ role, status: 'paid', deliveryEventAt: '2026-11-02T10:00:00Z' })).current).toBe('out');
+      expect(orderProgress(order({ role, status: 'closed' })).current).toBe('done');
+    }
+    expect(orderProgress(order({ status: 'cancelled' })).current).toBeNull();
   });
 
   it('NFR-USE-07 the order page shows the steps with the current one marked, in words too', async () => {

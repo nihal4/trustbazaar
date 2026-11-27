@@ -16,6 +16,7 @@ import { useOpenThread } from '../../shared/chat';
 import { useServerNow } from '../../shared/clock';
 import { postmarkDate } from '../../shared/postmark';
 import { EscrowSteps } from '../../shared/EscrowSteps';
+import { orderProgress } from './progress';
 import { signInPath } from '../../shared/document';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
@@ -178,16 +179,6 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
 /** The reasons the server gives for a cancelled order (the order_cancel_reason enum), each in words; an unknown code is not shown. */
 const CANCEL_REASONS = ['checkout_expired', 'payment_window_expired', 'buyer_abandoned', 'listing_withdrawn'];
 
-/**
- * Where the order is: payment, the handover (or delivery), and the end; each step done, current or still to come, in
- * words for screen readers. A cancelled order has none.
- */
-export function stepsOf(o: OrderView): { key: 'payment' | 'handover' | 'done'; state: 'done' | 'current' | 'next' }[] {
-  if (o.status === 'cancelled') return [];
-  const at = o.status === 'awaiting_payment' ? 0 : o.status === 'closed' ? 3 : o.deliveryEventAt === null ? 1 : 2;
-  return (['payment', 'handover', 'done'] as const).map((key, i) => ({ key, state: i < at ? 'done' : i === at ? 'current' : 'next' }));
-}
-
 /** The day the money left TrustBazaar, for the postmark: paid out to the seller or refunded to the buyer. */
 export function postmarkOf(o: OrderView, lang: Lang): string | undefined {
   const out = o.escrow && ['released', 'refunded', 'partially_refunded'].includes(o.escrow.state);
@@ -201,18 +192,8 @@ export function postmarkOf(o: OrderView, lang: Lang): string | undefined {
  * to pay, the payment panel below says what to do and the sentence says it is not paid yet. A cancelled order has no steps.
  */
 function Money({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
-  const steps = stepsOf(o);
-  const now = steps.find((s) => s.state === 'current');
-  const current = steps.length === 0 ? null : now ? ({ payment: 'in', handover: 'held', done: 'out' } as const)[now.key] : 'done';
+  const progress = orderProgress(o);
   const out = postmarkOf(o, lang);
-  // the three stages in the buyer's words: Payment complete -> Money on hold -> Product confirmed (the last stage, when the seller is paid)
-  const paidDone = steps.find((s) => s.key === 'payment')?.state === 'done';
-  const label = (k: 'payment' | 'handover' | 'done') =>
-    k === 'payment'
-      ? t(paidDone ? 'order.steps.payment_done' : 'order.steps.payment')
-      : k === 'handover'
-        ? t('order.steps.handover_held')
-        : t('order.steps.done');
   return (
     <section aria-labelledby="money-title" className={styles.moneyPanel}>
       <h2 id="money-title" className={styles.moneyLabel}>
@@ -236,11 +217,11 @@ function Money({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
           {t('orders.receipt')}
         </button>
       )}
-      {steps.length > 0 && (
+      {progress.current !== null && (
         <EscrowSteps
-          current={current}
+          current={progress.current}
           label={t('order.steps.label')}
-          labels={[label('payment'), label('handover'), label('done')]}
+          labels={progress.labels.map((key) => t(key)) as [string, string, string]}
           stateWords={{ done: t('order.steps.state.done'), current: t('order.steps.state.current'), next: t('order.steps.state.next') }}
         />
       )}
