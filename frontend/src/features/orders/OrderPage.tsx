@@ -14,7 +14,7 @@ import { ChatIcon, Tick } from '../../shared/icons';
 import { useApi } from '../../shared/api';
 import { useOpenThread } from '../../shared/chat';
 import { useServerNow } from '../../shared/clock';
-import { postmarkDate } from '../../shared/Counterfoil';
+import { postmarkDate } from '../../shared/postmark';
 import { EscrowSteps } from '../../shared/EscrowSteps';
 import { signInPath } from '../../shared/document';
 import { errorText } from '../../shared/errors';
