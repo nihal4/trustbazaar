@@ -385,3 +385,6 @@ div.error > :first-child {
 @media (prefers-reduced-motion: reduce) {
   .codeGroup[data-focused] .codeCells > span[data-here]::after { animation: none; }
 }
+
+/* a link in the list of errors is a target of its own: at least 28 px high (WCAG 2.5.8) */
+.summary a { display: inline-block; min-height: 28px; padding-block: 3px; }

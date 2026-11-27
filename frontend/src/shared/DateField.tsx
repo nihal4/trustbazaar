@@ -67,6 +67,9 @@ function Calendar({ title, value, min, max, startAt, lang, onPick, onClose }: {
   const lead = new Date(first).getUTCDay();
   const days = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
   const cells = [...Array.from({ length: lead }, () => null), ...Array.from({ length: days }, (_, i) => iso(first + i * DAY))];
+  // the month in rows of a week, the last one filled up, so the grid has rows and cells as a grid should
+  const padded = [...cells, ...Array.from({ length: (7 - (cells.length % 7)) % 7 }, () => null)];
+  const weeks = Array.from({ length: padded.length / 7 }, (_, i) => padded.slice(i * 7, i * 7 + 7));
   const years: number[] = [];
   for (let yr = Number(max.slice(0, 4)); yr >= Number(min.slice(0, 4)); yr--) years.push(yr);
 
@@ -111,15 +114,19 @@ function Calendar({ title, value, min, max, startAt, lang, onPick, onClose }: {
       </div>
       <div className={calendar.weekdays} aria-hidden="true">{weekdays.map((w) => <span key={w}>{w}</span>)}</div>
       <div className={calendar.days} role="grid" aria-label={`${monthName(m)} ${toLocalDigits(String(y), lang)}`} ref={grid} onKeyDown={onKey}>
-        {cells.map((d, i) => d === null
-          ? <span key={`e${i}`} className={calendar.empty} />
-          : (
-            <button key={d} type="button" role="gridcell" className={`${calendar.day} ${d === value ? calendar.chosen : ''} ${d === today ? calendar.today : ''}`}
-              disabled={d < min || d > max} aria-selected={d === value} aria-current={d === today ? 'date' : undefined} tabIndex={d === focus ? 0 : -1} data-focus={d === focus}
-              aria-label={fmt({ dateStyle: 'full' }).format(ms(d))} onClick={() => onPick(d)}>
-              {toLocalDigits(String(Number(d.slice(8, 10))), lang)}
-            </button>
-          ))}
+        {weeks.map((week, wi) => (
+          <div key={wi} role="row" className={calendar.week}>
+            {week.map((d, i) => d === null
+              ? <span key={`e${wi}-${i}`} role="gridcell" aria-hidden="true" className={calendar.empty} />
+              : (
+                <button key={d} type="button" role="gridcell" className={`${calendar.day} ${d === value ? calendar.chosen : ''} ${d === today ? calendar.today : ''}`}
+                  disabled={d < min || d > max} aria-selected={d === value} aria-current={d === today ? 'date' : undefined} tabIndex={d === focus ? 0 : -1} data-focus={d === focus}
+                  aria-label={fmt({ dateStyle: 'full' }).format(ms(d))} onClick={() => onPick(d)}>
+                  {toLocalDigits(String(Number(d.slice(8, 10))), lang)}
+                </button>
+              ))}
+          </div>
+        ))}
       </div>
     </Popup>
   );

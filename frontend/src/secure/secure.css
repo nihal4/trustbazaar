@@ -37,6 +37,8 @@ h2 { margin: 0 0 0.75rem; font-size: 1.125rem; letter-spacing: -0.01em; }
 :lang(bn) h2 { letter-spacing: 0; }
 a { color: var(--text); font-weight: 600; text-underline-offset: 3px; transition: color 140ms ease; }
 @media (hover: hover) and (pointer: fine) { a:hover { color: var(--hot); } }
+/* a link that stands alone on its line (back to the order, home) is a target of at least 28 px */
+p > a:only-child { display: inline-flex; align-items: center; min-height: 28px; }
 :focus-visible { outline: 2px solid var(--hot); outline-offset: 2px; }
 
 /* a block of the page: a hairline over it, no box; its heading, its words, its buttons */
