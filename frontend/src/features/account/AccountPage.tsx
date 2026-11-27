@@ -41,11 +41,12 @@ export function Component() {
 
   const u = me.data;
   return (
-    <div className={styles.narrow}>
+    <div className={styles.accountPage}>
       <AccountTabs t={t} />
       <h1>{t('account.title')}</h1>
       {message && <FormMessage kind="error">{message}</FormMessage>}
-      <dl className={styles.facts}>
+      {/* the facts as a ruled ledger on the 32 px grid: a row is two cells high, the label on the left, the value on the right */}
+      <dl className={styles.ledger}>
         <div><dt>{t('account.name')}</dt><dd>{u.displayName}</dd></div>
         {u.phoneMasked && <div><dt>{t('field.phone')}</dt><dd>{u.phoneMasked}</dd></div>}
         {u.email && (
@@ -64,11 +65,11 @@ export function Component() {
         <div><dt>{t('account.mfa')}</dt><dd>{t(u.mfaEnabled ? 'account.mfa_on' : 'account.mfa_off')}</dd></div>
       </dl>
       {u.accountStatus === 'suspended' && <FormMessage kind="info">{t('account.suspended')}</FormMessage>}
-      <ul className={styles.links}>
+      <ul className={styles.ruledLinks}>
         <li><Link to="/seller">{t('account.seller_link')}</Link></li>
         <li><Link to="/account/payout">{t('account.payout_link')}</Link></li>
       </ul>
-      <button type="button" className={styles.secondary} onClick={() => void signOut()} disabled={busy}>
+      <button type="button" className={styles.signOut} onClick={() => void signOut()} disabled={busy}>
         {t('account.sign_out')}
       </button>
     </div>
