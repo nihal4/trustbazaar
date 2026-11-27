@@ -70,10 +70,12 @@ export function Component() {
                       {th.other?.displayName ?? t('chat.closed_account')}
                       {th.other?.verified && <span className={styles.tick} title={t('chat.verified')}><Tick /><span className={styles.visuallyHidden}>{t('chat.verified')}</span></span>}
                     </span>
-                    <span className={styles.about}>{t('chat.about', { title: th.listing.title ?? t('chat.listing_gone') })}</span>
-                    <span className={styles.meta}>
-                      {t(th.role === 'buyer' ? 'chat.buying' : 'chat.selling')}
-                      {th.closed && <> · {t('chat.closed')}</>}
+                    <span className={styles.about}>
+                      <span className={styles.productTag}>{t('chat.about', { title: th.listing.title ?? t('chat.listing_gone') })}</span>
+                      <span className={styles.role}>
+                        {t(th.role === 'buyer' ? 'chat.buying' : 'chat.selling')}
+                        {th.closed && <> · {t('chat.closed')}</>}
+                      </span>
                     </span>
                   </span>
                   <span className={styles.threadSide}>

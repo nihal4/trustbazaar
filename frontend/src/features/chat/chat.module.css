@@ -173,27 +173,174 @@
   }
 }
 
-/* the conversation (U10-25): ruled, not boxed. A message is a line of text with a rule on the side of whoever said it: theirs on the left in the
-   hairline colour, mine on the right in vermilion over a faint wash. The log scrolls inside its own frame; the writing place sits under it on a rule. */
-.back {
+/* the conversation (U10-25), after the messaging apps people already know: one rounded card holding a header (back, the other party's initial, name and
+   listing), the messages as bubbles (mine right in the accent colour, theirs left on the surface, the time inside), and a bar at the foot to write
+   in: attach, a rounded field that grows, a round send button. Colours and the vermilion are the theme's. */
+.chat {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--tb-line);
+  border-radius: 16px;
+  background: var(--tb-bg);
+}
+
+.chatHead {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--tb-line);
+  background: var(--tb-sheet, var(--tb-surface));
+}
+
+.backBtn,
+.iconBtn {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--tb-text);
+  cursor: pointer;
+  transition: background 140ms;
+}
+
+.backBtn:hover,
+.iconBtn:hover {
+  background: var(--tb-surface);
+}
+
+.backBtn:focus-visible,
+.iconBtn:focus-visible,
+.attach:focus-within .iconBtn {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: 2px;
+}
+
+.backBtn svg,
+.iconBtn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.headAvatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tb-hot) 18%, transparent);
+  color: var(--tb-hot);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.headText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.page .chatHead h1 {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
   margin: 0;
-  padding-bottom: 0.75rem;
+  padding: 0;
+  border: 0;
+  font-size: 1.0625rem;
+  line-height: 1.25;
+  letter-spacing: 0;
 }
 
 .about {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
   margin: 0;
-  padding-bottom: 1rem;
+  font-size: 0.875rem;
+  min-width: 0;
+}
+
+.headName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* the product the talk is about: a ruled chip, in the text colour, never the default underlined link */
+.product {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0.125rem 0.625rem;
+  border: 1px solid var(--tb-border);
+  border-radius: 999px;
+  color: var(--tb-text);
+  font-weight: 600;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.productTag {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0.125rem 0.625rem;
+  border: 1px solid var(--tb-border);
+  border-radius: 999px;
+  color: var(--tb-text);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.threadLink:hover .productTag {
+  border-color: var(--tb-hot);
+}
+
+.threads ~ .secondary {
+  border-radius: 0;
+}
+
+.product:hover {
+  border-color: var(--tb-hot);
+  color: var(--tb-hot);
+}
+
+.role {
+  color: var(--tb-muted);
+}
+
+.retry {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .messages {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  max-height: min(34rem, 60vh);
+  gap: 0.25rem;
+  height: clamp(18rem, 58vh, 40rem);
   overflow-y: auto;
-  padding: 1rem 0.25rem 1rem 0;
-  border-top: 1px solid var(--tb-line);
-  border-bottom: 1px solid var(--tb-line);
+  padding: 1rem;
+  margin: 0;
+  list-style: none;
+  background: var(--tb-bg);
 }
 
 .messages:focus-visible {
@@ -206,36 +353,54 @@
   flex-direction: column;
   gap: 0.25rem;
   width: fit-content;
-  max-width: min(85%, 36rem);
-  padding: 0.5rem 0.875rem;
+  max-width: min(78%, 34rem);
+  margin: 0;
+  padding: 0.5rem 0.75rem 0.375rem;
   overflow-wrap: anywhere;
 }
 
 .mine {
-  align-items: flex-end;
   margin-left: auto;
-  border-right: 2px solid var(--tb-hot);
-  background: color-mix(in srgb, var(--tb-hot) 7%, transparent);
-  text-align: end;
+  border-radius: 18px 18px 4px 18px;
+  background: var(--tb-accent);
+  color: var(--tb-accent-text);
 }
 
 .theirs {
   margin-right: auto;
-  border-left: 2px solid var(--tb-border);
+  border-radius: 18px 18px 18px 4px;
+  background: var(--tb-surface);
+  color: var(--tb-text);
+}
+
+.day {
+  align-self: center;
+  margin: 0.75rem 0 0.5rem;
+}
+
+.day span {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: var(--tb-surface);
+  color: var(--tb-muted);
+  font-size: 0.8125rem;
 }
 
 .empty {
+  margin: auto;
+  max-width: 24rem;
   color: var(--tb-muted);
+  text-align: center;
 }
 
 .sender {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--tb-hot);
-}
-
-.sender:empty {
-  display: none;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 /* Plain text: line breaks as typed, nothing interpreted (SEC-INP-03, FR-CHT-09). */
@@ -249,7 +414,7 @@
   max-width: 100%;
   max-height: 20rem;
   object-fit: contain;
-  border: 1px solid var(--tb-line);
+  border-radius: 12px;
 }
 
 .flag,
@@ -258,19 +423,42 @@
   margin: 0;
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--tb-warning-border);
+  border-radius: 12px;
   background: var(--tb-warning-bg);
   color: var(--tb-text);
-  text-align: start;
+  font-size: 0.9375rem;
 }
 
 .notice {
-  margin: 1rem 0;
+  margin: 1rem;
 }
 
 .status {
   margin: 0;
   font-size: 0.875rem;
-  color: var(--tb-muted);
+  opacity: 0.8;
+}
+
+/* the foot of a bubble: the report on the left (theirs only), the time on the right */
+.foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.foot .linkButton {
+  min-height: 0;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+/* the time (and, on mine, whether it was delivered or read) at the foot of the bubble */
+.time {
+  margin-left: auto;
+  font-size: 0.75rem;
+  opacity: 0.72;
+  color: inherit;
 }
 
 .error {
@@ -279,66 +467,178 @@
   margin: 0;
 }
 
-/* the writing place: a ruled field over a line holding the count and the buttons */
-.composer,
-.photoRow,
-.report {
+/* block and report: small text buttons on a line under the header */
+.actionsWrap {
+  display: contents;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0 1rem;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--tb-line);
+}
+
+.actions .secondary,
+.actions .linkButton {
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tb-muted);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 400;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.actions .secondary:hover:not(:disabled),
+.actions .linkButton:hover {
+  color: var(--tb-hot);
+}
+
+.actionNote {
+  padding: 0.5rem 1rem 0;
+}
+
+/* the foot: a photo waiting to be sent, the bar to write in, and the one line of advice */
+.dock {
+  padding: 0.75rem 1rem 0.5rem;
+  border-top: 1px solid var(--tb-line);
+  background: var(--tb-sheet, var(--tb-surface));
+}
+
+.photoPanel {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin: 1rem 0 0;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--tb-line);
+  border-radius: 12px;
 }
 
-.composer label,
-.report label.fieldLabel {
+.photoPanel label {
   font-weight: 600;
 }
 
-.composer textarea,
-.report textarea,
-.photo input[type='text'] {
+.photoPanel input[type='text'] {
   width: 100%;
+  min-height: 44px;
   box-sizing: border-box;
-  font: inherit;
-  padding: 0.75rem 0.875rem;
+  padding: 0 1rem;
   border: 1px solid var(--tb-border);
-  border-radius: 0;
-  background: transparent;
+  border-radius: 999px;
+  background: var(--tb-bg);
   color: var(--tb-text);
-  resize: vertical;
+  font: inherit;
 }
 
-.photo input[type='text'] {
-  min-height: 48px;
-}
-
-.composer textarea:focus-visible,
-.report textarea:focus-visible,
-.photo input[type='text']:focus-visible {
+.photoPanel input[type='text']:focus-visible,
+.field:focus-visible {
   outline: none;
   border-color: var(--tb-hot);
-  box-shadow: inset 0 0 0 1px var(--tb-hot);
+  box-shadow: 0 0 0 1px var(--tb-hot);
 }
 
-.composerFoot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem 1rem;
-}
-
-.composerFoot p {
+.fileName {
   margin: 0;
+  color: var(--tb-muted);
+  overflow-wrap: anywhere;
 }
 
-/* the main button of the page: a vermilion hairline over a faint wash (as in every popup); the others are plain ruled cells */
+.bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.composer {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.field {
+  flex: 1;
+  min-width: 0;
+  max-height: 9rem;
+  box-sizing: border-box;
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--tb-border);
+  border-radius: 22px;
+  background: var(--tb-bg);
+  color: var(--tb-text);
+  font: inherit;
+  line-height: 1.4;
+  resize: none;
+}
+
+.sendBtn {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--tb-hot);
+  color: #0a1018;
+  cursor: pointer;
+  transition: opacity 140ms, transform 140ms;
+}
+
+.sendBtn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.sendBtn:hover:not(:disabled) {
+  transform: scale(1.06);
+}
+
+.sendBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sendBtn:focus-visible {
+  outline: 2px solid var(--tb-text);
+  outline-offset: 2px;
+}
+
+.attach {
+  display: inline-flex;
+  flex: none;
+}
+
+.attach input[type='file'] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.dockNote {
+  margin: 0.375rem 0 0;
+  font-size: 0.8125rem;
+  text-align: center;
+}
+
 .primary,
 .secondary {
-  min-height: 48px;
-  padding: 0 1.5rem;
+  min-height: 44px;
+  padding: 0 1.25rem;
   border: 1px solid var(--tb-border);
-  border-radius: 0;
+  border-radius: 999px;
   background: none;
   color: var(--tb-text);
   font: inherit;
@@ -349,11 +649,11 @@
 
 .primary {
   border-color: var(--tb-hot);
-  background: color-mix(in srgb, var(--tb-hot) 10%, transparent);
+  background: color-mix(in srgb, var(--tb-hot) 12%, transparent);
 }
 
 .primary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--tb-hot) 18%, transparent);
+  background: color-mix(in srgb, var(--tb-hot) 22%, transparent);
 }
 
 .secondary:hover:not(:disabled) {
@@ -367,8 +667,7 @@
 }
 
 .primary:focus-visible,
-.secondary:focus-visible,
-.attach:focus-within {
+.secondary:focus-visible {
   outline: 2px solid var(--tb-hot);
   outline-offset: 2px;
 }
@@ -379,109 +678,21 @@
   gap: 0.5rem;
 }
 
-/* the photo: the real file field is hidden by clipping (it keeps its label and the keyboard), the label is the button */
-.attach {
-  display: inline-flex;
-  align-items: center;
-  box-sizing: border-box;
-}
-
-.attach label {
-  display: inline-flex;
-  align-items: center;
-  min-height: 48px;
-  padding: 0 1.5rem;
-  border: 1px solid var(--tb-border);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.attach label:hover {
-  border-color: var(--tb-hot);
-}
-
-.attach input[type='file'] {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
-
-.photo {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin: 0.5rem 0 0;
-}
-
-.photo label {
-  font-weight: 600;
-}
-
-.fileName {
-  margin: 0;
-  color: var(--tb-muted);
-  overflow-wrap: anywhere;
-}
-
-/* block and report: two ruled cells on the line under the heading */
-.actions {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  margin: 0 0 1rem;
-  border: 1px solid var(--tb-line);
-}
-
-.actions > :where(button) {
-  min-height: 52px;
-}
-
-.actions .secondary,
-.actions .linkButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 52px;
-  padding: 0 1rem;
-  border: 0;
-  border-radius: 0;
-  background: none;
-  color: var(--tb-text);
-  font: inherit;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.actions > * + * {
-  border-left: 1px solid var(--tb-line);
-}
-
-.actions .secondary:hover:not(:disabled),
-.actions .linkButton:hover {
-  background: var(--tb-surface);
-}
-
-.actionNote {
-  margin: 0 0 1rem;
-}
-
-@media (max-width: 30rem) {
-  .actions {
-    grid-auto-flow: row;
+@media (max-width: 40rem) {
+  .chat {
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+    margin: 0 calc(-1 * var(--tb-gutter, 1rem));
   }
 
-  .actions > * + * {
-    border-left: 0;
-    border-top: 1px solid var(--tb-line);
+  .messages {
+    height: clamp(16rem, calc(100dvh - 23rem), 40rem);
+    padding: 0.75rem;
   }
 
   .message {
-    max-width: 92%;
+    max-width: 86%;
   }
 }
 

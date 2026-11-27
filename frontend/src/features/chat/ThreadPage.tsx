@@ -3,12 +3,12 @@
 // The reference ChatThread (lib/live.js) keeps the messages in order: a live chat.message is appended if it is the
 // next number, a gap or a reconnection fetches the missing ones (IF-COM-02), and our own message, shown as
 // "Sending…" with its client id, is confirmed when the server's copy arrives. Block and report are on the thread.
-import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChatThread } from '../../lib/live.js';
 import { toLocalDigits } from '../../lib/money.js';
-import { formatDateTime } from '../../lib/time.js';
+import { dateParts } from '../../lib/time.js';
 import { useApi, type Api } from '../../shared/api';
 import { ConfirmDialog } from '../../shared/ConfirmDialog';
 import { Popup, PopupActions } from '../../shared/Popup';
@@ -35,6 +35,11 @@ const CATALOGUES = { en, bn };
 /** DV-40 */
 export const MAX_TEXT = 2000;
 const MAX_CAPTION = 300;
+const stroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
+const BackIcon = () => <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 5 L8 12 L15 19" {...stroke} /></svg>;
+const SendIcon = () => <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12 L20 4 L14 20 L11 13 Z M11 13 L20 4" {...stroke} /></svg>;
+const ClipIcon = () => <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 11 L12 19 a5 5 0 0 1 -7 -7 L13 4 a3.5 3.5 0 0 1 5 5 L10 17 a2 2 0 0 1 -3 -3 L14 7" {...stroke} /></svg>;
+const initialOf = (name: string) => (Array.from(name.trim())[0] ?? '?').toUpperCase();
 const CATEGORIES = ['fraudulent', 'counterfeit', 'prohibited', 'misrepresented', 'abusive'] as const;
 type Category = (typeof CATEGORIES)[number];
 
@@ -215,48 +220,66 @@ function Conversation({ id, t, lang }: { id: string; t: T; lang: Lang }) {
   const pending = [...thread.current.pending.values()];
   const lastMine = [...messages].reverse().find((m) => m.fromMe);
 
+  const sameDay = (a: string, b: string) => {
+    const x = dateParts(Date.parse(a), lang);
+    const y = dateParts(Date.parse(b), lang);
+    return x.day === y.day && x.month === y.month && x.year === y.year;
+  };
   return (
     <div className={styles.page}>
-      <p className={styles.back}><Link to="/messages">{t('thread.back')}</Link></p>
-      <h1>{t('thread.with', { name })}{s?.other?.verified && <span className={styles.tick} title={t('chat.verified')}><Tick /><span className={styles.visuallyHidden}>{t('chat.verified')}</span></span>}</h1>
-      {s && (
-        <p className={styles.about}>
-          {s.listing.title
-            ? <Link to={`/listings/${encodeURIComponent(s.listing.id)}`}>{t('thread.listing', { title: s.listing.title })}</Link>
-            : t('chat.about', { title: t('chat.listing_gone') })}
-          {' · '}{t(s.role === 'buyer' ? 'chat.buying' : 'chat.selling')}
-        </p>
-      )}
-      {s?.other && <ThreadActions threadId={id} other={s.other} t={t} lang={lang} />}
+      <div className={styles.chat}>
+        <header className={styles.chatHead}>
+          <Link to="/messages" className={styles.backBtn}><BackIcon /><span className={styles.visuallyHidden}>{t('thread.back')}</span></Link>
+          <span className={styles.headAvatar} aria-hidden="true">{initialOf(name)}</span>
+          <div className={styles.headText}>
+            <h1 aria-label={t('thread.with', { name })}>
+              <span className={styles.headName}>{name}</span>
+              {s?.other?.verified && <span className={styles.tick} title={t('chat.verified')}><Tick /><span className={styles.visuallyHidden}>{t('chat.verified')}</span></span>}
+            </h1>
+            {s && (
+              <p className={styles.about}>
+                {s.listing.title
+                  ? <Link className={styles.product} to={`/listings/${encodeURIComponent(s.listing.id)}`}>{t('thread.listing', { title: s.listing.title })}</Link>
+                  : <span className={styles.muted}>{t('chat.about', { title: t('chat.listing_gone') })}</span>}
+                <span className={styles.role}>{t(s.role === 'buyer' ? 'chat.buying' : 'chat.selling')}</span>
+              </p>
+            )}
+          </div>
+        </header>
+        {s?.other && <ThreadActions threadId={id} other={s.other} t={t} lang={lang} />}
 
-      <h2 className={styles.visuallyHidden}>{t('thread.messages')}</h2>
-      {!loaded ? <p role="status">{t('shell.loading')}</p> : (
-        <ol ref={log} className={styles.messages} role="log" tabIndex={0} aria-label={t('thread.messages')}>
-          {messages.length === 0 && pending.length === 0 && <li className={styles.empty}>{t('thread.empty')}</li>}
-          {messages.map((m) => (
-            <MessageItem key={m.seq} m={m} role={s?.role ?? null} threadId={id} t={t} lang={lang}
-              mark={m === lastMine ? (marks.read >= m.seq ? 'read' : marks.delivered >= m.seq ? 'delivered' : null) : null} />
-          ))}
-          {pending.map((p) => (
-            <li key={p.clientMsgId} className={`${styles.message} ${styles.mine}`}>
-              <span className={styles.sender}>{t('thread.you')}</span>
-              <p className={styles.text}>{p.text}</p>
-              {failed.has(p.clientMsgId)
-                ? <p className={styles.status}>{t('thread.failed')}{' '}
-                    {!closed && <button type="button" className={styles.linkButton} onClick={() => send(p.text, p.clientMsgId)}>{t('thread.retry')}</button>}
-                  </p>
-                : <p className={styles.status} role="status">{t('thread.sending')}</p>}
-            </li>
-          ))}
-        </ol>
-      )}
-      {sendError && <FormMessage kind="error">{sendError}</FormMessage>}
-      {closed ? <p className={styles.notice}>{t('thread.closed')}</p> : loaded && (
-        <>
-          <Composer t={t} lang={lang} onSend={(text) => send(text, newClientId())} />
-          <PhotoForm threadId={id} t={t} lang={lang} onSent={() => void sync()} />
-        </>
-      )}
+        <h2 className={styles.visuallyHidden}>{t('thread.messages')}</h2>
+        {!loaded ? <p role="status" className={styles.notice}>{t('shell.loading')}</p> : (
+          <ol ref={log} className={styles.messages} role="log" tabIndex={0} aria-label={t('thread.messages')}>
+            {messages.length === 0 && pending.length === 0 && <li className={styles.empty}>{t('thread.empty')}</li>}
+            {messages.map((m, i) => {
+              const p = dateParts(Date.parse(m.at), lang);
+              return (
+                <Fragment key={m.seq}>
+                  {(i === 0 || !sameDay(messages[i - 1].at, m.at)) && <li role="presentation" className={styles.day}><span>{`${p.weekday}, ${p.day} ${p.month} ${p.year}`}</span></li>}
+                  <MessageItem m={m} role={s?.role ?? null} threadId={id} t={t} lang={lang}
+                    mark={m === lastMine ? (marks.read >= m.seq ? 'read' : marks.delivered >= m.seq ? 'delivered' : null) : null} />
+                </Fragment>
+              );
+            })}
+            {pending.map((p) => (
+              <li key={p.clientMsgId} className={`${styles.message} ${styles.mine}`}>
+                <span className={styles.sender}>{t('thread.you')}</span>
+                <p className={styles.text}>{p.text}</p>
+                {failed.has(p.clientMsgId)
+                  ? <p className={styles.status}>{t('thread.failed')}{' '}
+                      {!closed && <button type="button" className={styles.retry} onClick={() => send(p.text, p.clientMsgId)}>{t('thread.retry')}</button>}
+                    </p>
+                  : <p className={styles.status} role="status">{t('thread.sending')}</p>}
+              </li>
+            ))}
+          </ol>
+        )}
+        {sendError && <div className={styles.actionNote}><FormMessage kind="error">{sendError}</FormMessage></div>}
+        {closed ? <p className={styles.notice}>{t('thread.closed')}</p> : loaded && (
+          <Dock threadId={id} t={t} lang={lang} onSend={(text) => send(text, newClientId())} onSent={() => void sync()} />
+        )}
+      </div>
     </div>
   );
 }
@@ -284,56 +307,52 @@ function MessageItem({ m, role, threadId, mark, t, lang }: {
           {f === 'credentials' && role === 'seller' && <> {t('flag.credentials_seller')}</>}
         </p>
       ))}
-      <span className={styles.time}>{formatDateTime(Date.parse(m.at), lang)}{mark && <> · {t(`thread.${mark}`)}</>}</span>
-      {!m.fromMe && !m.removed && <ReportForm threadId={threadId} seq={m.seq} t={t} lang={lang} />}
+      <div className={styles.foot}>
+        {!m.fromMe && !m.removed && <ReportForm threadId={threadId} seq={m.seq} t={t} lang={lang} />}
+        <span className={styles.time}>{(() => { const p = dateParts(Date.parse(m.at), lang); return `${p.time} ${p.period}`; })()}{mark && <> · {t(`thread.${mark}`)}</>}</span>
+      </div>
     </li>
   );
 }
 
-function Composer({ t, lang, onSend }: { t: T; lang: Lang; onSend: (text: string) => void }) {
+/** The foot of the conversation: attach, a field that grows with what is typed (Enter sends, Shift+Enter breaks the line), and the round send button.
+ *  FR-CHT-03: one photo with an optional caption; Unit 6 checks it and removes its metadata. A chosen photo waits in a panel above the bar. */
+function Dock({ threadId, t, lang, onSend, onSent }: { threadId: string; t: T; lang: Lang; onSend: (text: string) => void; onSent: () => void }) {
+  const api = useApi();
   const [text, setText] = useState('');
+  const field = useRef<HTMLTextAreaElement>(null);
   const length = [...text.normalize('NFC')].length;
   const tooLong = length > MAX_TEXT;
-  const submit = (ev: FormEvent) => {
-    ev.preventDefault();
-    const body = text.trim();
-    if (!body || tooLong) return;
-    onSend(body);
-    setText('');
-  };
-  return (
-    <form className={styles.composer} onSubmit={submit} noValidate>
-      <label htmlFor="chat-text">{t('thread.label')}</label>
-      <p id="chat-hint" className={styles.hint}>{t('thread.hint')}</p>
-      <textarea id="chat-text" rows={3} value={text} aria-describedby="chat-hint chat-count" aria-invalid={tooLong || undefined}
-        onChange={(e) => setText(e.target.value)} />
-      <div className={styles.composerFoot}>
-        <p id="chat-count" className={tooLong ? styles.error : styles.hint}>
-          {tooLong ? t('thread.too_long', { max: toLocalDigits(String(MAX_TEXT), lang) })
-            : t('thread.counter', { count: toLocalDigits(String(length), lang), max: toLocalDigits(String(MAX_TEXT), lang) })}
-        </p>
-        <button type="submit" className={styles.primary} disabled={!text.trim() || tooLong}>{t('thread.send')}</button>
-      </div>
-    </form>
-  );
-}
-
-/** FR-CHT-03: one photo with an optional caption; Unit 6 checks it and removes its metadata. */
-function PhotoForm({ threadId, t, lang, onSent }: { threadId: string; t: T; lang: Lang; onSent: () => void }) {
-  const api = useApi();
   const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const clientId = useRef<string | null>(null);
   const input = useRef<HTMLInputElement>(null);
+  const grow = () => {
+    const el = field.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, 144)}px`;
+  };
+  const submit = (ev?: FormEvent) => {
+    ev?.preventDefault();
+    const body = text.trim();
+    if (!body || tooLong) return;
+    onSend(body);
+    setText('');
+    requestAnimationFrame(grow);
+  };
+  const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); submit(); }
+  };
   const reset = () => {
     setFile(null);
     setCaption('');
     clientId.current = null;
     if (input.current) input.current.value = '';
   };
-  const submit = (ev: FormEvent) => {
+  const sendPhoto = (ev: FormEvent) => {
     ev.preventDefault();
     if (!file || busy) return;
     clientId.current ??= newClientId(); // the same id for a resend of this photo
@@ -352,14 +371,9 @@ function PhotoForm({ threadId, t, lang, onSent }: { threadId: string; t: T; lang
     ).finally(() => setBusy(false));
   };
   return (
-    <form className={styles.photo} onSubmit={submit} noValidate>
-      <div className={styles.attach}>
-        <label htmlFor="chat-photo">{t('thread.photo')}</label>
-        <input id="chat-photo" ref={input} type="file" accept="image/jpeg,image/png,image/webp"
-          onChange={(e: ChangeEvent<HTMLInputElement>) => { setFile(e.target.files?.[0] ?? null); clientId.current = null; }} />
-      </div>
+    <div className={styles.dock}>
       {file && (
-        <>
+        <form className={styles.photoPanel} onSubmit={sendPhoto} noValidate>
           <p className={styles.fileName}>{file.name}</p>
           <label htmlFor="chat-caption">{t('thread.caption')}</label>
           <input id="chat-caption" type="text" maxLength={MAX_CAPTION} value={caption} onChange={(e) => setCaption(e.target.value)} />
@@ -368,9 +382,27 @@ function PhotoForm({ threadId, t, lang, onSent }: { threadId: string; t: T; lang
             <button type="submit" className={styles.primary} disabled={busy} aria-busy={busy}>{busy ? t('thread.sending') : t('thread.send_photo')}</button>
             <button type="button" className={styles.secondary} onClick={reset} disabled={busy}>{t('thread.cancel_photo')}</button>
           </div>
-        </>
+        </form>
       )}
-    </form>
+      <div className={styles.bar}>
+        <div className={styles.attach}>
+          <label htmlFor="chat-photo" className={styles.iconBtn} title={t('thread.photo')}><ClipIcon /><span className={styles.visuallyHidden}>{t('thread.photo')}</span></label>
+          <input id="chat-photo" ref={input} type="file" accept="image/jpeg,image/png,image/webp"
+            onChange={(e: ChangeEvent<HTMLInputElement>) => { setFile(e.target.files?.[0] ?? null); clientId.current = null; }} />
+        </div>
+        <form className={styles.composer} onSubmit={submit} noValidate>
+          <label htmlFor="chat-text" className={styles.visuallyHidden}>{t('thread.label')}</label>
+          <textarea id="chat-text" ref={field} className={styles.field} rows={1} value={text} aria-describedby="chat-hint chat-count" aria-invalid={tooLong || undefined}
+            onChange={(e) => { setText(e.target.value); grow(); }} onKeyDown={onKey} />
+          <button type="submit" className={styles.sendBtn} disabled={!text.trim() || tooLong}><SendIcon /><span className={styles.visuallyHidden}>{t('thread.send')}</span></button>
+        </form>
+      </div>
+      <p id="chat-hint" className={`${styles.hint} ${styles.dockNote}`}>{t('thread.hint')}</p>
+      <p id="chat-count" className={tooLong ? `${styles.error} ${styles.dockNote}` : length > MAX_TEXT - 200 ? `${styles.hint} ${styles.dockNote}` : styles.visuallyHidden}>
+        {tooLong ? t('thread.too_long', { max: toLocalDigits(String(MAX_TEXT), lang) })
+          : t('thread.counter', { count: toLocalDigits(String(length), lang), max: toLocalDigits(String(MAX_TEXT), lang) })}
+      </p>
+    </div>
   );
 }
 
@@ -407,7 +439,7 @@ function ThreadActions({ threadId, other, t, lang }: { threadId: string; other: 
     ).finally(() => setBusy(false));
   };
   return (
-    <section aria-label={t('thread.actions')}>
+    <section aria-label={t('thread.actions')} className={styles.actionsWrap}>
       <div className={styles.actions}>
         {blocked
           ? <button type="button" className={styles.secondary} onClick={unblock} disabled={busy}>{t('thread.unblock', { name })}</button>
