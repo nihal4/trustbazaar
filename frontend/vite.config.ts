@@ -8,7 +8,7 @@ import react from '@vitejs/plugin-react';
 const backend = process.env.VITE_BACKEND ?? 'http://localhost:3000';
 
 // In development the other two documents are reached at their real addresses, as nginx serves them in the container
-// (/account/kyc/* is kyc.html, /secure/* is secure.html); a page load of those paths is answered with the document.
+// (/account/kyc/* is kyc.html, /secure/* is secure.html, /staff/* and /admin/* are staff.html); a page load of those paths is answered with the document.
 const documentRoutes = {
   name: 'tb-document-routes',
   configureServer(server: { middlewares: { use: (fn: (req: { url?: string; headers: Record<string, string | undefined> }, res: unknown, next: () => void) => void) => void } }) {
@@ -17,6 +17,7 @@ const documentRoutes = {
       const page = req.headers.accept?.includes('text/html');
       if (page && (path === '/account/kyc' || path.startsWith('/account/kyc/'))) req.url = '/kyc.html';
       else if (page && path.startsWith('/secure/')) req.url = '/secure.html';
+      else if (page && (path === '/staff' || path.startsWith('/staff/') || path === '/admin' || path.startsWith('/admin/'))) req.url = '/staff.html';
       next();
     });
   },
