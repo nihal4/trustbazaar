@@ -29,7 +29,7 @@
     "types": 20
   },
   "jscpd": {
-    "clones": 7,
-    "duplicatedLines": 113
+    "clones": 17,
+    "duplicatedLines": 270
   }
 }

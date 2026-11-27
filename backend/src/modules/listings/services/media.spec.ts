@@ -7,8 +7,10 @@ import { MediaPipeline, PhotoRejected, sniffImage } from './media';
 // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const sharp = require('sharp') as typeof import('sharp').default;
 
-const image = (fmt: 'jpeg' | 'png' | 'webp', w = 2000, h = 1000) =>
-  sharp({ create: { width: w, height: h, channels: 3, background: '#468' } })[fmt]().toBuffer();
+const image = (fmt: 'jpeg' | 'png' | 'webp', w = 2000, h = 1000) => {
+  const picture = sharp({ create: { width: w, height: h, channels: 3, background: '#468' } });
+  return picture[fmt]().toBuffer();
+};
 
 describe('MediaPipeline (listing photos, section 6.2)', () => {
   const root = mkdtempSync(join(tmpdir(), 'tb-media-'));

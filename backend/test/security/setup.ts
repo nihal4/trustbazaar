@@ -74,8 +74,10 @@ export const newLocal = () => `019${String(randomInt(0, 1e8)).padStart(8, '0')}`
 
 let shade = 0;
 /** A plain test image (each a slightly different colour), JPEG or PNG. */
-export const image = (fmt: 'jpeg' | 'png' = 'jpeg', width = 640, height = 400) =>
-  sharp({ create: { width, height, channels: 3, background: { r: (shade += 7) % 255, g: 90, b: 160 } } })[fmt]().toBuffer();
+export const image = (fmt: 'jpeg' | 'png' = 'jpeg', width = 640, height = 400) => {
+  const picture = sharp({ create: { width, height, channels: 3, background: { r: (shade += 7) % 255, g: 90, b: 160 } } });
+  return picture[fmt]().toBuffer();
+};
 
 /** A KYC submission (NID, both sides and two selfies) through the API; returns its id. */
 export async function submitKyc(b: Browser, d: { docNumber?: string; fullName?: string } = {}): Promise<{ id: string; docNumber: string }> {
@@ -98,28 +100,52 @@ export async function submitKyc(b: Browser, d: { docNumber?: string; fullName?: 
 /** A physical fixed-price draft listing of the member's, through the API, in a category of its own; returns its id. */
 export async function draftListing(s: Suite, b: Browser, o: Record<string, unknown> = {}): Promise<string> {
   const [{ id: categoryId }] = await s.fx.query<{ id: number }>(
-    `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'Test goods', 'পরীক্ষা', 'physical') RETURNING id`, [`sec-${randomUUID().slice(0, 8)}`]);
+    `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'Test goods', 'পরীক্ষা', 'physical') RETURNING id`,
+    [`sec-${randomUUID().slice(0, 8)}`],
+  );
   const r = await b.post('/listings', {
-    itemKind: 'physical', saleFormat: 'fixed_price', categoryId, title: 'A used desk lamp',
-    description: 'A used desk lamp in good condition, written by the security tests.', condition: 'used', noVisibleDefects: true,
-    fulfilmentOptions: 'pickup_only', weightClass: 'up_to_1kg', sizeClass: 'small', price: '150000', quantity: 1,
-    area: { district: 'Dhaka', lat: 23.81049, lng: 90.41234 }, ...o,
+    itemKind: 'physical',
+    saleFormat: 'fixed_price',
+    categoryId,
+    title: 'A used desk lamp',
+    description: 'A used desk lamp in good condition, written by the security tests.',
+    condition: 'used',
+    noVisibleDefects: true,
+    fulfilmentOptions: 'pickup_only',
+    weightClass: 'up_to_1kg',
+    sizeClass: 'small',
+    price: '150000',
+    quantity: 1,
+    area: { district: 'Dhaka', lat: 23.81049, lng: 90.41234 },
+    ...o,
   });
   if (r.status !== 201) throw new Error(`draft refused: ${r.status} ${await r.text()}`);
   return ((await r.json()) as { id: string }).id;
 }
 
 /** An active pickup listing at `price` poisha and the buyer's order awaiting payment, made through the API. */
-export async function pendingOrder(s: Suite, price = 1_500_000): Promise<{ buyer: Awaited<ReturnType<Suite['signedIn']>>; sellerId: string; orderId: string; total: string }> {
+export async function pendingOrder(
+  s: Suite,
+  price = 1_500_000,
+): Promise<{ buyer: Awaited<ReturnType<Suite['signedIn']>>; sellerId: string; orderId: string; total: string }> {
   const sellerId = await s.fx.user({ kyc: 'verified' });
   const [{ id: categoryId }] = await s.fx.query<{ id: number }>(
-    `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'Phones', 'ফোন', 'physical') RETURNING id`, [`pay-${randomUUID().slice(0, 8)}`]);
+    `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'Phones', 'ফোন', 'physical') RETURNING id`,
+    [`pay-${randomUUID().slice(0, 8)}`],
+  );
   const [{ id: listingId }] = await s.fx.query<{ id: string }>(
     `INSERT INTO listings.listings (seller_id, item_kind, sale_format, category_id, title, description, condition, no_visible_defects,
         fulfilment_options, area_district, approx_lat, approx_lng, price, quantity_total, quantity_available)
      VALUES ($1, 'physical', 'fixed_price', $2, 'Phone for the payment checks', 'A phone in good condition, written by the security tests.', 'used', true,
-        'pickup_only', 'Dhaka', 23.81, 90.41, $3, 1, 1) RETURNING id`, [sellerId, categoryId, price]);
-  for (const n of [1, 2]) await s.fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 1, 1)`, [listingId, n, randomUUID().replace(/-/g, '')]);
+        'pickup_only', 'Dhaka', 23.81, 90.41, $3, 1, 1) RETURNING id`,
+    [sellerId, categoryId, price],
+  );
+  for (const n of [1, 2])
+    await s.fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 1, 1)`, [
+      listingId,
+      n,
+      randomUUID().replace(/-/g, ''),
+    ]);
   await s.fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [listingId]);
   const buyer = await s.signedIn({ kyc: 'verified' });
   const r = await buyer.b.post('/orders', { listingId, quantity: 1, fulfilment: 'self_pickup' });
@@ -132,7 +158,10 @@ export async function pendingOrder(s: Suite, price = 1_500_000): Promise<{ buyer
 export async function decideOnMockPage(s: Suite, redirectUrl: string, outcome: 'succeeded' | 'failed' = 'succeeded'): Promise<URL> {
   const page = new URL(redirectUrl);
   const form = await fetch(s.t.url(page.pathname.replace('/api/v1', '') + page.search), {
-    method: 'POST', redirect: 'manual', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: `outcome=${outcome}`,
+    method: 'POST',
+    redirect: 'manual',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: `outcome=${outcome}`,
   });
   if (form.status !== 303) throw new Error(`mock page: ${form.status}`);
   return new URL(form.headers.get('location')!);
