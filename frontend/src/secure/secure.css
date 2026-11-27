@@ -27,7 +27,12 @@ body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--
 
 .top { display: flex; align-items: center; min-height: 72px; padding: 0 max(1rem, calc((100% - 40rem) / 2 + 1rem)); border-bottom: 1px solid var(--line); }
 .brand { display: inline-flex; align-items: center; min-height: 44px; }
+.top { justify-content: space-between; }
 .logotype { display: block; height: 28px; width: auto; }
+.logoLight { display: none; }
+.theme { display: inline-grid; place-items: center; width: 44px; height: 44px; min-height: 44px; padding: 0; border: 1px solid var(--line); border-radius: 0; background: none; color: var(--text); cursor: pointer; }
+.theme .sun { display: block; } .theme .moon { display: none; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 #root { display: block; max-width: 40rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 h1 { margin: 0 0 1.25rem; padding: 1.5rem 0 0; border-top: 2px solid var(--hot); font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.125rem); line-height: 1.15; letter-spacing: -0.03em; font-weight: 600; }
@@ -91,3 +96,16 @@ button + button { margin-left: 0.5rem; }
   #root > * { animation-name: arriveFade; }
   button:active:not(:disabled) { transform: none; }
 }
+
+/* the light theme (U10-28): the app's light values, with the vermilion a step darker for text and lines on white; the theme switch shows the sun in the dark theme (to go light) and the moon in the light one */
+:root[data-theme='light'] {
+  --bg: #ffffff; --surface: #f3f5f8; --text: #0f1720; --muted: #5a6472; --border: #8590a0; --line: #e2e6ec; --hot: #c2410c; --accent: #c2410c;
+  --error: #b42318; --error-bg: #fef3f2; --error-line: #fecdca; --success: #0b6b3f; color-scheme: light;
+}
+:root[data-theme='light'] .logoDark { display: none; }
+:root[data-theme='light'] .logoLight { display: block; }
+:root[data-theme='light'] .theme .sun { display: none; }
+:root[data-theme='light'] .theme .moon { display: block; }
+:root[data-theme='light'] .error { color: #912018; }
+@media (hover: hover) and (pointer: fine) { .theme:hover { border-color: var(--hot); color: var(--hot); } }
+.theme:focus-visible { outline: 2px solid var(--hot); outline-offset: 2px; }

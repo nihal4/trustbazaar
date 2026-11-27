@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="/theme-init.js"></script>
     <link rel="icon" type="image/svg+xml" href="/brand/mark.svg" />
     <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png" />
     <title>TrustBazaar</title>
@@ -10,8 +11,14 @@
   <body>
     <header class="top">
       <a class="brand" href="/" aria-label="TrustBazaar home">
-        <img class="logotype" src="/brand/trustbazaar-reversed.svg" alt="" height="28" />
+        <img class="logotype logoDark" src="/brand/trustbazaar-reversed.svg" alt="" height="28" />
+      <img class="logotype logoLight" src="/brand/trustbazaar.svg" alt="" height="28" />
       </a>
+      <button type="button" class="theme" id="theme">
+        <svg class="moon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        <svg class="sun" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4" /><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6" /></g></svg>
+        <span class="sr" id="theme-label"></span>
+      </button>
     </header>
     <main id="root"></main>
     <script type="module" src="/src/entries/secure.tsx"></script>

@@ -55,6 +55,8 @@
   "form.next_month": "Next month",
   "form.month": "Month",
   "form.year": "Year",
+  "shell.theme.to_light": "Switch to light mode",
+  "shell.theme.to_dark": "Switch to dark mode",
   "form.show_password": "Show password",
   "form.hide_password": "Hide password",
   "error.rate_limited_wait": "Too many attempts. Try again in {time}."

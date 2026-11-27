@@ -362,7 +362,7 @@
 .header > .headSearch { flex: 1 1 9rem; min-width: 9rem; }
 .header [class*='Button-root'] { white-space: nowrap; }
 /* the orange Sell button reads in dark text (white on #ff6b35 is 2.8:1, below the 4.5:1 of WCAG AA) */
-.header [class*='Button-root'] { --button-color: #0a1018; color: #0a1018; }
+:root[data-theme='dark'] .header [class*='Button-root'] { --button-color: #0a1018; color: #0a1018; }
 .header [class*='Button-label'] { overflow: visible; }
 
 /* the confirmation dialog in the ruled look: a hairline panel, the action in vermilion, Cancel as an outline */
@@ -467,3 +467,11 @@
   border-color: var(--tb-hot);
   background: none;
 }
+
+/* the theme switch (U10-28): a ruled square with the sun or the moon, in the header (wide screens, the console, the ID check) and next to the language in the footer */
+.headTools { display: inline-flex; align-items: center; gap: 0.5rem; }
+.themeSwitch { display: inline-grid; flex: none; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--tb-line); border-radius: 0; background: none; color: var(--tb-text); cursor: pointer; transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), border-color 140ms ease, color 140ms ease; }
+.themeSwitch:active { transform: scale(0.94); }
+@media (hover: hover) and (pointer: fine) { .themeSwitch:hover { border-color: var(--tb-hot); color: var(--tb-hot); } }
+.themeSwitch:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .themeSwitch:active { transform: none; } }

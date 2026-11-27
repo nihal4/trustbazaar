@@ -54,6 +54,11 @@
   --tb-line-height: 1.5;
 }
 
+/* The light theme (U10-28): the values above, with the vermilion a step darker where it is text, a line or a wash on white (#ff6b35 on white is 2.8:1; #c2410c is 5.2:1, and 4.7:1 on the
+   surface). A part of a page that is dark in both themes (the home's hero, set data-theme="dark" on itself) keeps the bright vermilion. */
+:root[data-theme='light'] { --tb-hot: #c2410c; --tb-hot-hover: #9a3412; }
+:not(:root)[data-theme='dark'] { --tb-hot: #ff6b35; --tb-hot-hover: #ff8a5c; }
+
 /* Hind Siliguri covers the Bengali block and is loaded only for Bangla (language/font.ts); the Bangla figures (digits,
    taka sign and the separators between them) come first from 'TB Figures', so numbers read clearly in one face (Decisions
    log, U10-20). Bangla needs taller lines. */
