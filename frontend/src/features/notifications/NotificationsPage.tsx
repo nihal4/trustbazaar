@@ -4,7 +4,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { formatDateTime } from '../../lib/time.js';
+import { dateParts } from '../../lib/time.js';
 import { toLocalDigits } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
 import { AccountTabs } from '../../shared/AccountTabs';
@@ -57,8 +57,11 @@ export function Component() {
     <div className={styles.page}>
       <AccountTabs t={t} />
       <h1>{t('notifications.title')}</h1>
-      <List t={t} lang={lang} />
-      <PreferencesForm />
+      {/* the notices on the left, the settings on the right, divided by one line (as the profile, the dashboard and the security page) */}
+      <div className={styles.cols}>
+        <List t={t} lang={lang} />
+        <PreferencesForm />
+      </div>
     </div>
   );
 }
@@ -96,7 +99,7 @@ function List({ t, lang }: { t: ReturnType<typeof useT>['t']; lang: Lang }) {
   const items = pages.data.pages.flatMap((p) => p.items);
   const unread = pages.data.pages[0]?.unread ?? 0;
   return (
-    <section aria-labelledby="notifications-list-title">
+    <section aria-labelledby="notifications-list-title" className={styles.listSection}>
       <h2 id="notifications-list-title" className={styles.visuallyHidden}>{t('notifications.list')}</h2>
       <div className={styles.toolbar}>
         <p role="status">
@@ -115,10 +118,12 @@ function List({ t, lang }: { t: ReturnType<typeof useT>['t']; lang: Lang }) {
             {items.map((n) => (
               <li key={n.id} className={n.readAt ? styles.read : styles.unread}>
                 <button type="button" className={styles.item} onClick={() => open(n)}>
-                  {!n.readAt && <span className={styles.new}>{t('notifications.new')}</span>}
-                  <span className={styles.title}>{n.title}</span>
-                  <span className={styles.body}>{n.body}</span>
-                  <span className={styles.time}>{formatDateTime(Date.parse(n.createdAt), lang)}</span>
+                  <span className={styles.main}>
+                    {!n.readAt && <span className={styles.new}>{t('notifications.new')}</span>}
+                    <span className={styles.title}>{n.title}</span>
+                    <span className={styles.body}>{n.body}</span>
+                  </span>
+                  <When iso={n.createdAt} lang={lang} />
                 </button>
               </li>
             ))}
@@ -130,6 +135,17 @@ function List({ t, lang }: { t: ReturnType<typeof useT>['t']; lang: Lang }) {
         </button>
       )}
     </section>
+  );
+}
+
+/** The day and the time of a notice in Dhaka time, right-aligned: the date, then the weekday and the time (NFR-USE-08). */
+function When({ iso, lang }: { iso: string; lang: Lang }) {
+  const p = dateParts(Date.parse(iso), lang);
+  return (
+    <time dateTime={iso} className={styles.when}>
+      <span className={styles.whenDate}>{p.day} {p.month} {p.year}</span>
+      <span className={styles.whenTime}>{p.weekday}, {p.time} {p.period}</span>
+    </time>
   );
 }
 

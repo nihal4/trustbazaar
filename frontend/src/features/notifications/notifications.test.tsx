@@ -46,7 +46,8 @@ describe('the notification centre', () => {
     expect(items.map((li) => within(li).getByText(/Payment received|New sign-in/).textContent)).toEqual(['Payment received', 'New sign-in']);
     expect(within(items[0]).getByText('New')).toBeTruthy();
     expect(within(items[1]).queryByText('New')).toBeNull();
-    expect(within(items[0]).getByText('Sun 1 Nov 2026, 6:00 pm')).toBeTruthy();
+    expect(within(items[0]).getByText('1 Nov 2026')).toBeTruthy();           // the date, then the weekday and the time in Dhaka
+    expect(within(items[0]).getByText('Sun, 6:00 PM')).toBeTruthy();
     expect(within(items[1]).getByText('<b>Chrome</b> on Android')).toBeTruthy();
     expect(items[1].querySelector('b')).toBeNull();
   });
