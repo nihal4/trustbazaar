@@ -308,13 +308,11 @@
   .auction {
     min-height: 24rem;
   }
-  .pay {
-    min-height: auto;
-  }
   .cardBox:nth-child(even) {
     padding-left: var(--tb-space-7);
   }
   .pay {
+    min-height: auto;
     grid-column: 1 / -1;
     padding-left: 0 !important;
     display: grid;
@@ -362,11 +360,6 @@
   .auction {
     min-height: 26.25rem;
   }
-  .idCard,
-  .code,
-  .pay {
-    min-height: 18rem;
-  }
   .escrow {
     grid-column: 1 / span 6;
   }
@@ -377,6 +370,7 @@
   .idCard,
   .code,
   .pay {
+    min-height: 18rem;
     grid-column: span 4;
     padding: var(--tb-space-8);
     padding-left: 0;
