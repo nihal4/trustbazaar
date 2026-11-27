@@ -17,6 +17,7 @@ import { downloadReceipt, hasReceipt } from './receipt';
 import en from '../../messages/en/orders.json';
 import bn from '../../messages/bn/orders.json';
 import styles from './orders.module.css';
+import { Button } from '../../shared/ui';
 
 const CATALOGUES = { en, bn };
 
@@ -147,9 +148,9 @@ export function Component() {
         </section>
       )}
       {orders.hasNextPage && (
-        <button type="button" className={styles.secondary} disabled={orders.isFetchingNextPage} onClick={() => void orders.fetchNextPage()}>
+        <Button variant="secondary" type="button" disabled={orders.isFetchingNextPage} onClick={() => void orders.fetchNextPage()}>
           {t('orders.more')}
-        </button>
+        </Button>
       )}
     </div>
   );

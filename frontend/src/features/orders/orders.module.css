@@ -13,35 +13,6 @@
   letter-spacing: 0;
   line-height: 1.35;
 }
-.meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--tb-space-2) var(--tb-space-3-5);
-  margin: 0;
-  color: var(--tb-muted);
-}
-.meta a {
-  color: var(--tb-text);
-  text-underline-offset: 3px;
-}
-.stubHeading {
-  margin: 0;
-  font-size: var(--tb-text-sm);
-  font-weight: 600;
-  color: var(--tb-text);
-}
-.visuallyHidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
-}
 .money {
   margin: 0;
   font-size: var(--tb-text-lg);
@@ -52,22 +23,6 @@
 .panel h2 {
   margin-top: 0;
   font-size: var(--tb-text-2xl);
-}
-.breakdown {
-  display: grid;
-  grid-template-columns: 1fr max-content;
-  gap: var(--tb-space-1) var(--tb-space-4);
-  max-width: 24rem;
-}
-.breakdown dd {
-  margin: 0;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-.total {
-  font-weight: 600;
-  border-top: 1px solid var(--tb-border);
-  padding-top: var(--tb-space-1);
 }
 .choice {
   border: 0;
@@ -174,7 +129,6 @@
   padding: var(--tb-space-2-5) var(--tb-space-3);
 }
 .request,
-.agreed,
 .proposal,
 .code,
 .courier {
@@ -191,9 +145,6 @@
   overflow-wrap: anywhere;
   word-break: break-all;
 }
-.history {
-  padding-left: var(--tb-space-4);
-}
 .tab,
 .tabOn {
   min-height: 44px;
@@ -209,33 +160,6 @@
 .list {
   list-style: none;
   padding: 0;
-}
-.row {
-  border-bottom: 1px solid var(--tb-line);
-  padding-block: var(--tb-space-3-5);
-  overflow-wrap: anywhere;
-  font-variant-numeric: tabular-nums;
-}
-.row p {
-  margin: var(--tb-space-1) 0 0;
-}
-/* Disputes and ratings (U8-09) */
-.statements {
-  padding-left: var(--tb-space-4);
-}
-.statements li {
-  margin-bottom: var(--tb-space-2);
-}
-.stars {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--tb-space-2);
-}
-.stars span {
-  display: flex;
-  align-items: center;
-  gap: var(--tb-space-1);
-  min-height: 44px;
 }
 /* Game accounts (U8-07) */
 .game {
@@ -341,28 +265,6 @@
   outline: 2px solid var(--tb-hot);
   outline-offset: -3px;
 }
-.row a {
-  color: var(--tb-text);
-  font-weight: 600;
-  text-decoration: none;
-  background-image: linear-gradient(var(--tb-hot), var(--tb-hot));
-  background-repeat: no-repeat;
-  background-size: 0 2px;
-  background-position: 0 100%;
-  transition: background-size var(--tb-dur-press);
-}
-.row a:hover {
-  background-size: 100% 2px;
-}
-.tag {
-  display: inline-block;
-  font-size: var(--tb-text-sm);
-  font-weight: 600;
-  padding: 0;
-  border-radius: 0;
-  background: none;
-  border-bottom: 1px solid var(--tb-border);
-}
 .disclosure {
   color: var(--tb-text);
   padding: var(--tb-space-3-5) 0;
@@ -384,14 +286,7 @@
   border-radius: 0;
   background: none;
 }
-@media (prefers-reduced-motion: reduce) {
-  .row a {
-    transition: none;
-  }
-}
 /* links that stand alone are 44 px targets */
-.row a,
-.meta a,
 .page > p > a {
   display: inline-flex;
   align-items: center;
@@ -420,12 +315,6 @@
   box-shadow: inset 0 -2px 0 var(--tb-hot);
   outline: 2px solid transparent;
 }
-.row.row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0 var(--tb-space-6);
-  align-items: start;
-}
 .rowAmount {
   margin: 0;
   font-family: var(--tb-font);
@@ -436,9 +325,6 @@
   padding-top: var(--tb-space-2);
 }
 @media (max-width: 30rem) {
-  .row.row {
-    grid-template-columns: minmax(0, 1fr);
-  }
   .rowAmount {
     grid-row: 1;
     padding-top: 0;
@@ -450,13 +336,6 @@
    their own sections. No boxes: hairline rules between rows; the photo is the only framed thing (an image). */
 .ordersSection {
   margin-top: var(--tb-space-6);
-}
-.count {
-  color: var(--tb-muted);
-  font-family: var(--tb-font);
-  font-weight: 600;
-  font-size: var(--tb-text-md);
-  font-variant-numeric: tabular-nums;
 }
 .gridHead,
 .gridRow {
@@ -676,91 +555,12 @@
   outline: 2px solid var(--tb-hot);
   outline-offset: 2px;
 }
-
-/* the pay panel as one sequence (U10-23): numbered steps on rules, the step the buyer is on is marked with the one vermilion voice */
-.flow {
-  list-style: none;
-  margin: var(--tb-space-2) 0 0;
-  padding: 0;
-  border-top: 1px solid var(--tb-line);
-}
-.flow > li {
-  padding: var(--tb-space-5) 0;
-  border-bottom: 1px solid var(--tb-line);
-}
-.flow h3 {
-  display: flex;
-  align-items: center;
-  gap: var(--tb-space-3);
-  margin: 0 0 var(--tb-space-3);
-  font-size: var(--tb-text-lg);
-}
-.flowNo {
-  display: inline-grid;
-  place-items: center;
-  width: 1.625rem;
-  height: 1.625rem;
-  border-radius: var(--tb-radius-circle);
-  border: 1.5px solid var(--tb-muted);
-  color: var(--tb-muted);
-  font-size: var(--tb-text-xs);
-  font-variant-numeric: tabular-nums;
-}
-.flowNext h3 {
-  color: var(--tb-muted);
-}
-.flow p {
-  margin: var(--tb-space-1) 0;
-}
-.flow .breakdown {
-  max-width: 26rem;
-  margin: 0 0 var(--tb-space-2);
-}
 .courier h3 {
   font-size: var(--tb-text-base);
   margin: 0 0 var(--tb-space-1);
 }
 .courier .secondary {
   min-height: 44px;
-}
-.flow .primary {
-  margin-top: var(--tb-space-3);
-}
-
-/* the journey of a paid order (U10-23) */
-.journey {
-  margin-block: var(--tb-space-4);
-}
-.journey h2 {
-  margin: 0 0 var(--tb-space-2);
-  font-size: var(--tb-text-2xl);
-}
-.journeyList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  border-top: 1px solid var(--tb-line);
-}
-.journeyList > li {
-  padding: var(--tb-space-3-5) 0;
-  border-bottom: 1px solid var(--tb-line);
-}
-.journeyList h3 {
-  display: flex;
-  align-items: center;
-  gap: var(--tb-space-3);
-  margin: 0;
-  font-size: var(--tb-text-base);
-}
-.journeyDo {
-  margin: var(--tb-space-1-5) 0 0 2.375rem;
-  max-width: 40rem;
-  color: var(--tb-text);
-  line-height: 1.5;
-  text-wrap: pretty;
-}
-.journeyList .flowNext h3 {
-  color: var(--tb-muted);
 }
 .srOnly {
   position: absolute;
@@ -1033,29 +833,6 @@
 /* the money panel keeps a hairline on top: the vermilion rule belongs to the rail */
 .moneyPanel {
   border-top: 1px solid var(--tb-line);
-}
-
-/* the journey: plain numbers on hairlines, no outlined circles */
-.flowNo,
-.journeyList .flowNo {
-  width: 1.5rem;
-  height: auto;
-  border: 0;
-  border-radius: 0;
-  font-size: var(--tb-text-md);
-  font-weight: 600;
-}
-.flowNow .flowNo {
-  border-color: var(--tb-hot);
-  color: var(--tb-hot);
-}
-.flowDone .flowNo {
-  border-color: var(--tb-protect);
-  color: var(--tb-protect);
-}
-.flowNo svg {
-  width: 18px;
-  height: 18px;
 }
 
 /* the rail: normal-case headings, ruled cells that show they act, the other party without a filled badge */
@@ -1466,16 +1243,6 @@
   border-bottom: 1px solid var(--tb-line);
   gap: var(--tb-space-2);
 }
-.rail .flow {
-  margin: 0;
-}
-.rail .flow > li {
-  padding: var(--tb-space-4) 0;
-}
-.rail .flow h3 {
-  font-size: var(--tb-text-base);
-  margin-bottom: var(--tb-space-2);
-}
 .rail .courier {
   display: grid;
   gap: var(--tb-space-3);
@@ -1487,12 +1254,8 @@
   display: grid;
   gap: var(--tb-space-2);
 }
-.rail .flow .primary,
 .rail .courier .primary {
   width: 100%;
-}
-.rail .breakdown {
-  max-width: none;
 }
 .shipment h3 {
   margin: 0;
@@ -1526,19 +1289,14 @@
 .shipFacts .wideCell {
   grid-column: 1 / -1;
 }
-.shipment .tag {
-  justify-self: start;
-}
 /* ruled lists: evidence, statements, status history */
-.ruledList,
-.statements {
+.ruledList {
   list-style: none;
   margin: 0;
   padding: 0;
   border-top: 1px solid var(--tb-line);
 }
-.ruledList > li,
-.statements > li {
+.ruledList > li {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -1584,7 +1342,6 @@ input[type='file']:hover::file-selector-button {
   background: var(--tb-sheet);
   position: static;
 }
-.inner .popupButtons,
 [class*='inner'] .popupButtons {
   position: sticky;
 }
@@ -1595,16 +1352,6 @@ input[type='file']:hover::file-selector-button {
 .rail .deadlineGrid dd {
   font-size: var(--tb-text-base);
   line-height: 1.4;
-}
-.statements > li.mine {
-  border-left: 0;
-  background: color-mix(in srgb, var(--tb-hot) 6%, transparent);
-  padding-inline: var(--tb-space-3-5);
-}
-.statements > li {
-  display: grid;
-  gap: var(--tb-space-1);
-  padding-inline: var(--tb-space-3-5);
 }
 .breakdownGrid > div {
   display: grid;
@@ -1666,8 +1413,7 @@ input[type='file']:hover::file-selector-button {
 .shipFacts,
 .breakdownGrid,
 .cellRow,
-.popupButtons,
-.actions {
+.popupButtons {
   border-inline: 0;
 }
 /* a button that opens a popup: a full-width ruled cell with a chevron, as the cells of the action grid */
@@ -1902,9 +1648,6 @@ input[type='file']::file-selector-button {
 .rail .deadlineGrid > div {
   padding-inline: 0;
 }
-.agreed > div {
-  margin-top: var(--tb-space-2);
-}
 .ruledList > li > div {
   margin-left: auto;
 }
@@ -1912,12 +1655,6 @@ input[type='file']::file-selector-button {
 /* the paid courier order: the shipment as a strip of cells and the journey right under it without its own title */
 .shipFacts .statusCell dd {
   color: var(--tb-protect);
-}
-.journeyBare {
-  margin-top: 0;
-}
-.journeyBare .journeyList {
-  border-top: 0;
 }
 /* the shipment as ruled cells, label over value */
 .shipment {

@@ -17,6 +17,7 @@ import en from '../../messages/en/chat.json';
 import bn from '../../messages/bn/chat.json';
 import { fetchThreads, THREADS_KEY, type ThreadPage } from './model';
 import styles from './chat.module.css';
+import { Button } from '../../shared/ui';
 
 const CATALOGUES = { en, bn };
 
@@ -116,9 +117,9 @@ export function Component() {
         </ul>
       )}
       {pages.hasNextPage && (
-        <button type="button" className={styles.secondary} onClick={() => void pages.fetchNextPage()} disabled={pages.isFetchingNextPage}>
+        <Button variant="secondary" type="button" onClick={() => void pages.fetchNextPage()} disabled={pages.isFetchingNextPage}>
           {t('chat.more')}
-        </button>
+        </Button>
       )}
     </div>
   );

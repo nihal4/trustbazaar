@@ -93,7 +93,6 @@
 }
 
 /* the buttons: square, ruled; the main one with a vermilion line over a faint wash, closing in the error colour */
-.secondary,
 .primaryLink,
 .danger {
   display: inline-flex;
@@ -111,7 +110,6 @@
   cursor: pointer;
   transition: background var(--tb-dur-base);
 }
-.secondary:hover:not(:disabled),
 .primaryLink:hover {
   background: color-mix(in srgb, var(--tb-hot) 18%, transparent);
 }
@@ -123,12 +121,10 @@
 .danger:hover:not(:disabled) {
   background: color-mix(in srgb, var(--tb-error) 18%, transparent);
 }
-.secondary:disabled,
 .danger:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
-.secondary:focus-visible,
 .primaryLink:focus-visible,
 .danger:focus-visible {
   outline: 2px solid var(--tb-hot);
@@ -147,7 +143,6 @@
     border-inline-start: 0;
     border-top: 1px solid var(--tb-line);
   }
-  .secondary,
   .primaryLink,
   .danger {
     width: 100%;

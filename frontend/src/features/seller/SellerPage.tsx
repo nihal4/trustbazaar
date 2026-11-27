@@ -23,6 +23,7 @@ import { accountLine, accountStatus, needingAction, type PayoutAccount, type Sel
 import en from '../../messages/en/seller.json';
 import bn from '../../messages/bn/seller.json';
 import styles from './seller.module.css';
+import { Button } from '../../shared/ui';
 
 const CATALOGUES = { en, bn };
 
@@ -251,9 +252,9 @@ function Listings({ t, lang }: { t: T; lang: Lang }) {
         ))}
       </ul>
       {listings.hasNextPage && (
-        <button type="button" className={styles.secondary} onClick={() => void listings.fetchNextPage()}>
+        <Button variant="secondary" type="button" onClick={() => void listings.fetchNextPage()}>
           {t('seller.more')}
-        </button>
+        </Button>
       )}
     </section>
   );
@@ -390,9 +391,9 @@ function Statements({ t, lang }: { t: T; lang: Lang }) {
         </article>
       ))}
       {statements.hasNextPage && (
-        <button type="button" className={styles.secondary} onClick={() => void statements.fetchNextPage()}>
+        <Button variant="secondary" type="button" onClick={() => void statements.fetchNextPage()}>
           {t('seller.more')}
-        </button>
+        </Button>
       )}
     </section>
   );

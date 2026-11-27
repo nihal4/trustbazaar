@@ -21,6 +21,7 @@ import { StepUpCancelled } from '../../shared/stepUp';
 import en from '../../messages/en/privacy.json';
 import bn from '../../messages/bn/privacy.json';
 import styles from './privacy.module.css';
+import { Button } from '../../shared/ui';
 
 const CATALOGUES = { en, bn };
 
@@ -110,9 +111,9 @@ function DataExport({ status, loading, error, t, lang }: { status: ExportStatus 
       {status?.status === 'expired' && <p className={styles.hint}>{t('export.expired')}</p>}
       {message && <FormMessage kind="error">{message}</FormMessage>}
       {canAsk && !loading && (
-        <button type="button" className={styles.secondary} disabled={ask.isPending} onClick={() => ask.mutate()}>
+        <Button variant="primary" type="button" disabled={ask.isPending} onClick={() => ask.mutate()}>
           {t(status ? 'export.ask_again' : 'export.ask')}
-        </button>
+        </Button>
       )}
     </section>
   );
