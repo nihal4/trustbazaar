@@ -626,3 +626,15 @@ input[type='file'].fileHidden { position: absolute; width: 1px; height: 1px; mar
 .photoCell strong { display: grid; place-items: center; padding: 0 1.25rem; border-left: 1px solid var(--tb-line); font-variant-numeric: tabular-nums; }
 .photoCell:has(.fileHidden:focus-visible) { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
 .photoCell:has(.fileHidden:disabled) label { opacity: 0.5; cursor: not-allowed; }
+
+/* the left column with room to read (U10-25): the money panel's sentences breathe, its parts are set apart (the day it left, the receipt, the line of steps), and the blocks below have more space between them */
+.moneyPanel { padding: 1.5rem 0 2rem; }
+.moneyPanel .money { margin: 0.75rem 0 0.75rem; font-weight: 500; line-height: 1.6; max-width: 38rem; }
+.moneyPanel .hint { margin: 0 0 1rem; line-height: 1.6; }
+.moneyPanel .receiptLink { margin: 0.75rem 0 0; }
+.moneyPanel > ol { margin-top: 2.25rem; }
+.main > .panel, .main > section { padding-block: 1.75rem; }
+.main .panel > p, .main .panel .hint { line-height: 1.6; }
+.main .panel > h2 { margin-bottom: 0.75rem; }
+.main .panel h3 { margin-block: 1.5rem 0.75rem; }
+.main .form { gap: 0.625rem; margin-block: 1rem; }

@@ -218,9 +218,6 @@ function SellerCode({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: T; la
       <div className={styles.code}>
         <h3>{t('handover.enter_title')}</h3>
         <p>{t('handover.enter_note')}</p>
-        <dl className={styles.statusGrid}>
-          <div><dt>{t('handover.photos_label')}</dt><dd>{toLocalDigits(String(photos), lang)} / 3</dd></div>
-        </dl>
         <button type="button" className={styles.primary} onClick={() => { setMessage(null); setStep(1); }}>{t('handover.start')}</button>
       </div>
       {step > 0 && (
@@ -237,7 +234,10 @@ function SellerCode({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: T; la
                 <input id="handover-photo" className={styles.fileHidden} type="file" accept="image/jpeg,image/png,image/webp" capture="environment"
                   disabled={photo.isPending || photos >= 3} onChange={(e) => picked(e.target.files, e.target)} />
                 <label htmlFor="handover-photo">
-                  <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false"><path d="M4 8 H8 L10 5 H14 L16 8 H20 V19 H4 Z M12 16.5 a3.5 3.5 0 1 0 0.01 0 Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>
+                  <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false">
+                    <path d="M3 8.5a2 2 0 0 1 2-2h2.2l1.3-2h7l1.3 2H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                    <circle cx="12" cy="13" r="3.6" fill="none" stroke="currentColor" strokeWidth="1.6" />
+                  </svg>
                   <span>{t('handover.photo_add')}</span>
                 </label>
                 <strong aria-label={t('handover.photos_label')}>{toLocalDigits(String(photos), lang)} / 3</strong>
