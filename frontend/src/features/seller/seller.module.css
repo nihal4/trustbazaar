@@ -7,14 +7,6 @@
   flex-direction: column;
   gap: 0;
 }
-.head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--tb-space-3) var(--tb-space-6);
-  padding-bottom: var(--tb-space-5);
-}
 .head h1,
 .page > h1 {
   margin: 0;
@@ -64,6 +56,12 @@
 
 /* the dashboard (U10-25, the same line grid as the profile): a vermilion rule over the head, four figures divided by lines, then two columns divided by one line */
 .head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tb-space-3) var(--tb-space-6);
+  padding-bottom: var(--tb-space-5);
   border-top: 2px solid var(--tb-hot);
   padding-top: var(--tb-space-6);
 }
@@ -233,15 +231,13 @@
 .form > * {
   max-width: 34rem;
 }
-.form label {
-  margin-top: var(--tb-space-2);
-}
 .choice legend {
   padding: 0;
   font-weight: 600;
   margin-bottom: var(--tb-space-1);
 }
 .form label {
+  margin-top: var(--tb-space-2);
   font-weight: 600;
 }
 .choice label {
@@ -269,29 +265,11 @@
   border-bottom-color: var(--tb-hot);
   background: none;
 }
-.choice input {
-  width: 20px;
-  height: 20px;
-  accent-color: var(--tb-hot);
-  flex: none;
-  margin: 0;
-}
 .buttons {
   display: flex;
   flex-wrap: wrap;
   gap: var(--tb-space-2-5);
   margin-block: var(--tb-space-2);
-}
-.primary {
-  min-height: 48px;
-  padding: 0 var(--tb-space-6);
-  border-radius: var(--tb-btn-radius);
-  background: var(--tb-btn-bg);
-  color: var(--tb-btn-fg);
-  border: 1px solid var(--tb-btn-line);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
 }
 .primary:disabled {
   opacity: 0.6;
@@ -535,6 +513,14 @@
   outline-offset: 2px;
 }
 .primary {
+  min-height: 48px;
+  padding: 0 var(--tb-space-6);
+  background: var(--tb-btn-bg);
+  color: var(--tb-btn-fg);
+  border: 1px solid var(--tb-btn-line);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
   border-radius: var(--tb-btn-radius);
 }
 .choice div {
@@ -550,6 +536,11 @@
 
 /* the options of the payout kind: a hairline ring, a vermilion dot when chosen (no default browser look) */
 .choice input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--tb-hot);
+  flex: none;
+  margin: 0;
   appearance: none;
   display: grid;
   place-content: center;
