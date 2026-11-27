@@ -128,11 +128,6 @@
   text-decoration: none;
 }
 
-.account:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-
 .iconLink {
   min-width: 44px;
   min-height: 44px;
@@ -154,18 +149,6 @@
   background: var(--tb-bg);
   border-top: 1px solid var(--tb-line);
   padding: 0.375rem 0 calc(0.375rem + env(safe-area-inset-bottom));
-}
-
-.tabBar ul {
-  display: flex;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.tabBar li {
-  flex: 1 1 0;
-  min-width: 0;
 }
 
 .tab {
@@ -202,22 +185,10 @@
   padding: var(--tb-space-4);
 }
 
-.dialog::backdrop {
-  background: rgb(0 0 0 / 0.4);
-}
-
-.dialog h2 {
-  margin-top: 0;
-}
-
 .dialogActions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--tb-space-2);
-}
-
-.dialogActions button {
-  min-height: 44px;
 }
 
 .badge {
@@ -382,10 +353,6 @@
     border-color var(--tb-dur-base),
     background var(--tb-dur-base);
 }
-.headSearch:focus-within {
-  background: var(--tb-sheet);
-  border-color: var(--tb-text);
-}
 .headSearch input:focus-visible {
   outline: 2px solid var(--tb-text);
   outline-offset: 4px;
@@ -418,6 +385,8 @@
   transition: background-size 180ms;
 }
 .account:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
   background-size: calc(100% - 1.5rem) 1.5px;
 }
 .langSwitch {
@@ -459,11 +428,6 @@
   .logotypeBn {
     height: 30px;
   }
-}
-
-/* tap targets of 44 px (WCAG 2.2 AA, NFR-USE-06) */
-.header [class*='Button-root'] {
-  min-height: 44px;
 }
 
 /* The footer: ruled like the page. Three columns on the page's own thirds (the brand, Explore, Help) divided by hairlines; one
@@ -574,6 +538,7 @@
   transition: box-shadow var(--tb-dur-base);
 }
 .headSearch:focus-within {
+  border-color: var(--tb-text);
   background: none;
   border-bottom-color: var(--tb-border);
   outline: 0;
@@ -621,11 +586,15 @@
   -webkit-backdrop-filter: none;
 }
 .tabBar ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: minmax(0, 1fr);
 }
 .tabBar li {
+  flex: 1 1 0;
   min-width: 0;
 }
 .tabBar li + li {
@@ -747,7 +716,10 @@
   flex: 1 1 9rem;
   min-width: 9rem;
 }
+
+/* tap targets of 44 px (WCAG 2.2 AA, NFR-USE-06) */
 .header [class*='Button-root'] {
+  min-height: 44px;
   white-space: nowrap;
 }
 /* the orange Sell button reads in dark text (white on #ff6b35 is 2.8:1, below the 4.5:1 of WCAG AA) */
@@ -771,15 +743,12 @@
   background: rgb(0 0 0 / 0.6);
 }
 .dialog h2 {
+  margin-top: 0;
   font-family: var(--tb-font-display);
   font-weight: var(--tb-display-weight);
   font-size: var(--tb-text-3xl);
   letter-spacing: -0.02em;
   margin: 0 0 var(--tb-space-3);
-}
-.dialog p {
-  margin: 0 0 var(--tb-space-3);
-  line-height: 1.5;
 }
 .dialogActions {
   gap: var(--tb-space-2-5);
@@ -805,9 +774,6 @@
 }
 .dialogActions button:first-child:hover:not(:disabled) {
   background: var(--tb-hot-hover);
-}
-.dialogActions button:last-child:hover:not(:disabled) {
-  border-color: var(--tb-hot);
 }
 .dialogActions button:disabled {
   opacity: 0.6;
@@ -836,9 +802,6 @@
   text-decoration: none;
   background: none;
   transition: background var(--tb-dur-base);
-}
-.navCell + .navCell {
-  border-left: 1px solid var(--tb-line);
 }
 .navCell:hover {
   background: var(--tb-surface);
@@ -880,21 +843,6 @@
 }
 .footerLang .footerLabel {
   margin: 0;
-}
-.footerLang .langSwitch {
-  min-width: 7rem;
-  min-height: 44px;
-  padding: 0 var(--tb-space-5);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-panel);
-  background: none;
-  color: var(--tb-text);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-.footerLang .langSwitch:hover {
-  border-color: var(--tb-hot);
 }
 .footerLang .langSwitch:focus-visible {
   outline: 2px solid var(--tb-hot);
@@ -941,6 +889,11 @@
   border-left: 1px solid var(--tb-line);
 }
 .footerLang .langSwitch {
+  background: none;
+  color: var(--tb-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
   min-width: 44px;
   min-height: 44px;
   padding: 0 var(--tb-space-2);
@@ -949,6 +902,7 @@
   border-radius: 0;
 }
 .footerLang .langSwitch:hover {
+  border-color: var(--tb-hot);
   border-bottom-color: var(--tb-hot);
 }
 
@@ -960,6 +914,7 @@
   border-radius: 0;
 }
 .dialog p {
+  line-height: 1.5;
   text-wrap: pretty;
   margin: 0 0 var(--tb-space-3);
 }
@@ -970,6 +925,7 @@
   background: none;
 }
 .dialogActions button:last-child:hover:not(:disabled) {
+  border-color: var(--tb-hot);
   border-bottom-color: var(--tb-hot);
 }
 /* the phone header's bell and account: ruled cells (a hairline between them), not filled round tiles */
