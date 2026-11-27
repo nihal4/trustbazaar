@@ -137,23 +137,6 @@
   }
 }
 
-.humanCheck {
-  margin: var(--tb-space-4) 0 0;
-  color: var(--tb-muted);
-  font-size: var(--tb-text-sm);
-  text-align: center;
-}
-
-.forgot {
-  margin: -0.625rem 0 var(--tb-space-5);
-  font-size: var(--tb-text-md);
-}
-
-.forgot a {
-  color: var(--tb-muted);
-  text-underline-offset: 3px;
-}
-
 /* buttons */
 .actions {
   display: flex;
@@ -163,8 +146,7 @@
 }
 
 .actions button:not([type='submit']),
-.sessions button,
-.secondary {
+.sessions button {
   min-height: 44px;
   padding: 0 var(--tb-space-5);
   border: 1px solid var(--tb-border);
@@ -177,44 +159,23 @@
 }
 
 .actions button:not([type='submit']):disabled,
-.sessions button:disabled,
-.secondary:disabled {
+.sessions button:disabled {
   color: var(--tb-muted);
   cursor: not-allowed;
-}
-
-/* panels */
-.facts dt {
-  color: var(--tb-muted);
-  font-weight: 500;
-  font-size: var(--tb-text-md);
-}
-
-.facts > div {
-  padding: var(--tb-space-3) 0;
-  border-bottom: 1px solid var(--tb-line);
-}
-
-.facts > div:last-child {
-  border-bottom: 0;
-}
-
-.facts dd {
-  margin: var(--tb-space-0-5) 0 0;
-  font-weight: 600;
-  overflow-wrap: anywhere;
-}
-
-.facts dd a {
-  color: var(--tb-accent);
-  font-weight: 600;
-  text-underline-offset: 3px;
 }
 
 .section {
   border-top: 1px solid var(--tb-line);
   padding-top: var(--tb-space-6);
   margin-top: var(--tb-space-8);
+}
+
+/* buttons side by side: the row owns the gap, a button carries no margin */
+.buttonRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-3);
+  margin-top: var(--tb-space-3);
 }
 
 .section h2 {
@@ -270,35 +231,6 @@
   margin-top: var(--tb-space-6);
 }
 
-.steps {
-  padding-left: var(--tb-space-6);
-  line-height: 1.6;
-}
-
-.links {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 var(--tb-space-6);
-  display: grid;
-  gap: var(--tb-space-1);
-}
-
-.links a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  color: var(--tb-text);
-  font-weight: 600;
-  text-underline-offset: 3px;
-}
-
-/* the "Forgot your password?" link is a stand-alone target: 44 px */
-.forgot a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-}
-
 /* U10-25 (redesign v3): no filled or rounded panels: a notice, the facts, a session, the key and the recovery codes are ruled blocks on hairlines */
 
 /* The key and the recovery codes: tabular figures, wide spacing, no monospace (section 3). */
@@ -319,15 +251,6 @@
   border-radius: 0;
   background: none;
   border-bottom: 1px solid var(--tb-line);
-  padding-inline: 0;
-}
-
-.facts {
-  margin: 0 0 var(--tb-space-6);
-  padding: var(--tb-space-1) var(--tb-space-5);
-  border: 0;
-  border-top: 1px solid var(--tb-line);
-  border-radius: 0;
   padding-inline: 0;
 }
 
@@ -685,16 +608,6 @@
   outline-offset: -2px;
 }
 
-/* A link inside a sentence (the terms and the privacy notice in the label of the box): it is part of the line, not a target of its own, so it neither
-   stretches the line nor sits apart from the words; the label around it is the target of 44 px. */
-.textLink {
-  display: inline;
-  min-height: 0;
-  margin: 0;
-  padding: 0;
-  line-height: inherit;
-}
-
 /* A step with no field (a sent notice, a result): its message, and the one button, share out the form band like the parts of a form do. */
 .stepNote {
   flex: 1;
@@ -928,32 +841,6 @@
   outline-offset: 2px;
 }
 
-.signOut {
-  min-height: 44px;
-  padding: 0 var(--tb-space-6);
-  border: 1px solid var(--tb-border);
-  border-radius: 0;
-  background: none;
-  color: var(--tb-text);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.signOut:hover:not(:disabled) {
-  border-color: var(--tb-hot);
-}
-
-.signOut:focus-visible {
-  outline: 2px solid var(--tb-hot);
-  outline-offset: 2px;
-}
-
-.signOut:disabled {
-  color: var(--tb-muted);
-  cursor: not-allowed;
-}
-
 @media (max-width: 47.99rem) {
   .idBand {
     grid-template-columns: 5.5rem minmax(0, 1fr);
@@ -1115,14 +1002,8 @@
 }
 
 .secCol .sessions button:hover:not(:disabled),
-.secondary:hover:not(:disabled),
 .actions button:not([type='submit']):hover:not(:disabled) {
   border-color: var(--tb-hot);
-}
-
-.secondary {
-  margin-inline-end: var(--tb-space-3);
-  margin-bottom: var(--tb-space-2);
 }
 
 @media (max-width: 63.99rem) {

@@ -3,7 +3,7 @@
 export { Avatar, initials, type AvatarSize } from './Avatar';
 export { Button, IconButton, type ButtonProps, type ButtonSize, type ButtonVariant } from './Button';
 export { Checkbox, Radio } from './Choice';
-export { Field, Input, Select, TextField, Textarea, type ControlProps } from './Field';
+export { Field, FieldMessage, Input, Select, TextField, Textarea, type ControlLook, type ControlProps } from './Field';
 export { Notice, type NoticeTone } from './Notice';
 export { Calendar, isValidDate, type CalendarLabels } from './Calendar';
 export { ConfirmDialog, type ConfirmDialogProps } from './ConfirmDialog';

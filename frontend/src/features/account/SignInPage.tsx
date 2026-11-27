@@ -15,6 +15,7 @@ import { loginProblem, normaliseLogin } from './input';
 import { AuthSplit } from './AuthSplit';
 import { authRows, fieldAria, headFor, Slot } from './AuthParts';
 import styles from './account.module.css';
+import { Button } from '../../shared/ui';
 
 export function Component() {
   const { t, lang } = useAccountT();
@@ -165,20 +166,20 @@ export function Component() {
         }
         foot={
           <div className={styles.footLinks}>
-            <button
+            <Button
+              variant="link"
               type="button"
-              className={styles.link}
               onClick={() => {
                 setStep('login');
                 setMessage(null);
               }}
             >
               {t('signin.back')}
-            </button>
+            </Button>
             {email && (
-              <button type="button" className={styles.link} aria-disabled={resending || resendIn > 0} onClick={() => void resend()}>
+              <Button variant="link" type="button" aria-disabled={resending || resendIn > 0} onClick={() => void resend()}>
                 {resendIn > 0 ? t('signin.resend_wait', { time: formatWait(resendIn, lang) }) : t('signin.resend')}
-              </button>
+              </Button>
             )}
           </div>
         }
@@ -284,9 +285,9 @@ export function Component() {
           <h1 id="signin-head">{t('signin.title')}</h1>
           <p className={`${styles.lead} ${styles.leadRow}`}>
             <span className={styles.who}>{login.trim()}</span>{' '}
-            <button
+            <Button
+              variant="link"
               type="button"
-              className={styles.link}
               onClick={() => {
                 setStep('login');
                 setPassword('');
@@ -294,7 +295,7 @@ export function Component() {
               }}
             >
               {t('signin.change_login')}
-            </button>
+            </Button>
           </p>
         </>
       }

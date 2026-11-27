@@ -3,13 +3,14 @@
 //   secondary  an ordinary action (ruled)
 //   quiet      a small, low-key action (text only)
 //   danger     an action that cannot be undone or ends something
+//   link       an action that reads as a link (underlined, in the accent colour); `inline` sets it in a sentence, with no tap box of its own
 // It is square and ruled like the rest of the grid, at least 44 px high (NFR-USE-06, WCAG 2.2 target size). `as` renders it as a link (<Button as={Link} to="/orders">) so that a link that
 // looks like a button is a link for the keyboard and the screen reader, and a button that acts is a button.
 import type { ComponentPropsWithoutRef, ElementType, ReactNode } from 'react';
 import { cx } from './cx';
 import styles from './button.module.css';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'quiet' | 'danger';
+export type ButtonVariant = 'primary' | 'secondary' | 'quiet' | 'danger' | 'link';
 export type ButtonSize = 'md' | 'lg';
 
 type OwnProps<T extends ElementType> = {
@@ -18,6 +19,8 @@ type OwnProps<T extends ElementType> = {
   size?: ButtonSize;
   /** fills the width of its container (a button at the foot of a card or a phone sheet) */
   block?: boolean;
+  /** a link-variant button set in a line of text */
+  inline?: boolean;
   /** the action is running: the button is disabled and announced as busy */
   loading?: boolean;
   children?: ReactNode;
@@ -30,6 +33,7 @@ export function Button<T extends ElementType = 'button'>({
   variant = 'secondary',
   size = 'md',
   block,
+  inline,
   loading,
   className,
   children,
@@ -45,14 +49,14 @@ export function Button<T extends ElementType = 'button'>({
       {...rest}
       disabled={isButton ? disabled : undefined}
       aria-busy={loading || undefined}
-      className={cx(styles.button, styles[variant], size === 'lg' && styles.lg, block && styles.block, className)}
+      className={cx(styles.button, styles[variant], size === 'lg' && styles.lg, block && styles.block, inline && styles.inline, className)}
     >
       {children}
     </Tag>
   );
 }
 
-type IconButtonProps = Omit<ButtonProps<'button'>, 'children' | 'size' | 'block'> & {
+type IconButtonProps = Omit<ButtonProps<'button'>, 'children' | 'size' | 'block' | 'inline'> & {
   /** what it does, in words: an icon alone says nothing to a screen reader */
   label: string;
   children: ReactNode;

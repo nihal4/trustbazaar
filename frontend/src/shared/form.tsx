@@ -1,9 +1,11 @@
 // Form parts that keep the accessibility rules of section 7 in one place: every field has a visible
 // label; hints and errors are tied to the field; errors are also listed in a summary at the top,
-// which takes focus and links to each field.
+// which takes focus and links to each field. They are the app's forms on the primitives (shared/ui, U11-06): the field, the checkbox, the notice and the button are drawn there;
+// what is here is what needs the app (the language, the digits of Bangla, the one-time code's cells, the eye of a password).
 import { useEffect, useRef, useState, type InputHTMLAttributes, type ReactNode } from 'react';
 import { toAsciiDigits, toLocalDigits } from '../lib/money.js';
 import { useLanguage } from './language/Language';
+import { Button, Checkbox, Field, FieldMessage, IconButton, Input, Notice } from './ui';
 import styles from './form.module.css';
 
 type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'id' | 'value' | 'onChange'>;
@@ -19,34 +21,19 @@ interface FieldProps extends InputProps {
 
 export function TextField({ id, label, value, onChange, hint, error, ...input }: FieldProps) {
   // the field's own hint and error, after whatever the page already ties it to (the heading, a message under it): none of them may replace the others
-  const described = [input['aria-describedby'], hint ? `${id}-hint` : '', error ? `${id}-error` : ''].filter(Boolean).join(' ') || undefined;
+  const own = input['aria-describedby'];
   const isPassword = input.type === 'password';
   return (
-    <div className={styles.field}>
-      <label htmlFor={id}>{label}</label>
-      {hint && (
-        <p id={`${id}-hint`} className={styles.hint}>
-          {hint}
-        </p>
-      )}
-      {isPassword ? (
-        <PasswordInput id={id} value={value} onChange={onChange} invalid={Boolean(error)} described={described} input={input} />
-      ) : (
-        <input
-          id={id}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          aria-invalid={error ? true : undefined}
-          {...input}
-          aria-describedby={described}
-        />
-      )}
-      {error && (
-        <p id={`${id}-error`} className={styles.error}>
-          {error}
-        </p>
-      )}
-    </div>
+    <Field id={id} label={label} hint={hint} error={error}>
+      {(control) => {
+        const described = [own, control['aria-describedby']].filter(Boolean).join(' ') || undefined;
+        return isPassword ? (
+          <PasswordInput value={value} onChange={onChange} control={{ ...control, 'aria-describedby': described }} input={input} />
+        ) : (
+          <Input value={value} onChange={(e) => onChange(e.target.value)} {...control} {...input} aria-describedby={described} />
+        );
+      }}
+    </Field>
   );
 }
 
@@ -74,102 +61,90 @@ const RECOVERY_MAX = 40;
 export function CodeField({ id, label, value, onChange, hint, error, length = 6, allowRecovery = false, ...input }: CodeFieldProps) {
   const { lang } = useLanguage();
   const [focused, setFocused] = useState(false);
-  const described = [input['aria-describedby'], hint ? `${id}-hint` : '', error ? `${id}-error` : ''].filter(Boolean).join(' ') || undefined;
   const recovery = allowRecovery && /[A-Za-z]/.test(value);
   const shown = recovery ? value.replace(/[^A-Za-z0-9-]/g, '').slice(0, RECOVERY_MAX) : toAsciiDigits(value).replace(/\D/g, '').slice(0, length);
   const clean = (raw: string) =>
     allowRecovery && /[A-Za-z]/.test(raw) ? raw.replace(/[^A-Za-z0-9-]/g, '').slice(0, RECOVERY_MAX) : toAsciiDigits(raw).replace(/\D/g, '').slice(0, length);
   const next = Math.min(shown.length, length - 1);
   return (
-    <div className={styles.field}>
-      <label htmlFor={id}>{label}</label>
-      {hint && (
-        <p id={`${id}-hint`} className={styles.hint}>
-          {hint}
-        </p>
-      )}
-      <div className={styles.codeGroup} data-focused={focused || undefined} data-invalid={error || input['aria-invalid'] ? true : undefined}>
-        <input
-          id={id}
-          className={styles.codeInput}
-          value={shown}
-          inputMode={allowRecovery ? 'text' : 'numeric'}
-          autoComplete="one-time-code"
-          autoCapitalize="characters"
-          spellCheck={false}
-          aria-invalid={error ? true : undefined}
-          {...input}
-          aria-describedby={described}
-          onChange={(e) => onChange(clean(e.target.value))}
-          onFocus={(e) => {
-            setFocused(true);
-            input.onFocus?.(e);
-          }}
-          onBlur={(e) => {
-            setFocused(false);
-            input.onBlur?.(e);
-          }}
-        />
-        {recovery ? (
-          <div className={styles.codeCells} data-text aria-hidden="true">
-            <span data-here={focused ? true : undefined}>{shown}</span>
+    <Field id={id} label={label} hint={hint} error={error}>
+      {(control) => {
+        const described = [input['aria-describedby'], control['aria-describedby']].filter(Boolean).join(' ') || undefined;
+        return (
+          <div className={styles.codeGroup} data-focused={focused || undefined} data-invalid={error || input['aria-invalid'] ? true : undefined}>
+            <input
+              id={control.id}
+              className={styles.codeInput}
+              value={shown}
+              inputMode={allowRecovery ? 'text' : 'numeric'}
+              autoComplete="one-time-code"
+              autoCapitalize="characters"
+              spellCheck={false}
+              aria-invalid={control['aria-invalid']}
+              {...input}
+              aria-describedby={described}
+              onChange={(e) => onChange(clean(e.target.value))}
+              onFocus={(e) => {
+                setFocused(true);
+                input.onFocus?.(e);
+              }}
+              onBlur={(e) => {
+                setFocused(false);
+                input.onBlur?.(e);
+              }}
+            />
+            {recovery ? (
+              <div className={styles.codeCells} data-text aria-hidden="true">
+                <span data-here={focused ? true : undefined}>{shown}</span>
+              </div>
+            ) : (
+              <div className={styles.codeCells} aria-hidden="true" style={{ gridTemplateColumns: `repeat(${length}, minmax(0, 1fr))` }}>
+                {Array.from({ length }, (_, i) => (
+                  <span key={i} data-here={focused && i === next ? true : undefined}>
+                    {shown[i] ? toLocalDigits(shown[i], lang) : ''}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
-        ) : (
-          <div className={styles.codeCells} aria-hidden="true" style={{ gridTemplateColumns: `repeat(${length}, minmax(0, 1fr))` }}>
-            {Array.from({ length }, (_, i) => (
-              <span key={i} data-here={focused && i === next ? true : undefined}>
-                {shown[i] ? toLocalDigits(shown[i], lang) : ''}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-      {error && (
-        <p id={`${id}-error`} className={styles.error}>
-          {error}
-        </p>
-      )}
-    </div>
+        );
+      }}
+    </Field>
   );
 }
 
 /** A password field with an eye: the button shows or hides what was typed (U10-25); a toggle, not a link, with its state in aria-pressed. */
 function PasswordInput({
-  id,
   value,
   onChange,
-  invalid,
-  described,
+  control,
   input,
 }: {
-  id: string;
   value: string;
   onChange: (v: string) => void;
-  invalid: boolean;
-  described?: string;
+  control: { id: string; 'aria-describedby'?: string; 'aria-invalid'?: true };
   input: InputProps;
 }) {
   const { t } = useLanguage();
   const [shown, setShown] = useState(false);
   return (
     <div className={styles.passwordWrap}>
-      <input
-        id={id}
+      <Input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        aria-invalid={invalid ? true : undefined}
+        {...control}
         {...input}
-        aria-describedby={described}
+        aria-describedby={control['aria-describedby']}
         type={shown ? 'text' : 'password'}
         autoCapitalize="off"
         autoCorrect="off"
         spellCheck={false}
       />
-      <button
-        type="button"
+      <IconButton
+        variant="quiet"
         className={styles.eye}
         aria-pressed={shown}
-        aria-label={t(shown ? 'form.hide_password' : 'form.show_password')}
+        label={t(shown ? 'form.hide_password' : 'form.show_password')}
         onClick={() => setShown((v) => !v)}
       >
         <svg
@@ -188,7 +163,7 @@ function PasswordInput({
           <circle cx="12" cy="12" r="3" />
           {shown && <path d="M4 20 20 4" />}
         </svg>
-      </button>
+      </IconButton>
     </div>
   );
 }
@@ -204,21 +179,20 @@ interface CheckboxProps {
 
 export function CheckboxField({ id, label, checked, onChange, error, autoFocus }: CheckboxProps) {
   return (
-    <div className={styles.checkbox}>
-      <input
+    <div>
+      <Checkbox
         id={id}
-        type="checkbox"
+        label={label}
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
         autoFocus={autoFocus}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${id}-error` : undefined}
       />
-      <label htmlFor={id}>{label}</label>
       {error && (
-        <p id={`${id}-error`} className={styles.error}>
+        <FieldMessage id={`${id}-error`} tone="error">
           {error}
-        </p>
+        </FieldMessage>
       )}
     </div>
   );
@@ -238,9 +212,8 @@ export function ErrorSummary({ title, items }: { title: string; items: SummaryIt
   }, [key]);
   if (items.length === 0) return null;
   return (
-    <div ref={box} tabIndex={-1} className={styles.summary} role="alert" aria-labelledby="error-summary-title">
-      <h2 id="error-summary-title">{title}</h2>
-      <ul>
+    <Notice ref={box} tabIndex={-1} tone="error" title={title} headingLevel={2} titleId="error-summary-title">
+      <ul className={styles.summaryList}>
         {items.map((i) => (
           <li key={i.id}>
             <a
@@ -255,24 +228,24 @@ export function ErrorSummary({ title, items }: { title: string; items: SummaryIt
           </li>
         ))}
       </ul>
-    </div>
+    </Notice>
   );
 }
 
 /** A message about the whole form (a refused sign-in, a sent link); announced politely or as an alert. */
 export function FormMessage({ kind, children }: { kind: 'error' | 'info' | 'success'; children: ReactNode }) {
   return (
-    <div role={kind === 'error' ? 'alert' : 'status'} className={styles[kind]}>
+    <Notice tone={kind} className={styles.message}>
       {children}
-    </div>
+    </Notice>
   );
 }
 
 /** The main button of a form: disabled from the click until the answer (section 4.2, "Sent once"). */
 export function SubmitButton({ busy, disabled, children }: { busy: boolean; disabled?: boolean; children: ReactNode }) {
   return (
-    <button type="submit" className={styles.primary} disabled={busy || disabled} aria-busy={busy || undefined}>
+    <Button type="submit" variant="primary" loading={busy} disabled={disabled}>
       {children}
-    </button>
+    </Button>
   );
 }

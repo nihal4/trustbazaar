@@ -18,6 +18,7 @@ import { authRows, fieldAria, headFor, Slot } from './AuthParts';
 import { AuthSplit } from './AuthSplit';
 import { LegalDialog } from './LegalDocs';
 import styles from './account.module.css';
+import { Button } from '../../shared/ui';
 
 type Step = 'name' | 'email' | 'password' | 'code' | 'phone' | 'terms';
 interface Started {
@@ -286,15 +287,15 @@ export function Component() {
     .map((part, i) => {
       if (part === '{terms}')
         return (
-          <button key={i} type="button" className={`${styles.link} ${styles.textLink}`} onClick={open('terms')}>
+          <Button variant="link" inline key={i} type="button" onClick={open('terms')}>
             {t('legal.terms_name')}
-          </button>
+          </Button>
         );
       if (part === '{privacy}')
         return (
-          <button key={i} type="button" className={`${styles.link} ${styles.textLink}`} onClick={open('privacy')}>
+          <Button variant="link" inline key={i} type="button" onClick={open('privacy')}>
             {t('legal.privacy_name')}
-          </button>
+          </Button>
         );
       return part;
     });
@@ -382,12 +383,12 @@ export function Component() {
         }
         foot={
           <div className={styles.footLinks}>
-            <button type="button" className={styles.link} onClick={backTo('password')}>
+            <Button variant="link" type="button" onClick={backTo('password')}>
               {t('register.change_details')}
-            </button>
-            <button type="button" className={styles.link} aria-disabled={resending || resendIn > 0} onClick={() => void resend()}>
+            </Button>
+            <Button variant="link" type="button" aria-disabled={resending || resendIn > 0} onClick={() => void resend()}>
               {resendIn > 0 ? t('signin.resend_wait', { time: formatWait(resendIn, lang) }) : t('signin.resend')}
-            </button>
+            </Button>
           </div>
         }
       >
@@ -434,9 +435,9 @@ export function Component() {
         head={heading}
         foot={
           <div className={styles.footLinks}>
-            <button type="button" className={styles.link} onClick={backTo('phone')}>
+            <Button variant="link" type="button" onClick={backTo('phone')}>
               {t('signin.back')}
-            </button>
+            </Button>
           </div>
         }
       >

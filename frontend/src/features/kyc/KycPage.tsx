@@ -35,6 +35,7 @@ import {
   type WizardStep,
 } from './model';
 import styles from './kyc.module.css';
+import { Button } from '../../shared/ui';
 
 export function Component() {
   const { t, lang } = useKycT();
@@ -133,9 +134,9 @@ function AfterSubmission({ status }: { status: KycStatusView }) {
       <h2 id="kyc-sent-title">{t('sent.title')}</h2>
       {error && <FormMessage kind="error">{error}</FormMessage>}
       {links === null ? (
-        <button type="button" className={styles.secondary} onClick={() => void show()} disabled={busy}>
+        <Button variant="secondary" type="button" onClick={() => void show()} disabled={busy}>
           {t('sent.show')}
-        </button>
+        </Button>
       ) : (
         <ul className={styles.thumbs}>
           {links.map((l) => (
@@ -458,28 +459,22 @@ function Wizard() {
 
         <div className={styles.nav}>
           {index > 0 && (
-            <button type="button" className={styles.secondary} onClick={back} disabled={busy}>
+            <Button variant="secondary" type="button" onClick={back} disabled={busy}>
               {t('wizard.back')}
-            </button>
+            </Button>
           )}
           {step === 'review' ? (
-            <button
-              type="button"
-              className={styles.primary}
-              onClick={() => void submit()}
-              disabled={busy || waitFor > 0 || !challenge}
-              aria-busy={busy || undefined}
-            >
+            <Button variant="primary" type="button" onClick={() => void submit()} disabled={busy || waitFor > 0 || !challenge} aria-busy={busy || undefined}>
               {waitFor > 0 ? t('wizard.wait', { time: formatWait(waitFor, lang) }) : t('review.submit')}
-            </button>
+            </Button>
           ) : step === 'details' ? (
-            <button type="submit" form="kyc-details" className={styles.primary}>
+            <Button variant="primary" type="submit" form="kyc-details">
               {t('wizard.next')}
-            </button>
+            </Button>
           ) : (
-            <button type="button" className={styles.primary} onClick={() => next()} disabled={!canGoOn}>
+            <Button variant="primary" type="button" onClick={() => next()} disabled={!canGoOn}>
               {t(step === 'intro' ? 'intro.start' : 'wizard.next')}
-            </button>
+            </Button>
           )}
         </div>
       </section>

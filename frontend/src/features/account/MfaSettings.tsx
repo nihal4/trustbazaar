@@ -16,6 +16,7 @@ import { StepUpCancelled } from '../../shared/stepUp';
 import { digits, otherError, passwordReasonText, rejectedPasswordReason, retryAfter, useAccountT } from './common';
 import { isSixDigits, PASSWORD } from './input';
 import styles from './account.module.css';
+import { Button } from '../../shared/ui';
 
 const QrCode = lazy(() => import('./QrCode'));
 
@@ -123,9 +124,9 @@ export function MfaSettings({ sessionsKey }: { sessionsKey: readonly unknown[] }
       {view.kind === 'idle' && !on && (
         <>
           <p>{t('mfa.off_intro')}</p>
-          <button type="button" className={styles.secondary} onClick={() => void start()} disabled={busy}>
+          <Button variant="secondary" type="button" onClick={() => void start()} disabled={busy}>
             {t('mfa.turn_on')}
-          </button>
+          </Button>
         </>
       )}
 
@@ -134,9 +135,9 @@ export function MfaSettings({ sessionsKey }: { sessionsKey: readonly unknown[] }
           <p>{t('mfa.on_intro')}</p>
           <h3>{t('mfa.codes_title')}</h3>
           <p>{t('mfa.regenerate_intro')}</p>
-          <button type="button" className={styles.secondary} onClick={() => void regenerate()} disabled={busy}>
+          <Button variant="secondary" type="button" onClick={() => void regenerate()} disabled={busy}>
             {t('mfa.regenerate')}
-          </button>
+          </Button>
           <TurnOff
             sessionsKey={sessionsKey}
             onOff={async (passwordChanged) => {

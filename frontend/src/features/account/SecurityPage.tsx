@@ -21,6 +21,7 @@ import { SettingRow } from './SettingRow';
 import { digits, otherError, passwordReasonText, rejectedPasswordReason, retryAfter, useAccountT } from './common';
 import { bangladeshiMobile, isSixDigits, looksLikeEmail, PASSWORD } from './input';
 import styles from './account.module.css';
+import { Button } from '../../shared/ui';
 
 interface SessionSummary {
   id: string;
@@ -119,20 +120,24 @@ function Sessions({ list, error }: { list: SessionSummary[]; error: unknown }) {
       {error !== null && <FormMessage kind="error">{otherError(error, t, lang)}</FormMessage>}
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
       <ul className={styles.sessions}>{ordered.slice(0, SESSIONS_SHOWN).map(item)}</ul>
-      {ordered.length > SESSIONS_SHOWN && (
-        <button type="button" className={styles.secondary} aria-haspopup="dialog" onClick={() => setAll(true)}>
-          {t('sessions.show_all', { count: digits(ordered.length, lang) })}
-        </button>
-      )}
-      {others.length > 0 && (
-        <button
-          type="button"
-          className={styles.secondary}
-          disabled={busy !== null}
-          onClick={() => void run('others', () => api.request('POST', '/auth/sessions/end-others'))}
-        >
-          {t('sessions.end_others')}
-        </button>
+      {(ordered.length > SESSIONS_SHOWN || others.length > 0) && (
+        <div className={styles.buttonRow}>
+          {ordered.length > SESSIONS_SHOWN && (
+            <Button variant="secondary" type="button" aria-haspopup="dialog" onClick={() => setAll(true)}>
+              {t('sessions.show_all', { count: digits(ordered.length, lang) })}
+            </Button>
+          )}
+          {others.length > 0 && (
+            <Button
+              variant="secondary"
+              type="button"
+              disabled={busy !== null}
+              onClick={() => void run('others', () => api.request('POST', '/auth/sessions/end-others'))}
+            >
+              {t('sessions.end_others')}
+            </Button>
+          )}
+        </div>
       )}
       {all && (
         <Popup id="sessions-popup" title={t('sessions.title')} closeLabel={t('legal.close')} onClose={() => setAll(false)}>
@@ -443,9 +448,9 @@ function EmailCodeSetting() {
       {on && !me.data.mfaEnabled && !me.data.emailVerified && <p className={styles.hint}>{t('email_code.verify_first')}</p>}
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
       <p>
-        <button type="button" className={styles.secondary} disabled={busy} onClick={() => void change()}>
+        <Button variant="secondary" type="button" disabled={busy} onClick={() => void change()}>
           {t(on ? 'email_code.turn_off' : 'email_code.turn_on')}
-        </button>
+        </Button>
       </p>
     </section>
   );
