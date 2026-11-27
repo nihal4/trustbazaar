@@ -8,7 +8,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toAsciiDigits } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
 import { untilAfter, useSecondsLeft } from '../../shared/countdown';
-import { CheckboxField, FormMessage, SubmitButton, TextField } from '../../shared/form';
+import { CheckboxField, CodeField, FormMessage, SubmitButton, TextField } from '../../shared/form';
 import { ME_KEY, useMe } from '../../shared/me';
 import { fieldErrors, problemName } from '../../shared/problems';
 import { Popup } from '../../shared/Popup';
@@ -209,8 +209,8 @@ function Enrol({ otpauthUri, secret, onDone, onCancel, onStateChanged }: {
       )}
       {step === 3 && (
         <form onSubmit={confirm} noValidate>
-          <TextField id="mfa-confirm-code" label={t('mfa.first_code')} hint={t('mfa.first_code_hint')} value={code} onChange={setCode}
-            error={error ?? undefined} inputMode="numeric" autoComplete="one-time-code" maxLength={6} data-autofocus />
+          <CodeField id="mfa-confirm-code" label={t('mfa.first_code')} hint={t('mfa.first_code_hint')} value={code} onChange={setCode}
+            error={error ?? undefined} autoFocus data-autofocus />
           <div className={styles.stepNav}>
             <button type="button" onClick={() => setStep(2)} disabled={busy}>{t('mfa.back')}</button>
             <SubmitButton busy={busy} disabled={waitFor > 0}>
@@ -326,8 +326,8 @@ function TurnOff({ sessionsKey, onOff, onStateChanged }: {
       <h3>{t('mfa.off_title')}</h3>
       <p>{t('mfa.off_explain')}</p>
       {message && <FormMessage kind="error">{message}</FormMessage>}
-      <TextField id="mfa-off-code" label={t('mfa.app_code')} hint={t('mfa.app_code_hint')} value={code} onChange={setCode}
-        error={errors.code} inputMode="numeric" autoComplete="one-time-code" maxLength={6} />
+      <CodeField id="mfa-off-code" label={t('mfa.app_code')} hint={t('mfa.app_code_hint')} value={code} onChange={setCode}
+        error={errors.code} />
       <TextField id="mfa-off-password" label={t('mfa.new_password')}
         hint={t('mfa.new_password_hint', { min: digits(PASSWORD.minSingleFactor, lang) })} value={password} onChange={setPassword}
         error={errors.password} type="password" autoComplete="new-password" />

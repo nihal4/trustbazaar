@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useApi } from '../../shared/api';
 import { untilAfter, useSecondsLeft } from '../../shared/countdown';
-import { CheckboxField, SubmitButton, TextField } from '../../shared/form';
+import { CheckboxField, CodeField, SubmitButton, TextField } from '../../shared/form';
 import { isApiError, problemName } from '../../shared/problems';
 import { toAsciiDigits } from '../../lib/money.js';
 import { otherError, retryAfter, useAccountT, useAfterSignIn } from './common';
@@ -149,9 +149,13 @@ export function Component() {
         )}>
         <form onSubmit={submitCode} noValidate className={styles.stepForm}>
           <div className={styles.fieldGroup}>
-            <TextField id="signin-code" label={t('code.label')} value={code} onChange={setCode}
-              autoComplete="one-time-code" inputMode={email ? 'numeric' : undefined} maxLength={40} autoFocus
-              {...fieldAria(message, message === t('signin.resent'), 'signin-message')} />
+            {/* the code sent by e-mail is six digits, shown in cells; an authenticator or recovery code may be longer and have letters, so it is an ordinary field */}
+            {email
+              ? <CodeField id="signin-code" label={t('code.label')} value={code} onChange={setCode} autoFocus
+                {...fieldAria(message, message === t('signin.resent'), 'signin-message')} />
+              : <TextField id="signin-code" label={t('code.label')} value={code} onChange={setCode}
+                autoComplete="one-time-code" maxLength={40} autoFocus
+                {...fieldAria(message, message === t('signin.resent'), 'signin-message')} />}
             <Slot id="signin-message" message={message} ok={message === t('signin.resent')} />
           </div>
           <div className={styles.extra}><CheckboxField id="signin-remember" label={t('signin.remember')} checked={remember} onChange={setRemember} /></div>

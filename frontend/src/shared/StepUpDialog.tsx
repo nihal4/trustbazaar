@@ -8,7 +8,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useApi } from './api';
 import { untilAfter, untilServerTime, useSecondsLeft } from './countdown';
 import { errorText } from './errors';
-import { FormMessage, TextField } from './form';
+import { CodeField, FormMessage, TextField } from './form';
 import { useLanguage } from './language/Language';
 import { toAsciiDigits } from '../lib/money.js';
 import { isApiError, problemName } from './problems';
@@ -77,9 +77,10 @@ export function StepUpDialog({ request }: { request: StepUpRequest }) {
       <form onSubmit={submit}>
         {instruction && <p>{instruction}</p>}
         {error && <FormMessage kind="error">{error}</FormMessage>}
-        <TextField id="stepup-code" label={t('stepup.code_label')} value={code} onChange={setCode} data-autofocus
-          autoComplete="one-time-code" inputMode={started?.method === 'sms' ? 'numeric' : 'text'}
-          maxLength={40} required />
+        {started?.method === 'sms'
+          ? <CodeField id="stepup-code" label={t('stepup.code_label')} value={code} onChange={setCode} data-autofocus required />
+          : <TextField id="stepup-code" label={t('stepup.code_label')} value={code} onChange={setCode} data-autofocus
+            autoComplete="one-time-code" inputMode="text" maxLength={40} required />}
         <PopupActions>
           <button type="submit" disabled={busy || !started || waitFor > 0} aria-busy={busy || undefined}>
             {waitFor > 0 ? t('stepup.wait', { time: formatWait(waitFor, lang) }) : t('stepup.confirm')}

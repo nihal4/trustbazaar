@@ -145,6 +145,23 @@ describe('register', () => {
     await waitFor(() => expect(screen.getByRole('alert').textContent).toMatch(/6-digit code from the e-mail/));
   });
 
+  it('FR-ACC-02 a six-digit code is typed in cells divided by lines: pasted with spaces, in Bangla digits, or digit by digit, it fills the cells in order', async () => {
+    const be = fakeBackend({ 'POST /auth/register': started });
+    renderApp('/register', be);
+    await toCode();
+    const input = screen.getByLabelText('Code') as HTMLInputElement;
+    const cells = () => Array.from(document.querySelectorAll('[class*=codeCells] > span')).map((c) => c.textContent);
+    expect(cells()).toEqual(['', '', '', '', '', '']);
+    type('Code', '123 456');
+    expect(input.value).toBe('123456');
+    expect(cells()).toEqual(['1', '2', '3', '4', '5', '6']);
+    type('Code', '১২৩');
+    expect(input.value).toBe('123');
+    expect(cells()).toEqual(['1', '2', '3', '', '', '']);
+    type('Code', '12a34567');
+    expect(input.value).toBe('123456');
+  });
+
   it('FR-ACC-04 the terms and conditions open in a dialog with the whole text in a region that scrolls; Escape closes it and the focus returns to the link', async () => {
     renderApp('/register', fakeBackend({ 'POST /auth/register': started, 'POST /auth/register/verify': noContent() }));
     await toTerms();
@@ -395,6 +412,27 @@ describe('account and security', () => {
     const links = screen.getAllByRole('link', { name: /^Sign in/ }).map((a) => a.getAttribute('href'));
     expect(links).toContain(`/signin?next=${encodeURIComponent('/account')}`);
     expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('FR-ACC-08 the two latest logins are shown, and all of them in a popup with the rest to sign out', async () => {
+    const at = (n: number) => new Date(Date.UTC(2026, 10, 27, 12, 0) - n * 3_600_000).toISOString();
+    const be = fakeBackend({
+      'GET /auth/sessions': json(200, [
+        { id: 's-1', current: true, device: 'Chrome on Mac', approxLocation: null, createdAt: at(1), lastSeenAt: at(0) },
+        { id: 's-2', current: false, device: 'Firefox on Windows', approxLocation: null, createdAt: at(5), lastSeenAt: at(2) },
+        { id: 's-3', current: false, device: 'Safari on iPhone', approxLocation: null, createdAt: at(9), lastSeenAt: at(8) },
+        { id: 's-4', current: false, device: 'Edge on Windows', approxLocation: null, createdAt: at(20), lastSeenAt: at(19) },
+      ]),
+    });
+    renderApp('/account/security', be);
+    await screen.findByRole('heading', { name: 'Where you are signed in' });
+    expect(screen.getByText('Chrome on Mac').textContent).toContain('this device');
+    expect(screen.getByText('Firefox on Windows')).toBeTruthy();
+    expect(screen.queryByText('Safari on iPhone')).toBeNull();
+    click('See all 4 logins');
+    const dialog = await screen.findByRole('dialog', { name: 'Where you are signed in' });
+    for (const d of ['Chrome on Mac', 'Firefox on Windows', 'Safari on iPhone', 'Edge on Windows']) expect(within(dialog).getByText(d)).toBeTruthy();
+    expect(within(dialog).getAllByRole('button', { name: 'Sign out this device' })).toHaveLength(3);
   });
 
   it('FR-ACC-08 sessions show device and last use in Dhaka time, mark this device, and others can be ended', async () => {

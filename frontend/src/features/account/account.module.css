@@ -1398,3 +1398,37 @@
 .scanKey .linkButton:hover {
   border-color: var(--tb-hot);
 }
+
+/* all the logins in a popup: the same hairline rows, in the popup's own scroll */
+.sessionsPopup {
+  margin: 0;
+}
+
+.sessionsPopup li {
+  padding: 0.875rem 0;
+  border-bottom: 1px solid var(--tb-line);
+}
+
+.sessionsPopup p {
+  margin: 0 0 0.125rem;
+  color: var(--tb-muted);
+  font-size: 0.9375rem;
+}
+
+.sessionsPopup .device {
+  color: var(--tb-text);
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.sessionsPopup strong {
+  color: var(--tb-hot);
+  font-weight: 600;
+}
+
+.sessionsPopup button {
+  margin-top: 0.5rem;
+  min-height: 40px;
+  padding: 0 1rem;
+  font-size: 0.9375rem;
+}

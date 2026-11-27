@@ -2,6 +2,7 @@
 // label; hints and errors are tied to the field; errors are also listed in a summary at the top,
 // which takes focus and links to each field.
 import { useEffect, useRef, useState, type InputHTMLAttributes, type ReactNode } from 'react';
+import { toAsciiDigits, toLocalDigits } from '../lib/money.js';
 import { useLanguage } from './language/Language';
 import styles from './form.module.css';
 
@@ -28,6 +29,48 @@ export function TextField({ id, label, value, onChange, hint, error, ...input }:
         ? <PasswordInput id={id} value={value} onChange={onChange} invalid={Boolean(error)} described={described} input={input} />
         : <input id={id} value={value} onChange={(e) => onChange(e.target.value)}
           aria-invalid={error ? true : undefined} {...input} aria-describedby={described} />}
+      {error && <p id={`${id}-error`} className={styles.error}>{error}</p>}
+    </div>
+  );
+}
+
+interface CodeFieldProps extends Omit<InputProps, 'maxLength' | 'type' | 'inputMode' | 'autoComplete'> {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  hint?: string;
+  error?: string;
+  /** how many digits the code has (a one-time code is 6) */
+  length?: number;
+}
+
+/**
+ * A one-time code of digits, shown as cells divided by lines (U10-25): `| 4 | 8 | 2 | 0 | 1 | 7 |`. It is one real input (so pasting, autofill and the SMS and
+ * e-mail suggestions of a phone all work) laid over the cells, which only show what was typed; the next empty cell is marked. What is typed or pasted is
+ * made digits (the digits of Bangla too), spaces and dashes dropped, and cut at the length.
+ */
+export function CodeField({ id, label, value, onChange, hint, error, length = 6, ...input }: CodeFieldProps) {
+  const { lang } = useLanguage();
+  const [focused, setFocused] = useState(false);
+  const described = [input['aria-describedby'], hint ? `${id}-hint` : '', error ? `${id}-error` : ''].filter(Boolean).join(' ') || undefined;
+  const digits = toAsciiDigits(value).replace(/\D/g, '').slice(0, length);
+  const next = Math.min(digits.length, length - 1);
+  return (
+    <div className={styles.field}>
+      <label htmlFor={id}>{label}</label>
+      {hint && <p id={`${id}-hint`} className={styles.hint}>{hint}</p>}
+      <div className={styles.codeGroup} data-focused={focused || undefined} data-invalid={error || input['aria-invalid'] ? true : undefined}>
+        <input id={id} className={styles.codeInput} value={digits} inputMode="numeric" autoComplete="one-time-code"
+          aria-invalid={error ? true : undefined} {...input} aria-describedby={described}
+          onChange={(e) => onChange(toAsciiDigits(e.target.value).replace(/\D/g, '').slice(0, length))}
+          onFocus={(e) => { setFocused(true); input.onFocus?.(e); }} onBlur={(e) => { setFocused(false); input.onBlur?.(e); }} />
+        <div className={styles.codeCells} aria-hidden="true" style={{ gridTemplateColumns: `repeat(${length}, minmax(0, 1fr))` }}>
+          {Array.from({ length }, (_, i) => (
+            <span key={i} data-here={focused && i === next ? true : undefined}>{digits[i] ? toLocalDigits(digits[i], lang) : ''}</span>
+          ))}
+        </div>
+      </div>
       {error && <p id={`${id}-error`} className={styles.error}>{error}</p>}
     </div>
   );

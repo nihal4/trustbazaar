@@ -7,10 +7,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApi } from '../../shared/api';
 import { AccountTabs } from '../../shared/AccountTabs';
 import { untilAfter, untilServerTime, useSecondsLeft } from '../../shared/countdown';
-import { FormMessage, SubmitButton, TextField } from '../../shared/form';
+import { CodeField, FormMessage, SubmitButton, TextField } from '../../shared/form';
 import { ME_KEY, useMe } from '../../shared/me';
 import { isApiError, problemName } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
+import { Popup } from '../../shared/Popup';
 import { StepUpCancelled } from '../../shared/stepUp';
 import { formatDateTime } from '../../lib/time.js';
 import { toAsciiDigits } from '../../lib/money.js';
@@ -31,7 +32,7 @@ interface SessionSummary {
 }
 
 const SESSIONS_KEY = ['auth', 'sessions'] as const;
-const SESSIONS_SHOWN = 5;
+const SESSIONS_SHOWN = 2;
 
 export function Component() {
   const { t } = useAccountT();
@@ -93,37 +94,35 @@ function Sessions({ list, error }: { list: SessionSummary[]; error: unknown }) {
   };
 
   const others = list.filter((s) => !s.current);
-  // this device first, then the others newest first; five are shown, the rest behind one button (a long history is not a long page)
+  // this device first, then the others newest first; the two latest are shown, and all of them in a popup (a long history is not a long page)
   const [all, setAll] = useState(false);
   const ordered = [...list].sort((a, b) => Number(b.current) - Number(a.current));
-  const shown = all ? ordered : ordered.slice(0, SESSIONS_SHOWN);
+  const item = (s: SessionSummary) => (
+    <li key={s.id}>
+      <p className={styles.device}>
+        {s.device ?? t('sessions.unknown_device')}
+        {s.current && <strong> · {t('sessions.this_device')}</strong>}
+      </p>
+      {s.approxLocation && <p>{s.approxLocation}</p>}
+      <p>{t('sessions.last_used', { at: formatDateTime(Date.parse(s.lastSeenAt), lang) })}</p>
+      <p>{t('sessions.started', { at: formatDateTime(Date.parse(s.createdAt), lang) })}</p>
+      {!s.current && (
+        <button type="button" disabled={busy !== null}
+          onClick={() => void run(s.id, () => api.del(`/auth/sessions/${encodeURIComponent(s.id)}`))}>
+          {t('sessions.end')}
+        </button>
+      )}
+    </li>
+  );
   return (
     <section aria-labelledby="sessions-title" className={styles.section}>
       <h2 id="sessions-title">{t('sessions.title')}</h2>
       {error !== null && <FormMessage kind="error">{otherError(error, t, lang)}</FormMessage>}
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
-      <ul className={styles.sessions}>
-        {shown.map((s) => (
-          <li key={s.id}>
-            <p className={styles.device}>
-              {s.device ?? t('sessions.unknown_device')}
-              {s.current && <strong> · {t('sessions.this_device')}</strong>}
-            </p>
-            {s.approxLocation && <p>{s.approxLocation}</p>}
-            <p>{t('sessions.last_used', { at: formatDateTime(Date.parse(s.lastSeenAt), lang) })}</p>
-            <p>{t('sessions.started', { at: formatDateTime(Date.parse(s.createdAt), lang) })}</p>
-            {!s.current && (
-              <button type="button" disabled={busy !== null}
-                onClick={() => void run(s.id, () => api.del(`/auth/sessions/${encodeURIComponent(s.id)}`))}>
-                {t('sessions.end')}
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
+      <ul className={styles.sessions}>{ordered.slice(0, SESSIONS_SHOWN).map(item)}</ul>
       {ordered.length > SESSIONS_SHOWN && (
-        <button type="button" className={styles.secondary} onClick={() => setAll((v) => !v)} aria-expanded={all}>
-          {all ? t('sessions.show_fewer') : t('sessions.show_all', { count: digits(ordered.length, lang) })}
+        <button type="button" className={styles.secondary} aria-haspopup="dialog" onClick={() => setAll(true)}>
+          {t('sessions.show_all', { count: digits(ordered.length, lang) })}
         </button>
       )}
       {others.length > 0 && (
@@ -131,6 +130,12 @@ function Sessions({ list, error }: { list: SessionSummary[]; error: unknown }) {
           onClick={() => void run('others', () => api.request('POST', '/auth/sessions/end-others'))}>
           {t('sessions.end_others')}
         </button>
+      )}
+      {all && (
+        <Popup id="sessions-popup" title={t('sessions.title')} closeLabel={t('legal.close')} onClose={() => setAll(false)}>
+          {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
+          <ul className={`${styles.sessions} ${styles.sessionsPopup}`}>{ordered.map(item)}</ul>
+        </Popup>
       )}
     </section>
   );
@@ -288,8 +293,7 @@ function PhoneForm() {
         : (
           <form onSubmit={verify} noValidate>
             <p>{t('register.code_sent', { phone: sentTo })}</p>
-            <TextField id="phone-code" label={t('code.label')} value={code} onChange={setCode} error={error ?? undefined}
-              inputMode="numeric" autoComplete="one-time-code" maxLength={6} />
+            <CodeField id="phone-code" label={t('code.label')} value={code} onChange={setCode} error={error ?? undefined} />
             <div className={styles.actions}>
               <SubmitButton busy={busy}>{t('contact.phone_verify')}</SubmitButton>
               <button type="button" disabled={resendIn > 0 || busy} onClick={() => void start()}>

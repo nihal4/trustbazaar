@@ -7,7 +7,7 @@ import { useEffect, useRef, useState, type FormEvent, type MouseEvent, type Reac
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useApi } from '../../shared/api';
 import { untilAfter, untilServerTime, useSecondsLeft } from '../../shared/countdown';
-import { CheckboxField, SubmitButton, TextField } from '../../shared/form';
+import { CheckboxField, CodeField, SubmitButton, TextField } from '../../shared/form';
 import { useViewport } from '../../shared/gridCell';
 import { fieldErrors, isApiError, problemName } from '../../shared/problems';
 import { toAsciiDigits } from '../../lib/money.js';
@@ -289,8 +289,7 @@ export function Component() {
         )}>
         <form onSubmit={(e) => void verify(e)} noValidate className={styles.stepForm}>
           <div className={styles.fieldGroup}>
-            <TextField id="register-code" label={t('code.label')} value={code} onChange={setCode} autoComplete="one-time-code" inputMode="numeric"
-              maxLength={6} autoFocus {...aria(notice)} />
+            <CodeField id="register-code" label={t('code.label')} value={code} onChange={setCode} autoFocus {...aria(notice)} />
             <Slot id="register-message" message={message} ok={notice} />
           </div>
           <SubmitButton busy={busy} disabled={waitFor > 0}>{button ?? t('register.verify')}</SubmitButton>

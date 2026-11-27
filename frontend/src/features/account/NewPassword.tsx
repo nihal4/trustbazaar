@@ -5,7 +5,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApi } from '../../shared/api';
 import { untilAfter, useSecondsLeft } from '../../shared/countdown';
-import { SubmitButton, TextField } from '../../shared/form';
+import { CodeField, SubmitButton, TextField } from '../../shared/form';
 import { problemName } from '../../shared/problems';
 import { toAsciiDigits } from '../../lib/money.js';
 import { digits, otherError, passwordReasonText, rejectedPasswordReason, retryAfter, useAccountT } from './common';
@@ -73,8 +73,7 @@ export function NewPasswordForm({ proof, onDone, onLinkRefused }: {
   return (
     <form onSubmit={(e) => void submit(e)} noValidate className={styles.stepForm}>
       <div className={styles.fieldGroup}>
-        {phone && <TextField id="reset-code" label={t('code.label')} value={code} onChange={setCode} inputMode="numeric" autoComplete="one-time-code"
-          maxLength={6} autoFocus {...aria('code')} />}
+        {phone && <CodeField id="reset-code" label={t('code.label')} value={code} onChange={setCode} autoFocus {...aria('code')} />}
         <TextField id="reset-password" label={t('reset.new_password')}
           hint={t('reset.password_hint', { min: digits(PASSWORD.minSingleFactor, lang), minMfa: digits(PASSWORD.minWithMfa, lang) })}
           value={password} onChange={setPassword} type="password" autoComplete="new-password" autoFocus={!phone} {...aria('password')} />
