@@ -7,6 +7,7 @@ import { FormMessage } from '../../shared/form';
 import { cameraProblem, IMAGE_TYPES, MAX_IMAGE_BYTES, stopStream, useCamera, type CameraProblem, type Facing } from './camera';
 import { useKycT } from './common';
 import styles from './kyc.module.css';
+import { Button } from '../../shared/ui';
 
 interface Props {
   id: string;
@@ -104,24 +105,24 @@ export function Capture({ id, title, labelledBy, hint, facing, frame, allowFile,
       </div>
       <div className={styles.nav}>
         {value ? (
-          <button
+          <Button
+            variant="secondary"
             type="button"
-            className={styles.secondary}
             onClick={() => {
               onChange(null);
               void start();
             }}
           >
             {t('capture.retake')}
-          </button>
+          </Button>
         ) : stream ? (
-          <button type="button" className={styles.primary} onClick={() => void take()} disabled={busy || !ready}>
+          <Button variant="primary" type="button" onClick={() => void take()} disabled={busy || !ready}>
             {t('capture.take')}
-          </button>
+          </Button>
         ) : (
-          <button type="button" className={styles.primary} onClick={() => void start()} disabled={busy}>
+          <Button variant="primary" type="button" onClick={() => void start()} disabled={busy}>
             {t('capture.start')}
-          </button>
+          </Button>
         )}
       </div>
       {problem && !value && (

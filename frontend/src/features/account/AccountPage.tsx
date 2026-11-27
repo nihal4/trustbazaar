@@ -12,6 +12,7 @@ import { toLocalDigits } from '../../lib/money.js';
 import { Tick } from '../../shared/icons';
 import { otherError, useAccountT } from './common';
 import styles from './account.module.css';
+import { Button } from '../../shared/ui';
 
 const KYC_ACTION: Record<KycStatus, boolean> = {
   unsubmitted: true,
@@ -163,9 +164,9 @@ export function Component() {
           <Link to="/account/payout">{t('account.payout_link')}</Link>
         </li>
       </ul>
-      <button type="button" className={styles.signOut} onClick={() => void signOut()} disabled={busy}>
+      <Button variant="secondary" type="button" onClick={() => void signOut()} disabled={busy}>
         {t('account.sign_out')}
-      </button>
+      </Button>
     </div>
   );
 }

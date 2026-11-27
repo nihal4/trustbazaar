@@ -18,7 +18,7 @@
     "warning:property-no-deprecated": 24,
     "warning:value-keyword-case": 11,
     "warning:color-function-alias-notation": 16,
-    "warning:no-duplicate-selectors": 49,
+    "warning:no-duplicate-selectors": 48,
     "warning:length-zero-no-unit": 2,
     "warning:declaration-block-no-duplicate-properties": 1
   },

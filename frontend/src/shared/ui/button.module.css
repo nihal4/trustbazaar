@@ -69,6 +69,32 @@
   background: var(--tb-error-bg);
 }
 
+.link {
+  min-height: 44px;
+  margin-inline: calc(var(--tb-space-2) * -1);
+  padding: 0 var(--tb-space-2);
+  border-color: transparent;
+  color: var(--tb-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.link:hover:not(:disabled) {
+  color: var(--tb-text);
+}
+.link[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+/* in a sentence: the line's own height, no tap box of its own */
+.inline {
+  display: inline;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  line-height: inherit;
+  vertical-align: baseline;
+}
+
 .icon {
   width: 44px;
   padding: 0;

@@ -13,6 +13,7 @@ import { AuthSplit } from './AuthSplit';
 import { bangladeshiMobile, loginKind, normaliseLogin } from './input';
 import { NewPasswordForm, ResetDone } from './NewPassword';
 import styles from './account.module.css';
+import { Button } from '../../shared/ui';
 
 export function Component() {
   const { t, lang } = useAccountT();
@@ -57,16 +58,16 @@ export function Component() {
   if (sentTo) {
     const again = (
       <div className={styles.footLinks}>
-        <button
+        <Button
+          variant="link"
           type="button"
-          className={styles.link}
           onClick={() => {
             setSentTo(null);
             setMessage(null);
           }}
         >
           {t('reset.again')}
-        </button>
+        </Button>
       </div>
     );
     return sentTo.kind === 'phone' && sentTo.phone ? (
