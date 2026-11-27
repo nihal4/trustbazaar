@@ -13,7 +13,7 @@
   position: absolute;
   left: var(--tb-space-2);
   top: -3rem;
-  padding: var(--tb-space-2) var(--tb-space-3);
+  padding: var(--tb-space-2) var(--tb-space-4);
   background: var(--tb-accent);
   color: var(--tb-accent-text);
   border-radius: var(--tb-radius);
@@ -26,12 +26,9 @@
 
 .header {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: var(--tb-space-2) var(--tb-space-4);
-  padding: var(--tb-space-3) var(--tb-gutter);
-  border-bottom: 1px solid var(--tb-line);
-  background: var(--tb-bg);
+  gap: var(--tb-space-2) var(--tb-space-6);
+  padding: var(--tb-space-4) var(--tb-gutter);
 }
 
 .brand {
@@ -45,19 +42,11 @@
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
 }
 
 .mark {
   flex: none;
-}
-
-.wordmark {
-  font-weight: 600;
-  font-size: 1.4rem;
-  letter-spacing: -0.035em;
-  line-height: 1;
-  font-family: var(--tb-font-display);
 }
 
 .docTitle {
@@ -71,9 +60,8 @@
 
 .langSwitch {
   min-height: 44px;
-  padding: var(--tb-space-1) var(--tb-space-3);
+  padding: var(--tb-space-1) var(--tb-space-4);
   border: 0;
-  border-radius: var(--tb-radius-pill);
   background: var(--tb-surface);
   color: var(--tb-text);
   font-weight: 600;
@@ -88,12 +76,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--tb-space-2) var(--tb-space-3);
-  margin: var(--tb-space-3);
-  padding: var(--tb-space-2) var(--tb-space-3);
-  background: var(--tb-warning-bg);
-  border: 1px solid var(--tb-warning-border);
-  border-radius: var(--tb-radius);
+  gap: var(--tb-space-2) var(--tb-space-4);
 }
 
 .notice p {
@@ -106,31 +89,11 @@
   width: 100%;
   max-width: var(--tb-max-width);
   margin: 0 auto;
-  padding: var(--tb-space-4) clamp(1rem, 4vw, 3.5rem);
-}
-
-/* room for the tab bar, so it never covers the end of the page */
-.withTabs {
-  padding-bottom: 6rem;
+  padding: var(--tb-space-6) clamp(var(--tb-space-4), 4vw, 3.5rem);
 }
 
 .main:focus {
   outline: none;
-}
-
-.account {
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  padding: 0 var(--tb-space-2);
-  color: var(--tb-text);
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.account:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
 }
 
 .iconLink {
@@ -145,81 +108,6 @@
   color: var(--tb-text);
 }
 
-.tabBar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 5;
-  background: var(--tb-bg);
-  border-top: 1px solid var(--tb-line);
-  padding: 0.375rem 0 calc(0.375rem + env(safe-area-inset-bottom));
-}
-
-.tabBar ul {
-  display: flex;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.tabBar li {
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-.tab {
-  min-height: 52px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  color: var(--tb-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.tabOn {
-  color: var(--tb-accent);
-}
-
-.tabSell {
-  display: grid;
-  place-items: center;
-  width: 2.5rem;
-  height: 1.75rem;
-  border-radius: var(--tb-radius-pill);
-  background: var(--tb-accent);
-  color: var(--tb-accent-text);
-}
-
-.dialog {
-  width: min(28rem, calc(100vw - 2rem));
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius);
-  padding: var(--tb-space-3);
-}
-
-.dialog::backdrop {
-  background: rgb(0 0 0 / 0.4);
-}
-
-.dialog h2 {
-  margin-top: 0;
-}
-
-.dialogActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--tb-space-2);
-}
-
-.dialogActions button {
-  min-height: 44px;
-}
-
 .badge {
   display: inline-block;
   min-width: 1.5em;
@@ -228,7 +116,7 @@
   border-radius: var(--tb-radius-control);
   background: var(--tb-accent);
   color: var(--tb-accent-text);
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
   font-weight: 600;
   text-align: center;
 }
@@ -250,7 +138,7 @@
 @media (max-width: 47.99em) {
   .header {
     flex-wrap: nowrap;
-    gap: 0.5rem;
+    gap: var(--tb-space-2);
   }
   .wordmark {
     font-size: 1.2rem;
@@ -260,10 +148,10 @@
     height: 26px;
   }
   .langSwitch {
-    padding: var(--tb-space-1) 0.75rem;
+    padding: var(--tb-space-1) var(--tb-space-3);
   }
   .account {
-    padding: 0 0.375rem;
+    padding: 0 var(--tb-space-1-5);
   }
   .langSwitch,
   .account,
@@ -280,13 +168,13 @@
     top: -2px;
     right: -4px;
     margin: 0;
-    font-size: 0.75rem;
+    font-size: var(--tb-text-2xs);
     line-height: 1.4;
   }
 }
 @media (max-width: 26rem) {
   .header {
-    gap: 0.375rem;
+    gap: var(--tb-space-1-5);
   }
   .wordmark {
     font-size: 1.05rem;
@@ -298,10 +186,10 @@
 /* at 320 px, signed in and in Bangla, "English" is the widest switch: a little less padding keeps the line */
 @media (max-width: 21rem) {
   .langSwitch {
-    padding-inline: 0.5rem;
+    padding-inline: var(--tb-space-2);
   }
   .wordmark {
-    font-size: 1rem;
+    font-size: var(--tb-text-base);
   }
 }
 
@@ -329,24 +217,6 @@
     margin-left: auto;
   }
 }
-
-/* ---- Redesign v3 (docs/design/10_visual_v3.md): flat and plain. A mint promise bar, a white header with a search field,
-   an ink footer, a standard bottom bar on phones. These rules follow the older ones and win. ---- */
-.promiseBar {
-  margin: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem var(--tb-gutter);
-  background: transparent;
-  border-bottom: 1px solid var(--tb-line);
-  color: var(--tb-text);
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.4;
-  text-align: center;
-}
 .promiseBar svg {
   flex: none;
 }
@@ -355,11 +225,13 @@
   top: 0;
   z-index: 20;
   flex-wrap: nowrap;
-  padding-block: 0.75rem;
+  padding-block: var(--tb-space-3);
   background: var(--tb-bg);
   border-bottom: 1px solid var(--tb-line);
 }
 .wordmark {
+  line-height: 1;
+  font-family: var(--tb-font-display);
   font-weight: 500;
   font-size: 1.4rem;
   letter-spacing: -0.03em;
@@ -371,25 +243,14 @@
   margin-inline: auto;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
   min-height: 46px;
-  padding: 0 0.875rem;
-  border-radius: var(--tb-radius);
-  background: var(--tb-surface);
-  border: 1.5px solid transparent;
   color: var(--tb-muted);
-  transition:
-    border-color 140ms,
-    background 140ms;
-}
-.headSearch:focus-within {
-  background: var(--tb-sheet);
-  border-color: var(--tb-text);
 }
 .headSearch input:focus-visible {
   outline: 2px solid var(--tb-text);
   outline-offset: 4px;
-  border-radius: 4px;
+  border-radius: var(--tb-radius-panel);
 }
 .headSearch input {
   flex: 1;
@@ -407,7 +268,10 @@
   height: 20px;
 }
 .account {
-  padding: 0.5rem 0.75rem;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: var(--tb-space-2) var(--tb-space-3);
   font-weight: 500;
   color: var(--tb-text);
   text-decoration: none;
@@ -418,18 +282,11 @@
   transition: background-size 180ms;
 }
 .account:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
   background-size: calc(100% - 1.5rem) 1.5px;
 }
 .langSwitch {
-  border-radius: var(--tb-radius);
-}
-.tabOn {
-  color: var(--tb-text);
-  font-weight: 600;
-}
-.tabSell {
-  background: var(--tb-action);
-  color: var(--tb-action-text);
   border-radius: var(--tb-radius);
 }
 @media (max-width: 47.99em) {
@@ -460,21 +317,6 @@
     height: 30px;
   }
 }
-
-/* tap targets of 44 px (WCAG 2.2 AA, NFR-USE-06) */
-.header [class*='Button-root'] {
-  min-height: 44px;
-}
-
-/* The footer: ruled like the page. Three columns on the page's own thirds (the brand, Explore, Help) divided by hairlines; one
-   column with rules between on phones. Muted text, links brighten and draw a hot underline on hover. */
-.footer {
-  margin-top: 4rem;
-  padding: 0 var(--tb-gutter) 3rem;
-  border-top: 1px solid var(--tb-line);
-  color: var(--tb-muted);
-  font-size: 0.9375rem;
-}
 .footerGrid {
   display: grid;
   grid-template-columns: 1fr;
@@ -483,18 +325,18 @@
 }
 .footerAbout,
 .footerCol {
-  padding: 2rem 0;
+  padding: var(--tb-space-8) 0;
 }
 .footerCol {
   border-top: 1px solid var(--tb-line);
 }
 .footerAbout p {
   max-width: 32ch;
-  margin: 1rem 0 0;
+  margin: var(--tb-space-4) 0 0;
   line-height: 1.6;
 }
 .footerLabel {
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--tb-space-2);
   color: var(--tb-text);
   font-weight: 600;
 }
@@ -516,8 +358,8 @@
   background-size: 0 1.5px;
   background-position: 0 calc(50% + 0.7em);
   transition:
-    color 140ms,
-    background-size 200ms;
+    color var(--tb-dur-base),
+    background-size var(--tb-dur-slow);
 }
 .footerLinks a:hover {
   color: var(--tb-text);
@@ -533,12 +375,12 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .footerAbout {
-    padding-right: 2rem;
+    padding-right: var(--tb-space-8);
   }
   .footerCol {
     border-top: 0;
     border-left: 1px solid var(--tb-line);
-    padding-left: 2rem;
+    padding-left: var(--tb-space-8);
   }
 }
 
@@ -569,11 +411,12 @@
   border: 0;
   border-bottom: 1px solid var(--tb-border);
   border-radius: 0;
-  padding: 0 0.25rem;
+  padding: 0 var(--tb-space-1);
   box-shadow: none;
-  transition: box-shadow 140ms;
+  transition: box-shadow var(--tb-dur-base);
 }
 .headSearch:focus-within {
+  border-color: var(--tb-text);
   background: none;
   border-bottom-color: var(--tb-border);
   outline: 0;
@@ -604,10 +447,14 @@
 /* ---- The phone tab bar, ruled like the page (docs/design/10_visual_v3.md): a line on top, equal cells divided by hairlines, no
    filled blocks. The current tab has a 2 px hot line on the bar's top edge; Sell is the one hot tab (an outlined square, not a
    filled pill), so the primary action is marked without a block. Labels never wrap or overflow, down to 320 px. ---- */
+
+/* room for the tab bar, so it never covers the end of the page */
 .withTabs {
   padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
 }
 .tabBar {
+  position: fixed;
+  z-index: 5;
   left: 0;
   right: 0;
   bottom: 0;
@@ -621,27 +468,36 @@
   -webkit-backdrop-filter: none;
 }
 .tabBar ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: minmax(0, 1fr);
 }
 .tabBar li {
+  flex: 1 1 0;
   min-width: 0;
 }
 .tabBar li + li {
   border-left: 1px solid var(--tb-line);
 }
 .tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
   position: relative;
   min-height: 58px;
   gap: 4px;
   padding: 0 2px;
   color: var(--tb-muted);
-  font-size: 0.75rem;
+  font-size: var(--tb-text-2xs);
   font-weight: 600;
   transition:
-    color 140ms,
-    background 140ms;
+    color var(--tb-dur-base),
+    background var(--tb-dur-base);
 }
 .tab svg {
   width: 22px;
@@ -655,7 +511,7 @@
   top: -1px;
   height: 2px;
   background: transparent;
-  transition: background 140ms;
+  transition: background var(--tb-dur-base);
 }
 .tab:active {
   background: var(--tb-surface);
@@ -679,7 +535,7 @@
   width: 22px;
   height: 22px;
   border: 1.5px solid var(--tb-hot);
-  border-radius: 4px;
+  border-radius: var(--tb-radius-panel);
   background: none;
   color: var(--tb-hot);
 }
@@ -694,8 +550,8 @@
   left: calc(50% + 4px);
   min-width: 1.25rem;
   margin: 0;
-  padding: 0 0.25rem;
-  font-size: 0.75rem;
+  padding: 0 var(--tb-space-1);
+  font-size: var(--tb-text-2xs);
   line-height: 1.35;
 }
 .tabLabel {
@@ -705,7 +561,7 @@
   white-space: nowrap;
 }
 :lang(bn) .tab {
-  font-size: 0.8125rem;
+  font-size: var(--tb-text-xs);
 }
 .tab:focus-visible {
   outline: 2px solid var(--tb-hot);
@@ -728,7 +584,15 @@
 
 /* On a listing the right column stays in view down to the footer, so the footer keeps to the left of it: the page sets
    html[data-rail] and --tb-rail-reserve (the column's width and the gap). */
+
+/* The footer: ruled like the page. Three columns on the page's own thirds (the brand, Explore, Help) divided by hairlines; one
+   column with rules between on phones. Muted text, links brighten and draw a hot underline on hover. */
 .footer {
+  margin-top: 4rem;
+  padding: 0 var(--tb-gutter) var(--tb-space-12);
+  border-top: 1px solid var(--tb-line);
+  color: var(--tb-muted);
+  font-size: var(--tb-text-md);
   position: relative;
 }
 :global(html[data-rail='on']) .footer {
@@ -747,25 +611,19 @@
   flex: 1 1 9rem;
   min-width: 9rem;
 }
+
+/* tap targets of 44 px (WCAG 2.2 AA, NFR-USE-06) */
 .header [class*='Button-root'] {
+  min-height: 44px;
   white-space: nowrap;
 }
 /* the orange Sell button reads in dark text (white on #ff6b35 is 2.8:1, below the 4.5:1 of WCAG AA) */
 :root[data-theme='dark'] .header [class*='Button-root'] {
-  --button-color: #0a1018;
-  color: #0a1018;
+  --button-color: var(--tb-on-hot);
+  color: var(--tb-on-hot);
 }
 .header [class*='Button-label'] {
   overflow: visible;
-}
-
-/* the confirmation dialog in the ruled look: a hairline panel, the action in vermilion, Cancel as an outline */
-.dialog {
-  background: var(--tb-sheet);
-  color: var(--tb-text);
-  border: 1px solid var(--tb-border);
-  border-radius: 4px;
-  padding: 1.5rem;
 }
 .dialog::backdrop {
   background: rgb(0 0 0 / 0.6);
@@ -773,24 +631,22 @@
 .dialog h2 {
   font-family: var(--tb-font-display);
   font-weight: var(--tb-display-weight);
-  font-size: 1.5rem;
+  font-size: var(--tb-text-3xl);
   letter-spacing: -0.02em;
-  margin: 0 0 0.75rem;
-}
-.dialog p {
-  margin: 0 0 0.75rem;
-  line-height: 1.5;
+  margin: 0 0 var(--tb-space-3);
 }
 .dialogActions {
-  gap: 0.625rem;
-  margin-top: 1.25rem;
-  padding-top: 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-2-5);
+  margin-top: var(--tb-space-5);
+  padding-top: var(--tb-space-5);
   border-top: 1px solid var(--tb-line);
 }
 .dialogActions button {
   min-height: 48px;
-  padding: 0 1.25rem;
-  border-radius: 6px;
+  padding: 0 var(--tb-space-5);
+  border-radius: var(--tb-radius-control);
   font: inherit;
   font-weight: 700;
   cursor: pointer;
@@ -806,9 +662,6 @@
 .dialogActions button:first-child:hover:not(:disabled) {
   background: var(--tb-hot-hover);
 }
-.dialogActions button:last-child:hover:not(:disabled) {
-  border-color: var(--tb-hot);
-}
 .dialogActions button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -816,15 +669,6 @@
 .dialogActions button:focus-visible {
   outline: 2px solid var(--tb-text);
   outline-offset: 3px;
-}
-
-/* the signed-in header's links as a ruled grid of icon cells (the names stay for screen readers and as tooltips) */
-.navGrid {
-  display: flex;
-  flex: none;
-  border: 1px solid var(--tb-line);
-  border-radius: 4px;
-  overflow: hidden;
 }
 .navCell {
   position: relative;
@@ -835,10 +679,7 @@
   color: var(--tb-text);
   text-decoration: none;
   background: none;
-  transition: background 140ms;
-}
-.navCell + .navCell {
-  border-left: 1px solid var(--tb-line);
+  transition: background var(--tb-dur-base);
 }
 .navCell:hover {
   background: var(--tb-surface);
@@ -857,8 +698,8 @@
   right: 5px;
   min-width: 1.25rem;
   margin: 0;
-  padding: 0 0.25rem;
-  font-size: 0.75rem;
+  padding: 0 var(--tb-space-1);
+  font-size: var(--tb-text-2xs);
   line-height: 1.35;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -872,29 +713,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--tb-space-4);
   max-width: var(--tb-max-width);
   margin-inline: auto;
-  padding: 1rem 0 0;
+  padding: var(--tb-space-4) 0 0;
   border-top: 1px solid var(--tb-line);
 }
 .footerLang .footerLabel {
   margin: 0;
-}
-.footerLang .langSwitch {
-  min-width: 7rem;
-  min-height: 44px;
-  padding: 0 1.25rem;
-  border: 1px solid var(--tb-border);
-  border-radius: 4px;
-  background: none;
-  color: var(--tb-text);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-.footerLang .langSwitch:hover {
-  border-color: var(--tb-hot);
 }
 .footerLang .langSwitch:focus-visible {
   outline: 2px solid var(--tb-hot);
@@ -904,7 +730,23 @@
   border-top: 0;
 }
 /* the promise line is one line on every screen: the long sentence, or a short one on narrow phones */
+
+/* ---- Redesign v3 (docs/design/10_visual_v3.md): flat and plain. A mint promise bar, a white header with a search field,
+   an ink footer, a standard bottom bar on phones. These rules follow the older ones and win. ---- */
 .promiseBar {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--tb-space-2);
+  padding: var(--tb-space-2) var(--tb-gutter);
+  background: transparent;
+  border-bottom: 1px solid var(--tb-line);
+  color: var(--tb-text);
+  font-size: var(--tb-text-sm);
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
   white-space: nowrap;
   overflow: hidden;
 }
@@ -926,7 +768,11 @@
 }
 
 /* ruled, not boxed (owner's review): the header's icon cells and the language switch have dividers and rules, no outlines or rounded boxes */
+
+/* the signed-in header's links as a ruled grid of icon cells (the names stay for screen readers and as tooltips) */
 .navGrid {
+  display: flex;
+  flex: none;
   border: 0;
   border-radius: 0;
   overflow: visible;
@@ -941,27 +787,40 @@
   border-left: 1px solid var(--tb-line);
 }
 .footerLang .langSwitch {
+  background: none;
+  color: var(--tb-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
   min-width: 44px;
   min-height: 44px;
-  padding: 0 0.5rem;
+  padding: 0 var(--tb-space-2);
   border: 0;
   border-bottom: 1px solid var(--tb-border);
   border-radius: 0;
 }
 .footerLang .langSwitch:hover {
+  border-color: var(--tb-hot);
   border-bottom-color: var(--tb-hot);
 }
 
 /* the confirmation dialog, ruled: a vermilion rule on top and a hairline under, no outline; Cancel is a ruled cell; the paragraphs wrap with no lone last word */
+
+/* the confirmation dialog in the ruled look: a hairline panel, the action in vermilion, Cancel as an outline */
 .dialog {
+  width: min(28rem, calc(100vw - 2rem));
+  background: var(--tb-sheet);
+  color: var(--tb-text);
+  padding: var(--tb-space-6);
   border: 0;
   border-top: 2px solid var(--tb-hot);
   border-bottom: 1px solid var(--tb-border);
   border-radius: 0;
 }
 .dialog p {
+  line-height: 1.5;
   text-wrap: pretty;
-  margin: 0 0 0.75rem;
+  margin: 0 0 var(--tb-space-3);
 }
 .dialogActions button:last-child {
   border: 0;
@@ -970,6 +829,7 @@
   background: none;
 }
 .dialogActions button:last-child:hover:not(:disabled) {
+  border-color: var(--tb-hot);
   border-bottom-color: var(--tb-hot);
 }
 /* the phone header's bell and account: ruled cells (a hairline between them), not filled round tiles */
@@ -989,7 +849,7 @@
 
 /* the "test mode" strip on payment screens: a ruled band with a warning line above and below, not a filled box */
 .notice {
-  margin: var(--tb-space-3) 0;
+  margin: var(--tb-space-4) 0;
   padding: var(--tb-space-2) 0;
   background: none;
   border: 0;
@@ -1016,8 +876,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 1.25rem clamp(1rem, 4vw, 3rem);
+  gap: var(--tb-space-4);
+  padding: var(--tb-space-5) clamp(var(--tb-space-4), 4vw, var(--tb-space-12));
 }
 
 .bareMain {
@@ -1048,7 +908,7 @@
 .headTools {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
 }
 .themeSwitch {
   display: inline-grid;
@@ -1063,9 +923,9 @@
   color: var(--tb-text);
   cursor: pointer;
   transition:
-    transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
-    border-color 140ms ease,
-    color 140ms ease;
+    transform var(--tb-dur-press) var(--tb-ease-out),
+    border-color var(--tb-dur-base) ease,
+    color var(--tb-dur-base) ease;
 }
 .themeSwitch:active {
   transform: scale(0.94);

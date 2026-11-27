@@ -44,7 +44,7 @@ page.on('response', async (response) => {
 });
 const recordedAt = new Date().toISOString();
 await page.goto(base + path, { waitUntil: 'networkidle' });
-await page.waitForTimeout(2500);
+await page.waitForTimeout(Number(process.env.RECORD_WAIT ?? 2500)); // RECORD_WAIT (ms) for pages that poll or load on a timer
 await browser.close();
 writeFileSync(join(here, 'fixtures', `${name}.json`), JSON.stringify({ recordedAt, path, answers }, null, 2) + '\n');
 console.log(`${name}: ${Object.keys(answers).length} answers recorded at ${recordedAt}`);

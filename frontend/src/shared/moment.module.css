@@ -1,23 +1,16 @@
-/* Times as ruled cells: figure over unit, hairlines between the cells, no box (the look of the auction countdown). */
-.moment {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem 0;
-  align-items: flex-start;
-}
 .moment > .group + .group {
-  margin-left: 1.25rem;
-  padding-left: 1.25rem;
+  margin-left: var(--tb-space-5);
+  padding-left: var(--tb-space-5);
   border-left: 1px solid var(--tb-line);
 }
 .group {
   display: grid;
-  gap: 0.25rem;
+  gap: var(--tb-space-1);
   align-content: start;
 }
 .k {
   color: var(--tb-muted);
-  font-size: 0.8125rem;
+  font-size: var(--tb-text-xs);
   font-weight: 500;
   line-height: 1.3;
 }
@@ -32,7 +25,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0.125rem 0.625rem;
+  padding: var(--tb-space-0-5) var(--tb-space-2-5);
 }
 .cell:first-child {
   padding-left: 0;
@@ -44,27 +37,23 @@
 .cell strong {
   font-family: var(--tb-font);
   font-weight: 600;
-  font-size: 1.25rem;
+  font-size: var(--tb-text-2xl);
   line-height: 1.15;
   font-variant-numeric: tabular-nums;
 }
 .cell small {
   color: var(--tb-muted);
-  font-size: 0.75rem;
+  font-size: var(--tb-text-2xs);
   font-weight: 600;
   letter-spacing: 0.06em;
   line-height: 1.2;
   text-transform: uppercase;
 }
-:lang(bn) .cell small {
-  letter-spacing: 0;
-  text-transform: none;
-}
 .urgent .cell strong {
   color: var(--tb-hot);
 }
 .ended .cell strong {
-  font-size: 1rem;
+  font-size: var(--tb-text-base);
   color: var(--tb-muted);
 }
 .visuallyHidden {
@@ -86,34 +75,37 @@
 
 /* a small date for rows of a chat or a list */
 .compact .cell {
-  padding: 0 0.5rem;
+  padding: 0 var(--tb-space-2);
 }
 .compact .cell strong {
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
 }
 .compact .cell small {
-  font-size: 0.75rem;
+  font-size: var(--tb-text-2xs);
 }
 
 /* a time on one line ("6:00 PM"), for the corner of a chat bubble */
 .inline .cell {
   flex-direction: row;
   align-items: baseline;
-  gap: 0.25rem;
+  gap: var(--tb-space-1);
   padding: 0;
 }
 .inline .cell strong {
-  font-size: 0.8125rem;
+  font-size: var(--tb-text-xs);
   font-weight: 500;
   color: var(--tb-muted);
 }
 .inline .cell small {
-  font-size: 0.75rem;
+  font-size: var(--tb-text-2xs);
 }
 
-/* review: the date group keeps its rule only beside the countdown, never when it wraps below it; Bangla needs air */
+/* review: the date group keeps its rule only beside the countdown, never when it wraps below it; Bangla needs air */ /* Times as ruled cells: figure over unit, hairlines between the cells, no box (the look of the auction countdown). */
 .moment {
-  gap: 0.75rem 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--tb-space-3) var(--tb-space-6);
 }
 .moment > .group + .group {
   margin: 0;
@@ -121,12 +113,14 @@
   border: 0;
 }
 :lang(bn) .cell small {
-  font-size: 0.8125rem;
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: var(--tb-text-xs);
   line-height: 1.5;
 }
 :lang(bn) .compact .cell small,
 :lang(bn) .inline .cell small {
-  font-size: 0.75rem;
+  font-size: var(--tb-text-2xs);
 }
 :lang(bn) .cell strong {
   line-height: 1.3;

@@ -7,18 +7,10 @@
   flex-direction: column;
   gap: 0;
 }
-.head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem 1.5rem;
-  padding-bottom: 1.25rem;
-}
 .head h1,
 .page > h1 {
   margin: 0;
-  font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.125rem);
+  font-size: var(--tb-text-title);
   letter-spacing: -0.03em;
   font-weight: 600;
 }
@@ -30,10 +22,10 @@
 
 .panel {
   border-top: 1px solid var(--tb-line);
-  padding: 1.5rem 0 2rem;
+  padding: var(--tb-space-6) 0 var(--tb-space-8);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  row-gap: 0.75rem;
+  row-gap: var(--tb-space-3);
   min-width: 0;
 }
 .panel:first-child {
@@ -41,13 +33,13 @@
 }
 .panel h2 {
   margin: 0;
-  font-size: 1.125rem;
+  font-size: var(--tb-text-xl);
   letter-spacing: -0.01em;
   font-weight: 600;
 }
 .panel h3 {
-  margin: 0.75rem 0 0;
-  font-size: 0.8125rem;
+  margin: var(--tb-space-3) 0 0;
+  font-size: var(--tb-text-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -56,7 +48,7 @@
 :lang(bn) .panel h3 {
   text-transform: none;
   letter-spacing: 0;
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
 }
 .panel > p {
   margin: 0;
@@ -64,8 +56,14 @@
 
 /* the dashboard (U10-25, the same line grid as the profile): a vermilion rule over the head, four figures divided by lines, then two columns divided by one line */
 .head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tb-space-3) var(--tb-space-6);
+  padding-bottom: var(--tb-space-5);
   border-top: 2px solid var(--tb-hot);
-  padding-top: 1.5rem;
+  padding-top: var(--tb-space-6);
 }
 .figures {
   display: grid;
@@ -75,7 +73,7 @@
   border-bottom: 1px solid var(--tb-line);
 }
 .figures > div {
-  padding: 1.25rem 1.5rem;
+  padding: var(--tb-space-5) var(--tb-space-6);
   border-left: 1px solid var(--tb-line);
   min-width: 0;
 }
@@ -85,22 +83,22 @@
 }
 .figures dt {
   color: var(--tb-muted);
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
   font-weight: 500;
 }
 .figures dd {
-  margin: 0.25rem 0 0;
-  font-size: 1.5rem;
+  margin: var(--tb-space-1) 0 0;
+  font-size: var(--tb-text-3xl);
   font-weight: 600;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
 .figures dd.figText {
-  font-size: 1rem;
+  font-size: var(--tb-text-base);
   line-height: 1.4;
   letter-spacing: 0;
-  padding-top: 0.5rem;
+  padding-top: var(--tb-space-2);
 }
 .cols {
   display: grid;
@@ -108,13 +106,13 @@
 }
 .col {
   min-width: 0;
-  padding-top: 0.5rem;
+  padding-top: var(--tb-space-2);
 }
 .col:first-child {
-  padding-inline-end: 2rem;
+  padding-inline-end: var(--tb-space-8);
 }
 .col + .col {
-  padding-inline-start: 2rem;
+  padding-inline-start: var(--tb-space-8);
   border-inline-start: 1px solid var(--tb-line);
 }
 @media (max-width: 63.99rem) {
@@ -147,7 +145,7 @@
   .figures > div:first-child,
   .figures > div:nth-child(3) {
     border-left: 0;
-    padding: 0.875rem 0;
+    padding: var(--tb-space-3-5) 0;
     border-top: 1px solid var(--tb-line);
   }
   .figures > div:first-child {
@@ -169,7 +167,7 @@
   border: 0;
   border-bottom: 1px solid var(--tb-line);
   background: none;
-  padding: 0.875rem 0;
+  padding: var(--tb-space-3-5) 0;
   overflow-wrap: anywhere;
 }
 .list > li:first-child {
@@ -180,15 +178,15 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem 1rem;
+  gap: var(--tb-space-2) var(--tb-space-4);
 }
 .payoutRow a {
   color: var(--tb-text);
   text-underline-offset: 3px;
 }
 .payoutRow p {
-  margin: 0.25rem 0 0;
-  font-size: 0.9375rem;
+  margin: var(--tb-space-1) 0 0;
+  font-size: var(--tb-text-md);
 }
 .amount {
   font-variant-numeric: tabular-nums;
@@ -198,9 +196,9 @@
   text-underline-offset: 3px;
 }
 .row p {
-  margin: 0.25rem 0 0;
+  margin: var(--tb-space-1) 0 0;
   color: var(--tb-muted);
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
 }
 .select,
 .form input {
@@ -209,7 +207,7 @@
   width: 100%;
   box-sizing: border-box;
   max-width: 34rem;
-  padding: 0 0.25rem;
+  padding: 0 var(--tb-space-1);
   border: 0;
   border-bottom: 1px solid var(--tb-border);
   border-radius: 0;
@@ -228,20 +226,18 @@
 }
 .form {
   display: grid;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
 }
 .form > * {
   max-width: 34rem;
 }
-.form label {
-  margin-top: 0.5rem;
-}
 .choice legend {
   padding: 0;
   font-weight: 600;
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--tb-space-1);
 }
 .form label {
+  margin-top: var(--tb-space-2);
   font-weight: 600;
 }
 .choice label {
@@ -250,16 +246,15 @@
 .choice {
   border: 0;
   padding: 0;
-  margin: 0.5rem 0;
+  margin: var(--tb-space-2) 0;
   display: flex;
   flex-direction: column;
 }
 .choice div {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  min-height: 50px;
-  padding: 0.375rem 0;
+  gap: var(--tb-space-3);
+  padding: var(--tb-space-1-5) 0;
   border: 0;
   border-bottom: 1px solid var(--tb-line);
   border-radius: 0;
@@ -269,29 +264,11 @@
   border-bottom-color: var(--tb-hot);
   background: none;
 }
-.choice input {
-  width: 20px;
-  height: 20px;
-  accent-color: var(--tb-hot);
-  flex: none;
-  margin: 0;
-}
 .buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.625rem;
-  margin-block: 0.5rem;
-}
-.primary {
-  min-height: 48px;
-  padding: 0 1.5rem;
-  border-radius: var(--tb-btn-radius);
-  background: var(--tb-btn-bg);
-  color: var(--tb-btn-fg);
-  border: 1px solid var(--tb-btn-line);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
+  gap: var(--tb-space-2-5);
+  margin-block: var(--tb-space-2);
 }
 .primary:disabled {
   opacity: 0.6;
@@ -299,7 +276,7 @@
 .secondary {
   align-self: flex-start;
   min-height: 44px;
-  padding: 0 1.5rem;
+  padding: 0 var(--tb-space-6);
   border: 1px solid var(--tb-border);
   border-radius: 0;
   background: none;
@@ -312,10 +289,10 @@
 /* a statement: the order and its day, the payout as the one figure, the breakdown on hairlines */
 .panel article {
   border-bottom: 1px solid var(--tb-line);
-  padding: 0 0 1.25rem;
-  margin-bottom: 1.25rem;
+  padding: 0 0 var(--tb-space-5);
+  margin-bottom: var(--tb-space-5);
   display: grid;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
   min-width: 0;
 }
 .stmtHead {
@@ -323,11 +300,11 @@
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: 0.25rem 1.5rem;
+  gap: var(--tb-space-1) var(--tb-space-6);
 }
 .panel .stubHeading {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--tb-text-base);
   font-weight: 600;
   overflow-wrap: anywhere;
   text-transform: none;
@@ -341,7 +318,7 @@
 .stubNote {
   margin: 0;
   color: var(--tb-muted);
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
 }
 .figure {
   margin: 0;
@@ -362,13 +339,13 @@
 .breakdown dt,
 .breakdown dd {
   margin: 0;
-  padding: 0.375rem 0;
+  padding: var(--tb-space-1-5) 0;
   border-bottom: 1px solid var(--tb-line);
 }
 .breakdown dd {
   text-align: right;
   font-variant-numeric: tabular-nums;
-  padding-left: 1.5rem;
+  padding-left: var(--tb-space-6);
 }
 .total {
   font-weight: 600;
@@ -380,9 +357,9 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
-  gap: 0.25rem 1.5rem;
+  gap: var(--tb-space-1) var(--tb-space-6);
   border-bottom: 1px solid var(--tb-line);
-  padding: 0.875rem 0;
+  padding: var(--tb-space-3-5) 0;
 }
 .list > .orderRow:first-child {
   padding-top: 0;
@@ -398,9 +375,9 @@
   color: var(--tb-hot);
 }
 .orderMain p {
-  margin: 0.25rem 0 0;
+  margin: var(--tb-space-1) 0 0;
   color: var(--tb-muted);
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
 }
 .when {
   display: flex;
@@ -415,12 +392,12 @@
 }
 .whenTime {
   color: var(--tb-muted);
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
 }
 .whenLeft {
-  margin-top: 0.125rem;
+  margin-top: var(--tb-space-0-5);
   color: var(--tb-hot);
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
 }
 .whenUrgent {
   font-weight: 600;
@@ -434,7 +411,7 @@
     text-align: left;
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 0 0.75rem;
+    gap: 0 var(--tb-space-3);
   }
 }
 
@@ -444,7 +421,7 @@
   align-items: center;
   justify-content: center;
   min-height: 44px;
-  padding: 0 1.5rem;
+  padding: 0 var(--tb-space-6);
   border: 1px solid var(--tb-btn-line);
   border-radius: var(--tb-btn-radius);
   background: var(--tb-btn-bg);
@@ -483,9 +460,9 @@
   display: grid;
   grid-template-columns: minmax(6rem, 9rem) minmax(0, 1fr);
   align-items: center;
-  column-gap: 1rem;
+  column-gap: var(--tb-space-4);
   min-height: 4rem;
-  padding: 0.5rem 0;
+  padding: var(--tb-space-2) 0;
   border-top: 1px solid var(--tb-line);
 }
 .facts > div:last-child {
@@ -493,7 +470,7 @@
 }
 .facts dt {
   color: var(--tb-muted);
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
   font-weight: 500;
 }
 .facts dd {
@@ -505,7 +482,7 @@
   display: inline-block;
   width: 8px;
   height: 8px;
-  margin-inline-end: 0.5rem;
+  margin-inline-end: var(--tb-space-2);
   border: 1px solid var(--tb-muted);
   vertical-align: middle;
 }
@@ -514,13 +491,13 @@
   background: var(--tb-hot);
 }
 .back {
-  margin: 0.5rem 0 0;
+  margin: var(--tb-space-2) 0 0;
 }
 .ghostButton {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  padding: 0 1.5rem;
+  padding: 0 var(--tb-space-6);
   border: 1px solid var(--tb-border);
   background: none;
   color: var(--tb-text);
@@ -535,6 +512,14 @@
   outline-offset: 2px;
 }
 .primary {
+  min-height: 48px;
+  padding: 0 var(--tb-space-6);
+  background: var(--tb-btn-bg);
+  color: var(--tb-btn-fg);
+  border: 1px solid var(--tb-btn-line);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
   border-radius: var(--tb-btn-radius);
 }
 .choice div {
@@ -543,18 +528,23 @@
 @media (max-width: 30rem) {
   .facts > div {
     grid-template-columns: minmax(0, 1fr);
-    row-gap: 0.125rem;
-    padding: 0.75rem 0;
+    row-gap: var(--tb-space-0-5);
+    padding: var(--tb-space-3) 0;
   }
 }
 
 /* the options of the payout kind: a hairline ring, a vermilion dot when chosen (no default browser look) */
 .choice input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--tb-hot);
+  flex: none;
+  margin: 0;
   appearance: none;
   display: grid;
   place-content: center;
   border: 1px solid var(--tb-border);
-  border-radius: 50%;
+  border-radius: var(--tb-radius-circle);
   background: none;
   cursor: pointer;
 }
@@ -562,10 +552,10 @@
   content: '';
   width: 10px;
   height: 10px;
-  border-radius: 50%;
+  border-radius: var(--tb-radius-circle);
   background: var(--tb-hot);
   transform: scale(0);
-  transition: transform 120ms ease;
+  transition: transform var(--tb-dur-quick) ease;
 }
 .choice input:checked {
   border-color: var(--tb-hot);
@@ -586,7 +576,7 @@
 /* the ways to be paid: ruled rows with the brand's mark; touching one opens its form in a popup over the blurred page (shared/Popup) */
 .options {
   list-style: none;
-  margin: 0.25rem 0 0;
+  margin: var(--tb-space-1) 0 0;
   padding: 0;
   border-top: 1px solid var(--tb-line);
 }
@@ -596,10 +586,10 @@
 .option {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--tb-space-4);
   width: 100%;
   min-height: 72px;
-  padding: 0.5rem 0;
+  padding: var(--tb-space-2) 0;
   border: 0;
   background: none;
   color: var(--tb-text);
@@ -622,18 +612,18 @@
 }
 .popForm {
   display: grid;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
 }
 .popForm label {
   font-weight: 600;
-  margin-top: 0.5rem;
+  margin-top: var(--tb-space-2);
 }
 .popForm input {
   min-height: 46px;
   font: inherit;
   width: 100%;
   box-sizing: border-box;
-  padding: 0 0.25rem;
+  padding: 0 var(--tb-space-1);
   border: 0;
   border-bottom: 1px solid var(--tb-border);
   border-radius: 0;
@@ -648,13 +638,13 @@
 .popHead {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--tb-space-4);
 }
 .popHead p {
   margin: 0;
 }
 .popForm .buttons {
-  margin-top: 0.75rem;
+  margin-top: var(--tb-space-3);
 }
 
 /* links that stand alone in a row keep a target of at least 24 px (WCAG 2.5.8) */

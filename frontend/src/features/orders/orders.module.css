@@ -1,40 +1,13 @@
-/* The order page, first part (section 7.4; money-order world, docs/design/10_visual_v2.md, AC-ORD-2): one column up
-   to 52rem; the item and its state on top, then the counterfoil (where the money is, the total in figures and words,
-   the steps, the postmark); panels on the second sheet; the main actions at least 44 px high. */
-.page {
-  max-width: 52rem;
-}
 .head {
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
-  gap: 1rem;
-  align-items: center;
-  margin-bottom: 1.25rem;
+  gap: var(--tb-space-4);
 }
 .thumb {
   display: block;
-  width: 88px;
-  height: 88px;
   border: 1px solid var(--tb-line);
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-surface);
-  overflow: hidden;
-}
-.thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
 }
 .headText {
   min-width: 0;
-}
-.headText h1 {
-  margin: 0 0 0.5rem;
-  font-size: clamp(1.375rem, 1.1rem + 1vw, 1.875rem);
-  line-height: 1.15;
-  letter-spacing: -0.03em;
-  overflow-wrap: anywhere;
 }
 :lang(bn) .headText h1 {
   letter-spacing: 0;
@@ -44,7 +17,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 0.875rem;
+  gap: var(--tb-space-2) var(--tb-space-3-5);
   margin: 0;
   color: var(--tb-muted);
 }
@@ -52,20 +25,9 @@
   color: var(--tb-text);
   text-underline-offset: 3px;
 }
-.status {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  padding: 0 0.75rem;
-  border-radius: var(--tb-radius-control);
-  background: var(--tb-accent-soft);
-  color: var(--tb-accent-strong);
-  font-weight: 600;
-  font-size: 0.875rem;
-}
 .stubHeading {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
   font-weight: 600;
   color: var(--tb-text);
 }
@@ -82,24 +44,19 @@
 }
 .money {
   margin: 0;
-  font-size: 1.0625rem;
+  font-size: var(--tb-text-lg);
   line-height: 1.45;
   font-weight: 600;
   max-width: 40rem;
 }
-.panel {
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-surface);
-  padding: 1.25rem 1.375rem;
-}
 .panel h2 {
   margin-top: 0;
-  font-size: 1.25rem;
+  font-size: var(--tb-text-2xl);
 }
 .breakdown {
   display: grid;
   grid-template-columns: 1fr max-content;
-  gap: var(--tb-space-1) var(--tb-space-3);
+  gap: var(--tb-space-1) var(--tb-space-4);
   max-width: 24rem;
 }
 .breakdown dd {
@@ -115,7 +72,6 @@
 .choice {
   border: 0;
   padding: 0;
-  margin: var(--tb-space-2) 0;
 }
 .choice div {
   display: flex;
@@ -125,7 +81,7 @@
 }
 .choice button {
   min-height: 44px;
-  padding: 0 1.25rem;
+  padding: 0 var(--tb-space-5);
   font: inherit;
   font-weight: 600;
   border: 1px solid var(--tb-border);
@@ -140,7 +96,7 @@
 }
 .primary {
   min-height: 48px;
-  padding: 0 1.5rem;
+  padding: 0 var(--tb-space-6);
   border-radius: var(--tb-btn-radius);
   background: var(--tb-btn-bg);
   color: var(--tb-btn-fg);
@@ -158,7 +114,7 @@
 }
 .secondary {
   min-height: 44px;
-  padding: 0 1.25rem;
+  padding: 0 var(--tb-space-5);
   border: 1px solid var(--tb-border);
   border-radius: var(--tb-radius-control);
   background: var(--tb-bg);
@@ -172,17 +128,7 @@
 }
 /* The order view (section 7.5; U8-06): one column at 320 px; tap targets at least 44 px; long strings wrap. */
 .page section {
-  margin-block: var(--tb-space-3);
-}
-.deadlines {
-  display: grid;
-  gap: 0.5rem;
-  margin: 0;
-}
-.deadlines > div {
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-surface);
-  padding: 0.625rem 0.875rem;
+  margin-block: var(--tb-space-4);
 }
 .deadlines div {
   display: grid;
@@ -213,7 +159,6 @@
 }
 .form {
   display: grid;
-  gap: var(--tb-space-1);
   margin-block: var(--tb-space-2);
 }
 .form input,
@@ -222,14 +167,11 @@
   min-height: 46px;
   font: inherit;
   max-width: 100%;
-  padding: 0 0.75rem;
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-  background: var(--tb-sheet);
+  padding: 0 var(--tb-space-3);
   color: var(--tb-text);
 }
 .form textarea {
-  padding: 0.625rem 0.75rem;
+  padding: var(--tb-space-2-5) var(--tb-space-3);
 }
 .request,
 .agreed,
@@ -237,75 +179,31 @@
 .code,
 .courier {
   border-top: 1px solid var(--tb-line);
-  padding-top: 1rem;
-  margin-top: 1rem;
+  padding-top: var(--tb-space-4);
+  margin-top: var(--tb-space-4);
 }
 .notice {
   display: block;
   color: var(--tb-error);
   font-weight: 600;
 }
-.codeDigits {
-  display: inline-block;
-  font-size: 2.5rem;
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  font-variant-numeric: tabular-nums;
-  margin: 0.75rem 0;
-  padding: 0.5rem 1rem 0.5rem 1.25rem;
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-sheet);
-  border: 1px solid var(--tb-border);
-}
-.shipment {
-  border-top: 1px solid var(--tb-line);
-  padding-top: 1rem;
-  margin-top: 1rem;
-}
-.tag {
-  display: inline-block;
-  border-radius: var(--tb-radius-control);
-  background: var(--tb-surface);
-  padding: 2px 10px;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-.facts {
-  display: grid;
-  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
-  gap: var(--tb-space-1) var(--tb-space-2);
-}
-.facts dd {
-  margin: 0;
-  overflow-wrap: anywhere;
-}
 .wrap {
   overflow-wrap: anywhere;
   word-break: break-all;
 }
 .history {
-  padding-left: var(--tb-space-3);
-}
-.tabs {
-  display: flex;
-  gap: var(--tb-space-2);
-  margin-block: var(--tb-space-2);
+  padding-left: var(--tb-space-4);
 }
 .tab,
 .tabOn {
   min-height: 44px;
-  padding: 0 1.25rem;
   border: 0;
-  border-radius: var(--tb-radius-control);
-  background: var(--tb-surface);
-  color: var(--tb-text);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
 }
 .tabOn {
   background: var(--tb-text);
-  color: var(--tb-sheet);
   font-weight: 600;
 }
 .list {
@@ -314,7 +212,7 @@
 }
 .row {
   border-bottom: 1px solid var(--tb-line);
-  padding-block: 0.875rem;
+  padding-block: var(--tb-space-3-5);
   overflow-wrap: anywhere;
   font-variant-numeric: tabular-nums;
 }
@@ -323,7 +221,7 @@
 }
 /* Disputes and ratings (U8-09) */
 .statements {
-  padding-left: var(--tb-space-3);
+  padding-left: var(--tb-space-4);
 }
 .statements li {
   margin-bottom: var(--tb-space-2);
@@ -339,24 +237,11 @@
   gap: var(--tb-space-1);
   min-height: 44px;
 }
-.reply {
-  border: 1px solid var(--tb-line);
-  border-radius: var(--tb-radius-control);
-  background: var(--tb-surface);
-  padding: 0.5rem 0.75rem;
-}
 /* Game accounts (U8-07) */
 .game {
   border-top: 1px solid var(--tb-line);
-  padding-top: 1rem;
-  margin-top: 1rem;
-}
-.disclosure {
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-error-bg);
-  border: 1px solid var(--tb-error-line);
-  color: var(--tb-text);
-  padding: 0.875rem 1rem;
+  padding-top: var(--tb-space-4);
+  margin-top: var(--tb-space-4);
 }
 .check {
   display: flex;
@@ -368,7 +253,7 @@
   display: inline-flex;
   align-items: center;
   min-height: 48px;
-  padding: 0 1.5rem;
+  padding: 0 var(--tb-space-6);
   border-radius: var(--tb-btn-radius);
   background: var(--tb-btn-bg);
   color: var(--tb-btn-fg);
@@ -380,33 +265,28 @@
 /* ---- redesign v3 (U10-23): the order screens in the ruled look of the home, the listing and the room: hairlines and dividers, no outlined or filled boxes
    (buttons and images keep theirs); one vermilion rule on top of the money panel ---- */
 .moneyPanel {
-  margin-block: var(--tb-space-3);
-  padding: 1rem 0 1.25rem;
-  border-top: 2px solid var(--tb-hot);
+  margin-block: var(--tb-space-4);
   border-bottom: 1px solid var(--tb-line);
 }
 .moneyLabel {
   margin: 0;
   color: var(--tb-muted);
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
   font-weight: 500;
 }
 .moneyAmount {
-  margin: 0.125rem 0 0.5rem;
+  margin: var(--tb-space-0-5) 0 var(--tb-space-2);
   font-family: var(--tb-font);
   font-weight: 600;
-  font-size: clamp(2.25rem, 1.8rem + 1.6vw, 3rem);
+  font-size: var(--tb-text-headline);
   line-height: 1.05;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
-.moneyPanel .money {
-  margin-bottom: 1rem;
-}
-.moneyPanel .hint {
-  margin: -0.5rem 0 1rem;
-}
 .status {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--tb-text-sm);
   min-height: 0;
   padding: 0;
   border-radius: 0;
@@ -415,16 +295,18 @@
   font-weight: 700;
 }
 .panel {
-  padding: 1.25rem 0;
+  padding: var(--tb-space-5) 0;
   border-radius: 0;
   border-top: 1px solid var(--tb-line);
   background: none;
 }
 .deadlines {
+  display: grid;
+  margin: 0;
   gap: 0;
 }
 .deadlines > div {
-  padding: 0.625rem 0;
+  padding: var(--tb-space-2-5) 0;
   border-radius: 0;
   background: none;
   border-top: 1px solid var(--tb-line);
@@ -433,13 +315,14 @@
   border-top: 0;
 }
 .tabs {
+  display: flex;
   gap: 0;
-  margin-block: var(--tb-space-3) 0;
+  margin-block: var(--tb-space-4) 0;
   border-bottom: 1px solid var(--tb-line);
 }
 .tab,
 .tabOn {
-  padding: 0 1.25rem;
+  padding: 0 var(--tb-space-5);
   border-radius: 0;
   background: none;
   color: var(--tb-muted);
@@ -466,53 +349,40 @@
   background-repeat: no-repeat;
   background-size: 0 2px;
   background-position: 0 100%;
-  transition: background-size 160ms;
+  transition: background-size var(--tb-dur-press);
 }
 .row a:hover {
   background-size: 100% 2px;
 }
 .tag {
+  display: inline-block;
+  font-size: var(--tb-text-sm);
+  font-weight: 600;
   padding: 0;
   border-radius: 0;
   background: none;
   border-bottom: 1px solid var(--tb-border);
 }
-.reply {
-  border: 0;
-  border-left: 2px solid var(--tb-hot);
-  border-radius: 0;
-  background: none;
-  padding: 0.25rem 0 0.25rem 0.75rem;
-}
 .disclosure {
-  padding: 0.875rem 0;
+  color: var(--tb-text);
+  padding: var(--tb-space-3-5) 0;
   border: 0;
   border-block: 1px solid var(--tb-error-line);
   border-radius: 0;
   background: none;
 }
 .codeDigits {
-  padding: 0.5rem 0;
+  display: inline-block;
+  font-size: var(--tb-text-4xl);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  font-variant-numeric: tabular-nums;
+  margin: var(--tb-space-3) 0;
+  padding: var(--tb-space-2) 0;
   border: 0;
   border-block: 1px solid var(--tb-border);
   border-radius: 0;
   background: none;
-}
-.form input,
-.form select,
-.form textarea {
-  border: 0;
-  border-bottom: 1px solid var(--tb-border);
-  border-radius: 0;
-  background: none;
-  padding-left: 0.25rem;
-}
-.form input:focus-visible,
-.form select:focus-visible,
-.form textarea:focus-visible {
-  outline: 0;
-  border-bottom-color: var(--tb-hot);
-  box-shadow: inset 0 -2px 0 var(--tb-hot);
 }
 @media (prefers-reduced-motion: reduce) {
   .row a {
@@ -530,14 +400,12 @@
 
 /* ---- review fixes (U10-23) ---- */
 .reply {
+  border-left: 2px solid var(--tb-hot);
+  border-radius: 0;
+  background: none;
   border: 0;
   border-top: 1px solid var(--tb-line);
-  padding: 0.5rem 0 0;
-}
-.choice > div {
-  padding: 0.25rem 0;
-  border-top: 1px solid var(--tb-line);
-  min-height: 52px;
+  padding: var(--tb-space-2) 0 0;
 }
 .choice > div:last-of-type {
   border-bottom: 1px solid var(--tb-line);
@@ -548,27 +416,24 @@
 .form input:focus-visible,
 .form select:focus-visible,
 .form textarea:focus-visible {
+  border-bottom-color: var(--tb-hot);
+  box-shadow: inset 0 -2px 0 var(--tb-hot);
   outline: 2px solid transparent;
 }
-.head {
-  margin-top: var(--tb-space-3);
+.row.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0 var(--tb-space-6);
+  align-items: start;
 }
 .rowAmount {
   margin: 0;
   font-family: var(--tb-font);
   font-weight: 600;
-  font-size: 1.125rem;
+  font-size: var(--tb-text-xl);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-}
-.row.row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0 1.5rem;
-  align-items: start;
-}
-.rowAmount {
-  padding-top: 0.5rem;
+  padding-top: var(--tb-space-2);
 }
 @media (max-width: 30rem) {
   .row.row {
@@ -577,35 +442,35 @@
   .rowAmount {
     grid-row: 1;
     padding-top: 0;
-    font-size: 1.0625rem;
+    font-size: var(--tb-text-lg);
   }
 }
 
 /* The orders list as a ruled grid (U10-23): a small photo, the item, its status, the other party, the money and the receipt; bought and cancelled kept in
    their own sections. No boxes: hairline rules between rows; the photo is the only framed thing (an image). */
 .ordersSection {
-  margin-top: var(--tb-space-4);
+  margin-top: var(--tb-space-6);
 }
 .count {
   color: var(--tb-muted);
   font-family: var(--tb-font);
   font-weight: 600;
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
   font-variant-numeric: tabular-nums;
 }
 .gridHead,
 .gridRow {
   display: grid;
   grid-template-columns: 4rem minmax(0, 2.2fr) minmax(0, 1.4fr) minmax(0, 1.2fr) minmax(5.5rem, auto) 10.5rem;
-  gap: 0 1.25rem;
+  gap: 0 var(--tb-space-5);
   align-items: center;
 }
 .gridHead {
-  padding-block: 0.5rem;
+  padding-block: var(--tb-space-2);
   border-top: 2px solid var(--tb-hot);
   border-bottom: 1px solid var(--tb-line);
   color: var(--tb-muted);
-  font-size: 0.8125rem;
+  font-size: var(--tb-text-xs);
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -615,22 +480,20 @@
   text-transform: none;
 }
 .gridRow {
-  padding-block: 0.75rem;
+  padding-block: var(--tb-space-3);
   border-bottom: 1px solid var(--tb-line);
 }
 .gridRow p {
   margin: 0;
 }
 .gridRow .hint {
-  margin-top: 0.125rem;
-  font-size: 0.875rem;
+  margin-top: var(--tb-space-0-5);
+  font-size: var(--tb-text-sm);
   color: var(--tb-muted);
 }
 .thumb {
-  width: 4rem;
-  height: 4rem;
   overflow: hidden;
-  border-radius: 4px;
+  border-radius: var(--tb-radius-panel);
   background: var(--tb-surface);
 }
 .thumb img {
@@ -658,9 +521,9 @@
 .receipt {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
   min-height: 44px;
-  padding: 0 0.25rem;
+  padding: 0 var(--tb-space-1);
   border: 0;
   border-bottom: 1px solid var(--tb-border);
   border-radius: 0;
@@ -668,7 +531,7 @@
   color: var(--tb-text);
   font: inherit;
   font-weight: 600;
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
   white-space: nowrap;
   cursor: pointer;
 }
@@ -686,7 +549,7 @@
   .gridRow {
     grid-template-columns: 4rem minmax(0, 1fr) auto;
     grid-template-areas: 'photo main money' 'photo status status' 'photo who who' '. action action';
-    gap: 0.125rem 1rem;
+    gap: var(--tb-space-0-5) var(--tb-space-4);
     align-items: start;
   }
   .gridRow > :nth-child(1) {
@@ -712,7 +575,7 @@
     content: attr(data-label);
     display: block;
     color: var(--tb-muted);
-    font-size: 0.8125rem;
+    font-size: var(--tb-text-xs);
   }
 }
 @media (forced-colors: active) {
@@ -734,7 +597,7 @@
   background-repeat: no-repeat;
   background-size: 0 2px;
   background-position: 0 100%;
-  transition: background-size 160ms;
+  transition: background-size var(--tb-dur-press);
 }
 .gridRow a:hover {
   background-size: 100% 2px;
@@ -753,14 +616,14 @@
 .stageTabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 0 2rem;
+  gap: 0 var(--tb-space-8);
   margin-top: var(--tb-space-2);
 }
 .stageTab,
 .stageOn {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
   min-height: 44px;
   padding: 0;
   border: 0;
@@ -788,9 +651,9 @@
   place-items: center;
   width: 1.375rem;
   height: 1.375rem;
-  border-radius: 50%;
+  border-radius: var(--tb-radius-circle);
   border: 1px solid currentColor;
-  font-size: 0.75rem;
+  font-size: var(--tb-text-2xs);
   font-variant-numeric: tabular-nums;
 }
 .cancelledMark {
@@ -802,25 +665,9 @@
   display: inline-block;
   width: 0.5rem;
   height: 0.5rem;
-  margin-right: 0.5rem;
-  border-radius: 50%;
+  margin-right: var(--tb-space-2);
+  border-radius: var(--tb-radius-circle);
   background: var(--tb-muted);
-}
-
-.receiptLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 44px;
-  padding: 0 0.125rem;
-  border: 0;
-  border-bottom: 1px solid var(--tb-border);
-  border-radius: 0;
-  background: none;
-  color: var(--tb-text);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
 }
 .receiptLink:hover {
   border-bottom-color: var(--tb-hot);
@@ -838,63 +685,55 @@
   border-top: 1px solid var(--tb-line);
 }
 .flow > li {
-  padding: 1.25rem 0;
+  padding: var(--tb-space-5) 0;
   border-bottom: 1px solid var(--tb-line);
 }
 .flow h3 {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin: 0 0 0.75rem;
-  font-size: 1.0625rem;
+  gap: var(--tb-space-3);
+  margin: 0 0 var(--tb-space-3);
+  font-size: var(--tb-text-lg);
 }
 .flowNo {
   display: inline-grid;
   place-items: center;
   width: 1.625rem;
   height: 1.625rem;
-  border-radius: 50%;
+  border-radius: var(--tb-radius-circle);
   border: 1.5px solid var(--tb-muted);
   color: var(--tb-muted);
-  font-size: 0.8125rem;
+  font-size: var(--tb-text-xs);
   font-variant-numeric: tabular-nums;
-}
-.flowNow .flowNo {
-  border-color: var(--tb-hot);
-  color: var(--tb-hot);
-}
-.flowDone .flowNo {
-  border-color: var(--tb-protect);
-  color: var(--tb-protect);
 }
 .flowNext h3 {
   color: var(--tb-muted);
 }
 .flow p {
-  margin: 0.25rem 0;
+  margin: var(--tb-space-1) 0;
 }
 .flow .breakdown {
   max-width: 26rem;
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--tb-space-2);
 }
 .courier h3 {
-  font-size: 1rem;
-  margin: 0 0 0.25rem;
+  font-size: var(--tb-text-base);
+  margin: 0 0 var(--tb-space-1);
 }
 .courier .secondary {
   min-height: 44px;
 }
 .flow .primary {
-  margin-top: 0.75rem;
+  margin-top: var(--tb-space-3);
 }
 
 /* the journey of a paid order (U10-23) */
 .journey {
-  margin-block: var(--tb-space-3);
+  margin-block: var(--tb-space-4);
 }
 .journey h2 {
-  margin: 0 0 0.5rem;
-  font-size: 1.25rem;
+  margin: 0 0 var(--tb-space-2);
+  font-size: var(--tb-text-2xl);
 }
 .journeyList {
   list-style: none;
@@ -903,18 +742,18 @@
   border-top: 1px solid var(--tb-line);
 }
 .journeyList > li {
-  padding: 0.875rem 0;
+  padding: var(--tb-space-3-5) 0;
   border-bottom: 1px solid var(--tb-line);
 }
 .journeyList h3 {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--tb-space-3);
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--tb-text-base);
 }
 .journeyDo {
-  margin: 0.375rem 0 0 2.375rem;
+  margin: var(--tb-space-1-5) 0 0 2.375rem;
   max-width: 40rem;
   color: var(--tb-text);
   line-height: 1.5;
@@ -935,12 +774,25 @@
 
 /* the receipt link keeps clear of the progress line; the handover code is a grid */
 .receiptLink {
-  margin-block: 0.25rem 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  min-height: 44px;
+  padding: 0 var(--tb-space-0-5);
+  border: 0;
+  border-bottom: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: none;
+  color: var(--tb-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  margin-block: var(--tb-space-1) var(--tb-space-7);
 }
 .code {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.75rem;
+  gap: var(--tb-space-3);
   margin-block: 0;
 }
 .code > h3,
@@ -949,17 +801,10 @@
   margin: 0;
 }
 .code > h3 {
-  font-size: 1.125rem;
+  font-size: var(--tb-text-xl);
 }
 .code > .codeDigits {
   justify-self: start;
-}
-.code button {
-  width: 100%;
-}
-.headText h1 {
-  overflow-wrap: break-word;
-  text-wrap: balance;
 }
 
 /* the page in two columns from 60rem, as the listing page: the story on the left, a rail that stays in view on the right (meetup handover with its two actions, then the code, then the other party) */
@@ -968,7 +813,7 @@
 }
 .cols {
   display: grid;
-  gap: 1.5rem;
+  gap: var(--tb-space-6);
 }
 .main,
 .rail {
@@ -981,18 +826,18 @@
 }
 .rail > section {
   margin-block: 0;
-  padding: 1.25rem 0;
+  padding: var(--tb-space-5) 0;
   border: 0;
   border-bottom: 1px solid var(--tb-line);
   border-radius: 0;
   background: none;
   display: grid;
-  gap: 1rem;
+  gap: var(--tb-space-4);
 }
 .rail h2,
 .rail h3 {
   margin: 0;
-  font-size: 1.125rem;
+  font-size: var(--tb-text-xl);
 }
 .rail p {
   margin: 0;
@@ -1000,7 +845,7 @@
 @media (min-width: 60rem) {
   .cols {
     grid-template-columns: minmax(0, 1fr) 24rem;
-    gap: 3rem;
+    gap: var(--tb-space-12);
     align-items: start;
   }
 }
@@ -1008,19 +853,13 @@
 /* the actions are ruled cells, not boxed buttons: the whole cell is the button, hairlines between (as the chat cell of the listing page) */
 .bare {
   display: grid;
-  gap: 1rem;
+  gap: var(--tb-space-4);
 }
 .actionGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  border-block: 1px solid var(--tb-line);
 }
 .actionGrid > * + * {
   border-left: 1px solid var(--tb-line);
-}
-.actionGrid > form {
-  grid-column: 1 / -1;
-  border-left: 0;
 }
 .actionCell {
   display: flex;
@@ -1029,7 +868,7 @@
 .actionGrid button.secondary {
   flex: 1;
   min-height: 56px;
-  padding: 0.5rem 0.75rem;
+  padding: var(--tb-space-2) var(--tb-space-3);
   border: 0;
   border-radius: 0;
   background: none;
@@ -1039,8 +878,8 @@
   text-align: center;
   cursor: pointer;
   transition:
-    color 140ms,
-    background 140ms;
+    color var(--tb-dur-base),
+    background var(--tb-dur-base);
 }
 .actionGrid button.secondary:hover:not(:disabled),
 .actionCell > button:hover:not(:disabled) {
@@ -1056,26 +895,13 @@
   flex: 1;
   min-height: 56px;
 }
-
-/* the other party: the seller row of the listing page */
-.partyHead {
-  color: var(--tb-muted);
-  font-size: 0.8125rem !important;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
 .partyRow {
-  --av: 64px;
   display: grid;
-  grid-template-columns: calc(var(--av) + 14px) minmax(0, 1fr) auto;
-  min-height: calc(var(--av) + 16px);
   border-block: 1px solid var(--tb-line);
 }
 .partyRow > * {
   display: flex;
   align-items: center;
-  padding: 0.75rem 0.875rem;
 }
 .partyRow > * + *:not(.chatError) {
   border-left: 1px solid var(--tb-line);
@@ -1089,28 +915,28 @@
   padding: 0;
   box-sizing: border-box;
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--tb-radius-panel);
   background: var(--tb-surface);
   color: var(--tb-text);
   font-weight: 600;
-  font-size: 1.125rem;
+  font-size: var(--tb-text-xl);
 }
 .partyInfo {
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: 0.125rem;
+  gap: var(--tb-space-0-5);
   min-width: 0;
 }
 .partyLine {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
   overflow-wrap: anywhere;
 }
 .partySince {
   color: var(--tb-muted);
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
 }
 .tick {
   display: inline-flex;
@@ -1119,18 +945,6 @@
 .tick svg {
   width: 20px;
   height: 20px;
-}
-.chatCell {
-  justify-content: center;
-  min-width: 56px;
-  border: 0;
-  background: none;
-  color: var(--tb-text);
-  cursor: pointer;
-  text-decoration: none;
-  transition:
-    color 140ms,
-    background 140ms;
 }
 .chatCell:hover:not(:disabled) {
   color: var(--tb-hot);
@@ -1147,47 +961,27 @@
 .chatError {
   grid-column: 1 / -1;
   border-left: 0 !important;
-  padding: 0 0 0.75rem;
-}
-
-/* alignment (review): the title sits in the left column so the rail starts at the top beside it; the title is smaller */
-.head {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-}
-.headText h1 {
-  font-size: clamp(1.25rem, 1.05rem + 0.7vw, 1.625rem);
+  padding: 0 0 var(--tb-space-3);
 }
 .cols {
-  margin-top: var(--tb-space-3);
+  margin-top: var(--tb-space-4);
 }
 .main > .moneyPanel {
-  margin-top: 1rem;
+  margin-top: var(--tb-space-4);
 }
 .rail {
   margin-top: 0;
 }
 
 /* ---- review round (impeccable): one ruled structure for the whole page ---- */
-/* the facts under the title: three ruled cells, label over value */
-.head {
-  grid-template-columns: 88px minmax(0, 1fr);
-  align-items: start;
-  row-gap: 0;
-}
 .head .facts {
   grid-column: 1 / -1;
-  margin: 1rem 0 0;
-}
-.facts {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-block: 1px solid var(--tb-line);
+  margin: var(--tb-space-4) 0 0;
 }
 .facts > div {
   display: grid;
-  gap: 0.125rem;
-  padding: 0.75rem 1rem;
+  gap: var(--tb-space-0-5);
+  padding: var(--tb-space-3) var(--tb-space-4);
 }
 .facts > div:first-child {
   padding-left: 0;
@@ -1197,7 +991,7 @@
 }
 .facts dt {
   color: var(--tb-muted);
-  font-size: 0.8125rem;
+  font-size: var(--tb-text-xs);
 }
 .facts dd {
   margin: 0;
@@ -1212,10 +1006,12 @@
   color: var(--tb-text);
   text-underline-offset: 3px;
 }
-.facts .status {
-  color: var(--tb-protect);
-}
 .headText h1 {
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+  font-size: clamp(1.25rem, 1.05rem + 0.7vw, 1.625rem);
   margin: 0;
   align-self: center;
 }
@@ -1223,7 +1019,13 @@
   width: 64px;
   height: 64px;
 }
+/* the facts under the title: three ruled cells, label over value */
+
+/* alignment (review): the title sits in the left column so the rail starts at the top beside it; the title is smaller */
 .head {
+  margin-top: 0;
+  margin-bottom: var(--tb-space-2);
+  row-gap: 0;
   grid-template-columns: 64px minmax(0, 1fr);
   align-items: center;
 }
@@ -1240,13 +1042,15 @@
   height: auto;
   border: 0;
   border-radius: 0;
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
   font-weight: 600;
 }
 .flowNow .flowNo {
+  border-color: var(--tb-hot);
   color: var(--tb-hot);
 }
 .flowDone .flowNo {
+  border-color: var(--tb-protect);
   color: var(--tb-protect);
 }
 .flowNo svg {
@@ -1255,10 +1059,12 @@
 }
 
 /* the rail: normal-case headings, ruled cells that show they act, the other party without a filled badge */
+
+/* the other party: the seller row of the listing page */
 .partyHead {
   text-transform: none;
   letter-spacing: 0;
-  font-size: 1.125rem !important;
+  font-size: var(--tb-text-xl) !important;
   font-weight: 600;
   color: var(--tb-text);
 }
@@ -1270,31 +1076,22 @@
   color: var(--tb-muted);
 }
 .chatCell {
+  justify-content: center;
+  min-width: 56px;
+  border: 0;
+  background: none;
+  color: var(--tb-text);
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    color var(--tb-dur-base),
+    background var(--tb-dur-base);
   flex-direction: column;
-  gap: 0.125rem;
+  gap: var(--tb-space-0-5);
 }
 .chatLabel {
-  font-size: 0.75rem;
+  font-size: var(--tb-text-2xs);
   font-weight: 600;
-}
-.actionCell > button {
-  justify-content: space-between;
-}
-.actionCell > button::after {
-  content: '';
-  width: 0.5rem;
-  height: 0.5rem;
-  margin-left: 0.5rem;
-  border: solid currentColor;
-  border-width: 1.5px 1.5px 0 0;
-  transform: rotate(45deg);
-  flex: none;
-}
-.actionCell > button {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  text-align: left;
 }
 .actionGrid button.quiet {
   color: var(--tb-muted);
@@ -1324,7 +1121,7 @@
     order: 2;
   }
   .facts > div {
-    padding-inline: 0.625rem;
+    padding-inline: var(--tb-space-2-5);
   }
 }
 
@@ -1341,25 +1138,16 @@
   text-underline-offset: 3px;
   min-width: 0;
 }
-
-/* review: both columns scroll together (the rail is not sticky); deadlines are the first grid row of the Meetup handover */
-.deadlineGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  margin: 0;
-  border: 1px solid var(--tb-line);
-}
 .deadlineGrid > div {
   display: grid;
-  gap: 0.125rem;
-  padding: 0.75rem 0.875rem;
+  gap: var(--tb-space-0-5);
 }
 .deadlineGrid > div + div {
   border-left: 1px solid var(--tb-line);
 }
 .deadlineGrid dt {
   color: var(--tb-muted);
-  font-size: 0.8125rem;
+  font-size: var(--tb-text-xs);
 }
 .deadlineGrid dd {
   margin: 0;
@@ -1387,11 +1175,14 @@
 
 /* the facts under the title as a full grid */
 .facts {
+  gap: var(--tb-space-1) var(--tb-space-2);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   border: 1px solid var(--tb-line);
 }
 .facts > div,
 .facts > div:first-child {
-  padding: 0.75rem 1rem;
+  padding: var(--tb-space-3) var(--tb-space-4);
 }
 .page .deadlineWrap {
   margin: 0;
@@ -1410,14 +1201,14 @@
   border-radius: 0;
 }
 .form {
-  gap: 0.375rem;
+  gap: var(--tb-space-1-5);
 }
 .form > label,
 .choice legend {
-  margin: 0.75rem 0 0.125rem;
+  margin: var(--tb-space-3) 0 var(--tb-space-0-5);
   padding: 0;
   color: var(--tb-muted);
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
   font-weight: 600;
 }
 .choice {
@@ -1432,23 +1223,29 @@
   clear: both;
 }
 .choice > div {
+  border-top: 1px solid var(--tb-line);
+  min-height: 52px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.25rem 0.75rem;
-  padding: 0.25rem 0;
+  gap: var(--tb-space-1) var(--tb-space-3);
+  padding: var(--tb-space-1) 0;
 }
 .choice > div label {
   flex: 1 1 auto;
   min-width: 0;
   margin: 0;
   color: var(--tb-text);
-  font-size: 1rem;
+  font-size: var(--tb-text-base);
   font-weight: 500;
 }
 .form input,
 .form select,
 .form textarea {
+  border: 0;
+  border-bottom: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: none;
   padding-left: 0;
   width: 100%;
   box-sizing: border-box;
@@ -1460,23 +1257,17 @@
 }
 .form > .hint {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
 }
 .popupButtons {
   display: grid;
   grid-template-columns: 1fr 1fr;
   border: 1px solid var(--tb-line);
-  margin-top: 0.75rem;
+  margin-top: var(--tb-space-3);
 }
 .popupButtons > button {
   min-height: 56px;
   border: 0;
-}
-.popupButtons > button + button {
-  border-left: 1px solid var(--tb-line);
-  background: none;
-  text-decoration: none;
-  color: var(--tb-text);
 }
 .popupButtons > button:only-child {
   grid-column: 1 / -1;
@@ -1498,7 +1289,7 @@
   counter-increment: t;
   display: grid;
   grid-template-columns: 1.75rem minmax(0, 1fr);
-  padding: 0.75rem 0;
+  padding: var(--tb-space-3) 0;
   border-bottom: 1px solid var(--tb-line);
   line-height: 1.5;
   text-wrap: pretty;
@@ -1522,9 +1313,9 @@
 .accept {
   display: grid;
   grid-template-columns: 1.5rem minmax(0, 1fr);
-  gap: 0.75rem;
+  gap: var(--tb-space-3);
   align-items: start;
-  padding: 0.875rem 0;
+  padding: var(--tb-space-3-5) 0;
   border-bottom: 1px solid var(--tb-line);
   font-weight: 600;
   line-height: 1.45;
@@ -1533,7 +1324,7 @@
 .accept input {
   width: 1.25rem;
   height: 1.25rem;
-  margin: 0.125rem 0 0;
+  margin: var(--tb-space-0-5) 0 0;
   accent-color: var(--tb-hot);
 }
 .popupButtons > button:disabled {
@@ -1546,17 +1337,14 @@
   text-wrap: balance;
   margin: 0;
 }
+/* the code digits fit a 360 px phone */
 .codeCentre {
   display: block;
   width: 100%;
   box-sizing: border-box;
   margin: 0;
-  padding: 1rem 0 1rem 0.2em;
+  padding: var(--tb-space-4) 0 var(--tb-space-4) 0.2em;
   text-align: center;
-  font-size: 3rem;
-}
-/* the code digits fit a 360 px phone */
-.codeCentre {
   font-size: clamp(1.5rem, 8.5vw, 3rem);
   white-space: nowrap;
 }
@@ -1569,15 +1357,13 @@
 .popupButtons > button,
 .popupButtons > button.primary {
   border: 0;
-  padding: 0.75rem 1rem;
+  padding: var(--tb-space-3) var(--tb-space-4);
 }
 .popupButtons > button + button {
+  background: none;
+  text-decoration: none;
+  color: var(--tb-text);
   border-left: 1px solid var(--tb-line);
-}
-.popupButtons {
-  position: sticky;
-  bottom: 0;
-  background: var(--tb-sheet);
 }
 @media (max-width: 30rem) {
   .popupButtons {
@@ -1602,9 +1388,6 @@
 .deadlineGrid {
   border: 1px solid var(--tb-line);
 }
-.actionGrid {
-  border-block: 1px solid var(--tb-line);
-}
 .deadlineGrid > div,
 .actionGrid > .actionCell {
   background: var(--tb-bg);
@@ -1615,6 +1398,8 @@
   border-left: 0;
 }
 .actionGrid > form {
+  grid-column: 1 / -1;
+  border-left: 0;
   background: var(--tb-bg);
 }
 .form p > .secondary {
@@ -1628,31 +1413,11 @@
 }
 
 /* ---- review round 3: the pay panel in the rail, buttons that open popups are ruled cells, the shipment as a grid, ruled lists, file inputs ---- */
-/* a button that opens a popup: a full-width ruled cell with a chevron, as the cells of the action grid */
-.cellButton {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  min-height: 52px;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--tb-line);
-  border-radius: 0;
-  background: none;
-  color: var(--tb-text);
-  font: inherit;
-  font-weight: 600;
-  text-align: left;
-  cursor: pointer;
-  transition:
-    color 140ms,
-    background 140ms;
-}
 .cellButton::after {
   content: '';
   width: 0.5rem;
   height: 0.5rem;
-  margin-left: 0.75rem;
+  margin-left: var(--tb-space-3);
   border: solid currentColor;
   border-width: 1.5px 1.5px 0 0;
   transform: rotate(45deg);
@@ -1696,31 +1461,31 @@
 }
 /* the pay panel inside the rail */
 .rail > section.early {
-  padding: 1.25rem 0;
+  padding: var(--tb-space-5) 0;
   border: 0;
   border-bottom: 1px solid var(--tb-line);
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
 }
 .rail .flow {
   margin: 0;
 }
 .rail .flow > li {
-  padding: 1rem 0;
+  padding: var(--tb-space-4) 0;
 }
 .rail .flow h3 {
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
+  font-size: var(--tb-text-base);
+  margin-bottom: var(--tb-space-2);
 }
 .rail .courier {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--tb-space-3);
   border-top: 0;
   padding-top: 0;
   margin-top: 0;
 }
 .rail .courier > div {
   display: grid;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
 }
 .rail .flow .primary,
 .rail .courier .primary {
@@ -1729,17 +1494,9 @@
 .rail .breakdown {
   max-width: none;
 }
-/* the shipment as ruled cells, label over value */
-.shipment {
-  display: grid;
-  gap: 0.75rem;
-  margin-top: 0;
-  padding-top: 1rem;
-  border-top: 1px solid var(--tb-line);
-}
 .shipment h3 {
   margin: 0;
-  font-size: 1.125rem;
+  font-size: var(--tb-text-xl);
 }
 .shipFacts {
   display: grid;
@@ -1751,14 +1508,14 @@
 }
 .shipFacts > div {
   display: grid;
-  gap: 0.125rem;
+  gap: var(--tb-space-0-5);
   align-content: start;
-  padding: 0.75rem 0.875rem;
+  padding: var(--tb-space-3) var(--tb-space-3-5);
   background: var(--tb-bg);
 }
 .shipFacts dt {
   color: var(--tb-muted);
-  font-size: 0.8125rem;
+  font-size: var(--tb-text-xs);
 }
 .shipFacts dd {
   margin: 0;
@@ -1786,14 +1543,10 @@
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: baseline;
-  gap: 0.25rem 1rem;
-  padding: 0.75rem 0;
+  gap: var(--tb-space-1) var(--tb-space-4);
+  padding: var(--tb-space-3) 0;
   margin: 0;
   border-bottom: 1px solid var(--tb-line);
-}
-.statements > li {
-  display: grid;
-  gap: 0.25rem;
 }
 .ruledList a {
   display: inline;
@@ -1802,101 +1555,79 @@
 }
 /* the dispute panel: quieter headings, one rhythm */
 .main .panel h3 {
-  margin: 1.25rem 0 0.5rem;
-  font-size: 1rem;
+  margin: var(--tb-space-5) 0 var(--tb-space-2);
+  font-size: var(--tb-text-base);
 }
 .main .panel > p {
-  margin: 0.5rem 0;
+  margin: var(--tb-space-2) 0;
 }
 /* file inputs: the browser button as a sharp ruled cell */
 input[type='file'] {
   width: 100%;
-  padding: 0.5rem 0;
+  padding: var(--tb-space-2) 0;
   border: 0;
   color: var(--tb-muted);
   font: inherit;
-  font-size: 0.9375rem;
-}
-input[type='file']::file-selector-button {
-  margin-right: 0.875rem;
-  padding: 0.625rem 1rem;
-  border: 1px solid var(--tb-line);
-  border-radius: 0;
-  background: none;
-  color: var(--tb-text);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
+  font-size: var(--tb-text-md);
 }
 input[type='file']:hover::file-selector-button {
   background: var(--tb-surface);
   color: var(--tb-hot);
 }
 .form input[type='file'] {
-  padding: 0.5rem 0;
+  padding: var(--tb-space-2) 0;
   border-bottom: 0;
 }
 /* the popup form fits a popup */
 .popupButtons {
+  bottom: 0;
+  background: var(--tb-sheet);
   position: static;
 }
 .inner .popupButtons,
 [class*='inner'] .popupButtons {
   position: sticky;
 }
-
-/* ---- dispute round: compact panel, the conversation as its own section, the deadlines in the rail as ruled rows ---- */
-.rail .deadlineGrid {
-  grid-template-columns: 1fr;
-}
 .rail .deadlineGrid > div {
-  padding: 0.875rem 1rem;
-  gap: 0.25rem;
+  padding: var(--tb-space-3-5) var(--tb-space-4);
+  gap: var(--tb-space-1);
 }
 .rail .deadlineGrid dd {
-  font-size: 1rem;
+  font-size: var(--tb-text-base);
   line-height: 1.4;
 }
 .statements > li.mine {
   border-left: 0;
   background: color-mix(in srgb, var(--tb-hot) 6%, transparent);
-  padding-inline: 0.875rem;
+  padding-inline: var(--tb-space-3-5);
 }
 .statements > li {
-  padding-inline: 0.875rem;
-}
-
-/* ---- awaiting payment: the left column as a ruled grid (breakdown, what happens next, protection); the actions are in the rail ---- */
-.breakdownGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1px;
-  margin: 0 0 var(--tb-space-3);
-  border: 1px solid var(--tb-line);
-  background: var(--tb-line);
+  gap: var(--tb-space-1);
+  padding-inline: var(--tb-space-3-5);
 }
 .breakdownGrid > div {
   display: grid;
-  gap: 0.25rem;
-  padding: 0.875rem 1rem;
+  gap: var(--tb-space-1);
+  padding: var(--tb-space-3-5) var(--tb-space-4);
   background: var(--tb-bg);
 }
 .breakdownGrid dt {
   color: var(--tb-muted);
-  font-size: 0.8125rem;
+  font-size: var(--tb-text-xs);
 }
 .breakdownGrid dd {
   margin: 0;
   font-weight: 600;
-  font-size: 1.125rem;
+  font-size: var(--tb-text-xl);
   font-variant-numeric: tabular-nums;
 }
 .previewBlock {
-  margin-block: var(--tb-space-3);
+  margin-block: var(--tb-space-4);
 }
 .previewBlock > h2 {
-  margin: 0 0 0.75rem;
-  font-size: 1.25rem;
+  margin: 0 0 var(--tb-space-3);
+  font-size: var(--tb-text-2xl);
 }
 @media (max-width: 30rem) {
   .breakdownGrid {
@@ -1904,9 +1635,16 @@ input[type='file']:hover::file-selector-button {
   }
 }
 /* the breakdown has four cells, the total marked; the preview and protection blocks are gone */
+
+/* ---- awaiting payment: the left column as a ruled grid (breakdown, what happens next, protection); the actions are in the rail ---- */
 .breakdownGrid {
+  display: grid;
+  gap: 1px;
+  margin: 0 0 var(--tb-space-4);
+  border: 1px solid var(--tb-line);
+  background: var(--tb-line);
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--tb-space-3);
 }
 .breakdownGrid .totalCell dd {
   color: var(--tb-hot);
@@ -1932,7 +1670,25 @@ input[type='file']:hover::file-selector-button {
 .actions {
   border-inline: 0;
 }
+/* a button that opens a popup: a full-width ruled cell with a chevron, as the cells of the action grid */
 .cellButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 52px;
+  padding: var(--tb-space-2) var(--tb-space-3);
+  border: 1px solid var(--tb-line);
+  border-radius: 0;
+  background: none;
+  color: var(--tb-text);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    color var(--tb-dur-base),
+    background var(--tb-dur-base);
   border-inline: 0;
   padding-inline: 0;
 }
@@ -1967,13 +1723,24 @@ input[type='file']:hover::file-selector-button {
   border-left: 0;
   border-top: 1px solid var(--tb-line);
 }
+
+/* ---- dispute round: compact panel, the conversation as its own section, the deadlines in the rail as ruled rows ---- */
 .rail .deadlineGrid {
+  grid-template-columns: 1fr;
   gap: 0;
 }
 input[type='file']::file-selector-button {
+  padding: var(--tb-space-2-5) var(--tb-space-4);
+  border: 1px solid var(--tb-line);
+  border-radius: 0;
+  background: none;
+  color: var(--tb-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
   border-inline: 0;
   padding-inline: 0;
-  margin-right: 1rem;
+  margin-right: var(--tb-space-4);
 }
 /* the delivery choice: two ruled rows, the whole row is the button */
 .choiceGrid {
@@ -1982,8 +1749,8 @@ input[type='file']::file-selector-button {
 }
 .choiceCell {
   display: grid;
-  gap: 0.125rem;
-  padding: 0.875rem 1.75rem 0.875rem 0;
+  gap: var(--tb-space-0-5);
+  padding: var(--tb-space-3-5) var(--tb-space-7) var(--tb-space-3-5) 0;
   border: 0;
   border-radius: 0;
   background: none;
@@ -1993,8 +1760,8 @@ input[type='file']::file-selector-button {
   cursor: pointer;
   position: relative;
   transition:
-    color 140ms,
-    background 140ms;
+    color var(--tb-dur-base),
+    background var(--tb-dur-base);
 }
 .choiceCell + .choiceCell {
   border-top: 1px solid var(--tb-line);
@@ -2004,7 +1771,7 @@ input[type='file']::file-selector-button {
 }
 .choiceCell span {
   color: var(--tb-muted);
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
 }
 .choiceCell::after {
   content: '';
@@ -2040,12 +1807,12 @@ input[type='file']::file-selector-button {
 }
 .chosenGrid > div {
   display: grid;
-  gap: 0.125rem;
-  padding: 0.75rem 0;
+  gap: var(--tb-space-0-5);
+  padding: var(--tb-space-3) 0;
 }
 .chosenGrid dt {
   color: var(--tb-muted);
-  font-size: 0.8125rem;
+  font-size: var(--tb-text-xs);
 }
 .chosenGrid dd {
   margin: 0;
@@ -2053,7 +1820,7 @@ input[type='file']::file-selector-button {
 }
 .changeCell {
   align-self: stretch;
-  padding: 0 0 0 1rem;
+  padding: 0 0 0 var(--tb-space-4);
   border: 0;
   border-left: 1px solid var(--tb-line);
   border-radius: 0;
@@ -2074,16 +1841,16 @@ input[type='file']::file-selector-button {
 }
 .payRow > div {
   display: grid;
-  gap: 0.125rem;
+  gap: var(--tb-space-0-5);
   align-content: center;
-  padding: 0.75rem 0;
+  padding: var(--tb-space-3) 0;
 }
 .payRow > div span {
   color: var(--tb-muted);
-  font-size: 0.8125rem;
+  font-size: var(--tb-text-xs);
 }
 .payRow > div strong {
-  font-size: 1.25rem;
+  font-size: var(--tb-text-2xl);
   font-variant-numeric: tabular-nums;
 }
 .payRow > .primary {
@@ -2098,7 +1865,7 @@ input[type='file']::file-selector-button {
 /* the quote as two ruled cells in the courier popup */
 .quoteBlock {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--tb-space-3);
 }
 .quoteGrid {
   display: grid;
@@ -2108,15 +1875,15 @@ input[type='file']::file-selector-button {
 }
 .quoteGrid > div {
   display: grid;
-  gap: 0.125rem;
-  padding: 0.75rem 0.875rem;
+  gap: var(--tb-space-0-5);
+  padding: var(--tb-space-3) var(--tb-space-3-5);
 }
 .quoteGrid > div:first-child {
   padding-left: 0;
 }
 .quoteGrid dt {
   color: var(--tb-muted);
-  font-size: 0.8125rem;
+  font-size: var(--tb-text-xs);
 }
 .quoteGrid dd {
   margin: 0;
@@ -2127,16 +1894,16 @@ input[type='file']::file-selector-button {
 .deadlineGrid dd,
 .shipFacts dd,
 .quoteGrid dd {
-  margin-top: 0.25rem;
+  margin-top: var(--tb-space-1);
 }
 .deadlineGrid > div {
-  padding: 0.875rem 1rem;
+  padding: var(--tb-space-3-5) var(--tb-space-4);
 }
 .rail .deadlineGrid > div {
   padding-inline: 0;
 }
 .agreed > div {
-  margin-top: 0.5rem;
+  margin-top: var(--tb-space-2);
 }
 .ruledList > li > div {
   margin-left: auto;
@@ -2152,12 +1919,16 @@ input[type='file']::file-selector-button {
 .journeyBare .journeyList {
   border-top: 0;
 }
+/* the shipment as ruled cells, label over value */
 .shipment {
+  display: grid;
+  gap: var(--tb-space-3);
+  margin-top: 0;
   padding-top: 0;
   border-top: 0;
 }
 .panel > .shipment:first-of-type {
-  margin-top: 0.5rem;
+  margin-top: var(--tb-space-2);
 }
 .rail > .historyCell {
   padding: 0;
@@ -2176,17 +1947,17 @@ input[type='file']::file-selector-button {
 }
 .statusGrid > div {
   display: grid;
-  gap: 0.25rem;
+  gap: var(--tb-space-1);
   align-content: start;
-  padding: 0.75rem 0;
+  padding: var(--tb-space-3) 0;
 }
 .statusGrid > div + div {
-  padding-left: 1rem;
+  padding-left: var(--tb-space-4);
   border-left: 1px solid var(--tb-line);
 }
 .statusGrid dt {
   color: var(--tb-muted);
-  font-size: 0.8125rem;
+  font-size: var(--tb-text-xs);
 }
 .statusGrid dd {
   margin: 0;
@@ -2212,12 +1983,12 @@ input[type='file']::file-selector-button {
 /* the count of new messages on the chat cell */
 .badge {
   margin-left: auto;
-  padding: 0 0.5rem;
+  padding: 0 var(--tb-space-2);
   min-width: 1.5rem;
-  border-radius: 999px;
+  border-radius: var(--tb-radius-pill);
   background: var(--tb-hot);
   color: var(--tb-accent-text, #0a0e0d);
-  font-size: 0.8125rem;
+  font-size: var(--tb-text-xs);
   font-weight: 700;
   line-height: 1.5rem;
   text-align: center;
@@ -2245,26 +2016,22 @@ input[type='file'].fileHidden {
 .dcPage {
   display: grid;
   grid-template-columns: minmax(15rem, 21rem) minmax(0, 1fr);
-  gap: 1.5rem;
+  gap: var(--tb-space-6);
   height: calc(100svh - 9rem);
   min-height: 30rem;
-  margin-block: 1rem;
+  margin-block: var(--tb-space-4);
 }
 .dcSide {
   display: grid;
   align-content: start;
-  gap: 0.75rem;
+  gap: var(--tb-space-3);
   padding: 0;
   overflow-y: auto;
 }
 .dcSide h1 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: var(--tb-text-3xl);
   letter-spacing: -0.02em;
-}
-.dcBack {
-  color: var(--tb-text);
-  text-underline-offset: 3px;
 }
 .dcFacts {
   display: grid;
@@ -2273,15 +2040,15 @@ input[type='file'].fileHidden {
 }
 .dcFacts > div {
   display: grid;
-  gap: 0.25rem;
-  padding: 0.75rem 0;
+  gap: var(--tb-space-1);
+  padding: var(--tb-space-3) 0;
 }
 .dcFacts > div + div {
   border-top: 1px solid var(--tb-line);
 }
 .dcFacts dt {
   color: var(--tb-muted);
-  font-size: 0.8125rem;
+  font-size: var(--tb-text-xs);
 }
 .dcFacts dd {
   margin: 0;
@@ -2297,8 +2064,8 @@ input[type='file'].fileHidden {
 .dcHead {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
+  gap: var(--tb-space-3);
+  padding: var(--tb-space-3) var(--tb-space-4);
   border-bottom: 1px solid var(--tb-line);
 }
 .dcHead > div {
@@ -2308,7 +2075,7 @@ input[type='file'].fileHidden {
 }
 .dcHead span {
   color: var(--tb-muted);
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
 }
 .dcAvatar {
   display: grid;
@@ -2320,15 +2087,15 @@ input[type='file'].fileHidden {
   background-image: linear-gradient(to right, var(--tb-line) 1px, transparent 1px), linear-gradient(to bottom, var(--tb-line) 1px, transparent 1px);
   background-size: 11px 11px;
   color: var(--tb-hot);
-  font-size: 1.125rem;
+  font-size: var(--tb-text-xl);
   font-weight: 700;
 }
 .dcThread {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--tb-space-1);
   min-height: 0;
-  padding: 1rem;
+  padding: var(--tb-space-4);
   overflow-y: auto;
   overscroll-behavior: contain;
 }
@@ -2343,8 +2110,8 @@ input[type='file'].fileHidden {
 .dcDay {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin: 0.75rem 0 0.5rem;
+  gap: var(--tb-space-3);
+  margin: var(--tb-space-3) 0 var(--tb-space-2);
 }
 .dcDay::before,
 .dcDay::after {
@@ -2361,7 +2128,7 @@ input[type='file'].fileHidden {
 }
 .dcBubble {
   max-width: min(34rem, 78%);
-  padding: 0.5rem 0.75rem 0.375rem;
+  padding: var(--tb-space-2) var(--tb-space-3) var(--tb-space-1-5);
   border: 1px solid var(--tb-border);
   border-radius: 0;
   background: none;
@@ -2385,24 +2152,24 @@ input[type='file'].fileHidden {
 .dcTime {
   display: flex;
   justify-content: flex-end;
-  margin-top: 0.125rem;
+  margin-top: var(--tb-space-0-5);
 }
 .dcComposer {
   display: grid;
-  gap: 0.375rem;
-  padding: 0.75rem 1rem;
+  gap: var(--tb-space-1-5);
+  padding: var(--tb-space-3) var(--tb-space-4);
   border-top: 1px solid var(--tb-line);
 }
 .dcBar {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: end;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
 }
 .dcInput {
   min-height: 48px;
   max-height: 8rem;
-  padding: 0.75rem;
+  padding: var(--tb-space-3);
   border: 1px solid var(--tb-border);
   border-radius: 0;
   background: var(--tb-bg);
@@ -2438,7 +2205,7 @@ input[type='file'].fileHidden {
   background: color-mix(in srgb, var(--tb-hot) 10%, transparent);
   color: var(--tb-hot);
   cursor: pointer;
-  transition: background 140ms;
+  transition: background var(--tb-dur-base);
 }
 .dcSend svg {
   width: 20px;
@@ -2453,7 +2220,7 @@ input[type='file'].fileHidden {
 }
 .dcClosed {
   margin: 0;
-  padding: 0.875rem 1.25rem;
+  padding: var(--tb-space-3-5) var(--tb-space-5);
   border-top: 1px solid var(--tb-line);
   color: var(--tb-muted);
 }
@@ -2462,9 +2229,7 @@ input[type='file'].fileHidden {
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);
     height: auto;
-  }
-  .dcPage {
-    gap: 1rem;
+    gap: var(--tb-space-4);
   }
   .dcSide {
     padding: 0;
@@ -2473,22 +2238,6 @@ input[type='file'].fileHidden {
     height: 70svh;
     min-height: 24rem;
   }
-}
-
-/* ---- review round (impeccable, before the PR) ---- */
-/* grids whose cells wrap: a rule above and below, a hairline above and left of each cell inside (an inset shadow), nothing at the open sides */
-.actionGrid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0;
-  background: none;
-  border-block: 1px solid var(--tb-line);
-  overflow: hidden;
-}
-.actionGrid > .actionCell,
-.actionGrid > form {
-  background: none;
-  box-shadow: -1px -1px 0 var(--tb-line);
-  border-left: 0;
 }
 .actionGrid > .actionCell:last-child:nth-child(odd) {
   grid-column: 1 / -1;
@@ -2506,14 +2255,19 @@ input[type='file'].fileHidden {
 .quoteGrid > div {
   box-shadow: -1px -1px 0 var(--tb-line);
   border-left: 0;
-  padding-left: 1rem;
+  padding-left: var(--tb-space-4);
 }
 .shipFacts > div + div,
 .breakdownGrid > div + div,
 .quoteGrid > div + div {
   border-left: 0;
 }
+
+/* review: both columns scroll together (the rail is not sticky); deadlines are the first grid row of the Meetup handover */
 .deadlineGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  margin: 0;
   overflow: hidden;
 }
 /* the attach control shows keyboard focus (the real input is clipped) */
@@ -2528,12 +2282,12 @@ input[type='file'].fileHidden {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .dcFacts > div {
-    padding: 0.5rem 0.5rem 0.5rem 0;
+    padding: var(--tb-space-2) var(--tb-space-2) var(--tb-space-2) 0;
   }
   .dcFacts > div + div {
     border-top: 0;
     border-left: 1px solid var(--tb-line);
-    padding-left: 0.5rem;
+    padding-left: var(--tb-space-2);
   }
   .dcMain {
     height: calc(100svh - 9rem);
@@ -2541,6 +2295,8 @@ input[type='file'].fileHidden {
   }
 }
 .dcBack {
+  color: var(--tb-text);
+  text-underline-offset: 3px;
   display: inline-flex;
   align-items: center;
   min-height: 44px;
@@ -2558,14 +2314,14 @@ input[type='file'].fileHidden {
 .code input {
   width: 100%;
   min-height: 56px;
-  padding: 0 0.25rem;
+  padding: 0 var(--tb-space-1);
   border: 0;
   border-bottom: 1px solid var(--tb-border);
   border-radius: 0;
   background: none;
   color: var(--tb-text);
   font: inherit;
-  font-size: 1.5rem;
+  font-size: var(--tb-text-3xl);
   letter-spacing: 0.15em;
   font-variant-numeric: tabular-nums;
 }
@@ -2582,13 +2338,13 @@ input[type='file'].fileHidden {
   margin: 0;
 }
 .chosenGrid > dl > div {
-  padding: 0.75rem 0;
+  padding: var(--tb-space-3) 0;
 }
 .choice a {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  padding-inline: 0.25rem;
+  padding-inline: var(--tb-space-1);
 }
 
 .returnStep {
@@ -2598,7 +2354,7 @@ input[type='file'].fileHidden {
   gap: 8px;
 }
 .returnStep h2 {
-  font-size: 1rem;
+  font-size: var(--tb-text-base);
   margin: 0;
 }
 
@@ -2613,10 +2369,10 @@ input[type='file'].fileHidden {
 .starsField legend {
   float: left;
   width: 100%;
-  margin: 0 0 0.375rem;
+  margin: 0 0 var(--tb-space-1-5);
   padding: 0;
   color: var(--tb-muted);
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
   font-weight: 600;
 }
 .starsField legend + * {
@@ -2648,17 +2404,17 @@ input[type='file'].fileHidden {
   display: grid;
   justify-items: center;
   align-content: center;
-  gap: 0.125rem;
+  gap: var(--tb-space-0-5);
   min-height: 72px;
   margin: 0;
-  padding: 0.5rem 0.25rem;
+  padding: var(--tb-space-2) var(--tb-space-1);
   color: var(--tb-muted);
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
   font-weight: 600;
   cursor: pointer;
   transition:
-    background 140ms,
-    color 140ms;
+    background var(--tb-dur-base),
+    color var(--tb-dur-base);
 }
 .starCell label::after {
   content: attr(data-n);
@@ -2682,11 +2438,11 @@ input[type='file'].fileHidden {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.25rem 0.75rem;
+  gap: var(--tb-space-1) var(--tb-space-3);
 }
 .starRow {
   display: inline-flex;
-  gap: 0.125rem;
+  gap: var(--tb-space-0-5);
   color: var(--tb-hot);
 }
 .starRow svg {
@@ -2695,7 +2451,7 @@ input[type='file'].fileHidden {
 }
 .form textarea.ratingText {
   min-height: 96px;
-  padding: 0.625rem 0.75rem;
+  padding: var(--tb-space-2-5) var(--tb-space-3);
   border: 1px solid var(--tb-border);
   border-bottom: 1px solid var(--tb-border);
 }
@@ -2706,12 +2462,12 @@ input[type='file'].fileHidden {
 
 /* the seller's handover in a popup of two steps (U10-25): where the person is (as in turning the authenticator app on), then the step */
 .hoStepper {
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--tb-space-1);
 }
 .hoStepper p {
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--tb-space-2);
   color: var(--tb-muted);
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
 }
 .hoStepper strong {
   color: var(--tb-text);
@@ -2720,7 +2476,7 @@ input[type='file'].fileHidden {
 .hoStepper ol {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.375rem;
+  gap: var(--tb-space-1-5);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -2738,7 +2494,7 @@ input[type='file'].fileHidden {
 }
 .hoStep {
   display: grid;
-  gap: 1rem;
+  gap: var(--tb-space-4);
 }
 .hoStep > p {
   margin: 0;
@@ -2754,15 +2510,15 @@ input[type='file'].fileHidden {
 .photoCell label {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
+  gap: var(--tb-space-3-5);
   min-height: 88px;
-  padding: 0.75rem 1rem;
+  padding: var(--tb-space-3) var(--tb-space-4);
   color: var(--tb-text);
   font-weight: 600;
   cursor: pointer;
   transition:
-    background 140ms,
-    color 140ms;
+    background var(--tb-dur-base),
+    color var(--tb-dur-base);
 }
 .photoCell label:hover {
   background: var(--tb-surface);
@@ -2775,7 +2531,7 @@ input[type='file'].fileHidden {
 .photoCell strong {
   display: grid;
   place-items: center;
-  padding: 0 1.25rem;
+  padding: 0 var(--tb-space-5);
   border-left: 1px solid var(--tb-line);
   font-variant-numeric: tabular-nums;
 }
@@ -2790,50 +2546,58 @@ input[type='file'].fileHidden {
 
 /* the left column with room to read (U10-25): the money panel's sentences breathe, its parts are set apart (the day it left, the receipt, the line of steps), and the blocks below have more space between them */
 .moneyPanel {
-  padding: 1.5rem 0 2rem;
+  padding: var(--tb-space-6) 0 var(--tb-space-8);
 }
 .moneyPanel .money {
-  margin: 0.75rem 0 0.75rem;
+  margin: var(--tb-space-3) 0 var(--tb-space-3);
   font-weight: 500;
   line-height: 1.6;
   max-width: 38rem;
 }
 .moneyPanel .hint {
-  margin: 0 0 1rem;
+  margin: 0 0 var(--tb-space-4);
   line-height: 1.6;
 }
 .moneyPanel .receiptLink {
-  margin: 0.75rem 0 0;
+  margin: var(--tb-space-3) 0 0;
 }
 .moneyPanel > ol {
   margin-top: 2.25rem;
 }
 .main > .panel,
 .main > section {
-  padding-block: 1.75rem;
+  padding-block: var(--tb-space-7);
 }
 .main .panel > p,
 .main .panel .hint {
   line-height: 1.6;
 }
 .main .panel > h2 {
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--tb-space-3);
 }
 .main .panel h3 {
-  margin-block: 1.5rem 0.75rem;
+  margin-block: var(--tb-space-6) var(--tb-space-3);
 }
 .main .form {
-  gap: 0.625rem;
-  margin-block: 1rem;
+  gap: var(--tb-space-2-5);
+  margin-block: var(--tb-space-4);
 }
 
 /* the rail's actions as a list and the other party as a card (U10-25): one action to a line, the text on the left and an arrow on the right, hairlines
    between; the party is a square photo place with the grid and the initials, the name with the tick, since when, and the message cell */
+/* grids whose cells wrap: a rule above and below, a hairline above and left of each cell inside (an inset shadow), nothing at the open sides */
 .actionGrid {
+  gap: 0;
+  background: none;
+  border-block: 1px solid var(--tb-line);
+  overflow: hidden;
   grid-template-columns: 1fr;
 }
+
+/* ---- review round (impeccable, before the PR) ---- */
 .actionGrid > .actionCell,
 .actionGrid > form {
+  background: none;
   box-shadow: none;
   border-left: 0;
 }
@@ -2842,14 +2606,26 @@ input[type='file'].fileHidden {
   border-top: 1px solid var(--tb-line);
 }
 .actionCell > button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
   min-height: 60px;
-  padding: 0.5rem 0.25rem;
-  font-size: 1rem;
+  padding: var(--tb-space-2) var(--tb-space-1);
+  font-size: var(--tb-text-base);
   line-height: 1.35;
 }
 .actionCell > button::after {
-  margin-right: 0.25rem;
-  transition: transform 140ms;
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-left: var(--tb-space-2);
+  border: solid currentColor;
+  border-width: 1.5px 1.5px 0 0;
+  transform: rotate(45deg);
+  flex: none;
+  margin-right: var(--tb-space-1);
+  transition: transform var(--tb-dur-base);
 }
 .actionCell > button:hover:not(:disabled)::after {
   transform: translateX(3px) rotate(45deg);
@@ -2860,20 +2636,20 @@ input[type='file'].fileHidden {
   min-height: 84px;
 }
 .partyRow > * {
-  padding: 1rem 0;
+  padding: var(--tb-space-4) 0;
 }
 .partyRow > .avatar {
   align-self: center;
   justify-self: start;
   width: var(--av);
   height: var(--av);
-  margin: 0 1rem 0 0.25rem;
+  margin: 0 var(--tb-space-4) 0 var(--tb-space-1);
   padding: 0;
   border: 1px solid var(--tb-border);
   background-image: linear-gradient(to right, var(--tb-line) 1px, transparent 1px), linear-gradient(to bottom, var(--tb-line) 1px, transparent 1px);
   background-size: 13px 13px;
   color: var(--tb-hot);
-  font-size: 1.125rem;
+  font-size: var(--tb-text-xl);
   font-weight: 700;
 }
 .partyRow > .partyInfo {
@@ -2881,6 +2657,6 @@ input[type='file'].fileHidden {
 }
 .partyRow > .chatCell {
   min-width: 76px;
-  padding: 1rem;
+  padding: var(--tb-space-4);
   border-left: 1px solid var(--tb-line);
 }

@@ -15,9 +15,9 @@
 .page h1,
 .narrow h1 {
   margin: 0;
-  padding: 1.5rem 0 1.25rem;
+  padding: var(--tb-space-6) 0 var(--tb-space-5);
   border-top: 2px solid var(--tb-hot);
-  font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.125rem);
+  font-size: var(--tb-text-title);
   line-height: 1.1;
   letter-spacing: -0.03em;
   font-weight: 600;
@@ -30,13 +30,13 @@
 
 .layout {
   display: grid;
-  gap: 2rem;
+  gap: var(--tb-space-8);
   align-items: start;
 }
 @media (min-width: 60rem) {
   .layout {
     grid-template-columns: minmax(0, 1fr) 19rem;
-    gap: 3rem;
+    gap: var(--tb-space-12);
   }
 }
 .wizard {
@@ -45,23 +45,23 @@
 
 /* the review status, on every step (NFR-USE-02): a ruled block, the word of the status large */
 .status {
-  margin-bottom: 1.5rem;
-  padding: 1rem 0;
+  margin-bottom: var(--tb-space-6);
+  padding: var(--tb-space-4) 0;
   border-block: 1px solid var(--tb-line);
 }
 .status h2,
 .sent h2 {
-  margin: 0 0 0.25rem;
+  margin: 0 0 var(--tb-space-1);
   color: var(--tb-muted);
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
   font-weight: 500;
 }
 .status p {
-  margin: 0 0 0.375rem;
+  margin: 0 0 var(--tb-space-1-5);
   line-height: 1.55;
 }
 .status p:first-of-type strong {
-  font-size: 1.125rem;
+  font-size: var(--tb-text-xl);
   font-weight: 600;
 }
 .status p:last-child {
@@ -72,24 +72,24 @@
 .steps {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin: 0 0 1.25rem;
+  margin: 0 0 var(--tb-space-5);
   padding: 0;
   list-style: none;
   border: 1px solid var(--tb-line);
 }
 .steps li {
   transition:
-    color 160ms ease,
-    background-color 160ms ease;
+    color var(--tb-dur-press) ease,
+    background-color var(--tb-dur-press) ease;
   position: relative;
   display: flex;
   align-items: center;
-  gap: 0.625rem;
+  gap: var(--tb-space-2-5);
   min-width: 0;
   min-height: 56px;
-  padding: 0.5rem 0.75rem;
+  padding: var(--tb-space-2) var(--tb-space-3);
   color: var(--tb-muted);
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
   font-weight: 600;
 }
 .steps li + li {
@@ -107,7 +107,7 @@
   width: 24px;
   height: 24px;
   border: 1px solid var(--tb-border);
-  font-size: 0.75rem;
+  font-size: var(--tb-text-2xs);
   font-weight: 700;
 }
 .done {
@@ -145,20 +145,20 @@
   .steps li {
     flex-direction: column;
     justify-content: center;
-    gap: 0.25rem;
-    padding: 0.5rem 0.25rem;
+    gap: var(--tb-space-1);
+    padding: var(--tb-space-2) var(--tb-space-1);
     text-align: center;
-    font-size: 0.8125rem;
+    font-size: var(--tb-text-xs);
   }
 }
 
 .progress {
   margin: 0;
   color: var(--tb-muted);
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
 }
 .stepTitle {
-  margin: 0.25rem 0 1rem;
+  margin: var(--tb-space-1) 0 var(--tb-space-4);
   font-size: 1.375rem;
   letter-spacing: -0.02em;
   line-height: 1.25;
@@ -170,7 +170,7 @@
   outline: none;
 }
 .wizard ul {
-  padding-left: 1.25rem;
+  padding-left: var(--tb-space-5);
   line-height: 1.65;
 }
 .wizard p {
@@ -188,7 +188,7 @@
   place-items: center;
   aspect-ratio: 4 / 3;
   max-width: 36rem;
-  margin-bottom: 1rem;
+  margin-bottom: var(--tb-space-4);
   overflow: hidden;
   border: 1px solid var(--tb-line);
   background: #04090a;
@@ -231,44 +231,44 @@
 .oval {
   width: 62%;
   aspect-ratio: 3 / 4;
-  border-radius: 50%;
+  border-radius: var(--tb-radius-circle);
   margin-top: -10%;
 }
 .frameText {
   position: relative;
   z-index: 2;
   align-self: end;
-  margin: 0 1rem 1rem;
-  color: #fff;
+  margin: 0 var(--tb-space-4) var(--tb-space-4);
+  color: var(--tb-white);
   font-weight: 600;
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
   text-align: center;
 }
 
 /* what to do for the liveness selfie: a ruled block with a vermilion line */
 .action {
-  margin: 0 0 1rem;
-  padding: 0.75rem 1rem;
+  margin: 0 0 var(--tb-space-4);
+  padding: var(--tb-space-3) var(--tb-space-4);
   border: 1px solid var(--tb-hot);
   background: color-mix(in srgb, var(--tb-hot) 10%, transparent);
   color: var(--tb-text);
-  font-size: 1.125rem;
+  font-size: var(--tb-text-xl);
   font-weight: 600;
 }
 
 /* the kind of document: ruled rows with a ring that fills with a vermilion dot */
 .choice {
-  margin: 0 0 1.5rem;
+  margin: 0 0 var(--tb-space-6);
   padding: 0;
   border: 0;
 }
 .choice legend {
   float: left;
   width: 100%;
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--tb-space-2);
   padding: 0;
   color: var(--tb-muted);
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
   font-weight: 600;
 }
 .choice legend + * {
@@ -277,9 +277,9 @@
 .choice div {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
+  gap: var(--tb-space-3-5);
   min-height: 56px;
-  padding: 0 0.25rem;
+  padding: 0 var(--tb-space-1);
   border-top: 1px solid var(--tb-line);
 }
 .choice div:last-child {
@@ -299,7 +299,7 @@
   min-height: 0;
   margin: 0;
   border: 1px solid var(--tb-border);
-  border-radius: 50%;
+  border-radius: var(--tb-radius-circle);
   background: transparent;
   cursor: pointer;
 }
@@ -313,7 +313,7 @@
 }
 .choice label {
   flex: 1;
-  padding: 1rem 0;
+  padding: var(--tb-space-4) 0;
   font-weight: 600;
   cursor: pointer;
 }
@@ -321,7 +321,7 @@
 /* the file, offered only after a camera problem and only for documents (U8-03): a ruled tile */
 .file {
   position: relative;
-  margin: 0.75rem 0;
+  margin: var(--tb-space-3) 0;
 }
 .file input {
   position: absolute;
@@ -336,13 +336,13 @@
   align-items: center;
   justify-content: center;
   min-height: 56px;
-  padding: 0.5rem 1rem;
+  padding: var(--tb-space-2) var(--tb-space-4);
   border: 1px solid var(--tb-border);
   font-weight: 600;
   text-align: center;
   transition:
-    border-color 140ms ease,
-    background-color 140ms ease;
+    border-color var(--tb-dur-base) ease,
+    background-color var(--tb-dur-base) ease;
 }
 .file input:focus-visible + label {
   outline: 2px solid var(--tb-hot);
@@ -359,8 +359,8 @@
 .nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1.25rem;
+  gap: var(--tb-space-3);
+  margin-top: var(--tb-space-5);
 }
 .capture .nav {
   margin-top: 0;
@@ -368,16 +368,16 @@
 .primary,
 .secondary {
   min-height: 52px;
-  padding: 0 1.75rem;
+  padding: 0 var(--tb-space-7);
   border-radius: 0;
   cursor: pointer;
   font: inherit;
   font-weight: 600;
   color: var(--tb-text);
   transition:
-    transform 160ms var(--kyc-ease),
-    background-color 140ms ease,
-    border-color 140ms ease;
+    transform var(--tb-dur-press) var(--kyc-ease),
+    background-color var(--tb-dur-base) ease,
+    border-color var(--tb-dur-base) ease;
 }
 /* a press is felt: the button gives a little under the finger */
 .primary:active:not(:disabled),
@@ -414,8 +414,8 @@
 .thumbs {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
-  gap: 0.75rem;
-  margin: 0 0 1rem;
+  gap: var(--tb-space-3);
+  margin: 0 0 var(--tb-space-4);
   padding: 0 !important;
   list-style: none;
 }
@@ -428,29 +428,29 @@
 }
 .thumbs .preview {
   aspect-ratio: 1;
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--tb-space-1);
   object-fit: cover;
 }
 .thumbs span {
   color: var(--tb-muted);
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
 }
 
 /* what will be sent: ruled rows, the name of a fact on the left, its value on the right */
 .facts {
-  margin: 0 0 1.25rem;
+  margin: 0 0 var(--tb-space-5);
   border-top: 1px solid var(--tb-line);
 }
 .facts > div {
   display: grid;
   grid-template-columns: minmax(8rem, 12rem) minmax(0, 1fr);
-  gap: 1rem;
-  padding: 0.875rem 0;
+  gap: var(--tb-space-4);
+  padding: var(--tb-space-3-5) 0;
   border-bottom: 1px solid var(--tb-line);
 }
 .facts dt {
   color: var(--tb-muted);
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
 }
 .facts dd {
   margin: 0;
@@ -460,19 +460,19 @@
 @media (max-width: 30rem) {
   .facts > div {
     grid-template-columns: 1fr;
-    gap: 0.125rem;
+    gap: var(--tb-space-0-5);
   }
 }
 
 .sent {
-  margin-top: 1.5rem;
+  margin-top: var(--tb-space-6);
 }
 
 /* the side panel: the photo rules as ruled lines, who sees the ID, and what happens after */
 .side {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--tb-space-6);
   min-width: 0;
 }
 @media (min-width: 60rem) {
@@ -482,28 +482,28 @@
   }
 }
 .side h2 {
-  margin: 0 0 0.5rem;
-  font-size: 1.0625rem;
+  margin: 0 0 var(--tb-space-2);
+  font-size: var(--tb-text-lg);
 }
 .rules {
-  padding-top: 1rem;
+  padding-top: var(--tb-space-4);
   border-top: 1px solid var(--tb-line);
 }
 .rules ul {
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
   line-height: 1.5;
 }
 .rules li {
-  padding: 0.625rem 0;
+  padding: var(--tb-space-2-5) 0;
   border-top: 1px solid var(--tb-line);
 }
 .private {
   display: flex;
-  gap: 0.75rem;
-  padding-top: 1rem;
+  gap: var(--tb-space-3);
+  padding-top: var(--tb-space-4);
   border-top: 1px solid var(--tb-line);
 }
 .private svg {
@@ -513,13 +513,13 @@
 }
 .private p {
   margin: 0;
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
   line-height: 1.55;
 }
 .after {
   margin: 0;
   color: var(--tb-muted);
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
   line-height: 1.55;
 }
 .visuallyHidden {
@@ -544,10 +544,10 @@
 }
 .wizard > .stepTitle ~ div,
 .wizard > .stepTitle ~ form {
-  animation: kycStepIn 200ms var(--kyc-ease) both;
+  animation: kycStepIn var(--tb-dur-slow) var(--kyc-ease) both;
 }
 .thumbs li {
-  animation: kycStepIn 200ms var(--kyc-ease) both;
+  animation: kycStepIn var(--tb-dur-slow) var(--kyc-ease) both;
 }
 .thumbs li:nth-child(2) {
   animation-delay: 40ms;

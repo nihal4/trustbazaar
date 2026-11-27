@@ -6,9 +6,9 @@
 
 .page h1 {
   margin: 0;
-  padding: 1.5rem 0 0.75rem;
+  padding: var(--tb-space-6) 0 var(--tb-space-3);
   border-top: 2px solid var(--tb-hot);
-  font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.125rem);
+  font-size: var(--tb-text-title);
   line-height: 1.1;
   letter-spacing: -0.03em;
   font-weight: 600;
@@ -21,7 +21,7 @@
 
 .lead {
   margin: 0;
-  padding-bottom: 1.5rem;
+  padding-bottom: var(--tb-space-6);
   max-width: 40rem;
   line-height: 1.6;
 }
@@ -42,19 +42,19 @@
 .cols > section {
   min-width: 0;
   margin: 0;
-  padding: 1.5rem 0 2rem;
+  padding: var(--tb-space-6) 0 var(--tb-space-8);
 }
 .cols > section:first-child {
-  padding-inline-end: 2rem;
+  padding-inline-end: var(--tb-space-8);
 }
 .cols > section + section {
-  padding-inline-start: 2rem;
+  padding-inline-start: var(--tb-space-8);
   border-inline-start: 1px solid var(--tb-line);
 }
 
 .panel h2 {
-  margin: 0 0 0.75rem;
-  font-size: 1.125rem;
+  margin: 0 0 var(--tb-space-3);
+  font-size: var(--tb-text-xl);
   letter-spacing: -0.01em;
   font-weight: 600;
 }
@@ -62,7 +62,7 @@
   letter-spacing: 0;
 }
 .panel p {
-  margin: 0 0 1rem;
+  margin: 0 0 var(--tb-space-4);
   line-height: 1.6;
 }
 .panel > :last-child {
@@ -74,20 +74,20 @@
 
 /* the copy that is ready: a ruled block with what it is and until when */
 .ready {
-  margin-bottom: 1rem;
+  margin-bottom: var(--tb-space-4);
   border-block: 1px solid var(--tb-line);
-  padding: 1rem 0 0.25rem;
+  padding: var(--tb-space-4) 0 var(--tb-space-1);
 }
 
 /* what closing does: one effect to a line */
 .effects {
-  margin: 0 0 1.25rem;
+  margin: 0 0 var(--tb-space-5);
   padding: 0;
   list-style: none;
   border-top: 1px solid var(--tb-line);
 }
 .effects li {
-  padding: 0.75rem 0;
+  padding: var(--tb-space-3) 0;
   border-bottom: 1px solid var(--tb-line);
   line-height: 1.5;
 }
@@ -100,7 +100,7 @@
   align-items: center;
   justify-content: center;
   min-height: 52px;
-  padding: 0 1.5rem;
+  padding: 0 var(--tb-space-6);
   border: 1px solid var(--tb-hot);
   border-radius: 0;
   background: color-mix(in srgb, var(--tb-hot) 10%, transparent);
@@ -109,7 +109,7 @@
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-  transition: background 140ms;
+  transition: background var(--tb-dur-base);
 }
 .secondary:hover:not(:disabled),
 .primaryLink:hover {

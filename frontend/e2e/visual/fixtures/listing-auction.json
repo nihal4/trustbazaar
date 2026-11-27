@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-11-27T13:24:49.600Z",
+  "recordedAt": "2026-11-27T14:29:43.688Z",
   "path": "/listings/56eb1022-2d29-4562-b6d8-e1d9eef92902",
   "answers": {
     "GET /listings/56eb1022-2d29-4562-b6d8-e1d9eef92902": {
@@ -63,7 +63,7 @@
           "hasReserve": false,
           "reserveMet": true,
           "minimumBid": "1200000",
-          "serverTime": "2026-11-27T13:24:49.813Z",
+          "serverTime": "2026-11-27T14:29:43.931Z",
           "seq": 0,
           "currentPrice": null
         },
@@ -77,19 +77,36 @@
         "createdAt": "2026-11-25T18:00:24.254Z"
       }
     },
+    "GET /auctions/56eb1022-2d29-4562-b6d8-e1d9eef92902/bids": {
+      "status": 200,
+      "body": {
+        "items": []
+      }
+    },
     "GET /me": {
       "status": 401,
       "body": {
         "type": "/problems/session-ended",
         "title": "Your session has ended. Please sign in again.",
         "status": 401,
-        "correlationId": "ccb8b83f-1488-488f-9671-4b1dce48f7fd"
+        "correlationId": "c007c538-7573-41bd-8735-466524654735"
       }
     },
-    "GET /auctions/56eb1022-2d29-4562-b6d8-e1d9eef92902/bids": {
+    "GET /auctions/56eb1022-2d29-4562-b6d8-e1d9eef92902/state": {
       "status": 200,
       "body": {
-        "items": []
+        "auctionId": "56eb1022-2d29-4562-b6d8-e1d9eef92902",
+        "status": "open",
+        "startPrice": "1200000",
+        "price": null,
+        "bidCount": 0,
+        "leaderAlias": null,
+        "endAt": "2026-11-28T18:00:24.476Z",
+        "hasReserve": false,
+        "reserveMet": true,
+        "minimumBid": "1200000",
+        "serverTime": "2026-11-27T14:29:54.010Z",
+        "seq": 0
       }
     }
   }

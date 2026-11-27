@@ -20,9 +20,14 @@ export function AccountTabs({ t }: { t: T }) {
   const row = useRef<HTMLElement>(null);
   const { pathname } = useLocation();
   useEffect(() => {
-    const nav = row.current;
-    const current = nav?.querySelector<HTMLElement>('[aria-current="page"]');
-    if (nav && current) nav.scrollLeft = Math.max(0, current.offsetLeft - nav.offsetLeft - 16);
+    const show = () => {
+      const nav = row.current;
+      const current = nav?.querySelector<HTMLElement>('[aria-current="page"]');
+      if (nav && current) nav.scrollLeft = Math.max(0, current.offsetLeft - nav.offsetLeft - 16);
+    };
+    show();
+    // the tabs are wider or narrower once the web font has arrived: place the current one again then, so it is not left where the fallback font put it
+    void document.fonts?.ready.then(show);
   }, [pathname]);
   return (
     <nav ref={row} aria-label={t('shell.account_tabs.label')} className={styles.tabs}>
