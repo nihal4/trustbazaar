@@ -12,6 +12,7 @@ import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
 import { FRESHNESS } from '../../shared/query';
 import { Popup } from '../../shared/Popup';
+import { ActionCell } from '../../shared/ui';
 import { DateCells } from '../../shared/Moment';
 import { SimulatedBanner } from '../../shared/SimulatedBanner';
 import { AddressForm, useAddresses } from './Courier';
@@ -110,9 +111,7 @@ export function ShipmentHistory({ items, t, lang }: { items: Shipment[]; t: T; l
   if (!s) return null;
   return (
     <div className={styles.historyCell}>
-      <button type="button" className={`${styles.secondary} ${styles.cellButton}`} onClick={() => setOpen(true)}>
-        {t('shipments.history')}
-      </button>
+      <ActionCell onClick={() => setOpen(true)}>{t('shipments.history')}</ActionCell>
       {open && (
         <Popup id={`history-${s.id}`} title={t('shipments.history')} closeLabel={t('actions.back')} onClose={() => setOpen(false)}>
           <ol className={styles.ruledList} role="list">

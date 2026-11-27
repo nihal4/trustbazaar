@@ -9,6 +9,7 @@ import { FormMessage } from '../../shared/form';
 import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
 import { Popup } from '../../shared/Popup';
+import { ActionCell, PopupActions } from '../../shared/ui';
 import { ConfirmDialog } from '../../shared/ConfirmDialog';
 import { useRefresh, type DisputeView } from './Disputes';
 import styles from './orders.module.css';
@@ -57,27 +58,23 @@ export function ReturnStep({ d, t, lang }: { d: DisputeView; t: T; lang: Lang })
       )}
       {step.check !== 'mismatch' &&
         (needsCheck ? (
-          <button
-            type="button"
-            className={`${styles.primary} ${styles.cellButton}`}
+          <ActionCell
             onClick={() => {
               setMessage(null);
               setPopup('check');
             }}
           >
             {t('dispute.return_check_open')}
-          </button>
+          </ActionCell>
         ) : (
-          <button
-            type="button"
-            className={`${styles.primary} ${styles.cellButton}`}
+          <ActionCell
             onClick={() => {
               setMessage(null);
               setPopup('confirm');
             }}
           >
             {t('dispute.return_received')}
-          </button>
+          </ActionCell>
         ))}
       {popup === 'check' && (
         <Popup
@@ -105,14 +102,14 @@ export function ReturnStep({ d, t, lang }: { d: DisputeView; t: T; lang: Lang })
             </dl>
             <label htmlFor="return-value">{t('handover.device_label')}</label>
             <input id="return-value" value={value} maxLength={40} autoComplete="off" onChange={(e) => setValue(e.target.value)} />
-            <div className={styles.popupButtons}>
-              <button type="submit" className={styles.primary} disabled={check.isPending || value.trim().length < 6}>
+            <PopupActions>
+              <button type="submit" disabled={check.isPending || value.trim().length < 6}>
                 {t('handover.device_check')}
               </button>
-              <button type="button" className={styles.secondary} disabled={check.isPending} onClick={() => setPopup('closed')}>
+              <button type="button" disabled={check.isPending} onClick={() => setPopup('closed')}>
                 {t('actions.back')}
               </button>
-            </div>
+            </PopupActions>
           </form>
         </Popup>
       )}

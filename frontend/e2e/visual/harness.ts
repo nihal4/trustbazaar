@@ -89,6 +89,19 @@ export async function openScreen(page: Page, fixtureName: string, look: Look, pa
   await page.evaluate(() => document.fonts.ready);
   // what the graphics card draws (a canvas) is hidden, not masked (see `volatile` below); set on the element, because the page's content security policy refuses a stylesheet
   await page.evaluate(() => document.querySelectorAll('canvas').forEach((c) => c.style.setProperty('visibility', 'hidden', 'important')));
+  // a transition that is still running when the picture is taken (a border changing colour after the theme was set) would be drawn half way, and how far it got depends on how long the
+  // page took to get here: a change that only moved the timing would then look like a change of the screen. Every running one is finished, so the picture shows the settled state
+  // (an endless one throws; those are the live dots, which the screenshot call stops itself)
+  await page.evaluate(() =>
+    document.getAnimations().forEach((a) => {
+      try {
+        a.finish();
+      } catch {
+        /* an animation that never ends */
+      }
+    }),
+  );
+  await page.clock.runFor(50);
   return { unmatched };
 }
 

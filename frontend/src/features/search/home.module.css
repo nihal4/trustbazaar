@@ -238,40 +238,6 @@
 }
 .winSteps {
   display: none;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  gap: var(--tb-space-2-5);
-  font-size: var(--tb-text-md);
-  color: var(--tb-on-dark-soft);
-}
-.winSteps li {
-  display: flex;
-  align-items: center;
-  gap: var(--tb-space-2-5);
-}
-.winSteps li::before {
-  content: '';
-  flex: none;
-  width: 12px;
-  height: 12px;
-  border-radius: var(--tb-radius-circle);
-  border: 2px solid rgb(255 255 255 / 0.5);
-}
-.winDone {
-  color: var(--tb-white);
-}
-.winDone::before {
-  background: #fff;
-  border-color: var(--tb-white) !important;
-}
-.winNow {
-  color: var(--tb-white);
-  font-weight: 650;
-}
-.winNow::before {
-  background: var(--tb-protect);
-  border-color: var(--tb-protect) !important;
 }
 .card {
   position: absolute;

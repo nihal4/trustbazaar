@@ -1,6 +1,6 @@
 // Where an order is, and what its three steps say (U11-04: the view model of the order's progress). The page does not decide this; it asks here and draws what comes back, so the
 // buyer's and the seller's order, a cancelled one and a closed one all go through one tested function, and the Stepper primitive (shared/ui) only draws steps it is given.
-import type { EscrowStep } from '../../shared/EscrowSteps';
+import type { EscrowStep } from '../../shared/moneySteps';
 import type { OrderView } from './model';
 
 export type StepKey = 'payment' | 'handover' | 'done';

@@ -1,5 +1,6 @@
 // The buyer's side of the handover: the code to read out at the meetup, shown only after the terms are accepted.
 import { Popup } from '../../shared/Popup';
+import { PopupActions } from '../../shared/ui';
 import { Terms } from './Terms';
 import { useState } from 'react';
 import type { T } from '../../shared/language/catalogue';
@@ -59,11 +60,11 @@ export function BuyerCode({
         <Popup id="code-show" title={t('handover.code_title')} closeLabel={t('handover.hide_code')} onClose={() => setStep('closed')}>
           <p className={styles.codeNote}>{t('confirm.share_handover_code')}</p>
           <p className={`${styles.codeDigits} ${styles.codeCentre}`}>{code ? spaced(code, lang) : t('shell.loading')}</p>
-          <div className={styles.popupButtons}>
-            <button type="button" className={styles.secondary} onClick={() => setStep('closed')}>
+          <PopupActions>
+            <button type="button" onClick={() => setStep('closed')}>
               {t('handover.close_code')}
             </button>
-          </div>
+          </PopupActions>
         </Popup>
       )}
     </>

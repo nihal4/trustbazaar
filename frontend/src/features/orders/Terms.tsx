@@ -7,6 +7,7 @@ import { useApi } from '../../shared/api';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
 import { Popup } from '../../shared/Popup';
+import { PopupActions } from '../../shared/ui';
 import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
 import styles from './orders.module.css';
@@ -78,14 +79,14 @@ export function Terms({
         <span>{check}</span>
       </label>
       {message && <FormMessage kind="error">{message}</FormMessage>}
-      <div className={styles.popupButtons}>
-        <button type="button" className={styles.primary} disabled={!accepted || working} aria-busy={working} onClick={() => void accept()}>
+      <PopupActions>
+        <button type="button" disabled={!accepted || working} aria-busy={working} onClick={() => void accept()}>
           {agree}
         </button>
-        <button type="button" className={styles.secondary} disabled={working} onClick={onClose}>
+        <button type="button" disabled={working} onClick={onClose}>
           {back}
         </button>
-      </div>
+      </PopupActions>
     </Popup>
   );
 }

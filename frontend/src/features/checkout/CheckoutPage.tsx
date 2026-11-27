@@ -18,7 +18,7 @@ import { FormMessage } from '../../shared/form';
 import { useT } from '../../shared/language/Language';
 import { useMe } from '../../shared/me';
 import { isApiError, problemName } from '../../shared/problems';
-import { EscrowSteps } from '../../shared/EscrowSteps';
+import { moneySteps } from '../../shared/moneySteps';
 import { FRESHNESS } from '../../shared/query';
 import { PaymentSheet } from '../../shared/PaymentSheet';
 import enOrders from '../../messages/en/orders.json';
@@ -27,7 +27,7 @@ import { SimulatedBanner } from '../../shared/SimulatedBanner';
 import en from '../../messages/en/checkout.json';
 import bn from '../../messages/bn/checkout.json';
 import styles from './checkout.module.css';
-import { Button } from '../../shared/ui';
+import { Button, Stepper } from '../../shared/ui';
 
 const CATALOGUES = { en, bn };
 
@@ -236,10 +236,10 @@ export function Component() {
               <strong>{t('checkout.promise.title')}</strong>
             </p>
             <div className={styles.steps}>
-              <EscrowSteps
-                current={null}
+              <Stepper
+                look="line"
+                steps={moneySteps([t('checkout.counterfoil.in'), t('checkout.counterfoil.held'), t('checkout.counterfoil.out')], null)}
                 label={t('checkout.steps_label')}
-                labels={[t('checkout.counterfoil.in'), t('checkout.counterfoil.held'), t('checkout.counterfoil.out')]}
               />
             </div>
             <Button variant="primary" type="submit" form="checkout-form" disabled={create.isPending}>

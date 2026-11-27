@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatMoney } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
 import { Popup } from '../../shared/Popup';
+import { ActionCell, ActionList, PopupActions } from '../../shared/ui';
 import { ConfirmDialog } from '../../shared/ConfirmDialog';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
@@ -105,44 +106,30 @@ export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang:
       {message && !needsReason && <FormMessage kind="error">{message}</FormMessage>}
       {request && <RequestStatus o={o} t={t} />}
       {allowed.length === 0 && !extra && <p className={styles.hint}>{t('actions.none')}</p>}
-      <div className={styles.actionGrid}>
+      <ActionList>
         {extra}
         {allowed.includes('confirm') && (
-          <div className={styles.actionCell}>
-            <button type="button" className={styles.primary} onClick={() => setOpen('confirm')} disabled={act.isPending}>
-              {t('actions.confirm_receipt')}
-            </button>
-          </div>
+          <ActionCell variant="primary" onClick={() => setOpen('confirm')} disabled={act.isPending}>
+            {t('actions.confirm_receipt')}
+          </ActionCell>
         )}
         {allowed.includes('accept') && (
-          <div className={styles.actionCell}>
-            <button type="button" className={styles.primary} onClick={() => setOpen('accept')} disabled={act.isPending}>
-              {t('actions.accept_request')}
-            </button>
-          </div>
+          <ActionCell variant="primary" onClick={() => setOpen('accept')} disabled={act.isPending}>
+            {t('actions.accept_request')}
+          </ActionCell>
         )}
         {allowed.includes('decline') && (
-          <div className={styles.actionCell}>
-            <button type="button" className={styles.secondary} onClick={() => run('decline')} disabled={act.isPending}>
-              {t('actions.decline_request')}
-            </button>
-          </div>
+          <ActionCell onClick={() => run('decline')} disabled={act.isPending}>
+            {t('actions.decline_request')}
+          </ActionCell>
         )}
         {allowed.includes('request') && open !== 'request' && (
-          <div className={styles.actionCell}>
-            <button type="button" className={`${styles.secondary} ${styles.quiet}`} onClick={() => setOpen('request')}>
-              {t('actions.ask_cancel')}
-            </button>
-          </div>
+          <ActionCell variant="quiet" onClick={() => setOpen('request')}>
+            {t('actions.ask_cancel')}
+          </ActionCell>
         )}
-        {allowed.includes('cancel') && open !== 'cancel' && (
-          <div className={styles.actionCell}>
-            <button type="button" className={styles.secondary} onClick={() => setOpen('cancel')}>
-              {t('actions.seller_cancel')}
-            </button>
-          </div>
-        )}
-      </div>
+        {allowed.includes('cancel') && open !== 'cancel' && <ActionCell onClick={() => setOpen('cancel')}>{t('actions.seller_cancel')}</ActionCell>}
+      </ActionList>
 
       {needsReason && !confirming && (
         <Popup
@@ -168,13 +155,13 @@ export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang:
               rows={3}
               onChange={(e) => setReason(e.target.value)}
             />
-            <div className={styles.popupButtons}>
-              <button type="submit" className={styles.primary} disabled={act.isPending}>
+            <PopupActions>
+              <button type="submit" disabled={act.isPending}>
                 {t(open === 'request' ? 'actions.send_request' : 'actions.continue')}
               </button>
               <button
                 type="button"
-                className={styles.secondary}
+
                 onClick={() => {
                   setOpen(null);
                   setReason('');
@@ -183,7 +170,7 @@ export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang:
               >
                 {t('actions.back')}
               </button>
-            </div>
+            </PopupActions>
           </form>
         </Popup>
       )}

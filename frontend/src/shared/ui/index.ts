@@ -15,3 +15,4 @@ export { Table, type TableColumn } from './Table';
 export { Tab, Tabs } from './Tabs';
 export { Count, Tag, type TagTone } from './Tag';
 export { cx } from './cx';
+export { ActionCell, ActionList } from './ActionList';

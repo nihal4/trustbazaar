@@ -12,7 +12,7 @@ import { fieldErrors, problemName } from '../../shared/problems';
 import { useOwnership } from './GameListing';
 import { durationLabel, reasonTexts, type EditableListing, type SellingTerms } from './sell';
 import styles from './sell.module.css';
-import { Button } from '../../shared/ui';
+import { Button, Input, Select } from '../../shared/ui';
 import { listingKey, percentOf } from './sellShared';
 
 export function Publish({ l, terms, t, lang }: { l: EditableListing; terms: SellingTerms; t: T; lang: Lang }) {
@@ -70,20 +70,20 @@ export function Publish({ l, terms, t, lang }: { l: EditableListing; terms: Sell
       {auction && (
         <>
           <label htmlFor="start-price">{t('sell.start_price')}</label>
-          <input id="start-price" inputMode="decimal" value={start} onChange={(e) => setStart(e.target.value)} />
+          <Input block id="start-price" inputMode="decimal" value={start} onChange={(e) => setStart(e.target.value)} />
           <label htmlFor="reserve-price">{t('sell.reserve_price')}</label>
-          <input id="reserve-price" inputMode="decimal" value={reserve} onChange={(e) => setReserve(e.target.value)} aria-describedby="reserve-hint" />
+          <Input block id="reserve-price" inputMode="decimal" value={reserve} onChange={(e) => setReserve(e.target.value)} aria-describedby="reserve-hint" />
           <p id="reserve-hint" className={styles.hint}>
             {t('sell.reserve_hint')}
           </p>
           <label htmlFor="duration">{t('sell.duration')}</label>
-          <select id="duration" value={duration} onChange={(e) => setDuration(e.target.value)}>
+          <Select block id="duration" value={duration} onChange={(e) => setDuration(e.target.value)}>
             {terms.auctionDurations.map((d) => (
               <option key={d} value={d}>
                 {durationLabel(d, t, lang)}
               </option>
             ))}
-          </select>
+          </Select>
         </>
       )}
       {game && <p>{t(blocked ? 'sell.game.details_first' : 'sell.game.review_first')}</p>}

@@ -16,6 +16,7 @@ import { problemName } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { addressesKey, areasKey, orderKey, type Area, type OrderView, type Quote, type SavedAddress } from './model';
 import { Popup } from '../../shared/Popup';
+import { ActionCell, PopupActions } from '../../shared/ui';
 import { TimeLeft } from '../../shared/Moment';
 import { Terms } from './Terms';
 import styles from './orders.module.css';
@@ -105,14 +106,14 @@ export function AddressForm({
       <input id={`${p}-landmark`} value={landmark} maxLength={120} onChange={(e) => setLandmark(e.target.value)} />
       <label htmlFor={`${p}-contact`}>{t('address.contact')}</label>
       <input id={`${p}-contact`} value={contactName} maxLength={80} autoComplete="name" onChange={(e) => setContactName(e.target.value)} />
-      <div className={styles.popupButtons}>
-        <button type="submit" className={styles.primary} disabled={save.isPending}>
+      <PopupActions>
+        <button type="submit" disabled={save.isPending}>
           {t('address.save')}
         </button>
-        <button type="button" className={styles.secondary} onClick={onCancel}>
+        <button type="button" onClick={onCancel}>
           {t('actions.back')}
         </button>
-      </div>
+      </PopupActions>
     </form>
   );
 }
@@ -181,9 +182,9 @@ export function CourierChoice({ o, t, lang, disabled, onDone }: { o: OrderView; 
           ))}
         </fieldset>
       )}
-      <button type="button" className={`${styles.secondary} ${styles.cellButton}`} onClick={() => setAdding(true)}>
+      <ActionCell compact onClick={() => setAdding(true)}>
         {t('address.add')}
-      </button>
+      </ActionCell>
       {adding && (
         <Popup id="address-dropoff-popup" title={t('address.new.dropoff')} closeLabel={t('actions.back')} onClose={() => setAdding(false)}>
           <AddressForm
@@ -200,9 +201,9 @@ export function CourierChoice({ o, t, lang, disabled, onDone }: { o: OrderView; 
         </Popup>
       )}
       {selected && !quote && (
-        <button type="button" className={`${styles.secondary} ${styles.cellButton}`} disabled={disabled || ask.isPending} onClick={() => ask.mutate(selected)}>
+        <ActionCell compact disabled={disabled || ask.isPending} onClick={() => ask.mutate(selected)}>
           {t('courier.get_quote')}
-        </button>
+        </ActionCell>
       )}
       {quote && (
         <div className={styles.quoteBlock}>
@@ -219,18 +220,13 @@ export function CourierChoice({ o, t, lang, disabled, onDone }: { o: OrderView; 
             </div>
           </dl>
           {expired ? (
-            <button
-              type="button"
-              className={`${styles.secondary} ${styles.cellButton}`}
-              disabled={disabled || ask.isPending}
-              onClick={() => selected && ask.mutate(selected)}
-            >
+            <ActionCell compact disabled={disabled || ask.isPending} onClick={() => selected && ask.mutate(selected)}>
               {t('courier.requote')}
-            </button>
+            </ActionCell>
           ) : (
-            <button type="button" className={`${styles.secondary} ${styles.cellButton}`} disabled={disabled || choose.isPending} onClick={() => setTerms(true)}>
+            <ActionCell compact disabled={disabled || choose.isPending} onClick={() => setTerms(true)}>
               {t('courier.choose', { fee: formatMoney(BigInt(quote.fee), lang) })}
-            </button>
+            </ActionCell>
           )}
         </div>
       )}

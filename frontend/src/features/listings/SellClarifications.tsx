@@ -9,7 +9,7 @@ import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
 import { type EditableListing } from './sell';
 import styles from './sell.module.css';
-import { Button } from '../../shared/ui';
+import { Button, Textarea } from '../../shared/ui';
 import { listingKey } from './sellShared';
 
 export function Clarifications({ l, t, lang }: { l: EditableListing; t: T; lang: Lang }) {
@@ -50,7 +50,7 @@ export function Clarifications({ l, t, lang }: { l: EditableListing; t: T; lang:
         }}
       >
         <label htmlFor="clarification">{t('sell.add_clarification')}</label>
-        <textarea id="clarification" value={body} rows={3} maxLength={1000} onChange={(e) => setBody(e.target.value)} />
+        <Textarea block id="clarification" value={body} rows={3} maxLength={1000} onChange={(e) => setBody(e.target.value)} />
         <div className={styles.buttons}>
           <Button variant="primary" type="submit" disabled={add.isPending}>
             {t('sell.send_clarification')}

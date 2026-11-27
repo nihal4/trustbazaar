@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { Calendar, Card, ConfirmDialog, FactList, Panel, Popup, Section, Stepper, Tab, Table, Tabs } from './index';
+import { ActionCell, ActionList, Calendar, Card, ConfirmDialog, FactList, Panel, Popup, Section, Stepper, Tab, Table, Tabs } from './index';
 
 afterEach(cleanup);
 const css = (name: string) => readFileSync(join(__dirname, name), 'utf8');
@@ -71,6 +71,16 @@ describe('Stepper (U11-05)', () => {
     expect(items[1].textContent).toContain('current step');
     expect(items[2].textContent).toContain('still to come');
   });
+
+  it.each(['rule', 'line', 'rows', 'onDark'] as const)(
+    'NFR-USE-07 the %s look is the same ordered list, with the current step marked and each state in words',
+    (look) => {
+      render(<Stepper look={look} steps={steps} label={`Progress ${look}`} stateWords={{ done: 'done', current: 'current step', next: 'still to come' }} />);
+      const items = within(screen.getByRole('list', { name: `Progress ${look}` })).getAllByRole('listitem');
+      expect(items.map((li) => li.getAttribute('aria-current'))).toEqual([null, 'step', null]);
+      expect(items[0].textContent).toContain('done');
+    },
+  );
 
   it('NFR-USE-05 the steps stack in one column on a phone', () => {
     expect(css('stepper.module.css')).toMatch(/@media \(max-width: 560px\)\s*\{\s*\.steps\s*\{\s*grid-template-columns: minmax\(0, 1fr\)/);
@@ -204,5 +214,24 @@ describe('Calendar (U11-05)', () => {
     const grid = screen.getByRole('grid', { hidden: true });
     expect(grid.getAttribute('aria-label')).toMatch(/১৯৯৫/);
     expect(within(grid).getByText('১২')).toBeTruthy();
+  });
+});
+
+describe('ActionList (U11-15)', () => {
+  it('NFR-USE-06 each row is a real button or link, and a row alone is the same control without the list', () => {
+    render(
+      <>
+        <ActionList>
+          <ActionCell variant="primary">Confirm receipt</ActionCell>
+          <ActionCell as="a" href="/disputes/1">
+            Open chat
+          </ActionCell>
+        </ActionList>
+        <ActionCell>Add an address</ActionCell>
+      </>,
+    );
+    expect(screen.getByRole('button', { name: 'Confirm receipt' })).toHaveProperty('type', 'button');
+    expect(screen.getByRole('link', { name: 'Open chat' })).toHaveProperty('href', expect.stringContaining('/disputes/1'));
+    expect(screen.getByRole('button', { name: 'Add an address' })).toBeTruthy();
   });
 });

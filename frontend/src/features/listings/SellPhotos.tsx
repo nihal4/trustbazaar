@@ -9,7 +9,7 @@ import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
 import { type EditableListing, type SellingTerms } from './sell';
 import styles from './sell.module.css';
-import { Button } from '../../shared/ui';
+import { Button, Checkbox } from '../../shared/ui';
 import { listingKey } from './sellShared';
 
 export function Photos({ l, terms, t, lang }: { l: EditableListing; terms: SellingTerms; t: T; lang: Lang }) {
@@ -76,10 +76,7 @@ export function Photos({ l, terms, t, lang }: { l: EditableListing; terms: Selli
       </ul>
       {left > 0 && (
         <>
-          <div className={styles.check}>
-            <input id="shows-defects" type="checkbox" checked={defects} onChange={(e) => setDefects(e.target.checked)} />
-            <label htmlFor="shows-defects">{t('sell.these_show_defects')}</label>
-          </div>
+          <Checkbox id="shows-defects" checked={defects} onChange={(e) => setDefects(e.target.checked)} label={t('sell.these_show_defects')} />
           <div className={styles.addTile}>
             <label htmlFor="photo-files">{t('sell.add_photos', { left: toLocalDigits(String(left), lang) })}</label>
             <span className={styles.hint}>{t('sell.add_photos_formats')}</span>

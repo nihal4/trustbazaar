@@ -655,46 +655,6 @@
   display: grid;
   gap: var(--tb-space-4);
 }
-.actionGrid {
-  display: grid;
-}
-.actionGrid > * + * {
-  border-left: 1px solid var(--tb-line);
-}
-.actionCell {
-  display: flex;
-}
-.actionCell > button,
-.actionGrid button.secondary {
-  flex: 1;
-  min-height: 56px;
-  padding: var(--tb-space-2) var(--tb-space-3);
-  border: 0;
-  border-radius: 0;
-  background: none;
-  color: var(--tb-text);
-  font: inherit;
-  font-weight: 600;
-  text-align: center;
-  cursor: pointer;
-  transition:
-    color var(--tb-dur-base),
-    background var(--tb-dur-base);
-}
-.actionGrid button.secondary:hover:not(:disabled),
-.actionCell > button:hover:not(:disabled) {
-  color: var(--tb-hot);
-  background: var(--tb-surface);
-}
-.actionGrid button.secondary:focus-visible,
-.actionCell > button:focus-visible {
-  outline: 2px solid var(--tb-hot);
-  outline-offset: -3px;
-}
-.actionGrid button.primary {
-  flex: 1;
-  min-height: 56px;
-}
 .partyRow {
   display: grid;
   border-block: 1px solid var(--tb-line);
@@ -870,10 +830,6 @@
   font-size: var(--tb-text-2xs);
   font-weight: 600;
 }
-.actionGrid button.quiet {
-  color: var(--tb-muted);
-  font-weight: 500;
-}
 
 /* phones: the page reads head, money, what to do next (the rail), then the story */
 @media (max-width: 59.99rem) {
@@ -938,7 +894,6 @@
 /* no filled orange boxes: orange border, low-opacity wash, sharp edges */
 .primary,
 .primaryLink,
-.actionGrid button.primary,
 .rail button.primary {
   background: color-mix(in srgb, var(--tb-hot) 10%, transparent);
   color: var(--tb-text);
@@ -1036,25 +991,6 @@
   margin: 0;
   font-size: var(--tb-text-sm);
 }
-.popupButtons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  border: 1px solid var(--tb-line);
-  margin-top: var(--tb-space-3);
-}
-.popupButtons > button {
-  min-height: 56px;
-  border: 0;
-}
-.popupButtons > button:only-child {
-  grid-column: 1 / -1;
-}
-.popupButtons > .secondary:hover {
-  background: var(--tb-surface);
-}
-.form .popupButtons .secondary {
-  text-decoration: none;
-}
 .terms {
   list-style: none;
   counter-reset: t;
@@ -1104,10 +1040,6 @@
   margin: var(--tb-space-0-5) 0 0;
   accent-color: var(--tb-hot);
 }
-.popupButtons > button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
 /* the code popup: the note and the digits centred (the trailing letter-space is cancelled so the digits sit truly in the middle) */
 .codeNote {
   text-align: center;
@@ -1130,54 +1062,18 @@
 .accept {
   line-height: var(--tb-line-height, 1.5);
 }
-/* popup button grid: no stray orange border, air inside the cells, stacked on phones */
-.popupButtons > button,
-.popupButtons > button.primary {
-  border: 0;
-  padding: var(--tb-space-3) var(--tb-space-4);
-}
-.popupButtons > button + button {
-  background: none;
-  text-decoration: none;
-  color: var(--tb-text);
-  border-left: 1px solid var(--tb-line);
-}
-@media (max-width: 30rem) {
-  .popupButtons {
-    grid-template-columns: 1fr;
-  }
-  .popupButtons > button + button {
-    border-left: 0;
-    border-top: 1px solid var(--tb-line);
-  }
-}
-/* the primary keeps its orange wash on hover inside the action grid */
-.actionGrid button.primary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--tb-hot) 18%, transparent);
-  color: var(--tb-text);
-}
-/* ruled cells with a hairline between them however they wrap (a 1 px gap over the rule colour), and the popup dialog is not a cell */
-.deadlineGrid,
-.actionGrid {
+/* ruled cells with a hairline between them however they wrap (a 1 px gap over the rule colour) */
+.deadlineGrid {
   gap: 1px;
   background: var(--tb-line);
-}
-.deadlineGrid {
   border: 1px solid var(--tb-line);
 }
-.deadlineGrid > div,
-.actionGrid > .actionCell {
+.deadlineGrid > div {
   background: var(--tb-bg);
   border-left: 0;
 }
-.deadlineGrid > div + div,
-.actionGrid > * + * {
+.deadlineGrid > div + div {
   border-left: 0;
-}
-.actionGrid > form {
-  grid-column: 1 / -1;
-  border-left: 0;
-  background: var(--tb-bg);
 }
 .form p > .secondary {
   background: none;
@@ -1190,28 +1086,6 @@
 }
 
 /* ---- review round 3: the pay panel in the rail, buttons that open popups are ruled cells, the shipment as a grid, ruled lists, file inputs ---- */
-.cellButton::after {
-  content: '';
-  width: 0.5rem;
-  height: 0.5rem;
-  margin-left: var(--tb-space-3);
-  border: solid currentColor;
-  border-width: 1.5px 1.5px 0 0;
-  transform: rotate(45deg);
-  flex: none;
-}
-.cellButton:hover:not(:disabled) {
-  color: var(--tb-hot);
-  background: var(--tb-surface);
-}
-.cellButton:focus-visible {
-  outline: 2px solid var(--tb-hot);
-  outline-offset: -3px;
-}
-.cellButton:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
 /* two buttons side by side as ruled cells, not sticky */
 .cellRow {
   display: grid;
@@ -1336,15 +1210,6 @@ input[type='file']:hover::file-selector-button {
   padding: var(--tb-space-2) 0;
   border-bottom: 0;
 }
-/* the popup form fits a popup */
-.popupButtons {
-  bottom: 0;
-  background: var(--tb-sheet);
-  position: static;
-}
-[class*='inner'] .popupButtons {
-  position: sticky;
-}
 .rail .deadlineGrid > div {
   padding: var(--tb-space-3-5) var(--tb-space-4);
   gap: var(--tb-space-1);
@@ -1412,34 +1277,8 @@ input[type='file']:hover::file-selector-button {
 .deadlineGrid,
 .shipFacts,
 .breakdownGrid,
-.cellRow,
-.popupButtons {
+.cellRow {
   border-inline: 0;
-}
-/* a button that opens a popup: a full-width ruled cell with a chevron, as the cells of the action grid */
-.cellButton {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  min-height: 52px;
-  padding: var(--tb-space-2) var(--tb-space-3);
-  border: 1px solid var(--tb-line);
-  border-radius: 0;
-  background: none;
-  color: var(--tb-text);
-  font: inherit;
-  font-weight: 600;
-  text-align: left;
-  cursor: pointer;
-  transition:
-    color var(--tb-dur-base),
-    background var(--tb-dur-base);
-  border-inline: 0;
-  padding-inline: 0;
-}
-.cellButton + .cellButton {
-  margin-top: -1px;
 }
 .facts > div:first-child,
 .deadlineGrid > div:first-child,
@@ -1671,7 +1510,7 @@ input[type='file']::file-selector-button {
   padding: 0;
   border-bottom: 1px solid var(--tb-line);
 }
-.rail > .historyCell .cellButton {
+.rail > .historyCell > button {
   border: 0;
   min-height: 56px;
 }
@@ -1711,9 +1550,6 @@ input[type='file']::file-selector-button {
   padding-left: 0;
   border-left: 0;
   border-top: 1px solid var(--tb-line);
-}
-.cellLink {
-  text-decoration: none;
 }
 
 /* ---- the dispute chat as a messenger: rows from TrustBazaar on the left, yours on the right, the box at the bottom ---- */
@@ -1975,9 +1811,6 @@ input[type='file'].fileHidden {
     height: 70svh;
     min-height: 24rem;
   }
-}
-.actionGrid > .actionCell:last-child:nth-child(odd) {
-  grid-column: 1 / -1;
 }
 .shipFacts,
 .breakdownGrid,
@@ -2322,51 +2155,8 @@ input[type='file'].fileHidden {
 
 /* the rail's actions as a list and the other party as a card (U10-25): one action to a line, the text on the left and an arrow on the right, hairlines
    between; the party is a square photo place with the grid and the initials, the name with the tick, since when, and the message cell */
-/* grids whose cells wrap: a rule above and below, a hairline above and left of each cell inside (an inset shadow), nothing at the open sides */
-.actionGrid {
-  gap: 0;
-  background: none;
-  border-block: 1px solid var(--tb-line);
-  overflow: hidden;
-  grid-template-columns: 1fr;
-}
 
 /* ---- review round (impeccable, before the PR) ---- */
-.actionGrid > .actionCell,
-.actionGrid > form {
-  background: none;
-  box-shadow: none;
-  border-left: 0;
-}
-.actionGrid > .actionCell + .actionCell,
-.actionGrid > * + * {
-  border-top: 1px solid var(--tb-line);
-}
-.actionCell > button {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  text-align: left;
-  min-height: 60px;
-  padding: var(--tb-space-2) var(--tb-space-1);
-  font-size: var(--tb-text-base);
-  line-height: 1.35;
-}
-.actionCell > button::after {
-  content: '';
-  width: 0.5rem;
-  height: 0.5rem;
-  margin-left: var(--tb-space-2);
-  border: solid currentColor;
-  border-width: 1.5px 1.5px 0 0;
-  transform: rotate(45deg);
-  flex: none;
-  margin-right: var(--tb-space-1);
-  transition: transform var(--tb-dur-base);
-}
-.actionCell > button:hover:not(:disabled)::after {
-  transform: translateX(3px) rotate(45deg);
-}
 .partyRow {
   --av: 52px;
   grid-template-columns: auto minmax(0, 1fr) auto;

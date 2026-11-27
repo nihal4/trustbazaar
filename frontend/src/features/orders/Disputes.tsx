@@ -13,6 +13,7 @@ import { useApi } from '../../shared/api';
 import { useServerNow } from '../../shared/clock';
 import { ConfirmDialog } from '../../shared/ConfirmDialog';
 import { Popup } from '../../shared/Popup';
+import { ActionCell, PopupActions } from '../../shared/ui';
 import { Moment } from '../../shared/Moment';
 import { Terms } from './Terms';
 import { errorText } from '../../shared/errors';
@@ -159,7 +160,7 @@ export function DisputeSlot({ o, items, t, lang }: { o: OrderView; items: Disput
           {sent &&
             live &&
             (sent.failed ? <FormMessage kind="error">{sent.failed}</FormMessage> : <FormMessage kind="success">{t('dispute.sent')}</FormMessage>)}
-          <Link to={`/disputes/${encodeURIComponent(d.id)}`} className={`${styles.secondary} ${styles.cellButton} ${styles.cellLink}`}>
+          <ActionCell as={Link} to={`/disputes/${encodeURIComponent(d.id)}`}>
             {t('dispute.open_chat')}
             {(latest?.unseen ?? 0) > 0 && (
               <>
@@ -169,7 +170,7 @@ export function DisputeSlot({ o, items, t, lang }: { o: OrderView; items: Disput
                 <span className={styles.srOnly}>{t('dispute.unseen', { n: toLocalDigits(String(latest?.unseen ?? 0), lang) })}</span>
               </>
             )}
-          </Link>
+          </ActionCell>
         </section>
       )}
       {dispute.isError && <FormMessage kind="error">{errorText(dispute.error, t, lang)}</FormMessage>}
@@ -181,9 +182,9 @@ export function DisputeSlot({ o, items, t, lang }: { o: OrderView; items: Disput
         ) : (
           <section aria-labelledby="open-dispute-title" className={styles.panel}>
             <h2 id="open-dispute-title">{t('dispute.slot_title')}</h2>
-            <button type="button" className={`${styles.secondary} ${styles.cellButton}`} disabled aria-describedby="dispute-not-yet">
+            <ActionCell disabled aria-describedby="dispute-not-yet">
               {t('dispute.open_button')}
-            </button>
+            </ActionCell>
             <p id="dispute-not-yet" className={styles.hint}>
               {t('dispute.not_yet')}
             </p>
@@ -280,9 +281,7 @@ function OpenDispute({ o, t, lang, onOpened }: { o: OrderView; t: T; lang: Lang;
     <section aria-labelledby="open-dispute-title" className={styles.panel}>
       <h2 id="open-dispute-title">{t('dispute.slot_title')}</h2>
       {message && !shown && <FormMessage kind="error">{message}</FormMessage>}
-      <button type="button" className={`${styles.secondary} ${styles.cellButton}`} onClick={() => setShown(true)}>
-        {t('dispute.open_button')}
-      </button>
+      <ActionCell onClick={() => setShown(true)}>{t('dispute.open_button')}</ActionCell>
       {shown && !confirming && (
         <Popup id="open-dispute-form" title={t('dispute.open_title')} closeLabel={t('actions.back')} busy={open.isPending} onClose={closeForm}>
           <form onSubmit={submit} noValidate className={styles.form}>
@@ -325,14 +324,14 @@ function OpenDispute({ o, t, lang, onOpened }: { o: OrderView; t: T; lang: Lang;
             </p>
             {files.length > 0 && <p className={styles.hint}>{t('dispute.files_chosen', { n: toLocalDigits(String(files.length), lang) })}</p>}
             {progress && <p role="status">{progress}</p>}
-            <div className={styles.popupButtons}>
-              <button type="submit" className={styles.primary} disabled={open.isPending}>
+            <PopupActions>
+              <button type="submit" disabled={open.isPending}>
                 {t('dispute.continue')}
               </button>
-              <button type="button" className={styles.secondary} onClick={closeForm}>
+              <button type="button" onClick={closeForm}>
                 {t('actions.back')}
               </button>
-            </div>
+            </PopupActions>
           </form>
         </Popup>
       )}
@@ -388,9 +387,7 @@ export function Withdraw({ d, o, t, lang }: { d: DisputeView; o: OrderView | nul
   return (
     <div>
       {message && <FormMessage kind="error">{message}</FormMessage>}
-      <button type="button" className={`${styles.secondary} ${styles.cellButton}`} onClick={() => setConfirming(true)}>
-        {t('dispute.withdraw')}
-      </button>
+      <ActionCell onClick={() => setConfirming(true)}>{t('dispute.withdraw')}</ActionCell>
       {confirming && (
         <ConfirmDialog
           id="withdraw-dispute"

@@ -1,5 +1,6 @@
 // The check of a device's identifier at the meetup (a phone or a laptop): the buyer's part of the handover.
 import { Popup } from '../../shared/Popup';
+import { PopupActions } from '../../shared/ui';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toLocalDigits } from '../../lib/money.js';
@@ -71,14 +72,14 @@ export function DeviceCheck({
         </dl>
         <label htmlFor="device-value">{t('handover.device_label')}</label>
         <input id="device-value" value={value} maxLength={40} autoComplete="off" disabled={locked} onChange={(e) => setValue(e.target.value)} />
-        <div className={styles.popupButtons}>
-          <button type="submit" className={styles.primary} disabled={check.isPending || locked || value.trim().length < 6}>
+        <PopupActions>
+          <button type="submit" disabled={check.isPending || locked || value.trim().length < 6}>
             {t('handover.device_check')}
           </button>
-          <button type="button" className={styles.secondary} disabled={check.isPending} onClick={onClose}>
+          <button type="button" disabled={check.isPending} onClick={onClose}>
             {t('actions.back')}
           </button>
-        </div>
+        </PopupActions>
       </form>
     </Popup>
   );

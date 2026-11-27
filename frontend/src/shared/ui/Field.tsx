@@ -43,21 +43,24 @@ export function Field({ id, label, hint, error, className, children }: FieldProp
 /** The look of a control: a hairline under it (the site's field, in both themes), or a ruled box (a rare variant for a control that stands alone on an open page). */
 export type ControlLook = 'line' | 'box';
 
-export function Input({ look = 'line', className, ...rest }: InputHTMLAttributes<HTMLInputElement> & { look?: ControlLook }) {
-  return <input {...rest} className={cx(styles.control, look === 'box' && styles.box, className)} />;
+/** `block`: the control fills its container (a form that is itself one column), instead of stopping at the width of a field (32 rem). */
+type Fill = { block?: boolean };
+
+export function Input({ look = 'line', block, className, ...rest }: InputHTMLAttributes<HTMLInputElement> & { look?: ControlLook } & Fill) {
+  return <input {...rest} className={cx(styles.control, look === 'box' && styles.box, block && styles.block, className)} />;
 }
 
-export function Select({ look = 'line', className, children, ...rest }: SelectHTMLAttributes<HTMLSelectElement> & { look?: ControlLook }) {
+export function Select({ look = 'line', block, className, children, ...rest }: SelectHTMLAttributes<HTMLSelectElement> & { look?: ControlLook } & Fill) {
   return (
-    <select {...rest} className={cx(styles.control, styles.select, look === 'box' && styles.box, className)}>
+    <select {...rest} className={cx(styles.control, styles.select, look === 'box' && styles.box, block && styles.block, className)}>
       {children}
     </select>
   );
 }
 
 /** Several lines need a frame to be seen: a textarea is always the ruled box. */
-export function Textarea({ className, ...rest }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <textarea {...rest} className={cx(styles.control, styles.box, styles.textarea, className)} />;
+export function Textarea({ block, className, ...rest }: TextareaHTMLAttributes<HTMLTextAreaElement> & Fill) {
+  return <textarea {...rest} className={cx(styles.control, styles.box, styles.textarea, block && styles.block, className)} />;
 }
 
 /** The text under a control: a hint in muted type or an error in the danger colour (an error is also what `aria-describedby` points at). */

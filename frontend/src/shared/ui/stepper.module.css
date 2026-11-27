@@ -72,3 +72,178 @@
     border-left-color: var(--tb-hot);
   }
 }
+
+/* The other looks of the stepper (U11-15); each is the look a screen drew by itself before, now one component. A step is `.item`, and `.isDone` and `.isCurrent` say where it is. */
+.line b,
+.rows b,
+.onDark b {
+  font: inherit;
+  color: inherit;
+}
+
+/* line: the money steps of an order as balls on a line (docs/design/10_visual_v3.md): a step the money has reached is a filled green ball and the line up to it is green; a step it has not reached is an empty ring on a grey line */
+.line {
+  display: grid;
+  grid-template-columns: repeat(var(--steps, 3), minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.line .item {
+  position: relative;
+  padding: var(--tb-space-7) var(--tb-space-3) 0 0;
+  color: var(--tb-muted);
+  font-size: var(--tb-text-sm);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.line .item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--tb-border);
+  border-radius: var(--tb-radius-circle);
+  background: var(--tb-bg);
+}
+.line .item::after {
+  content: '';
+  position: absolute;
+  left: 16px;
+  right: 0;
+  top: 7px;
+  height: 2px;
+  background: var(--tb-line);
+}
+.line .item:last-child::after {
+  content: none;
+}
+.line .isDone,
+.line .isCurrent {
+  color: var(--tb-text);
+}
+.line .isDone::before,
+.line .isCurrent::before {
+  border-color: var(--tb-protect);
+  background: var(--tb-protect);
+}
+.line .isDone::after {
+  background: var(--tb-protect);
+}
+.line .isCurrent {
+  font-weight: 600;
+  color: var(--tb-protect);
+}
+/* while the payment is the step the order is at (not paid yet), its ring is vermilion (the action to take), not green: green is for what is held or done */
+.line .isCurrent:first-child {
+  color: var(--tb-text);
+}
+.line .isCurrent:first-child::before {
+  background: var(--tb-bg);
+  border-color: var(--tb-hot);
+}
+@media (forced-colors: active) {
+  .line .item::before {
+    border-color: CanvasText;
+  }
+  .line .isDone::before,
+  .line .isCurrent::before {
+    background: Highlight;
+  }
+  .line .item::after {
+    background: CanvasText;
+  }
+}
+
+/* rows: a ruled list, a ball at the start of each row (the promise on the home page) */
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--tb-line);
+}
+.rows .item {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-3-5);
+  padding: var(--tb-space-3) 0;
+  font-weight: 500;
+  color: var(--tb-muted);
+}
+.rows .item + .item {
+  border-top: 1px solid var(--tb-line);
+}
+.rows .item::before {
+  content: '';
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--tb-radius-circle);
+  border: 2px solid var(--tb-border);
+}
+.rows .isDone {
+  color: var(--tb-text);
+}
+.rows .isDone::before {
+  background: var(--tb-text);
+  border-color: var(--tb-text);
+}
+.rows .isCurrent {
+  color: var(--tb-white);
+  font-weight: 650;
+}
+.rows .isCurrent::before {
+  background: var(--tb-protect);
+  border-color: var(--tb-protect);
+  box-shadow: 0 0 0 4px rgb(93 211 158 / 0.22);
+}
+@media (forced-colors: active) {
+  .rows .isCurrent::before {
+    box-shadow: none;
+    outline: 2px solid Highlight;
+  }
+}
+
+/* onDark: a compact list of balls on a dark ground (the example in the home page's window); the page places the list and decides when it shows */
+.onDark {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: var(--tb-space-2-5);
+  font-size: var(--tb-text-md);
+  color: var(--tb-on-dark-soft);
+}
+.onDark .item {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-2-5);
+}
+.onDark .item::before {
+  content: '';
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--tb-radius-circle);
+  border: 2px solid rgb(255 255 255 / 0.5);
+}
+.onDark .isDone {
+  color: var(--tb-white);
+}
+.onDark .isDone::before {
+  background: var(--tb-white);
+  border-color: var(--tb-white);
+}
+.onDark .isCurrent {
+  color: var(--tb-white);
+  font-weight: 650;
+}
+.onDark .isCurrent::before {
+  background: var(--tb-protect);
+  border-color: var(--tb-protect);
+}
