@@ -13,7 +13,7 @@ import { fieldErrors, problemName } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { commissionOf, nearestArea, reasonTexts, type Category, type EditableListing, type SellingTerms } from './sell';
 import styles from './sell.module.css';
-import { Button } from '../../shared/ui';
+import { Button, Checkbox, Input, Radio, Select, Textarea } from '../../shared/ui';
 import { listingKey, percentOf } from './sellShared';
 import { CONDITIONS, FULFILMENT, WEIGHTS, SIZES, useAreas } from './sellOptions';
 
@@ -154,19 +154,17 @@ export function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; 
         <fieldset className={styles.choice}>
           <legend>{t('sell.kind')}</legend>
           {(['physical', 'game_account'] as const).map((k) => (
-            <div key={k}>
-              <input
-                id={`kind-${k}`}
-                type="radio"
-                name="kind"
-                checked={itemKind === k}
-                onChange={() => {
-                  setItemKind(k);
-                  setCategoryId('');
-                }}
-              />
-              <label htmlFor={`kind-${k}`}>{t(`sell.kind.${k}`)}</label>
-            </div>
+            <Radio
+              key={k}
+              id={`kind-${k}`}
+              name="kind"
+              checked={itemKind === k}
+              onChange={() => {
+                setItemKind(k);
+                setCategoryId('');
+              }}
+              label={t(`sell.kind.${k}`)}
+            />
           ))}
           {game && <p className={styles.hint}>{t('sell.game.kind_hint')}</p>}
         </fieldset>
@@ -175,33 +173,31 @@ export function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; 
         <fieldset className={styles.choice}>
           <legend>{t('sell.format')}</legend>
           {(['fixed_price', 'auction'] as const).map((f) => (
-            <div key={f}>
-              <input id={`format-${f}`} type="radio" name="format" checked={saleFormat === f} onChange={() => setSaleFormat(f)} />
-              <label htmlFor={`format-${f}`}>{t(`sell.format.${f}`)}</label>
-            </div>
+            <Radio key={f} id={`format-${f}`} name="format" checked={saleFormat === f} onChange={() => setSaleFormat(f)} label={t(`sell.format.${f}`)} />
           ))}
         </fieldset>
       )}
       {draft && (
         <>
           <label htmlFor="category">{t('sell.field.categoryId')}</label>
-          <select id="category" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} aria-describedby="category-hint">
+          <Select block id="category" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} aria-describedby="category-hint">
             <option value="">{t('sell.category_choose')}</option>
             {options.map((c) => (
               <option key={c.id} value={String(c.id)} disabled={!c.selectable}>
                 {(lang === 'bn' ? c.nameBn : c.nameEn) + (c.selectable ? '' : ` (${t('sell.prohibited')})`)}
               </option>
             ))}
-          </select>
+          </Select>
           <p id="category-hint" className={styles.hint}>
             {t('sell.prohibited_policy')} <Link to="/help/terms">{t('sell.policy_link')}</Link>
           </p>
         </>
       )}
       <label htmlFor="title">{t('sell.field.title')}</label>
-      <input id="title" value={title} maxLength={120} onChange={(e) => setTitle(e.target.value)} />
+      <Input block id="title" value={title} maxLength={120} onChange={(e) => setTitle(e.target.value)} />
       <label htmlFor="description">{t('sell.field.description')}</label>
-      <textarea
+      <Textarea
+        block
         id="description"
         value={description}
         rows={6}
@@ -215,23 +211,21 @@ export function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; 
       {!game && (
         <>
           <label htmlFor="condition">{t('sell.field.condition')}</label>
-          <select id="condition" value={condition} onChange={(e) => setCondition(e.target.value)}>
+          <Select block id="condition" value={condition} onChange={(e) => setCondition(e.target.value)}>
             <option value="">{t('sell.choose')}</option>
             {CONDITIONS.map((c) => (
               <option key={c} value={c}>
                 {t(`sell.condition.${c}`)}
               </option>
             ))}
-          </select>
-          <div className={styles.check}>
-            <input id="no-defects" type="checkbox" checked={noDefects} onChange={(e) => setNoDefects(e.target.checked)} />
-            <label htmlFor="no-defects">{t('sell.no_defects')}</label>
-          </div>
+          </Select>
+          <Checkbox id="no-defects" checked={noDefects} onChange={(e) => setNoDefects(e.target.checked)} label={t('sell.no_defects')} />
           {!noDefects && <p className={styles.hint}>{t('sell.defects_hint')}</p>}
           {!game && draft && ['mobile-phones', 'laptops-computers'].includes(categories.data?.find((c) => String(c.id) === categoryId)?.slug ?? '') && (
             <>
               <label htmlFor="serial">{t('sell.field.serial')}</label>
-              <input
+              <Input
+                block
                 id="serial"
                 value={serial}
                 maxLength={40}
@@ -246,33 +240,33 @@ export function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; 
             </>
           )}
           <label htmlFor="fulfilment">{t('sell.field.fulfilmentOptions')}</label>
-          <select id="fulfilment" value={fulfilment} onChange={(e) => setFulfilment(e.target.value)}>
+          <Select block id="fulfilment" value={fulfilment} onChange={(e) => setFulfilment(e.target.value)}>
             {FULFILMENT.map((f) => (
               <option key={f} value={f}>
                 {t(`sell.fulfilment.${f}`)}
               </option>
             ))}
-          </select>
+          </Select>
           {courier && (
             <>
               <label htmlFor="weight">{t('sell.field.weightClass')}</label>
-              <select id="weight" value={weight} onChange={(e) => setWeight(e.target.value)}>
+              <Select block id="weight" value={weight} onChange={(e) => setWeight(e.target.value)}>
                 <option value="">{t('sell.choose')}</option>
                 {WEIGHTS.map((w) => (
                   <option key={w} value={w}>
                     {t(`sell.weight.${w}`)}
                   </option>
                 ))}
-              </select>
+              </Select>
               <label htmlFor="size">{t('sell.field.sizeClass')}</label>
-              <select id="size" value={size} onChange={(e) => setSize(e.target.value)}>
+              <Select block id="size" value={size} onChange={(e) => setSize(e.target.value)}>
                 <option value="">{t('sell.choose')}</option>
                 {SIZES.map((s) => (
                   <option key={s} value={s}>
                     {t(`sell.size.${s}`)}
                   </option>
                 ))}
-              </select>
+              </Select>
             </>
           )}
         </>
@@ -280,7 +274,7 @@ export function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; 
       {saleFormat === 'fixed_price' && (
         <>
           <label htmlFor="price">{t('sell.field.price')}</label>
-          <input id="price" inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} aria-describedby="price-hint" />
+          <Input block id="price" inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} aria-describedby="price-hint" />
           <p id="price-hint" className={styles.hint}>
             {commission
               ? t('sell.commission_fixed', { percent: percentOf(terms.commissionBps, lang), amount: formatMoney(commission, lang) })
@@ -289,7 +283,7 @@ export function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; 
           {!game && (
             <>
               <label htmlFor="quantity">{t('sell.field.quantity')}</label>
-              <input id="quantity" inputMode="numeric" value={quantity} maxLength={4} onChange={(e) => setQuantity(e.target.value)} />
+              <Input block id="quantity" inputMode="numeric" value={quantity} maxLength={4} onChange={(e) => setQuantity(e.target.value)} />
             </>
           )}
         </>
@@ -298,7 +292,8 @@ export function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; 
       {!game && (
         <>
           <label htmlFor="area">{t('sell.field.area')}</label>
-          <select
+          <Select
+            block
             id="area"
             value={areaId}
             onChange={(e) => {
@@ -311,7 +306,7 @@ export function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; 
             {(areas.data?.items ?? []).map((a) => (
               <option key={a.id} value={String(a.id)}>{`${lang === 'bn' ? a.nameBn : a.nameEn}, ${a.district}`}</option>
             ))}
-          </select>
+          </Select>
           <p id="area-hint" className={styles.hint}>
             {t('sell.area_hint')}
           </p>

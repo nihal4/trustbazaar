@@ -16,7 +16,7 @@ import { fieldErrors } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { reasonTexts, type EditableListing } from './sell';
 import styles from './sell.module.css';
-import { Button } from '../../shared/ui';
+import { Button, Input, Select, Textarea } from '../../shared/ui';
 
 export interface Game {
   id: number;
@@ -124,7 +124,8 @@ function GameDetailsForm({ l, details, fixed, t, lang }: { l: EditableListing; d
       {message && <FormMessage kind="error">{message}</FormMessage>}
       {saved && <FormMessage kind="success">{t('sell.game.saved')}</FormMessage>}
       <label htmlFor="game">{t('sell.field.gameId')}</label>
-      <select
+      <Select
+        block
         id="game"
         value={gameId}
         disabled={fixed}
@@ -139,19 +140,20 @@ function GameDetailsForm({ l, details, fixed, t, lang }: { l: EditableListing; d
             {g.name}
           </option>
         ))}
-      </select>
+      </Select>
       {game && <p className={styles.hint}>{game.publisherNote}</p>}
       <label htmlFor="platform">{t('sell.field.platform')}</label>
-      <select id="platform" value={platform} disabled={fixed || !game} onChange={(e) => setPlatform(e.target.value)}>
+      <Select block id="platform" value={platform} disabled={fixed || !game} onChange={(e) => setPlatform(e.target.value)}>
         <option value="">{t('sell.choose')}</option>
         {(game?.platforms ?? []).map((p) => (
           <option key={p} value={p}>
             {p}
           </option>
         ))}
-      </select>
+      </Select>
       <label htmlFor="player-id">{t('sell.field.playerId')}</label>
-      <input
+      <Input
+        block
         id="player-id"
         value={playerId}
         maxLength={64}
@@ -164,7 +166,7 @@ function GameDetailsForm({ l, details, fixed, t, lang }: { l: EditableListing; d
         {t(fixed ? 'sell.game.player_id_fixed' : 'sell.game.player_id_hint')}
       </p>
       <label htmlFor="contents">{t('sell.field.contents')}</label>
-      <textarea id="contents" value={contents} rows={4} maxLength={2000} onChange={(e) => setContents(e.target.value)} aria-describedby="contents-hint" />
+      <Textarea block id="contents" value={contents} rows={4} maxLength={2000} onChange={(e) => setContents(e.target.value)} aria-describedby="contents-hint" />
       <p id="contents-hint" className={styles.hint}>
         {t('sell.game.contents_hint')}
       </p>
