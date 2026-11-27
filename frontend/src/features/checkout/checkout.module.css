@@ -77,21 +77,6 @@
   margin-bottom: var(--tb-space-1);
   padding: 0;
 }
-.field input[type='text'] {
-  min-height: 46px;
-  max-width: 8rem;
-  font: inherit;
-  font-variant-numeric: tabular-nums;
-  padding: 0 var(--tb-space-3-5);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-  background: var(--tb-sheet);
-  color: var(--tb-text);
-}
-.option:has(input:checked) {
-  border-color: var(--tb-accent);
-  background: var(--tb-accent-wash);
-}
 .option input {
   width: 20px;
   height: 20px;
@@ -154,9 +139,14 @@
   border-color: var(--tb-line);
   background: none;
   box-shadow: inset 3px 0 0 var(--tb-hot);
-  padding-left: var(--tb-space-3);
 }
 .field input[type='text'] {
+  min-height: 46px;
+  max-width: 8rem;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  padding: 0 var(--tb-space-3-5);
+  color: var(--tb-text);
   border: 0;
   border-bottom: 1px solid var(--tb-border);
   border-radius: 0;
