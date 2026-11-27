@@ -1,0 +1,74 @@
+/* A stepper (Stepper.tsx): a rule across the top of each step in a row; a rule down the side in a column. */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(var(--steps, 3), minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.step {
+  display: grid;
+  align-content: start;
+  gap: var(--tb-space-0-5);
+  padding: var(--tb-space-3-5) var(--tb-space-3) 0 0;
+  border-top: 2px solid var(--tb-line);
+  color: var(--tb-muted);
+  font-size: var(--tb-text-sm);
+}
+.step b {
+  color: var(--tb-text);
+  font-size: var(--tb-text-md);
+  font-weight: 600;
+}
+.done {
+  border-top-color: var(--tb-success);
+}
+.current {
+  border-top-color: var(--tb-hot);
+  color: var(--tb-text);
+}
+.next b {
+  color: var(--tb-muted);
+}
+.note {
+  font-variant-numeric: tabular-nums;
+}
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.vertical {
+  grid-template-columns: minmax(0, 1fr);
+}
+.vertical .step {
+  padding: 0 0 var(--tb-space-4-5) var(--tb-space-4);
+  border-top: 0;
+  border-left: 2px solid var(--tb-line);
+}
+.vertical .done {
+  border-left-color: var(--tb-success);
+}
+.vertical .current {
+  border-left-color: var(--tb-hot);
+}
+@media (max-width: 560px) {
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .step {
+    padding: 0 0 var(--tb-space-4-5) var(--tb-space-4);
+    border-top: 0;
+    border-left: 2px solid var(--tb-line);
+  }
+  .done {
+    border-left-color: var(--tb-success);
+  }
+  .current {
+    border-left-color: var(--tb-hot);
+  }
+}

@@ -1,0 +1,64 @@
+/* A table (Table.tsx): ruled rows; stacked blocks under 560 px. */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  border-top: 1px solid var(--tb-line);
+}
+.caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.table th,
+.table td {
+  padding: var(--tb-space-3) var(--tb-space-4) var(--tb-space-3) 0;
+  border-bottom: 1px solid var(--tb-line);
+  text-align: start;
+  vertical-align: top;
+}
+.table th {
+  color: var(--tb-muted);
+  font-size: var(--tb-text-sm);
+  font-weight: 600;
+}
+.table td {
+  font-variant-numeric: tabular-nums;
+}
+.end {
+  text-align: end !important;
+}
+@media (max-width: 560px) {
+  .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .table,
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+  }
+  .table tr {
+    border-bottom: 1px solid var(--tb-line);
+    padding-block: var(--tb-space-2);
+  }
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--tb-space-4);
+    padding: var(--tb-space-1-5) 0;
+    border: 0;
+    text-align: end;
+  }
+  .table td::before {
+    content: attr(data-label);
+    color: var(--tb-muted);
+    font-size: var(--tb-text-sm);
+    text-align: start;
+  }
+}

@@ -1,0 +1,36 @@
+/* Tabs (Tabs.tsx): a row with a rule under it; the current tab has a vermilion rule. */
+.tabs {
+  overflow-x: auto;
+  border-bottom: 1px solid var(--tb-line);
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+.tabs ul {
+  display: flex;
+  gap: var(--tb-space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  width: max-content;
+}
+.tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--tb-space-0-5);
+  margin-bottom: -1px; /* the tab's rule lies over the hairline of the row */
+  border-bottom: 2px solid transparent;
+  color: var(--tb-muted);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.tab:hover {
+  color: var(--tb-text);
+}
+.tab[aria-current] {
+  border-bottom-color: var(--tb-hot);
+  color: var(--tb-text);
+}
