@@ -19,6 +19,8 @@ export interface Me {
   mfaEnabled: boolean;
   /** a code by e-mail at each sign-in from a device that is not remembered (FR-ACC-12) */
   emailTwoStep?: boolean;
+  /** when the account was made (an ISO time): the profile page's "member since" */
+  memberSince?: string;
 }
 
 export const ME_KEY = ['me'] as const;

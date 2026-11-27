@@ -92,7 +92,7 @@
   "verify_email.done": "Your e-mail address is verified.",
   "account.title": "Your account",
   "account.link": "Go to your account",
-  "account.name": "Display name",
+  "account.name": "Full name",
   "account.email_verified": "verified",
   "account.email_unverified": "not verified yet",
   "account.kyc": "Identity check",
@@ -206,5 +206,12 @@
   "legal.privacy_name": "Privacy Notice",
   "legal.terms_title": "Terms and Conditions",
   "legal.close": "Close",
-  "signin.account_ready": "Your account is ready. Sign in to continue."
+  "signin.account_ready": "Your account is ready. Sign in to continue.",
+  "account.section_personal": "Personal information",
+  "account.section_verification": "Verification",
+  "account.member_since": "Member since",
+  "account.rating": "Rating",
+  "account.rating_value": "{average} out of 5 ({count})",
+  "account.no_ratings": "No ratings yet",
+  "account.completed": "Completed deals"
 }

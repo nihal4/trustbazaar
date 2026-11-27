@@ -374,6 +374,21 @@ describe('account and security', () => {
     expect(screen.getByRole('link', { name: 'Account' })).toBeTruthy();
   });
 
+  it('FR-REV-04 the profile shows the rating, the completed deals and the month the member joined, with the initial in the photo place', async () => {
+    const be = fakeBackend({
+      'GET /me': json(200, { ...standInMe, kycStatus: 'verified', memberSince: '2026-11-10T08:00:00Z' }),
+      [`GET /users/${standInMe.id}/trust`]: json(200, { userId: standInMe.id, averageRating: 4.5, ratingCount: 12, completedTransactions: 7, badges: { verified: true, pro: false } }),
+    });
+    renderApp('/account', be);
+    expect(await screen.findByText('4.5 out of 5 (12)')).toBeTruthy();
+    expect(screen.getByText('7')).toBeTruthy();
+    expect(screen.getByText('November 2026')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 2, name: 'Rahim' })).toBeTruthy();
+    expect(screen.getByText('Identity check: Verified')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 2, name: 'Personal information' })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 2, name: 'Verification' })).toBeTruthy();
+  });
+
   it('IF-UI-01 without a session the account page asks the user to sign in, returning to it', async () => {
     renderApp('/account', fakeBackend({ 'GET /me': problem(401, 'session-ended'), 'POST /auth/refresh': problem(401, 'session-ended') }));
     expect(await screen.findByRole('heading', { name: 'Sign in to continue' })).toBeTruthy();

@@ -92,7 +92,7 @@
   "verify_email.done": "আপনার ই-মেইল ঠিকানা যাচাই হয়েছে।",
   "account.title": "আপনার অ্যাকাউন্ট",
   "account.link": "আপনার অ্যাকাউন্টে যান",
-  "account.name": "প্রদর্শিত নাম",
+  "account.name": "পূর্ণ নাম",
   "account.email_verified": "যাচাই করা",
   "account.email_unverified": "এখনো যাচাই হয়নি",
   "account.kyc": "পরিচয় যাচাই",
@@ -206,5 +206,12 @@
   "legal.privacy_name": "গোপনীয়তা নোটিশ",
   "legal.terms_title": "শর্তাবলি",
   "legal.close": "বন্ধ করুন",
-  "signin.account_ready": "আপনার অ্যাকাউন্ট তৈরি হয়েছে। চালিয়ে যেতে সাইন ইন করুন।"
+  "signin.account_ready": "আপনার অ্যাকাউন্ট তৈরি হয়েছে। চালিয়ে যেতে সাইন ইন করুন।",
+  "account.section_personal": "ব্যক্তিগত তথ্য",
+  "account.section_verification": "যাচাই",
+  "account.member_since": "সদস্য হয়েছেন",
+  "account.rating": "রেটিং",
+  "account.rating_value": "৫-এর মধ্যে {average} ({count})",
+  "account.no_ratings": "এখনও কোনো রেটিং নেই",
+  "account.completed": "সম্পন্ন লেনদেন"
 }
