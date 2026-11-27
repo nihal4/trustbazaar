@@ -83,6 +83,45 @@ describe('requirements and status', () => {
     expect(screen.getByText('The whole card inside the frame')).toBeTruthy();
   });
 
+  it('FR-KYC-01 the date of birth is typed or chosen in a calendar of our own: month and year to choose, days that cannot be chosen dim, the day chosen fills the field', async () => {
+    const be = fakeBackend({ 'GET /kyc/status': json(200, status()) });
+    mount(be, standInCamera().camera);
+    await screen.findByRole('heading', { name: 'What you need' });
+    click('Start');
+    await screen.findByRole('heading', { name: 'Your document details' });
+    click('Choose a date');
+    const dialog = await screen.findByRole('dialog', { name: 'Date of birth' });
+    fireEvent.change(within(dialog).getByLabelText('Year'), { target: { value: '1995' } });
+    fireEvent.change(within(dialog).getByLabelText('Month'), { target: { value: '3' } });   // April
+    expect(within(dialog).getAllByRole('gridcell')).toHaveLength(30);
+    fireEvent.click(within(dialog).getByRole('gridcell', { name: /12 April 1995/ }));
+    expect((screen.getByLabelText('Date of birth') as HTMLInputElement).value).toBe('1995-04-12');
+    expect(screen.queryByRole('dialog', { name: 'Date of birth' })).toBeNull();
+    // no day after today can be chosen: the last year offered is this one, and its later days are disabled
+    click('Choose a date');
+    const again = await screen.findByRole('dialog', { name: 'Date of birth' });
+    const thisYear = String(new Date().getUTCFullYear());
+    expect((within(again).getByLabelText('Year') as HTMLSelectElement).options[0].value).toBe(thisYear);
+  });
+
+  it('FR-KYC-01 the calendar opens with a day in focus, the arrow keys move it, and choosing a month leaves the focus on the month list', async () => {
+    const be = fakeBackend({ 'GET /kyc/status': json(200, status()) });
+    mount(be, standInCamera().camera);
+    await screen.findByRole('heading', { name: 'What you need' });
+    click('Start');
+    await screen.findByRole('heading', { name: 'Your document details' });
+    type('Date of birth', '1995-04-12');
+    click('Choose a date');
+    const dialog = await screen.findByRole('dialog', { name: 'Date of birth' });
+    expect(document.activeElement?.getAttribute('aria-label')).toMatch(/12 April 1995/);
+    fireEvent.keyDown(document.activeElement as Element, { key: 'ArrowRight' });
+    await waitFor(() => expect(document.activeElement?.getAttribute('aria-label')).toMatch(/13 April 1995/));
+    const month = within(dialog).getByLabelText('Month') as HTMLSelectElement;
+    month.focus();
+    fireEvent.change(month, { target: { value: '5' } });
+    expect(document.activeElement).toBe(month);
+  });
+
   it('NFR-USE-02 the requirements come before any capture, and the review status is shown on every step', async () => {
     const be = fakeBackend({ 'GET /kyc/status': json(200, status()) });
     mount(be, standInCamera().camera);

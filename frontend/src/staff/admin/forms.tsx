@@ -1,5 +1,5 @@
 // Small forms of the administration screens: labelled text fields, a submit with the server's answer in words.
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useId, useState, type FormEvent, type ReactNode } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { FormMessage } from '../../shared/form';
 import type { T } from '../../shared/language/catalogue';
@@ -36,7 +36,8 @@ export function SaveForm({ title, button, t, lang, check, run, done, children }:
     setMessage(null);
     save.mutate();
   };
-  const id = title.replace(/\W+/g, '-').toLowerCase();
+  // a unique id for each form (the title is no id: in Bangla it has no letters a pattern for ASCII word characters keeps, and two forms would share one name)
+  const id = `form-${useId().replace(/:/g, '')}`;
   return (
     <form onSubmit={submit} noValidate className={styles.panel} aria-labelledby={id}>
       <h3 id={id}>{title}</h3>

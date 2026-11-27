@@ -11,6 +11,8 @@ import { useMediaQuery } from '@mantine/hooks';
 import { BellIcon, ChatIcon, HomeIcon, OrdersIcon, PlusIcon, SearchIcon, UserIcon } from './icons';
 import { Logo } from './Logo';
 import { useLanguage } from './language/Language';
+import { ThemeSwitch } from './ThemeSwitch';
+import { useTheme } from './themeMode';
 import { LanguageSwitch } from './language/LanguageSwitch';
 import { ME_KEY, useMe } from './me';
 import { useLive } from './live';
@@ -37,6 +39,7 @@ const BARE_PATHS = new Set(['/signin', '/register', '/reset', '/reset-password',
 
 export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps) {
   const { t } = useLanguage();
+  const [theme] = useTheme();
   const main = useRef<HTMLElement>(null);
   const { pathname } = useLocation();
   const shownPath = useRef(pathname);
@@ -56,9 +59,9 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
         <a className={styles.skip} href="#main">{t('shell.skip_to_content')}</a>
         <header className={styles.bareTop}>
           {home.sameDocument
-            ? <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo onDark /></Link>
-            : <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}><Logo onDark /></a>}
-          <LanguageSwitch />
+            ? <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo onDark={theme === 'dark'} /></Link>
+            : <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}><Logo onDark={theme === 'dark'} /></a>}
+          <span className={styles.headTools}><ThemeSwitch /><LanguageSwitch /></span>
         </header>
         <main id="main" ref={main} tabIndex={-1} className={styles.bareMain}>
           <Suspense fallback={<p role="status">{t('shell.loading')}</p>}>
@@ -74,13 +77,14 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
       {accountLinks && <p className={styles.promiseBar}><ShieldIcon /><span className={styles.promiseLong}>{t('shell.promise_bar')}</span><span className={styles.promiseShort}>{t('shell.promise_bar_short')}</span></p>}
       <header className={exit ? `${styles.header} ${styles.withExit}` : styles.header}>
         {home.sameDocument
-          ? <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo onDark={accountLinks} /></Link>
-          : <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}><Logo onDark={accountLinks} /></a>}
+          ? <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo onDark={theme === 'dark'} /></Link>
+          : <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}><Logo onDark={theme === 'dark'} /></a>}
         {titleKey && <span className={styles.docTitle}>{t(titleKey)}</span>}
         {accountLinks && !phone && pathname !== '/' && pathname !== '/search' ? <><HeaderSearch /><span className={styles.spacerSmall} /></> : <span className={styles.spacer} />}
         {accountLinks && <AccountLink phone={phone} />}
-        {!accountLinks && <LanguageSwitch />}
+        {!accountLinks && <span className={styles.headTools}><ThemeSwitch /><LanguageSwitch /></span>}
         {exit && <a className={styles.exit} href={exit.href}>{t(exit.labelKey)}</a>}
+        {accountLinks && !phone && <ThemeSwitch />}
         {accountLinks && !phone && <Button component={Link} to="/sell/new">{t('shell.sell')}</Button>}
       </header>
       <SignedOutNotice />
@@ -150,7 +154,7 @@ function Footer() {
       </div>
       <div className={styles.footerLang}>
         <span id="footer-language" className={styles.footerLabel}>{t('shell.footer.language')}</span>
-        <LanguageSwitch />
+        <span className={styles.headTools}><ThemeSwitch /><LanguageSwitch /></span>
       </div>
     </footer>
   );

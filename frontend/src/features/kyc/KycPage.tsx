@@ -11,6 +11,7 @@ import { formatDateTime } from '../../lib/time.js';
 import { useApi } from '../../shared/api';
 import { untilAfter, useSecondsLeft } from '../../shared/countdown';
 import { errorText } from '../../shared/errors';
+import { DateField } from '../../shared/DateField';
 import { ErrorSummary, FormMessage, TextField, type SummaryItem } from '../../shared/form';
 import { ME_KEY } from '../../shared/me';
 import { fieldErrors, isApiError, problemName } from '../../shared/problems';
@@ -253,7 +254,7 @@ function Wizard() {
     setImageErrors((e) => ({ ...e, [k]: undefined }));
   };
 
-  const set = (k: keyof typeof details) => (v: string) => setDetails((d) => ({ ...d, [k]: v }));
+  const set = (k: keyof typeof details) => (v: string) => { setDetails((d) => ({ ...d, [k]: v })); setDetailErrors((e) => ({ ...e, [k]: undefined })); };
   const summary: SummaryItem[] = (Object.entries(detailErrors) as [string, string][]).map(([f, m]) => ({ id: `kyc-${f}`, message: m }));
 
   return (
@@ -291,8 +292,9 @@ function Wizard() {
               value={details.docNumber} onChange={set('docNumber')} error={detailErrors.docNumber} autoComplete="off" maxLength={30} />
             <TextField id="kyc-fullName" label={t('details.name')} hint={t('details.name_hint')} value={details.fullName}
               onChange={set('fullName')} error={detailErrors.fullName} autoComplete="name" maxLength={100} />
-            <TextField id="kyc-dateOfBirth" label={t('details.dob')} hint={t('details.dob_hint')} value={details.dateOfBirth}
-              onChange={set('dateOfBirth')} error={detailErrors.dateOfBirth} type="date" autoComplete="bday" />
+            <DateField id="kyc-dateOfBirth" label={t('details.dob')} hint={t('details.dob_hint')} value={details.dateOfBirth}
+              onChange={set('dateOfBirth')} error={detailErrors.dateOfBirth} min="1900-01-01" max={new Date().toISOString().slice(0, 10)}
+              startAt={`${new Date().getUTCFullYear() - 25}-06-01`} autoComplete="bday" />
           </form>
         )}
 

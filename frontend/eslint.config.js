@@ -76,10 +76,10 @@ export default tseslint.config(
       ],
     },
   },
-  // The one module allowed to keep the guest's language choice in localStorage (section 8.2). The
-  // refresh time is kept by lib/api.js, which is outside these rules.
+  // The two modules allowed to keep a guest's choice in localStorage (section 8.2): the language, and the colour theme (U10-28), a preference that is no secret and no
+  // session. The refresh time is kept by lib/api.js, which is outside these rules.
   {
-    files: ['src/shared/language/storage.ts'],
+    files: ['src/shared/language/storage.ts', 'src/shared/themeMode.ts', 'src/shared/themeMode.test.tsx', 'src/secure/main.ts'],
     rules: { 'no-restricted-globals': 'off', 'no-restricted-properties': 'off' },
   },
   // Import boundaries. Flat config replaces a rule's options per matching block, so each block

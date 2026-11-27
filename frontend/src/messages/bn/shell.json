@@ -50,6 +50,13 @@
   "shell.language.changing": "ভাষা বদলানো হচ্ছে",
   "shell.promise_bar_short": "নিশ্চিত না করা পর্যন্ত টাকা নিরাপদ",
   "shell.footer.language": "ভাষা",
+  "form.pick_date": "তারিখ বেছে নিন",
+  "form.prev_month": "আগের মাস",
+  "form.next_month": "পরের মাস",
+  "form.month": "মাস",
+  "form.year": "বছর",
+  "shell.theme.to_light": "হালকা মোডে যান",
+  "shell.theme.to_dark": "গাঢ় মোডে যান",
   "form.show_password": "পাসওয়ার্ড দেখান",
   "form.hide_password": "পাসওয়ার্ড লুকান",
   "error.rate_limited_wait": "অনেকবার চেষ্টা করা হয়েছে। {time} পরে আবার চেষ্টা করুন।"

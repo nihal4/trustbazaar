@@ -85,5 +85,7 @@
   "secure.error.window-ended": "The takeover time has ended.",
   "secure.error.recovery-email-confirmed": "You confirmed changing the recovery e-mail, so this is no longer possible.",
   "secure.error.rekey-used": "The one request to send again has been used.",
-  "secure.home_link": "TrustBazaar home"
+  "secure.home_link": "TrustBazaar home",
+  "secure.theme.to_light": "Switch to light mode",
+  "secure.theme.to_dark": "Switch to dark mode"
 }

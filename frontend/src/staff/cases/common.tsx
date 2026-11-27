@@ -30,7 +30,7 @@ export function staffError(e: unknown, t: T, lang: Lang): string {
 export function CaseFrame({ title, back, children, t }: { title: string; back: string; children: ReactNode; t: T }) {
   return (
     <div>
-      <p><Link to={back}>{t('staff.case.back')}</Link></p>
+      <p><Link className={styles.back} to={back}>{t('staff.case.back')}</Link></p>
       <h1>{title}</h1>
       {children}
     </div>
