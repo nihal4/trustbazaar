@@ -43,6 +43,33 @@ async function stepUp(code = '123456') {
 }
 
 describe('turning the authenticator app on', () => {
+  it('FR-ACC-06 the cross closes the popup during the steps, and nothing is turned on; only the recovery codes hold it open', async () => {
+    const { be } = mfaBackend();
+    renderApp('/account/security', be);
+    await openMfa();
+    fireEvent.click(await screen.findByRole('button', { name: 'Turn on the authenticator app' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Next' }));
+    await screen.findByRole('img', { name: /QR code/ });
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(be.called('POST /me/mfa/totp/confirm')).toEqual([]);
+
+    // the codes: the cross does nothing until Done
+    await openMfa();
+    fireEvent.click(await screen.findByRole('button', { name: 'Turn on the authenticator app' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Next' }));
+    await screen.findByRole('img', { name: /QR code/ });
+    click('Next');
+    type('Code from the app', '000000');
+    click('Turn on');
+    await screen.findByText(/The code is not correct/);
+    type('Code from the app', '123456');
+    click('Turn on');
+    await screen.findByRole('list', { name: 'Recovery codes' });
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(screen.getByRole('dialog', { name: 'Authenticator app' })).toBeTruthy();
+  });
+
   it('FR-ACC-06 the QR code is drawn in the page as SVG shapes, named without the secret; the key and the link are shown too', async () => {
     const { be } = mfaBackend();
     renderApp('/account/security', be);

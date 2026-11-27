@@ -86,8 +86,8 @@ export function MfaSettings({ sessionsKey }: { sessionsKey: readonly unknown[] }
   if (me.isError) return null;   // the page above already asks to sign in when there is no session
   const on = me.data.mfaEnabled;
 
-  // the recovery codes are shown once: while they are on screen the popup cannot be closed by Escape, the cross or a click outside, only by its own Done
-  const locked = view.kind === 'codes' || view.kind === 'enrolling';
+  // the recovery codes are shown once: while they are on screen the popup cannot be closed by Escape, the cross or a click outside, only by its own Done (the steps before it close like any popup, and nothing is turned on until the first code is right)
+  const locked = view.kind === 'codes';
   const content = (
     <>
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
@@ -132,7 +132,7 @@ export function MfaSettings({ sessionsKey }: { sessionsKey: readonly unknown[] }
         <span className={styles.settingValue}>{t(on ? 'account.mfa_on' : 'account.mfa_off')}</span>
       </button>
       {open && (
-        <Popup id="mfa-popup" title={t('mfa.title')} closeLabel={t('legal.close')} busy={locked || busy} onClose={() => { setOpen(false); setView({ kind: 'idle' }); setMessage(null); }}>
+        <Popup id="mfa-popup" title={t('mfa.title')} closeLabel={t('legal.close')} wide busy={locked || busy} onClose={() => { setOpen(false); setView({ kind: 'idle' }); setMessage(null); }}>
           {content}
         </Popup>
       )}
@@ -178,27 +178,32 @@ function Enrol({ otpauthUri, secret, onDone, onCancel, onStateChanged }: {
       {step === 1 && (
         <>
           <p>{t('mfa.step_app')}</p>
-          <div className={styles.actions}>
-            <button type="button" className={styles.next} onClick={() => setStep(2)}>{t('mfa.next')}</button>
+          <div className={styles.stepNav}>
             <button type="button" onClick={onCancel}>{t('mfa.cancel')}</button>
+            <button type="button" className={styles.next} onClick={() => setStep(2)}>{t('mfa.next')}</button>
           </div>
         </>
       )}
       {step === 2 && (
         <>
           <p>{t('mfa.step_scan')}</p>
-          <Suspense fallback={<p role="status">{t('shell.loading')}</p>}>
-            <QrCode text={otpauthUri} label={t('mfa.qr_label')} />
-          </Suspense>
-          <p>{t('mfa.manual')}</p>
-          <p className={styles.secret} aria-label={t('mfa.secret_label')}>{groupSecret(secret)}</p>
-          <div className={styles.actions}>
-            <CopyButton text={secret.replace(/\s+/g, '')} label={t('mfa.copy_secret')} />
-            <a href={otpauthUri}>{t('mfa.open_app')}</a>
+          {/* the code beside its key: scan it, or copy the key, or open the link on this phone */}
+          <div className={styles.scan}>
+            <Suspense fallback={<p role="status">{t('shell.loading')}</p>}>
+              <QrCode text={otpauthUri} label={t('mfa.qr_label')} />
+            </Suspense>
+            <div className={styles.scanKey}>
+              <p>{t('mfa.manual')}</p>
+              <p className={styles.secret} aria-label={t('mfa.secret_label')}>{groupSecret(secret)}</p>
+              <div className={styles.actions}>
+                <CopyButton text={secret.replace(/\s+/g, '')} label={t('mfa.copy_secret')} />
+                <a href={otpauthUri} className={styles.linkButton}>{t('mfa.open_app')}</a>
+              </div>
+            </div>
           </div>
-          <div className={styles.actions}>
-            <button type="button" className={styles.next} onClick={() => setStep(3)}>{t('mfa.next')}</button>
+          <div className={styles.stepNav}>
             <button type="button" onClick={() => setStep(1)}>{t('mfa.back')}</button>
+            <button type="button" className={styles.next} onClick={() => setStep(3)}>{t('mfa.next')}</button>
           </div>
         </>
       )}
@@ -206,11 +211,11 @@ function Enrol({ otpauthUri, secret, onDone, onCancel, onStateChanged }: {
         <form onSubmit={confirm} noValidate>
           <TextField id="mfa-confirm-code" label={t('mfa.first_code')} hint={t('mfa.first_code_hint')} value={code} onChange={setCode}
             error={error ?? undefined} inputMode="numeric" autoComplete="one-time-code" maxLength={6} data-autofocus />
-          <div className={styles.actions}>
+          <div className={styles.stepNav}>
+            <button type="button" onClick={() => setStep(2)} disabled={busy}>{t('mfa.back')}</button>
             <SubmitButton busy={busy} disabled={waitFor > 0}>
               {waitFor > 0 ? t('wait.seconds', { time: formatWait(waitFor, lang) }) : t('mfa.confirm')}
             </SubmitButton>
-            <button type="button" onClick={() => setStep(2)} disabled={busy}>{t('mfa.back')}</button>
           </div>
         </form>
       )}

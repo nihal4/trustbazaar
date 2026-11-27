@@ -31,3 +31,6 @@
 @media (max-width: 30rem) { .actions { grid-auto-flow: row; } .actions > button + button { border-left: 0; border-top: 1px solid var(--tb-line); } }
 .body { display: grid; gap: 0.75rem; line-height: var(--tb-line-height, 1.5); }
 .body p { margin: 0; }
+
+/* a popup with a side-by-side body (the QR code beside its key): wider on a large screen */
+@media (min-width: 40rem) { .popup.wide { width: min(46rem, 100%); } }

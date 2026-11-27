@@ -1291,3 +1291,110 @@
 .actions + .actions {
   margin-top: 0.75rem;
 }
+
+/* the authenticator steps (U10-25 polish): the QR code beside its key; the key and the link as buttons; the way on and back under a hairline, Back on the left and the step's main button on the right */
+.scan {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+  margin: 0.5rem 0 0;
+}
+
+.scanKey p {
+  margin: 0 0 0.75rem;
+}
+
+.scanKey .secret {
+  padding: 0.75rem 0;
+  font-size: 1.0625rem;
+}
+
+.scanKey .actions {
+  align-items: stretch;
+}
+
+.linkButton {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 1.25rem;
+  border: 1px solid var(--tb-border);
+  background: none;
+  color: var(--tb-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.linkButton:hover {
+  border-color: var(--tb-hot);
+}
+
+.linkButton:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: 2px;
+}
+
+.stepNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--tb-line);
+}
+
+.stepNav > button {
+  min-height: 44px;
+  padding: 0 1.5rem;
+  border: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: none;
+  color: var(--tb-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.stepNav > button:hover:not(:disabled) {
+  border-color: var(--tb-hot);
+}
+
+.stepNav > button.next {
+  border-color: var(--tb-btn-line);
+  background: var(--tb-btn-bg);
+  color: var(--tb-btn-fg);
+}
+
+.stepNav > button.next:hover:not(:disabled) {
+  background: var(--tb-btn-bg-hover);
+}
+
+@media (max-width: 36rem) {
+  .scan {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.stepNav > button[type='submit'] {
+  border-color: var(--tb-btn-line);
+  background: var(--tb-btn-bg);
+  color: var(--tb-btn-fg);
+}
+
+.stepNav > button[type='submit']:hover:not(:disabled) {
+  background: var(--tb-btn-bg-hover);
+}
+
+.stepNav > button[type='submit']:disabled {
+  opacity: 0.6;
+}
+
+.scanKey .linkButton {
+  border-color: var(--tb-border);
+}
+
+.scanKey .linkButton:hover {
+  border-color: var(--tb-hot);
+}

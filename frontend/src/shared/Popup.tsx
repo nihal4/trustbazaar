@@ -4,7 +4,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { usePendingStepUp } from './stepUp';
 import styles from './popup.module.css';
 
-export function Popup({ id, title, closeLabel, busy = false, decorativeClose = false, describedBy, isStepUp = false, onClose, children }: { id: string; title: string; closeLabel: string; busy?: boolean; decorativeClose?: boolean; describedBy?: string; isStepUp?: boolean; onClose: () => void; children: ReactNode }) {
+export function Popup({ id, title, closeLabel, busy = false, decorativeClose = false, describedBy, isStepUp = false, wide = false, onClose, children }: { id: string; title: string; closeLabel: string; busy?: boolean; decorativeClose?: boolean; describedBy?: string; isStepUp?: boolean; wide?: boolean; onClose: () => void; children: ReactNode }) {
   // a popup never stands under another: while the step-up code is asked, every other popup is out of sight (and keeps what was typed in it)
   const stepping = usePendingStepUp() !== null && !isStepUp;
   const dialog = useRef<HTMLDialogElement>(null);
@@ -21,7 +21,7 @@ export function Popup({ id, title, closeLabel, busy = false, decorativeClose = f
   }, []);
   const close = () => { if (!busy) onClose(); };
   return (
-    <dialog ref={dialog} className={styles.popup} style={stepping ? { display: 'none' } : undefined} aria-labelledby={`${id}-title`} aria-describedby={describedBy} onCancel={(e) => { e.preventDefault(); close(); }}
+    <dialog ref={dialog} className={wide ? `${styles.popup} ${styles.wide}` : styles.popup} style={stepping ? { display: 'none' } : undefined} aria-labelledby={`${id}-title`} aria-describedby={describedBy} onCancel={(e) => { e.preventDefault(); close(); }}
       onMouseDown={(e) => { downOnBackdrop.current = e.target === dialog.current; }}
       onClick={(e) => { if (downOnBackdrop.current && e.target === dialog.current) close(); }}>
       <div className={styles.inner}>
