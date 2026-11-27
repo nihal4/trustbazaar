@@ -9,7 +9,7 @@ import { FormMessage } from '../../shared/form';
 import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
 import { Popup } from '../../shared/Popup';
-import { PopupActions } from '../../shared/ui';
+import { ActionCell, PopupActions } from '../../shared/ui';
 import { ConfirmDialog } from '../../shared/ConfirmDialog';
 import { useRefresh, type DisputeView } from './Disputes';
 import styles from './orders.module.css';
@@ -58,27 +58,23 @@ export function ReturnStep({ d, t, lang }: { d: DisputeView; t: T; lang: Lang })
       )}
       {step.check !== 'mismatch' &&
         (needsCheck ? (
-          <button
-            type="button"
-            className={`${styles.primary} ${styles.cellButton}`}
+          <ActionCell
             onClick={() => {
               setMessage(null);
               setPopup('check');
             }}
           >
             {t('dispute.return_check_open')}
-          </button>
+          </ActionCell>
         ) : (
-          <button
-            type="button"
-            className={`${styles.primary} ${styles.cellButton}`}
+          <ActionCell
             onClick={() => {
               setMessage(null);
               setPopup('confirm');
             }}
           >
             {t('dispute.return_received')}
-          </button>
+          </ActionCell>
         ))}
       {popup === 'check' && (
         <Popup

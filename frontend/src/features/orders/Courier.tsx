@@ -16,7 +16,7 @@ import { problemName } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { addressesKey, areasKey, orderKey, type Area, type OrderView, type Quote, type SavedAddress } from './model';
 import { Popup } from '../../shared/Popup';
-import { PopupActions } from '../../shared/ui';
+import { ActionCell, PopupActions } from '../../shared/ui';
 import { TimeLeft } from '../../shared/Moment';
 import { Terms } from './Terms';
 import styles from './orders.module.css';
@@ -182,9 +182,9 @@ export function CourierChoice({ o, t, lang, disabled, onDone }: { o: OrderView; 
           ))}
         </fieldset>
       )}
-      <button type="button" className={`${styles.secondary} ${styles.cellButton}`} onClick={() => setAdding(true)}>
+      <ActionCell compact onClick={() => setAdding(true)}>
         {t('address.add')}
-      </button>
+      </ActionCell>
       {adding && (
         <Popup id="address-dropoff-popup" title={t('address.new.dropoff')} closeLabel={t('actions.back')} onClose={() => setAdding(false)}>
           <AddressForm
@@ -201,9 +201,9 @@ export function CourierChoice({ o, t, lang, disabled, onDone }: { o: OrderView; 
         </Popup>
       )}
       {selected && !quote && (
-        <button type="button" className={`${styles.secondary} ${styles.cellButton}`} disabled={disabled || ask.isPending} onClick={() => ask.mutate(selected)}>
+        <ActionCell compact disabled={disabled || ask.isPending} onClick={() => ask.mutate(selected)}>
           {t('courier.get_quote')}
-        </button>
+        </ActionCell>
       )}
       {quote && (
         <div className={styles.quoteBlock}>
@@ -220,18 +220,13 @@ export function CourierChoice({ o, t, lang, disabled, onDone }: { o: OrderView; 
             </div>
           </dl>
           {expired ? (
-            <button
-              type="button"
-              className={`${styles.secondary} ${styles.cellButton}`}
-              disabled={disabled || ask.isPending}
-              onClick={() => selected && ask.mutate(selected)}
-            >
+            <ActionCell compact disabled={disabled || ask.isPending} onClick={() => selected && ask.mutate(selected)}>
               {t('courier.requote')}
-            </button>
+            </ActionCell>
           ) : (
-            <button type="button" className={`${styles.secondary} ${styles.cellButton}`} disabled={disabled || choose.isPending} onClick={() => setTerms(true)}>
+            <ActionCell compact disabled={disabled || choose.isPending} onClick={() => setTerms(true)}>
               {t('courier.choose', { fee: formatMoney(BigInt(quote.fee), lang) })}
-            </button>
+            </ActionCell>
           )}
         </div>
       )}

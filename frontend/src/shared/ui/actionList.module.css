@@ -1,0 +1,139 @@
+/* Rows of actions (ActionList.tsx): the ruled list of a rail, and the ruled cell of a button that opens a popup. */
+.list {
+  display: grid;
+  grid-template-columns: 1fr;
+  border-block: 1px solid var(--tb-line);
+  overflow: hidden;
+}
+.list > * + * {
+  border-top: 1px solid var(--tb-line);
+}
+/* a form that opens inside the list takes a whole row */
+.list > form {
+  grid-column: 1 / -1;
+  background: none;
+  box-shadow: none;
+  border-left: 0;
+}
+.item {
+  display: flex;
+  background: none;
+  box-shadow: none;
+  border-left: 0;
+}
+
+.row {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 56px;
+  padding: var(--tb-space-2) var(--tb-space-3);
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--tb-text);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color var(--tb-dur-base),
+    background var(--tb-dur-base);
+}
+.row::after {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-left: var(--tb-space-2);
+  margin-right: var(--tb-space-1);
+  border: solid currentColor;
+  border-width: 1.5px 1.5px 0 0;
+  transform: rotate(45deg);
+  flex: none;
+  transition: transform var(--tb-dur-base);
+}
+.row:hover:not(:disabled) {
+  color: var(--tb-hot);
+  background: var(--tb-surface);
+}
+.row:hover:not(:disabled)::after {
+  transform: translateX(3px) rotate(45deg);
+}
+.row:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: -3px;
+}
+.row.primary {
+  padding: var(--tb-space-2) var(--tb-space-1);
+  font-size: var(--tb-text-base);
+  line-height: 1.35;
+  border: 1px solid var(--tb-hot);
+  background: color-mix(in srgb, var(--tb-hot) 10%, transparent);
+}
+.row.primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--tb-hot) 18%, transparent);
+  color: var(--tb-text);
+}
+.row.primary:disabled {
+  opacity: 0.6;
+}
+.row.quiet {
+  color: var(--tb-muted);
+  font-weight: 500;
+}
+.row.quiet:hover:not(:disabled) {
+  color: var(--tb-hot);
+}
+
+/* outside a list: a ruled cell of its own, full width, hairlines above and below */
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 52px;
+  padding: var(--tb-space-2) 0;
+  border: 1px solid var(--tb-line);
+  border-inline: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--tb-text);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color var(--tb-dur-base),
+    background var(--tb-dur-base);
+}
+.cell + .cell {
+  margin-top: -1px;
+}
+.cell::after {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-left: var(--tb-space-3);
+  border: solid currentColor;
+  border-width: 1.5px 1.5px 0 0;
+  transform: rotate(45deg);
+  flex: none;
+}
+.cell:hover:not(:disabled) {
+  color: var(--tb-hot);
+  background: var(--tb-surface);
+}
+.cell:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: -3px;
+}
+.cell:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.compact {
+  min-height: 44px;
+}

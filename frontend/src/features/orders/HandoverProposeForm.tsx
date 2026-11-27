@@ -1,6 +1,6 @@
 // Proposing a meetup place and time: a point from the list or a place of the member's own, and a time on the Dhaka clock.
 import { Popup } from '../../shared/Popup';
-import { PopupActions } from '../../shared/ui';
+import { ActionCell, PopupActions } from '../../shared/ui';
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDateTime } from '../../lib/time.js';
@@ -66,13 +66,7 @@ export function ProposeForm({ o, h, t, lang }: { o: OrderView; h: HandoverView; 
     };
     propose.mutate(body);
   };
-  const button = (
-    <div className={styles.actionCell}>
-      <button type="button" className={styles.secondary} onClick={() => setShown(true)}>
-        {t(h.agreed ? 'handover.propose_other' : 'handover.propose')}
-      </button>
-    </div>
-  );
+  const button = <ActionCell onClick={() => setShown(true)}>{t(h.agreed ? 'handover.propose_other' : 'handover.propose')}</ActionCell>;
   if (!shown) return button;
   return (
     <>

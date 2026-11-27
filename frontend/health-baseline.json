@@ -1,6 +1,6 @@
 {
   "eslint": {
-    "warning:sonarjs/no-nested-conditional": 69,
+    "warning:sonarjs/no-nested-conditional": 68,
     "warning:sonarjs/no-nested-template-literals": 16,
     "warning:sonarjs/cognitive-complexity": 9,
     "warning:jsx-a11y/no-static-element-interactions": 1,
@@ -8,14 +8,14 @@
     "warning:jsx-a11y/no-autofocus": 15,
     "warning:sonarjs/no-duplicate-string": 2,
     "warning:jsx-a11y/label-has-associated-control": 1,
-    "warning:jsx-a11y/no-redundant-roles": 3,
+    "warning:jsx-a11y/no-redundant-roles": 2,
     "warning:jsx-a11y/no-noninteractive-element-interactions": 3,
     "warning:jsx-a11y/click-events-have-key-events": 3,
     "warning:jsx-a11y/interactive-supports-focus": 1
   },
   "stylelint": {
     "warning:import-notation": 5,
-    "warning:property-no-deprecated": 23,
+    "warning:property-no-deprecated": 22,
     "warning:value-keyword-case": 11,
     "warning:color-function-alias-notation": 12,
     "warning:no-duplicate-selectors": 47,

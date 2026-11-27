@@ -5,17 +5,18 @@ Every kind of thing on the site exists **once** here, with variants, and a page 
 | Component | Variants and sizes |
 |---|---|
 | `Button`, `IconButton` | `primary`, `secondary`, `quiet`, `danger`, `link` (`inline` in a sentence); sizes `md` (44 px) and `lg` (56 px); `loading`; `as={Link}` makes a link that looks like a button |
-| `Field`, `Input`, `Select`, `Textarea`, `TextField` | the underline look (default) or `look="box"`; a label, a hint and an error tied to the control |
+| `Field`, `Input`, `Select`, `Textarea`, `TextField` | the underline look (default) or `look="box"`; `block` fills its container; a label, a hint and an error tied to the control |
 | `Radio`, `Checkbox` | a round ring with a dot, and a square box; the whole row is the target |
 | `Notice` | `info`, `success`, `warning`, `error`; an error is announced at once |
 | `Tag`, `Count` | tones `neutral`, `hot`, `ok`, `error`; a count caps at 99+ |
 | `Avatar` | `sm`, `md`, `lg`; initials in any script |
 | `Panel`, `Section`, `Card` | a panel is `section` (a rule on top), `boxed` or `emphasis` (a 2 px vermilion rule); a card can be a link |
 | `FactList` | 1 to 4 columns, fewer on a phone |
-| `Stepper` | a row, or a column on a phone; the steps and their states come in as data |
+| `Stepper` | `look`: `rule` (default), `line` (balls on a line: an order's money), `rows` (a ruled list with a ball), `onDark`; a row, or a column on a phone; the steps and their states come in as data |
 | `Table` | stacks into blocks on a phone |
 | `Tabs`, `Tab` | links; the current one has `aria-current` and a vermilion rule |
-| `Popup`, `ConfirmDialog` | a dialog over a blurred page; `hidden` keeps what was typed |
+| `ActionList`, `ActionCell` | a ruled list of rows with an arrow at the end of each (`primary`, `quiet`; `as` makes a link; `compact`); a cell outside a list is a ruled cell of its own |
+| `Popup`, `PopupActions`, `ConfirmDialog` | a dialog over a blurred page; `hidden` keeps what was typed; `PopupActions` is the ruled cells at its foot |
 | `Calendar` | a month grid with a month and a year to choose; the language comes in as props |
 
 ## The rules
