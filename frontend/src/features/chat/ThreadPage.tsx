@@ -11,6 +11,8 @@ import { toLocalDigits } from '../../lib/money.js';
 import { formatDateTime } from '../../lib/time.js';
 import { useApi, type Api } from '../../shared/api';
 import { ConfirmDialog } from '../../shared/ConfirmDialog';
+import { Popup, PopupActions } from '../../shared/Popup';
+import { THREADS_UNREAD_KEY } from '../../shared/notifications';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
 import { Tick } from '../../shared/icons';
@@ -107,6 +109,8 @@ function Conversation({ id, t, lang }: { id: string; t: T; lang: Lang }) {
       void api.post(`/threads/${encodeURIComponent(id)}/marks`, { delivered: body.delivered, read: body.read }).catch(() => undefined);
     }
     void queryClient.invalidateQueries({ queryKey: [...THREADS_KEY, 'list'] });
+    // the count in the header drops once the server has the mark
+    window.setTimeout(() => void queryClient.invalidateQueries({ queryKey: THREADS_UNREAD_KEY }), 1200);
   }, [api, id, live, queryClient]);
   useEffect(() => {
     const onVisible = () => ack();
@@ -189,6 +193,14 @@ function Conversation({ id, t, lang }: { id: string; t: T; lang: Lang }) {
     );
   }, [api, bump, id, lang, sync, t]);
 
+  // the newest message is in view: the log is scrolled to its end when a message comes or is sent
+  const log = useRef<HTMLOListElement>(null);
+  const shown = thread.current.messages.length + thread.current.pending.size;
+  useEffect(() => {
+    const el = log.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [loaded, shown]);
+
   if (loadError && !loaded) {
     return (
       <div className={styles.page}>
@@ -205,7 +217,7 @@ function Conversation({ id, t, lang }: { id: string; t: T; lang: Lang }) {
 
   return (
     <div className={styles.page}>
-      <p><Link to="/messages">{t('thread.back')}</Link></p>
+      <p className={styles.back}><Link to="/messages">{t('thread.back')}</Link></p>
       <h1>{t('thread.with', { name })}{s?.other?.verified && <span className={styles.tick} title={t('chat.verified')}><Tick /><span className={styles.visuallyHidden}>{t('chat.verified')}</span></span>}</h1>
       {s && (
         <p className={styles.about}>
@@ -219,7 +231,7 @@ function Conversation({ id, t, lang }: { id: string; t: T; lang: Lang }) {
 
       <h2 className={styles.visuallyHidden}>{t('thread.messages')}</h2>
       {!loaded ? <p role="status">{t('shell.loading')}</p> : (
-        <ol className={styles.messages} role="log" aria-label={t('thread.messages')}>
+        <ol ref={log} className={styles.messages} role="log" tabIndex={0} aria-label={t('thread.messages')}>
           {messages.length === 0 && pending.length === 0 && <li className={styles.empty}>{t('thread.empty')}</li>}
           {messages.map((m) => (
             <MessageItem key={m.seq} m={m} role={s?.role ?? null} threadId={id} t={t} lang={lang}
@@ -295,11 +307,13 @@ function Composer({ t, lang, onSend }: { t: T; lang: Lang; onSend: (text: string
       <p id="chat-hint" className={styles.hint}>{t('thread.hint')}</p>
       <textarea id="chat-text" rows={3} value={text} aria-describedby="chat-hint chat-count" aria-invalid={tooLong || undefined}
         onChange={(e) => setText(e.target.value)} />
-      <p id="chat-count" className={tooLong ? styles.error : styles.hint}>
-        {tooLong ? t('thread.too_long', { max: toLocalDigits(String(MAX_TEXT), lang) })
-          : t('thread.counter', { count: toLocalDigits(String(length), lang), max: toLocalDigits(String(MAX_TEXT), lang) })}
-      </p>
-      <button type="submit" disabled={!text.trim() || tooLong}>{t('thread.send')}</button>
+      <div className={styles.composerFoot}>
+        <p id="chat-count" className={tooLong ? styles.error : styles.hint}>
+          {tooLong ? t('thread.too_long', { max: toLocalDigits(String(MAX_TEXT), lang) })
+            : t('thread.counter', { count: toLocalDigits(String(length), lang), max: toLocalDigits(String(MAX_TEXT), lang) })}
+        </p>
+        <button type="submit" className={styles.primary} disabled={!text.trim() || tooLong}>{t('thread.send')}</button>
+      </div>
     </form>
   );
 }
@@ -339,16 +353,19 @@ function PhotoForm({ threadId, t, lang, onSent }: { threadId: string; t: T; lang
   };
   return (
     <form className={styles.photo} onSubmit={submit} noValidate>
-      <label htmlFor="chat-photo">{t('thread.photo')}</label>
-      <input id="chat-photo" ref={input} type="file" accept="image/jpeg,image/png,image/webp"
-        onChange={(e: ChangeEvent<HTMLInputElement>) => { setFile(e.target.files?.[0] ?? null); clientId.current = null; }} />
+      <div className={styles.attach}>
+        <label htmlFor="chat-photo">{t('thread.photo')}</label>
+        <input id="chat-photo" ref={input} type="file" accept="image/jpeg,image/png,image/webp"
+          onChange={(e: ChangeEvent<HTMLInputElement>) => { setFile(e.target.files?.[0] ?? null); clientId.current = null; }} />
+      </div>
       {file && (
         <>
+          <p className={styles.fileName}>{file.name}</p>
           <label htmlFor="chat-caption">{t('thread.caption')}</label>
           <input id="chat-caption" type="text" maxLength={MAX_CAPTION} value={caption} onChange={(e) => setCaption(e.target.value)} />
           {error && <FormMessage kind="error">{error}</FormMessage>}
-          <div className={styles.row}>
-            <button type="submit" disabled={busy} aria-busy={busy}>{busy ? t('thread.sending') : t('thread.send_photo')}</button>
+          <div className={styles.buttons}>
+            <button type="submit" className={styles.primary} disabled={busy} aria-busy={busy}>{busy ? t('thread.sending') : t('thread.send_photo')}</button>
             <button type="button" className={styles.secondary} onClick={reset} disabled={busy}>{t('thread.cancel_photo')}</button>
           </div>
         </>
@@ -363,7 +380,7 @@ function ThreadActions({ threadId, other, t, lang }: { threadId: string; other: 
   const [confirming, setConfirming] = useState(false);
   const [blocked, setBlocked] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
+  const [message, setMessage] = useState<Note | null>(null);
   const name = other.displayName;
   const path = `/blocks/${encodeURIComponent(other.id)}`;
   const block = () => {
@@ -390,14 +407,14 @@ function ThreadActions({ threadId, other, t, lang }: { threadId: string; other: 
     ).finally(() => setBusy(false));
   };
   return (
-    <section aria-label={t('thread.actions')} className={styles.actions}>
-      {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
-      <div className={styles.row}>
+    <section aria-label={t('thread.actions')}>
+      <div className={styles.actions}>
         {blocked
           ? <button type="button" className={styles.secondary} onClick={unblock} disabled={busy}>{t('thread.unblock', { name })}</button>
           : <button type="button" className={styles.secondary} onClick={() => setConfirming(true)} disabled={busy}>{t('thread.block', { name })}</button>}
-        <ReportForm threadId={threadId} seq={null} t={t} lang={lang} />
+        <ReportForm threadId={threadId} seq={null} t={t} lang={lang} onNote={setMessage} />
       </div>
+      {message && <div className={styles.actionNote}><FormMessage kind={message.kind}>{message.text}</FormMessage></div>}
       {confirming && (
         <ConfirmDialog id="block-confirm" title={t('confirm.block.title', { name })} confirmLabel={t('confirm.block.confirm', { name })}
           cancelLabel={t('confirm.cancel')} busy={busy} onConfirm={block} onCancel={() => setConfirming(false)}>
@@ -408,25 +425,19 @@ function ThreadActions({ threadId, other, t, lang }: { threadId: string; other: 
   );
 }
 
-/** A report of the thread (seq null) or of one of the other party's messages, to the report queue (Unit 7). */
-function ReportForm({ threadId, seq, t, lang }: { threadId: string; seq: number | null; t: T; lang: Lang }) {
+/** A report of the thread (seq null) or of one of the other party's messages, to the report queue (Unit 7). It opens in a popup over the page;
+ *  the answer after it closes is given by the caller (`onNote`, for the thread) or under the button (for a message). */
+type Note = { kind: 'error' | 'success' | 'info'; text: string };
+function ReportForm({ threadId, seq, t, lang, onNote }: { threadId: string; seq: number | null; t: T; lang: Lang; onNote?: (n: Note | null) => void }) {
   const api = useApi();
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState<Category | null>(null);
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<{ kind: 'error' | 'success' | 'info'; text: string } | null>(null);
+  const [message, setMessage] = useState<Note | null>(null);
   const base = seq === null ? 'report-thread' : `report-${seq}`;
-  if (!open) {
-    return (
-      <>
-        {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
-        <button type="button" className={styles.linkButton} onClick={() => { setOpen(true); setMessage(null); }}>
-          {t(seq === null ? 'report.thread' : 'report.message')}
-        </button>
-      </>
-    );
-  }
+  // inside the popup an error stays in the popup; what is said after it closes goes to the caller or under the button
+  const said = (n: Note | null) => (onNote ? onNote(n) : setMessage(n));
   const submit = (ev: FormEvent) => {
     ev.preventDefault();
     if (!category) {
@@ -439,35 +450,47 @@ function ReportForm({ threadId, seq, t, lang }: { threadId: string; seq: number 
     }).then(
       () => {
         setOpen(false);
-        setMessage({ kind: 'success', text: t('report.sent') });
+        setMessage(null);
+        said({ kind: 'success', text: t('report.sent') });
       },
       (e: unknown) => {
         if (problemName(e) === 'feature-off') {
           setOpen(false);
-          setMessage({ kind: 'info', text: t('report.unavailable') });
+          setMessage(null);
+          said({ kind: 'info', text: t('report.unavailable') });
         } else setMessage({ kind: 'error', text: errorText(e, t, lang) });
       },
     ).finally(() => setBusy(false));
   };
   return (
-    <form className={styles.report} onSubmit={submit} noValidate>
-      <fieldset>
-        <legend>{t(seq === null ? 'report.title_thread' : 'report.title_message')}</legend>
-        <p className={styles.hint}>{t('report.category')}</p>
-        {CATEGORIES.map((c) => (
-          <div key={c}>
-            <input id={`${base}-${c}`} type="radio" name={base} checked={category === c} onChange={() => setCategory(c)} />
-            <label htmlFor={`${base}-${c}`}>{t(`report.category.${c}`)}</label>
-          </div>
-        ))}
-      </fieldset>
-      <label htmlFor={`${base}-text`}>{t('report.text')}</label>
-      <textarea id={`${base}-text`} rows={2} maxLength={MAX_TEXT} value={text} onChange={(e) => setText(e.target.value)} />
-      {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
-      <div className={styles.row}>
-        <button type="submit" disabled={busy} aria-busy={busy}>{t('report.send')}</button>
-        <button type="button" className={styles.secondary} onClick={() => setOpen(false)} disabled={busy}>{t('report.cancel')}</button>
-      </div>
-    </form>
+    <>
+      {!open && !onNote && message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
+      <button type="button" className={styles.linkButton} onClick={() => { setOpen(true); setMessage(null); said(null); }}>
+        {t(seq === null ? 'report.thread' : 'report.message')}
+      </button>
+      {open && (
+        <Popup id={base} title={t(seq === null ? 'report.title_thread' : 'report.title_message')} closeLabel={t('report.cancel')} busy={busy} onClose={() => setOpen(false)}>
+          <form className={styles.report} onSubmit={submit} noValidate>
+            <fieldset>
+              <legend className={styles.visuallyHidden}>{t(seq === null ? 'report.title_thread' : 'report.title_message')}</legend>
+              <p className={styles.hint}>{t('report.category')}</p>
+              {CATEGORIES.map((c) => (
+                <div key={c}>
+                  <input id={`${base}-${c}`} type="radio" name={base} checked={category === c} onChange={() => setCategory(c)} />
+                  <label htmlFor={`${base}-${c}`}>{t(`report.category.${c}`)}</label>
+                </div>
+              ))}
+            </fieldset>
+            <label className={styles.fieldLabel} htmlFor={`${base}-text`}>{t('report.text')}</label>
+            <textarea id={`${base}-text`} rows={3} maxLength={MAX_TEXT} value={text} onChange={(e) => setText(e.target.value)} />
+            {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
+            <PopupActions>
+              <button type="submit" disabled={busy} aria-busy={busy}>{t('report.send')}</button>
+              <button type="button" onClick={() => setOpen(false)} disabled={busy}>{t('report.cancel')}</button>
+            </PopupActions>
+          </form>
+        </Popup>
+      )}
+    </>
   );
 }
