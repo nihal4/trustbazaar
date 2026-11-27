@@ -52,14 +52,6 @@
   flex: none;
 }
 
-.wordmark {
-  font-weight: 600;
-  font-size: 1.4rem;
-  letter-spacing: -0.035em;
-  line-height: 1;
-  font-family: var(--tb-font-display);
-}
-
 .docTitle {
   color: var(--tb-muted);
   font-weight: 500;
@@ -109,11 +101,6 @@
   padding: var(--tb-space-6) clamp(var(--tb-space-4), 4vw, 3.5rem);
 }
 
-/* room for the tab bar, so it never covers the end of the page */
-.withTabs {
-  padding-bottom: 6rem;
-}
-
 .main:focus {
   outline: none;
 }
@@ -140,17 +127,6 @@
   color: var(--tb-text);
 }
 
-.tabBar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 5;
-  background: var(--tb-bg);
-  border-top: 1px solid var(--tb-line);
-  padding: 0.375rem 0 calc(0.375rem + env(safe-area-inset-bottom));
-}
-
 .tab {
   min-height: 52px;
   display: flex;
@@ -166,29 +142,6 @@
 
 .tabOn {
   color: var(--tb-accent);
-}
-
-.tabSell {
-  display: grid;
-  place-items: center;
-  width: 2.5rem;
-  height: 1.75rem;
-  border-radius: var(--tb-radius-pill);
-  background: var(--tb-accent);
-  color: var(--tb-accent-text);
-}
-
-.dialog {
-  width: min(28rem, calc(100vw - 2rem));
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius);
-  padding: var(--tb-space-4);
-}
-
-.dialogActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--tb-space-2);
 }
 
 .badge {
@@ -300,24 +253,6 @@
     margin-left: auto;
   }
 }
-
-/* ---- Redesign v3 (docs/design/10_visual_v3.md): flat and plain. A mint promise bar, a white header with a search field,
-   an ink footer, a standard bottom bar on phones. These rules follow the older ones and win. ---- */
-.promiseBar {
-  margin: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: var(--tb-space-2);
-  padding: var(--tb-space-2) var(--tb-gutter);
-  background: transparent;
-  border-bottom: 1px solid var(--tb-line);
-  color: var(--tb-text);
-  font-size: var(--tb-text-sm);
-  font-weight: 500;
-  line-height: 1.4;
-  text-align: center;
-}
 .promiseBar svg {
   flex: none;
 }
@@ -331,6 +266,8 @@
   border-bottom: 1px solid var(--tb-line);
 }
 .wordmark {
+  line-height: 1;
+  font-family: var(--tb-font-display);
   font-weight: 500;
   font-size: 1.4rem;
   letter-spacing: -0.03em;
@@ -396,11 +333,6 @@
   color: var(--tb-text);
   font-weight: 600;
 }
-.tabSell {
-  background: var(--tb-action);
-  color: var(--tb-action-text);
-  border-radius: var(--tb-radius);
-}
 @media (max-width: 47.99em) {
   .header {
     flex-wrap: wrap;
@@ -428,16 +360,6 @@
   .logotypeBn {
     height: 30px;
   }
-}
-
-/* The footer: ruled like the page. Three columns on the page's own thirds (the brand, Explore, Help) divided by hairlines; one
-   column with rules between on phones. Muted text, links brighten and draw a hot underline on hover. */
-.footer {
-  margin-top: 4rem;
-  padding: 0 var(--tb-gutter) var(--tb-space-12);
-  border-top: 1px solid var(--tb-line);
-  color: var(--tb-muted);
-  font-size: var(--tb-text-md);
 }
 .footerGrid {
   display: grid;
@@ -569,10 +491,14 @@
 /* ---- The phone tab bar, ruled like the page (docs/design/10_visual_v3.md): a line on top, equal cells divided by hairlines, no
    filled blocks. The current tab has a 2 px hot line on the bar's top edge; Sell is the one hot tab (an outlined square, not a
    filled pill), so the primary action is marked without a block. Labels never wrap or overflow, down to 320 px. ---- */
+
+/* room for the tab bar, so it never covers the end of the page */
 .withTabs {
   padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
 }
 .tabBar {
+  position: fixed;
+  z-index: 5;
   left: 0;
   right: 0;
   bottom: 0;
@@ -697,7 +623,15 @@
 
 /* On a listing the right column stays in view down to the footer, so the footer keeps to the left of it: the page sets
    html[data-rail] and --tb-rail-reserve (the column's width and the gap). */
+
+/* The footer: ruled like the page. Three columns on the page's own thirds (the brand, Explore, Help) divided by hairlines; one
+   column with rules between on phones. Muted text, links brighten and draw a hot underline on hover. */
 .footer {
+  margin-top: 4rem;
+  padding: 0 var(--tb-gutter) var(--tb-space-12);
+  border-top: 1px solid var(--tb-line);
+  color: var(--tb-muted);
+  font-size: var(--tb-text-md);
   position: relative;
 }
 :global(html[data-rail='on']) .footer {
@@ -730,15 +664,6 @@
 .header [class*='Button-label'] {
   overflow: visible;
 }
-
-/* the confirmation dialog in the ruled look: a hairline panel, the action in vermilion, Cancel as an outline */
-.dialog {
-  background: var(--tb-sheet);
-  color: var(--tb-text);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-panel);
-  padding: var(--tb-space-6);
-}
 .dialog::backdrop {
   background: rgb(0 0 0 / 0.6);
 }
@@ -751,6 +676,8 @@
   margin: 0 0 var(--tb-space-3);
 }
 .dialogActions {
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--tb-space-2-5);
   margin-top: var(--tb-space-5);
   padding-top: var(--tb-space-5);
@@ -782,15 +709,6 @@
 .dialogActions button:focus-visible {
   outline: 2px solid var(--tb-text);
   outline-offset: 3px;
-}
-
-/* the signed-in header's links as a ruled grid of icon cells (the names stay for screen readers and as tooltips) */
-.navGrid {
-  display: flex;
-  flex: none;
-  border: 1px solid var(--tb-line);
-  border-radius: var(--tb-radius-panel);
-  overflow: hidden;
 }
 .navCell {
   position: relative;
@@ -852,7 +770,23 @@
   border-top: 0;
 }
 /* the promise line is one line on every screen: the long sentence, or a short one on narrow phones */
+
+/* ---- Redesign v3 (docs/design/10_visual_v3.md): flat and plain. A mint promise bar, a white header with a search field,
+   an ink footer, a standard bottom bar on phones. These rules follow the older ones and win. ---- */
 .promiseBar {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--tb-space-2);
+  padding: var(--tb-space-2) var(--tb-gutter);
+  background: transparent;
+  border-bottom: 1px solid var(--tb-line);
+  color: var(--tb-text);
+  font-size: var(--tb-text-sm);
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
   white-space: nowrap;
   overflow: hidden;
 }
@@ -874,7 +808,11 @@
 }
 
 /* ruled, not boxed (owner's review): the header's icon cells and the language switch have dividers and rules, no outlines or rounded boxes */
+
+/* the signed-in header's links as a ruled grid of icon cells (the names stay for screen readers and as tooltips) */
 .navGrid {
+  display: flex;
+  flex: none;
   border: 0;
   border-radius: 0;
   overflow: visible;
@@ -907,7 +845,13 @@
 }
 
 /* the confirmation dialog, ruled: a vermilion rule on top and a hairline under, no outline; Cancel is a ruled cell; the paragraphs wrap with no lone last word */
+
+/* the confirmation dialog in the ruled look: a hairline panel, the action in vermilion, Cancel as an outline */
 .dialog {
+  width: min(28rem, calc(100vw - 2rem));
+  background: var(--tb-sheet);
+  color: var(--tb-text);
+  padding: var(--tb-space-6);
   border: 0;
   border-top: 2px solid var(--tb-hot);
   border-bottom: 1px solid var(--tb-border);
