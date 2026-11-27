@@ -38,6 +38,7 @@ export async function start(root: HTMLElement, o: Options = {}): Promise<() => v
   document.documentElement.lang = lang;
   const t = createT(CATALOGUES[lang], { strict: o.strict ?? false });
   document.querySelector('.brand')?.setAttribute('aria-label', t('secure.home_link'));   // the static header's logo link
+  if (lang === 'bn') document.querySelector('.brand img')?.setAttribute('src', '/brand/trustbazaar-bn-reversed.svg');
   const now = o.now ?? (() => Date.now());
   const m = ROUTE.exec(loc.pathname);
   if (!m) {

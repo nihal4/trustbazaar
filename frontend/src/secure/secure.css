@@ -1,7 +1,7 @@
-/* The credential document's own styles (SEC-GAM-03: it loads no shared code). The money-order design
-   (docs/design/10_visual_v2.md; U10-08, U10-11): the app's tokens repeated here (src/shared/tokens.css), the same self-hosted
-   fonts (Bangla glyphs only when the page is in Bangla, by unicode-range), a slim header with the logo, panels on mist,
-   12 px inputs and 48 px pill buttons. Text keeps a contrast of at least 4.5:1, control borders 3:1. The key's
+/* The credential document's own styles (SEC-GAM-03: it loads no shared code). The line-grid design of the app
+   (docs/design/10_visual_v3.md; U10-26): the dark app's tokens repeated here (src/shared/tokens.css), the same self-hosted
+   fonts (Bangla glyphs only when the page is in Bangla, by unicode-range), a slim header with the logo, a vermilion rule
+   over the title, hairline blocks instead of panels, square ruled fields and buttons. Text keeps a contrast of at least 4.5:1, control borders 3:1. The key's
    fingerprint and the login details stay in a monospace face, so 0 and O or l and 1 cannot be confused (Decisions
    log, U10-08). */
 @import '@fontsource-variable/figtree/wght.css';
@@ -11,14 +11,12 @@
 @import '@fontsource/hind-siliguri/bengali-700.css';
 
 :root {
-  --bg: #ffffff; --surface: #f3f5f8; --cream: #f3f5f8; --text: #0f1720; --muted: #5a6472; --border: #8590a0;
-  --line: #e2e6ec; --accent: #0f1720; --accent-soft: #ffe1d2; --accent-text: #ffffff; --error: #b42318;
-  --success: #0b6b3f; --radius: 12px;
+  --bg: #0a1110; --surface: #16221f; --text: #f1f5f3; --muted: #a2b5b0; --border: #66807a; --line: #2a3b36;
+  --hot: #ff6b35; --accent: #ff6b35; --accent-text: #0a1018; --error: #ff6f8e; --error-bg: #2b1219; --error-line: #6b2a3a;
+  --success: #5dd39e; --ease-out: cubic-bezier(0.23, 1, 0.32, 1); color-scheme: dark;
   --font: 'Figtree Variable', 'TB Figures', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --line-height: 1.5;
 }
-/* the figures, as in the app (src/shared/language/font.ts): in Bangla the digits, taka sign and the separators
-   between them; in English, after Figtree, only the taka sign */
 @font-face { font-family: 'TB Figures'; font-weight: 400; font-display: swap; src: url('../shared/language/figures/figures-digits-400.woff2') format('woff2'); unicode-range: U+09E6-09EF, U+09F3; }
 @font-face { font-family: 'TB Figures'; font-weight: 400; font-display: swap; src: url('../shared/language/figures/figures-marks-400.woff2') format('woff2'); unicode-range: U+002C, U+002E, U+003A; }
 @font-face { font-family: 'TB Figures'; font-weight: 600; font-display: swap; src: url('../shared/language/figures/figures-digits-600.woff2') format('woff2'); unicode-range: U+09E6-09EF, U+09F3; }
@@ -27,47 +25,67 @@
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 1rem; line-height: var(--line-height); overflow-wrap: anywhere; }
 
-.top { display: flex; align-items: center; min-height: 64px; padding: 0 max(1rem, calc((100% - 40rem) / 2 + 1rem)); border-bottom: 1px solid var(--line); }
-.brand { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; color: var(--text); text-decoration: none; }
-.mark { flex: none; }
-.wordmark { font-family: 'Schibsted Grotesk Variable', system-ui, sans-serif; font-size: 1.2rem; font-weight: 500; letter-spacing: -0.035em; }
+.top { display: flex; align-items: center; min-height: 72px; padding: 0 max(1rem, calc((100% - 40rem) / 2 + 1rem)); border-bottom: 1px solid var(--line); }
+.brand { display: inline-flex; align-items: center; min-height: 44px; }
+.logotype { display: block; height: 28px; width: auto; }
 
-#root { display: block; max-width: 40rem; margin: 0 auto; padding: 1.75rem 1rem 3rem; }
-h1 { margin: 0 0 1rem; font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.125rem); line-height: 1.15; letter-spacing: -0.03em; font-weight: 600; }
+#root { display: block; max-width: 40rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+h1 { margin: 0 0 1.25rem; padding: 1.5rem 0 0; border-top: 2px solid var(--hot); font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.125rem); line-height: 1.15; letter-spacing: -0.03em; font-weight: 600; }
 :lang(bn) h1 { letter-spacing: 0; line-height: 1.35; font-weight: 600; }
 h1:focus { outline: none; }
-h2 { margin: 0 0 0.5rem; font-size: 1.1875rem; letter-spacing: -0.015em; }
+h2 { margin: 0 0 0.75rem; font-size: 1.125rem; letter-spacing: -0.01em; }
 :lang(bn) h2 { letter-spacing: 0; }
-a { color: var(--accent); font-weight: 600; text-underline-offset: 3px; }
-:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+a { color: var(--text); font-weight: 600; text-underline-offset: 3px; transition: color 140ms ease; }
+@media (hover: hover) and (pointer: fine) { a:hover { color: var(--hot); } }
+:focus-visible { outline: 2px solid var(--hot); outline-offset: 2px; }
 
-.panel { border-radius: var(--tb-radius-panel); background: var(--surface); padding: 1.125rem 1.25rem; margin: 1.25rem 0; }
+/* a block of the page: a hairline over it, no box; its heading, its words, its buttons */
+.panel { margin: 0; padding: 1.5rem 0; border-top: 1px solid var(--line); }
 .panel > :last-child { margin-bottom: 0; }
 .hint { color: var(--muted); }
 .panel .hint { font-size: 0.9375rem; }
-.error, .success, .info { margin: 1rem 0; padding: 0.75rem 1rem; border-radius: var(--tb-radius-panel); }
-.error { color: #912018; background: #fef3f2; border: 1px solid #fecdca; font-weight: 600; }
-.success { background: #f3f5f8; border: 1px solid var(--accent-soft); }
+p { line-height: 1.6; }
+.error, .success, .info { margin: 1rem 0; padding: 0.75rem 1rem; border: 1px solid var(--line); }
+.error { color: #ffd3dc; background: var(--error-bg); border-color: var(--error-line); font-weight: 600; }
+.success { border-color: var(--success); background: color-mix(in srgb, var(--success) 8%, transparent); }
 .info { background: var(--surface); }
 .fingerprint, .secret { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 1.0625rem; letter-spacing: 0.02em; overflow-wrap: anywhere; }
-.details .secret { display: inline-block; padding: 0.25rem 0.625rem; border-radius: 8px; background: var(--bg); border: 1px solid var(--line); }
-.field { display: flex; flex-direction: column; gap: 0.375rem; margin-bottom: 1rem; }
+.details .secret { display: inline-block; padding: 0.25rem 0.625rem; border: 1px solid var(--border); background: var(--bg); }
+.field { display: flex; flex-direction: column; gap: 0.375rem; margin-bottom: 1.25rem; }
 .field label { font-weight: 600; }
 .field .hint { margin: 0; font-size: 0.9375rem; }
 .check { display: flex; align-items: center; gap: 0.75rem; min-height: 44px; }
-.check input { width: 22px; height: 22px; margin: 0; accent-color: var(--accent); }
-input[type='text'], input[type='password'], textarea { font: inherit; min-height: 48px; padding: 0.625rem 0.875rem; border: 1.5px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); width: 100%; }
-input[type='text']:focus-visible, input[type='password']:focus-visible, textarea:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 0; border-color: var(--accent); }
-input[type='radio'] { width: 22px; height: 22px; accent-color: var(--accent); }
-button { font: inherit; font-weight: 600; min-height: 48px; padding: 0 1.5rem; border-radius: var(--radius); cursor: pointer; }
-button:disabled { cursor: not-allowed; opacity: 0.6; }
+.check input { width: 22px; height: 22px; margin: 0; accent-color: var(--hot); }
+input[type='text'], input[type='password'], textarea { font: inherit; min-height: 52px; padding: 0.625rem 0.875rem; border: 1px solid var(--border); border-radius: 0; background: transparent; color: var(--text); width: 100%; transition: border-color 140ms ease, box-shadow 140ms ease; }
+input[type='text']:focus-visible, input[type='password']:focus-visible, textarea:focus-visible { outline: none; border-color: var(--hot); box-shadow: inset 0 0 0 1px var(--hot); }
+input[type='radio'] { width: 22px; height: 22px; accent-color: var(--hot); }
+
+/* the buttons: square and ruled; the main one a vermilion line over a faint wash, the other a hairline; a press gives a little under the finger */
+button { font: inherit; font-weight: 600; min-height: 52px; padding: 0 1.5rem; border-radius: 0; color: var(--text); cursor: pointer; transition: transform 160ms var(--ease-out), background-color 140ms ease, border-color 140ms ease; }
+button:active:not(:disabled) { transform: scale(0.97); }
+button:disabled { cursor: not-allowed; opacity: 0.45; }
 button + button { margin-left: 0.5rem; }
-.primary { background: var(--accent); color: var(--accent-text); border: 0; }
-.secondary { background: var(--bg); color: var(--text); border: 1.5px solid var(--border); }
-.details { margin: 0.5rem 0; }
-.details dt { color: var(--muted); font-size: 0.9375rem; }
-.details dd { margin: 0.125rem 0 0.75rem; }
+.primary { background: color-mix(in srgb, var(--hot) 10%, transparent); border: 1px solid var(--hot); }
+.secondary { background: none; border: 1px solid var(--border); }
+@media (hover: hover) and (pointer: fine) {
+  .primary:hover:not(:disabled) { background: color-mix(in srgb, var(--hot) 18%, transparent); }
+  .secondary:hover:not(:disabled) { border-color: var(--hot); }
+}
+.details { margin: 0.5rem 0; border-top: 1px solid var(--line); }
+.details dt { padding-top: 0.75rem; color: var(--muted); font-size: 0.9375rem; }
+.details dd { margin: 0.125rem 0 0; padding-bottom: 0.75rem; border-bottom: 1px solid var(--line); }
 .details ul { margin: 0.25rem 0 0; padding-left: 1.25rem; }
-.checklist { padding-left: 1.25rem; }
-.checklist li { margin-bottom: 0.75rem; }
+
+/* the takeover steps: one ruled line to a step, the step's own button at its end */
+.checklist { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+.checklist li { padding: 0.875rem 0; border-bottom: 1px solid var(--line); }
 .checklist li span { margin-right: 0.5rem; }
+
+/* a screen arrives: its blocks rise a few pixels and fade in, 200 ms; reduced motion keeps only the fade */
+@keyframes arrive { from { opacity: 0; transform: translateY(6px); } }
+#root > * { animation: arrive 200ms var(--ease-out) both; }
+@keyframes arriveFade { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  #root > * { animation-name: arriveFade; }
+  button:active:not(:disabled) { transform: none; }
+}

@@ -74,8 +74,8 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
       {accountLinks && <p className={styles.promiseBar}><ShieldIcon /><span className={styles.promiseLong}>{t('shell.promise_bar')}</span><span className={styles.promiseShort}>{t('shell.promise_bar_short')}</span></p>}
       <header className={exit ? `${styles.header} ${styles.withExit}` : styles.header}>
         {home.sameDocument
-          ? <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo onDark={accountLinks} /></Link>
-          : <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}><Logo onDark={accountLinks} /></a>}
+          ? <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo onDark={accountLinks || document.documentElement.dataset.theme === 'dark'} /></Link>
+          : <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}><Logo onDark={accountLinks || document.documentElement.dataset.theme === 'dark'} /></a>}
         {titleKey && <span className={styles.docTitle}>{t(titleKey)}</span>}
         {accountLinks && !phone && pathname !== '/' && pathname !== '/search' ? <><HeaderSearch /><span className={styles.spacerSmall} /></> : <span className={styles.spacer} />}
         {accountLinks && <AccountLink phone={phone} />}

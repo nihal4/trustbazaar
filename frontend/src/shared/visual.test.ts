@@ -43,10 +43,15 @@ describe('the Daylight colours', () => {
     expect([t.accent, t.text, t.muted, t.border, t.surface, t.line, t.error]).toEqual(['#0f1720', '#0f1720', '#5a6472', '#8590a0', '#f3f5f8', '#e2e6ec', '#b42318']);
   });
 
-  it('SEC-GAM-03 the credential document repeats the same colours in its own stylesheet', () => {
+  it('SEC-GAM-03 the credential document repeats the dark theme\'s colours in its own stylesheet (U10-26)', () => {
+    const dark = Object.fromEntries([...(/:root\[data-theme='dark'\]\s*\{([^}]*)\}/.exec(read('shared/tokens.css'))?.[1] ?? '').matchAll(/--([\w-]+):\s*([^;]+);/g)].map((m) => [m[1].replace(/^tb-/, ''), m[2].trim().toLowerCase()]));
     const s = tokens(read('secure/secure.css'));
-    expect([s.bg, s.surface, s.cream, s.text, s.muted, s.border, s.line, s.accent, s.error, s.success])
-      .toEqual([t.bg, t.surface, t.cream, t.text, t.muted, t.border, t.line, t.accent, t.error, t.success]);
+    expect([s.bg, s.surface, s.text, s.muted, s.border, s.line, s.error, s.success])
+      .toEqual([dark.bg, dark.surface, dark.text, dark.muted, dark.border, dark.line, dark.error, dark.success]);
+    expect(contrast(s.text, s.bg)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(s.muted, s.bg)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(s.hot, s.bg)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(s.border, s.bg)).toBeGreaterThanOrEqual(3);
   });
 });
 

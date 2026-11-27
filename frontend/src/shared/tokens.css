@@ -65,8 +65,8 @@
   --mantine-line-height: 1.7;
 }
 
-/* The dark theme of the user app (index.html sets data-theme="dark"; the console, the ID check and the credentials page stay
-   light). Same token names, so every component follows; --tb-action turns vermilion with ink text. */
+/* The dark theme of the user app (index.html and kyc.html set data-theme="dark"; the console stays light; the credentials page, which
+   loads no shared code, repeats these values in its own stylesheet). Same token names, so every component follows; --tb-action turns vermilion with ink text. */
 :root[data-theme='dark'] {
   color-scheme: dark;
   --tb-bg: #0a1110; --tb-sheet: #101a19; --tb-surface: #16221f; --tb-text: #f1f5f3; --tb-muted: #a2b5b0;
