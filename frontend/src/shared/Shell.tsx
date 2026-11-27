@@ -130,11 +130,12 @@ function HeaderSearch() {
 /** The user app's footer: what the site is, and the help pages. */
 function Footer() {
   const { t } = useLanguage();
+  const [theme] = useTheme();
   return (
     <footer className={styles.footer}>
       <div className={styles.footerGrid}>
         <div className={styles.footerAbout}>
-          <Logo onDark />
+          <Logo onDark={theme === 'dark'} />
           <p>{t('shell.footer.tagline')}</p>
         </div>
         <nav className={styles.footerCol} aria-labelledby="footer-explore">

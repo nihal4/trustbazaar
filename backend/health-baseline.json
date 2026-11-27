@@ -1,0 +1,15 @@
+{
+  "eslint": {
+    "warning:@typescript-eslint/no-unused-vars": 1
+  },
+  "knip": {
+    "dependencies": 5,
+    "unlisted": 2,
+    "exports": 165,
+    "types": 19
+  },
+  "jscpd": {
+    "clones": 6,
+    "duplicatedLines": 150
+  }
+}

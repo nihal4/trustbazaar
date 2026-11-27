@@ -21,7 +21,9 @@
     "format:check": "prettier --check \"{src,test}/**/*.ts\"",
     "dup": "jscpd",
     "unused": "knip --no-exit-code",
-    "health": "npm run lint --silent; npm run dup --silent; npm run unused --silent"
+    "health": "npm run lint --silent; npm run dup --silent; npm run unused --silent",
+    "health:ratchet": "node ../scripts/health-ratchet.mjs",
+    "health:baseline": "node ../scripts/health-ratchet.mjs --update"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.0",

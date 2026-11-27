@@ -38,6 +38,8 @@ The tools check that code stays readable and that the design system is used. Run
 | `npm run dup` | jscpd: copied code |
 | `npm run unused` | knip: unused files, exports and dependencies (`backend/` too) |
 | `npm run deps` | dependency-cruiser: a cycle, or `shared/` importing a feature |
+| `npm run health:ratchet` (also in `backend/`) | The ratchet: ESLint, Stylelint, knip and jscpd numbers may go down, never up; CI runs it. After a clean-up lowered them, `npm run health:baseline` and commit `health-baseline.json` |
+| `npm run visual` / `visual:update` | The screenshot tests of the main screens in the pinned Playwright container (needs Docker and `npm run build`); `visual:update` only when a screen is meant to change. Screens are recorded from the real system with `node e2e/visual/record.mjs <name> <path> --session <file>` and replayed from `e2e/visual/fixtures/` |
 | `npm run storybook` | The component catalogue at http://localhost:6006; `npm run storybook:build` builds it. Add a story next to a shared component as `Component.stories.tsx` |
 
 When you make a commit, Husky runs ESLint and Stylelint on the staged files (errors stop the commit) and checks the message (`type(scope): subject`, the scope is a task id). Run `npm install` in the repository root once to set the hooks up.
