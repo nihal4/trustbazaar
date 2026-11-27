@@ -17,7 +17,6 @@
   align-items: center;
   gap: 6px;
   max-width: calc(100% - 16px);
-  border-radius: var(--tb-radius-panel);
   padding: 3px 8px;
   font-size: var(--tb-text-xs);
   line-height: 1.35;
@@ -25,7 +24,6 @@
 }
 .clock {
   left: 8px;
-  background: var(--tb-ink);
   color: var(--tb-white);
   font-variant-numeric: tabular-nums;
 }
@@ -42,12 +40,6 @@
 }
 .soon i {
   background: #fff;
-}
-.featured {
-  right: 8px;
-  background: var(--tb-sheet);
-  color: var(--tb-accent);
-  border: 1.5px solid var(--tb-accent);
 }
 .clock + .featured {
   top: auto;
@@ -115,6 +107,7 @@
   background: var(--tb-ink);
 }
 .featured {
+  right: 8px;
   white-space: nowrap;
   border: 0;
   background: var(--tb-accent-soft);
