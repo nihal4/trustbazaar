@@ -1,3 +1,4 @@
+// The ID-check document (kyc.html): the KYC wizard in a document of its own, so the pages that handle identity documents load nothing else.
 import { createRoot } from 'react-dom/client';
 import { createDocument, DocumentRoot, signInInUserApp } from '../shared/document';
 import { kycRoutes } from '../features/kyc/routes';

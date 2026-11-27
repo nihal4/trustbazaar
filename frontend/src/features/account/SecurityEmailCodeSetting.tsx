@@ -1,3 +1,4 @@
+// The setting that asks for an e-mailed code at sign-in from a new device, on the security page.
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useApi } from '../../shared/api';

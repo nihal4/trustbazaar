@@ -1,3 +1,4 @@
+// A party's dispute chat as the operator sees it: the party's statements and what TrustBazaar sent them.
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { formatDateTime } from '../../lib/time.js';

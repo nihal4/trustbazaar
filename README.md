@@ -22,51 +22,49 @@ The team decided what to build and how, answered every design question, and revi
 
 ```
 trustbazaar/
-├── docs/                    # SRS, Proposal, Supplementary Market Analysis (source + PDF)
-├── backend/                 # NestJS (TypeScript) API — auth, listings, auctions,
-│                             #   orders, payments/escrow, delivery, chat, disputes
-│   └── src/
-│       ├── entities/        # TypeORM entities (data model to be finalised in the SDD)
-│       ├── modules/         # One module per feature area (see below)
-│       └── realtime/        # WebSocket gateway for live bids, chat, notifications
-├── frontend/                # React + Vite (TypeScript) web client
-├── .github/workflows/       # CI pipeline (runs on every push to main, per SEC-SDL-02)
-├── docker-compose.yml       # backend + frontend + postgres + redis, as separate containers (NFR-MNT-01)
-└── .env.example             # required environment variables (copy to .env)
+├── ARCHITECTURE.md          # how the parts fit: start here to understand the system
+├── BUILDING.md              # the builder guide: the rules every task follows
+├── PROGRESS.md              # the tasks, who owns them, what is finished, and the Decisions log
+├── docs/
+│   ├── srs.tex, srs.pdf    # the requirements (IDs: FR-, NFR-, SEC-, IF-)
+│   ├── design/              # the design, in nine units, with the SQL and its tests
+│   ├── api/                 # openapi.json, generated from the backend's code
+│   ├── decisions/           # short notes on why the code is the way it is
+│   └── HOW-TO.md            # "how do I change X?"
+├── backend/                 # NestJS (TypeScript): the kernel and seven units (see ARCHITECTURE.md)
+│   ├── src/kernel/          # config, events, policies, problems, the pool; never imports a unit
+│   ├── src/modules/         # identity, listings, orders, delivery, game-accounts, chat, trust
+│   ├── src/migrations/      # the schema, changed only here
+│   └── test/                # API, security and concurrency tests (need PostgreSQL and Redis)
+├── frontend/                # React + Vite (TypeScript): the user app, the ID check and the staff console
+│   ├── src/features/        # one folder per area of the app
+│   ├── src/shared/ui/       # the design system (every component once, with variants)
+│   └── e2e/visual/          # the screenshot tests
+├── .github/workflows/       # CI: lint, format, tests, screenshots, integration, images (SEC-SDL-02)
+├── docker-compose.yml       # backend, web, PostgreSQL and Redis as separate containers (NFR-MNT-01)
+└── .env.example             # the environment variables (copy to .env)
 ```
 
-### Backend modules → SRS v2.0 requirement areas
+Each folder of `frontend/src/features/` and `backend/src/modules/` has a `README.md` that says what the area is for, where to start and how it is tested.
 
-Requirement identifiers are area-based since SRS v2.0 (Appendix D of the SRS maps every v1.1 number such as `FR-23` to its new identifier).
+### The backend units and the requirements they serve
 
-| Module | SRS area | Requirements |
+Requirement identifiers are area-based (Appendix D of the SRS maps the old numbers).
+
+| Unit | What it does | Requirement areas |
 |---|---|---|
-| `auth`, `users` | Account registration and authentication | FR-ACC-01–FR-ACC-11, SEC-AUTH, SEC-SES |
-| `kyc` | Identity verification | FR-KYC-01–FR-KYC-12 |
-| `listings` | Listing creation; search and discovery | FR-LST-01–FR-LST-13, FR-SRC-01–FR-SRC-06 |
-| `auctions` | Auction engine | FR-AUC-01–FR-AUC-18 |
-| `orders` | Fixed-price purchase | FR-FIX-01–FR-FIX-05 |
-| `payments` | Payment, escrow, refunds and payouts | FR-PAY-01–FR-PAY-21 |
-| `delivery` | Meetup handover and courier delivery | FR-DLV-01–FR-DLV-14 |
-| *planned:* `game-accounts` | Game-account escrow | FR-GAM-01–FR-GAM-20, SEC-GAM |
-| `chat` | Real-time chat | FR-CHT-01–FR-CHT-10 |
-| `reviews` | Ratings, reviews and trust signals | FR-REV-01–FR-REV-07 |
-| `disputes` | Dispute resolution | FR-DSP-01–FR-DSP-12 |
-| `notifications` | Notifications | FR-NTF-01–FR-NTF-08 |
-| `payments` (monetization) | Monetization | FR-MON-01–FR-MON-10 |
-| *planned:* trust & safety, staff (operator/administrator) | Trust and safety; operator and administrator functions | FR-TNS-01–FR-TNS-09, FR-OPS-01–FR-OPS-09 |
-| *planned:* privacy | Privacy and data-subject rights | FR-PRV-01–FR-PRV-06 |
-| cross-cutting (guards, interceptors, config) | Security and quality requirements | SEC-*, NFR-* |
-
-Each module currently contains a minimal, working NestJS module/controller/service stub with `TODO` markers pointing at the specific requirement it needs to implement — this is a scaffold to build on, not a finished system.
+| `identity` | accounts, sign-in, sessions, KYC, staff accounts, approvals, audit | FR-ACC, FR-KYC, SEC-AUTH, SEC-SES |
+| `listings` | listings, search, the auction engine, stock | FR-LST, FR-SRC, FR-AUC |
+| `orders` | orders, escrow, the ledger, payments, refunds, payouts, monetization | FR-FIX, FR-PAY, FR-MON |
+| `delivery` | meetup handover and courier delivery | FR-DLV |
+| `game-accounts` | game-account escrow and the sealed credential handover | FR-GAM, SEC-GAM |
+| `chat` | conversations, notifications | FR-CHT, FR-NTF |
+| `trust` | disputes, ratings, sanctions, privacy, the parameter set, staff work queues | FR-DSP, FR-REV, FR-TNS, FR-OPS, FR-PRV |
+| the kernel and cross-cutting code | guards, policies, config, events, health | SEC-*, NFR-* |
 
 ## Building it
 
-The design is finished (`docs/design/`, Units 1 to 9). Before writing code, read **[`BUILDING.md`](BUILDING.md)**,
-the builder guide that everyone, including AI assistants, follows; then see **[`PROGRESS.md`](PROGRESS.md)** for
-the tasks, who owns them, and what is finished (`python3 scripts/check_progress.py --next` lists what can be
-started now). `CLAUDE.md` points Claude to both. The module table below describes the old scaffold; the
-target structure is in `BUILDING.md` section 3.
+The design is finished (`docs/design/`, Units 1 to 9) and the system is built. Before changing code, read **[`ARCHITECTURE.md`](ARCHITECTURE.md)** (how it fits), **[`BUILDING.md`](BUILDING.md)** (the rules every task follows) and **[`docs/HOW-TO.md`](docs/HOW-TO.md)** (how to do the common changes). **[`PROGRESS.md`](PROGRESS.md)** lists the tasks, who owns them and what is finished (`python3 scripts/check_progress.py --next` lists what can be started now). `CLAUDE.md` points AI assistants to the same documents.
 
 ## Getting Started
 
@@ -95,10 +93,10 @@ npm run start:dev
 
 ### Running tests
 ```bash
-cd backend
-npm test
+cd backend && npm test          # unit tests
+cd frontend && npm test         # unit tests
 ```
-The concurrency-sensitive test suite (`test/concurrency/`) covers the properties called out as the project's evaluation criteria: simultaneous bidding, simultaneous stock decrement, duplicate payment-webhook delivery, and settlement fee-split correctness (NFR-MNT-02; acceptance criteria in SRS Appendix A).
+The integration suite (the whole backend over HTTP, with the concurrency tests: simultaneous bidding, simultaneous stock decrement, duplicate payment callbacks), the screenshot tests and the checks that CI runs are described in [`docs/HOW-TO.md`](docs/HOW-TO.md).
 
 ## Environment Variables
 
@@ -113,6 +111,7 @@ No real financial transactions are processed anywhere in this repository — see
 
 See [`docs/README.md`](docs/README.md) for build instructions.
 
+- [`ARCHITECTURE.md`](ARCHITECTURE.md), [`docs/HOW-TO.md`](docs/HOW-TO.md), [`docs/decisions/`](docs/decisions/) and [`docs/api/`](docs/api/README.md) — how the system is built, how to change it, why it is like this, and the generated API document
 - `docs/srs.tex` / `docs/srs.pdf` — Software Requirements Specification v2.0 (IEEE 830-1998 structure): functional, security and quality requirements, configurable parameters, acceptance criteria and traceability
 - `docs/proposal.tex` / `docs/proposal.pdf` — Project Proposal (revised), including the 12-week timeline
 - `docs/supplementary/` — Supplementary Market Analysis of Bikroy.com and its alternatives, cited by the proposal and the SRS

@@ -1,3 +1,4 @@
+// What the auction's parts share: formatting a price, the amount check of a bid and the words for each refusal.
 import { formatMoney } from '../../lib/money.js';
 import { formatDateTime } from '../../lib/time.js';
 import { ApiError } from '../../lib/api.js';

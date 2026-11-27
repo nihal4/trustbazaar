@@ -1,3 +1,4 @@
+// What the parts of the security page share: the sessions query key and page size, the summary of a session, and the call that runs after a step-up.
 import { StepUpCancelled } from '../../shared/stepUp';
 
 export interface SessionSummary {

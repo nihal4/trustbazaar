@@ -1,3 +1,4 @@
+// The seller's side of the handover: the photos of the item, the code the buyer reads out, and the two-step popup that takes both.
 import { Popup } from '../../shared/Popup';
 import { useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';

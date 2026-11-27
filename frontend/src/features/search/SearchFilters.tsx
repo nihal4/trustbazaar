@@ -1,3 +1,4 @@
+// The filters of the search page: category, condition, price, place and sort, in the sheet on a phone and beside the results on a desktop.
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { parseTaka } from '../../lib/money.js';
 import { FormMessage } from '../../shared/form';

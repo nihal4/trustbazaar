@@ -1,3 +1,4 @@
+// Clarifications added to a listing after it is published: a note the seller adds that every bidder sees.
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDateTime } from '../../lib/time.js';

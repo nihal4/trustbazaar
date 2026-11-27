@@ -1,3 +1,5 @@
+// Publishing a listing: what is still missing (the start price and the reserve of an auction), the limit on live listings, and the answer: published, or sent
+// for review.
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { parseTaka } from '../../lib/money.js';

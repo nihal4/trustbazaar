@@ -1,3 +1,4 @@
+// The delivery areas (administrator): list, add and change, with their zone.
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApi } from '../../shared/api';

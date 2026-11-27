@@ -1,3 +1,4 @@
+// The staff console's document (staff.html): the operator and administrator screens, with the staff session and none of the member app's code.
 import { createRoot } from 'react-dom/client';
 import { createDocument, DocumentRoot } from '../shared/document';
 import { staffRoutes, staffSignIn } from '../staff/routes';

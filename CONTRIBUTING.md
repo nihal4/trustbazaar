@@ -28,18 +28,18 @@ Prefixes used: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `perf`, `ci`,
 Pick it with `python3 scripts/check_progress.py --next`, then read its unit's design document in `docs/design/`, the integration notes listed under the unit in `PROGRESS.md`, and the requirements in `docs/srs.tex` (see `BUILDING.md` section 2).
 
 ## Code health tools (U11)
-The tools check that code stays readable and that the design system is used. Run `npm run health` in `frontend/` or `backend/` for the whole report. Until the clean-up (U11 in `PROGRESS.md`) has reached a folder, most of these are warnings or reports, not errors.
+The tools keep the code readable and make sure the design system is used. **They are CI checks, not advice:** they run on every pull request (`.github/workflows/ci.yml`) and are expected to be green before a merge. The checks the `main` branch requires are set in the repository's branch protection, outside the code; the screenshot job (`visual`) fails on any different pixel, and it should be one of them. Run `npm run health` in `frontend/` or `backend/` for the whole report. What to do when one is red is in [`docs/HOW-TO.md`](docs/HOW-TO.md) ("When CI is red").
 
 | Command (in `frontend/` unless noted) | What it does |
 |---|---|
-| `npm run lint` | ESLint: errors stop CI; warnings are the report (accessibility of the markup, too complex, repeated code) |
-| `npm run lint:css` | Stylelint: a colour or a font written in a stylesheet instead of a token (`var(--tb-…)`) is flagged |
+| `npm run lint` | ESLint: errors stop CI, and the size and complexity limits are errors (a file, a function, its complexity); warnings are the report (accessibility of the markup, repeated code) |
+| `npm run lint:css` | Stylelint: a colour or a font written in a stylesheet instead of a token (`var(--tb-…)`) is an **error** in CI |
 | `npm run format` / `format:check` | Prettier, one format over the whole code (`backend/` has the same two commands); CI checks it, and the hooks leave it to you: run `npm run format` before you commit. The one commit that formatted everything (U11-14) is in `.git-blame-ignore-revs`: GitHub skips it in blame, and locally `git config blame.ignoreRevsFile .git-blame-ignore-revs` does the same |
 | `npm run dup` | jscpd: copied code |
 | `npm run unused` | knip: unused files, exports and dependencies (`backend/` too) |
-| `npm run deps` | dependency-cruiser: a cycle, or `shared/` importing a feature |
+| `npm run deps` | dependency-cruiser: a cycle, `shared/` importing a feature, or `shared/ui` importing anything but presentational code; every rule is an error in CI |
 | `npm run health:ratchet` (also in `backend/`) | The ratchet: ESLint, Stylelint, knip and jscpd numbers may go down, never up; CI runs it. After a clean-up lowered them, `npm run health:baseline` and commit `health-baseline.json` |
-| `npm run visual` / `visual:update` | The screenshot tests of the main screens in the pinned Playwright container (needs Docker and `npm run build`); `visual:update` only when a screen is meant to change. Screens are recorded from the real system with `node e2e/visual/record.mjs <name> <path> --session <file>` and replayed from `e2e/visual/fixtures/` |
+| `npm run visual` / `visual:update` | The screenshot tests (a **required** CI check: zero different pixels) of the main screens in the pinned Playwright container (needs Docker and `npm run build`); `visual:update` only when a screen is meant to change. Screens are recorded from the real system with `node e2e/visual/record.mjs <name> <path> --session <file>` and replayed from `e2e/visual/fixtures/` |
 | `npm run storybook` | The component catalogue at http://localhost:6006; `npm run storybook:build` builds it. Add a story next to a shared component as `Component.stories.tsx` |
 
 When you make a commit, Husky runs ESLint and Stylelint on the staged files (errors stop the commit) and checks the message (`type(scope): subject`, the scope is a task id). Run `npm install` in the repository root once to set the hooks up.

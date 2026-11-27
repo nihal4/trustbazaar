@@ -1,3 +1,4 @@
+// Turning the authenticator app off: asks for a code first (step-up), then ends the second factor. A step of MfaSettings.
 import { formatWait } from '../../shared/wait';
 import { useState, type FormEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';

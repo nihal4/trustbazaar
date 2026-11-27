@@ -1,3 +1,5 @@
+// The details form of a listing being sold: category, title, description, condition, how it is handed over, price or auction terms, and where the
+// item is.
 import { useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';

@@ -1,3 +1,4 @@
+// The buyer's side of the handover: the code to read out at the meetup, shown only after the terms are accepted.
 import { Popup } from '../../shared/Popup';
 import { Terms } from './Terms';
 import { useState } from 'react';

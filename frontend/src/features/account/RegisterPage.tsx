@@ -1,3 +1,5 @@
+// Register (IF-UI-01; FR-ACC-01): one question at a time on the ruled card. The steps and what each asks are drawn here; the state, the checks and the calls of
+// the flow are in registerFlow.tsx.
 import { formatWait } from '../../shared/wait';
 import { type ReactNode } from 'react';
 import { CheckboxField, CodeField, SubmitButton, TextField } from '../../shared/form';

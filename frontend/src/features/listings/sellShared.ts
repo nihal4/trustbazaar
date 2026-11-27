@@ -1,3 +1,4 @@
+// What the sell form's parts share: the listing query key and the percentage of an upload.
 import { toLocalDigits } from '../../lib/money.js';
 import type { Lang } from '../../shared/language/lang';
 

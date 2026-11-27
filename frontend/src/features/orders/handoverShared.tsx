@@ -1,3 +1,4 @@
+// What the handover's parts share: the Dhaka date-time input, the name of a place and the 'where' line of a proposal.
 import { toLocalDigits } from '../../lib/money.js';
 import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';

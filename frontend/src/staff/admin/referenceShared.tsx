@@ -1,3 +1,4 @@
+// What the reference-data screens share: the zones, the kinds of meetup point and the shapes of a game, an area, a point and a fare table.
 export const ZONES = ['inside_dhaka', 'dhaka_suburbs', 'outside_dhaka'] as const;
 
 export type Zone = (typeof ZONES)[number];

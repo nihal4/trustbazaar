@@ -1,3 +1,4 @@
+// The live sessions on the security page (FR-ACC-08): device and last use, this device marked, ending one session or all the others.
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useApi } from '../../shared/api';

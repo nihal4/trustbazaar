@@ -1,3 +1,4 @@
+// Changing the e-mail address on the security page: asks the member to confirm the new address, behind step-up (FR-ACC-09).
 import { useState, type FormEvent } from 'react';
 import { useApi } from '../../shared/api';
 import { FormMessage, SubmitButton, TextField } from '../../shared/form';

@@ -1,3 +1,4 @@
+// The second-chance offer of an auction (FR-AUC-15): the bidder it was passed to accepts or declines before it expires.
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';

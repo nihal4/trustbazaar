@@ -15,18 +15,23 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with: { node-version: 20, cache: npm, cache-dependency-path: "${{ matrix.app }}/package-lock.json" }
+        with: { node-version: "${{ matrix.app == 'frontend' && 22 || 20 }}", cache: npm, cache-dependency-path: "${{ matrix.app }}/package-lock.json" }
       - run: npm ci
       - run: npm run lint                                   # NFR-MNT-07: no ESLint errors
       - run: npm run format:check                           # U11-14: one format (Prettier); `npm run format` fixes it
       - run: node --test ../scripts/audit-check.test.mjs && node ../scripts/audit-check.mjs  # SEC-SDL-04: high and critical, with the documented exceptions of audit-exceptions.json (P0-10)
       - run: npm test -- --coverage                         # NFR-MNT-03: thresholds in the test configuration
       - run: node ../scripts/health-ratchet.mjs             # U11-02: ESLint, Stylelint, knip and jscpd numbers may go down, never up (health-baseline.json)
+      - run: npm run lint:css                               # U11-03: Stylelint; a raw colour or font in a stylesheet is an error
+        if: matrix.app == 'frontend'
+      - run: npm run deps                                   # U11-04: dependency-cruiser; shared/ui stays presentational, no import cycles (all rules are errors)
+        if: matrix.app == 'frontend'
+      - run: npm run storybook:build                        # U11-01: the component catalogue builds, so a broken story fails here
+        if: matrix.app == 'frontend'
 
-  visual:                                                   # U11-02: every main screen as a picture, compared with the baselines (frontend/e2e/visual)
+  visual:                                                   # U11-02, required since U11-12: every main screen as a picture, compared with the baselines (frontend/e2e/visual); zero different pixels
     runs-on: ubuntu-24.04
     container: mcr.microsoft.com/playwright:v1.63.0-noble   # the version of @playwright/test: the same fonts and rendering as where the baselines were made
-    continue-on-error: true                                 # advisory until the baselines are confirmed on this runner (made on arm64; if the pixels differ, make them with --platform linux/amd64), then it becomes required (U11-12)
     defaults: { run: { working-directory: frontend } }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
@@ -141,6 +146,7 @@ jobs:
       - run: python3 docs/design/deploy/test_compose.py .
       - run: python3 scripts/check_progress.py --summary    # PROGRESS.md (BUILDING.md section 8)
       - run: python3 scripts/check_test_names.py              # tests named after requirements (BUILDING.md section 6)
+      - run: python3 scripts/check_docs.py                    # U11-12: every feature and module has its README, and the links of the guides point at files that exist
       - run: python3 scripts/check_commit_trailers.py "origin/${{ github.base_ref }}"   # no AI co-author or session trailers (P0-11)
         if: github.event_name == 'pull_request'
 

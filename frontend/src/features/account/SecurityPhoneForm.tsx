@@ -1,3 +1,4 @@
+// Changing the mobile number on the security page: a code to the new number, then the change, behind step-up (FR-ACC-09).
 import { formatWait } from '../../shared/wait';
 import { useState, type FormEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
