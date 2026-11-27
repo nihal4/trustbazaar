@@ -9,6 +9,7 @@ import { FormMessage } from '../../shared/form';
 import { useMe, type KycStatus } from '../../shared/me';
 import { isApiError } from '../../shared/problems';
 import { toLocalDigits } from '../../lib/money.js';
+import { Tick } from '../../shared/icons';
 import { otherError, useAccountT } from './common';
 import styles from './account.module.css';
 
@@ -69,12 +70,7 @@ export function Component() {
         <div className={styles.idText}>
           <h2 className={styles.nameLine}>
             <span>{u.displayName}</span>
-            {u.kycStatus === 'verified' && (
-              <span className={styles.badge}>
-                <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square"><path d="M3 8.5 6.5 12 13 4.5" /></svg>
-                {t('kyc.status.verified')}
-              </span>
-            )}
+            {u.kycStatus === 'verified' && <span className={styles.tick} title={t('kyc.status.verified')}><Tick /><span className={styles.srOnly}>{t('kyc.status.verified')}</span></span>}
           </h2>
           <ul className={styles.marks}>
             <Mark on={u.kycStatus === 'verified'} text={`${t('account.kyc')}: ${t(`kyc.status.${u.kycStatus}`)}`} />
