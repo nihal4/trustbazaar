@@ -79,11 +79,6 @@
   margin: 0 0 var(--tb-space-1);
 }
 
-.summary a {
-  color: var(--tb-error);
-  font-weight: 600;
-}
-
 .primary {
   transition:
     background-color var(--tb-dur-quick) ease,
@@ -251,21 +246,6 @@ div.error > :first-child {
   padding-right: var(--tb-space-12);
 }
 
-.eye {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border: 0;
-  background: none;
-  color: var(--tb-muted);
-  cursor: pointer;
-}
-
 .eye:hover,
 .eye[aria-pressed='true'] {
   color: var(--tb-text);
@@ -286,6 +266,18 @@ div.error > :first-child {
 
 /* the eye's glyph stands on the field's right edge, the box keeps its 44 px */
 .eye {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  color: var(--tb-muted);
+  cursor: pointer;
   justify-items: end;
 }
 
@@ -396,6 +388,8 @@ div.error > :first-child {
 
 /* a link in the list of errors is a target of its own: at least 28 px high (WCAG 2.5.8) */
 .summary a {
+  color: var(--tb-error);
+  font-weight: 600;
   display: inline-block;
   min-height: 28px;
   padding-block: 3px;
