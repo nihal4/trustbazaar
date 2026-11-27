@@ -24,6 +24,7 @@ export class MockCourierController {
     return this.courier;
   }
 
+  /** Development only: moves a consignment of the mock courier to its next status (with the return charge when it comes back). */
   @Staff('operator')
   @Post('consignments/:c/advance')
   @HttpCode(200)

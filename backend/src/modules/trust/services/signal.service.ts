@@ -61,6 +61,7 @@ export class SignalService {
     },
   };
 
+  /** Turns an event into a signal for the operators' queue (a flagged chat message and so on); true when it made one. */
   async onEvent(e: OutboxEvent): Promise<boolean> {
     if (e.type === 'chat.message.flagged') return this.onChatFlag(e);
     const s = this.map[e.type]?.(e);

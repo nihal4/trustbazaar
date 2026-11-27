@@ -11,6 +11,7 @@ export const normaliseForScreening = (text: string) => text.normalize('NFC').toL
 
 @Injectable()
 export class ScreeningService {
+  /** The screening terms that occur in the title and the description of a listing, with their severity. */
   async matches(m: EntityManager, title: string, description: string): Promise<{ term: string; severity: string }[]> {
     const text = normaliseForScreening(`${title} ${description}`);
     return m.query(`SELECT term, severity FROM listings.screening_terms WHERE strpos($1, lower(term)) > 0 ORDER BY severity, term`, [text]);

@@ -7,7 +7,7 @@ import { securityEvents } from '../../../kernel/metrics/metrics';
 
 // Unit 1's scheduled jobs (docs/design/09_integration.pdf "Scheduled jobs": Unit 1 runs daily).
 // The erasure after closure and of rejected KYC data (U1-09, FR-PRV-04) runs daily too.
-export const DAY_MS = 24 * 3_600_000;
+const DAY_MS = 24 * 3_600_000;
 
 @Injectable()
 export class IdentityJobs implements OnModuleInit {

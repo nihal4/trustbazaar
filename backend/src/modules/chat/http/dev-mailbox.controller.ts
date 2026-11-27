@@ -19,6 +19,7 @@ export const DEV_MAILBOX = Symbol('DEV_MAILBOX');
 export class DevMailboxController {
   constructor(@Inject(DEV_MAILBOX) private readonly mailbox: DevMailbox | null) {}
 
+  /** Development only: the messages the backend would have sent by e-mail or SMS, optionally for one recipient (404 when the mailbox is off). */
   @Staff()
   @Get('dev-mailbox')
   async list(@Query() q: MailboxQuery) {

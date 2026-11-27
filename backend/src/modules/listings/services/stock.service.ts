@@ -24,20 +24,24 @@ export class StockService implements ListingsPort, OnModuleInit {
     private readonly bus: EventBus,
   ) {}
 
+  /** Subscribes to the orders' events (paid, cancelled and the rest) to keep the stock in step. */
   onModuleInit(): void {
     this.bus.on('orders.order.paid', 'listings.stock', (e) => this.onOrder(e, 'sold'));
     this.bus.on('orders.order.cancelled', 'listings.stock', (e) => this.onOrder(e, 'released'));
   }
 
+  /** Reserves units for an order, in the caller's transaction; false when that many are not available (FR-FIX-05). */
   async reserve(listingId: string, qty: number, tx: EntityManager): Promise<boolean> {
     const [{ ok }] = await tx.query(`SELECT listings.reserve($1, $2) AS ok`, [listingId, qty]);
     return ok === true;
   }
 
+  /** Gives reserved units back. */
   async release(listingId: string, qty: number, tx: EntityManager): Promise<void> {
     await tx.query(`SELECT listings.release($1, $2)`, [listingId, qty]);
   }
 
+  /** Marks reserved units as sold, locking the listing. */
   async markSold(listingId: string, qty: number, tx: EntityManager): Promise<void> {
     const before = await tx.getRepository(Listing).findOne({ where: { id: listingId }, lock: { mode: 'pessimistic_write' } });
     if (!before) throw new Problem('not-found');
@@ -56,6 +60,7 @@ export class StockService implements ListingsPort, OnModuleInit {
     }
   }
 
+  /** The facts of a listing that an order is made from, read in the caller's transaction when there is one. */
   async snapshot(listingId: string, tx?: EntityManager): Promise<ListingSnapshot> {
     const m = tx ?? this.db.manager;
     const l = await m.getRepository(Listing).findOneBy({ id: listingId });

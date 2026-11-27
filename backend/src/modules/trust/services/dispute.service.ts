@@ -47,9 +47,9 @@ const LIVE = ['open', 'under_review', 'awaiting_seller'];
 /** Images only: Unit 1's FileVault re-encodes evidence as an image without metadata, so a PDF is refused (Decisions log, U7-03). */
 export const EVIDENCE_MIME = ['image/jpeg', 'image/png', 'image/webp'] as const;
 export const EVIDENCE_VIDEO_MIME = ['video/mp4', 'video/quicktime', 'video/webm'] as const;
-export const MAX_EVIDENCE_BYTES = 10_485_760; // CP-33: an image
+const MAX_EVIDENCE_BYTES = 10_485_760; // CP-33: an image
 export const MAX_EVIDENCE_VIDEO_BYTES = 52_428_800; // a video: 50 MB, at most MAX_EVIDENCE_VIDEOS per party (Decisions log, courier/dispute terms)
-export const MAX_EVIDENCE_VIDEOS = 2;
+const MAX_EVIDENCE_VIDEOS = 2;
 
 interface DisputeRow {
   id: string;

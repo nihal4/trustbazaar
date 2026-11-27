@@ -4,7 +4,7 @@ import { OwnershipReviewService } from '../services/ownership-review.service';
 
 // FR-GAM-04 (docs/design/05_game_accounts.pdf section 3.3): a game-account listing that ends unsold, is cancelled or is
 // removed releases its player-ID claim. Idempotent: a released claim is not released again.
-export const LISTING_ENDED = ['listings.listing.ended_unsold', 'listings.listing.cancelled', 'listings.listing.removed'];
+const LISTING_ENDED = ['listings.listing.ended_unsold', 'listings.listing.cancelled', 'listings.listing.removed'];
 
 @Injectable()
 export class ClaimConsumers implements OnModuleInit {

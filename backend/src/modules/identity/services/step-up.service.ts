@@ -32,6 +32,7 @@ export class StepUpService {
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
+  /** Starts a step-up for a sensitive action: asks for the authenticator code, or sends an SMS code to the member's phone. */
   async start(userId: string, sessionId: string, action: StepUpAction): Promise<StepUpStart> {
     if (await this.secondFactor.hasTotp(userId)) return { method: 'totp' };
     const phone = await this.phoneOf(userId);
@@ -43,6 +44,7 @@ export class StepUpService {
     return { method: 'sms', resendAt: new Date(this.clock.now().getTime() + 60_000).toISOString() };
   }
 
+  /** Checks the step-up code and gives a short grant for that one action. */
   async verify(
     userId: string,
     sessionId: string,

@@ -38,6 +38,7 @@ export class BlockService implements BlockPort {
     return rows.map((r) => r.blocked_id);
   }
 
+  /** Throws when a block exists between the seller and the buyer, in either direction (FR-CHT-08, I-37). */
   async assertNotBlocked(sellerId: string, buyerId: string, tx?: EntityManager): Promise<void> {
     const [r] = (await (tx ?? this.db.manager).query(`SELECT 1 FROM chat.blocks WHERE (blocker_id, blocked_id) IN (($1, $2), ($2, $1)) LIMIT 1`, [
       sellerId,

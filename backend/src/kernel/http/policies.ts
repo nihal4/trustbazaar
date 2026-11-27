@@ -8,7 +8,7 @@ import { SetMetadata } from '@nestjs/common';
 // Ownership rules in the design's API tables (Seller, Buyer, Participant, Assigned operator, ...) are
 // checks on one object and belong in the unit's service; the route declares SignedIn or Staff.
 
-export const VERIFIED_ACTIONS = ['list', 'bid', 'buy', 'payout'] as const;
+const VERIFIED_ACTIONS = ['list', 'bid', 'buy', 'payout'] as const;
 export type VerifiedAction = (typeof VERIFIED_ACTIONS)[number];
 
 // Must equal identity.staff_role (checked by a test in Unit 1).

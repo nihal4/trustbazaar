@@ -90,6 +90,7 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     );
   }
 
+  /** A parcel came back from the courier: settles the escrow (FR-DLV-12); ignored, with a warning, unless the money is still held. */
   async refundCourierReturned(orderId: string, courierCharge: bigint, tx: EntityManager): Promise<void> {
     const { o, e } = await this.lock(tx, orderId);
     if (!e || e.state !== 'held') {
@@ -107,6 +108,7 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     if (courierCharge > 0n) await this.recordCourierCost(orderId, courierCharge, tx);
   }
 
+  /** Books the courier's charge for a failed delivery as an expense in the ledger (FR-DLV-12). */
   async recordCourierCost(orderId: string, amount: bigint, tx: EntityManager): Promise<void> {
     if (amount <= 0n) return;
     await post(tx, 'courier_return_charge', orderId, null, 'courier charge for a failed delivery (FR-DLV-12)', [
@@ -125,6 +127,7 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     await this.event(tx, 'orders.escrow.frozen', orderId, { orderId, disputeId, buyerId: o.buyerId, sellerId: o.sellerId });
   }
 
+  /** Applies a dispute's outcome to the frozen escrow; only for the dispute that froze it. */
   async applyDisputeOutcome(orderId: string, disputeId: string, outcome: DisputeOutcome, tx: EntityManager): Promise<void> {
     const { o, e } = await this.lock(tx, orderId);
     if (!e || e.state !== 'frozen_disputed' || e.openDisputeId !== disputeId)
@@ -164,6 +167,7 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     }
   }
 
+  /** Unfreezes the escrow when the dispute that froze it is withdrawn. */
   async withdrawDispute(orderId: string, disputeId: string, tx: EntityManager): Promise<void> {
     const { e } = await this.lock(tx, orderId);
     if (!e || e.state !== 'frozen_disputed' || e.openDisputeId !== disputeId)
@@ -328,12 +332,14 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     };
   }
 
+  /** Whether the order may be disputed at that time. */
   async disputeAllowed(orderId: string, at: Date): Promise<boolean> {
     const o = await this.db.getRepository(Order).findOneBy({ id: orderId });
     const e = await this.db.getRepository(Escrow).findOneBy({ orderId });
     return !!o && !!e && this.allowed(o, e, at);
   }
 
+  /** One deadline of the order, by kind, with the listing's title, or null. */
   async deadline(orderId: string, kind: DeadlineKind): Promise<{ dueAt: Date; listingTitle: string | null } | null> {
     const o = await this.db.getRepository(Order).findOneBy({ id: orderId });
     if (!o) return null;
@@ -346,6 +352,7 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     return o.fulfilmentStep === STEP_OF[kind] && o.fulfilmentDoneAt === null ? at(o.fulfilmentDueAt) : null;
   }
 
+  /** What each dispute outcome would pay the buyer and the seller, for a whole refund or for a given refund of the item. */
   async previewOutcomes(orderId: string, itemRefund?: bigint): Promise<OutcomePreview> {
     const o = await this.db.getRepository(Order).findOneBy({ id: orderId });
     if (!o) throw new Problem('not-found');

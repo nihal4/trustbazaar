@@ -8,7 +8,7 @@ import type { AttemptRef, PaymentProvider, ProviderId, VerifiedResult } from './
 const TTL_SECONDS = 24 * 60 * 60;
 export const mockKey = (attemptId: string) => `mockpay:${attemptId}`;
 
-export interface MockRecord {
+interface MockRecord {
   amount: string;
   status: 'pending' | 'succeeded' | 'failed';
   /** Tests may make the provider report another amount (FR-PAY-03). */

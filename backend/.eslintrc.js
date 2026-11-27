@@ -74,6 +74,17 @@ module.exports = {
         ],
       },
     },
+    // Size and complexity limits (U11-11): ERRORS, set just above the largest file, function and complexity the code had when they were measured, so that nothing grows past them.
+    // They come down as the large services are split (the developer guide, U11-12). Specs, the migrations and the test support are not held to them.
+    {
+      files: ['src/**/*.ts'],
+      excludedFiles: ['src/**/*.spec.ts', 'src/migrations/**'],
+      rules: {
+        'max-lines': ['error', { max: 720, skipBlankLines: true, skipComments: true }],
+        'max-lines-per-function': ['error', { max: 160, skipBlankLines: true, skipComments: true, IIFEs: true }],
+        complexity: ['error', 50],
+      },
+    },
   ],
   ignorePatterns: ['dist/', 'node_modules/', '.eslintrc.js'],
 };

@@ -49,12 +49,14 @@ export class RecordsService implements DeliveryQueries {
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
   ) {}
 
+  /** Whether a 'not received' claim is allowed now, by the delivery records and the CP-17 window. */
   async notReceivedAllowed(orderId: string): Promise<boolean> {
     const cp17 = (await this.params.current()).ms('CP-17');
     const [r] = (await this.db.query(`SELECT delivery.not_received_allowed($1, $2 * interval '1 millisecond') AS ok`, [orderId, cp17])) as { ok: boolean }[];
     return r.ok;
   }
 
+  /** The open delivery issues, a page at a time (cursor). */
   async openIssues(cursor?: string): Promise<Page<DeliveryIssue>> {
     const after = decodeCursor(cursor);
     const rows = (await this.db.query(

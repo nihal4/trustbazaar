@@ -30,12 +30,14 @@ const ctx = (req: Request) => ({ ip: req.ip ?? null, correlationId: correlationI
 export class ConfigController {
   constructor(private readonly admin: ConfigAdminService) {}
 
+  /** The current parameter set. */
   @Staff('administrator')
   @Get()
   current() {
     return this.admin.currentSet();
   }
 
+  /** The published versions of the parameter set. */
   @Staff('administrator')
   @Get('versions')
   versions() {

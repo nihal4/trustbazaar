@@ -17,6 +17,7 @@ const METHODS: Record<string, FulfilmentMethod[]> = {
 export class ListingsQueriesService implements ListingsQueries {
   constructor(private readonly db: DataSource) {}
 
+  /** What the order and delivery units need of a listing: its fulfilment options, weight and size class, and district. */
   async fulfilmentFacts(listingId: string): Promise<{
     options: FulfilmentMethod[];
     weightClass: WeightClass | null;
@@ -43,12 +44,14 @@ export class ListingsQueriesService implements ListingsQueries {
     };
   }
 
+  /** What a chat thread shows of its listing: the seller, the title and the status. */
   async threadFacts(listingId: string): Promise<{ sellerId: string; title: string; status: ListingStatus }> {
     const l = await this.db.getRepository(Listing).findOne({ where: { id: listingId }, select: { sellerId: true, title: true, status: true } });
     if (!l) throw new Problem('not-found');
     return { sellerId: l.sellerId, title: l.title, status: l.status };
   }
 
+  /** The listings held for review, with why they were held, up to a limit. */
   async reviewQueue(limit = 200): Promise<ReviewItem[]> {
     const rows = (await this.db.query(
       `SELECT l.id, l.seller_id, l.title, h.at, h.reason

@@ -144,6 +144,7 @@ export class NotificationService {
     return p ? { language: p.language, emailTransactional: p.email_transactional } : { ...DEFAULTS };
   }
 
+  /** Saves the changed notification preferences over the member's current ones and returns the result. */
   async setPreferences(userId: string, p: Partial<Preferences>): Promise<Preferences> {
     const next = { ...(await this.preferences(userId)), ...p };
     await this.db.query(

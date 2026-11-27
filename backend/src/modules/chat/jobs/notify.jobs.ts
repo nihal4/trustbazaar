@@ -6,7 +6,7 @@ import { ReminderService } from '../services/reminder.service';
 
 // Unit 6's scheduled jobs so far (docs/design/06_chat_notifications.pdf section 8; U6-05). The delivery worker is
 // "continuous": every 10 seconds here. Chat retention came with U6-03, the reminder job with U6-06.
-export const DAY_MS = 86_400_000;
+const DAY_MS = 86_400_000;
 
 @Injectable()
 export class NotifyJobs implements OnModuleInit {

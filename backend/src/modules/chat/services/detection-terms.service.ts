@@ -7,9 +7,9 @@ import { AUDIT_SERVICE, AuditServicePort } from '../../identity/ports';
 // Operators add and remove terms; each change is audited (DC-8). A term is stored lower case and NFC (term_normalised),
 // as chat.detect compares. Removing a term changes no message already flagged: flags are kept with the message.
 
-export const FLAGS = ['payment_phrase', 'off_platform_app', 'credentials'] as const;
+const FLAGS = ['payment_phrase', 'off_platform_app', 'credentials'] as const;
 export type DetectionFlag = (typeof FLAGS)[number];
-export const MAX_TERM = 60;
+const MAX_TERM = 60;
 
 export interface DetectionTermView {
   term: string;
@@ -17,7 +17,7 @@ export interface DetectionTermView {
   addedAt: string;
 }
 
-export const normaliseTerm = (term: string): string => term.normalize('NFC').toLowerCase().normalize('NFC').trim().replace(/\s+/g, ' ');
+const normaliseTerm = (term: string): string => term.normalize('NFC').toLowerCase().normalize('NFC').trim().replace(/\s+/g, ' ');
 
 @Injectable()
 export class DetectionTermsService {

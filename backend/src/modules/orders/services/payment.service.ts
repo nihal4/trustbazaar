@@ -176,6 +176,7 @@ export class PaymentService {
     return signState(this.config.secrets.callbackStateKey.reveal(), attemptId);
   }
 
+  /** Checks the signed state of a provider's callback link; throws link-invalid if it was altered. */
   checkState(attemptId: string, state: string | undefined): void {
     if (!stateValid(this.config.secrets.callbackStateKey.reveal(), attemptId, state)) throw new Problem('link-invalid');
   }

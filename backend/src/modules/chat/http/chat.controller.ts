@@ -34,6 +34,7 @@ export class ChatController {
     return this.chat.open(userOf(p).userId, id);
   }
 
+  /** The member's conversations, a page at a time (cursor). */
   @SignedIn()
   @Get('threads')
   threads(@CurrentPrincipal() p: Principal, @Query() q: ThreadsQuery) {
@@ -47,6 +48,7 @@ export class ChatController {
     return this.chat.messages(userOf(p), id, q.after ?? 0);
   }
 
+  /** Sends a text message in a thread; the client id makes a retry send it only once. */
   @SignedIn()
   @Post('threads/:id/messages')
   @HttpCode(200)
@@ -87,6 +89,7 @@ export class ChatController {
     await this.blocks.block(userOf(p).userId, userId);
   }
 
+  /** Lifts the member's block on another member. */
   @SignedIn()
   @Delete('blocks/:userId')
   @HttpCode(204)

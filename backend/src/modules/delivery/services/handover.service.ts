@@ -21,8 +21,8 @@ import { fromDeliveryDb, refusal } from './refusals';
 // order first (DC-14). No cash changes hands anywhere: the item is already paid for (FR-DLV-05).
 
 /** DV-26: at least this far ahead, and at least this long before the handover deadline. */
-export const MEETUP_LEAD = '1 hour';
-export const MEETUP_BUFFER = '2 hours';
+const MEETUP_LEAD = '1 hour';
+const MEETUP_BUFFER = '2 hours';
 
 type HandoverStatus = 'arranging' | 'agreed' | 'completed' | 'locked' | 'cancelled';
 interface HandoverRow {
@@ -39,13 +39,13 @@ interface HandoverRow {
   cancelled_at: Date | null;
 }
 /** A place of the parties' own (FR-DLV-04; Decisions log, U4-03): shown with a safety notice by the client. */
-export interface OwnPlaceView {
+interface OwnPlaceView {
   name: string;
   lat: number | null;
   lng: number | null;
   mapUrl: string | null;
 }
-export interface ProposalView {
+interface ProposalView {
   id: string;
   byMe: boolean;
   meetAt: string;
@@ -82,7 +82,7 @@ export interface HandoverView {
 
 const ACTIVE: HandoverStatus[] = ['arranging', 'agreed'];
 /** U10-23: photos the seller may add to one handover. */
-export const MAX_HANDOVER_PHOTOS = 3;
+const MAX_HANDOVER_PHOTOS = 3;
 /** U10-23: wrong tries of the device check before it is locked (a mistyped digit is allowed). */
 const DEVICE_TRIES = 5;
 
@@ -243,6 +243,7 @@ export class HandoverService {
     return ((await this.db.query(`SELECT delivery.purge_photos($1) AS key`, [orderId])) as { key: string }[]).map((r) => r.key);
   }
 
+  /** The seller adds a photo of the item to the order's handover; returns how many photos the handover has. */
   async addPhoto(userId: string, orderId: string, file: { buffer: Buffer; mimetype: string } | undefined): Promise<{ count: number }> {
     const h = await this.party(this.db.manager, orderId, userId);
     if (h.seller_id !== userId) throw new Problem('forbidden', { errors: [{ field: 'file', reason: 'seller-only' }] });

@@ -97,6 +97,7 @@ export class MetricsService implements OnApplicationBootstrap, OnApplicationShut
     }
   }
 
+  /** Starts the metrics server on METRICS_PORT (nothing when it is off); it answers GET /metrics only. */
   async onApplicationBootstrap(): Promise<void> {
     if (this.config.metricsPort === null) return;
     this.server = createServer((req, res) => {
@@ -124,6 +125,7 @@ export class MetricsService implements OnApplicationBootstrap, OnApplicationShut
     return (this.server?.address() as AddressInfo | null)?.port ?? null;
   }
 
+  /** Stops the metrics server. */
   async onApplicationShutdown(): Promise<void> {
     const s = this.server;
     this.server = undefined;

@@ -64,10 +64,12 @@ export class StaffService implements OnModuleInit {
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
+  /** Registers the four-eyes handler for resetting a staff member's authenticator. */
   onModuleInit(): void {
     this.approvals.registerHandler('staff.mfa_reset', (a, m, ctx) => this.resetMfaIn(m, a, ctx));
   }
 
+  /** The staff accounts. */
   async list(): Promise<StaffSummary[]> {
     const rows = await this.db.query(
       `SELECT id, email, display_name, role, status, created_at, created_by, disabled_at FROM identity.staff_accounts ORDER BY created_at`,

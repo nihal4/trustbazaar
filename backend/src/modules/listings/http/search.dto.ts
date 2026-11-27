@@ -5,7 +5,7 @@ import type { ItemCondition, ItemKind, SaleFormat } from '../ports';
 import { POISHA } from './listings.dto';
 
 /** FR-SRC-03, and relevance when there are words (Decisions log, U3-03). */
-export const SORTS = ['relevance', 'newest', 'price_asc', 'price_desc', 'distance', 'ending_soon'] as const;
+const SORTS = ['relevance', 'newest', 'price_asc', 'price_desc', 'distance', 'ending_soon'] as const;
 export type Sort = (typeof SORTS)[number];
 
 /** GET /search (docs/design/03_listings_auctions.pdf section 7): every field optional; filters in the page's URL. */

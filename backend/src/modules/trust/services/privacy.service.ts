@@ -28,7 +28,7 @@ import {
 //  - Retention (daily): 2 years after a dispute was decided or withdrawn, its statements' text and evidence files go
 //    (disputes.purge_due); the files are erased from Unit 1's FileVault. The dispute, its history and decision stay.
 
-export const CASE_FILE_RETENTION = '2 years';
+const CASE_FILE_RETENTION = '2 years';
 
 interface DisclosureRow {
   id: string;
@@ -59,6 +59,7 @@ export class PrivacyService implements OnModuleInit {
     @Inject(DELIVERY_COMMANDS) private readonly delivery: DeliveryCommands,
   ) {}
 
+  /** Registers the handler that runs an approved disclosure. */
   onModuleInit(): void {
     this.approvals.registerHandler('disclosure.approve', (a, tx) => this.approved(a, tx));
   }

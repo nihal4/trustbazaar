@@ -20,8 +20,7 @@ import { publish } from './outbox';
 // identities never leave it except a bidder's own maximum, to that bidder (FR-AUC-08).
 
 /** The refusals of section 3.2, answered 422 bid-refused with the code as the reason. */
-export const REFUSALS = ['below_minimum', 'max_not_higher', 'auction_ended', 'auction_not_open', 'seller_cannot_bid', 'bidder_restricted'] as const;
-export type Refusal = (typeof REFUSALS)[number];
+const REFUSALS = ['below_minimum', 'max_not_higher', 'auction_ended', 'auction_not_open', 'seller_cannot_bid', 'bidder_restricted'] as const;
 
 export interface BidResult {
   bidId: string;

@@ -20,13 +20,13 @@ import { NotificationService } from './notification.service';
 const OPENABLE = ['active', 'sold', 'ended_unsold'];
 
 /** DV-40 */
-export const MAX_TEXT = 2000;
-export const MAX_CAPTION = 300;
+const MAX_TEXT = 2000;
+const MAX_CAPTION = 300;
 /** DV-44 */
-export const SYNC_PAGE = 200;
+const SYNC_PAGE = 200;
 const THREAD_PAGE = 50;
 /** DV-41: at most one chat e-mail per thread per recipient in this window, and only when not connected. */
-export const CHAT_EMAIL_WINDOW = '15 minutes';
+const CHAT_EMAIL_WINDOW = '15 minutes';
 
 interface ThreadRow {
   id: string;
@@ -69,7 +69,7 @@ export interface MessageView {
 }
 
 /** Maps the database's refusals of chat.post, chat.open_thread and chat.mark to problems. */
-export function fromChatDb(err: unknown): never {
+function fromChatDb(err: unknown): never {
   if (err instanceof QueryFailedError) {
     const d = err.driverError as { code?: string; message?: string; constraint?: string };
     if (d.code === '42501' && d.message?.includes('blocked')) throw new Problem('blocked');

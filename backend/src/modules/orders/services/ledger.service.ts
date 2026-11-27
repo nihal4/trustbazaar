@@ -28,6 +28,7 @@ const PAGE_ENTRIES = 50;
 export class LedgerService {
   constructor(private readonly db: DataSource) {}
 
+  /** Posts a set of balanced ledger lines for an order, in the caller's transaction. */
   post(m: EntityManager, kind: EntryKind, orderId: string | null, sourceId: string | null, memo: string, lines: Line[]): Promise<void> {
     return post(m, kind, orderId, sourceId, memo, lines);
   }

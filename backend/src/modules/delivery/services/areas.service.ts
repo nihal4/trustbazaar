@@ -67,6 +67,7 @@ export class AreasService {
     return { items: rows.map(view) };
   }
 
+  /** One delivery area by id, or null. */
   async get(id: number): Promise<AreaView | null> {
     const [r] = (await this.db.query(`SELECT id, district, name_en, name_bn, zone, lat::text, lng::text, active FROM delivery.areas WHERE id = $1`, [
       id,

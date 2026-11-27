@@ -58,6 +58,7 @@ export class OwnershipReviewService {
     }));
   }
 
+  /** The ownership proofs waiting for review, with their times as ISO text. */
   async queue() {
     return {
       items: (await this.proofQueue()).map((p) => ({ ...p, submittedAt: p.submittedAt.toISOString(), codeExpiresAt: p.codeExpiresAt.toISOString() })),

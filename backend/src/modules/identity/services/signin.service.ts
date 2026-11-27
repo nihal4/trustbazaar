@@ -19,7 +19,7 @@ import { HumanCheck } from '../security/human-check';
 import { SignInThrottle } from './signin-throttle.service';
 
 /** SEC-ABU-02: failures of one login before a sign-in needs a solved challenge (CP-04 delays from the fifth). */
-export const HUMAN_CHECK_AFTER_FAILURES = 3;
+const HUMAN_CHECK_AFTER_FAILURES = 3;
 import { RequestContext, SessionService } from './session.service';
 import { securityEvents } from '../../../kernel/metrics/metrics';
 
@@ -49,9 +49,9 @@ interface UserRow {
 
 /** U10-25: the e-mail code is valid 10 minutes, five tries, at most 3 sends a sign-in with 60 seconds between; a remembered device skips the step for 30 days. */
 export const EMAIL_CODE_SECONDS = 600;
-export const EMAIL_CODE_SENDS = 3;
-export const EMAIL_CODE_GAP_SECONDS = 60;
-export const TRUSTED_DEVICE_DAYS = 30;
+const EMAIL_CODE_SENDS = 3;
+const EMAIL_CODE_GAP_SECONDS = 60;
+const TRUSTED_DEVICE_DAYS = 30;
 const DEVICE_KEY = /^[A-Za-z0-9_-]{43}$/;
 
 export type SignInResult =
@@ -101,6 +101,7 @@ export class SignInService {
     @Inject(TB_CONFIG) private readonly config: TbConfig,
   ) {}
 
+  /** The first step of sign-in, the login and the password: answers with the session, or with a second step (a code, or a human check) when one is needed. */
   async signIn(login: string, password: string, deviceKey: string | undefined, ctx: RequestContext): Promise<SignInResult> {
     const account = normaliseLogin(login);
     // Keyed by the login as typed (normalised), so unknown accounts are throttled exactly like real ones.
@@ -229,6 +230,7 @@ export class SignInService {
     return { resendAfter: EMAIL_CODE_GAP_SECONDS };
   }
 
+  /** The second step of sign-in: the one-time code or a recovery code, against the ticket of the first step; issues the session (and remembers the device if asked). */
   async verifyMfa(ticket: string | undefined, code: string, deviceKey: string | undefined, ctx: RequestContext, remember = false): Promise<IssuedCookies> {
     if (!ticket) throw new Problem('session-ended');
     const key = `mfa:ticket:${sha256hex(ticket)}`;

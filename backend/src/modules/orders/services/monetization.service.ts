@@ -35,7 +35,6 @@ import { randomUUID } from 'crypto';
 //  - isPro: active, or cancelled with the paid month still running. A past-due seller is on standard terms until paying.
 //    It is read when an order is created (FR-MON-02), at publication against CP-28 and for the Pro badge.
 
-export const FEATURE_HOURS = [24, 48] as const;
 const ATTEMPT_LIFETIME_MS = 15 * 60_000; // DV-11
 const STRIPE_MIN_SESSION_MS = 31 * 60_000; // as for orders (Decisions log, U2-03)
 const BATCH = 200;
@@ -83,6 +82,7 @@ export class MonetizationService implements OnModuleInit, ProStatusQuery {
     private readonly jobs: JobRunner,
   ) {}
 
+  /** Registers what the payment service needs to take money for featuring a listing and for a subscription. */
   onModuleInit(): void {
     this.payments.registerSubject('featured_listing', this.startFeatured);
     this.payments.registerSubject('subscription', this.paySubscription, this.renewalFailed);

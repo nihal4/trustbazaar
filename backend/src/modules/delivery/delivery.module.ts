@@ -40,7 +40,7 @@ import { DeliveryDataExport } from './services/data-export';
  * The courier adapter chosen by COURIER_MODE (section 3.3). Only the mock exists until Pathao or Steadfast sandbox
  * access is granted; the configuration refuses COURIER_MODE=sandbox until then (Decisions log, U4-04).
  */
-export function buildCourier(config: TbConfig, redis: Redis, clock: Clock): MockCourier {
+function buildCourier(config: TbConfig, redis: Redis, clock: Clock): MockCourier {
   const secret = config.providers.courierWebhookSecret?.reveal();
   return new MockCourier(redis, secret, () => clock.now(), config.mockCourierAutoAdvanceSeconds);
 }

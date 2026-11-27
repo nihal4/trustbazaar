@@ -54,6 +54,7 @@ export interface AuditRow {
 export class AuditService {
   constructor(private readonly db: DataSource) {}
 
+  /** Appends an entry to the audit log, in the caller's transaction. */
   async record(manager: EntityManager, entry: AuditEntry): Promise<void> {
     await manager.getRepository(AuditEvent).insert({
       actorType: entry.actorType,

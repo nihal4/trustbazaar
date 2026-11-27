@@ -11,7 +11,7 @@ import { RequestContext } from './session.service';
 // handler registered for the action in the same transaction, then sets executed_at: the decision and its
 // effect both happen or neither does. The database refuses self-approval and a second open proposal for the
 // same action and target. Every proposal and decision is audited with the approval id (FR-OPS-07).
-export const APPROVAL_EXPIRY_HOURS = 72; // DV-5
+const APPROVAL_EXPIRY_HOURS = 72; // DV-5
 
 export interface ApprovalView {
   id: string;
@@ -81,6 +81,7 @@ export class ApprovalService {
     this.handlers.set(action, handler);
   }
 
+  /** Proposes an action that needs a second staff member's approval (four eyes), with a reason of at least 10 characters; the action's handler runs when it is approved. */
   async propose(p: Proposal, ctx: RequestContext, tx?: EntityManager): Promise<ApprovalView> {
     if (!this.handlers.has(p.action)) throw new Error(`no approval handler for ${p.action}`);
     if (p.reason.trim().length < 10) throw new Problem('validation-failed', { errors: [{ field: 'reason', reason: 'at-least-10-characters' }] });

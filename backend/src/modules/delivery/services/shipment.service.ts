@@ -24,7 +24,7 @@ import { StatusService } from './status.service';
 // addresses swapped (Decisions log, U4-04).
 
 /** DV-32 */
-export const SYNC_TIMEOUT_MS = 10_000;
+const SYNC_TIMEOUT_MS = 10_000;
 const FINAL: ShipmentStatus[] = ['delivered', 'returned_to_seller', 'cancelled'];
 
 export interface ShipmentView {

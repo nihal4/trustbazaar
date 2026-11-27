@@ -7,8 +7,8 @@ import { join } from 'path';
 // or breached password (the bundled list, compared ignoring letter case), or contains a word specific to
 // this site or to the person: "trustbazaar", their name, number or e-mail name.
 export const MIN_LENGTH_SINGLE_FACTOR = 15;
-export const MIN_LENGTH_WITH_MFA = 8;
-export const MAX_LENGTH = 256; // DV-8
+const MIN_LENGTH_WITH_MFA = 8;
+const MAX_LENGTH = 256; // DV-8
 
 export type PasswordRefusal = 'too-short' | 'too-long' | 'common' | 'context';
 

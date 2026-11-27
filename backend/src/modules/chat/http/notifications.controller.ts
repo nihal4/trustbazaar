@@ -22,6 +22,7 @@ export class NotificationsController {
     return this.notices.list(userOf(p).userId, q.cursor);
   }
 
+  /** Marks notifications as read: the listed ones, or all of them. */
   @SignedIn()
   @Post('notifications/read')
   @HttpCode(200)
@@ -36,6 +37,7 @@ export class NotificationsController {
     return this.notices.preferences(userOf(p).userId);
   }
 
+  /** Sets the member's notification preferences (the language and which e-mails they receive). */
   @SignedIn()
   @Put('me/notification-preferences')
   setPreferences(@CurrentPrincipal() p: Principal, @Body() dto: PreferencesDto) {

@@ -12,7 +12,7 @@ import { publish } from './outbox';
 // and announced by an outbox event (DC-6); after commit the auction's room gets the new state (best effort).
 
 /** A reason long enough to mean something in the audit log (as for Unit 1's staff actions). */
-export const MIN_REASON = 10;
+const MIN_REASON = 10;
 
 const reasonOf = (reason: string, field = 'reason'): string => {
   const r = reason?.trim() ?? '';

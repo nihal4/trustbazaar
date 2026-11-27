@@ -50,7 +50,7 @@ type Fields = Pick<
 /** What an editable active listing may still change (FR-LST-07); a draft may change everything. */
 const ACTIVE_EDITABLE = new Set(['title', 'description', 'price', 'quantity']);
 /** DV-22: the relisting similarity window (FR-TNS-02). */
-export const RELISTING = { window: '7 days', days: 7, similarity: 0.6 } as const;
+const RELISTING = { window: '7 days', days: 7, similarity: 0.6 } as const;
 const PUBLIC_STATUSES: ListingStatus[] = ['active', 'sold', 'ended_unsold'];
 const PAGE = 50;
 
@@ -276,6 +276,7 @@ export class ListingService {
     }
   }
 
+  /** Removes a photo from the seller's own listing while its photos can still be edited, and deletes the file. */
   async removePhoto(userId: string, id: string, photoId: string): Promise<void> {
     const key = await this.db.transaction(async (m) => {
       const l = await this.lockOwn(m, id, userId);

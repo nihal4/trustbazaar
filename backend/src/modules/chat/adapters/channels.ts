@@ -24,7 +24,7 @@ export const maskAddress = (s: string) => (s.includes('@') ? s.replace(/^(.).*(@
 let n = 0;
 const ref = (channel: string) => `sim-${channel}-${Date.now().toString(36)}-${(n++).toString(36)}`;
 
-export class LogEmailAdapter implements EmailAdapter {
+class LogEmailAdapter implements EmailAdapter {
   readonly simulated = true;
   private readonly log = new Logger('EmailAdapter');
   constructor(
@@ -39,7 +39,7 @@ export class LogEmailAdapter implements EmailAdapter {
   }
 }
 
-export class LogSmsAdapter implements SmsAdapter {
+class LogSmsAdapter implements SmsAdapter {
   readonly simulated = true;
   private readonly log = new Logger('SmsAdapter');
   constructor(

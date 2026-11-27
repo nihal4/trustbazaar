@@ -26,7 +26,7 @@ import type { CaseQuery, ReportCategory, ReportCommands, ReportTarget, StaffCase
 //    a reason of at least 10 characters. The action itself (a sanction, ...) is taken with its own endpoint.
 //    trust.report.resolved tells the reporter only whether action was taken (FR-TNS-09).
 
-export const MAX_REPORT_TEXT = 2000;
+const MAX_REPORT_TEXT = 2000;
 const OPEN = ['open', 'under_review'];
 
 interface ReportRow {

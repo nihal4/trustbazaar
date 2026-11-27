@@ -17,8 +17,8 @@ const sharp = require('sharp') as typeof import('sharp').default;
 // unless asked), at most 1600 px on the long side, with a 400 px thumbnail. The files get a random name on
 // the listing_media volume (FILES_ROOT/listings) and are served with a fixed type by ListingPhotosController.
 export const MAX_PHOTO_BYTES = 10 * 1024 * 1024; // the multipart cap; CP-33 image_bytes is applied too
-export const FULL_SIZE = 1600; // DV-20
-export const THUMB_SIZE = 400; // DV-20
+const FULL_SIZE = 1600; // DV-20
+const THUMB_SIZE = 400; // DV-20
 const MAX_INPUT_PIXELS = 50_000_000; // a decompression bomb is refused before it is decoded
 export const STORAGE_KEY = /^[0-9a-f]{32}$/;
 

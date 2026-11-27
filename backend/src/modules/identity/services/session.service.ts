@@ -18,7 +18,7 @@ import { publish } from './outbox';
 // A session row is the truth: the access token only names it. A refresh token is 256 random bits; the
 // server keeps its SHA-256. Every refresh replaces it. Presenting a replaced token again within DV-4
 // (10 s, another tab) gets 409 to retry; later, it means the token was stolen, and the session ends.
-export const REUSE_GRACE_MS = 10_000; // DV-4
+const REUSE_GRACE_MS = 10_000; // DV-4
 const sha256 = (s: string) => createHash('sha256').update(s).digest();
 const randomToken = () => randomBytes(32).toString('base64url');
 /** The device key this service issues: 32 random bytes, base64url. */
@@ -327,7 +327,7 @@ export class SessionService {
 }
 
 /** "Chrome on Android" from a user agent, for the session list; never the full string. */
-export function deviceLabel(ua: string | null): string | null {
+function deviceLabel(ua: string | null): string | null {
   if (!ua) return null;
   const browser = /Edg\//.test(ua)
     ? 'Edge'

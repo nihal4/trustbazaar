@@ -22,6 +22,7 @@ export class DeliveryAdminController {
     private readonly points: MeetupPointsService,
   ) {}
 
+  /** Adds a delivery area. */
   @Staff('administrator')
   @Post('areas')
   @HttpCode(201)
@@ -29,6 +30,7 @@ export class DeliveryAdminController {
     return this.areas.create(staffOf(p).staffId, dto);
   }
 
+  /** Changes a delivery area. */
   @Staff('administrator')
   @Patch('areas/:id')
   changeArea(
@@ -46,6 +48,7 @@ export class DeliveryAdminController {
     return this.fares.current();
   }
 
+  /** Publishes a new courier fare table. */
   @Staff('administrator')
   @Post('fare-tables')
   @HttpCode(201)
@@ -53,12 +56,14 @@ export class DeliveryAdminController {
     return this.fares.publish(staffOf(p).staffId, dto);
   }
 
+  /** The meetup points. */
   @Staff('administrator')
   @Get('meetup-points')
   listPoints() {
     return this.points.list();
   }
 
+  /** Adds a meetup point. */
   @Staff('administrator')
   @Post('meetup-points')
   @HttpCode(201)
@@ -66,6 +71,7 @@ export class DeliveryAdminController {
     return this.points.create(staffOf(p).staffId, dto);
   }
 
+  /** Changes a meetup point. */
   @Staff('administrator')
   @Patch('meetup-points/:id')
   changePoint(

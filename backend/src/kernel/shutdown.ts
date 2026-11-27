@@ -15,7 +15,7 @@ import { LiveGateway } from './live/live.gateway';
 //  4. closes the live connections (clients reconnect elsewhere or after the restart, then resync), then the
 //     application: its shutdown hooks, the database pool and Redis.
 // Nest's own shutdown hooks are not enabled: they would close Redis and the database before the requests end.
-export const GRACE_MS = 25_000;
+const GRACE_MS = 25_000;
 const log = new Logger('Shutdown');
 
 export async function drainAndClose(app: INestApplication, graceMs = GRACE_MS): Promise<void> {

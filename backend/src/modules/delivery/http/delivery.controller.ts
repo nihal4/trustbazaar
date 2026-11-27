@@ -23,6 +23,7 @@ export class DeliveryController {
     private readonly addresses: AddressService,
   ) {}
 
+  /** The delivery areas. */
   @Public()
   @Get('delivery/areas')
   listAreas() {
@@ -45,12 +46,14 @@ export class DeliveryController {
     return this.quotes.issue(userOf(p).userId, dto);
   }
 
+  /** The member's saved delivery addresses. */
   @SignedIn()
   @Get('me/addresses')
   myAddresses(@CurrentPrincipal() p: Principal) {
     return this.addresses.list(userOf(p).userId);
   }
 
+  /** Saves a delivery address for the member. */
   @SignedIn()
   @Post('me/addresses')
   @HttpCode(201)
@@ -58,6 +61,7 @@ export class DeliveryController {
     return this.addresses.create(userOf(p).userId, dto);
   }
 
+  /** Removes one of the member's saved addresses. */
   @SignedIn()
   @Delete('me/addresses/:id')
   @HttpCode(204)

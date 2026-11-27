@@ -12,7 +12,7 @@ export interface AccessClaims {
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-export const isUuid = (s: unknown): s is string => typeof s === 'string' && UUID.test(s);
+const isUuid = (s: unknown): s is string => typeof s === 'string' && UUID.test(s);
 
 export function signAccessToken(keys: Keyring, claims: { sub: string; sid: string; pt: 'user' | 'staff' }, ttlSeconds: number, now: Date): string {
   const iat = Math.floor(now.getTime() / 1000);

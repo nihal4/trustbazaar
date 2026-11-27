@@ -4,7 +4,7 @@ import { authenticator } from 'otplib';
 // TOTP (RFC 6238; FR-ACC-06; Unit 1 section 6.2): 6 digits, 30-second steps, accepted within one step
 // either side of now. checkTotp returns the step the code belongs to, or null; the caller stores it and
 // refuses any step not later than the last one used, so a code cannot be used twice.
-export const TOTP_STEP_SECONDS = 30;
+const TOTP_STEP_SECONDS = 30;
 
 export function checkTotp(secretBase32: string, code: string, now: Date): number | null {
   if (!/^\d{6}$/.test(code)) return null;

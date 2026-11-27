@@ -1,7 +1,7 @@
 import { INestApplication, RequestMethod } from '@nestjs/common';
-import { METHOD_METADATA, PATH_METADATA } from '@nestjs/common/constants';
+import { HTTP_CODE_METADATA, METHOD_METADATA, PATH_METADATA, ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
-import { Policy, POLICY_KEY, STEP_UP_KEY, StepUpAction } from '../../src/kernel/http/policies';
+import { Policy, POLICY_KEY, RATE_LIMIT_KEY, STEP_UP_KEY, StepUpAction } from '../../src/kernel/http/policies';
 
 /** One route of the running backend, as its controller declares it. */
 export interface Route {
@@ -11,7 +11,17 @@ export interface Route {
   policy: Policy | undefined;
   stepUp: StepUpAction | undefined;
   handler: string;
+  /** The controller class and the name of the method, for the documentation (U11-11). */
+  controller: new (...a: unknown[]) => unknown;
+  methodName: string;
+  rateLimit: string | undefined;
+  /** The status the handler answers with when it succeeds, if it says (@HttpCode). */
+  httpCode: number | undefined;
+  /** What the handler takes from the request: its body, query, path parameters and headers, with the class of a body or query. */
+  args: { kind: 'body' | 'query' | 'param' | 'header'; name: string | undefined; type: unknown }[];
 }
+
+const ARG_KINDS: Record<number, 'body' | 'query' | 'param' | 'header'> = { 3: 'body', 4: 'query', 5: 'param', 6: 'header' };
 
 /** Every route of the app's controllers (test-only controllers included), sorted by path and method. */
 export function routesOf(app: INestApplication): Route[] {
@@ -35,11 +45,31 @@ export function routesOf(app: INestApplication): Route[] {
           policy: reflector.getAllAndOverride<Policy | undefined>(POLICY_KEY, [handler, cls]),
           stepUp: reflector.getAllAndOverride<StepUpAction | undefined>(STEP_UP_KEY, [handler, cls]),
           handler: `${cls.name}.${name}`,
+          controller: cls,
+          methodName: name,
+          rateLimit: reflector.getAllAndOverride<string | undefined>(RATE_LIMIT_KEY, [handler, cls]),
+          httpCode: Reflect.getMetadata(HTTP_CODE_METADATA, handler) as number | undefined,
+          args: argsOf(cls, name),
         });
       }
     }
   }
   return out.sort((a, b) => a.path.localeCompare(b.path) || a.method.localeCompare(b.method));
+}
+
+function argsOf(cls: object & { prototype: object }, name: string): Route['args'] {
+  const meta = (Reflect.getMetadata(ROUTE_ARGS_METADATA, cls, name) ?? {}) as Record<string, { index: number; data?: unknown }>;
+  const types = (Reflect.getMetadata('design:paramtypes', cls.prototype, name) ?? []) as unknown[];
+  return Object.entries(meta)
+    .map(([key, v]) => ({
+      kind: ARG_KINDS[Number(key.split(':')[0])],
+      name: typeof v.data === 'string' ? v.data : undefined,
+      type: types[v.index],
+      index: v.index,
+    }))
+    .filter((a) => a.kind !== undefined)
+    .sort((a, b) => a.index - b.index)
+    .map(({ kind, name: n, type }) => ({ kind, name: n, type }));
 }
 
 /** 'POST /orders/:id/payments' */

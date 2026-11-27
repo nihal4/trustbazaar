@@ -38,6 +38,7 @@ export class ClosureService implements AccountClosureChecks {
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
   ) {}
 
+  /** Registers a check that decides whether an account may be closed; a unit registers each of its checks once. */
   register(check: AccountClosureCheck): void {
     if (this.checks.some((c) => c.name === check.name)) throw new Error(`closure check ${check.name} registered twice`);
     this.checks.push(check);

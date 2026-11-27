@@ -9,7 +9,7 @@ import type { Fulfilment, ItemCondition, ItemKind, ListingStatus, SaleFormat, Si
 export const POISHA = /^[1-9][0-9]{0,15}$/;
 
 /** FR-LST-06: the area shown (district) and the location used for distance, rounded to 3 decimals (about 110 m). */
-export class AreaDto {
+class AreaDto {
   @IsString()
   @Length(2, 40)
   district!: string;

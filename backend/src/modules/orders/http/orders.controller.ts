@@ -39,6 +39,7 @@ export class OrdersController {
     return order;
   }
 
+  /** The caller's orders as buyer (the default) or as seller, by stage, a page at a time (cursor). */
   @SignedIn()
   @Get()
   list(@Query() q: OrdersQuery, @CurrentPrincipal() p: Principal) {

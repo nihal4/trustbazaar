@@ -52,6 +52,7 @@ export class HealthService {
     this.draining = true;
   }
 
+  /** Whether the instance can serve now: false while it is draining for a shutdown, otherwise whether PostgreSQL and Redis answer. */
   async readiness(): Promise<Readiness> {
     if (this.draining) return { ready: false, draining: true, postgres: 'up', redis: 'up' };
     const [postgres, redis] = await Promise.all([probe(() => this.db.query('SELECT 1')), probe(() => this.redis.ping())]);

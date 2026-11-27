@@ -15,7 +15,7 @@ import type { CaseType, ChatCommands } from '../ports';
 // disputes since U7-03 (Decisions log, U6-03).
 
 /** The SRS retention schedule: a thread's content is kept 1 year after its last message. */
-export const CHAT_RETENTION = '1 year';
+const CHAT_RETENTION = '1 year';
 
 export interface StaffMessageView {
   seq: number;
@@ -40,6 +40,7 @@ export class HoldService implements ChatCommands {
     private readonly modules: ModuleRef,
   ) {}
 
+  /** Puts a hold on a thread for a case (its type and id); holding again for the same case changes nothing. */
   async hold(threadId: string, caseType: CaseType, caseId: string): Promise<void> {
     try {
       await this.db.query(
@@ -52,6 +53,7 @@ export class HoldService implements ChatCommands {
     }
   }
 
+  /** Releases the hold a case put on a thread. */
   async release(threadId: string, caseType: CaseType, caseId: string): Promise<void> {
     await this.db.query(`UPDATE chat.thread_holds SET released_at = now() WHERE thread_id = $1 AND case_type = $2 AND case_id = $3 AND released_at IS NULL`, [
       threadId,
@@ -60,6 +62,7 @@ export class HoldService implements ChatCommands {
     ]);
   }
 
+  /** The id of the thread between a listing's buyer and its seller, or null if they never wrote. */
   async threadFor(listingId: string, buyerId: string): Promise<string | null> {
     const [t] = (await this.db.query(`SELECT id FROM chat.threads WHERE listing_id = $1 AND buyer_id = $2`, [listingId, buyerId])) as { id: string }[];
     return t?.id ?? null;

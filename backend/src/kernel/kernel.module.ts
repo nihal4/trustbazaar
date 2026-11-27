@@ -1,5 +1,6 @@
 import { Global, Inject, Module, OnModuleDestroy } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { PoolWatch } from './db/pool-watch';
 import type Redis from 'ioredis';
 import { clockProvider, CLOCK } from './clock';
 import { config } from './config/config';
@@ -30,6 +31,8 @@ import { MetricsService } from './metrics/metrics.service';
       useFactory: () => ({
         type: 'postgres',
         url: config().databaseUrl.reveal(),
+        // the pool: a transaction holds one connection for its whole length, so the size bounds how many run at once (see docs/design/ and the Decisions log, U11-11)
+        extra: { max: config().dbPoolMax, connectionTimeoutMillis: config().dbConnectTimeoutMs },
         autoLoadEntities: true,
         synchronize: false,
         migrationsRun: false,
@@ -49,6 +52,7 @@ import { MetricsService } from './metrics/metrics.service';
     LiveGateway,
     { provide: LIVE, useExisting: LiveGateway },
     MetricsService,
+    PoolWatch,
   ],
   exports: [TB_CONFIG, REDIS, CLOCK, EventBus, JobRunner, IdempotencyKeys, LIVE], // CONFIG_PORT is provided by Unit 7 (U7-01)
 })

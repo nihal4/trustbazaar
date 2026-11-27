@@ -10,7 +10,7 @@ import { ConfigService } from './config.service';
 // rule of the SRS table and all broken rules are reported together. Switches, CP-30 and CP-36 change only
 // through an approved proposal (four-eyes); its handler publishes with the approval. Every publication is
 // audited with the values before and after.
-export const FOUR_EYES_CODES = (code: string) => code.startsWith('SW-') || code === 'CP-30' || code === 'CP-36';
+const FOUR_EYES_CODES = (code: string) => code.startsWith('SW-') || code === 'CP-30' || code === 'CP-36';
 
 export interface ConfigVersionView {
   version: number;
@@ -35,6 +35,7 @@ export class ConfigAdminService implements OnModuleInit {
     @Inject(AUDIT_SERVICE) private readonly audit: AuditServicePort,
   ) {}
 
+  /** Registers the four-eyes approval of publishing a parameter set and of the emergency switches (CP-30). */
   onModuleInit(): void {
     // CP-30 'emergency.control' for the switches; 'config.publish' for CP-30 and CP-36 themselves.
     for (const action of ['emergency.control', 'config.publish']) {
@@ -45,12 +46,14 @@ export class ConfigAdminService implements OnModuleInit {
     }
   }
 
+  /** The current parameter version and all its values. */
   async currentSet(q: Queryable = this.db): Promise<{ version: number; values: Record<string, unknown> }> {
     const [{ version }] = await q.query(`SELECT staff.current_config_version() AS version`);
     const [{ set }] = await q.query(`SELECT staff.config_as_json($1) AS set`, [version]);
     return { version, values: set };
   }
 
+  /** The published versions of the parameter set, newest first, with who published them and why. */
   async versions(): Promise<ConfigVersionView[]> {
     const rows = await this.db.query(`SELECT version, created_by, reason, approval_id, created_at FROM staff.config_versions ORDER BY version DESC LIMIT 200`);
     return rows.map((r: Record<string, unknown>) => ({

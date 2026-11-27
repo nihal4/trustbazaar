@@ -3,7 +3,7 @@
 // in any string is masked to its last characters. Request and response bodies are never logged at all.
 
 /** Keys (case-insensitive, also as part of a longer key: sessionToken, set-cookie, passwordHash) that are never logged. */
-export const REDACTED_KEYS = ['password', 'otp', 'token', 'cookie', 'authorization', 'nid', 'accountnumber', 'ciphertext', 'credentials', 'secret'] as const;
+const REDACTED_KEYS = ['password', 'otp', 'token', 'cookie', 'authorization', 'nid', 'accountnumber', 'ciphertext', 'credentials', 'secret'] as const;
 export const REDACTED = '[redacted]';
 
 const MAX_DEPTH = 6;

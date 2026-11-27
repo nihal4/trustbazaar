@@ -105,6 +105,7 @@ export class StaffPayoutsController {
     return { items: await this.payouts.pendingBankAccounts(staffOf(p).staffId, ctx(req)) };
   }
 
+  /** An operator approves or rejects a seller's bank account, with the reason. */
   @Staff('operator')
   @Post('payout-accounts/:id/decision')
   @HttpCode(200)

@@ -187,6 +187,7 @@ export class OrderService implements OrdersPort {
     return this.view(tx ?? this.db.manager, id, a.winnerId);
   }
 
+  /** The order as its buyer or seller sees it; anyone else is told it does not exist (SEC-SDL-09). */
   getOrderForParty(orderId: string, userId: string): Promise<OrderView> {
     return this.view(this.db.manager, orderId, userId);
   }
@@ -245,6 +246,7 @@ export class OrderService implements OrdersPort {
     });
   }
 
+  /** The digest and the last four characters of the device identifier recorded when the listing was ordered, or null. */
   async deviceIdentifier(orderId: string): Promise<{ digest: string; last4: string } | null> {
     const [row] = (await this.db.query(
       `SELECT listing_snapshot->>'serialDigest' AS digest, listing_snapshot->>'serialLast4' AS last4 FROM orders.orders WHERE id = $1`,
@@ -253,6 +255,7 @@ export class OrderService implements OrdersPort {
     return row?.digest && row.last4 ? { digest: row.digest, last4: row.last4 } : null;
   }
 
+  /** Locks the order's row in the caller's transaction and returns the facts a fulfilment action needs (I-20). */
   async lockForFulfilment(orderId: string, tx: EntityManager): Promise<FulfilmentFacts> {
     const o = await tx.getRepository(Order).findOne({ where: { id: orderId }, lock: { mode: 'pessimistic_write' } });
     if (!o) throw new Problem('not-found');
@@ -286,6 +289,7 @@ export class OrderService implements OrdersPort {
     completed: `(status IN ('closed', 'cancelled'))`,
   };
 
+  /** The member's orders as buyer or as seller, by stage, a page at a time (cursor). */
   async list(userId: string, role: 'buyer' | 'seller', cursor: string | undefined, stage?: 'orders' | 'on_the_way' | 'completed') {
     const after = decodeCursor(cursor);
     const column = role === 'seller' ? 'seller_id' : 'buyer_id';
