@@ -73,22 +73,23 @@ function Calendar({ title, value, min, max, startAt, lang, onPick, onClose }: {
   const years: number[] = [];
   for (let yr = Number(max.slice(0, 4)); yr >= Number(min.slice(0, 4)); yr--) years.push(yr);
 
-  // moving by keys moves the focus with the day; showing a month keeps the same day number as far as the month has it
-  const go = (to: string) => { moved.current = true; setFocus(clamp(to)); };
-  const shiftMonth = (by: number) => {
+  // moving by keys moves the focus with the day; the arrows and the month and year lists keep the focus where it is (a keyboard user changing the month stays on the list);
+  // showing a month keeps the same day number as far as the month has it
+  const go = (to: string, focusDay = false) => { moved.current = focusDay; setFocus(clamp(to)); };
+  const shiftMonth = (by: number, focusDay = false) => {
     const target = new Date(Date.UTC(y, m + by, 1));
     const last = new Date(Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0)).getUTCDate();
-    go(iso(Date.UTC(target.getUTCFullYear(), target.getUTCMonth(), Math.min(Number(focus.slice(8, 10)), last))));
+    go(iso(Date.UTC(target.getUTCFullYear(), target.getUTCMonth(), Math.min(Number(focus.slice(8, 10)), last))), focusDay);
   };
   const canPrev = monthStart(focus) > monthStart(min);
   const canNext = monthStart(focus) < monthStart(max);
   const onKey = (e: React.KeyboardEvent) => {
     const step: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
-    if (e.key in step) { e.preventDefault(); go(iso(ms(focus) + step[e.key] * DAY)); }
-    else if (e.key === 'PageUp') { e.preventDefault(); shiftMonth(-1); }
-    else if (e.key === 'PageDown') { e.preventDefault(); shiftMonth(1); }
-    else if (e.key === 'Home') { e.preventDefault(); go(iso(ms(focus) - new Date(ms(focus)).getUTCDay() * DAY)); }
-    else if (e.key === 'End') { e.preventDefault(); go(iso(ms(focus) + (6 - new Date(ms(focus)).getUTCDay()) * DAY)); }
+    if (e.key in step) { e.preventDefault(); go(iso(ms(focus) + step[e.key] * DAY), true); }
+    else if (e.key === 'PageUp') { e.preventDefault(); shiftMonth(-1, true); }
+    else if (e.key === 'PageDown') { e.preventDefault(); shiftMonth(1, true); }
+    else if (e.key === 'Home') { e.preventDefault(); go(iso(ms(focus) - new Date(ms(focus)).getUTCDay() * DAY), true); }
+    else if (e.key === 'End') { e.preventDefault(); go(iso(ms(focus) + (6 - new Date(ms(focus)).getUTCDay()) * DAY), true); }
   };
   useEffect(() => { if (moved.current) grid.current?.querySelector<HTMLElement>('[data-focus="true"]')?.focus(); }, [focus]);
 
@@ -120,7 +121,7 @@ function Calendar({ title, value, min, max, startAt, lang, onPick, onClose }: {
               ? <span key={`e${wi}-${i}`} role="gridcell" aria-hidden="true" className={calendar.empty} />
               : (
                 <button key={d} type="button" role="gridcell" className={`${calendar.day} ${d === value ? calendar.chosen : ''} ${d === today ? calendar.today : ''}`}
-                  disabled={d < min || d > max} aria-selected={d === value} aria-current={d === today ? 'date' : undefined} tabIndex={d === focus ? 0 : -1} data-focus={d === focus}
+                  disabled={d < min || d > max} aria-selected={d === value} aria-current={d === today ? 'date' : undefined} tabIndex={d === focus ? 0 : -1} data-focus={d === focus} data-autofocus={d === focus ? true : undefined}
                   aria-label={fmt({ dateStyle: 'full' }).format(ms(d))} onClick={() => onPick(d)}>
                   {toLocalDigits(String(Number(d.slice(8, 10))), lang)}
                 </button>

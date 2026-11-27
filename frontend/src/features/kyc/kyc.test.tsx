@@ -104,6 +104,24 @@ describe('requirements and status', () => {
     expect((within(again).getByLabelText('Year') as HTMLSelectElement).options[0].value).toBe(thisYear);
   });
 
+  it('FR-KYC-01 the calendar opens with a day in focus, the arrow keys move it, and choosing a month leaves the focus on the month list', async () => {
+    const be = fakeBackend({ 'GET /kyc/status': json(200, status()) });
+    mount(be, standInCamera().camera);
+    await screen.findByRole('heading', { name: 'What you need' });
+    click('Start');
+    await screen.findByRole('heading', { name: 'Your document details' });
+    type('Date of birth', '1995-04-12');
+    click('Choose a date');
+    const dialog = await screen.findByRole('dialog', { name: 'Date of birth' });
+    expect(document.activeElement?.getAttribute('aria-label')).toMatch(/12 April 1995/);
+    fireEvent.keyDown(document.activeElement as Element, { key: 'ArrowRight' });
+    await waitFor(() => expect(document.activeElement?.getAttribute('aria-label')).toMatch(/13 April 1995/));
+    const month = within(dialog).getByLabelText('Month') as HTMLSelectElement;
+    month.focus();
+    fireEvent.change(month, { target: { value: '5' } });
+    expect(document.activeElement).toBe(month);
+  });
+
   it('NFR-USE-02 the requirements come before any capture, and the review status is shown on every step', async () => {
     const be = fakeBackend({ 'GET /kyc/status': json(200, status()) });
     mount(be, standInCamera().camera);
