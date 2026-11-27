@@ -1,0 +1,54 @@
+/* A radio or checkbox row (Choice.tsx). */
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--tb-space-2-5);
+  min-height: 44px;
+  padding-block: var(--tb-space-2-5);
+  cursor: pointer;
+}
+.mark {
+  flex: none;
+  appearance: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  border: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: var(--tb-sheet);
+  cursor: pointer;
+}
+.mark::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background: var(--tb-hot);
+  transform: scale(0);
+  transition: transform var(--tb-dur-quick) var(--tb-ease-out);
+}
+.radio::after {
+  width: 8px;
+  height: 8px;
+}
+.mark:checked {
+  border-color: var(--tb-hot);
+  background: color-mix(in srgb, var(--tb-hot) 10%, transparent);
+}
+.mark:checked::after {
+  transform: scale(1);
+}
+.mark:disabled,
+.mark:disabled + .text {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.text {
+  display: grid;
+  gap: var(--tb-space-0-5);
+}
+.hint {
+  color: var(--tb-muted);
+  font-size: var(--tb-text-sm);
+}

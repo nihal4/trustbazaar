@@ -1,0 +1,36 @@
+/* A tag and a count (Tag.tsx). */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 var(--tb-space-2);
+  border: 1px solid var(--tb-border);
+  font-size: var(--tb-text-xs);
+  line-height: 1;
+  white-space: nowrap;
+}
+.hot {
+  border-color: var(--tb-hot);
+  background: color-mix(in srgb, var(--tb-hot) 10%, transparent);
+}
+.ok {
+  border-color: var(--tb-success);
+  color: var(--tb-success);
+}
+.error {
+  border-color: var(--tb-error);
+  color: var(--tb-error);
+}
+.count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 var(--tb-space-1-5);
+  background: var(--tb-hot);
+  color: var(--tb-hot-text);
+  font-size: var(--tb-text-2xs);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}

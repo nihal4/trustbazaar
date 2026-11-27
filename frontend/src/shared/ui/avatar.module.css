@@ -1,0 +1,33 @@
+/* An avatar or photo place (Avatar.tsx): a square on the grid. */
+.avatar {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--tb-line);
+  background-color: var(--tb-surface);
+  background-image: linear-gradient(var(--tb-line) 1px, transparent 1px), linear-gradient(90deg, var(--tb-line) 1px, transparent 1px);
+  background-size: 16px 16px;
+  color: var(--tb-muted);
+  font-weight: 600;
+}
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sm {
+  width: 40px;
+  height: 40px;
+  font-size: var(--tb-text-xs);
+}
+.md {
+  width: 64px;
+  height: 64px;
+  font-size: var(--tb-text-base);
+}
+.lg {
+  width: 96px;
+  height: 96px;
+  font-size: var(--tb-text-2xl);
+}

@@ -1,0 +1,55 @@
+/* The field (Field.tsx): a label, a hint, one ruled control 48 px high, an error. */
+.field {
+  display: grid;
+  gap: var(--tb-space-1-5);
+  min-width: 0;
+}
+.field label {
+  font-size: var(--tb-text-sm);
+  font-weight: 600;
+}
+.hint,
+.error {
+  margin: 0;
+  font-size: var(--tb-text-sm);
+}
+.hint {
+  color: var(--tb-muted);
+}
+.error {
+  color: var(--tb-error);
+  font-weight: 600;
+}
+
+.control {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 var(--tb-space-3-5);
+  border: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: var(--tb-sheet);
+  color: var(--tb-text);
+  font: inherit;
+  transition: border-color var(--tb-dur-base) var(--tb-ease-out);
+}
+.control::placeholder {
+  color: var(--tb-muted);
+}
+.control:focus-visible {
+  border-color: var(--tb-hot);
+}
+.control[aria-invalid='true'] {
+  border-color: var(--tb-error);
+}
+.control:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.select {
+  cursor: pointer;
+}
+.textarea {
+  min-height: 7.5rem;
+  padding-block: var(--tb-space-3);
+  resize: vertical;
+}

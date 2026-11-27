@@ -11,6 +11,14 @@ module.exports = {
       to: { path: '^src/(features|staff)/', pathNot: '\\.test\\.' },
     },
     {
+      name: 'shared-ui-is-presentational',
+      severity: 'error',
+      comment:
+        'shared/ui/ holds the primitives (U11-04): presentational only. No api, router, react-query, language context, features or staff code; what a role or a situation shows comes in as props from the page.',
+      from: { path: '^src/shared/ui/', pathNot: '\\.(test|stories)\\.' },
+      to: { path: ['^src/(features|staff|lib)/', '^src/shared/(api|me|live|language|pages|Shell)', 'node_modules/(react-router|react-router-dom|@tanstack)'] },
+    },
+    {
       name: 'lib-is-plain',
       severity: 'warn',
       comment: 'lib/ is plain code (no React, no shared UI, no features).',

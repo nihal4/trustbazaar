@@ -1,0 +1,21 @@
+/* A notice (Notice.tsx). */
+.notice {
+  display: grid;
+  gap: var(--tb-space-1);
+  padding: var(--tb-space-3-5) var(--tb-space-4);
+  border: 1px solid var(--tb-line);
+  border-left: 3px solid var(--tb-border);
+  font-size: var(--tb-text-md);
+}
+.title {
+  font-weight: 600;
+}
+.warning {
+  border-left-color: var(--tb-warning-border);
+  background: var(--tb-warning-bg);
+}
+.error {
+  border-left-color: var(--tb-error);
+  background: var(--tb-error-bg);
+  color: var(--tb-error-text);
+}
