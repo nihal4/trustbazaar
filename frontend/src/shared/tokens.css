@@ -45,10 +45,48 @@
   --tb-btn-line: transparent;
   --tb-btn-radius: var(--tb-radius-control);
   --tb-radius-panel: 4px;
+  /* Spacing, in steps of 4px (U11-03): --tb-space-N is N x 4px, a half step is written N-5 (--tb-space-2-5 = 10px). Gaps, padding and margins use these and nothing else. */
+  --tb-space-0-5: 0.125rem;
   --tb-space-1: 0.25rem;
+  --tb-space-1-5: 0.375rem;
   --tb-space-2: 0.5rem;
-  --tb-space-3: 1rem;
-  --tb-space-4: 1.5rem;
+  --tb-space-2-5: 0.625rem;
+  --tb-space-3: 0.75rem;
+  --tb-space-3-5: 0.875rem;
+  --tb-space-4: 1rem;
+  --tb-space-4-5: 1.125rem;
+  --tb-space-5: 1.25rem;
+  --tb-space-6: 1.5rem;
+  --tb-space-7: 1.75rem;
+  --tb-space-8: 2rem;
+  --tb-space-10: 2.5rem;
+  --tb-space-12: 3rem;
+  /* Type scale (U11-03): the sizes the site uses, in rem so they follow the reader's text size; the display sizes are fluid. Change one here and every use follows. */
+  --tb-text-2xs: 0.75rem;
+  --tb-text-xs: 0.8125rem;
+  --tb-text-sm: 0.875rem;
+  --tb-text-md: 0.9375rem;
+  --tb-text-base: 1rem;
+  --tb-text-lg: 1.0625rem;
+  --tb-text-xl: 1.125rem;
+  --tb-text-2xl: 1.25rem;
+  --tb-text-3xl: 1.5rem;
+  --tb-text-4xl: 2.5rem;
+  --tb-text-heading-sm: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem);
+  --tb-text-heading: clamp(1.75rem, 3.6vw, 2.5rem);
+  --tb-text-title: clamp(1.625rem, 1.3rem + 1.2vw, 2.125rem);
+  --tb-text-headline: clamp(2.25rem, 1.8rem + 1.6vw, 3rem);
+  /* Corners (U11-03): square is the theme (border-radius: 0 needs no token); these are the few exceptions */
+  --tb-radius-slight: 2px;
+  --tb-radius-circle: 50%;
+  /* Motion (U11-03): how long and how it moves; press feedback is the shortest, popups the longest */
+  --tb-dur-quick: 120ms;
+  --tb-dur-base: 140ms;
+  --tb-dur-press: 160ms;
+  --tb-dur-slow: 200ms;
+  --tb-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --tb-ease-settle: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --tb-ease-glide: cubic-bezier(0.2, 0.7, 0.2, 1);
   --tb-max-width: 82rem;
   --tb-shadow-card: 0 1px 2px rgba(15, 23, 32, 0.06), 0 6px 18px -8px rgba(15, 23, 32, 0.16);
   --tb-shadow-lift: 0 2px 4px rgba(15, 23, 32, 0.08), 0 16px 32px -12px rgba(15, 23, 32, 0.24);

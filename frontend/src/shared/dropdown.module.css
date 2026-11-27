@@ -3,16 +3,16 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.125rem;
+  gap: var(--tb-space-0-5);
   min-width: 0;
 }
 .label {
   color: var(--tb-muted);
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
   font-weight: 500;
 }
 :lang(bn) .label {
-  font-size: 1.0625rem;
+  font-size: var(--tb-text-lg);
   line-height: 1.5;
 }
 .button {
@@ -21,14 +21,14 @@
   align-items: center;
   width: 100%;
   min-height: 44px;
-  padding: 0 1.75rem 0 0;
+  padding: 0 var(--tb-space-7) 0 0;
   border: 0;
   border-radius: 0;
   outline: 0;
   background: none;
   color: var(--tb-text);
   font: inherit;
-  font-size: 1.0625rem;
+  font-size: var(--tb-text-lg);
   text-align: left;
   cursor: pointer;
 }
@@ -42,7 +42,7 @@
   border-right: 2px solid var(--tb-hot);
   border-bottom: 2px solid var(--tb-hot);
   transform: translateY(-70%) rotate(45deg);
-  transition: transform 160ms;
+  transition: transform var(--tb-dur-press);
 }
 .button[aria-expanded='true']::after {
   transform: translateY(-30%) rotate(-135deg);
@@ -51,7 +51,7 @@
   box-shadow: inset 0 -2px 0 var(--tb-hot);
 }
 .list {
-  margin: 0.25rem 0 0;
+  margin: var(--tb-space-1) 0 0;
   padding: 0;
   list-style: none;
   max-height: min(28rem, 55svh);
@@ -63,12 +63,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--tb-space-4);
   min-height: 48px;
-  padding: 0 0.75rem;
+  padding: 0 var(--tb-space-3);
   border-top: 1px solid var(--tb-line);
   color: var(--tb-text);
-  font-size: 1.0625rem;
+  font-size: var(--tb-text-lg);
   cursor: pointer;
 }
 .option:first-child {
@@ -89,7 +89,7 @@
   flex: none;
   width: 0.4rem;
   height: 0.75rem;
-  margin-right: 0.25rem;
+  margin-right: var(--tb-space-1);
   border-right: 2px solid var(--tb-hot);
   border-bottom: 2px solid var(--tb-hot);
   transform: rotate(45deg) translateY(-2px);

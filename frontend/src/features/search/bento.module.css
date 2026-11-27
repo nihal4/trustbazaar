@@ -4,15 +4,15 @@
 .safe {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  padding-top: 1.5rem;
+  gap: var(--tb-space-6);
+  padding-top: var(--tb-space-6);
   border-top: 1px solid var(--tb-line);
 }
 .h2 {
   margin: 0;
   font-family: var(--tb-font-display);
   font-weight: var(--tb-display-weight);
-  font-size: clamp(1.75rem, 3.6vw, 2.5rem);
+  font-size: var(--tb-text-heading);
   letter-spacing: -0.025em;
   line-height: 1.1;
   min-height: 1.3em;
@@ -44,8 +44,8 @@
   max-width: 36ch;
 }
 .caption {
-  margin: 0 0 0.625rem;
-  font-size: 0.9375rem;
+  margin: 0 0 var(--tb-space-2-5);
+  font-size: var(--tb-text-md);
   font-weight: 500;
   color: var(--tb-muted);
 }
@@ -60,13 +60,13 @@
 .cardBox {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 1.75rem 0;
+  gap: var(--tb-space-3);
+  padding: var(--tb-space-7) 0;
   background: var(--tb-bg);
 }
 .ui {
   margin-top: auto;
-  padding-top: 1rem;
+  padding-top: var(--tb-space-4);
 }
 .escrow {
   box-shadow: inset 0 2px 0 var(--tb-hot);
@@ -83,8 +83,8 @@
 .timeline li {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
-  padding: 0.75rem 0;
+  gap: var(--tb-space-3-5);
+  padding: var(--tb-space-3) 0;
   font-weight: 500;
   color: var(--tb-muted);
 }
@@ -96,7 +96,7 @@
   flex: none;
   width: 16px;
   height: 16px;
-  border-radius: 50%;
+  border-radius: var(--tb-radius-circle);
   border: 2px solid var(--tb-border);
 }
 .timeline .done {
@@ -119,35 +119,35 @@
 .clockRow {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
   font-weight: 500;
   margin-top: auto;
-  padding-top: 1rem;
+  padding-top: var(--tb-space-4);
 }
 .clockRow + .ui {
   margin-top: 0;
-  padding-top: 0.75rem;
+  padding-top: var(--tb-space-3);
 }
 .clockRow strong {
   font-family: var(--tb-font);
   font-weight: 600;
-  font-size: 1.5rem;
+  font-size: var(--tb-text-3xl);
   font-variant-numeric: tabular-nums;
 }
 .tag {
   margin-left: auto;
-  padding: 0.125rem 0.5rem;
+  padding: var(--tb-space-0-5) var(--tb-space-2);
   border: 1px solid var(--tb-line);
-  border-radius: 2px;
+  border-radius: var(--tb-radius-slight);
   color: var(--tb-muted);
-  font-size: 0.8125rem;
+  font-size: var(--tb-text-xs);
   font-style: normal;
   font-weight: 600;
 }
 .live {
   width: 9px;
   height: 9px;
-  border-radius: 50%;
+  border-radius: var(--tb-radius-circle);
   background: var(--tb-error);
   animation: ping 1.8s infinite;
 }
@@ -162,7 +162,7 @@
 }
 .bids {
   list-style: none;
-  margin: 0.875rem 0 0;
+  margin: var(--tb-space-3-5) 0 0;
   padding: 0;
   display: grid;
   gap: 0;
@@ -171,8 +171,8 @@
 .bids li {
   display: flex;
   justify-content: space-between;
-  padding: 0.625rem 0;
-  font-size: 0.9375rem;
+  padding: var(--tb-space-2-5) 0;
+  font-size: var(--tb-text-md);
 }
 .bids li + li {
   border-top: 1px solid var(--tb-line);
@@ -189,14 +189,14 @@
 .checks {
   list-style: none;
   margin: auto 0 0;
-  padding: 1rem 0 0;
+  padding: var(--tb-space-4) 0 0;
   display: grid;
-  gap: 0.625rem;
+  gap: var(--tb-space-2-5);
 }
 .checks li {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
+  gap: var(--tb-space-2-5);
   font-weight: 500;
 }
 .tickBox {
@@ -226,19 +226,19 @@
   background: var(--tb-bg);
   font-family: var(--tb-font);
   font-weight: 600;
-  font-size: 1.5rem;
+  font-size: var(--tb-text-3xl);
   font-variant-numeric: tabular-nums;
 }
 
 .methods {
   list-style: none;
   margin: auto 0 0;
-  padding: 1rem 0 0;
+  padding: var(--tb-space-4) 0 0;
   display: flex;
   flex-wrap: wrap;
 }
 .methods li {
-  padding: 0 1.25rem;
+  padding: 0 var(--tb-space-5);
   font-weight: 600;
   border-left: 1px solid var(--tb-line);
 }
@@ -249,8 +249,8 @@
 
 .journey {
   display: grid;
-  gap: 1.5rem;
-  padding-top: 1.5rem;
+  gap: var(--tb-space-6);
+  padding-top: var(--tb-space-6);
   border-top: 1px solid var(--tb-line);
 }
 .jSteps {
@@ -264,12 +264,12 @@
 .jSteps li {
   display: grid;
   grid-template-columns: 2.25rem minmax(0, 1fr);
-  column-gap: 0.75rem;
-  row-gap: 0.375rem;
+  column-gap: var(--tb-space-3);
+  row-gap: var(--tb-space-1-5);
   align-content: start;
   min-height: 9.5rem;
   color: var(--tb-muted);
-  padding: 1.5rem 1.5rem 1.5rem 0;
+  padding: var(--tb-space-6) var(--tb-space-6) var(--tb-space-6) 0;
 }
 .jSteps li + li {
   border-top: 1px solid var(--tb-line);
@@ -279,7 +279,7 @@
   color: var(--tb-text);
   font-family: var(--tb-font-display);
   font-weight: var(--tb-display-weight);
-  font-size: 1.25rem;
+  font-size: var(--tb-text-2xl);
 }
 .jSteps li > span:last-child {
   grid-column: 2;
@@ -289,7 +289,7 @@
   grid-row: 1 / span 2;
   font-family: var(--tb-font-display);
   font-weight: var(--tb-display-weight);
-  font-size: 1.5rem;
+  font-size: var(--tb-text-3xl);
   line-height: 1.1;
   color: var(--tb-hot);
   font-variant-numeric: tabular-nums;
@@ -301,7 +301,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .cardBox {
-    padding: 1.75rem 1.75rem 1.75rem 0;
+    padding: var(--tb-space-7) var(--tb-space-7) var(--tb-space-7) 0;
     min-height: 15rem;
   }
   .escrow,
@@ -312,14 +312,14 @@
     min-height: auto;
   }
   .cardBox:nth-child(even) {
-    padding-left: 1.75rem;
+    padding-left: var(--tb-space-7);
   }
   .pay {
     grid-column: 1 / -1;
     padding-left: 0 !important;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    column-gap: 2rem;
+    column-gap: var(--tb-space-8);
     align-content: center;
   }
   .pay .h3,
@@ -344,7 +344,7 @@
   }
   .jSteps li:nth-child(even) {
     border-left: 1px solid var(--tb-line);
-    padding-left: 1.5rem;
+    padding-left: var(--tb-space-6);
   }
 }
 /* laptop and wider: twelve columns, four steps in a row */
@@ -353,10 +353,10 @@
     grid-template-columns: repeat(12, minmax(0, 1fr));
   }
   .cardBox {
-    padding: 2rem 2rem 2rem 0;
+    padding: var(--tb-space-8) var(--tb-space-8) var(--tb-space-8) 0;
   }
   .cardBox:nth-child(even) {
-    padding-left: 2rem;
+    padding-left: var(--tb-space-8);
   }
   .escrow,
   .auction {
@@ -378,7 +378,7 @@
   .code,
   .pay {
     grid-column: span 4;
-    padding: 2rem;
+    padding: var(--tb-space-8);
     padding-left: 0;
   }
   .pay {
@@ -386,12 +386,12 @@
   }
   .pay .methods {
     margin: auto 0 0;
-    padding: 1rem 0 0;
+    padding: var(--tb-space-4) 0 0;
     align-self: auto;
   }
   .code,
   .pay {
-    padding-left: 2rem !important;
+    padding-left: var(--tb-space-8) !important;
   }
   .idCard {
     padding-left: 0;
@@ -404,7 +404,7 @@
   }
   .jSteps li + li {
     border-left: 1px solid var(--tb-line);
-    padding-left: 1.5rem;
+    padding-left: var(--tb-space-6);
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -417,7 +417,7 @@
 :lang(bn) .timeline li,
 :lang(bn) .bids li,
 :lang(bn) .checks li {
-  font-size: 1.0625rem;
+  font-size: var(--tb-text-lg);
 }
 
 @media (forced-colors: active) {

@@ -4,8 +4,8 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
-  margin-bottom: 1.125rem;
+  gap: var(--tb-space-1-5);
+  margin-bottom: var(--tb-space-4-5);
 }
 
 .field label {
@@ -15,7 +15,7 @@
 .field input {
   font: inherit;
   min-height: 48px;
-  padding: 0 0.875rem;
+  padding: 0 var(--tb-space-3-5);
   border: 1.5px solid var(--tb-border);
   border-radius: var(--tb-radius);
   background: var(--tb-bg);
@@ -37,22 +37,22 @@
 .hint {
   margin: 0;
   color: var(--tb-muted);
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
 }
 
 .error {
   margin: 0;
   color: var(--tb-error);
   font-weight: 600;
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
 }
 
 .checkbox {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: var(--tb-space-1) 0.75rem;
+  gap: var(--tb-space-1) var(--tb-space-3);
   align-items: start;
-  margin-bottom: 1.125rem;
+  margin-bottom: var(--tb-space-4-5);
 }
 
 .checkbox .error {
@@ -70,12 +70,12 @@
 .summary {
   border: 2px solid var(--tb-error);
   border-radius: var(--tb-radius-panel);
-  padding: 0.875rem 1.125rem;
-  margin-bottom: 1.25rem;
+  padding: var(--tb-space-3-5) var(--tb-space-4-5);
+  margin-bottom: var(--tb-space-5);
 }
 
 .summary h2 {
-  font-size: 1.0625rem;
+  font-size: var(--tb-text-lg);
   margin: 0 0 var(--tb-space-1);
 }
 
@@ -86,17 +86,17 @@
 
 .primary {
   transition:
-    background-color 120ms ease,
-    border-color 120ms ease;
+    background-color var(--tb-dur-quick) ease,
+    border-color var(--tb-dur-quick) ease;
   min-height: 48px;
-  padding: 0 1.75rem;
+  padding: 0 var(--tb-space-7);
   border: 1px solid var(--tb-btn-line);
   border-radius: var(--tb-btn-radius);
   background: var(--tb-btn-bg);
   color: var(--tb-btn-fg);
   font: inherit;
   font-weight: 600;
-  font-size: 1.0625rem;
+  font-size: var(--tb-text-lg);
   cursor: pointer;
 }
 
@@ -130,14 +130,14 @@
 div.info,
 div.success,
 div.error {
-  padding: 0.75rem 1rem;
-  margin-bottom: 1.25rem;
+  padding: var(--tb-space-3) var(--tb-space-4);
+  margin-bottom: var(--tb-space-5);
   border: 0;
   border-radius: var(--tb-radius-panel);
   background: var(--tb-surface);
   color: var(--tb-text);
   font-weight: 500;
-  font-size: 1rem;
+  font-size: var(--tb-text-base);
 }
 
 div.error {
@@ -166,7 +166,7 @@ div.error > :first-child {
   background: none;
   padding-inline: 0;
   caret-color: var(--tb-hot);
-  transition: border-color 120ms ease;
+  transition: border-color var(--tb-dur-quick) ease;
 }
 
 :root[data-theme='dark'] .field input::selection,
@@ -211,7 +211,7 @@ div.error > :first-child {
   border-radius: 0;
   background: none;
   cursor: pointer;
-  transition: border-color 120ms ease;
+  transition: border-color var(--tb-dur-quick) ease;
 }
 
 :root[data-theme='dark'] .checkbox input::after {
@@ -220,7 +220,7 @@ div.error > :first-child {
   height: 10px;
   background: var(--tb-hot);
   transform: scale(0);
-  transition: transform 120ms ease;
+  transition: transform var(--tb-dur-quick) ease;
 }
 
 :root[data-theme='dark'] .checkbox input:checked {
@@ -248,7 +248,7 @@ div.error > :first-child {
 }
 
 .passwordWrap input {
-  padding-right: 3rem;
+  padding-right: var(--tb-space-12);
 }
 
 .eye {
@@ -296,7 +296,7 @@ div.error > :first-child {
   align-self: center;
   width: 100%;
   max-width: 22rem;
-  margin-block: 0.25rem;
+  margin-block: var(--tb-space-1);
 }
 
 .field .codeGroup > input.codeInput {
@@ -335,13 +335,13 @@ div.error > :first-child {
   height: 3.5rem;
   border-inline-start: 1px solid var(--pipe);
   color: var(--tb-text);
-  font-size: 1.5rem;
+  font-size: var(--tb-text-3xl);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   line-height: 1;
   transition:
-    border-color 120ms ease,
-    background 120ms ease;
+    border-color var(--tb-dur-quick) ease,
+    background var(--tb-dur-quick) ease;
 }
 
 .codeCells > span:last-child {
@@ -351,8 +351,8 @@ div.error > :first-child {
 .codeCells[data-text] > span {
   flex: 1;
   min-width: 0;
-  padding: 0 1rem;
-  font-size: 1.25rem;
+  padding: 0 var(--tb-space-4);
+  font-size: var(--tb-text-2xl);
   letter-spacing: 0.06em;
   overflow-wrap: anywhere;
 }

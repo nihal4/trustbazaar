@@ -49,9 +49,9 @@
   align-items: center;
   gap: 6px;
   max-width: calc(100% - 16px);
-  border-radius: 4px;
+  border-radius: var(--tb-radius-panel);
   padding: 3px 8px;
-  font-size: 0.8125rem;
+  font-size: var(--tb-text-xs);
   line-height: 1.35;
   font-weight: 600;
 }
@@ -75,7 +75,7 @@
   flex: none;
   width: 7px;
   height: 7px;
-  border-radius: 50%;
+  border-radius: var(--tb-radius-circle);
   background: var(--tb-on-ink-accent);
 }
 .soon {
@@ -97,12 +97,12 @@
 @media (max-width: 30rem) {
   .clock,
   .featured {
-    font-size: 0.75rem;
+    font-size: var(--tb-text-2xs);
     padding: 2px 6px;
   }
 }
 .price {
-  font-size: 1.125rem;
+  font-size: var(--tb-text-xl);
   font-weight: 600;
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
@@ -121,7 +121,7 @@
 .meta,
 .note {
   color: var(--tb-muted);
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
   line-height: 1.4;
 }
 
@@ -147,14 +147,14 @@
   margin-bottom: 10px;
 }
 .photo img {
-  transition: transform 400ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition: transform 400ms var(--tb-ease-glide);
 }
 .link:hover .photo img {
   transform: scale(1.03);
 }
 .clock,
 .featured {
-  border-radius: 2px;
+  border-radius: var(--tb-radius-slight);
 }
 .clock {
   background: var(--tb-ink);
@@ -166,7 +166,7 @@
 }
 .price {
   font-family: var(--tb-font);
-  font-size: 1.25rem;
+  font-size: var(--tb-text-2xl);
   font-weight: 600;
   letter-spacing: -0.01em;
 }
@@ -209,5 +209,5 @@
 
 :lang(bn) .meta,
 :lang(bn) .note {
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
 }

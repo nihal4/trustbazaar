@@ -13,7 +13,7 @@
   position: absolute;
   left: var(--tb-space-2);
   top: -3rem;
-  padding: var(--tb-space-2) var(--tb-space-3);
+  padding: var(--tb-space-2) var(--tb-space-4);
   background: var(--tb-accent);
   color: var(--tb-accent-text);
   border-radius: var(--tb-radius);
@@ -28,8 +28,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--tb-space-2) var(--tb-space-4);
-  padding: var(--tb-space-3) var(--tb-gutter);
+  gap: var(--tb-space-2) var(--tb-space-6);
+  padding: var(--tb-space-4) var(--tb-gutter);
   border-bottom: 1px solid var(--tb-line);
   background: var(--tb-bg);
 }
@@ -45,7 +45,7 @@
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
 }
 
 .mark {
@@ -71,7 +71,7 @@
 
 .langSwitch {
   min-height: 44px;
-  padding: var(--tb-space-1) var(--tb-space-3);
+  padding: var(--tb-space-1) var(--tb-space-4);
   border: 0;
   border-radius: var(--tb-radius-pill);
   background: var(--tb-surface);
@@ -88,9 +88,9 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--tb-space-2) var(--tb-space-3);
-  margin: var(--tb-space-3);
-  padding: var(--tb-space-2) var(--tb-space-3);
+  gap: var(--tb-space-2) var(--tb-space-4);
+  margin: var(--tb-space-4);
+  padding: var(--tb-space-2) var(--tb-space-4);
   background: var(--tb-warning-bg);
   border: 1px solid var(--tb-warning-border);
   border-radius: var(--tb-radius);
@@ -106,7 +106,7 @@
   width: 100%;
   max-width: var(--tb-max-width);
   margin: 0 auto;
-  padding: var(--tb-space-4) clamp(1rem, 4vw, 3.5rem);
+  padding: var(--tb-space-6) clamp(var(--tb-space-4), 4vw, 3.5rem);
 }
 
 /* room for the tab bar, so it never covers the end of the page */
@@ -176,7 +176,7 @@
   justify-content: center;
   gap: 2px;
   color: var(--tb-muted);
-  font-size: 0.75rem;
+  font-size: var(--tb-text-2xs);
   font-weight: 600;
   text-decoration: none;
 }
@@ -199,7 +199,7 @@
   width: min(28rem, calc(100vw - 2rem));
   border: 1px solid var(--tb-border);
   border-radius: var(--tb-radius);
-  padding: var(--tb-space-3);
+  padding: var(--tb-space-4);
 }
 
 .dialog::backdrop {
@@ -228,7 +228,7 @@
   border-radius: var(--tb-radius-control);
   background: var(--tb-accent);
   color: var(--tb-accent-text);
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
   font-weight: 600;
   text-align: center;
 }
@@ -250,7 +250,7 @@
 @media (max-width: 47.99em) {
   .header {
     flex-wrap: nowrap;
-    gap: 0.5rem;
+    gap: var(--tb-space-2);
   }
   .wordmark {
     font-size: 1.2rem;
@@ -260,10 +260,10 @@
     height: 26px;
   }
   .langSwitch {
-    padding: var(--tb-space-1) 0.75rem;
+    padding: var(--tb-space-1) var(--tb-space-3);
   }
   .account {
-    padding: 0 0.375rem;
+    padding: 0 var(--tb-space-1-5);
   }
   .langSwitch,
   .account,
@@ -280,13 +280,13 @@
     top: -2px;
     right: -4px;
     margin: 0;
-    font-size: 0.75rem;
+    font-size: var(--tb-text-2xs);
     line-height: 1.4;
   }
 }
 @media (max-width: 26rem) {
   .header {
-    gap: 0.375rem;
+    gap: var(--tb-space-1-5);
   }
   .wordmark {
     font-size: 1.05rem;
@@ -298,10 +298,10 @@
 /* at 320 px, signed in and in Bangla, "English" is the widest switch: a little less padding keeps the line */
 @media (max-width: 21rem) {
   .langSwitch {
-    padding-inline: 0.5rem;
+    padding-inline: var(--tb-space-2);
   }
   .wordmark {
-    font-size: 1rem;
+    font-size: var(--tb-text-base);
   }
 }
 
@@ -337,12 +337,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem var(--tb-gutter);
+  gap: var(--tb-space-2);
+  padding: var(--tb-space-2) var(--tb-gutter);
   background: transparent;
   border-bottom: 1px solid var(--tb-line);
   color: var(--tb-text);
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
   font-weight: 500;
   line-height: 1.4;
   text-align: center;
@@ -355,7 +355,7 @@
   top: 0;
   z-index: 20;
   flex-wrap: nowrap;
-  padding-block: 0.75rem;
+  padding-block: var(--tb-space-3);
   background: var(--tb-bg);
   border-bottom: 1px solid var(--tb-line);
 }
@@ -371,16 +371,16 @@
   margin-inline: auto;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
   min-height: 46px;
-  padding: 0 0.875rem;
+  padding: 0 var(--tb-space-3-5);
   border-radius: var(--tb-radius);
   background: var(--tb-surface);
   border: 1.5px solid transparent;
   color: var(--tb-muted);
   transition:
-    border-color 140ms,
-    background 140ms;
+    border-color var(--tb-dur-base),
+    background var(--tb-dur-base);
 }
 .headSearch:focus-within {
   background: var(--tb-sheet);
@@ -389,7 +389,7 @@
 .headSearch input:focus-visible {
   outline: 2px solid var(--tb-text);
   outline-offset: 4px;
-  border-radius: 4px;
+  border-radius: var(--tb-radius-panel);
 }
 .headSearch input {
   flex: 1;
@@ -407,7 +407,7 @@
   height: 20px;
 }
 .account {
-  padding: 0.5rem 0.75rem;
+  padding: var(--tb-space-2) var(--tb-space-3);
   font-weight: 500;
   color: var(--tb-text);
   text-decoration: none;
@@ -470,10 +470,10 @@
    column with rules between on phones. Muted text, links brighten and draw a hot underline on hover. */
 .footer {
   margin-top: 4rem;
-  padding: 0 var(--tb-gutter) 3rem;
+  padding: 0 var(--tb-gutter) var(--tb-space-12);
   border-top: 1px solid var(--tb-line);
   color: var(--tb-muted);
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
 }
 .footerGrid {
   display: grid;
@@ -483,18 +483,18 @@
 }
 .footerAbout,
 .footerCol {
-  padding: 2rem 0;
+  padding: var(--tb-space-8) 0;
 }
 .footerCol {
   border-top: 1px solid var(--tb-line);
 }
 .footerAbout p {
   max-width: 32ch;
-  margin: 1rem 0 0;
+  margin: var(--tb-space-4) 0 0;
   line-height: 1.6;
 }
 .footerLabel {
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--tb-space-2);
   color: var(--tb-text);
   font-weight: 600;
 }
@@ -516,8 +516,8 @@
   background-size: 0 1.5px;
   background-position: 0 calc(50% + 0.7em);
   transition:
-    color 140ms,
-    background-size 200ms;
+    color var(--tb-dur-base),
+    background-size var(--tb-dur-slow);
 }
 .footerLinks a:hover {
   color: var(--tb-text);
@@ -533,12 +533,12 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .footerAbout {
-    padding-right: 2rem;
+    padding-right: var(--tb-space-8);
   }
   .footerCol {
     border-top: 0;
     border-left: 1px solid var(--tb-line);
-    padding-left: 2rem;
+    padding-left: var(--tb-space-8);
   }
 }
 
@@ -569,9 +569,9 @@
   border: 0;
   border-bottom: 1px solid var(--tb-border);
   border-radius: 0;
-  padding: 0 0.25rem;
+  padding: 0 var(--tb-space-1);
   box-shadow: none;
-  transition: box-shadow 140ms;
+  transition: box-shadow var(--tb-dur-base);
 }
 .headSearch:focus-within {
   background: none;
@@ -637,11 +637,11 @@
   gap: 4px;
   padding: 0 2px;
   color: var(--tb-muted);
-  font-size: 0.75rem;
+  font-size: var(--tb-text-2xs);
   font-weight: 600;
   transition:
-    color 140ms,
-    background 140ms;
+    color var(--tb-dur-base),
+    background var(--tb-dur-base);
 }
 .tab svg {
   width: 22px;
@@ -655,7 +655,7 @@
   top: -1px;
   height: 2px;
   background: transparent;
-  transition: background 140ms;
+  transition: background var(--tb-dur-base);
 }
 .tab:active {
   background: var(--tb-surface);
@@ -679,7 +679,7 @@
   width: 22px;
   height: 22px;
   border: 1.5px solid var(--tb-hot);
-  border-radius: 4px;
+  border-radius: var(--tb-radius-panel);
   background: none;
   color: var(--tb-hot);
 }
@@ -694,8 +694,8 @@
   left: calc(50% + 4px);
   min-width: 1.25rem;
   margin: 0;
-  padding: 0 0.25rem;
-  font-size: 0.75rem;
+  padding: 0 var(--tb-space-1);
+  font-size: var(--tb-text-2xs);
   line-height: 1.35;
 }
 .tabLabel {
@@ -705,7 +705,7 @@
   white-space: nowrap;
 }
 :lang(bn) .tab {
-  font-size: 0.8125rem;
+  font-size: var(--tb-text-xs);
 }
 .tab:focus-visible {
   outline: 2px solid var(--tb-hot);
@@ -764,8 +764,8 @@
   background: var(--tb-sheet);
   color: var(--tb-text);
   border: 1px solid var(--tb-border);
-  border-radius: 4px;
-  padding: 1.5rem;
+  border-radius: var(--tb-radius-panel);
+  padding: var(--tb-space-6);
 }
 .dialog::backdrop {
   background: rgb(0 0 0 / 0.6);
@@ -773,24 +773,24 @@
 .dialog h2 {
   font-family: var(--tb-font-display);
   font-weight: var(--tb-display-weight);
-  font-size: 1.5rem;
+  font-size: var(--tb-text-3xl);
   letter-spacing: -0.02em;
-  margin: 0 0 0.75rem;
+  margin: 0 0 var(--tb-space-3);
 }
 .dialog p {
-  margin: 0 0 0.75rem;
+  margin: 0 0 var(--tb-space-3);
   line-height: 1.5;
 }
 .dialogActions {
-  gap: 0.625rem;
-  margin-top: 1.25rem;
-  padding-top: 1.25rem;
+  gap: var(--tb-space-2-5);
+  margin-top: var(--tb-space-5);
+  padding-top: var(--tb-space-5);
   border-top: 1px solid var(--tb-line);
 }
 .dialogActions button {
   min-height: 48px;
-  padding: 0 1.25rem;
-  border-radius: 6px;
+  padding: 0 var(--tb-space-5);
+  border-radius: var(--tb-radius-control);
   font: inherit;
   font-weight: 700;
   cursor: pointer;
@@ -823,7 +823,7 @@
   display: flex;
   flex: none;
   border: 1px solid var(--tb-line);
-  border-radius: 4px;
+  border-radius: var(--tb-radius-panel);
   overflow: hidden;
 }
 .navCell {
@@ -835,7 +835,7 @@
   color: var(--tb-text);
   text-decoration: none;
   background: none;
-  transition: background 140ms;
+  transition: background var(--tb-dur-base);
 }
 .navCell + .navCell {
   border-left: 1px solid var(--tb-line);
@@ -857,8 +857,8 @@
   right: 5px;
   min-width: 1.25rem;
   margin: 0;
-  padding: 0 0.25rem;
-  font-size: 0.75rem;
+  padding: 0 var(--tb-space-1);
+  font-size: var(--tb-text-2xs);
   line-height: 1.35;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -872,10 +872,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--tb-space-4);
   max-width: var(--tb-max-width);
   margin-inline: auto;
-  padding: 1rem 0 0;
+  padding: var(--tb-space-4) 0 0;
   border-top: 1px solid var(--tb-line);
 }
 .footerLang .footerLabel {
@@ -884,9 +884,9 @@
 .footerLang .langSwitch {
   min-width: 7rem;
   min-height: 44px;
-  padding: 0 1.25rem;
+  padding: 0 var(--tb-space-5);
   border: 1px solid var(--tb-border);
-  border-radius: 4px;
+  border-radius: var(--tb-radius-panel);
   background: none;
   color: var(--tb-text);
   font: inherit;
@@ -943,7 +943,7 @@
 .footerLang .langSwitch {
   min-width: 44px;
   min-height: 44px;
-  padding: 0 0.5rem;
+  padding: 0 var(--tb-space-2);
   border: 0;
   border-bottom: 1px solid var(--tb-border);
   border-radius: 0;
@@ -961,7 +961,7 @@
 }
 .dialog p {
   text-wrap: pretty;
-  margin: 0 0 0.75rem;
+  margin: 0 0 var(--tb-space-3);
 }
 .dialogActions button:last-child {
   border: 0;
@@ -989,7 +989,7 @@
 
 /* the "test mode" strip on payment screens: a ruled band with a warning line above and below, not a filled box */
 .notice {
-  margin: var(--tb-space-3) 0;
+  margin: var(--tb-space-4) 0;
   padding: var(--tb-space-2) 0;
   background: none;
   border: 0;
@@ -1016,8 +1016,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 1.25rem clamp(1rem, 4vw, 3rem);
+  gap: var(--tb-space-4);
+  padding: var(--tb-space-5) clamp(var(--tb-space-4), 4vw, var(--tb-space-12));
 }
 
 .bareMain {
@@ -1048,7 +1048,7 @@
 .headTools {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
 }
 .themeSwitch {
   display: inline-grid;
@@ -1063,9 +1063,9 @@
   color: var(--tb-text);
   cursor: pointer;
   transition:
-    transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
-    border-color 140ms ease,
-    color 140ms ease;
+    transform var(--tb-dur-press) var(--tb-ease-out),
+    border-color var(--tb-dur-base) ease,
+    color var(--tb-dur-base) ease;
 }
 .themeSwitch:active {
   transform: scale(0.94);

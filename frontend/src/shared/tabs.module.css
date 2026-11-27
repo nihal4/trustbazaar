@@ -1,7 +1,7 @@
 /* The account tabs (docs/design/10_visual.md, sections 6 and 7.8): a row of links on a hairline, the current one
    underlined in plum and in bold, so it is marked by more than colour; 44 px targets (WCAG 2.5.8). */
 .tabs {
-  margin: 0 0 1.75rem;
+  margin: 0 0 var(--tb-space-7);
   border-bottom: 1px solid var(--tb-line);
   overflow-x: auto;
   scrollbar-width: none;
@@ -10,7 +10,7 @@
 .tabs ul {
   list-style: none;
   display: flex;
-  gap: 1.5rem;
+  gap: var(--tb-space-6);
   margin: 0;
   padding: 0;
 }
@@ -19,7 +19,7 @@
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  padding: 0 0.125rem;
+  padding: 0 var(--tb-space-0-5);
   border-bottom: 3px solid transparent;
   margin-bottom: -1px;
   color: var(--tb-muted);
@@ -35,7 +35,7 @@
 .tab:focus-visible {
   outline: 3px solid var(--tb-focus);
   outline-offset: -3px;
-  border-radius: 6px;
+  border-radius: var(--tb-radius-control);
 }
 
 .active {

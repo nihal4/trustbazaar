@@ -4,7 +4,7 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: var(--tb-space-5);
 }
 .title {
   margin: 0;
@@ -18,25 +18,25 @@
 }
 .layout {
   display: grid;
-  gap: 1.5rem;
+  gap: var(--tb-space-6);
   align-items: start;
 }
 @media (min-width: 60rem) {
   .layout {
     grid-template-columns: minmax(0, 1fr) 24rem;
-    gap: 2.5rem;
+    gap: var(--tb-space-10);
   }
 }
 .main {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--tb-space-6);
   min-width: 0;
 }
 .item {
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr);
-  gap: 1rem;
+  gap: var(--tb-space-4);
   align-items: center;
 }
 .item p {
@@ -58,7 +58,7 @@
   display: block;
 }
 .itemTitle {
-  font-size: 1.0625rem;
+  font-size: var(--tb-text-lg);
   font-weight: 600;
   overflow-wrap: anywhere;
 }
@@ -69,14 +69,14 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  padding-top: 1.5rem;
+  gap: var(--tb-space-6);
+  padding-top: var(--tb-space-6);
   border-top: 1px solid var(--tb-line);
 }
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  gap: var(--tb-space-2-5);
   border: 0;
   padding: 0;
   margin: 0;
@@ -87,7 +87,7 @@
   font-size: 1.1875rem;
   font-weight: 600;
   letter-spacing: -0.01em;
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--tb-space-1);
   padding: 0;
 }
 .field input[type='text'] {
@@ -95,7 +95,7 @@
   max-width: 8rem;
   font: inherit;
   font-variant-numeric: tabular-nums;
-  padding: 0 0.875rem;
+  padding: 0 var(--tb-space-3-5);
   border: 1px solid var(--tb-border);
   border-radius: var(--tb-radius-control);
   background: var(--tb-sheet);
@@ -104,9 +104,9 @@
 .option {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--tb-space-3);
   min-height: 56px;
-  padding: 0.5rem 1rem;
+  padding: var(--tb-space-2) var(--tb-space-4);
   border: 1px solid var(--tb-line);
   border-radius: var(--tb-radius-control);
   background: var(--tb-sheet);
@@ -131,10 +131,10 @@
 .gameNote {
   border-radius: var(--tb-radius-panel);
   background: var(--tb-surface);
-  padding: 1rem 1.125rem;
+  padding: var(--tb-space-4) var(--tb-space-4-5);
 }
 .gameNote p {
-  margin: 0.25rem 0;
+  margin: var(--tb-space-1) 0;
 }
 .hint {
   color: var(--tb-muted);
@@ -145,7 +145,7 @@
 }
 .stubHeading {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
   font-weight: 600;
   color: var(--tb-text);
 }
@@ -155,14 +155,14 @@
 }
 .primary {
   min-height: 50px;
-  padding: 0 1.5rem;
+  padding: 0 var(--tb-space-6);
   border-radius: var(--tb-btn-radius);
   background: var(--tb-btn-bg);
   color: var(--tb-btn-fg);
   border: 1px solid var(--tb-btn-line);
   font: inherit;
   font-weight: 600;
-  font-size: 1.0625rem;
+  font-size: var(--tb-text-lg);
   cursor: pointer;
 }
 .primary:disabled {
@@ -183,7 +183,7 @@
 /* ---- redesign v3 (U10-23): checkout in the ruled look: the choices are rows between hairlines, the summary is a column under a vermilion rule ---- */
 .option {
   min-height: 56px;
-  padding: 0.5rem 0;
+  padding: var(--tb-space-2) 0;
   border: 0;
   border-top: 1px solid var(--tb-line);
   border-radius: 0;
@@ -196,14 +196,14 @@
   border-color: var(--tb-line);
   background: none;
   box-shadow: inset 3px 0 0 var(--tb-hot);
-  padding-left: 0.75rem;
+  padding-left: var(--tb-space-3);
 }
 .field input[type='text'] {
   border: 0;
   border-bottom: 1px solid var(--tb-border);
   border-radius: 0;
   background: none;
-  padding-left: 0.25rem;
+  padding-left: var(--tb-space-1);
 }
 .field input[type='text']:focus-visible {
   outline: 0;
@@ -211,40 +211,40 @@
   box-shadow: inset 0 -2px 0 var(--tb-hot);
 }
 .gameNote {
-  padding: 0.75rem 0;
+  padding: var(--tb-space-3) 0;
   border-radius: 0;
   background: none;
   border-block: 1px solid var(--tb-line);
 }
 .thumb {
-  border-radius: 4px;
+  border-radius: var(--tb-radius-panel);
 }
 .summary {
-  padding-top: 1rem;
+  padding-top: var(--tb-space-4);
   border-top: 2px solid var(--tb-hot);
   border-bottom: 1px solid var(--tb-line);
-  padding-bottom: 1.25rem;
+  padding-bottom: var(--tb-space-5);
 }
 .summaryLabel {
   margin: 0;
   color: var(--tb-muted);
-  font-size: 0.9375rem;
+  font-size: var(--tb-text-md);
   font-weight: 500;
 }
 .summaryAmount {
-  margin: 0.125rem 0 1rem;
+  margin: var(--tb-space-0-5) 0 var(--tb-space-4);
   font-family: var(--tb-font);
   font-weight: 600;
-  font-size: clamp(2.25rem, 1.8rem + 1.6vw, 3rem);
+  font-size: var(--tb-text-headline);
   line-height: 1.05;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
 .summary .hint {
-  margin-top: 0.875rem;
+  margin-top: var(--tb-space-3-5);
 }
 .summary .steps {
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--tb-space-5);
 }
 .itemTitle a {
   display: inline-flex;
@@ -254,10 +254,10 @@
 
 /* ---- review fixes (U10-23): every row has the same left padding, so choosing one does not move it; the row shows the focus ---- */
 .option {
-  padding-left: 0.75rem;
+  padding-left: var(--tb-space-3);
 }
 .option:has(input:checked) {
-  padding-left: 0.75rem;
+  padding-left: var(--tb-space-3);
 }
 .option:focus-within {
   background: var(--tb-surface);

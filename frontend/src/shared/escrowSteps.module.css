@@ -10,9 +10,9 @@
 }
 .list li {
   position: relative;
-  padding: 1.75rem 0.75rem 0 0;
+  padding: var(--tb-space-7) var(--tb-space-3) 0 0;
   color: var(--tb-muted);
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
   line-height: 1.35;
   overflow-wrap: anywhere;
 }
@@ -26,7 +26,7 @@
   width: 16px;
   height: 16px;
   border: 2px solid var(--tb-border);
-  border-radius: 50%;
+  border-radius: var(--tb-radius-circle);
   background: var(--tb-bg);
 }
 .list li::after {

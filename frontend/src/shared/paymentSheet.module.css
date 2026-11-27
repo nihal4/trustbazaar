@@ -22,7 +22,7 @@
 }
 @media (prefers-reduced-motion: no-preference) {
   .sheet[open] {
-    animation: sheetUp 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    animation: sheetUp 260ms var(--tb-ease-settle);
   }
   .sheet[open]::backdrop {
     animation: backdropIn 260ms ease-out;
@@ -41,16 +41,16 @@
 .inner {
   padding: 0.75rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
   display: grid;
-  gap: 0.75rem;
+  gap: var(--tb-space-3);
 }
 .grab {
   width: 3rem;
   height: 3px;
-  margin: 0 auto 0.25rem;
+  margin: 0 auto var(--tb-space-1);
   background: var(--tb-border);
 }
 .title {
-  margin: 0.25rem 0 0;
+  margin: var(--tb-space-1) 0 0;
   font-family: var(--tb-font-display);
   font-weight: var(--tb-display-weight);
   font-size: 1.625rem;
@@ -66,7 +66,7 @@
 }
 .methods {
   list-style: none;
-  margin: 0.25rem 0 0;
+  margin: var(--tb-space-1) 0 0;
   padding: 0;
   border-top: 1px solid var(--tb-line);
 }
@@ -76,11 +76,11 @@
 .method {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0 1rem;
+  gap: 0 var(--tb-space-4);
   align-items: center;
   width: 100%;
   min-height: 64px;
-  padding: 0.5rem 0;
+  padding: var(--tb-space-2) 0;
   border: 0;
   background: none;
   color: var(--tb-text);
@@ -97,12 +97,12 @@
 }
 .methodName {
   font-weight: 700;
-  font-size: 1.0625rem;
+  font-size: var(--tb-text-lg);
 }
 .methodNote {
   grid-column: 1;
   color: var(--tb-muted);
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
 }
 .method svg {
   grid-column: 2;
@@ -111,31 +111,31 @@
 }
 .form {
   display: grid;
-  gap: 0.875rem;
+  gap: var(--tb-space-3-5);
 }
 .field {
   display: grid;
-  gap: 0.25rem;
+  gap: var(--tb-space-1);
 }
 .field > span {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: var(--tb-space-3);
   color: var(--tb-muted);
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
   font-weight: 600;
 }
 .field input {
   min-height: 48px;
-  padding: 0 0.25rem;
+  padding: 0 var(--tb-space-1);
   border: 0;
   border-bottom: 1px solid var(--tb-border);
   border-radius: 0;
   background: none;
   color: var(--tb-text);
   font: inherit;
-  font-size: 1.125rem;
+  font-size: var(--tb-text-xl);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
 }
@@ -151,26 +151,26 @@
 .pair {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+  gap: var(--tb-space-6);
 }
 .brand {
   color: var(--tb-text);
-  font-size: 0.875rem;
+  font-size: var(--tb-text-sm);
   font-weight: 700;
   letter-spacing: 0;
 }
 .pay {
   min-height: 52px;
-  padding: 0 1.5rem;
+  padding: 0 var(--tb-space-6);
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--tb-radius-control);
   background: var(--tb-action);
   color: var(--tb-action-text);
   font: inherit;
   font-weight: 700;
-  font-size: 1.0625rem;
+  font-size: var(--tb-text-lg);
   cursor: pointer;
-  transition: background 140ms;
+  transition: background var(--tb-dur-base);
 }
 .pay:hover:not(:disabled) {
   background: var(--tb-hot-hover);
@@ -186,7 +186,7 @@
 .quiet {
   justify-self: center;
   min-height: 44px;
-  padding: 0 0.5rem;
+  padding: 0 var(--tb-space-2);
   border: 0;
   border-bottom: 1px solid var(--tb-border);
   border-radius: 0;
@@ -205,10 +205,10 @@
 }
 .center {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--tb-space-3);
   justify-items: center;
   text-align: center;
-  padding-block: 0.5rem;
+  padding-block: var(--tb-space-2);
 }
 .center .title {
   margin-top: 0;
@@ -217,7 +217,7 @@
   position: relative;
   width: min(18rem, 100%);
   height: 3px;
-  margin-top: 0.75rem;
+  margin-top: var(--tb-space-3);
   background: var(--tb-line);
   overflow: hidden;
 }
@@ -270,14 +270,14 @@
   margin: 0;
   font-family: var(--tb-font);
   font-weight: 600;
-  font-size: 2.5rem;
+  font-size: var(--tb-text-4xl);
   line-height: 1.05;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
 }
 .ask {
-  margin: 0.5rem 0 0;
-  padding-top: 0.75rem;
+  margin: var(--tb-space-2) 0 0;
+  padding-top: var(--tb-space-3);
   border-top: 1px solid var(--tb-line);
   width: 100%;
   font-weight: 600;
@@ -285,13 +285,13 @@
 }
 .answer {
   display: grid;
-  gap: 0.5rem;
+  gap: var(--tb-space-2);
   width: 100%;
 }
 .fine {
   margin: 0;
   color: var(--tb-muted);
-  font-size: 0.8125rem;
+  font-size: var(--tb-text-xs);
   text-wrap: pretty;
 }
 @media (forced-colors: active) {
