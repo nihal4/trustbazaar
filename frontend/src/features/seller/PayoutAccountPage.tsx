@@ -20,6 +20,7 @@ import { accountLine, accountStatus, type PayoutAccount } from './model';
 import en from '../../messages/en/seller.json';
 import bn from '../../messages/bn/seller.json';
 import styles from './seller.module.css';
+import { Button } from '../../shared/ui';
 
 const CATALOGUES = { en, bn };
 type Kind = PayoutAccount['kind'];
@@ -207,9 +208,9 @@ export function Component() {
                   </>
                 )}
                 <div className={styles.buttons}>
-                  <button type="submit" className={styles.primary} disabled={save.isPending}>
+                  <Button variant="primary" type="submit" disabled={save.isPending}>
                     {t(a ? 'payout.save_replace' : 'payout.save')}
-                  </button>
+                  </Button>
                 </div>
               </form>
             </Popup>

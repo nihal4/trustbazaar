@@ -15,7 +15,7 @@
   },
   "stylelint": {
     "warning:import-notation": 11,
-    "warning:property-no-deprecated": 24,
+    "warning:property-no-deprecated": 23,
     "warning:value-keyword-case": 11,
     "warning:color-function-alias-notation": 16,
     "warning:no-duplicate-selectors": 47,
@@ -27,7 +27,7 @@
     "types": 19
   },
   "jscpd": {
-    "clones": 18,
-    "duplicatedLines": 260
+    "clones": 15,
+    "duplicatedLines": 203
   }
 }

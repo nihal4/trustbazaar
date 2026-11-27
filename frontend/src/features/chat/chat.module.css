@@ -133,16 +133,10 @@
 }
 
 .about,
-.meta,
 .time,
 .hint,
 .muted {
   color: var(--tb-muted);
-}
-
-.meta,
-.time {
-  font-size: var(--tb-text-sm);
 }
 
 .unread {
@@ -789,13 +783,6 @@
   outline: none;
   border-color: var(--tb-hot);
   box-shadow: inset 0 0 0 1px var(--tb-hot);
-}
-
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--tb-space-3);
 }
 
 /* a small text button under a message of theirs */

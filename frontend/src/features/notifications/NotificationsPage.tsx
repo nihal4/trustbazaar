@@ -28,6 +28,7 @@ import { FRESHNESS } from '../../shared/query';
 import en from '../../messages/en/notifications.json';
 import bn from '../../messages/bn/notifications.json';
 import styles from './notifications.module.css';
+import { Button } from '../../shared/ui';
 
 const CATALOGUES = { en, bn };
 
@@ -143,9 +144,9 @@ function List({ t, lang }: { t: ReturnType<typeof useT>['t']; lang: Lang }) {
       <div className={styles.toolbar}>
         <p role="status">{unread > 0 ? t('notifications.unread_count', { count: toLocalDigits(String(unread), lang) }) : t('notifications.all_read')}</p>
         {unread > 0 && (
-          <button type="button" className={styles.secondary} disabled={markRead.isPending} onClick={() => markRead.mutate({ all: true })}>
+          <Button variant="secondary" type="button" disabled={markRead.isPending} onClick={() => markRead.mutate({ all: true })}>
             {t('notifications.mark_all')}
-          </button>
+          </Button>
         )}
       </div>
       {message && <FormMessage kind="error">{message}</FormMessage>}
@@ -155,18 +156,18 @@ function List({ t, lang }: { t: ReturnType<typeof useT>['t']; lang: Lang }) {
       ) : (
         <>
           {fresh.length > 0 ? <ul className={styles.list}>{fresh.map(row)}</ul> : <p className={styles.none}>{t('notifications.none_new')}</p>}
-          <button type="button" className={styles.secondary} aria-haspopup="dialog" onClick={() => setAll(true)}>
+          <Button variant="secondary" type="button" aria-haspopup="dialog" onClick={() => setAll(true)}>
             {t('notifications.show_all')}
-          </button>
+          </Button>
         </>
       )}
       {all && (
         <Popup id="notifications-popup" title={t('notifications.list')} closeLabel={t('notifications.close')} wide onClose={() => setAll(false)}>
           <ul className={`${styles.list} ${styles.listPopup}`}>{items.map(row)}</ul>
           {pages.hasNextPage && (
-            <button type="button" className={styles.secondary} onClick={() => void pages.fetchNextPage()} disabled={pages.isFetchingNextPage}>
+            <Button variant="secondary" type="button" onClick={() => void pages.fetchNextPage()} disabled={pages.isFetchingNextPage}>
               {t('notifications.more')}
-            </button>
+            </Button>
           )}
         </Popup>
       )}
