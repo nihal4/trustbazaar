@@ -1,3 +1,4 @@
+// Reporting a message or the whole conversation (FR-CHT-06): a category and a note, in a popup.
 import { useState, type FormEvent } from 'react';
 import { useApi } from '../../shared/api';
 import { Popup, PopupActions } from '../../shared/Popup';

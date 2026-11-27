@@ -1,3 +1,4 @@
+// The shapes the dispute case screens share: the case file, the outcomes, the chat view and the case's query key.
 export type Outcome = 'release' | 'full_refund' | 'partial_refund' | 'refund_after_return';
 
 export interface Outcomes {

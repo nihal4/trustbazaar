@@ -1,3 +1,4 @@
+// The game-account side of a dispute: the proof screenshot, the takeover record and who had access to the credentials.
 import { formatDateTime } from '../../lib/time.js';
 import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';

@@ -1,3 +1,4 @@
+// The evidence pack of a dispute: a download link with an expiry and the pack's checksum.
 import { useState } from 'react';
 import { formatDateTime } from '../../lib/time.js';
 import { useApi } from '../../shared/api';

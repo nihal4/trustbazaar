@@ -1,3 +1,5 @@
+// The details of a listing as a list of facts: category, condition, how it can be handed over, the district and, for a phone or a laptop, the device
+// identifier's last digits.
 import type { Lang } from '../../shared/language/lang';
 import { type ListingView } from './model';
 import styles from './listings.module.css';

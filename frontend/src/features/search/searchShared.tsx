@@ -1,3 +1,4 @@
+// What the search page and its filters share: the query parameters, the sort and condition lists, the category tree, the price in taka and the small controls.
 import { Dropdown } from '../../shared/Dropdown';
 import { useT } from '../../shared/language/Language';
 import styles from './search.module.css';

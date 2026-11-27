@@ -1,3 +1,4 @@
+// The photo gallery of a listing: the main photo and the others as a strip.
 import { useEffect, useState, type PointerEvent } from 'react';
 import { toLocalDigits } from '../../lib/money.js';
 import type { Lang } from '../../shared/language/lang';

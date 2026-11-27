@@ -1,3 +1,4 @@
+// One message in a conversation: text or photo, the time, whether it was delivered or read, and the flag when the screen held it.
 import { dateParts } from '../../lib/time.js';
 import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';

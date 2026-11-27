@@ -1,3 +1,4 @@
+// The bottom of a conversation (IF-UI-07): the message box, the photo attachment with its caption, and the send button, on the line grid.
 import { useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'react';
 import { toLocalDigits } from '../../lib/money.js';
 import { useApi } from '../../shared/api';

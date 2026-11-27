@@ -2,10 +2,10 @@
    entry and anything but the library in the credential document; these rules show the same picture as a graph and add two more: a cycle, and `shared/` importing a feature. */
 module.exports = {
   forbidden: [
-    { name: 'no-circular', severity: 'warn', comment: 'A cycle of imports makes code hard to follow and to move.', from: {}, to: { circular: true } },
+    { name: 'no-circular', severity: 'error', comment: 'A cycle of imports makes code hard to follow and to move.', from: {}, to: { circular: true } },
     {
       name: 'shared-not-features',
-      severity: 'warn',
+      severity: 'error',
       comment: 'shared/ is the layer under the features: it may not import from them or from the staff console.',
       from: { path: '^src/shared' },
       to: { path: '^src/(features|staff)/', pathNot: '\\.test\\.' },
@@ -20,14 +20,14 @@ module.exports = {
     },
     {
       name: 'lib-is-plain',
-      severity: 'warn',
+      severity: 'error',
       comment: 'lib/ is plain code (no React, no shared UI, no features).',
       from: { path: '^src/lib' },
       to: { path: '^src/(shared|features|staff)/' },
     },
     {
       name: 'no-test-in-production',
-      severity: 'warn',
+      severity: 'error',
       comment: 'Production code does not import test code.',
       from: { path: '^src', pathNot: '\\.(test|stories)\\.|^src/testing' },
       to: { path: '\\.(test|stories)\\.|^src/testing' },

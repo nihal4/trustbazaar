@@ -1,3 +1,4 @@
+// The check of a device's identifier at the meetup (a phone or a laptop): the buyer's part of the handover.
 import { Popup } from '../../shared/Popup';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';

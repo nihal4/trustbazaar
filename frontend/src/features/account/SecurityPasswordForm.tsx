@@ -1,3 +1,4 @@
+// Changing the password on the security page (SEC-AUTH-11), behind step-up.
 import { useState, type FormEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useApi } from '../../shared/api';

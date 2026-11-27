@@ -1,3 +1,4 @@
+// The open and closed state of the filter sheet on a phone, with the focus handling.
 import { useEffect, useState } from 'react';
 
 /** true while the viewport is narrower than 60rem, where the open filters are a sheet over the page */

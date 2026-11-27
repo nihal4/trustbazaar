@@ -1,3 +1,4 @@
+// Proposing a meetup place and time: a point from the list or a place of the member's own, and a time on the Dhaka clock.
 import { Popup } from '../../shared/Popup';
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';

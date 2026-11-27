@@ -1,3 +1,4 @@
+// The photos of a listing being sold: upload, order and removal, with the limits of the photo rules.
 import { useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toLocalDigits } from '../../lib/money.js';

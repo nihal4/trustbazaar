@@ -1,3 +1,5 @@
+// The ID-check wizard (FR-KYC-01, FR-KYC-02; NFR-USE-02): the details, then the picture of each side of the document and the selfies, the review status at every
+// step, and what happens after the submission.
 import { formatWait } from '../../shared/wait';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';

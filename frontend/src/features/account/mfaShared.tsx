@@ -1,3 +1,4 @@
+// What the MFA steps share: the lazily loaded QR code, the secret grouped for reading, the wrong-code message, the numbered step marks and the copy button.
 import { lazy, useEffect, useRef, useState } from 'react';
 import { digits, useAccountT } from './common';
 import styles from './account.module.css';
