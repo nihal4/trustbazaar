@@ -12,6 +12,7 @@ import { useStaffT } from '../text';
 import styles from '../staff.module.css';
 import { Action, CaseFrame, Choice, Facts, short, staffError } from './common';
 import { useQueued } from './queued';
+import { Button } from '../../shared/ui';
 
 type Live = 'matched' | 'not_matched' | 'not_available';
 
@@ -67,9 +68,9 @@ export function Component() {
                 </a>
               </p>
             ) : (
-              <button type="button" className={styles.secondary} onClick={() => void showShot()}>
+              <Button variant="secondary" type="button" onClick={() => void showShot()}>
                 {t('staff.proof.show')}
-              </button>
+              </Button>
             )}
             <p className={styles.hint}>{t('staff.case.links_expire')}</p>
           </section>

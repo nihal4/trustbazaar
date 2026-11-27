@@ -4,7 +4,7 @@ export default {
   extends: ['stylelint-config-standard'],
   plugins: ['stylelint-declaration-strict-value'],
   defaultSeverity: 'warning',
-  ignoreFiles: ['dist/**', 'storybook-static/**', 'node_modules/**', 'src/shared/mantine*.css'],
+  ignoreFiles: ['dist/**', 'storybook-static/**', 'node_modules/**'],
   rules: {
     // the design system: colours and fonts come from tokens (var(--tb-…)); transparent, currentColor and the like are allowed
     'scale-unlimited/declaration-strict-value': [

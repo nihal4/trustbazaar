@@ -6,6 +6,7 @@ import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
 import { staffError } from '../cases/common';
 import styles from '../staff.module.css';
+import { Button, Field, Input } from '../../shared/ui';
 
 export function Text({
   id,
@@ -25,22 +26,9 @@ export function Text({
   maxLength?: number;
 }) {
   return (
-    <div className={styles.field}>
-      <label htmlFor={id}>{label}</label>
-      <input
-        id={id}
-        value={value}
-        maxLength={maxLength}
-        inputMode={inputMode}
-        onChange={(e) => onChange(e.target.value)}
-        aria-describedby={hint ? `${id}-hint` : undefined}
-      />
-      {hint && (
-        <p id={`${id}-hint`} className={styles.hint}>
-          {hint}
-        </p>
-      )}
-    </div>
+    <Field id={id} label={label} hint={hint}>
+      {(control) => <Input {...control} value={value} maxLength={maxLength} inputMode={inputMode} onChange={(e) => onChange(e.target.value)} />}
+    </Field>
   );
 }
 
@@ -88,9 +76,9 @@ export function SaveForm({
       {children}
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
       <p>
-        <button type="submit" className={styles.primary} disabled={save.isPending}>
+        <Button variant="primary" type="submit" disabled={save.isPending}>
           {button}
-        </button>
+        </Button>
       </p>
     </form>
   );

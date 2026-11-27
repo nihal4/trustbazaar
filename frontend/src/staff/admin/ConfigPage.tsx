@@ -14,6 +14,7 @@ import { problemName } from '../../shared/problems';
 import { Action, staffError } from '../cases/common';
 import { useStaffT } from '../text';
 import styles from '../staff.module.css';
+import { Button, Checkbox, Field, Input } from '../../shared/ui';
 
 type Json = null | boolean | number | string | Json[] | { [k: string]: Json };
 interface ConfigSet {
@@ -133,9 +134,9 @@ function Editor({ set, t, lang }: { set: ConfigSet; t: T; lang: Lang }) {
       <div className={styles.panel}>
         <p>{changed.length ? t('admin.config.changed', { codes: changed.join(', ') }) : t('admin.config.unchanged')}</p>
         <p>
-          <button type="button" className={styles.secondary} disabled={!changed.length || bad.size > 0} onClick={() => void check()}>
+          <Button variant="secondary" type="button" disabled={!changed.length || bad.size > 0} onClick={() => void check()}>
             {t('admin.config.check')}
-          </button>
+          </Button>
         </p>
         {checkError && <FormMessage kind="error">{checkError}</FormMessage>}
         {violations && violations.length === 0 && <FormMessage kind="success">{t('admin.config.no_violations')}</FormMessage>}
@@ -217,17 +218,13 @@ function Value({
   const id = `p-${code}-${path.join('-') || 'value'}`;
   const label = path.length ? String(path[path.length - 1]).replace(/_/g, ' ') : t('admin.config.value');
   if (typeof original === 'boolean') {
-    return (
-      <div className={styles.check}>
-        <input id={id} type="checkbox" checked={value === true} onChange={(e) => onChange(code, path, e.target.checked, true)} />
-        <label htmlFor={id}>{label}</label>
-      </div>
-    );
+    return <Checkbox id={id} label={label} checked={value === true} onChange={(e) => onChange(code, path, e.target.checked, true)} />;
   }
-  return <Field id={id} label={label} value={value} original={original} onChange={(v, ok) => onChange(code, path, v, ok)} t={t} />;
+  return <ConfigValue id={id} label={label} value={value} original={original} onChange={(v, ok) => onChange(code, path, v, ok)} t={t} />;
 }
 
-function Field({
+/** One value of a parameter: a labelled field that says in words when what was typed is not the kind of value the parameter holds. */
+function ConfigValue({
   id,
   label,
   value,
@@ -245,31 +242,24 @@ function Field({
   const [text, setText] = useState(() => show(value));
   const [error, setError] = useState(false);
   const numeric = typeof original === 'number' || (Array.isArray(original) && typeof original[0] === 'number');
+  const shownLabel = Array.isArray(original) ? `${label} (${t('admin.config.list')})` : label;
+  const problem = numeric ? t('admin.config.need_number') : t('admin.config.need_value');
   return (
-    <div className={styles.field}>
-      <label htmlFor={id}>
-        {label}
-        {Array.isArray(original) ? ` (${t('admin.config.list')})` : ''}
-      </label>
-      <input
-        id={id}
-        value={text}
-        inputMode={numeric ? 'numeric' : undefined}
-        aria-invalid={error || undefined}
-        aria-describedby={error ? `${id}-error` : undefined}
-        onChange={(e) => {
-          setText(e.target.value);
-          const r = parse(e.target.value, original);
-          setError(!r.ok);
-          onChange(r.value, r.ok);
-        }}
-      />
-      {error && (
-        <p id={`${id}-error`} className={styles.fieldError}>
-          {t(numeric ? 'admin.config.need_number' : 'admin.config.need_value')}
-        </p>
+    <Field id={id} label={shownLabel} error={error ? problem : undefined}>
+      {(control) => (
+        <Input
+          {...control}
+          value={text}
+          inputMode={numeric ? 'numeric' : undefined}
+          onChange={(e) => {
+            setText(e.target.value);
+            const r = parse(e.target.value, original);
+            setError(!r.ok);
+            onChange(r.value, r.ok);
+          }}
+        />
       )}
-    </div>
+    </Field>
   );
 }
 

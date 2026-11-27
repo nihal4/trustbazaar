@@ -14,6 +14,7 @@ import type { Lang } from '../shared/language/lang';
 import { APPROVAL_ACTIONS, type Approval } from './model';
 import { useStaffT } from './text';
 import styles from './staff.module.css';
+import { Button, Field, Textarea } from '../shared/ui';
 
 const approvalsKey = ['staff', 'approvals'] as const;
 
@@ -86,29 +87,30 @@ function ApprovalItem({ a, t, lang }: { a: Approval; t: T; lang: Lang }) {
         ))}
       </dl>
       {message && <FormMessage kind="error">{message}</FormMessage>}
-      <label htmlFor={noteId}>{t('staff.approvals.note')}</label>
-      <textarea id={noteId} rows={2} maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} />
+      <Field id={noteId} label={t('staff.approvals.note')}>
+        {(control) => <Textarea {...control} rows={2} maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} />}
+      </Field>
       <p className={styles.buttons}>
-        <button
+        <Button
+          variant="primary"
           type="button"
-          className={styles.primary}
           onClick={() => {
             setMessage(null);
             setDeciding('approved');
           }}
         >
           {t('staff.approvals.approve')}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="secondary"
           type="button"
-          className={styles.secondary}
           onClick={() => {
             setMessage(null);
             setDeciding('rejected');
           }}
         >
           {t('staff.approvals.reject')}
-        </button>
+        </Button>
       </p>
       {deciding && (
         <ConfirmDialog

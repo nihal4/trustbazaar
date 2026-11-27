@@ -6,7 +6,6 @@
 import { Suspense, useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useMediaQuery } from '@mantine/hooks';
 import { BellIcon, ChatIcon, HomeIcon, OrdersIcon, PlusIcon, SearchIcon, UserIcon } from './icons';
 import { Logo } from './Logo';
 import { useLanguage } from './language/Language';
@@ -22,6 +21,7 @@ import { StepUpDialog } from './StepUpDialog';
 import { toLocalDigits } from '../lib/money.js';
 import styles from './shell.module.css';
 import { Button } from './ui';
+import { useMediaQuery } from './useMediaQuery';
 
 export interface ShellProps {
   /** the console and the KYC page name themselves next to the logo */
@@ -51,7 +51,7 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
   }, [pathname]);
 
   // Phones get the tab bar instead of the header's links; decided once on the first render, so nothing jumps.
-  const phone = useMediaQuery('(max-width: 47.99em)', false, { getInitialValueInEffect: false });
+  const phone = useMediaQuery('(max-width: 47.99em)');
   const tabs = accountLinks && phone;
   if (accountLinks && BARE_PATHS.has(pathname)) {
     return (

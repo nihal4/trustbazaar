@@ -9,7 +9,6 @@ import { privacyRoutes } from '../features/privacy/routes';
 import { searchRoutes } from '../features/search/routes';
 import { sellerRoutes } from '../features/seller/routes';
 import { createDocument, DocumentRoot, signInHere } from '../shared/document';
-import '../shared/kit.css';
 import '../shared/tokens.css';
 
 // index.html: the user app, every path not served by the other three documents

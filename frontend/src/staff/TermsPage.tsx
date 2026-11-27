@@ -12,6 +12,7 @@ import { Choice, staffError } from './cases/common';
 import { SaveForm, Text } from './admin/forms';
 import { useStaffT } from './text';
 import styles from './staff.module.css';
+import { Button } from '../shared/ui';
 
 export function Component() {
   const { t, lang } = useStaffT();
@@ -48,9 +49,9 @@ function Screening({ t, lang }: { t: T; lang: Lang }) {
         {(terms.data?.items ?? []).map((x) => (
           <li key={x.id}>
             <strong>{x.term}</strong> · {t(`staff.terms.severity.${x.severity}`)} · {formatDateTime(Date.parse(x.addedAt), lang)}{' '}
-            <button type="button" className={styles.secondary} disabled={remove.isPending} onClick={() => remove.mutate(x.id)}>
+            <Button variant="secondary" type="button" disabled={remove.isPending} onClick={() => remove.mutate(x.id)}>
               {t('staff.terms.remove', { term: x.term })}
-            </button>
+            </Button>
           </li>
         ))}
       </ul>
@@ -106,9 +107,9 @@ function Detection({ t, lang }: { t: T; lang: Lang }) {
         {(terms.data?.items ?? []).map((x) => (
           <li key={x.term}>
             <strong>{x.term}</strong> · {t(`staff.terms.flag.${x.flag}`)}{' '}
-            <button type="button" className={styles.secondary} disabled={remove.isPending} onClick={() => remove.mutate(x.term)}>
+            <Button variant="secondary" type="button" disabled={remove.isPending} onClick={() => remove.mutate(x.term)}>
               {t('staff.terms.remove', { term: x.term })}
-            </button>
+            </Button>
           </li>
         ))}
       </ul>

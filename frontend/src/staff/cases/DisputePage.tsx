@@ -16,6 +16,7 @@ import type { Lang } from '../../shared/language/lang';
 import { useStaffT } from '../text';
 import styles from '../staff.module.css';
 import { Action, CaseFrame, Choice, Facts, short, staffError } from './common';
+import { Button, Field, Input } from '../../shared/ui';
 
 type Outcome = 'release' | 'full_refund' | 'partial_refund' | 'refund_after_return';
 interface Split {
@@ -261,9 +262,9 @@ function Chat({ path, t, lang }: { path: string; t: T; lang: Lang }) {
     <section className={styles.panel} aria-labelledby="dispute-chat">
       <h2 id="dispute-chat">{t('staff.dispute.chat')}</h2>
       {!shown && (
-        <button type="button" className={styles.secondary} onClick={() => setShown(true)}>
+        <Button variant="secondary" type="button" onClick={() => setShown(true)}>
           {t('staff.dispute.show_chat')}
-        </button>
+        </Button>
       )}
       {chat.isError && <FormMessage kind="error">{staffError(chat.error, t, lang)}</FormMessage>}
       {chat.data && (
@@ -391,20 +392,23 @@ function Decide({ f, t, lang }: { f: CaseFile; t: T; lang: Lang }) {
       />
       {outcome === 'partial_refund' && (
         <div className={styles.field}>
-          <label htmlFor="item-refund">{t('staff.dispute.amount', { max: money(f.outcomes.itemPrice) })}</label>
-          <input
-            id="item-refund"
-            inputMode="decimal"
-            value={amount}
-            onChange={(e) => {
-              setAmount(e.target.value);
-              setPartial(null);
-            }}
-          />
+          <Field id="item-refund" label={t('staff.dispute.amount', { max: money(f.outcomes.itemPrice) })}>
+            {(control) => (
+              <Input
+                {...control}
+                inputMode="decimal"
+                value={amount}
+                onChange={(e) => {
+                  setAmount(e.target.value);
+                  setPartial(null);
+                }}
+              />
+            )}
+          </Field>
           <p>
-            <button type="button" className={styles.secondary} onClick={() => void preview()}>
+            <Button variant="secondary" type="button" onClick={() => void preview()}>
               {t('staff.dispute.show_split')}
-            </button>
+            </Button>
           </p>
           {previewError && <FormMessage kind="error">{previewError}</FormMessage>}
         </div>
@@ -463,9 +467,9 @@ function EvidencePack({ id, t, lang }: { id: string; t: T; lang: Lang }) {
           · {t('staff.dispute.pack_hash', { hash: pack.sha256.slice(0, 16), files: String(pack.files), at: formatDateTime(Date.parse(pack.expiresAt), lang) })}
         </p>
       ) : (
-        <button type="button" className={styles.secondary} disabled={busy} onClick={() => void make()}>
+        <Button variant="secondary" type="button" disabled={busy} onClick={() => void make()}>
           {t('staff.dispute.pack_button')}
-        </button>
+        </Button>
       )}
     </section>
   );

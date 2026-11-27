@@ -12,6 +12,7 @@ import { fieldErrors } from '../../shared/problems';
 import { Action, Choice, Facts, staffError } from '../cases/common';
 import { useStaffT } from '../text';
 import styles from '../staff.module.css';
+import { Button, Field, Input } from '../../shared/ui';
 
 interface StaffAccount {
   id: string;
@@ -82,14 +83,12 @@ function NewAccount({ t, lang }: { t: T; lang: Lang }) {
   return (
     <form onSubmit={submit} noValidate className={styles.panel} aria-labelledby="new-staff">
       <h2 id="new-staff">{t('admin.staff.new')}</h2>
-      <div className={styles.field}>
-        <label htmlFor="staff-email">{t('admin.staff.email')}</label>
-        <input id="staff-email" type="email" autoComplete="off" value={email} onChange={(e) => setEmail(e.target.value)} />
-      </div>
-      <div className={styles.field}>
-        <label htmlFor="staff-name">{t('admin.staff.name')}</label>
-        <input id="staff-name" maxLength={60} value={name} onChange={(e) => setName(e.target.value)} />
-      </div>
+      <Field id="staff-email" label={t('admin.staff.email')}>
+        {(control) => <Input {...control} type="email" autoComplete="off" value={email} onChange={(e) => setEmail(e.target.value)} />}
+      </Field>
+      <Field id="staff-name" label={t('admin.staff.name')}>
+        {(control) => <Input {...control} maxLength={60} value={name} onChange={(e) => setName(e.target.value)} />}
+      </Field>
       <Choice
         legend={t('admin.staff.role')}
         name="staff-role"
@@ -111,9 +110,9 @@ function NewAccount({ t, lang }: { t: T; lang: Lang }) {
         </div>
       )}
       <p>
-        <button type="submit" className={styles.primary} disabled={create.isPending}>
+        <Button variant="primary" type="submit" disabled={create.isPending}>
           {t('admin.staff.create')}
-        </button>
+        </Button>
       </p>
     </form>
   );
@@ -131,9 +130,9 @@ function Account({ s, t, lang }: { s: StaffAccount; t: T; lang: Lang }) {
       </p>
       <Facts rows={[[t('admin.staff.since'), formatDateTime(Date.parse(s.createdAt), lang)]]} />
       {active && !open && (
-        <button type="button" className={styles.secondary} onClick={() => setOpen(true)}>
+        <Button variant="secondary" type="button" onClick={() => setOpen(true)}>
           {t('admin.staff.manage', { name: s.displayName })}
-        </button>
+        </Button>
       )}
       {active && open && (
         <>

@@ -10,6 +10,7 @@ import { staffError } from '../cases/common';
 import { useStaffT } from '../text';
 import styles from '../staff.module.css';
 import { Text } from './forms';
+import { Button, Field, Input } from '../../shared/ui';
 
 interface Entry {
   id: string;
@@ -94,9 +95,9 @@ export function Component() {
       <section className={styles.panel} aria-labelledby="chain">
         <h2 id="chain">{t('admin.audit.chain')}</h2>
         <p className={styles.hint}>{t('admin.audit.chain_explain')}</p>
-        <button type="button" className={styles.secondary} onClick={() => void verify()}>
+        <Button variant="secondary" type="button" onClick={() => void verify()}>
           {t('admin.audit.verify')}
-        </button>
+        </Button>
         {chainError && <FormMessage kind="error">{chainError}</FormMessage>}
         {chain &&
           (chain.intact ? (
@@ -118,20 +119,18 @@ export function Component() {
             hint={t('admin.audit.action_hint')}
             maxLength={80}
           />
-          <div className={styles.field}>
-            <label htmlFor="audit-from">{t('admin.audit.from')}</label>
-            <input id="audit-from" type="date" value={form.from} onChange={(e) => setForm({ ...form, from: e.target.value })} />
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="audit-to">{t('admin.audit.to')}</label>
-            <input id="audit-to" type="date" value={form.to} onChange={(e) => setForm({ ...form, to: e.target.value })} />
-          </div>
+          <Field id="audit-from" label={t('admin.audit.from')}>
+            {(control) => <Input {...control} type="date" value={form.from} onChange={(e) => setForm({ ...form, from: e.target.value })} />}
+          </Field>
+          <Field id="audit-to" label={t('admin.audit.to')}>
+            {(control) => <Input {...control} type="date" value={form.to} onChange={(e) => setForm({ ...form, to: e.target.value })} />}
+          </Field>
         </div>
         {problem && <FormMessage kind="error">{problem}</FormMessage>}
         <p>
-          <button type="submit" className={styles.primary}>
+          <Button variant="primary" type="submit">
             {t('admin.audit.show')}
-          </button>
+          </Button>
         </p>
       </form>
       {log.isPending && <p role="status">{t('shell.loading')}</p>}
@@ -159,9 +158,9 @@ export function Component() {
         ))}
       </ol>
       {log.hasNextPage && (
-        <button type="button" className={styles.secondary} disabled={log.isFetchingNextPage} onClick={() => void log.fetchNextPage()}>
+        <Button variant="secondary" type="button" disabled={log.isFetchingNextPage} onClick={() => void log.fetchNextPage()}>
           {t('admin.audit.older')}
-        </button>
+        </Button>
       )}
     </div>
   );
