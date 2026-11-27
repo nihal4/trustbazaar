@@ -1,5 +1,8 @@
 // The main screens, each from its fixture (record.mjs), in both themes, at the phone (390 px) and the desktop (1440 px) width, in English; Bangla at 390 px for the text-heavy screens;
 // and interactive states (an open popup). Screens and states are added to these lists as the clean-up reaches them (U11-02 onwards): a screen has to be in the net before it is changed.
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { expect, test } from '@playwright/test';
 import { openScreen, volatile } from './harness';
 
@@ -19,6 +22,25 @@ for (const screen of SCREENS) {
         await expect(page).toHaveScreenshot(`${screen.name}-${theme}-${width}.png`, { fullPage: true, mask: volatile(page) });
       });
     }
+  }
+}
+
+// Every other recorded screen (screens.json): the dark theme at both widths and the light theme on the desktop, so a change to a shared style shows on every page that uses it
+const DONE = new Set(['home', 'order-buyer', 'order-seller', 'dispute-seller']);
+const REST: { name: string }[] = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'screens.json'), 'utf8')).filter(
+  (s: { name: string }) => !DONE.has(s.name),
+);
+for (const screen of REST) {
+  for (const [theme, width] of [
+    ['dark', 390],
+    ['dark', 1440],
+    ['light', 1440],
+  ] as const) {
+    test(`${screen.name} ${theme} ${width}`, async ({ page }) => {
+      const { unmatched } = await openScreen(page, screen.name, { theme, lang: 'en', width });
+      expect(unmatched, 'requests the fixture has no answer for').toEqual([]);
+      await expect(page).toHaveScreenshot(`${screen.name}-${theme}-${width}.png`, { fullPage: true, mask: volatile(page) });
+    });
   }
 }
 

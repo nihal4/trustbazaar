@@ -56,6 +56,8 @@ export async function openScreen(page: Page, fixtureName: string, look: Look, pa
     // a signed-in page saves the language it was opened in; nothing on the screen depends on the answer
     if (key === 'PUT /me/notification-preferences')
       return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ language: look.lang, emailTransactional: true }) });
+    // what the server answers with no body (204): no data export requested yet (trust.controller.ts exportStatus); a conversation marked as read when it is opened
+    if (key === 'GET /me/data-export' || /^POST \/threads\/[^/]+\/marks$/.test(key)) return route.fulfill({ status: 204 });
     const answer = fixture.answers[key + url.search] ?? fixture.answers[key];
     if (!answer) {
       unmatched.push(key);

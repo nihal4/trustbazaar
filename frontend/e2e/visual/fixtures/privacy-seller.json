@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-11-27T13:25:54.390Z",
+  "recordedAt": "2026-11-27T14:30:11.323Z",
   "path": "/account/privacy",
   "answers": {
     "GET /me": {
@@ -53,6 +53,15 @@
       "status": 200,
       "body": {
         "items": [
+          {
+            "id": "ce3a83a0-b3a6-43ef-a31e-74edd2326354",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T14:29:36.672Z",
+            "readAt": null
+          },
           {
             "id": "2a77a69e-1adf-4f89-83cf-93f9a92c3770",
             "code": "security.signin_new_device",
@@ -505,19 +514,10 @@
             "subject": null,
             "createdAt": "2026-11-27T05:48:33.808Z",
             "readAt": "2026-11-27T06:31:18.897Z"
-          },
-          {
-            "id": "74378bc7-da22-4e9d-9d55-458aa341d3fe",
-            "code": "security.signin_new_device",
-            "title": "New sign-in to your account",
-            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
-            "subject": null,
-            "createdAt": "2026-11-27T05:35:12.131Z",
-            "readAt": "2026-11-27T06:31:18.897Z"
           }
         ],
-        "unread": 18,
-        "nextCursor": "MjAyNi0xMS0yN1QwNTozNToxMi4xMzE4OTJafDc0Mzc4YmM3LWRhMjItNGU5ZC05ZDU1LTQ1OGFhMzQxZDNmZQ"
+        "unread": 19,
+        "nextCursor": "MjAyNi0xMS0yN1QwNTo0ODozMy44MDg4MTVafGQwMjQ2YjI5LTdiYzgtNGVhYy1iZTc0LTk1M2E1MjFiZDFmOQ"
       }
     }
   }

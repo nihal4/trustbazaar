@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-11-27T13:25:28.373Z",
+  "recordedAt": "2026-11-27T14:29:57.558Z",
   "path": "/messages/726a0c3c-e00a-491a-b2fe-ffc92b6599a3",
   "answers": {
     "GET /me": {
@@ -17,10 +17,148 @@
         "memberSince": "2026-11-02T10:15:30.147Z"
       }
     },
+    "GET /me/notification-preferences": {
+      "status": 200,
+      "body": {
+        "language": "en",
+        "emailTransactional": true
+      }
+    },
+    "GET /threads/726a0c3c-e00a-491a-b2fe-ffc92b6599a3/messages?after=0": {
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "clientId": null,
+            "seq": 1,
+            "fromMe": false,
+            "kind": "text",
+            "text": "Hi, is the Pixel 7 still available? Is the battery still good?",
+            "caption": null,
+            "image": null,
+            "flags": [],
+            "at": "2026-11-10T14:58:31.326Z",
+            "removed": false
+          },
+          {
+            "clientId": "88795bb4-e296-4a9e-8422-2fcd2c146a16",
+            "seq": 2,
+            "fromMe": true,
+            "kind": "text",
+            "text": "Yes, it is available. Battery health is 91%, I can show you at the meetup.",
+            "caption": null,
+            "image": null,
+            "flags": [],
+            "at": "2026-11-10T14:58:31.349Z",
+            "removed": false
+          },
+          {
+            "clientId": null,
+            "seq": 3,
+            "fromMe": false,
+            "kind": "text",
+            "text": "Great. Can we meet at Dhanmondi Police Station on Saturday afternoon?",
+            "caption": null,
+            "image": null,
+            "flags": [],
+            "at": "2026-11-10T14:58:31.364Z",
+            "removed": false
+          },
+          {
+            "clientId": "0f69ffdd-6180-4ee7-88b9-8f111e860f69",
+            "seq": 4,
+            "fromMe": true,
+            "kind": "text",
+            "text": "Is the lamp still available for pickup on Friday?",
+            "caption": null,
+            "image": null,
+            "flags": [],
+            "at": "2026-11-27T07:52:54.998Z",
+            "removed": false
+          },
+          {
+            "clientId": null,
+            "seq": 5,
+            "fromMe": false,
+            "kind": "text",
+            "text": "Also, can you drop the price a little?",
+            "caption": null,
+            "image": null,
+            "flags": [],
+            "at": "2026-11-27T07:53:55.109Z",
+            "removed": false
+          },
+          {
+            "clientId": null,
+            "seq": 6,
+            "fromMe": false,
+            "kind": "text",
+            "text": "Thanks!",
+            "caption": null,
+            "image": null,
+            "flags": [],
+            "at": "2026-11-27T07:53:56.030Z",
+            "removed": false
+          },
+          {
+            "clientId": null,
+            "seq": 7,
+            "fromMe": false,
+            "kind": "text",
+            "text": "One more question about the box.",
+            "caption": null,
+            "image": null,
+            "flags": [],
+            "at": "2026-11-27T07:54:25.204Z",
+            "removed": false
+          },
+          {
+            "clientId": null,
+            "seq": 8,
+            "fromMe": false,
+            "kind": "text",
+            "text": "One more question about the box.",
+            "caption": null,
+            "image": null,
+            "flags": [],
+            "at": "2026-11-27T07:54:36.873Z",
+            "removed": false
+          },
+          {
+            "clientId": "9b27838b-6009-4743-8fcf-cc2d572a0907",
+            "seq": 9,
+            "fromMe": true,
+            "kind": "text",
+            "text": "Yes, I can do 1,400 for pickup.",
+            "caption": null,
+            "image": null,
+            "flags": [],
+            "at": "2026-11-27T07:55:08.072Z",
+            "removed": false
+          }
+        ],
+        "more": false,
+        "lastSeq": 9,
+        "otherMarks": {
+          "delivered": 8,
+          "read": 8
+        },
+        "closed": false
+      }
+    },
     "GET /notifications": {
       "status": 200,
       "body": {
         "items": [
+          {
+            "id": "ce3a83a0-b3a6-43ef-a31e-74edd2326354",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T14:29:36.672Z",
+            "readAt": null
+          },
           {
             "id": "2a77a69e-1adf-4f89-83cf-93f9a92c3770",
             "code": "security.signin_new_device",
@@ -473,19 +611,23 @@
             "subject": null,
             "createdAt": "2026-11-27T05:48:33.808Z",
             "readAt": "2026-11-27T06:31:18.897Z"
-          },
-          {
-            "id": "74378bc7-da22-4e9d-9d55-458aa341d3fe",
-            "code": "security.signin_new_device",
-            "title": "New sign-in to your account",
-            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
-            "subject": null,
-            "createdAt": "2026-11-27T05:35:12.131Z",
-            "readAt": "2026-11-27T06:31:18.897Z"
           }
         ],
-        "unread": 18,
-        "nextCursor": "MjAyNi0xMS0yN1QwNTozNToxMi4xMzE4OTJafDc0Mzc4YmM3LWRhMjItNGU5ZC05ZDU1LTQ1OGFhMzQxZDNmZQ"
+        "unread": 19,
+        "nextCursor": "MjAyNi0xMS0yN1QwNTo0ODozMy44MDg4MTVafGQwMjQ2YjI5LTdiYzgtNGVhYy1iZTc0LTk1M2E1MjFiZDFmOQ"
+      }
+    },
+    "GET /threads/726a0c3c-e00a-491a-b2fe-ffc92b6599a3/messages?after=9": {
+      "status": 200,
+      "body": {
+        "items": [],
+        "more": false,
+        "lastSeq": 9,
+        "otherMarks": {
+          "delivered": 8,
+          "read": 8
+        },
+        "closed": false
       }
     },
     "GET /threads": {
@@ -511,148 +653,6 @@
           }
         ],
         "nextCursor": null
-      }
-    },
-    "GET /me/notification-preferences": {
-      "status": 200,
-      "body": {
-        "language": "en",
-        "emailTransactional": true
-      }
-    },
-    "GET /threads/726a0c3c-e00a-491a-b2fe-ffc92b6599a3/messages?after=0": {
-      "status": 200,
-      "body": {
-        "items": [
-          {
-            "clientId": null,
-            "seq": 1,
-            "fromMe": false,
-            "kind": "text",
-            "text": "Hi, is the Pixel 7 still available? Is the battery still good?",
-            "caption": null,
-            "image": null,
-            "flags": [],
-            "at": "2026-11-10T14:58:31.326Z",
-            "removed": false
-          },
-          {
-            "clientId": "88795bb4-e296-4a9e-8422-2fcd2c146a16",
-            "seq": 2,
-            "fromMe": true,
-            "kind": "text",
-            "text": "Yes, it is available. Battery health is 91%, I can show you at the meetup.",
-            "caption": null,
-            "image": null,
-            "flags": [],
-            "at": "2026-11-10T14:58:31.349Z",
-            "removed": false
-          },
-          {
-            "clientId": null,
-            "seq": 3,
-            "fromMe": false,
-            "kind": "text",
-            "text": "Great. Can we meet at Dhanmondi Police Station on Saturday afternoon?",
-            "caption": null,
-            "image": null,
-            "flags": [],
-            "at": "2026-11-10T14:58:31.364Z",
-            "removed": false
-          },
-          {
-            "clientId": "0f69ffdd-6180-4ee7-88b9-8f111e860f69",
-            "seq": 4,
-            "fromMe": true,
-            "kind": "text",
-            "text": "Is the lamp still available for pickup on Friday?",
-            "caption": null,
-            "image": null,
-            "flags": [],
-            "at": "2026-11-27T07:52:54.998Z",
-            "removed": false
-          },
-          {
-            "clientId": null,
-            "seq": 5,
-            "fromMe": false,
-            "kind": "text",
-            "text": "Also, can you drop the price a little?",
-            "caption": null,
-            "image": null,
-            "flags": [],
-            "at": "2026-11-27T07:53:55.109Z",
-            "removed": false
-          },
-          {
-            "clientId": null,
-            "seq": 6,
-            "fromMe": false,
-            "kind": "text",
-            "text": "Thanks!",
-            "caption": null,
-            "image": null,
-            "flags": [],
-            "at": "2026-11-27T07:53:56.030Z",
-            "removed": false
-          },
-          {
-            "clientId": null,
-            "seq": 7,
-            "fromMe": false,
-            "kind": "text",
-            "text": "One more question about the box.",
-            "caption": null,
-            "image": null,
-            "flags": [],
-            "at": "2026-11-27T07:54:25.204Z",
-            "removed": false
-          },
-          {
-            "clientId": null,
-            "seq": 8,
-            "fromMe": false,
-            "kind": "text",
-            "text": "One more question about the box.",
-            "caption": null,
-            "image": null,
-            "flags": [],
-            "at": "2026-11-27T07:54:36.873Z",
-            "removed": false
-          },
-          {
-            "clientId": "9b27838b-6009-4743-8fcf-cc2d572a0907",
-            "seq": 9,
-            "fromMe": true,
-            "kind": "text",
-            "text": "Yes, I can do 1,400 for pickup.",
-            "caption": null,
-            "image": null,
-            "flags": [],
-            "at": "2026-11-27T07:55:08.072Z",
-            "removed": false
-          }
-        ],
-        "more": false,
-        "lastSeq": 9,
-        "otherMarks": {
-          "delivered": 8,
-          "read": 8
-        },
-        "closed": false
-      }
-    },
-    "GET /threads/726a0c3c-e00a-491a-b2fe-ffc92b6599a3/messages?after=9": {
-      "status": 200,
-      "body": {
-        "items": [],
-        "more": false,
-        "lastSeq": 9,
-        "otherMarks": {
-          "delivered": 8,
-          "read": 8
-        },
-        "closed": false
       }
     }
   }
