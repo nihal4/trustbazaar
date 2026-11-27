@@ -1,24 +1,10 @@
-/* The order page, first part (section 7.4; money-order world, docs/design/10_visual_v2.md, AC-ORD-2): one column up
-   to 52rem; the item and its state on top, then the counterfoil (where the money is, the total in figures and words,
-   the steps, the postmark); panels on the second sheet; the main actions at least 44 px high. */
-.page {
-  max-width: 52rem;
-}
 .head {
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
   gap: var(--tb-space-4);
-  align-items: center;
-  margin-bottom: var(--tb-space-5);
 }
 .thumb {
   display: block;
-  width: 88px;
-  height: 88px;
   border: 1px solid var(--tb-line);
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-surface);
-  overflow: hidden;
 }
 .headText {
   min-width: 0;
@@ -86,7 +72,6 @@
 .choice {
   border: 0;
   padding: 0;
-  margin: var(--tb-space-2) 0;
 }
 .choice div {
   display: flex;
@@ -174,7 +159,6 @@
 }
 .form {
   display: grid;
-  gap: var(--tb-space-1);
   margin-block: var(--tb-space-2);
 }
 .form input,
@@ -184,9 +168,6 @@
   font: inherit;
   max-width: 100%;
   padding: 0 var(--tb-space-3);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-radius-control);
-  background: var(--tb-sheet);
   color: var(--tb-text);
 }
 .form textarea {
@@ -206,16 +187,6 @@
   color: var(--tb-error);
   font-weight: 600;
 }
-.shipment {
-  border-top: 1px solid var(--tb-line);
-  padding-top: var(--tb-space-4);
-  margin-top: var(--tb-space-4);
-}
-.facts {
-  display: grid;
-  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
-  gap: var(--tb-space-1) var(--tb-space-2);
-}
 .wrap {
   overflow-wrap: anywhere;
   word-break: break-all;
@@ -226,18 +197,13 @@
 .tab,
 .tabOn {
   min-height: 44px;
-  padding: 0 var(--tb-space-5);
   border: 0;
-  border-radius: var(--tb-radius-control);
-  background: var(--tb-surface);
-  color: var(--tb-text);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
 }
 .tabOn {
   background: var(--tb-text);
-  color: var(--tb-sheet);
   font-weight: 600;
 }
 .list {
@@ -300,8 +266,6 @@
    (buttons and images keep theirs); one vermilion rule on top of the money panel ---- */
 .moneyPanel {
   margin-block: var(--tb-space-4);
-  padding: var(--tb-space-4) 0 var(--tb-space-5);
-  border-top: 2px solid var(--tb-hot);
   border-bottom: 1px solid var(--tb-line);
 }
 .moneyLabel {
@@ -318,9 +282,6 @@
   line-height: 1.05;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
-}
-.moneyPanel .hint {
-  margin: -0.5rem 0 var(--tb-space-4);
 }
 .status {
   display: inline-flex;
@@ -446,11 +407,6 @@
   border-top: 1px solid var(--tb-line);
   padding: var(--tb-space-2) 0 0;
 }
-.choice > div {
-  padding: var(--tb-space-1) 0;
-  border-top: 1px solid var(--tb-line);
-  min-height: 52px;
-}
 .choice > div:last-of-type {
   border-bottom: 1px solid var(--tb-line);
 }
@@ -536,8 +492,6 @@
   color: var(--tb-muted);
 }
 .thumb {
-  width: 4rem;
-  height: 4rem;
   overflow: hidden;
   border-radius: var(--tb-radius-panel);
   background: var(--tb-surface);
@@ -852,9 +806,6 @@
 .code > .codeDigits {
   justify-self: start;
 }
-.code button {
-  width: 100%;
-}
 
 /* the page in two columns from 60rem, as the listing page: the story on the left, a rail that stays in view on the right (meetup handover with its two actions, then the code, then the other party) */
 .page {
@@ -906,8 +857,6 @@
 }
 .actionGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  border-block: 1px solid var(--tb-line);
 }
 .actionGrid > * + * {
   border-left: 1px solid var(--tb-line);
@@ -947,16 +896,12 @@
   min-height: 56px;
 }
 .partyRow {
-  --av: 64px;
   display: grid;
-  grid-template-columns: calc(var(--av) + 14px) minmax(0, 1fr) auto;
-  min-height: calc(var(--av) + 16px);
   border-block: 1px solid var(--tb-line);
 }
 .partyRow > * {
   display: flex;
   align-items: center;
-  padding: var(--tb-space-3) var(--tb-space-3-5);
 }
 .partyRow > * + *:not(.chatError) {
   border-left: 1px solid var(--tb-line);
@@ -1193,18 +1138,9 @@
   text-underline-offset: 3px;
   min-width: 0;
 }
-
-/* review: both columns scroll together (the rail is not sticky); deadlines are the first grid row of the Meetup handover */
-.deadlineGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  margin: 0;
-  border: 1px solid var(--tb-line);
-}
 .deadlineGrid > div {
   display: grid;
   gap: var(--tb-space-0-5);
-  padding: var(--tb-space-3) var(--tb-space-3-5);
 }
 .deadlineGrid > div + div {
   border-left: 1px solid var(--tb-line);
@@ -1239,6 +1175,7 @@
 
 /* the facts under the title as a full grid */
 .facts {
+  gap: var(--tb-space-1) var(--tb-space-2);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   border-block: 1px solid var(--tb-line);
@@ -1287,6 +1224,8 @@
   clear: both;
 }
 .choice > div {
+  border-top: 1px solid var(--tb-line);
+  min-height: 52px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1449,9 +1388,6 @@
 }
 .deadlineGrid {
   border: 1px solid var(--tb-line);
-}
-.actionGrid {
-  border-block: 1px solid var(--tb-line);
 }
 .deadlineGrid > div,
 .actionGrid > .actionCell {
@@ -1671,16 +1607,6 @@ input[type='file']:hover::file-selector-button {
   gap: var(--tb-space-1);
   padding-inline: var(--tb-space-3-5);
 }
-
-/* ---- awaiting payment: the left column as a ruled grid (breakdown, what happens next, protection); the actions are in the rail ---- */
-.breakdownGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1px;
-  margin: 0 0 var(--tb-space-4);
-  border: 1px solid var(--tb-line);
-  background: var(--tb-line);
-}
 .breakdownGrid > div {
   display: grid;
   gap: var(--tb-space-1);
@@ -1710,7 +1636,14 @@ input[type='file']:hover::file-selector-button {
   }
 }
 /* the breakdown has four cells, the total marked; the preview and protection blocks are gone */
+
+/* ---- awaiting payment: the left column as a ruled grid (breakdown, what happens next, protection); the actions are in the rail ---- */
 .breakdownGrid {
+  display: grid;
+  gap: 1px;
+  margin: 0 0 var(--tb-space-4);
+  border: 1px solid var(--tb-line);
+  background: var(--tb-line);
   grid-template-columns: repeat(4, minmax(0, 1fr));
   margin-bottom: var(--tb-space-3);
 }
@@ -2330,7 +2263,12 @@ input[type='file'].fileHidden {
 .quoteGrid > div + div {
   border-left: 0;
 }
+
+/* review: both columns scroll together (the rail is not sticky); deadlines are the first grid row of the Meetup handover */
 .deadlineGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  margin: 0;
   overflow: hidden;
 }
 /* the attach control shows keyboard focus (the real input is clipped) */
