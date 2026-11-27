@@ -9,6 +9,7 @@ import { formatMoney, toLocalDigits } from '../../lib/money.js';
 import { formatDateTime, formatDeadline } from '../../lib/time.js';
 import { useApi } from '../../shared/api';
 import { useServerNow } from '../../shared/clock';
+import { useMe } from '../../shared/me';
 import { signInPath } from '../../shared/document';
 import { errorText } from '../../shared/errors';
 import { postmarkDate } from '../../shared/postmark';
@@ -54,11 +55,55 @@ export function Component() {
         <h1>{t('seller.title')}</h1>
         <Button component={Link} to="/sell/new">{t('seller.new_listing')}</Button>
       </div>
-      <ActionNeeded orders={orders.data?.items ?? null} error={orders.error} t={t} lang={lang} />
-      <Listings t={t} lang={lang} />
-      <Payouts t={t} lang={lang} />
-      <Statements t={t} lang={lang} />
+      <Figures orders={orders.data?.items ?? null} t={t} lang={lang} />
+      {/* two columns divided by one line: what to do and what is for sale on the left, the money on the right */}
+      <div className={styles.cols}>
+        <div className={styles.col}>
+          <ActionNeeded orders={orders.data?.items ?? null} error={orders.error} t={t} lang={lang} />
+          <Listings t={t} lang={lang} />
+        </div>
+        <div className={styles.col}>
+          <Payouts t={t} lang={lang} />
+          <Statements t={t} lang={lang} />
+        </div>
+      </div>
     </div>
+  );
+}
+
+/** Four figures divided by lines: what needs the seller, what TrustBazaar owes them, the payout account, and the deals done. All from the server (nothing computed about money). */
+function Figures({ orders, t, lang }: { orders: SellerOrder[] | null; t: T; lang: Lang }) {
+  const api = useApi();
+  const me = useMe();
+  const id = me.data?.id;
+  const account = useQuery({
+    queryKey: ['me', 'payout-account'],
+    queryFn: ({ signal }) => api.get('/me/payout-account', { signal }) as Promise<{ account: PayoutAccount | null }>,
+    staleTime: FRESHNESS.money,
+    retry: false,
+  });
+  const owed = useQuery({
+    queryKey: ['me', 'statements', 'owed'],
+    queryFn: ({ signal }) => api.get('/me/statements', { signal }) as Promise<{ owed: string }>,
+    staleTime: FRESHNESS.money,
+    retry: false,
+  });
+  const trust = useQuery({
+    queryKey: ['trust', id],
+    queryFn: ({ signal }) => api.get(`/users/${id}/trust`, { signal }) as Promise<{ completedTransactions: number }>,
+    enabled: Boolean(id),
+    staleTime: 60_000,
+    retry: false,
+  });
+  const a = account.data?.account ?? null;
+  const dash = '–';
+  return (
+    <dl className={styles.figures}>
+      <div><dt>{t('seller.action_title')}</dt><dd>{orders ? toLocalDigits(String(needingAction(orders).length), lang) : dash}</dd></div>
+      <div><dt>{t('seller.fig_owed')}</dt><dd>{owed.data ? formatMoney(BigInt(owed.data.owed), lang) : dash}</dd></div>
+      <div><dt>{t('seller.account_title')}</dt><dd className={styles.figText}>{account.isSuccess ? (a ? accountStatus(a, t, lang) : t('seller.fig_none')) : dash}</dd></div>
+      <div><dt>{t('seller.fig_completed')}</dt><dd>{trust.data ? toLocalDigits(String(trust.data.completedTransactions), lang) : dash}</dd></div>
+    </dl>
   );
 }
 

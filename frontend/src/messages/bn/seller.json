@@ -84,5 +84,8 @@
   "payout.save_replace": "পেআউট অ্যাকাউন্ট বদলান",
   "payout.saved": "সংরক্ষিত। অ্যাকাউন্টের অবস্থা উপরে দেখানো হয়েছে।",
   "payout.to_dashboard": "আপনার বিক্রিতে ফিরে যান",
-  "seller.new_listing": "একটি জিনিস বিক্রি করুন"
+  "seller.new_listing": "একটি জিনিস বিক্রি করুন",
+  "seller.fig_owed": "আপনার পাওনা",
+  "seller.fig_completed": "সম্পন্ন লেনদেন",
+  "seller.fig_none": "নেই"
 }

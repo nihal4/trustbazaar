@@ -7,14 +7,36 @@
 :lang(bn) .head h1, :lang(bn) .page > h1 { letter-spacing: 0; font-weight: 600; }
 
 .panel { border-top: 1px solid var(--tb-line); padding: 1.5rem 0 2rem; display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 0.75rem; min-width: 0; }
+.panel:first-child { border-top: 0; }
 .panel h2 { margin: 0; font-size: 1.125rem; letter-spacing: -0.01em; font-weight: 600; }
 .panel h3 { margin: 0.75rem 0 0; font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--tb-muted); }
 :lang(bn) .panel h3 { text-transform: none; letter-spacing: 0; font-size: 0.9375rem; }
 .panel > p { margin: 0; }
-@media (min-width: 56rem) {
-  .panel { grid-template-columns: 13rem minmax(0, 1fr); column-gap: 2.5rem; }
-  .panel > * { grid-column: 2; }
-  .panel > h2 { grid-column: 1; }
+
+/* the dashboard (U10-25, the same line grid as the profile): a vermilion rule over the head, four figures divided by lines, then two columns divided by one line */
+.head { border-top: 2px solid var(--tb-hot); padding-top: 1.5rem; }
+.figures { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; border-top: 1px solid var(--tb-line); border-bottom: 1px solid var(--tb-line); }
+.figures > div { padding: 1.25rem 1.5rem; border-left: 1px solid var(--tb-line); min-width: 0; }
+.figures > div:first-child { border-left: 0; padding-inline-start: 0; }
+.figures dt { color: var(--tb-muted); font-size: 0.9375rem; font-weight: 500; }
+.figures dd { margin: 0.25rem 0 0; font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.figures dd.figText { font-size: 1rem; line-height: 1.4; letter-spacing: 0; padding-top: 0.5rem; }
+.cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.col { min-width: 0; padding-top: 0.5rem; }
+.col:first-child { padding-inline-end: 2rem; }
+.col + .col { padding-inline-start: 2rem; border-inline-start: 1px solid var(--tb-line); }
+@media (max-width: 63.99rem) {
+  .figures { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .figures > div:nth-child(3) { border-left: 0; padding-inline-start: 0; }
+  .figures > div:nth-child(n + 3) { border-top: 1px solid var(--tb-line); }
+  .cols { grid-template-columns: minmax(0, 1fr); }
+  .col:first-child { padding-inline-end: 0; }
+  .col + .col { padding-inline-start: 0; border-inline-start: 0; }
+}
+@media (max-width: 30rem) {
+  .figures { grid-template-columns: minmax(0, 1fr); }
+  .figures > div, .figures > div:first-child, .figures > div:nth-child(3) { border-left: 0; padding: 0.875rem 0; border-top: 1px solid var(--tb-line); }
+  .figures > div:first-child { border-top: 0; }
 }
 .hint { color: var(--tb-muted); }
 .list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
