@@ -223,7 +223,7 @@
 @media (max-width: 59.99rem) { .body { max-width: none; } }
 .body .text { max-width: 68ch; }
 /* a rail taller than the window (a game account's warnings, an auction's bids, a short laptop) scrolls inside itself, so Buy now is never pushed out of reach; the padding and margin keep focus rings from being cut */
-@media (min-width: 60rem) and (min-height: 46rem) { .rail { max-height: calc(100svh - 6.5rem); overflow-y: auto; overscroll-behavior: contain; padding: 4px; margin: -4px; scrollbar-width: thin; } }
+@media (min-width: 60rem) and (min-height: 46rem) { .rail { max-height: calc(100svh - 6.5rem); overflow-y: auto; overscroll-behavior: contain; padding: 4px; margin: -4px; } }
 /* small details: no stub under the category link, balanced title lines, the seller's name and Pro at readable sizes */
 .crumb a { border-bottom: 0; }
 .crumb a:hover { border-bottom: 1px solid var(--tb-hot); }

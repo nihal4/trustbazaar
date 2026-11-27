@@ -133,6 +133,44 @@ button {
   outline-offset: 2px;
 }
 
+/* Scroll bars in the theme (U10-25): thin, square, no rounded pill and no filled track; the thumb is a hairline colour and turns vermilion when it is
+   touched. WebKit and Blink draw them from the pseudo-elements, Firefox from the two standard properties (set only where the pseudo-elements do not
+   exist, as the standard properties would otherwise replace the hover colour). */
+@supports selector(::-webkit-scrollbar) {
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--tb-border);
+    border: 3px solid var(--tb-bg);                 /* the bar is a 4 px line inside its 10 px channel */
+    border-radius: 0;
+    min-height: 40px;
+    min-width: 40px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover,
+  *::-webkit-scrollbar-thumb:active {
+    background: var(--tb-hot);
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--tb-border) transparent;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

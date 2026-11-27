@@ -2,7 +2,6 @@
 // orders needing action with their deadlines first, listings by state, the payout account and its check status,
 // payouts and statements. Every figure comes from the server; the dashboard computes nothing about money.
 import { useState } from 'react';
-import { Button } from '@mantine/core';
 import { Link } from 'react-router-dom';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { formatMoney, toLocalDigits } from '../../lib/money.js';
@@ -51,9 +50,9 @@ export function Component() {
   if (orders.isError && isApiError(orders.error, 401)) return <p><Link to={signInPath('/seller')}>{t('seller.sign_in')}</Link></p>;
   return (
     <div className={styles.page}>
+      {/* the header's Sell an item is the one way to a new listing: no second button here */}
       <div className={styles.head}>
         <h1>{t('seller.title')}</h1>
-        <Button component={Link} to="/sell/new">{t('seller.new_listing')}</Button>
       </div>
       <Figures orders={orders.data?.items ?? null} t={t} lang={lang} />
       {/* two columns divided by one line: what to do and what is for sale on the left, the money on the right */}
