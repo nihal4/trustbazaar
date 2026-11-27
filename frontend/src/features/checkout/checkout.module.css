@@ -62,10 +62,6 @@
   font-weight: 600;
   overflow-wrap: anywhere;
 }
-.itemTitle a {
-  color: var(--tb-text);
-  text-underline-offset: 3px;
-}
 .form {
   display: flex;
   flex-direction: column;
@@ -101,17 +97,6 @@
   background: var(--tb-sheet);
   color: var(--tb-text);
 }
-.option {
-  display: flex;
-  align-items: center;
-  gap: var(--tb-space-3);
-  min-height: 56px;
-  padding: var(--tb-space-2) var(--tb-space-4);
-  border: 1px solid var(--tb-line);
-  border-radius: var(--tb-radius-control);
-  background: var(--tb-sheet);
-  cursor: pointer;
-}
 .option:has(input:checked) {
   border-color: var(--tb-accent);
   background: var(--tb-accent-wash);
@@ -128,20 +113,12 @@
   cursor: pointer;
   font-weight: 600;
 }
-.gameNote {
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-surface);
-  padding: var(--tb-space-4) var(--tb-space-4-5);
-}
 .gameNote p {
   margin: var(--tb-space-1) 0;
 }
 .hint {
   color: var(--tb-muted);
   margin: 0;
-}
-.summary {
-  min-width: 0;
 }
 .stubHeading {
   margin: 0;
@@ -179,16 +156,6 @@
   white-space: nowrap;
   border: 0;
 }
-
-/* ---- redesign v3 (U10-23): checkout in the ruled look: the choices are rows between hairlines, the summary is a column under a vermilion rule ---- */
-.option {
-  min-height: 56px;
-  padding: var(--tb-space-2) 0;
-  border: 0;
-  border-top: 1px solid var(--tb-line);
-  border-radius: 0;
-  background: none;
-}
 .option:last-of-type {
   border-bottom: 1px solid var(--tb-line);
 }
@@ -205,11 +172,6 @@
   background: none;
   padding-left: var(--tb-space-1);
 }
-.field input[type='text']:focus-visible {
-  outline: 0;
-  border-bottom-color: var(--tb-hot);
-  box-shadow: inset 0 -2px 0 var(--tb-hot);
-}
 .gameNote {
   padding: var(--tb-space-3) 0;
   border-radius: 0;
@@ -220,6 +182,7 @@
   border-radius: var(--tb-radius-panel);
 }
 .summary {
+  min-width: 0;
   padding-top: var(--tb-space-4);
   border-top: 2px solid var(--tb-hot);
   border-bottom: 1px solid var(--tb-line);
@@ -247,13 +210,27 @@
   margin-bottom: var(--tb-space-5);
 }
 .itemTitle a {
+  color: var(--tb-text);
+  text-underline-offset: 3px;
   display: inline-flex;
   align-items: center;
   min-height: 44px;
 }
 
 /* ---- review fixes (U10-23): every row has the same left padding, so choosing one does not move it; the row shows the focus ---- */
+
+/* ---- redesign v3 (U10-23): checkout in the ruled look: the choices are rows between hairlines, the summary is a column under a vermilion rule ---- */
 .option {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-3);
+  cursor: pointer;
+  min-height: 56px;
+  padding: var(--tb-space-2) 0;
+  border: 0;
+  border-top: 1px solid var(--tb-line);
+  border-radius: 0;
+  background: none;
   padding-left: var(--tb-space-3);
 }
 .option:has(input:checked) {
@@ -263,5 +240,7 @@
   background: var(--tb-surface);
 }
 .field input[type='text']:focus-visible {
+  border-bottom-color: var(--tb-hot);
+  box-shadow: inset 0 -2px 0 var(--tb-hot);
   outline: 2px solid transparent;
 }
