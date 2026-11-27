@@ -183,31 +183,11 @@
   cursor: not-allowed;
 }
 
-.link {
-  min-height: 24px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--tb-accent);
-  font: inherit;
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
-}
-
 /* panels */
 .facts dt {
   color: var(--tb-muted);
   font-weight: 500;
   font-size: var(--tb-text-md);
-}
-
-.facts {
-  margin: 0 0 var(--tb-space-6);
-  border: 1px solid var(--tb-line);
-  border-radius: var(--tb-radius-panel);
-  padding: var(--tb-space-1) var(--tb-space-5);
 }
 
 .facts > div {
@@ -343,6 +323,8 @@
 }
 
 .facts {
+  margin: 0 0 var(--tb-space-6);
+  padding: var(--tb-space-1) var(--tb-space-5);
   border: 0;
   border-top: 1px solid var(--tb-line);
   border-radius: 0;
@@ -522,6 +504,15 @@
 /* registration: the privacy notice follows the line under the heading, so it does not draw a second rule of its own */
 /* targets of 44 px (U10-25 review): the links and the small buttons of the card reach 44 px without changing the line they stand in */
 .link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tb-accent);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
   min-height: 44px;
   display: inline-flex;
   align-items: center;
