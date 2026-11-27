@@ -87,5 +87,7 @@
   "seller.new_listing": "Sell an item",
   "seller.fig_owed": "Owed to you",
   "seller.fig_completed": "Completed deals",
-  "seller.fig_none": "None"
+  "seller.fig_none": "None",
+  "payout.field_account": "Account",
+  "payout.field_status": "Status"
 }

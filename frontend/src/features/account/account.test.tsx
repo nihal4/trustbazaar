@@ -383,7 +383,7 @@ describe('account and security', () => {
     expect(await screen.findByText('4.5 out of 5 (12)')).toBeTruthy();
     expect(screen.getByText('7')).toBeTruthy();
     expect(screen.getByText('November 2026')).toBeTruthy();
-    expect(screen.getByRole('heading', { level: 2, name: 'Rahim' })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 2, name: 'Rahim Verified' })).toBeTruthy();   // the verified badge follows the name
     expect(screen.getByText('Identity check: Verified')).toBeTruthy();
     expect(screen.getByRole('heading', { level: 2, name: 'Personal information' })).toBeTruthy();
     expect(screen.getByRole('heading', { level: 2, name: 'Verification' })).toBeTruthy();

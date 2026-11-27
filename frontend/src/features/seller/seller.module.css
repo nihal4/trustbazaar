@@ -104,3 +104,27 @@
 /* the titles that are links read alike everywhere on the page: no underline, vermilion when touched */
 .row a, .stubHeading a, .payoutRow a { text-decoration: none; }
 .row a:hover, .stubHeading a:hover, .payoutRow a:hover { color: var(--tb-hot); }
+
+/* the payout account page (U10-25): the account's facts as hairline rows with a status mark, a ruled option list, ruled buttons */
+.facts { margin: 0; }
+.facts > div { display: grid; grid-template-columns: minmax(6rem, 9rem) minmax(0, 1fr); align-items: center; column-gap: 1rem; min-height: 4rem; padding: 0.5rem 0; border-top: 1px solid var(--tb-line); }
+.facts > div:last-child { border-bottom: 1px solid var(--tb-line); }
+.facts dt { color: var(--tb-muted); font-size: 0.9375rem; font-weight: 500; }
+.facts dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.dot { display: inline-block; width: 8px; height: 8px; margin-inline-end: 0.5rem; border: 1px solid var(--tb-muted); vertical-align: middle; }
+.dotOn { border-color: var(--tb-hot); background: var(--tb-hot); }
+.back { margin: 0.5rem 0 0; }
+.ghostButton { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.5rem; border: 1px solid var(--tb-border); background: none; color: var(--tb-text); font-weight: 600; text-decoration: none; }
+.ghostButton:hover { border-color: var(--tb-hot); }
+.ghostButton:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+.primary { border-radius: var(--tb-btn-radius); }
+.choice div { min-height: 56px; }
+@media (max-width: 30rem) { .facts > div { grid-template-columns: minmax(0, 1fr); row-gap: 0.125rem; padding: 0.75rem 0; } }
+
+/* the options of the payout kind: a hairline ring, a vermilion dot when chosen (no default browser look) */
+.choice input { appearance: none; display: grid; place-content: center; border: 1px solid var(--tb-border); border-radius: 50%; background: none; cursor: pointer; }
+.choice input::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--tb-hot); transform: scale(0); transition: transform 120ms ease; }
+.choice input:checked { border-color: var(--tb-hot); }
+.choice input:checked::after { transform: scale(1); }
+.choice input:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .choice input::after { transition: none; } }

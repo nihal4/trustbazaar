@@ -80,18 +80,29 @@ export function Component() {
 
   return (
     <div className={styles.page}>
-      <h1>{t('payout.title')}</h1>
+      <div className={styles.head}>
+        <h1>{t('payout.title')}</h1>
+      </div>
+      {/* two columns divided by one line, as on the dashboard: the account that is in use on the left, the form to add or replace it on the right */}
+      <div className={styles.cols}>
+      <div className={styles.col}>
       <section aria-labelledby="current-title" className={styles.panel}>
         <h2 id="current-title">{t('payout.current')}</h2>
         {account.isPending && <p role="status">{t('shell.loading')}</p>}
         {account.isSuccess && !a && <p>{t('seller.account_none')}</p>}
         {a && (
-          <>
-            <p>{accountLine(a, t)}</p>
-            <p><strong>{accountStatus(a, t, lang)}</strong></p>
-          </>
+          <dl className={styles.facts}>
+            <div><dt>{t('payout.field_account')}</dt><dd>{accountLine(a, t)}</dd></div>
+            <div>
+              <dt>{t('payout.field_status')}</dt>
+              <dd><span className={a.status === 'active' ? `${styles.dot} ${styles.dotOn}` : styles.dot} aria-hidden="true" />{accountStatus(a, t, lang)}</dd>
+            </div>
+          </dl>
         )}
       </section>
+      <p className={styles.back}><Link to="/seller" className={styles.ghostButton}>{t('payout.to_dashboard')}</Link></p>
+      </div>
+      <div className={styles.col}>
       <form onSubmit={submit} noValidate className={`${styles.panel} ${styles.form}`} aria-labelledby="new-title">
         <h2 id="new-title">{t(a ? 'payout.replace' : 'payout.add')}</h2>
         <p className={styles.hint}>{t('payout.cooling_note')}</p>
@@ -133,7 +144,8 @@ export function Component() {
           <button type="submit" className={styles.primary} disabled={save.isPending}>{t(a ? 'payout.save_replace' : 'payout.save')}</button>
         </div>
       </form>
-      <p><Link to="/seller">{t('payout.to_dashboard')}</Link></p>
+      </div>
+      </div>
     </div>
   );
 }

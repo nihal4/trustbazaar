@@ -67,7 +67,15 @@ export function Component() {
       <section className={styles.idBand} aria-label={u.displayName}>
         <div className={styles.avatar} aria-hidden="true"><span>{initialOf(u.displayName)}</span></div>
         <div className={styles.idText}>
-          <h2>{u.displayName}</h2>
+          <h2 className={styles.nameLine}>
+            <span>{u.displayName}</span>
+            {u.kycStatus === 'verified' && (
+              <span className={styles.badge}>
+                <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square"><path d="M3 8.5 6.5 12 13 4.5" /></svg>
+                {t('kyc.status.verified')}
+              </span>
+            )}
+          </h2>
           <ul className={styles.marks}>
             <Mark on={u.kycStatus === 'verified'} text={`${t('account.kyc')}: ${t(`kyc.status.${u.kycStatus}`)}`} />
             {u.email && <Mark on={u.emailVerified} text={`${t('field.email')}: ${t(u.emailVerified ? 'account.email_verified' : 'account.email_unverified')}`} />}
