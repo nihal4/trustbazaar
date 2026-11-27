@@ -8,6 +8,6 @@ export interface Clock {
 
 export const CLOCK = Symbol('CLOCK');
 
-export const systemClock: Clock = { now: () => new Date() };
+const systemClock: Clock = { now: () => new Date() };
 
 export const clockProvider: Provider = { provide: CLOCK, useValue: systemClock };

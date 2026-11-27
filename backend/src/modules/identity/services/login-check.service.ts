@@ -26,6 +26,7 @@ const NOT_THERE = new Set(['ENOTFOUND', 'ENODATA', 'ESERVFAIL', 'NXDOMAIN']);
  */
 @Injectable()
 export class DnsDomainResolver implements DomainResolver {
+  /** Whether an e-mail domain can receive mail (it has a mail exchanger). */
   async exists(domain: string): Promise<DomainState> {
     const look = async (): Promise<DomainState> => {
       try {
@@ -50,6 +51,7 @@ export class LoginCheckService {
     @Inject(TB_CONFIG) private readonly config?: Pick<TbConfig, 'emailMode'>,
   ) {}
 
+  /** Checks what the member typed as a login: a Bangladeshi mobile number, or an e-mail address whose domain can receive mail. */
   async check(login: string): Promise<LoginCheck> {
     const a = normaliseLogin(login);
     if (!a) return { ok: false, reason: 'format' };

@@ -3,10 +3,8 @@
     "warning:@typescript-eslint/no-unused-vars": 1
   },
   "knip": {
-    "dependencies": 5,
-    "unlisted": 2,
-    "exports": 165,
-    "types": 19
+    "exports": 81,
+    "types": 8
   },
   "jscpd": {
     "clones": 7,

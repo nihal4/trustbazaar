@@ -60,6 +60,7 @@ export class SignInThrottle {
     }
   }
 
+  /** Forgets the failed sign-in count of these logins. */
   async clear(...logins: string[]): Promise<void> {
     await this.redis.del(...logins.map(signInThrottleKey)).catch(() => undefined);
   }

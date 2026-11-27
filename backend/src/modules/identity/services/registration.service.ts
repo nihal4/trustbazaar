@@ -84,6 +84,7 @@ export class RegistrationService {
     return this.config.secrets.otpPepper.reveal();
   }
 
+  /** Starts registration: checks the name, the e-mail address and the password and sends the code; the account exists only after the last step (FR-ACC-01). */
   async register(input: RegistrationInput, ctx: RequestContext): Promise<RegistrationStarted> {
     const email = input.email.trim().toLowerCase();
     const displayName = input.displayName.trim().replace(/\s+/g, ' ');

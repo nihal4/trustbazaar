@@ -77,6 +77,7 @@ export class ListingsStaffController {
     return this.review.remove(staffOf(p).staffId, id, dto.reason, ctx(req));
   }
 
+  /** The terms the listing screen looks for. */
   @Staff('operator')
   @Get('screening-terms')
   terms() {
@@ -91,6 +92,7 @@ export class ListingsStaffController {
     return this.review.addTerm(staffOf(p).staffId, dto.term, dto.severity, ctx(req));
   }
 
+  /** Removes a screening term. */
   @Staff('operator')
   @Delete('screening-terms/:id')
   @HttpCode(204)

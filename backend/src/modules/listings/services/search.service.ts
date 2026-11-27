@@ -88,6 +88,7 @@ export class SearchService {
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
   ) {}
 
+  /** Searches active listings with the filters of the query (text, category, price, condition, place), a page at a time. */
   async search(viewerId: string | undefined, q: SearchQuery) {
     const errors: { field: string; reason: string }[] = [];
     if ((q.lat === undefined) !== (q.lng === undefined)) errors.push({ field: q.lat === undefined ? 'lat' : 'lng', reason: 'lat-and-lng-together' });

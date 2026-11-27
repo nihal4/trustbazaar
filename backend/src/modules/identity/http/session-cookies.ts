@@ -5,7 +5,7 @@ import { STAFF_COOKIES, USER_COOKIES } from '../security/cookies';
 // readable by the page, which copies it into X-CSRF-Token. The refresh cookie is sent only to the refresh
 // path. No token is ever put in a URL, a response body or browser storage (SEC-SES-03).
 export const REFRESH_COOKIE = '__Secure-tb_rt';
-export const REFRESH_PATH = '/api/v1/auth/refresh';
+const REFRESH_PATH = '/api/v1/auth/refresh';
 export const MFA_COOKIE = '__Host-tb_mfa';
 export const DEVICE_COOKIE = '__Host-tb_dev';
 const YEAR_MS = 365 * 24 * 3600 * 1000;
@@ -43,7 +43,7 @@ export function setMfaCookie(res: Response, ticket: string, maxAgeMs: number): v
 // Staff cookies (I-51 a): their own names and refresh path, so a staff session and a user session in one
 // browser never overwrite each other. The MFA and enrolment tickets are short-lived, like the user MFA ticket.
 export const STAFF_REFRESH_COOKIE = '__Secure-tb_srt';
-export const STAFF_REFRESH_PATH = '/api/v1/staff/auth/refresh';
+const STAFF_REFRESH_PATH = '/api/v1/staff/auth/refresh';
 export const STAFF_MFA_COOKIE = '__Host-tb_smfa';
 export const STAFF_ENROL_COOKIE = '__Host-tb_senrol';
 

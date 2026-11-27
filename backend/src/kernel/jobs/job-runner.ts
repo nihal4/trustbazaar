@@ -31,7 +31,7 @@ export interface JobStats {
   lastError: string | null;
 }
 
-export const SPREAD = 0.1; // DV-67
+const SPREAD = 0.1; // DV-67
 const FIRST_RUN_MAX_MS = 30_000;
 
 @Injectable()

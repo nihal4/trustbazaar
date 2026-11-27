@@ -74,6 +74,7 @@ export class StripeWebhookController {
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
+  /** Stripe's webhook, verified by its signature; answers 404 outside sandbox payment mode. */
   @Credential('provider-signature')
   @Post('stripe')
   @HttpCode(200)
@@ -107,6 +108,7 @@ export class MockPayController {
     @Inject(REDIS) private readonly redis: Redis,
   ) {}
 
+  /** The mock payment provider's page for a payment attempt (development and tests): the amount and the outcomes to choose. */
   @Credential('signed-state')
   @Get(':attemptId')
   async page(@Id('attemptId') attemptId: string, @Query('state') state: string | undefined, @Res() res: Response) {
@@ -132,6 +134,7 @@ export class MockPayController {
       .send(body);
   }
 
+  /** The mock provider's decision on an attempt (succeeded or failed), then a redirect back to the shop. */
   @Credential('signed-state')
   @Post(':attemptId')
   async decide(@Id('attemptId') attemptId: string, @Query('state') state: string | undefined, @Body() dto: MockPayDto, @Res() res: Response) {

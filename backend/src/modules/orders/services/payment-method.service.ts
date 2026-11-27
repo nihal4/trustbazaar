@@ -16,11 +16,13 @@ type MethodInput = { kind: 'card' | 'bkash' | 'nagad'; brand?: string | null; la
 export class PaymentMethodService {
   constructor(private readonly db: DataSource) {}
 
+  /** The member's saved payment method, or null if there is none or it was cleared. */
   async get(userId: string): Promise<SavedMethodView | null> {
     const r = await this.db.getRepository(SavedPaymentMethod).findOneBy({ userId });
     return r && r.clearedAt === null ? { kind: r.kind, brand: r.brand, last4: r.last4 } : null;
   }
 
+  /** Saves the member's payment method: its kind and, for a card, the brand. */
   async set(userId: string, m: MethodInput): Promise<SavedMethodView> {
     if (m.kind !== 'card' && m.brand) throw new Problem('validation-failed', { errors: [{ field: 'brand', reason: 'card-only' }] });
     await this.db.query(
@@ -31,6 +33,7 @@ export class PaymentMethodService {
     return (await this.get(userId))!;
   }
 
+  /** Clears the member's saved payment method. */
   async clear(userId: string): Promise<void> {
     await this.db.query(`UPDATE payments.saved_payment_methods SET cleared_at = now(), updated_at = now() WHERE user_id = $1 AND cleared_at IS NULL`, [userId]);
   }

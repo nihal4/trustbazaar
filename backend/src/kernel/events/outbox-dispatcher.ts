@@ -12,7 +12,7 @@ import { EventBus, OutboxEvent } from './event-bus';
 // longer retried. A slow or failing consumer never blocks the publisher, which committed long before.
 // An event nobody consumes is marked dispatched at once.
 export const OUTBOXES = ['identity', 'orders', 'auctions', 'delivery', 'game_accounts', 'chat', 'disputes'] as const;
-export const POLL_MS = 5_000; // DV-67
+const POLL_MS = 5_000; // DV-67
 export const MAX_ATTEMPTS = 10; // DV-67
 const BATCH = 100;
 

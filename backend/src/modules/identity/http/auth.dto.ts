@@ -51,7 +51,7 @@ export class RegisterDto {
   password!: string;
 }
 
-export class RegistrationIdDto {
+class RegistrationIdDto {
   @IsUUID()
   registrationId!: string;
 }

@@ -90,6 +90,7 @@ export class StaffAuthController {
     }
   }
 
+  /** Ends the staff member's session and clears its cookies. */
   @Staff()
   @Post('auth/signout')
   @HttpCode(204)
@@ -125,6 +126,7 @@ export class StaffController {
     return this.approvals.openFor(s.staffId, s.role);
   }
 
+  /** A second staff member approves or rejects a proposed action (four eyes). */
   @Staff()
   @Post('approvals/:id/decision')
   @HttpCode(200)
@@ -133,6 +135,7 @@ export class StaffController {
     return this.approvals.decide(id, { staffId: s.staffId, role: s.role }, dto.decision, dto.note, ctxOf(req));
   }
 
+  /** Declares a conflict of interest between the staff member and a member, with the reason. */
   @Staff()
   @Post('conflicts')
   @HttpCode(204)
@@ -149,6 +152,7 @@ export class AdminController {
     private readonly audit: AuditService,
   ) {}
 
+  /** The staff accounts. */
   @Staff('administrator')
   @Get('staff')
   list() {
@@ -162,6 +166,7 @@ export class AdminController {
     return this.staff.create(staffOf(p).staffId, dto, ctxOf(req));
   }
 
+  /** Disables a staff account, with the reason. */
   @Staff('administrator')
   @Post('staff/:id/disable')
   @HttpCode(200)
@@ -177,6 +182,7 @@ export class AdminController {
     return this.staff.proposeMfaReset(staffOf(p).staffId, id, dto.reason, ctxOf(req));
   }
 
+  /** Searches the audit log by actor, object, action and dates, a page at a time (cursor). */
   @Staff('administrator')
   @Get('audit')
   read(@Query() q: AuditQueryDto) {

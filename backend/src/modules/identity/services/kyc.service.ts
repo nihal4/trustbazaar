@@ -20,11 +20,11 @@ import { RequestContext } from './session.service';
 //    The fields are encrypted; blind indexes and routing flags are computed (flags only route a submission
 //    for closer review, they never decide it). One transaction then records the submission and its files,
 //    moves kyc_status to pending_review, writes the history row, the audit entry and identity.kyc.submitted.
-export const CP34_WINDOW_DAYS = 30;
-export const LIVENESS_SECONDS = 10 * 60; // DV-3
-export const LIVENESS_ACTIONS = ['turn_head_left', 'turn_head_right', 'look_up', 'smile', 'blink_twice'] as const;
+const CP34_WINDOW_DAYS = 30;
+const LIVENESS_SECONDS = 10 * 60; // DV-3
+const LIVENESS_ACTIONS = ['turn_head_left', 'turn_head_right', 'look_up', 'smile', 'blink_twice'] as const;
 export type KycFileKind = 'doc_front' | 'doc_back' | 'passport_photo_page' | 'selfie_neutral' | 'selfie_action';
-export const FILES_FOR: Record<DocType, KycFileKind[]> = {
+const FILES_FOR: Record<DocType, KycFileKind[]> = {
   nid: ['doc_front', 'doc_back', 'selfie_neutral', 'selfie_action'],
   passport: ['passport_photo_page', 'selfie_neutral', 'selfie_action'],
 };
@@ -91,6 +91,7 @@ export class KycService {
     return { challengeId, action, expiresAt: new Date(this.clock.now().getTime() + LIVENESS_SECONDS * 1000).toISOString() };
   }
 
+  /** The member's KYC status and when it last changed. */
   async status(userId: string): Promise<KycStatusView> {
     const [u] = await this.db.query(`SELECT kyc_status, kyc_status_changed_at FROM identity.users WHERE id = $1`, [userId]);
     const [last] = await this.db.query(

@@ -47,6 +47,7 @@ export class EvidencePackService {
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
+  /** Builds the evidence pack of a dispute for a staff member: a download link with its expiry and the pack's checksum. */
   async create(
     staff: Extract<Principal, { type: 'staff' }>,
     disputeId: string,

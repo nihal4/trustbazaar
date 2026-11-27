@@ -9,7 +9,7 @@ import { EventBus } from '../../../kernel/events/event-bus';
 // staff.config.published arrives; a new order may use the previous version for up to a minute, which is acceptable
 // because every order keeps the version it was created with. Versions never change, so atVersion() caches
 // them for good. The emergency switches are always read from the database (switchOn).
-export const CACHE_MS = 60_000; // DV-50
+const CACHE_MS = 60_000; // DV-50
 
 @Injectable()
 export class ConfigService implements ConfigPort, OnModuleInit {
@@ -22,11 +22,13 @@ export class ConfigService implements ConfigPort, OnModuleInit {
     private readonly bus?: EventBus,
   ) {}
 
+  /** Refreshes the cache when another instance publishes a parameter set (DV-50). */
   onModuleInit(): void {
     // DV-50: every instance refreshes when any instance publishes (the outbox dispatcher, K-04).
     this.bus?.on('staff.config.published', 'trust.config-cache', async () => this.invalidate());
   }
 
+  /** The current parameter set, kept for 60 seconds (DV-50). */
   async current(): Promise<ConfigValues> {
     const now = this.clock.now().getTime();
     if (this.cached && now - this.cached.at < CACHE_MS) return this.cached.values;
@@ -36,6 +38,7 @@ export class ConfigService implements ConfigPort, OnModuleInit {
     return values;
   }
 
+  /** The parameters of one version; an order or an auction keeps the version it was created with. */
   async atVersion(version: number): Promise<ParameterValues> {
     const known = this.versions.get(version);
     if (known) return known;

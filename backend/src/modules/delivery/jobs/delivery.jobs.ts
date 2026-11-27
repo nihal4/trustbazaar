@@ -10,8 +10,8 @@ import { UpkeepService } from '../services/upkeep.service';
 // and, for the mock courier with MOCK_COURIER_AUTO_ADVANCE_SECONDS set, its automatic steps. U4-05: status
 // reconciliation (30 minutes, DV-31), proposal lapse (15 minutes), address erasure (daily, DV-30) and provider-event
 // retention (daily, CP-32).
-export const MINUTE_MS = 60_000;
-export const DAY_MS = 24 * 60 * MINUTE_MS;
+const MINUTE_MS = 60_000;
+const DAY_MS = 24 * 60 * MINUTE_MS;
 
 @Injectable()
 export class DeliveryJobs implements OnModuleInit {

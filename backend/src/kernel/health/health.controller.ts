@@ -11,11 +11,13 @@ import { HealthService } from './health.service';
 export class HealthController {
   constructor(private readonly health: HealthService) {}
 
+  /** Liveness: the process is up and answering; no dependency is checked. */
   @Get('live')
   live(): { status: 'ok' } {
     return { status: 'ok' };
   }
 
+  /** Readiness: 200 when the instance can serve, 503 when it cannot. */
   @Get('ready')
   async ready(@Res({ passthrough: true }) res: Response): Promise<{ status: 'ok' | 'unavailable' }> {
     const { ready } = await this.health.readiness();

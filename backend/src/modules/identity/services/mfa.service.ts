@@ -25,11 +25,11 @@ import { RequestContext, SessionService } from './session.service';
 //    8-character MFA rule, the same request must set a new one of at least 15 characters; the database
 //    refuses any other outcome (users: password_single_factor_ok OR mfa_enabled).
 //  - Regenerate: after step-up, ten new codes; the old ones stop working.
-export const RECOVERY_CODES = 10; // DV-7
+const RECOVERY_CODES = 10; // DV-7
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O, 1/I: easy to copy by hand
 
 /** XXXXX-XXXXX from a 32-letter alphabet: 50 random bits each. */
-export function newRecoveryCode(): string {
+function newRecoveryCode(): string {
   const c = Array.from({ length: 10 }, () => ALPHABET[randomInt(ALPHABET.length)]).join('');
   return `${c.slice(0, 5)}-${c.slice(5)}`;
 }

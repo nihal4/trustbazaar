@@ -41,6 +41,7 @@ export class ChatStaffController {
     return this.terms.list();
   }
 
+  /** Adds a term to the message screen (a word that flags a chat message), with the flag it raises. */
   @Staff('operator')
   @Post('chat/detection-terms')
   @HttpCode(201)
@@ -48,6 +49,7 @@ export class ChatStaffController {
     return this.terms.add(staffOf(p).staffId, dto.term, dto.flag);
   }
 
+  /** Removes a term from the message screen. */
   @Staff('operator')
   @Delete('chat/detection-terms')
   @HttpCode(204)

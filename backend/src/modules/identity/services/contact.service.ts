@@ -39,7 +39,7 @@ export interface Me {
   memberSince: string;
 }
 
-export const isUniqueViolation = (e: unknown) => e instanceof QueryFailedError && (e as unknown as { code?: string }).code === '23505';
+const isUniqueViolation = (e: unknown) => e instanceof QueryFailedError && (e as unknown as { code?: string }).code === '23505';
 
 @Injectable()
 export class ContactService {
@@ -95,6 +95,7 @@ export class ContactService {
     return { emailTwoStep: enabled };
   }
 
+  /** Starts changing the phone number: sends a code to the new Bangladeshi mobile number. */
   async startPhoneChange(userId: string, sessionId: string, input: string): Promise<{ resendAt: string }> {
     const phone = bangladeshiMobile(input);
     if (!phone) throw new Problem('validation-failed', { errors: [{ field: 'phone', reason: 'not-bangladeshi-mobile' }] });
@@ -110,6 +111,7 @@ export class ContactService {
     return { resendAt: new Date(this.clock.now().getTime() + RESEND_GAP_SECONDS * 1000).toISOString() };
   }
 
+  /** Verifies the code sent to the new phone number and changes the number. */
   async verifyPhoneChange(userId: string, sessionId: string, code: string, ctx: RequestContext): Promise<void> {
     await this.otp.countEntry(`user:${userId}`);
     const where = `purpose = 'contact_change_phone' AND user_id = $1 AND bound_to = $2`;
@@ -146,6 +148,7 @@ export class ContactService {
     if (old) await this.notify.sendSms(old, 'contact_changed', { kind: 'phone' });
   }
 
+  /** Starts changing the e-mail address: asks the member to confirm the new address. */
   async startEmailChange(userId: string, input: string): Promise<void> {
     const email = input.trim().toLowerCase();
     const [me] = await this.db.query(`SELECT email FROM identity.users WHERE id = $1`, [userId]);

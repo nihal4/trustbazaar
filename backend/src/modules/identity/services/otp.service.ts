@@ -14,7 +14,7 @@ import { securityEvents } from '../../../kernel/metrics/metrics';
 // database caps the attempts, so the limit holds even if Redis is lost. The newest matching challenge is
 // the only valid one: asking again replaces the code.
 export const RESEND_GAP_SECONDS = 60; // Decisions log (U1-03)
-export const VERIFY_PER_HOUR = 20; // CP-05: code entries per account (or number, before an account) per hour
+const VERIFY_PER_HOUR = 20; // CP-05: code entries per account (or number, before an account) per hour
 
 export interface CP05 {
   otpValidityMinutes: number;
@@ -23,7 +23,7 @@ export interface CP05 {
   sendsPerNumberDay: number;
 }
 
-export type OtpPurpose = 'register_phone' | 'step_up' | 'contact_change_phone' | 'password_reset';
+type OtpPurpose = 'register_phone' | 'step_up' | 'contact_change_phone' | 'password_reset';
 
 export interface ChallengeSpec {
   purpose: OtpPurpose;
@@ -48,6 +48,7 @@ export class OtpService {
     return this.config.secrets.otpPepper.reveal();
   }
 
+  /** The one-time-code limits (CP-05): attempts, and sends per hour and per day. */
   async cp05(): Promise<CP05> {
     const p = await this.params.current();
     const v = p.get<{ attempts: number; sends_per_hour: number; sends_per_day: number }>('CP-05');
@@ -133,6 +134,7 @@ export class OtpService {
     return { kind: 'ok', challengeId: ch.id };
   }
 
+  /** Marks a code challenge as used, in the caller's transaction. */
   async markUsed(m: EntityManager, challengeId: string): Promise<void> {
     await m.query(`UPDATE identity.otp_challenges SET consumed_at = $2 WHERE id = $1 AND consumed_at IS NULL`, [challengeId, this.clock.now()]);
   }

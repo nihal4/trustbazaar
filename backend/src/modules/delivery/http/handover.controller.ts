@@ -23,6 +23,7 @@ const Id = (name: string) => Param(name, new ParseUUIDPipe({ exceptionFactory: (
 export class HandoverController {
   constructor(private readonly handovers: HandoverService) {}
 
+  /** The order's meetup handover as the caller's side sees it: where and when, the proposals, and the steps left. */
   @SignedIn()
   @Get('orders/:id/handover')
   view(@Id('id') id: string, @CurrentPrincipal() p: Principal) {
@@ -37,6 +38,7 @@ export class HandoverController {
     return this.handovers.propose(userOf(p).userId, id, dto);
   }
 
+  /** Accepts a meetup proposal the other party made. */
   @SignedIn()
   @Post('orders/:id/meetup-proposals/:pid/accept')
   @HttpCode(200)
@@ -44,6 +46,7 @@ export class HandoverController {
     return this.handovers.respond(userOf(p).userId, id, pid, true);
   }
 
+  /** Declines a meetup proposal the other party made. */
   @SignedIn()
   @Post('orders/:id/meetup-proposals/:pid/decline')
   @HttpCode(200)
@@ -51,6 +54,7 @@ export class HandoverController {
     return this.handovers.respond(userOf(p).userId, id, pid, false);
   }
 
+  /** Withdraws a meetup proposal the caller made. */
   @SignedIn()
   @Post('orders/:id/meetup-proposals/:pid/withdraw')
   @HttpCode(200)

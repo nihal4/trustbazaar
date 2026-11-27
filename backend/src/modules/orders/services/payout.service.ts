@@ -66,12 +66,12 @@ export function walletE164(input: string): string | null {
 }
 
 /** FR-TNS-08 (U7-09): the blind-index context of a bank account number. */
-export const BANK_ACCOUNT_INDEX = 'payments.bank_account';
+const BANK_ACCOUNT_INDEX = 'payments.bank_account';
 /**
  * A bank account is its bank (the first three digits of the routing number) and its number: the same account entered
  * with another branch's routing number is still found.
  */
-export const bankAccountKey = (routingNumber: string, accountNumber: string): string => `${routingNumber.slice(0, 3)}|${accountNumber}`;
+const bankAccountKey = (routingNumber: string, accountNumber: string): string => `${routingNumber.slice(0, 3)}|${accountNumber}`;
 
 @Injectable()
 export class PayoutService implements OnModuleInit {
@@ -88,6 +88,7 @@ export class PayoutService implements OnModuleInit {
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
+  /** Holds a seller's payouts when their account is suspended with the fraud flag. */
   onModuleInit(): void {
     this.bus.on('identity.account.suspended', 'orders.payout-hold', (e) => this.onSuspended(e));
     // a sanction with the fraud flag (any suspension, FR-TNS-05; U7-04) holds them the same way
@@ -212,6 +213,7 @@ export class PayoutService implements OnModuleInit {
     return rows.map((a) => ({ id: a.id, userId: a.userId, createdAt: a.createdAt }));
   }
 
+  /** The bank accounts waiting for review, for an operator. */
   async pendingBankAccounts(staffId: string, ctx: CallContext = {}) {
     const rows = await this.db.getRepository(PayoutAccount).find({ where: { status: 'pending_review' }, order: { createdAt: 'ASC' }, take: 100 });
     const out: (PayoutAccountView & { userId: string; routingNumber: string | null; kycLegalName: string })[] = [];

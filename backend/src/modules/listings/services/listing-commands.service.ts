@@ -13,6 +13,7 @@ import { publish } from './outbox';
 export class ListingCommandsService implements ListingsCommands {
   constructor(private readonly db: DataSource) {}
 
+  /** A staff member approves a listing held for review, with the reason. */
   async approveForPublication(listingId: string, byStaffId: string, reason: string, tx?: EntityManager): Promise<void> {
     await this.within(tx, async (m) => {
       const l = await this.held(m, listingId);
@@ -31,6 +32,7 @@ export class ListingCommandsService implements ListingsCommands {
     });
   }
 
+  /** A staff member sends a held listing back to draft, with the reason; false if it was not held. */
   async returnToDraft(listingId: string, byStaffId: string, reason: string, tx?: EntityManager): Promise<boolean> {
     return this.within(tx, async (m) => {
       if (!(await this.held(m, listingId))) return false;
@@ -40,6 +42,7 @@ export class ListingCommandsService implements ListingsCommands {
     });
   }
 
+  /** A staff member removes a listing, with the reason. */
   async remove(listingId: string, byStaffId: string, reason: string, tx?: EntityManager): Promise<void> {
     await this.within(tx, async (m) => {
       const [l] = (await m.query(`SELECT seller_id, item_kind, sale_format, status FROM listings.listings WHERE id = $1 FOR UPDATE`, [listingId])) as {

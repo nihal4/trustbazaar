@@ -44,6 +44,7 @@ export class SecondChanceService implements OnModuleInit {
     @Inject(AUCTION_BLOCKS) private readonly blocks: BlockPort,
   ) {}
 
+  /** Subscribes to an unpaid auction order expiring, which starts the second-chance offers. */
   onModuleInit(): void {
     this.bus.on('orders.order.payment_expired', 'auctions.second_chance', (e) => this.onPaymentExpired(e));
   }

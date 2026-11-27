@@ -15,8 +15,8 @@ import { RefundService } from '../services/refund.service';
 // deadline, so several instances can run a job at once and a missed run is caught up without acting twice.
 // The monetization job (payments.monetization, every 5 minutes) is MonetizationService's (U2-06); the outbox is
 // the kernel's (K-04).
-export const MINUTE_MS = 60_000;
-export const HOUR_MS = 3_600_000;
+const MINUTE_MS = 60_000;
+const HOUR_MS = 3_600_000;
 export const DV_15_MS = 2 * MINUTE_MS; // in-flight attempt age before reconciliation queries it
 const BATCH = 200;
 

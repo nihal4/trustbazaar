@@ -129,6 +129,14 @@ describe('configuration', () => {
     expect(problems({ ...dev(), PORT: '9000', METRICS_PORT: '9000' })).toEqual(bad);
   });
 
+  it('NFR-MNT-02 the database pool has room for a burst of transactions, and a request waits only so long for a connection (U11-11)', () => {
+    expect([loadConfig(dev()).dbPoolMax, loadConfig(dev()).dbConnectTimeoutMs]).toEqual([20, 20_000]);
+    expect(loadConfig({ ...dev(), DB_POOL_MAX: '50', DB_CONNECT_TIMEOUT_MS: '0' })).toMatchObject({ dbPoolMax: 50, dbConnectTimeoutMs: 0 });
+    for (const bad of ['0', '201', 'x', '1.5']) expect(problems({ ...dev(), DB_POOL_MAX: bad })).toEqual(['DB_POOL_MAX: a whole number from 1 to 200']);
+    for (const bad of ['-1', '600001', 'x'])
+      expect(problems({ ...dev(), DB_CONNECT_TIMEOUT_MS: bad })).toEqual(['DB_CONNECT_TIMEOUT_MS: whole milliseconds from 0 to 600000']);
+  });
+
   it('SEC-DAT-01 the public origin is https in production', () => {
     expect(problems({ ...prod(), PUBLIC_ORIGIN: 'http://trustbazaar.example' })).toEqual(['PUBLIC_ORIGIN: must be https in production']);
   });

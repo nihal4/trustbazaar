@@ -55,6 +55,7 @@ export class StaffAuthService {
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
+  /** A staff member's first step, the e-mail address and the password; the second step is the authenticator code. */
   async signIn(emailInput: string, password: string, ctx: RequestContext): Promise<StaffSignInResult> {
     const email = emailInput.trim().toLowerCase();
     const login = `staff:${email}`;
@@ -166,6 +167,7 @@ export class StaffAuthService {
     return this.startSession(staffId, 'enrolment', ctx, true);
   }
 
+  /** The signed-in staff member's account and their session. */
   async me(staffId: string, sessionId?: string): Promise<StaffMe> {
     const [s] = await this.db.query(`SELECT id, email, display_name, role FROM identity.staff_accounts WHERE id = $1`, [staffId]);
     const [ses] = sessionId

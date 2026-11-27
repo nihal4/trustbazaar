@@ -17,12 +17,14 @@ const Id = (name: string) => Param(name, new ParseUUIDPipe({ exceptionFactory: (
 export class DeliveryStaffController {
   constructor(private readonly records: RecordsService) {}
 
+  /** The open delivery issues, a page at a time (cursor). */
   @Staff('operator')
   @Get('delivery/issues')
   issues(@Query() q: IssuesQuery) {
     return this.records.openIssues(q.cursor);
   }
 
+  /** Resolves a delivery issue, with the reason. */
   @Staff('operator')
   @Post('delivery/issues/:id/resolve')
   @HttpCode(204)

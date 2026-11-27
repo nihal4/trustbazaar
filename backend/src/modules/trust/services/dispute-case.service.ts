@@ -115,6 +115,7 @@ export class DisputeCaseService implements OnModuleInit {
     private readonly sanctions: SanctionService,
   ) {}
 
+  /** Registers the handler that runs a dispute decision when a second operator approves it (CP-30). */
   onModuleInit(): void {
     // CP-30: the second operator's approval runs the proposed decision, in the approval's transaction
     this.approvals.registerHandler('dispute.outcome_20000', (a, tx) => this.decideApproved(a, tx));

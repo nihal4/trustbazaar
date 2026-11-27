@@ -25,8 +25,8 @@ import { securityEvents } from '../../../kernel/metrics/metrics';
 // Only the claimant sees the details (each decryption audited) and opens images, through signed links
 // that need a reason. Approve inserts the identity claim, whose primary key makes "one identity, one
 // account" a database guarantee. Revocation and blacklisting are four-eyes actions with handlers here.
-export const CLAIM_MINUTES = 30; // DV-6
-export const REJECTION_REASONS = [
+const CLAIM_MINUTES = 30; // DV-6
+const REJECTION_REASONS = [
   'image_unreadable',
   'selfie_mismatch',
   'liveness_failed',
@@ -38,7 +38,6 @@ export const REJECTION_REASONS = [
   'other',
 ] as const;
 export type RejectionReason = (typeof REJECTION_REASONS)[number];
-export const BLACKLIST_SOURCES = ['game_account_recovery', 'fraud_decision'] as const;
 
 export interface QueueItem {
   id: string;
@@ -70,6 +69,7 @@ export class KycReviewService implements OnModuleInit {
     @Inject(CONFIG_PORT) private readonly params: ConfigPort,
   ) {}
 
+  /** Registers the four-eyes handlers for revoking a KYC approval and for the blacklist changes. */
   onModuleInit(): void {
     this.approvals.registerHandler('kyc.revoke', (a, m, ctx) => this.revokeIn(m, a, ctx));
     this.approvals.registerHandler('blacklist.add', (a, m, ctx) => this.blacklistIn(m, a, ctx));
@@ -304,6 +304,7 @@ export class KycReviewService implements OnModuleInit {
     );
   }
 
+  /** Proposes removing a blacklist entry; a second staff member has to approve it (four eyes). */
   async proposeUnblacklist(staffId: string, entryId: string, reason: string, ctx: RequestContext) {
     const [e] = await this.db.query(`SELECT 1 FROM identity.nid_blacklist WHERE id = $1 AND removed_at IS NULL`, [entryId]);
     if (!e) throw new Problem('not-found');

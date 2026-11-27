@@ -4,7 +4,7 @@
 import { createHmac } from 'crypto';
 
 /** Spaces and dashes are dropped, letters are upper case: "35-209900 176148 1" and "352099001761481" are the same number. */
-export const normaliseDeviceId = (value: string): string => value.replace(/[\s-]/g, '').toUpperCase();
+const normaliseDeviceId = (value: string): string => value.replace(/[\s-]/g, '').toUpperCase();
 
 /** A usable identifier: 6 to 30 letters and digits once normalised. */
 export const isDeviceId = (value: string): boolean => /^[A-Z0-9]{6,30}$/.test(normaliseDeviceId(value));

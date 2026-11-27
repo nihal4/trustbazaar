@@ -11,7 +11,7 @@ import { publish } from './outbox';
 // an operator has reviewed is not raised again. The design gives no thresholds; these are the team's starting values
 // (Decisions log, U3-06), kept together here so they can become parameters. The linked-to-seller check (FR-TNS-08;
 // U7-09) asks Unit 1 (a shared browser) and Unit 2 (a shared payout wallet or bank account).
-export const SHILL = {
+const SHILL = {
   /** open auctions are scanned from this many bids */
   minBids: 10,
   /** and closed ones for this long after closing */

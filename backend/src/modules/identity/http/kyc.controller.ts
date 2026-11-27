@@ -92,12 +92,14 @@ export class KycController {
 export class StaffKycController {
   constructor(private readonly review: KycReviewService) {}
 
+  /** The KYC submissions waiting for review. */
   @Staff('operator')
   @Get('kyc/queue')
   queue() {
     return this.review.queue();
   }
 
+  /** Claims a submission for review, so two reviewers do not work on the same one. */
   @Staff('operator')
   @Post('kyc/submissions/:id/claim')
   @HttpCode(200)
@@ -105,6 +107,7 @@ export class StaffKycController {
     return this.review.claim(staffOf(p).staffId, id, ctxOf(req));
   }
 
+  /** A submission in detail, with links to its files. */
   @Staff('operator')
   @Get('kyc/submissions/:id')
   details(@Param('id', ParseUUIDPipe) id: string, @CurrentPrincipal() p: Principal, @Req() req: Request) {
@@ -145,6 +148,7 @@ export class StaffKycController {
     return this.review.proposeBlacklist(staffOf(p).staffId, dto.userId, dto.source, dto.relatedOrderId ?? null, dto.reason, ctxOf(req));
   }
 
+  /** Proposes removing a person from the identity blacklist; a second staff member has to approve it (four eyes). */
   @Staff('operator')
   @Post('blacklist/:id/remove')
   @HttpCode(202)
@@ -158,6 +162,7 @@ export class StaffKycController {
 export class FilesController {
   constructor(private readonly review: KycReviewService) {}
 
+  /** Serves a private file to the holder of a signed link (a reviewer's file link). */
   @Credential('signed-link')
   @RateLimit('files')
   @Get('v/:token')

@@ -16,7 +16,7 @@ import { REDIS } from '../../../kernel/redis.provider';
 
 export type HumanScope = 'register' | 'signin' | 'otp-send';
 export const POW_DIFFICULTY = 16;
-export const POW_LIFETIME_SECONDS = 300;
+const POW_LIFETIME_SECONDS = 300;
 export const HUMAN_PROOF_HEADER = 'x-human-proof';
 
 export interface PowChallenge {

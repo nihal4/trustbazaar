@@ -9,7 +9,7 @@ import { AUDIT_SERVICE, AuditServicePort } from '../../identity/ports';
 // deleted, because proposals refer to it. Suggestions come from delivery.suggest_points, which snaps both parties'
 // locations to a 0.02 degree grid before taking the midpoint (DV-27), and the API returns only the points.
 
-export type PointKind = 'police_station' | 'shopping_mall' | 'bank_branch' | 'other_public';
+type PointKind = 'police_station' | 'shopping_mall' | 'bank_branch' | 'other_public';
 export interface PointInput {
   kind: PointKind;
   nameEn: string;
@@ -35,8 +35,8 @@ export interface PointView {
 }
 
 /** DV-27 */
-export const SUGGESTIONS = 3;
-export const GRID_DEGREES = 0.02;
+const SUGGESTIONS = 3;
+const GRID_DEGREES = 0.02;
 
 interface Row {
   id: string;
@@ -93,6 +93,7 @@ export class MeetupPointsService {
     return rows.map(pointView);
   }
 
+  /** One meetup point by id, or null. */
   async get(id: string): Promise<PointView | null> {
     const [r] = (await this.db.query(`SELECT ${COLUMNS} FROM delivery.meetup_points WHERE id = $1`, [id])) as Row[];
     return r ? pointView(r) : null;

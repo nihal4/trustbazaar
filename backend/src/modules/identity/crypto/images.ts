@@ -9,7 +9,7 @@ const sharp = require('sharp') as typeof import('sharp').default;
 // location included: sharp writes none unless asked), resized to at most 2000 px on the long side and
 // re-encoded as JPEG. Re-encoding also destroys most payloads hidden in image files.
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // CP-33
-export const MAX_LONG_SIDE = 2000; // DV-9
+const MAX_LONG_SIDE = 2000; // DV-9
 const MAX_INPUT_PIXELS = 50_000_000; // a decompression bomb is refused before it is decoded
 
 export type ImageMime = 'image/jpeg' | 'image/png' | 'image/webp';

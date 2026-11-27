@@ -42,6 +42,7 @@ export class ListingReviewService implements OnModuleInit {
     private readonly listings?: ListingService,
   ) {}
 
+  /** Re-screens a seller's listings when something changes that decides their visibility (a subscription to those events). */
   onModuleInit(): void {
     for (const type of VISIBILITY_EVENTS) this.bus.on(type, 'listings.visibility', (e) => this.onSellerChanged(e).then(() => undefined));
   }

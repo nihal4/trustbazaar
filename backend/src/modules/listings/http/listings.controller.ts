@@ -66,6 +66,7 @@ export class ListingsController {
     return this.listings.addPhoto(userOf(p), id, file?.buffer, dto.showsDefects === 'true');
   }
 
+  /** Removes one photo from the seller's listing. */
   @SignedIn()
   @Delete(':id/photos/:pid')
   @HttpCode(204)
@@ -115,6 +116,7 @@ export class MyListingsController {
     return this.listings.sellingTerms(userOf(p));
   }
 
+  /** The seller's own listings, optionally by status, a page at a time (cursor). */
   @Verified()
   @Get('listings')
   mine(@Query() q: MyListingsQuery, @CurrentPrincipal() p: Principal) {
@@ -127,6 +129,7 @@ export class MyListingsController {
 export class ListingPhotosController {
   constructor(private readonly listings: ListingService) {}
 
+  /** A listing photo by its random storage key, full size or the thumbnail (?size=thumb); the key is never a path. */
   @Public()
   @Get(':key')
   async photo(@Param('key') key: string, @Query() q: PhotoQuery, @Res() res: Response): Promise<void> {

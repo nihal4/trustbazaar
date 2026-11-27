@@ -25,7 +25,7 @@ import { TrustDataExport } from './data-export';
 //    the 7-day rule still sees it.
 // KYC images are never included; the export says they can be asked for from the operator.
 
-export const EXPORT_VALID_DAYS = 7; // DV-49
+const EXPORT_VALID_DAYS = 7; // DV-49
 const DAY_MS = 86_400_000;
 const ERASED = 'erased';
 
@@ -63,6 +63,7 @@ export class DataExportService implements OnModuleInit {
     this.sources = [identity, orders, listings, delivery, game, chat, trust];
   }
 
+  /** Registers the data-export jobs: building the exports that are due, and expiring old ones. */
   onModuleInit(): void {
     this.jobs.register({ name: 'trust.data-export.build', intervalMs: 5 * 60_000, run: () => this.buildDue() });
     this.jobs.register({ name: 'trust.data-export.expire', intervalMs: DAY_MS, run: () => this.expireDue() });

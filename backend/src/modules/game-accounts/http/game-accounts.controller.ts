@@ -106,6 +106,7 @@ export class GameAccountsController {
     return this.ownership.games();
   }
 
+  /** Adds a game to the catalogue. */
   @Staff('administrator')
   @Post('admin/games')
   @HttpCode(201)
@@ -113,6 +114,7 @@ export class GameAccountsController {
     return this.ownership.addGame(staffOf(p), dto, ctx(req));
   }
 
+  /** Changes a game in the catalogue. */
   @Staff('administrator')
   @Patch('admin/games/:id')
   updateGame(
@@ -158,6 +160,7 @@ export class GameAccountsController {
 
   // ------------------------------------------------------------------ staff: the ownership review (FR-GAM-03, FR-OPS-01)
 
+  /** The ownership proofs waiting for review. */
   @Staff('operator')
   @Get('staff/game/ownership-proofs')
   proofs() {

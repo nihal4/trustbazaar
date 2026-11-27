@@ -6,10 +6,10 @@ import { ShillDetector } from '../services/shill-detector.service';
 
 // Unit 3's scheduled jobs (docs/design/09_integration.pdf section 5, "a few seconds"; NFR-REL-03; U3-05). Each
 // claims its rows with SKIP LOCKED and re-checks them under the lock, so every instance may run them at once.
-export const CLOSE_INTERVAL_MS = 2_000;
-export const OFFER_INTERVAL_MS = 10_000;
+const CLOSE_INTERVAL_MS = 2_000;
+const OFFER_INTERVAL_MS = 10_000;
 /** FR-AUC-18: "every few minutes" (section 5.8). */
-export const SHILL_INTERVAL_MS = 5 * 60_000;
+const SHILL_INTERVAL_MS = 5 * 60_000;
 
 @Injectable()
 export class AuctionsJobs implements OnModuleInit {

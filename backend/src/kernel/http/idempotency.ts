@@ -10,7 +10,7 @@ import { Problem } from './problems';
 // while the first is still running is refused with request-in-progress; a failed request frees the key.
 // If Redis cannot be reached the request goes ahead without the key: a duplicate draft is harmless and
 // can be discarded (an order holds its units only for the checkout hold), and Redis holds only reconstructible data (NFR-REL-01).
-export const KEY_FORMAT = /^[A-Za-z0-9_-]{8,100}$/;
+const KEY_FORMAT = /^[A-Za-z0-9_-]{8,100}$/;
 const TTL_SECONDS = 24 * 60 * 60;
 const PENDING = 'pending';
 

@@ -48,7 +48,7 @@ export interface Keyring {
   key(version: number): Secret | undefined;
 }
 
-export type Environment = 'development' | 'test' | 'production';
+type Environment = 'development' | 'test' | 'production';
 export type LogLevel = 'error' | 'warn' | 'info' | 'debug';
 
 export interface TbConfig {
@@ -63,6 +63,10 @@ export interface TbConfig {
   /** The protected-file volumes, one folder per purpose (Unit 9 Compose: /srv/files/kyc, ...). */
   readonly filesRoot: string;
   readonly databaseUrl: Secret;
+  /** DB_POOL_MAX (default 20): the most database connections this process holds; a transaction holds one for its whole length, so a burst of simultaneous transactions can use them all (U11-11). */
+  readonly dbPoolMax: number;
+  /** DB_CONNECT_TIMEOUT_MS (default 20000): how long a request waits for a free connection before it fails with an error instead of waiting for ever; 0 = for ever. */
+  readonly dbConnectTimeoutMs: number;
   readonly redisUrl: Secret;
   readonly paymentMode: 'mock' | 'sandbox';
   readonly courierMode: 'mock' | 'sandbox';
@@ -85,14 +89,14 @@ export const SECRETS = {
   callbackStateKey: 'CALLBACK_STATE_KEY',
   handoverKey: 'HANDOVER_KEY',
 } as const;
-export type SecretName = keyof typeof SECRETS;
+type SecretName = keyof typeof SECRETS;
 
 // Unit 1: versioned keys, rotated as Unit 1 section 7 describes.
 export const KEYRINGS = { jwt: 'JWT_KEY', field: 'FIELD_KEY', kycKek: 'KYC_KEK' } as const;
-export type KeyringName = keyof typeof KEYRINGS;
+type KeyringName = keyof typeof KEYRINGS;
 
 // Issued by the providers; their length is theirs. Which ones a mode needs is checked by the units' adapters.
-export const PROVIDERS = {
+const PROVIDERS = {
   stripeSecretKey: 'STRIPE_SECRET_KEY',
   stripeWebhookSecret: 'STRIPE_WEBHOOK_SECRET',
   bkashAppKey: 'BKASH_APP_KEY',
@@ -109,7 +113,7 @@ export const PROVIDERS = {
   twilioAuthToken: 'TWILIO_AUTH_TOKEN',
   twilioFrom: 'TWILIO_FROM',
 } as const;
-export type ProviderName = keyof typeof PROVIDERS;
+type ProviderName = keyof typeof PROVIDERS;
 
 export class ConfigError extends Error {
   constructor(readonly problems: string[]) {
@@ -263,6 +267,12 @@ export function loadConfig(env: Env): TbConfig {
     problems.push('STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET: required when PAYMENT_MODE is sandbox');
   }
 
+  const poolText = get('DB_POOL_MAX') ?? '20';
+  const dbPoolMax = Number(poolText);
+  if (!/^\d+$/.test(poolText) || dbPoolMax < 1 || dbPoolMax > 200) problems.push('DB_POOL_MAX: a whole number from 1 to 200');
+  const connectText = get('DB_CONNECT_TIMEOUT_MS') ?? '20000';
+  const dbConnectTimeoutMs = Number(connectText);
+  if (!/^\d+$/.test(connectText) || dbConnectTimeoutMs > 600_000) problems.push('DB_CONNECT_TIMEOUT_MS: whole milliseconds from 0 to 600000');
   const databaseUrl = secretUrl('DATABASE_URL');
   const redisUrl = secretUrl('REDIS_URL');
 
@@ -276,6 +286,8 @@ export function loadConfig(env: Env): TbConfig {
     legal,
     filesRoot,
     databaseUrl,
+    dbPoolMax,
+    dbConnectTimeoutMs,
     redisUrl,
     metricsPort,
     paymentMode,

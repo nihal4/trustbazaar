@@ -11,7 +11,7 @@ import { REPORT_COMMANDS, ReportCategory, ReportCommands, ReportTarget } from '.
 // unit finds it on first use; until it exists the answer is feature-off (Decisions log, U6-03), as checkout did
 // before its later ports (U2-02).
 
-export const MAX_REPORT_TEXT = 2000;
+const MAX_REPORT_TEXT = 2000;
 
 @Injectable()
 export class ReportService {
