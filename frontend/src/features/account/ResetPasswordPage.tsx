@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useViewport } from '../../shared/gridCell';
 import { useAccountT } from './common';
-import { bodyFor, headFor, rowsFor, StepNote } from './AuthParts';
+import { authRows, headFor, StepNote } from './AuthParts';
 import { AuthSplit } from './AuthSplit';
 import { useLinkToken } from './linkToken';
 import { NewPasswordForm, ResetDone } from './NewPassword';
@@ -13,8 +13,7 @@ export function Component() {
   const { t, lang } = useAccountT();
   const { vw } = useViewport();
   const head = headFor(vw, lang === 'bn');
-  // the tallest step: the SMS code, the new password with its hint and the authenticator code, and a message under them (two cells more than registration's)
-  const rows = rowsFor(vw, lang === 'bn', bodyFor(vw) + 2);
+  const rows = authRows(vw, lang === 'bn');
   const token = useLinkToken();
   const [invalid, setInvalid] = useState(token === null);
   const [done, setDone] = useState(false);

@@ -1,7 +1,7 @@
 // The page of the e-mail verification link (`/verify-email#token=...`; FR-ACC-02, FR-ACC-09; Decisions log, U1-03), on the ruled card (U10-25). The token is
 // sent once, even when React runs effects twice in development.
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useApi } from '../../shared/api';
 import { SubmitButton } from '../../shared/form';
@@ -9,7 +9,7 @@ import { useViewport } from '../../shared/gridCell';
 import { ME_KEY } from '../../shared/me';
 import { problemName } from '../../shared/problems';
 import { otherError, useAccountT } from './common';
-import { headFor, rowsFor, StepNote } from './AuthParts';
+import { authRows, headFor, StepNote } from './AuthParts';
 import { AuthSplit } from './AuthSplit';
 import { useLinkToken } from './linkToken';
 import styles from './account.module.css';
@@ -34,10 +34,10 @@ export function Component() {
         ? 'invalid' : { error: otherError(err, t, lang) }));
   }, [token, api, queryClient, t, lang]);
 
-  // a card of its own size: the heading and the message (and the one button), no foot
-  const rows = rowsFor(vw, lang === 'bn', 6, 0);
+  const rows = authRows(vw, lang === 'bn');
   return (
-    <AuthSplit stepKey="verify" rows={rows} headCells={head} head={<h1 id="verify-head">{t('verify_email.title')}</h1>}>
+    <AuthSplit stepKey="verify" rows={rows} headCells={head} head={<h1 id="verify-head">{t('verify_email.title')}</h1>}
+      foot={<div className={styles.footLinks}><Link to="/signin" className={styles.link}>{t('signin.link')}</Link></div>}>
       {state === 'done'
         ? (
           <form onSubmit={(e) => { e.preventDefault(); navigate('/account'); }} noValidate className={styles.stepForm}>

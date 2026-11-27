@@ -27,6 +27,10 @@ export const headFor = (vw: number, bangla: boolean) => (vw < 360 ? (bangla ? 8 
 export const bodyFor = (vw: number) => (vw < 360 ? 14 : vw < 520 ? 13 : 11);
 export const rowsFor = (vw: number, bangla: boolean, body = bodyFor(vw), foot = 2) => headFor(vw, bangla) + body + foot;
 
+/** THE card of every bare page (sign-in, registration, reset, verify): one size in every step of every page, sized for the tallest step of any of them (the
+ *  reset by SMS with the second factor and a message), so the card never changes shape between steps or between pages. */
+export const authRows = (vw: number, bangla: boolean) => rowsFor(vw, bangla, bodyFor(vw) + 2);
+
 /** The form band of a step that has no field: a message, then (maybe) the one button. */
 export function StepNote({ children }: { children: ReactNode }) {
   return <div className={styles.stepNote}>{children}</div>;

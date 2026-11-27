@@ -7,7 +7,7 @@ import { untilAfter, useSecondsLeft } from '../../shared/countdown';
 import { SubmitButton, TextField } from '../../shared/form';
 import { useViewport } from '../../shared/gridCell';
 import { digits, otherError, retryAfter, useAccountT } from './common';
-import { bodyFor, fieldAria, headFor, rowsFor, Slot, StepNote } from './AuthParts';
+import { authRows, fieldAria, headFor, Slot, StepNote } from './AuthParts';
 import { AuthSplit } from './AuthSplit';
 import { bangladeshiMobile, loginKind, normaliseLogin } from './input';
 import { NewPasswordForm, ResetDone } from './NewPassword';
@@ -17,8 +17,7 @@ export function Component() {
   const { t, lang } = useAccountT();
   const { vw } = useViewport();
   const head = headFor(vw, lang === 'bn');
-  // the tallest step: the SMS code, the new password with its hint and the authenticator code, and a message under them (two cells more than registration's)
-  const rows = rowsFor(vw, lang === 'bn', bodyFor(vw) + 2);
+  const rows = authRows(vw, lang === 'bn');
   const api = useApi();
   const [login, setLogin] = useState('');
   const [sentTo, setSentTo] = useState<{ kind: 'phone' | 'email'; phone: string | null } | null>(null);

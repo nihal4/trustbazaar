@@ -13,7 +13,7 @@ import { toAsciiDigits } from '../../lib/money.js';
 import { digits, otherError, passwordReasonText, rejectedPasswordReason, retryAfter, useAccountT } from './common';
 import { bangladeshiMobile, isSixDigits, looksLikeEmail, passwordLengthProblem, PASSWORD } from './input';
 import { LEGAL_VERSIONS } from './legal';
-import { fieldAria, headFor, rowsFor, Slot } from './AuthParts';
+import { authRows, fieldAria, headFor, Slot } from './AuthParts';
 import { AuthSplit } from './AuthSplit';
 import { LegalDialog } from './LegalDocs';
 import styles from './account.module.css';
@@ -26,7 +26,7 @@ export function Component() {
   const { t, lang } = useAccountT();
   const { vw } = useViewport();
   const head = headFor(vw, lang === 'bn');
-  const rows = rowsFor(vw, lang === 'bn');
+  const rows = authRows(vw, lang === 'bn');
   const api = useApi();
   const navigate = useNavigate();
   const location = useLocation();

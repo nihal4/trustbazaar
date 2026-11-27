@@ -12,13 +12,13 @@ import { digits, otherError, retryAfter, useAccountT, useAfterSignIn } from './c
 import { useViewport } from '../../shared/gridCell';
 import { loginProblem, normaliseLogin } from './input';
 import { AuthSplit } from './AuthSplit';
-import { fieldAria, Slot } from './AuthParts';
+import { authRows, fieldAria, headFor, Slot } from './AuthParts';
 import styles from './account.module.css';
 
 export function Component() {
   const { t, lang } = useAccountT();
   const { vw } = useViewport();
-  const rows = rowsFor(vw, lang === 'bn');
+  const rows = authRows(vw, lang === 'bn');
   const head = headFor(vw, lang === 'bn');
   const api = useApi();
   const afterSignIn = useAfterSignIn();
@@ -237,7 +237,3 @@ export function Component() {
   );
 }
 
-/** One height for the card in every step of sign-in (cells): set from the tallest step, so the card never grows or shrinks and no step has a void; a narrow
- *  screen wraps more lines and needs more. */
-const headFor = (vw: number, bangla: boolean) => (vw < 360 ? (bangla ? 8 : 7) : vw < 520 ? (bangla ? 7 : 6) : 5);
-const rowsFor = (vw: number, bangla: boolean) => headFor(vw, bangla) + 8 + 2;                 // the heading band, the form band's eight cells, the foot's two
