@@ -375,11 +375,7 @@
 }
 
 .day {
-  align-self: center;
   margin: var(--tb-space-3) 0 var(--tb-space-2);
-}
-
-.day {
   display: flex;
   align-items: center;
   align-self: stretch;
