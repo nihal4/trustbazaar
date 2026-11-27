@@ -13,6 +13,7 @@ import { useApi, type Api } from '../../shared/api';
 import { ConfirmDialog } from '../../shared/ConfirmDialog';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
+import { Tick } from '../../shared/icons';
 import { useT } from '../../shared/language/Language';
 import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
@@ -205,7 +206,7 @@ function Conversation({ id, t, lang }: { id: string; t: T; lang: Lang }) {
   return (
     <div className={styles.page}>
       <p><Link to="/messages">{t('thread.back')}</Link></p>
-      <h1>{t('thread.with', { name })}{s?.other?.verified && <span className={styles.badge}>{t('chat.verified')}</span>}</h1>
+      <h1>{t('thread.with', { name })}{s?.other?.verified && <span className={styles.tick} title={t('chat.verified')}><Tick /><span className={styles.visuallyHidden}>{t('chat.verified')}</span></span>}</h1>
       {s && (
         <p className={styles.about}>
           {s.listing.title

@@ -3,14 +3,21 @@
    pixels; warnings in words, not colour alone. The list sits under the account tabs; conversations are rows on mist,
    unread ones white with a plum edge; my messages are plum-tinted bubbles on the right, theirs on mist on the left. */
 .page {
-  max-width: 44rem;
+  max-width: 64rem;
 }
 
+/* U10-25 (redesign v3): the same line grid as the profile and the notices: a vermilion rule over the title, hairline rows, no boxes */
 .page h1 {
-  margin: 0 0 1rem;
-  font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 1.5rem 0 1.25rem;
+  border-top: 2px solid var(--tb-hot);
+  font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.125rem);
   line-height: 1.1;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.03em;
   font-weight: 600;
   overflow-wrap: anywhere;
 }
@@ -18,70 +25,113 @@
 :lang(bn) .page h1 {
   letter-spacing: 0;
   line-height: 1.35;
-  font-weight: 600;
 }
 
 .threads,
 .messages {
   list-style: none;
   padding: 0;
-  margin: 1rem 0 1.25rem;
+  margin: 0 0 1.25rem;
 }
 
 .threads {
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
+  border-top: 1px solid var(--tb-line);
 }
 
 .threads li {
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-surface);
+  border-bottom: 1px solid var(--tb-line);
 }
 
 .unreadThread {
-  background: var(--tb-bg) !important;
-  border: 1.5px solid var(--tb-line);
-  border-left: 4px solid var(--tb-accent);
+  box-shadow: inset 2px 0 0 var(--tb-hot);
 }
 
 .threadLink {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  min-height: 44px;
-  padding: 0.875rem 1.125rem;
-  border-radius: var(--tb-radius-panel);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  min-height: 80px;
+  padding: 1rem 0 1rem 1rem;
   color: var(--tb-text);
   text-decoration: none;
   overflow-wrap: anywhere;
 }
 
 .threadLink:hover .name {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  color: var(--tb-hot);
 }
 
 .threadLink:focus-visible {
-  outline: 3px solid var(--tb-focus);
-  outline-offset: -3px;
+  outline: 2px solid var(--tb-hot);
+  outline-offset: -2px;
+}
+
+/* the photo place: a square with the grid drawn in it and the other party's initial (there is no photo upload) */
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid var(--tb-border);
+  background-image:
+    linear-gradient(to right, var(--tb-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--tb-line) 1px, transparent 1px);
+  background-size: 16px 16px;
+  color: var(--tb-hot);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.threadMain {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
 }
 
 .name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   font-weight: 600;
 }
 
-.badge {
-  display: inline-block;
-  margin-left: 0.5rem;
-  padding: 1px 10px;
-  border-radius: var(--tb-radius-control);
-  background: var(--tb-accent-soft);
-  color: var(--tb-accent-strong);
-  font-size: 0.8125rem;
+/* the project's verified mark, as on the listing and order pages */
+.tick {
+  display: inline-flex;
+  color: var(--tb-protect);
+}
+
+.tick svg {
+  width: 20px;
+  height: 20px;
+}
+
+.threadSide {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  text-align: end;
+}
+
+.when {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.whenDate {
+  font-size: 0.9375rem;
   font-weight: 600;
-  letter-spacing: 0;
-  vertical-align: middle;
+}
+
+.whenTime {
+  color: var(--tb-muted);
+  font-size: 0.875rem;
 }
 
 .about,
@@ -99,7 +149,28 @@
 
 .unread {
   font-weight: 600;
-  color: var(--tb-accent);
+  color: var(--tb-hot);
+  font-size: 0.9375rem;
+}
+
+@media (max-width: 30rem) {
+  .threadLink {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .threadSide {
+    grid-column: 2;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 0.75rem;
+    text-align: start;
+  }
+
+  .when {
+    flex-direction: row;
+    gap: 0 0.5rem;
+  }
 }
 
 .message {
@@ -282,13 +353,17 @@
 .secondary {
   min-height: 44px;
   padding: 0 1.25rem;
-  border: 1.5px solid var(--tb-border);
-  border-radius: var(--tb-radius-pill);
-  background: var(--tb-bg);
+  border: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: none;
   color: var(--tb-text);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+}
+
+.secondary:hover:not(:disabled) {
+  border-color: var(--tb-hot);
 }
 
 .secondary:disabled {
