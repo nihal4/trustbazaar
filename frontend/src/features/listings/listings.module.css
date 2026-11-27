@@ -126,14 +126,6 @@
   margin: 0;
   font-weight: 600;
 }
-.timeLeft {
-  margin: 0;
-  color: var(--tb-muted);
-  font-size: var(--tb-text-sm);
-}
-.timeLeft .urgent {
-  color: var(--tb-error);
-}
 .facts p {
   margin: var(--tb-space-1) 0;
 }
@@ -201,7 +193,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.primary,
 .primaryLink {
   display: inline-flex;
   align-items: center;
@@ -216,9 +207,6 @@
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-}
-.primary:disabled {
-  opacity: 0.6;
 }
 .actions {
   display: flex;
@@ -453,7 +441,6 @@
 }
 /* each step is a ball on a line: a step the money has reached is a filled green ball, a step it has not is an empty ring, grey */
 .buyButton,
-.primary,
 .primaryLink {
   display: flex;
   align-items: center;
@@ -473,16 +460,13 @@
     transform var(--tb-dur-base);
 }
 .buyButton:hover,
-.primary:hover:not(:disabled),
 .primaryLink:hover {
   background: var(--tb-hot-hover);
 }
-.buyButton:active,
-.primary:active:not(:disabled) {
+.buyButton:active {
   transform: translateY(1px);
 }
 .buyButton:focus-visible,
-.primary:focus-visible,
 .primaryLink:focus-visible {
   outline: 2px solid var(--tb-text);
   outline-offset: 3px;
@@ -649,13 +633,6 @@
   font-size: var(--tb-text-md);
   letter-spacing: 0.02em;
 }
-.timeLeft strong {
-  color: var(--tb-text);
-  font-weight: 600;
-  font-family: var(--tb-font);
-  font-size: var(--tb-text-3xl);
-  font-variant-numeric: tabular-nums;
-}
 .bigPrice {
   line-height: 1;
   letter-spacing: -0.03em;
@@ -718,8 +695,7 @@
   padding: var(--tb-space-3) 0;
 }
 @media (prefers-reduced-motion: reduce) {
-  .buyButton,
-  .primary {
+  .buyButton {
     transition: none;
   }
 }
@@ -1153,11 +1129,6 @@ body:has(.bidBar) {
   min-height: 48px;
   margin: 0;
 }
-.barAct .bid .primary {
-  min-height: 48px;
-  padding: 0 var(--tb-space-5);
-  white-space: nowrap;
-}
 .barAct .bid .fieldError {
   grid-column: 1 / -1;
   margin: 0;
@@ -1263,10 +1234,6 @@ body:has(.bidBar) {
 }
 .barAct .bid > input {
   grid-column: 1;
-  grid-row: 2;
-}
-.barAct .bid > .primary {
-  grid-column: 2;
   grid-row: 2;
 }
 .barAct .bid > .fieldError,
@@ -1770,9 +1737,6 @@ body:has(.bidBar) {
     grid-template-columns: auto minmax(0, 1fr);
     gap: var(--tb-space-3) var(--tb-space-4);
   }
-  .roomStat {
-    grid-column: span 1;
-  }
 }
 .seat circle {
   fill: var(--tb-surface);
@@ -1819,21 +1783,6 @@ body:has(.bidBar) {
   display: grid;
   gap: var(--tb-space-3);
   align-content: start;
-}
-.sitOut {
-  justify-self: start;
-  min-height: 44px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--tb-muted);
-  font: inherit;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
-}
-.sitOut[aria-pressed='true'] {
-  color: var(--tb-hot);
 }
 @media (min-width: 60rem) {
   .roomFeed {
@@ -1895,15 +1844,8 @@ body:has(.bidBar) {
 .roomControls .bid > input {
   grid-column: 1;
 }
-.roomControls .bid > .primary {
-  grid-column: 2;
-  min-width: 9rem;
-}
 @media (max-width: 30rem) {
   .roomControls .bid > input {
-    grid-column: 1 / -1;
-  }
-  .roomControls .bid > .primary {
     grid-column: 1 / -1;
   }
 }
@@ -1927,8 +1869,7 @@ body:has(.bidBar) {
   align-items: center;
   min-height: 44px;
 }
-.roomFeed:focus-visible,
-.sitOut:focus-visible {
+.roomFeed:focus-visible {
   outline: 2px solid var(--tb-hot);
   outline-offset: 2px;
 }
@@ -2008,11 +1949,6 @@ body:has(.bidBar) {
 .barBody > .barCell {
   justify-content: center;
 }
-.roomStat {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-1);
-}
 .quickBid {
   min-height: 52px;
   border: 0;
@@ -2037,17 +1973,10 @@ body:has(.bidBar) {
 .roomControls .bid > input {
   min-height: 52px;
 }
-.roomControls .bid > .primary {
-  border-radius: 0 4px 4px 0;
-  min-height: 52px;
-}
 @media (max-width: 30rem) {
   .roomControls .bid > input {
     border-right: 1px solid var(--tb-border);
     border-radius: 4px 4px 0 0;
-  }
-  .roomControls .bid > .primary {
-    border-radius: 0 0 4px 4px;
   }
 }
 .roomAction {
@@ -2193,17 +2122,10 @@ body:has(.bidBar) {
   border-bottom-color: var(--tb-hot);
   box-shadow: inset 0 -2px 0 var(--tb-hot);
 }
-.roomControls .bid > .primary,
-.barAct .bid .primary {
-  border-radius: 0;
-}
 @media (max-width: 30rem) {
   .roomControls .bid > input {
     border-radius: 0;
     border-right: 0;
-  }
-  .roomControls .bid > .primary {
-    border-radius: 0;
   }
 }
 /* Sit this one out | Back to the listing: two cells between rules with one divider */

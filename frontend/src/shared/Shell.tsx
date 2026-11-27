@@ -6,7 +6,6 @@
 import { Suspense, useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Button } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { BellIcon, ChatIcon, HomeIcon, OrdersIcon, PlusIcon, SearchIcon, UserIcon } from './icons';
 import { Logo } from './Logo';
@@ -22,6 +21,7 @@ import { usePendingStepUp } from './stepUp';
 import { StepUpDialog } from './StepUpDialog';
 import { toLocalDigits } from '../lib/money.js';
 import styles from './shell.module.css';
+import { Button } from './ui';
 
 export interface ShellProps {
   /** the console and the KYC page name themselves next to the logo */
@@ -127,7 +127,7 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
         )}
         {accountLinks && !phone && <ThemeSwitch />}
         {accountLinks && !phone && (
-          <Button component={Link} to="/sell/new">
+          <Button as={Link} to="/sell/new" variant="primary">
             {t('shell.sell')}
           </Button>
         )}

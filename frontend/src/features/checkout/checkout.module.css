@@ -96,31 +96,6 @@
   color: var(--tb-muted);
   margin: 0;
 }
-.stubHeading {
-  margin: 0;
-  font-size: var(--tb-text-sm);
-  font-weight: 600;
-  color: var(--tb-text);
-}
-.total {
-  margin: 0;
-  font-variant-numeric: tabular-nums;
-}
-.primary {
-  min-height: 50px;
-  padding: 0 var(--tb-space-6);
-  border-radius: var(--tb-btn-radius);
-  background: var(--tb-btn-bg);
-  color: var(--tb-btn-fg);
-  border: 1px solid var(--tb-btn-line);
-  font: inherit;
-  font-weight: 600;
-  font-size: var(--tb-text-lg);
-  cursor: pointer;
-}
-.primary:disabled {
-  opacity: 0.6;
-}
 .visuallyHidden {
   position: absolute;
   width: 1px;

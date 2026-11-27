@@ -16,6 +16,7 @@ import { fieldErrors } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { reasonTexts, type EditableListing } from './sell';
 import styles from './sell.module.css';
+import { Button } from '../../shared/ui';
 
 export interface Game {
   id: number;
@@ -168,9 +169,9 @@ function GameDetailsForm({ l, details, fixed, t, lang }: { l: EditableListing; d
         {t('sell.game.contents_hint')}
       </p>
       <div className={styles.buttons}>
-        <button type="submit" className={styles.primary} disabled={save.isPending}>
+        <Button variant="primary" type="submit" disabled={save.isPending}>
           {t('sell.game.save')}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -252,9 +253,9 @@ function Proof({ l, o, t, lang }: { l: EditableListing; o: Ownership; t: T; lang
       )}
       {canAsk && (
         <p>
-          <button type="button" className={styles.primary} disabled={code.isPending} onClick={() => code.mutate()}>
+          <Button variant="primary" type="button" disabled={code.isPending} onClick={() => code.mutate()}>
             {t(p ? 'sell.game.new_code' : 'sell.game.get_code')}
-          </button>
+          </Button>
         </p>
       )}
     </section>

@@ -27,6 +27,7 @@ import { SimulatedBanner } from '../../shared/SimulatedBanner';
 import en from '../../messages/en/checkout.json';
 import bn from '../../messages/bn/checkout.json';
 import styles from './checkout.module.css';
+import { Button } from '../../shared/ui';
 
 const CATALOGUES = { en, bn };
 
@@ -241,9 +242,9 @@ export function Component() {
                 labels={[t('checkout.counterfoil.in'), t('checkout.counterfoil.held'), t('checkout.counterfoil.out')]}
               />
             </div>
-            <button type="submit" form="checkout-form" className={styles.primary} disabled={create.isPending}>
+            <Button variant="primary" type="submit" form="checkout-form" disabled={create.isPending}>
               {t('checkout.continue')}
-            </button>
+            </Button>
             <p className={styles.hint}>{t('checkout.reserve_note')}</p>
           </aside>
         )}

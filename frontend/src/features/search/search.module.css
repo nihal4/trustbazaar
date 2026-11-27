@@ -333,19 +333,6 @@ html[data-sheet='open'] {
   margin: 0;
   font-size: var(--tb-text-md);
 }
-.secondary {
-  min-height: 44px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--tb-text);
-  font: inherit;
-  font-weight: 600;
-  text-decoration: underline;
-  text-decoration-color: var(--tb-hot);
-  text-underline-offset: 4px;
-  cursor: pointer;
-}
 .apply {
   margin-top: var(--tb-space-5);
   min-height: 48px;
@@ -629,7 +616,6 @@ html[data-sheet='open'] {
 .toggle:focus-visible,
 .chip:focus-visible,
 .clear:focus-visible,
-.secondary:focus-visible,
 .apply:focus-visible,
 .submit:focus-visible {
   outline: 2px solid var(--tb-hot);
