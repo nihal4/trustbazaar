@@ -278,7 +278,8 @@ describe('ways in', () => {
       [`GET /threads/${THREAD}/messages`]: json(200, { items: [msg(1)], more: false, lastSeq: 1, otherMarks: { delivered: 0, read: 0 }, closed: false }),
     });
     renderApp('/notifications', be);
-    fireEvent.click(await screen.findByRole('button', { name: /New message/ }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Show all notifications' }));       // a read notice is in the popup
+    fireEvent.click(within(await screen.findByRole('dialog', { name: 'Your notifications' })).getByRole('button', { name: /New message/ }));
     expect(await screen.findByRole('heading', { name: /Conversation with Karim/ })).toBeTruthy();
   });
 
