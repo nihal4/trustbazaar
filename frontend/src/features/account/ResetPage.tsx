@@ -1,12 +1,13 @@
 // Password reset, step one (IF-UI-01; FR-ACC-07), on the ruled card (U10-25): the same answer whether or not the account exists. An e-mail address gets a
 // link (to /reset-password); a mobile number gets an SMS code, entered here with the new password.
+import { formatWait } from '../../shared/wait';
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useApi } from '../../shared/api';
 import { untilAfter, useSecondsLeft } from '../../shared/countdown';
 import { SubmitButton, TextField } from '../../shared/form';
 import { useViewport } from '../../shared/gridCell';
-import { digits, otherError, retryAfter, useAccountT } from './common';
+import { otherError, retryAfter, useAccountT } from './common';
 import { authRows, fieldAria, headFor, Slot, StepNote } from './AuthParts';
 import { AuthSplit } from './AuthSplit';
 import { bangladeshiMobile, loginKind, normaliseLogin } from './input';
@@ -75,7 +76,7 @@ export function Component() {
           <Slot id="reset-message" message={message} />
         </div>
         <SubmitButton busy={busy} disabled={waitFor > 0}>
-          {waitFor > 0 ? t('wait.seconds', { seconds: digits(waitFor, lang) }) : t('reset.send')}
+          {waitFor > 0 ? t('wait.seconds', { time: formatWait(waitFor, lang) }) : t('reset.send')}
         </SubmitButton>
       </form>
     </AuthSplit>

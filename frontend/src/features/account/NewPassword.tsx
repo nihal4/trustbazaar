@@ -1,5 +1,6 @@
 // Choosing a new password after a reset link or code (SEC-AUTH-10; Unit 1 section 6.4), in the form band of the ruled card (U10-25). With MFA on, Unit 1
 // answers mfa-required and nothing is spent, so the form then also asks for the second factor. A reset by SMS asks for the code here too.
+import { formatWait } from '../../shared/wait';
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApi } from '../../shared/api';
@@ -81,7 +82,7 @@ export function NewPasswordForm({ proof, onDone, onLinkRefused }: {
         <Slot id="reset-message" message={message?.text ?? null} ok={Boolean(message?.ok)} />
       </div>
       <SubmitButton busy={busy} disabled={waitFor > 0}>
-        {waitFor > 0 ? t('wait.seconds', { seconds: digits(waitFor, lang) }) : t('reset.save')}
+        {waitFor > 0 ? t('wait.seconds', { time: formatWait(waitFor, lang) }) : t('reset.save')}
       </SubmitButton>
     </form>
   );

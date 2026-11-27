@@ -25,7 +25,7 @@
   "wizard.progress": "Step {n} of {total}",
   "wizard.back": "Back",
   "wizard.next": "Continue",
-  "wizard.wait": "Try again in {seconds} s",
+  "wizard.wait": "Try again in {time}",
   "step.intro": "What you need",
   "step.details": "Your document details",
   "step.doc_front": "Front of your NID",

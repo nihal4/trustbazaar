@@ -25,7 +25,7 @@
   "wizard.progress": "ধাপ {n}, মোট {total}টির মধ্যে",
   "wizard.back": "পেছনে",
   "wizard.next": "এগিয়ে যান",
-  "wizard.wait": "{seconds} সেকেন্ড পরে আবার চেষ্টা করুন",
+  "wizard.wait": "{time} পরে আবার চেষ্টা করুন",
   "step.intro": "যা লাগবে",
   "step.details": "আপনার কাগজের তথ্য",
   "step.doc_front": "এনআইডির সামনের দিক",

@@ -20,8 +20,8 @@
   "stepup.confirm": "Confirm",
   "stepup.cancel": "Cancel",
   "stepup.resend": "Send a new code",
-  "stepup.resend_in": "New code in {seconds} s",
-  "stepup.wait": "Try again in {seconds} s",
+  "stepup.resend_in": "New code in {time}",
+  "stepup.wait": "Try again in {time}",
   "stepup.wrong_code": "The code is not correct. Check it and try again.",
   "stepup.expired": "This code has expired. Ask for a new one.",
   "shell.notifications": "Notifications",
@@ -51,5 +51,6 @@
   "shell.promise_bar_short": "Money held until you confirm",
   "shell.footer.language": "Language",
   "form.show_password": "Show password",
-  "form.hide_password": "Hide password"
+  "form.hide_password": "Hide password",
+  "error.rate_limited_wait": "Too many attempts. Try again in {time}."
 }

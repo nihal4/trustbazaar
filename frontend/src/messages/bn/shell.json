@@ -20,8 +20,8 @@
   "stepup.confirm": "নিশ্চিত করুন",
   "stepup.cancel": "বাতিল",
   "stepup.resend": "নতুন কোড পাঠান",
-  "stepup.resend_in": "{seconds} সেকেন্ড পরে নতুন কোড",
-  "stepup.wait": "{seconds} সেকেন্ড পরে আবার চেষ্টা করুন",
+  "stepup.resend_in": "{time} পরে নতুন কোড",
+  "stepup.wait": "{time} পরে আবার চেষ্টা করুন",
   "stepup.wrong_code": "কোডটি সঠিক নয়। দেখে আবার চেষ্টা করুন।",
   "stepup.expired": "এই কোডের মেয়াদ শেষ হয়ে গেছে। নতুন কোড চেয়ে নিন।",
   "shell.notifications": "নোটিফিকেশন",
@@ -51,5 +51,6 @@
   "shell.promise_bar_short": "নিশ্চিত না করা পর্যন্ত টাকা নিরাপদ",
   "shell.footer.language": "ভাষা",
   "form.show_password": "পাসওয়ার্ড দেখান",
-  "form.hide_password": "পাসওয়ার্ড লুকান"
+  "form.hide_password": "পাসওয়ার্ড লুকান",
+  "error.rate_limited_wait": "অনেকবার চেষ্টা করা হয়েছে। {time} পরে আবার চেষ্টা করুন।"
 }

@@ -1,6 +1,7 @@
 // Sign in (IF-UI-01; Unit 1 section 6.2): one error text for every failure, so the page never tells
 // which accounts exist (SEC-AUTH-05); the growing delay after failures (SEC-AUTH-04) is a countdown on
 // the button; with MFA on, a second step asks for the authenticator or recovery code.
+import { formatWait } from '../../shared/wait';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useApi } from '../../shared/api';
@@ -8,7 +9,7 @@ import { untilAfter, useSecondsLeft } from '../../shared/countdown';
 import { CheckboxField, SubmitButton, TextField } from '../../shared/form';
 import { isApiError, problemName } from '../../shared/problems';
 import { toAsciiDigits } from '../../lib/money.js';
-import { digits, otherError, retryAfter, useAccountT, useAfterSignIn } from './common';
+import { otherError, retryAfter, useAccountT, useAfterSignIn } from './common';
 import { useViewport } from '../../shared/gridCell';
 import { loginProblem, normaliseLogin } from './input';
 import { AuthSplit } from './AuthSplit';
@@ -129,7 +130,7 @@ export function Component() {
     setResending(false);
   };
 
-  const button = waitFor > 0 ? t('wait.seconds', { seconds: digits(waitFor, lang) }) : null;
+  const button = waitFor > 0 ? t('wait.seconds', { time: formatWait(waitFor, lang) }) : null;
 
   if (step === 'mfa') {
     const email = method === 'email';
@@ -141,7 +142,7 @@ export function Component() {
             <button type="button" className={styles.link} onClick={() => { setStep('login'); setMessage(null); }}>{t('signin.back')}</button>
             {email && (
               <button type="button" className={styles.link} aria-disabled={resending || resendIn > 0} onClick={() => void resend()}>
-                {resendIn > 0 ? t('signin.resend_wait', { seconds: digits(resendIn, lang) }) : t('signin.resend')}
+                {resendIn > 0 ? t('signin.resend_wait', { time: formatWait(resendIn, lang) }) : t('signin.resend')}
               </button>
             )}
           </div>

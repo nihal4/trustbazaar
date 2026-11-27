@@ -2,6 +2,7 @@
 // turning the authenticator app on (QR code, the secret as text, the otpauth:// link, the first code),
 // the ten recovery codes shown once, new recovery codes, and turning it off. The secret and the codes
 // live only in this component's state: never in the query cache or browser storage.
+import { formatWait } from '../../shared/wait';
 import { lazy, Suspense, useState, type FormEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toAsciiDigits } from '../../lib/money.js';
@@ -174,7 +175,7 @@ function Enrol({ otpauthUri, secret, onDone, onCancel, onStateChanged }: {
           error={error ?? undefined} inputMode="numeric" autoComplete="one-time-code" maxLength={6} />
         <div className={styles.actions}>
           <SubmitButton busy={busy} disabled={waitFor > 0}>
-            {waitFor > 0 ? t('wait.seconds', { seconds: digits(waitFor, lang) }) : t('mfa.confirm')}
+            {waitFor > 0 ? t('wait.seconds', { time: formatWait(waitFor, lang) }) : t('mfa.confirm')}
           </SubmitButton>
           <button type="button" onClick={onCancel} disabled={busy}>{t('mfa.cancel')}</button>
         </div>
@@ -274,7 +275,7 @@ function TurnOff({ sessionsKey, onOff, onStateChanged }: {
         hint={t('mfa.new_password_hint', { min: digits(PASSWORD.minSingleFactor, lang) })} value={password} onChange={setPassword}
         error={errors.password} type="password" autoComplete="new-password" />
       <SubmitButton busy={busy} disabled={waitFor > 0}>
-        {waitFor > 0 ? t('wait.seconds', { seconds: digits(waitFor, lang) }) : t('mfa.turn_off')}
+        {waitFor > 0 ? t('wait.seconds', { time: formatWait(waitFor, lang) }) : t('mfa.turn_off')}
       </SubmitButton>
     </form>
   );

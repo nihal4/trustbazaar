@@ -2,6 +2,7 @@
 // the password twice, the code sent to the e-mail address, the mobile number, then the terms and conditions (read in a dialog) and the age confirmation.
 // The account exists only after the last step (FR-ACC-01, FR-ACC-04); the person is not signed in by it and goes to the sign-in page, and an e-mail says the
 // account was created. The steps are history entries, as in sign-in; a reload starts again at the name.
+import { formatWait } from '../../shared/wait';
 import { useEffect, useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useApi } from '../../shared/api';
@@ -63,7 +64,7 @@ export function Component() {
   useEffect(() => { document.title = `${t(step === 'code' ? 'register.code_title' : 'register.title')} – TrustBazaar`; }, [step, t]);
 
   const say = (text: string | null, ok = false) => { setMessage(text); setNotice(ok); };
-  const button = waitFor > 0 ? t('wait.seconds', { seconds: digits(waitFor, lang) }) : null;
+  const button = waitFor > 0 ? t('wait.seconds', { time: formatWait(waitFor, lang) }) : null;
   const restart = (to: Step, text: string | null) => {
     setStarted(null); setCode(''); setAdult(false); setAccept(false);
     reached.current = new Set(['name', 'email', 'password']);
@@ -282,7 +283,7 @@ export function Component() {
           <div className={styles.footLinks}>
             <button type="button" className={styles.link} onClick={backTo('password')}>{t('register.change_details')}</button>
             <button type="button" className={styles.link} aria-disabled={resending || resendIn > 0} onClick={() => void resend()}>
-              {resendIn > 0 ? t('signin.resend_wait', { seconds: digits(resendIn, lang) }) : t('signin.resend')}
+              {resendIn > 0 ? t('signin.resend_wait', { time: formatWait(resendIn, lang) }) : t('signin.resend')}
             </button>
           </div>
         )}>

@@ -1,6 +1,7 @@
 // Account security (IF-UI-01; FR-ACC-06, FR-ACC-08, FR-ACC-09, SEC-AUTH-11): the live sessions with
 // device and last use, "this device" marked; ending sessions; password, mobile number and e-mail
 // changes, each behind step-up (SEC-AUTH-08); the authenticator app and recovery codes (MfaSettings).
+import { formatWait } from '../../shared/wait';
 import { useState, type FormEvent } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApi } from '../../shared/api';
@@ -250,7 +251,7 @@ function PhoneChange() {
             <TextField id="phone-new" label={t('contact.new_phone')} hint={t('field.phone_hint')} value={phone} onChange={setPhone}
               error={error ?? undefined} type="tel" inputMode="tel" autoComplete="tel" />
             <SubmitButton busy={busy} disabled={resendIn > 0}>
-              {resendIn > 0 ? t('wait.seconds', { seconds: digits(resendIn, lang) }) : t('contact.phone_submit')}
+              {resendIn > 0 ? t('wait.seconds', { time: formatWait(resendIn, lang) }) : t('contact.phone_submit')}
             </SubmitButton>
           </form>
         )
@@ -262,7 +263,7 @@ function PhoneChange() {
             <div className={styles.actions}>
               <SubmitButton busy={busy}>{t('contact.phone_verify')}</SubmitButton>
               <button type="button" disabled={resendIn > 0 || busy} onClick={() => void start()}>
-                {resendIn > 0 ? t('code.resend_in', { seconds: digits(resendIn, lang) }) : t('code.resend')}
+                {resendIn > 0 ? t('code.resend_in', { time: formatWait(resendIn, lang) }) : t('code.resend')}
               </button>
             </div>
           </form>
