@@ -87,8 +87,10 @@ export async function openScreen(page: Page, fixtureName: string, look: Look, pa
   }
   await expect(page.getByText(/^Loading…$|^লোড হচ্ছে/)).toHaveCount(0);
   await page.evaluate(() => document.fonts.ready);
+  // what the graphics card draws (a canvas) is hidden, not masked (see `volatile` below); set on the element, because the page's content security policy refuses a stylesheet
+  await page.evaluate(() => document.querySelectorAll('canvas').forEach((c) => c.style.setProperty('visibility', 'hidden', 'important')));
   return { unmatched };
 }
 
-/** What moves or is drawn by the graphics card, or changes with the camera: left out of the picture. */
-export const volatile = (page: Page) => [page.locator('canvas'), page.locator('video'), page.locator('section[data-theme="dark"]')];
+/** What changes with the camera or is the hero's shader: left out of the picture. (Canvases are hidden by openScreen, not masked: a mask is a box drawn over the picture, and on the sign-in page the canvas is the whole screen, so it hid the form too.) */
+export const volatile = (page: Page) => [page.locator('video'), page.locator('section[data-theme="dark"]')];

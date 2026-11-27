@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { toAsciiDigits, toLocalDigits } from '../lib/money.js';
 import { useLanguage } from './language/Language';
 import { usePendingStepUp } from './stepUp';
+import { Field, IconButton, Input } from './ui';
 import { Calendar, isValidDate } from './ui/Calendar';
 import styles from './form.module.css';
 
@@ -27,50 +28,40 @@ export function DateField({ id, label, value, onChange, hint, error, min, max, s
   const { t, lang } = useLanguage();
   const [open, setOpen] = useState(false);
   const stepping = usePendingStepUp() !== null;
-  const described = [hint ? `${id}-hint` : '', error ? `${id}-error` : ''].filter(Boolean).join(' ') || undefined;
   return (
-    <div className={styles.field}>
-      <label htmlFor={id}>{label}</label>
-      {hint && (
-        <p id={`${id}-hint`} className={styles.hint}>
-          {hint}
-        </p>
-      )}
-      <div className={styles.passwordWrap}>
-        <input
-          id={id}
-          value={value}
-          inputMode="numeric"
-          placeholder="YYYY-MM-DD"
-          maxLength={10}
-          autoComplete={autoComplete}
-          onChange={(e) => onChange(toAsciiDigits(e.target.value))}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={described}
-        />
-        <button type="button" className={styles.eye} aria-haspopup="dialog" aria-label={t('form.pick_date')} onClick={() => setOpen(true)}>
-          <svg
-            viewBox="0 0 24 24"
-            width="22"
-            height="22"
-            aria-hidden="true"
-            focusable="false"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect x="3.5" y="5" width="17" height="15" />
-            <path d="M3.5 10h17M8 3v4M16 3v4" />
-          </svg>
-        </button>
-      </div>
-      {error && (
-        <p id={`${id}-error`} className={styles.error}>
-          {error}
-        </p>
-      )}
+    <>
+      <Field id={id} label={label} hint={hint} error={error}>
+        {(control) => (
+          <div className={styles.passwordWrap}>
+            <Input
+              {...control}
+              value={value}
+              inputMode="numeric"
+              placeholder="YYYY-MM-DD"
+              maxLength={10}
+              autoComplete={autoComplete}
+              onChange={(e) => onChange(toAsciiDigits(e.target.value))}
+            />
+            <IconButton variant="quiet" className={styles.eye} aria-haspopup="dialog" label={t('form.pick_date')} onClick={() => setOpen(true)}>
+              <svg
+                viewBox="0 0 24 24"
+                width="22"
+                height="22"
+                aria-hidden="true"
+                focusable="false"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3.5" y="5" width="17" height="15" />
+                <path d="M3.5 10h17M8 3v4M16 3v4" />
+              </svg>
+            </IconButton>
+          </div>
+        )}
+      </Field>
       {open && (
         <Calendar
           title={label}
@@ -89,6 +80,6 @@ export function DateField({ id, label, value, onChange, hint, error, min, max, s
           onClose={() => setOpen(false)}
         />
       )}
-    </div>
+    </>
   );
 }

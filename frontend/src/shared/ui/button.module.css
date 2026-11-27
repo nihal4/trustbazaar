@@ -30,6 +30,7 @@
   cursor: not-allowed;
 }
 .button[aria-busy='true'] {
+  opacity: 1; /* busy is not off: the button keeps its look while an answer is awaited */
   cursor: progress;
 }
 
