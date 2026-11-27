@@ -2,8 +2,7 @@
    Colours keep text contrast of at least 4.5:1 on the page background; the focus ring is 2px with at least 3:1. */
 :root {
   /* Redesign v3 palette (docs/design/10_visual_v3.md), ink-navy and vermilion on white: ink actions, peach as the soft tint, vermilion as the vivid highlight. Text keeps
-     at least 4.5:1 on paper, sheet and surface; control borders and the focus ring at least 3:1. The Mantine theme
-     (theme.ts) uses the same values. */
+     at least 4.5:1 on paper, sheet and surface; control borders and the focus ring at least 3:1. */
   --tb-bg: #fff;
   --tb-sheet: #fff;
   --tb-surface: #f3f5f8;
@@ -124,9 +123,6 @@
 :root:lang(bn) {
   --tb-font: 'TB Figures', 'Hind Siliguri', 'Figtree Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --tb-line-height: 1.7;
-  --mantine-font-family: var(--tb-font);
-  --mantine-font-family-headings: var(--tb-font);
-  --mantine-line-height: 1.7;
 }
 
 /* The dark theme of the user app (index.html and kyc.html set data-theme="dark"; the console stays light; the credentials page, which
@@ -176,36 +172,6 @@
   --tb-glow-3: #ffb08a;
   --tb-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -10px rgba(0, 0, 0, 0.6);
   --tb-shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.4), 0 18px 40px -14px rgba(0, 0, 0, 0.7);
-}
-/* Mantine's components read their own variables: point them at the dark values */
-:root[data-theme='dark'][data-mantine-color-scheme='light'] {
-  --mantine-color-body: var(--tb-bg);
-  --mantine-color-text: var(--tb-text);
-  --mantine-color-bright: #fff;
-  --mantine-color-default: var(--tb-sheet);
-  --mantine-color-default-hover: var(--tb-surface);
-  --mantine-color-default-color: var(--tb-text);
-  --mantine-color-default-border: var(--tb-border);
-  --mantine-color-placeholder: #8ea0b5;
-  --mantine-color-dimmed: var(--tb-muted);
-  --mantine-color-disabled: var(--tb-surface);
-  --mantine-color-disabled-color: #6f8196;
-  --mantine-color-disabled-border: var(--tb-line);
-  --mantine-color-anchor: var(--tb-accent);
-  --mantine-color-error: var(--tb-error);
-  --mantine-primary-color-contrast: #0a1018;
-  --mantine-color-brand-filled: #ff6b35;
-  --mantine-color-brand-filled-hover: #ff8a5c;
-  --mantine-color-brand-light: rgba(255, 107, 53, 0.14);
-  --mantine-color-brand-light-hover: rgba(255, 107, 53, 0.22);
-  --mantine-color-brand-light-color: #ffb08a;
-  --mantine-color-brand-outline: #ff8a5c;
-  --mantine-color-brand-outline-hover: rgba(255, 107, 53, 0.1);
-  --mantine-color-brand-text: #ff8a5c;
-  --mantine-color-gray-filled: #62768d;
-  --mantine-color-gray-light: rgba(159, 176, 195, 0.12);
-  --mantine-color-gray-light-color: var(--tb-text);
-  --mantine-color-gray-text: var(--tb-muted);
 }
 
 *,
@@ -337,13 +303,4 @@ p,
 li,
 dd {
   text-wrap: pretty;
-}
-
-/* Mantine's filled button in the dark app follows the same ruled style (U10-25) */
-:root[data-theme='dark'] .mantine-Button-root:where([data-variant='filled']) {
-  --button-bg: var(--tb-btn-bg);
-  --button-hover: var(--tb-btn-bg-hover);
-  --button-color: var(--tb-btn-fg);
-  --button-bd: 1px solid var(--tb-btn-line);
-  --button-radius: var(--tb-btn-radius);
 }

@@ -5,5 +5,4 @@ reports
 package-lock.json
 *.md
 public
-src/shared/mantine*.css
 src/messages

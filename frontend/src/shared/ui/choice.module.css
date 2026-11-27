@@ -28,9 +28,13 @@
   transform: scale(0);
   transition: transform var(--tb-dur-quick) var(--tb-ease-out);
 }
+.radio {
+  border-radius: var(--tb-radius-circle);
+}
 .radio::after {
   width: 8px;
   height: 8px;
+  border-radius: var(--tb-radius-circle);
 }
 .mark:checked {
   border-color: var(--tb-hot);

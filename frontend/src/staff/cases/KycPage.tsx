@@ -14,6 +14,7 @@ import { queueKey } from '../model';
 import { useStaffT } from '../text';
 import styles from '../staff.module.css';
 import { Action, CaseFrame, Choice, Facts, short, staffError } from './common';
+import { Button, Field, Input } from '../../shared/ui';
 
 interface Submission {
   id: string;
@@ -166,19 +167,20 @@ function FileView({ id, kind, t, lang }: { id: string; kind: string; t: T; lang:
       <p>
         {label}{' '}
         {!asking && (
-          <button type="button" className={styles.secondary} onClick={() => setAsking(true)}>
+          <Button variant="secondary" type="button" onClick={() => setAsking(true)}>
             {t('staff.kyc.show')}
-          </button>
+          </Button>
         )}
       </p>
       {asking && (
         <div className={styles.field}>
-          <label htmlFor={`why-${kind}`}>{t('staff.kyc.why', { file: label })}</label>
-          <input id={`why-${kind}`} value={reason} maxLength={1000} onChange={(e) => setReason(e.target.value)} />
+          <Field id={`why-${kind}`} label={t('staff.kyc.why', { file: label })}>
+            {(control) => <Input {...control} value={reason} maxLength={1000} onChange={(e) => setReason(e.target.value)} />}
+          </Field>
           <p>
-            <button type="button" className={styles.primary} onClick={() => void show()}>
+            <Button variant="primary" type="button" onClick={() => void show()}>
               {t('staff.kyc.show_file')}
-            </button>
+            </Button>
           </p>
         </div>
       )}

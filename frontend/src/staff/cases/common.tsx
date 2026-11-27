@@ -10,6 +10,7 @@ import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
 import { fieldErrors, problemName } from '../../shared/problems';
 import styles from '../staff.module.css';
+import { Button, Field, Radio, Textarea } from '../../shared/ui';
 
 export const short = (id: string | null | undefined) => (id ? id.slice(0, 8) : '—');
 
@@ -133,24 +134,16 @@ export function Action({
     <form onSubmit={submit} noValidate className={styles.panel} aria-labelledby={`${id}-title`}>
       <h2 id={`${id}-title`}>{title}</h2>
       {children}
-      <label htmlFor={`${id}-reason`}>{reasonLabel ?? t('staff.action.reason')}</label>
-      <textarea
-        id={`${id}-reason`}
-        rows={3}
-        maxLength={maxReason}
-        value={reason}
-        onChange={(e) => setReason(e.target.value)}
-        aria-describedby={`${id}-hint`}
-        className={styles.wide}
-      />
-      <p id={`${id}-hint`} className={styles.hint}>
-        {t('staff.action.reason_hint', { min: String(minReason) })}
-      </p>
+      <Field id={`${id}-reason`} label={reasonLabel ?? t('staff.action.reason')} hint={t('staff.action.reason_hint', { min: String(minReason) })}>
+        {(control) => (
+          <Textarea {...control} rows={3} maxLength={maxReason} value={reason} onChange={(e) => setReason(e.target.value)} className={styles.wide} />
+        )}
+      </Field>
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
       <p>
-        <button type="submit" className={styles.primary} disabled={action.isPending}>
+        <Button variant="primary" type="submit" disabled={action.isPending}>
           {button}
-        </button>
+        </Button>
       </p>
       {confirming && (
         <ConfirmDialog
@@ -187,10 +180,7 @@ export function Choice<V extends string>({
     <fieldset className={styles.choice}>
       <legend>{legend}</legend>
       {options.map(([v, label]) => (
-        <div key={v}>
-          <input id={`${name}-${v}`} type="radio" name={name} checked={value === v} onChange={() => onChange(v)} />
-          <label htmlFor={`${name}-${v}`}>{label}</label>
-        </div>
+        <Radio key={v} id={`${name}-${v}`} name={name} label={label} checked={value === v} onChange={() => onChange(v)} />
       ))}
     </fieldset>
   );

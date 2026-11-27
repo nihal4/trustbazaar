@@ -17,6 +17,7 @@ import { QUEUE_LIMIT, queueKey, QUEUES, useStaffMe, type QueueItem } from './mod
 import { SessionTimer } from './SessionTimer';
 import { useStaffT } from './text';
 import styles from './staff.module.css';
+import { Button } from '../shared/ui';
 
 export function Component() {
   const { t, lang } = useStaffT();
@@ -83,9 +84,9 @@ export function Component() {
             </>
           )}
         </nav>
-        <button type="button" className={styles.signOut} disabled={signOut.isPending} onClick={() => signOut.mutate()}>
+        <Button variant="secondary" type="button" className={styles.signOut} disabled={signOut.isPending} onClick={() => signOut.mutate()}>
           {t('staff.sign_out')}
-        </button>
+        </Button>
       </aside>
       <div className={styles.content}>
         {s.session && <SessionTimer session={s.session} />}

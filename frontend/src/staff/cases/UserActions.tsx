@@ -5,8 +5,8 @@ import { useState } from 'react';
 import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
 import { useApi } from '../../shared/api';
-import styles from '../staff.module.css';
 import { Action, Choice, short } from './common';
+import { Checkbox, Field, Input } from '../../shared/ui';
 
 const KINDS = ['warning', 'listing_removal', 'selling_suspended', 'buying_suspended', 'account_suspended'] as const;
 type Kind = (typeof KINDS)[number];
@@ -59,20 +59,11 @@ export function UserActions({
           onChange={setKind}
         />
         {kind !== '' && kind !== 'warning' && kind !== 'listing_removal' && (
-          <div className={styles.field}>
-            <label htmlFor={`until-${userId}`}>{t('staff.member.until')}</label>
-            <input id={`until-${userId}`} type="date" value={until} onChange={(e) => setUntil(e.target.value)} aria-describedby={`until-hint-${userId}`} />
-            <p id={`until-hint-${userId}`} className={styles.hint}>
-              {t('staff.member.until_hint')}
-            </p>
-          </div>
+          <Field id={`until-${userId}`} label={t('staff.member.until')} hint={t('staff.member.until_hint')}>
+            {(control) => <Input {...control} type="date" value={until} onChange={(e) => setUntil(e.target.value)} />}
+          </Field>
         )}
-        <div className={styles.choice}>
-          <div>
-            <input id={`fraud-${userId}`} type="checkbox" checked={fraud} onChange={(e) => setFraud(e.target.checked)} />
-            <label htmlFor={`fraud-${userId}`}>{t('staff.member.fraud')}</label>
-          </div>
-        </div>
+        <Checkbox id={`fraud-${userId}`} label={t('staff.member.fraud')} checked={fraud} onChange={(e) => setFraud(e.target.checked)} />
       </Action>
       <Action
         title={t('staff.member.revoke_title')}

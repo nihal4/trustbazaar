@@ -12,6 +12,7 @@ import { STAFF_ME_KEY } from '../shared/me';
 import type { StaffMe } from './model';
 import { useStaffT } from './text';
 import styles from './staff.module.css';
+import { Button } from '../shared/ui';
 
 const AUTO = 120_000;
 const WARN = 60_000;
@@ -80,9 +81,9 @@ export function SessionTimer({ session }: { session: NonNullable<StaffMe['sessio
   return (
     <div role="alert" className={styles.warning}>
       <p>{t('staff.session.idle', { left: formatCountdown(left, lang).text })}</p>
-      <button type="button" className={styles.primary} onClick={() => void refresh()}>
+      <Button variant="primary" type="button" onClick={() => void refresh()}>
         {t('staff.session.stay')}
-      </button>
+      </Button>
     </div>
   );
 }

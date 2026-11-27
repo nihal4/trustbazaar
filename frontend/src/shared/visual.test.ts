@@ -139,13 +139,12 @@ describe('the fonts', () => {
   });
 
   it("NFR-PERF-07 the stylesheets import fonts only from the site's own packages", () => {
-    for (const css of [read('shared/kit.css'), read('secure/secure.css')]) {
+    for (const css of [read('secure/secure.css')]) {
       for (const m of css.matchAll(/@import\s+['"]([^'"]+)['"]/g)) expect(m[1]).not.toMatch(/^(https?:)?\/\//);
     }
   });
 
   it('NFR-PERF-07 the React documents get their fonts from font.ts after the load event, not from a stylesheet (AC-ALL-4)', async () => {
-    expect(read('shared/kit.css')).not.toMatch(/@fontsource|@font-face/);
     const added: FontFace[] = [];
     const fonts = { add: (f: FontFace) => added.push(f) } as unknown as FontFaceSet;
     const listeners: (() => void)[] = [];
