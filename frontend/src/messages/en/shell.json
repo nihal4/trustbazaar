@@ -50,6 +50,11 @@
   "shell.language.changing": "Changing language",
   "shell.promise_bar_short": "Money held until you confirm",
   "shell.footer.language": "Language",
+  "form.pick_date": "Choose a date",
+  "form.prev_month": "Previous month",
+  "form.next_month": "Next month",
+  "form.month": "Month",
+  "form.year": "Year",
   "form.show_password": "Show password",
   "form.hide_password": "Hide password",
   "error.rate_limited_wait": "Too many attempts. Try again in {time}."
