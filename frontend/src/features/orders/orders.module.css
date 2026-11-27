@@ -638,3 +638,17 @@ input[type='file'].fileHidden { position: absolute; width: 1px; height: 1px; mar
 .main .panel > h2 { margin-bottom: 0.75rem; }
 .main .panel h3 { margin-block: 1.5rem 0.75rem; }
 .main .form { gap: 0.625rem; margin-block: 1rem; }
+
+/* the rail's actions as a list and the other party as a card (U10-25): one action to a line, the text on the left and an arrow on the right, hairlines
+   between; the party is a square photo place with the grid and the initials, the name with the tick, since when, and the message cell */
+.actionGrid { grid-template-columns: 1fr; }
+.actionGrid > .actionCell, .actionGrid > form { box-shadow: none; border-left: 0; }
+.actionGrid > .actionCell + .actionCell, .actionGrid > * + * { border-top: 1px solid var(--tb-line); }
+.actionCell > button { min-height: 60px; padding: 0.5rem 0.25rem; font-size: 1rem; line-height: 1.35; }
+.actionCell > button::after { margin-right: 0.25rem; transition: transform 140ms; }
+.actionCell > button:hover:not(:disabled)::after { transform: translateX(3px) rotate(45deg); }
+.partyRow { --av: 52px; grid-template-columns: auto minmax(0, 1fr) auto; min-height: 84px; }
+.partyRow > * { padding: 1rem 0; }
+.partyRow > .avatar { align-self: center; justify-self: start; width: var(--av); height: var(--av); margin: 0 1rem 0 0.25rem; padding: 0; border: 1px solid var(--tb-border); background-image: linear-gradient(to right, var(--tb-line) 1px, transparent 1px), linear-gradient(to bottom, var(--tb-line) 1px, transparent 1px); background-size: 13px 13px; color: var(--tb-hot); font-size: 1.125rem; font-weight: 700; }
+.partyRow > .partyInfo { border-left: 0; }
+.partyRow > .chatCell { min-width: 76px; padding: 1rem; border-left: 1px solid var(--tb-line); }

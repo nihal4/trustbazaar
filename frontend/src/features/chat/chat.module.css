@@ -698,53 +698,94 @@
   }
 }
 
-/* the report, in a popup: the choices are ruled rows */
+/* the report, in a popup: a question over ruled choices (a ring that fills with a vermilion dot), then a hairline box and the popup's own buttons */
 .report {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
   margin: 0;
+  min-width: 0;
 }
 
 .report fieldset {
-  border: 0;
-  padding: 0;
+  min-width: 0;
   margin: 0;
-  border-top: 1px solid var(--tb-line);
-}
-
-.report legend {
-  font-weight: 600;
-  padding: 0 0 0.5rem;
-  float: left;
-  width: 100%;
-}
-
-.report legend + * {
-  clear: both;
+  padding: 0;
+  border: 0;
 }
 
 .report fieldset > .hint {
   margin: 0 0 0.5rem;
+  color: var(--tb-muted);
 }
 
 .report fieldset div {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  min-height: 48px;
+  gap: 0.875rem;
+  min-height: 52px;
+  border-top: 1px solid var(--tb-line);
+}
+
+.report fieldset div:last-child {
   border-bottom: 1px solid var(--tb-line);
+}
+
+.report fieldset div:focus-within {
+  background: var(--tb-surface);
 }
 
 .report fieldset label {
   flex: 1;
-  padding: 0.5rem 0;
+  padding: 0.75rem 0;
   cursor: pointer;
 }
 
 .report input[type='radio'] {
+  flex: none;
+  appearance: none;
   width: 20px;
   height: 20px;
   min-height: 0;
-  margin: 0;
-  accent-color: var(--tb-hot);
+  margin: 0 0 0 0.25rem;
+  border: 1px solid var(--tb-border);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.report input[type='radio']:checked {
+  border-color: var(--tb-hot);
+  background: radial-gradient(circle, var(--tb-hot) 0 38%, transparent 42%);
+}
+
+.report input[type='radio']:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: 2px;
+}
+
+.report label.fieldLabel {
+  font-weight: 600;
+}
+
+.report textarea {
+  display: block;
+  width: 100%;
+  min-height: 96px;
+  box-sizing: border-box;
+  padding: 0.75rem;
+  border: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--tb-text);
+  font: inherit;
+  resize: vertical;
+}
+
+.report textarea:focus-visible {
+  outline: none;
+  border-color: var(--tb-hot);
+  box-shadow: inset 0 0 0 1px var(--tb-hot);
 }
 
 .row {
