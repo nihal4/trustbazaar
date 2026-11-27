@@ -75,15 +75,19 @@ export class SessionAuthenticator {
     if (!live) return null;
 
     if (now.getTime() - s.last_seen_at.getTime() >= 60_000) {
-      await this.db.query(
-        `UPDATE identity.sessions SET last_seen_at = $2 WHERE id = $1 AND last_seen_at < $2::timestamptz - interval '1 minute'`,
-        [claims.sid, now],
-      );
+      await this.db.query(`UPDATE identity.sessions SET last_seen_at = $2 WHERE id = $1 AND last_seen_at < $2::timestamptz - interval '1 minute'`, [
+        claims.sid,
+        now,
+      ]);
     }
     return s.principal_type === 'user'
       ? {
-          type: 'user', userId: s.user_id!, sessionId: claims.sid, accountStatus: s.account_status as 'active' | 'suspended',
-          kycStatus: s.kyc_status!, emailVerified: s.email_verified === true,
+          type: 'user',
+          userId: s.user_id!,
+          sessionId: claims.sid,
+          accountStatus: s.account_status as 'active' | 'suspended',
+          kycStatus: s.kyc_status!,
+          emailVerified: s.email_verified === true,
         }
       : { type: 'staff', staffId: s.staff_id!, sessionId: claims.sid, role: s.staff_role! };
   }

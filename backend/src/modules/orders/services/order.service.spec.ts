@@ -32,32 +32,82 @@ class Repo {
     for (const r of this.rows.filter((x) => matches(x, where))) Object.assign(r, patch);
   }
   async find(o: { where: Row; take?: number }) {
-    return this.rows.filter((r) => matches(r, o.where)).reverse().slice(0, o.take ?? Infinity); // newest first
+    return this.rows
+      .filter((r) => matches(r, o.where))
+      .reverse()
+      .slice(0, o.take ?? Infinity); // newest first
   }
 }
 
 const NOW = new Date('2026-11-01T12:00:00Z');
 const PARAMS = {
-  'CP-10': '24 hours', 'CP-11': '12 hours', 'CP-13': '15 minutes', 'CP-25': { standard_bps: 500, pro_bps: 300 }, 'CP-26': 1000,
+  'CP-10': '24 hours',
+  'CP-11': '12 hours',
+  'CP-13': '15 minutes',
+  'CP-25': { standard_bps: 500, pro_bps: 300 },
+  'CP-26': 1000,
   'CP-27': { new_days: 30, new_per_order: 5_000_000, new_open: 10_000_000, per_order: 20_000_000 },
 };
 const snapshot = (o: Partial<ListingSnapshot> = {}): ListingSnapshot => ({
-  listingId: 'L1', sellerId: 'S', itemKind: 'physical', saleFormat: 'fixed_price', status: 'active',
-  category: { id: 1, slug: 'phones', nameEn: 'Phones', nameBn: 'ফোন' }, title: 'Phone', description: 'd', condition: 'used',
-  noVisibleDefects: true, fulfilmentOptions: 'pickup_or_courier', weightClass: null, sizeClass: null, district: 'Dhaka',
-  price: '1000000', clarifications: [], photoKeys: ['k1'], capturedAt: NOW.toISOString(), ...o,
+  listingId: 'L1',
+  sellerId: 'S',
+  itemKind: 'physical',
+  saleFormat: 'fixed_price',
+  status: 'active',
+  category: { id: 1, slug: 'phones', nameEn: 'Phones', nameBn: 'ফোন' },
+  title: 'Phone',
+  description: 'd',
+  condition: 'used',
+  noVisibleDefects: true,
+  fulfilmentOptions: 'pickup_or_courier',
+  weightClass: null,
+  sizeClass: null,
+  district: 'Dhaka',
+  price: '1000000',
+  clarifications: [],
+  photoKeys: ['k1'],
+  capturedAt: NOW.toISOString(),
+  ...o,
 });
 
-function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; verifiedAt?: Date | null; switchOn?: boolean; rows?: { id: string; cursor_at: string }[]; shipsCourier?: boolean; cp36?: boolean; proSeller?: string } = {}) {
+function setup(
+  o: {
+    snap?: ListingSnapshot;
+    reserve?: boolean;
+    open?: string;
+    verifiedAt?: Date | null;
+    switchOn?: boolean;
+    rows?: { id: string; cursor_at: string }[];
+    shipsCourier?: boolean;
+    cp36?: boolean;
+    proSeller?: string;
+  } = {},
+) {
   const repos = new Map<unknown, Repo>([
-    [Order, new Repo(() => ({ status: 'awaiting_payment', createdAt: NOW, paidAt: null, fulfilmentStep: null, fulfilmentDueAt: null, fulfilmentDoneAt: null, deliveryEventAt: null, cancelledAt: null, cancelReason: null, closedAt: null }))],
+    [
+      Order,
+      new Repo(() => ({
+        status: 'awaiting_payment',
+        createdAt: NOW,
+        paidAt: null,
+        fulfilmentStep: null,
+        fulfilmentDueAt: null,
+        fulfilmentDoneAt: null,
+        deliveryEventAt: null,
+        cancelledAt: null,
+        cancelReason: null,
+        closedAt: null,
+      })),
+    ],
     [Escrow, new Repo()],
     [OrdersOutboxEvent, new Repo()],
     [CancellationRequest, new Repo()],
   ]);
   const manager = {
     getRepository: (e: unknown) => repos.get(e)!,
-    query: jest.fn(async (sql: string, _params: unknown[] = []) => (sql.includes('sum(total)') ? [{ open: o.open ?? '0' }] : sql.includes('FROM orders.orders') ? (o.rows ?? []) : [])),
+    query: jest.fn(async (sql: string, _params: unknown[] = []) =>
+      sql.includes('sum(total)') ? [{ open: o.open ?? '0' }] : sql.includes('FROM orders.orders') ? (o.rows ?? []) : [],
+    ),
   };
   const db = { ...manager, manager, transaction: (cb: (m: typeof manager) => unknown) => cb(manager) };
   const listings = { reserve: jest.fn(async () => o.reserve ?? true), snapshot: jest.fn(async () => o.snap ?? snapshot()) };
@@ -73,28 +123,44 @@ function setup(o: { snap?: ListingSnapshot; reserve?: boolean; open?: string; ve
   // Unit 4's DeliveryPort: shipsCourier stays false until U4-04 (Decisions log, U4-02)
   const delivery = { shipsCourier: o.shipsCourier ?? false, claimQuote: jest.fn(async () => 8000n) };
   const svc = new OrderService(
-    db as unknown as DataSource, idempotency as unknown as IdempotencyKeys, listings as unknown as ListingsPort,
-    identity as unknown as IdentityQuery, audit as unknown as AuditServicePort, params, clock,
+    db as unknown as DataSource,
+    idempotency as unknown as IdempotencyKeys,
+    listings as unknown as ListingsPort,
+    identity as unknown as IdentityQuery,
+    audit as unknown as AuditServicePort,
+    params,
+    clock,
     { assertNotBlocked: jest.fn(async () => undefined) } as never,
     { threadFor: jest.fn(async () => null) } as never,
     delivery as never,
     { isPro: jest.fn(async (id: string) => id === o.proSeller) } as never,
   );
-  return { svc, manager, listings, audit, delivery, orders: repos.get(Order)!, outbox: repos.get(OrdersOutboxEvent)!, escrows: repos.get(Escrow)!, cancellations: repos.get(CancellationRequest)! };
+  return {
+    svc,
+    manager,
+    listings,
+    audit,
+    delivery,
+    orders: repos.get(Order)!,
+    outbox: repos.get(OrdersOutboxEvent)!,
+    escrows: repos.get(Escrow)!,
+    cancellations: repos.get(CancellationRequest)!,
+  };
 }
 
 const problemOf = async (p: Promise<unknown>) => {
   try {
     await p;
   } catch (err) {
-    if (err instanceof Problem) return [err.problem, ...((err.extra.errors as { field: string; reason: string }[] | undefined) ?? []).map((e) => `${e.field}:${e.reason}`)];
+    if (err instanceof Problem)
+      return [err.problem, ...((err.extra.errors as { field: string; reason: string }[] | undefined) ?? []).map((e) => `${e.field}:${e.reason}`)];
     throw err;
   }
   throw new Error('no problem raised');
 };
 
 describe('OrderService', () => {
-  it('FR-MON-02 a Pro Seller\'s order keeps the Pro commission rate of the day', async () => {
+  it("FR-MON-02 a Pro Seller's order keeps the Pro commission rate of the day", async () => {
     const s = setup({ proSeller: 'S' });
     await s.svc.checkout('B', { listingId: 'L1', quantity: 1, fulfilment: 'self_pickup' }, undefined);
     expect(s.orders.rows[0]).toMatchObject({ commissionBps: 300 });
@@ -104,7 +170,12 @@ describe('OrderService', () => {
     const s = setup();
     const { order } = await s.svc.checkout('B', { listingId: 'L1', quantity: 2, fulfilment: 'self_pickup' }, undefined);
     expect(order).toMatchObject({ status: 'awaiting_payment', itemPrice: '2000000', total: '2000000', fulfilment: 'self_pickup', role: 'buyer', escrow: null });
-    expect(s.orders.rows[0]).toMatchObject({ commissionBps: 500, deliveryMarginBps: 1000, paramsVersion: 7, paymentDueAt: new Date(NOW.getTime() + 15 * 60_000) });
+    expect(s.orders.rows[0]).toMatchObject({
+      commissionBps: 500,
+      deliveryMarginBps: 1000,
+      paramsVersion: 7,
+      paymentDueAt: new Date(NOW.getTime() + 15 * 60_000),
+    });
     expect(s.listings.reserve).toHaveBeenCalledWith('L1', 2, s.manager);
     expect(s.outbox.rows[0]).toMatchObject({ eventType: 'orders.order.created' });
     expect(s.audit.record).toHaveBeenCalledWith(expect.objectContaining({ action: 'orders.order.created', actorId: 'B' }), s.manager);
@@ -113,21 +184,50 @@ describe('OrderService', () => {
   it('FR-FIX-05 FR-GAM-01 not available, own listing, game accounts while CP-36 is off and the emergency switch are refused', async () => {
     expect(await problemOf(setup({ reserve: false }).svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined))).toEqual(['not-available']);
     expect(await problemOf(setup().svc.checkout('S', { listingId: 'L1', quantity: 1 }, undefined))).toEqual(['forbidden', 'listingId:own-listing']);
-    expect(await problemOf(setup({ cp36: false, snap: snapshot({ itemKind: 'game_account', fulfilmentOptions: null }) }).svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined)))
-      .toEqual(['feature-off']);
+    expect(
+      await problemOf(
+        setup({ cp36: false, snap: snapshot({ itemKind: 'game_account', fulfilmentOptions: null }) }).svc.checkout(
+          'B',
+          { listingId: 'L1', quantity: 1 },
+          undefined,
+        ),
+      ),
+    ).toEqual(['feature-off']);
     expect(await problemOf(setup({ switchOn: false }).svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined))).toEqual(['feature-off']);
-    expect(await problemOf(setup().svc.checkout('B', { listingId: 'L1', quantity: 1, fulfilment: 'courier' }, undefined))).toEqual(['feature-off', 'fulfilment:courier-not-yet-available']);
-    expect(await problemOf(setup({ snap: snapshot({ fulfilmentOptions: 'courier_only' }) }).svc.checkout('B', { listingId: 'L1', quantity: 1, fulfilment: 'self_pickup' }, undefined)))
-      .toEqual(['validation-failed', 'fulfilment:not-offered-by-listing']);
+    expect(await problemOf(setup().svc.checkout('B', { listingId: 'L1', quantity: 1, fulfilment: 'courier' }, undefined))).toEqual([
+      'feature-off',
+      'fulfilment:courier-not-yet-available',
+    ]);
+    expect(
+      await problemOf(
+        setup({ snap: snapshot({ fulfilmentOptions: 'courier_only' }) }).svc.checkout(
+          'B',
+          { listingId: 'L1', quantity: 1, fulfilment: 'self_pickup' },
+          undefined,
+        ),
+      ),
+    ).toEqual(['validation-failed', 'fulfilment:not-offered-by-listing']);
   });
 
   it('FR-TNS-07 CP-27 limits for new and for settled buyers', async () => {
     const fresh = { verifiedAt: new Date(NOW.getTime() - 3 * 86_400_000) };
-    expect(await problemOf(setup({ ...fresh, snap: snapshot({ price: '6000000' }) }).svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined))).toEqual(['order-limit', 'total:above-new-account-per-order-limit']);
-    expect(await problemOf(setup({ ...fresh, open: '8000000', snap: snapshot({ price: '3000000' }) }).svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined))).toEqual(['order-limit', 'total:above-new-account-open-limit']);
-    expect(await problemOf(setup({ verifiedAt: null, snap: snapshot({ price: '6000000' }) }).svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined))).toEqual(['order-limit', 'total:above-new-account-per-order-limit']);
+    expect(await problemOf(setup({ ...fresh, snap: snapshot({ price: '6000000' }) }).svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined))).toEqual([
+      'order-limit',
+      'total:above-new-account-per-order-limit',
+    ]);
+    expect(
+      await problemOf(
+        setup({ ...fresh, open: '8000000', snap: snapshot({ price: '3000000' }) }).svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined),
+      ),
+    ).toEqual(['order-limit', 'total:above-new-account-open-limit']);
+    expect(
+      await problemOf(setup({ verifiedAt: null, snap: snapshot({ price: '6000000' }) }).svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined)),
+    ).toEqual(['order-limit', 'total:above-new-account-per-order-limit']);
     expect((await setup({ snap: snapshot({ price: '6000000' }) }).svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined)).order.total).toBe('6000000');
-    expect(await problemOf(setup({ snap: snapshot({ price: '20000001' }) }).svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined))).toEqual(['order-limit', 'total:above-per-order-limit']);
+    expect(await problemOf(setup({ snap: snapshot({ price: '20000001' }) }).svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined))).toEqual([
+      'order-limit',
+      'total:above-per-order-limit',
+    ]);
   });
 
   it('FR-DLV-02 the buyer chooses self pickup while the order awaits payment', async () => {
@@ -143,9 +243,12 @@ describe('OrderService', () => {
     expect(await problemOf(s.svc.chooseFulfilment('B', randomUUID(), 'self_pickup'))).toEqual(['not-found']);
   });
 
-  it('FR-DLV-09 once Unit 4 ships courier, the quote is claimed in the order\'s transaction and its fee joins the one total', async () => {
+  it("FR-DLV-09 once Unit 4 ships courier, the quote is claimed in the order's transaction and its fee joins the one total", async () => {
     const s = setup({ shipsCourier: true });
-    expect(await problemOf(s.svc.checkout('B', { listingId: 'L1', quantity: 1, fulfilment: 'courier' }, undefined))).toEqual(['validation-failed', 'quoteId:required-for-courier']);
+    expect(await problemOf(s.svc.checkout('B', { listingId: 'L1', quantity: 1, fulfilment: 'courier' }, undefined))).toEqual([
+      'validation-failed',
+      'quoteId:required-for-courier',
+    ]);
     const { order } = await s.svc.checkout('B', { listingId: 'L1', quantity: 2, fulfilment: 'courier', quoteId: 'Q1' }, undefined);
     expect(s.delivery.claimQuote).toHaveBeenCalledWith({ quoteId: 'Q1', orderId: order.id, buyerId: 'B', listingId: 'L1', quantity: 2 }, s.manager);
     expect(order).toMatchObject({ fulfilment: 'courier', itemPrice: '2000000', deliveryFee: '8000', total: '2008000' });
@@ -163,14 +266,17 @@ describe('OrderService', () => {
     const game = snapshot({ itemKind: 'game_account', fulfilmentOptions: null });
     const s = setup({ snap: game });
     expect((await s.svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined)).order).toMatchObject({ fulfilment: 'game_account', deliveryFee: '0' });
-    expect(await problemOf(s.svc.checkout('B', { listingId: 'L1', quantity: 1, fulfilment: 'self_pickup' }, undefined))).toEqual(['validation-failed', 'fulfilment:not-offered-by-listing']);
+    expect(await problemOf(s.svc.checkout('B', { listingId: 'L1', quantity: 1, fulfilment: 'self_pickup' }, undefined))).toEqual([
+      'validation-failed',
+      'fulfilment:not-offered-by-listing',
+    ]);
     const won = setup({ snap: { ...game, saleFormat: 'auction' } });
     expect(await won.svc.createAuctionOrder({ listingId: 'L1', winnerId: 'B', price: 500000n, kind: 'auction' })).toMatchObject({ fulfilment: 'game_account' });
     expect(fulfilmentRefusal('self_pickup', ['game_account'])).toBe('not-offered-by-listing');
     expect(fulfilmentRefusal('self_pickup', ['self_pickup'])).toBeNull();
   });
 
-  it('FR-AUC-14 and FR-AUC-15 auction and second-chance orders get their windows, in the caller\'s transaction or their own', async () => {
+  it("FR-AUC-14 and FR-AUC-15 auction and second-chance orders get their windows, in the caller's transaction or their own", async () => {
     const s = setup({ snap: snapshot({ saleFormat: 'auction', price: null }) });
     const a = await s.svc.createAuctionOrder({ listingId: 'L1', winnerId: 'W', price: 230000n, kind: 'auction' }, s.manager as never);
     expect(a).toMatchObject({ kind: 'auction', total: '230000', fulfilment: null, role: 'buyer' });
@@ -181,15 +287,32 @@ describe('OrderService', () => {
     await expect(setup().svc.createAuctionOrder({ listingId: 'L1', winnerId: 'W', price: 1n, kind: 'auction' })).rejects.toThrow('not an auction');
   });
 
-  it('IF-UI-05 the order view: the seller\'s role, the escrow once paid, nobody else', async () => {
+  it("IF-UI-05 the order view: the seller's role, the escrow once paid, nobody else", async () => {
     const s = setup();
     const { order } = await s.svc.checkout('B', { listingId: 'L1', quantity: 1 }, undefined);
-    s.escrows.rows.push({ orderId: order.id, state: 'held', releasePolicy: 'standard', amountCollected: '1000000', amountRefunded: '0', disputeWindowEndsAt: null, autoReleaseAt: NOW });
-    expect(await s.svc.getOrderForParty(order.id, 'S')).toMatchObject({ role: 'seller', counterparty: { id: 'B', displayName: 'Name of B', verified: true, joinMonth: '2025-03' }, escrow: { state: 'held', autoReleaseAt: NOW.toISOString() } });
+    s.escrows.rows.push({
+      orderId: order.id,
+      state: 'held',
+      releasePolicy: 'standard',
+      amountCollected: '1000000',
+      amountRefunded: '0',
+      disputeWindowEndsAt: null,
+      autoReleaseAt: NOW,
+    });
+    expect(await s.svc.getOrderForParty(order.id, 'S')).toMatchObject({
+      role: 'seller',
+      counterparty: { id: 'B', displayName: 'Name of B', verified: true, joinMonth: '2025-03' },
+      escrow: { state: 'held', autoReleaseAt: NOW.toISOString() },
+    });
     expect(await problemOf(s.svc.getOrderForParty(order.id, 'X'))).toEqual(['not-found']);
     expect((await s.svc.getOrderForParty(order.id, 'B')).cancellationRequest).toBeNull();
     s.cancellations.rows.push({ id: 'C1', orderId: order.id, status: 'pending', reason: 'Wrong model', createdAt: NOW });
-    expect((await s.svc.getOrderForParty(order.id, 'B')).cancellationRequest).toEqual({ id: 'C1', status: 'pending', reason: 'Wrong model', createdAt: NOW.toISOString() });
+    expect((await s.svc.getOrderForParty(order.id, 'B')).cancellationRequest).toEqual({
+      id: 'C1',
+      status: 'pending',
+      reason: 'Wrong model',
+      createdAt: NOW.toISOString(),
+    });
   });
 
   it('IF-UI-05 the stage tabs filter on the server, so every tab pages on its own: orders, on the way, completed', async () => {
@@ -204,9 +327,13 @@ describe('OrderService', () => {
   });
 
   it('IF-UI-05 my orders in pages of 50 with a cursor', async () => {
-    const rows = Array.from({ length: 51 }, (_, i) => ({ id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`, cursor_at: '2026-11-01T10:00:00.123456Z' }));
+    const rows = Array.from({ length: 51 }, (_, i) => ({
+      id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`,
+      cursor_at: '2026-11-01T10:00:00.123456Z',
+    }));
     const s = setup({ rows });
-    for (const r of rows) s.orders.rows.push({ id: r.id, buyerId: 'B', sellerId: 'S', listingSnapshot: snapshot(), itemKind: 'physical', paymentDueAt: NOW, createdAt: NOW });
+    for (const r of rows)
+      s.orders.rows.push({ id: r.id, buyerId: 'B', sellerId: 'S', listingSnapshot: snapshot(), itemKind: 'physical', paymentDueAt: NOW, createdAt: NOW });
     const page = await s.svc.list('S', 'seller', undefined);
     expect(page.items).toHaveLength(50);
     expect(page.items[0].role).toBe('seller');
@@ -233,17 +360,25 @@ describe('OrderService.expireUnpaid (U2-07)', () => {
     s.orders.rows.push({ id: 'A1', kind: 'auction', status: 'awaiting_payment', paymentDueAt: NOW, listingId: 'L2', quantity: 1, buyerId: 'B', sellerId: 'S' });
     expect(await s.svc.expireUnpaid('A1')).toBe(true);
     expect(s.outbox.rows.slice(-2).map((r) => [r.eventType, (r.payload as { reason: string }).reason])).toEqual([
-      ['orders.order.cancelled', 'payment_window_expired'], ['orders.order.payment_expired', 'payment_window_expired'],
+      ['orders.order.cancelled', 'payment_window_expired'],
+      ['orders.order.payment_expired', 'payment_window_expired'],
     ]);
   });
 });
 
 describe('OrderService.lockForFulfilment (I-20)', () => {
-  it('I-20 the order is locked in the caller\'s transaction and its fulfilment facts returned', async () => {
+  it("I-20 the order is locked in the caller's transaction and its fulfilment facts returned", async () => {
     const s = setup();
     const { order } = await s.svc.checkout('B', { listingId: 'L1', quantity: 1, fulfilment: 'self_pickup' }, undefined);
     const facts = await s.svc.lockForFulfilment(order.id, s.manager as never);
-    expect(facts).toMatchObject({ orderId: order.id, status: 'awaiting_payment', fulfilment: 'self_pickup', stepRecorded: false, deliveryEventRecorded: false, escrowState: null });
+    expect(facts).toMatchObject({
+      orderId: order.id,
+      status: 'awaiting_payment',
+      fulfilment: 'self_pickup',
+      stepRecorded: false,
+      deliveryEventRecorded: false,
+      escrowState: null,
+    });
     s.escrows.rows.push({ orderId: order.id, state: 'held' });
     expect((await s.svc.lockForFulfilment(order.id, s.manager as never)).escrowState).toBe('held');
     await expect(s.svc.lockForFulfilment(randomUUID(), s.manager as never)).rejects.toBeInstanceOf(Problem);
@@ -254,7 +389,11 @@ describe('OrdersController', () => {
   const user = { type: 'user', userId: 'B', sessionId: 's', accountStatus: 'active', kycStatus: 'verified', emailVerified: true } as const;
   it('IF-UI-05 each route hands its caller and input to OrderService', async () => {
     const svc = {
-      checkout: jest.fn(async () => ({ order: { id: 'o' }, repeated: false })), list: jest.fn(), getOrderForParty: jest.fn(), getOrderPage: jest.fn(), chooseFulfilment: jest.fn(),
+      checkout: jest.fn(async () => ({ order: { id: 'o' }, repeated: false })),
+      list: jest.fn(),
+      getOrderForParty: jest.fn(),
+      getOrderPage: jest.fn(),
+      chooseFulfilment: jest.fn(),
     };
     const statements = { receipt: jest.fn() };
     const c = new OrdersController(svc as unknown as OrderService, statements as never);

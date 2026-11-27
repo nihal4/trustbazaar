@@ -12,7 +12,9 @@ describe('SEC-DAT-02 protected files at rest', () => {
     const owner = await s.signedIn({ kyc: 'unsubmitted' });
     const { id } = await submitKyc(owner.b);
     const rows = await s.fx.query<{ storage_key: string; wrapped_dek: Buffer; sha256: Buffer; byte_size: number }>(
-      `SELECT storage_key, wrapped_dek, sha256, byte_size FROM identity.kyc_files WHERE submission_id = $1`, [id]);
+      `SELECT storage_key, wrapped_dek, sha256, byte_size FROM identity.kyc_files WHERE submission_id = $1`,
+      [id],
+    );
     expect(rows).toHaveLength(4);
     for (const f of rows) {
       const stored = await fs.readFile(join(s.cfg.filesRoot, PURPOSE_FOLDER.kyc, f.storage_key));
@@ -45,11 +47,14 @@ describe('SEC-DAT-02 protected files at rest', () => {
       `INSERT INTO orders.orders (kind, listing_id, item_kind, buyer_id, seller_id, quantity, unit_price, item_price, fulfilment, delivery_fee, total,
           listing_snapshot, commission_bps, delivery_margin_bps, params_version, payment_due_at, status, paid_at, fulfilment_step, fulfilment_due_at)
        VALUES ('fixed_price', gen_random_uuid(), 'physical', $1, $2, 1, 300000, 300000, 'self_pickup', 0, 300000, '{"title":"Radio"}', 500, 1000, 1,
-               now(), 'paid', now(), 'meetup_handover', now() + interval '3 days') RETURNING id`, [buyer.a.userId, seller]);
+               now(), 'paid', now(), 'meetup_handover', now() + interval '3 days') RETURNING id`,
+      [buyer.a.userId, seller],
+    );
     const [{ id: dispute }] = await s.fx.query<{ id: string }>(
       `INSERT INTO disputes.disputes (order_id, buyer_id, seller_id, item_kind, type, description, item_price, amount_collected, seller_due_at)
        VALUES ($1, $2, $3, 'physical', 'not_as_described', 'The radio has no sound at all.', 300000, 300000, now() + interval '2 days') RETURNING id`,
-      [order, buyer.a.userId, seller]);
+      [order, buyer.a.userId, seller],
+    );
     const form = new FormData();
     form.set('file', new Blob([new Uint8Array(await image())], { type: 'image/jpeg' }), 'proof.jpg');
     expect((await buyer.b.upload(`/disputes/${dispute}/evidence`, form)).status).toBeLessThan(300);

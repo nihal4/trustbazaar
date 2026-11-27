@@ -234,194 +234,768 @@
 }
 
 /* Read by screen readers, not shown (WCAG 1.3.1); used to add words after a visible label */
-.visuallyHidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 /* Phones: logo, sign-in or the two icons, and the language switch stay on one line down to 320 px. */
 @media (max-width: 47.99em) {
-  .header { flex-wrap: nowrap; gap: 0.5rem; }
-  .wordmark { font-size: 1.2rem; }
-  .mark { width: 26px; height: 26px; }
-  .langSwitch { padding: var(--tb-space-1) 0.75rem; }
-  .account { padding: 0 0.375rem; }
-  .langSwitch, .account, .wordmark { white-space: nowrap; }
+  .header {
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+  }
+  .wordmark {
+    font-size: 1.2rem;
+  }
+  .mark {
+    width: 26px;
+    height: 26px;
+  }
+  .langSwitch {
+    padding: var(--tb-space-1) 0.75rem;
+  }
+  .account {
+    padding: 0 0.375rem;
+  }
+  .langSwitch,
+  .account,
+  .wordmark {
+    white-space: nowrap;
+  }
   /* the unread count sits on the bell's corner, so the header keeps one line */
-  .iconLink { position: relative; flex: none; }
-  .iconLink .badge { position: absolute; top: -2px; right: -4px; margin: 0; font-size: 0.75rem; line-height: 1.4; }
+  .iconLink {
+    position: relative;
+    flex: none;
+  }
+  .iconLink .badge {
+    position: absolute;
+    top: -2px;
+    right: -4px;
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
 }
 @media (max-width: 26rem) {
-  .header { gap: 0.375rem; }
-  .wordmark { font-size: 1.05rem; }
-  .iconLink { min-width: 44px; }
+  .header {
+    gap: 0.375rem;
+  }
+  .wordmark {
+    font-size: 1.05rem;
+  }
+  .iconLink {
+    min-width: 44px;
+  }
 }
 /* at 320 px, signed in and in Bangla, "English" is the widest switch: a little less padding keeps the line */
 @media (max-width: 21rem) {
-  .langSwitch { padding-inline: 0.5rem; }
-  .wordmark { font-size: 1rem; }
+  .langSwitch {
+    padding-inline: 0.5rem;
+  }
+  .wordmark {
+    font-size: 1rem;
+  }
 }
 
 /* The KYC wizard's way out (docs/design/10_visual.md, section 7.9, AC-KYC-1): plain words on the right of the slim
    header; on narrow phones the document's name gives way to it. */
-.exit { display: inline-flex; align-items: center; min-height: 44px; color: var(--tb-text); font-weight: 600; white-space: nowrap; text-underline-offset: 3px; }
-@media (max-width: 30rem) { .docTitle { display: none; } }
-@media (max-width: 26rem) { .withExit .wordmark { display: none; } .withExit .exit { margin-left: auto; } }
+.exit {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--tb-text);
+  font-weight: 600;
+  white-space: nowrap;
+  text-underline-offset: 3px;
+}
+@media (max-width: 30rem) {
+  .docTitle {
+    display: none;
+  }
+}
+@media (max-width: 26rem) {
+  .withExit .wordmark {
+    display: none;
+  }
+  .withExit .exit {
+    margin-left: auto;
+  }
+}
 
 /* ---- Redesign v3 (docs/design/10_visual_v3.md): flat and plain. A mint promise bar, a white header with a search field,
    an ink footer, a standard bottom bar on phones. These rules follow the older ones and win. ---- */
-.promiseBar { margin: 0; display: flex; justify-content: center; align-items: center; gap: 0.5rem; padding: 0.5rem var(--tb-gutter); background: transparent; border-bottom: 1px solid var(--tb-line); color: var(--tb-text); font-size: 0.875rem; font-weight: 500; line-height: 1.4; text-align: center; }
-.promiseBar svg { flex: none; }
-.header { position: sticky; top: 0; z-index: 20; flex-wrap: nowrap; padding-block: 0.75rem; background: var(--tb-bg); border-bottom: 1px solid var(--tb-line); }
-.wordmark { font-weight: 500; font-size: 1.4rem; letter-spacing: -0.03em; color: var(--tb-text); }
-.headSearch { flex: 1 1 18rem; max-width: 32rem; margin-inline: auto; display: flex; align-items: center; gap: 0.5rem; min-height: 46px; padding: 0 0.875rem; border-radius: var(--tb-radius); background: var(--tb-surface); border: 1.5px solid transparent; color: var(--tb-muted); transition: border-color 140ms, background 140ms; }
-.headSearch:focus-within { background: var(--tb-sheet); border-color: var(--tb-text); }
-.headSearch input:focus-visible { outline: 2px solid var(--tb-text); outline-offset: 4px; border-radius: 4px; }
-.headSearch input { flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; color: var(--tb-text); outline: 0; min-height: 44px; }
-.headSearch svg { flex: none; width: 20px; height: 20px; }
-.account { padding: 0.5rem 0.75rem; font-weight: 500; color: var(--tb-text); text-decoration: none; background-image: linear-gradient(currentColor, currentColor); background-repeat: no-repeat; background-size: 0 1.5px; background-position: 0.75rem calc(100% - 0.4rem); transition: background-size 180ms; }
-.account:hover { background-size: calc(100% - 1.5rem) 1.5px; }
-.langSwitch { border-radius: var(--tb-radius); }
-.tabOn { color: var(--tb-text); font-weight: 600; }
-.tabSell { background: var(--tb-action); color: var(--tb-action-text); border-radius: var(--tb-radius); }
-@media (max-width: 47.99em) { .header { flex-wrap: wrap; } }
+.promiseBar {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem var(--tb-gutter);
+  background: transparent;
+  border-bottom: 1px solid var(--tb-line);
+  color: var(--tb-text);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
+}
+.promiseBar svg {
+  flex: none;
+}
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  flex-wrap: nowrap;
+  padding-block: 0.75rem;
+  background: var(--tb-bg);
+  border-bottom: 1px solid var(--tb-line);
+}
+.wordmark {
+  font-weight: 500;
+  font-size: 1.4rem;
+  letter-spacing: -0.03em;
+  color: var(--tb-text);
+}
+.headSearch {
+  flex: 1 1 18rem;
+  max-width: 32rem;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 46px;
+  padding: 0 0.875rem;
+  border-radius: var(--tb-radius);
+  background: var(--tb-surface);
+  border: 1.5px solid transparent;
+  color: var(--tb-muted);
+  transition:
+    border-color 140ms,
+    background 140ms;
+}
+.headSearch:focus-within {
+  background: var(--tb-sheet);
+  border-color: var(--tb-text);
+}
+.headSearch input:focus-visible {
+  outline: 2px solid var(--tb-text);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+.headSearch input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: var(--tb-text);
+  outline: 0;
+  min-height: 44px;
+}
+.headSearch svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+.account {
+  padding: 0.5rem 0.75rem;
+  font-weight: 500;
+  color: var(--tb-text);
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-size: 0 1.5px;
+  background-position: 0.75rem calc(100% - 0.4rem);
+  transition: background-size 180ms;
+}
+.account:hover {
+  background-size: calc(100% - 1.5rem) 1.5px;
+}
+.langSwitch {
+  border-radius: var(--tb-radius);
+}
+.tabOn {
+  color: var(--tb-text);
+  font-weight: 600;
+}
+.tabSell {
+  background: var(--tb-action);
+  color: var(--tb-action-text);
+  border-radius: var(--tb-radius);
+}
+@media (max-width: 47.99em) {
+  .header {
+    flex-wrap: wrap;
+  }
+}
 
-
-.wmA { font-weight: 400; } .wmB { font-weight: 650; }
-.logotype { display: block; height: 40px; width: auto; }
-.logotypeBn { height: 36px; }
-@media (max-width: 26rem) { .logotype { height: 30px; } .logotypeBn { height: 30px; } }
+.wmA {
+  font-weight: 400;
+}
+.wmB {
+  font-weight: 650;
+}
+.logotype {
+  display: block;
+  height: 40px;
+  width: auto;
+}
+.logotypeBn {
+  height: 36px;
+}
+@media (max-width: 26rem) {
+  .logotype {
+    height: 30px;
+  }
+  .logotypeBn {
+    height: 30px;
+  }
+}
 
 /* tap targets of 44 px (WCAG 2.2 AA, NFR-USE-06) */
-.header [class*='Button-root'] { min-height: 44px; }
+.header [class*='Button-root'] {
+  min-height: 44px;
+}
 
 /* The footer: ruled like the page. Three columns on the page's own thirds (the brand, Explore, Help) divided by hairlines; one
    column with rules between on phones. Muted text, links brighten and draw a hot underline on hover. */
-.footer { margin-top: 4rem; padding: 0 var(--tb-gutter) 3rem; border-top: 1px solid var(--tb-line); color: var(--tb-muted); font-size: 0.9375rem; }
-.footerGrid { display: grid; grid-template-columns: 1fr; max-width: var(--tb-max-width); margin-inline: auto; }
-.footerAbout, .footerCol { padding: 2rem 0; }
-.footerCol { border-top: 1px solid var(--tb-line); }
-.footerAbout p { max-width: 32ch; margin: 1rem 0 0; line-height: 1.6; }
-.footerLabel { margin: 0 0 0.5rem; color: var(--tb-text); font-weight: 600; }
-.footerLinks { list-style: none; margin: 0; padding: 0; display: grid; }
-.footerLinks a { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; color: var(--tb-muted); text-decoration: none; background-image: linear-gradient(var(--tb-hot), var(--tb-hot)); background-repeat: no-repeat; background-size: 0 1.5px; background-position: 0 calc(50% + 0.7em); transition: color 140ms, background-size 200ms; }
-.footerLinks a:hover { color: var(--tb-text); background-size: 100% 1.5px; }
-.footerLinks a:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 3px; color: var(--tb-text); }
+.footer {
+  margin-top: 4rem;
+  padding: 0 var(--tb-gutter) 3rem;
+  border-top: 1px solid var(--tb-line);
+  color: var(--tb-muted);
+  font-size: 0.9375rem;
+}
+.footerGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  max-width: var(--tb-max-width);
+  margin-inline: auto;
+}
+.footerAbout,
+.footerCol {
+  padding: 2rem 0;
+}
+.footerCol {
+  border-top: 1px solid var(--tb-line);
+}
+.footerAbout p {
+  max-width: 32ch;
+  margin: 1rem 0 0;
+  line-height: 1.6;
+}
+.footerLabel {
+  margin: 0 0 0.5rem;
+  color: var(--tb-text);
+  font-weight: 600;
+}
+.footerLinks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+.footerLinks a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
+  color: var(--tb-muted);
+  text-decoration: none;
+  background-image: linear-gradient(var(--tb-hot), var(--tb-hot));
+  background-repeat: no-repeat;
+  background-size: 0 1.5px;
+  background-position: 0 calc(50% + 0.7em);
+  transition:
+    color 140ms,
+    background-size 200ms;
+}
+.footerLinks a:hover {
+  color: var(--tb-text);
+  background-size: 100% 1.5px;
+}
+.footerLinks a:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: 3px;
+  color: var(--tb-text);
+}
 @media (min-width: 48em) {
-  .footerGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .footerAbout { padding-right: 2rem; }
-  .footerCol { border-top: 0; border-left: 1px solid var(--tb-line); padding-left: 2rem; }
+  .footerGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .footerAbout {
+    padding-right: 2rem;
+  }
+  .footerCol {
+    border-top: 0;
+    border-left: 1px solid var(--tb-line);
+    padding-left: 2rem;
+  }
 }
 
 /* the header's own search shows from 1024; below that the page's search is the one, and the links stay on one line */
-.spacerSmall { flex: 1 1 0; }
-@media (max-width: 63.99em) { .headSearch { display: none; } }
-@media (min-width: 64em) { .spacerSmall { display: none; } }
-.account, .header [class*='Button-root'], .langSwitch { white-space: nowrap; }
+.spacerSmall {
+  flex: 1 1 0;
+}
+@media (max-width: 63.99em) {
+  .headSearch {
+    display: none;
+  }
+}
+@media (min-width: 64em) {
+  .spacerSmall {
+    display: none;
+  }
+}
+.account,
+.header [class*='Button-root'],
+.langSwitch {
+  white-space: nowrap;
+}
 
 /* The header search, ruled like the page: a line under the field instead of a box, and one focus mark (the hot underline) instead
    of two rings (the field's and the input's). */
-.headSearch { background: none; border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; padding: 0 0.25rem; box-shadow: none; transition: box-shadow 140ms; }
-.headSearch:focus-within { background: none; border-bottom-color: var(--tb-border); outline: 0; box-shadow: inset 0 -2px 0 var(--tb-hot); }
-.headSearch input, .headSearch input:focus, .headSearch input:focus-visible { outline: 0; box-shadow: none; }
-.headSearch input::placeholder { color: var(--tb-muted); }
-@media (forced-colors: active) { .headSearch { border-bottom-color: CanvasText; } .headSearch:focus-within { outline: 2px solid Highlight; } }
-.headSearch input::-webkit-search-cancel-button { filter: invert(1); opacity: 0.6; }
+.headSearch {
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--tb-border);
+  border-radius: 0;
+  padding: 0 0.25rem;
+  box-shadow: none;
+  transition: box-shadow 140ms;
+}
+.headSearch:focus-within {
+  background: none;
+  border-bottom-color: var(--tb-border);
+  outline: 0;
+  box-shadow: inset 0 -2px 0 var(--tb-hot);
+}
+.headSearch input,
+.headSearch input:focus,
+.headSearch input:focus-visible {
+  outline: 0;
+  box-shadow: none;
+}
+.headSearch input::placeholder {
+  color: var(--tb-muted);
+}
+@media (forced-colors: active) {
+  .headSearch {
+    border-bottom-color: CanvasText;
+  }
+  .headSearch:focus-within {
+    outline: 2px solid Highlight;
+  }
+}
+.headSearch input::-webkit-search-cancel-button {
+  filter: invert(1);
+  opacity: 0.6;
+}
 
 /* ---- The phone tab bar, ruled like the page (docs/design/10_visual_v3.md): a line on top, equal cells divided by hairlines, no
    filled blocks. The current tab has a 2 px hot line on the bar's top edge; Sell is the one hot tab (an outlined square, not a
    filled pill), so the primary action is marked without a block. Labels never wrap or overflow, down to 320 px. ---- */
-.withTabs { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
-.tabBar { left: 0; right: 0; bottom: 0; padding: 0 0 env(safe-area-inset-bottom); border: 0; border-top: 1px solid var(--tb-border); border-radius: 0; background: var(--tb-bg); box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
-.tabBar ul { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
-.tabBar li { min-width: 0; }
-.tabBar li + li { border-left: 1px solid var(--tb-line); }
-.tab { position: relative; min-height: 58px; gap: 4px; padding: 0 2px; color: var(--tb-muted); font-size: 0.75rem; font-weight: 600; transition: color 140ms, background 140ms; }
-.tab svg { width: 22px; height: 22px; }
-.tab::before { content: ''; position: absolute; left: 0; right: 0; top: -1px; height: 2px; background: transparent; transition: background 140ms; }
-.tab:active { background: var(--tb-surface); }
-.tabOn { color: var(--tb-text); font-weight: 600; }
-.tabOn::before { background: var(--tb-hot); }
-.tabHot { color: var(--tb-hot); }
-.tabHot.tabOn { color: var(--tb-hot); }
-.tabSell { display: grid; place-items: center; width: 22px; height: 22px; border: 1.5px solid var(--tb-hot); border-radius: 4px; background: none; color: var(--tb-hot); }
-.tabSell svg { width: 14px; height: 14px; }
+.withTabs {
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+}
+.tabBar {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0 0 env(safe-area-inset-bottom);
+  border: 0;
+  border-top: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: var(--tb-bg);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.tabBar ul {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+}
+.tabBar li {
+  min-width: 0;
+}
+.tabBar li + li {
+  border-left: 1px solid var(--tb-line);
+}
+.tab {
+  position: relative;
+  min-height: 58px;
+  gap: 4px;
+  padding: 0 2px;
+  color: var(--tb-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition:
+    color 140ms,
+    background 140ms;
+}
+.tab svg {
+  width: 22px;
+  height: 22px;
+}
+.tab::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 2px;
+  background: transparent;
+  transition: background 140ms;
+}
+.tab:active {
+  background: var(--tb-surface);
+}
+.tabOn {
+  color: var(--tb-text);
+  font-weight: 600;
+}
+.tabOn::before {
+  background: var(--tb-hot);
+}
+.tabHot {
+  color: var(--tb-hot);
+}
+.tabHot.tabOn {
+  color: var(--tb-hot);
+}
+.tabSell {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid var(--tb-hot);
+  border-radius: 4px;
+  background: none;
+  color: var(--tb-hot);
+}
+.tabSell svg {
+  width: 14px;
+  height: 14px;
+}
 /* the unread messages on the tab (U10-25): the number sits on the corner of the icon */
-.tab .badge { position: absolute; top: 4px; left: calc(50% + 4px); min-width: 1.25rem; margin: 0; padding: 0 0.25rem; font-size: 0.75rem; line-height: 1.35; }
-.tabLabel { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-:lang(bn) .tab { font-size: 0.8125rem; }
-.tab:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -4px; }
-@media (prefers-reduced-motion: reduce) { .tab, .tab::before { transition: none; } }
-@media (forced-colors: active) { .tabOn::before { background: Highlight; } .tabBar { border-top-color: CanvasText; } }
+.tab .badge {
+  position: absolute;
+  top: 4px;
+  left: calc(50% + 4px);
+  min-width: 1.25rem;
+  margin: 0;
+  padding: 0 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+.tabLabel {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:lang(bn) .tab {
+  font-size: 0.8125rem;
+}
+.tab:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: -4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tab,
+  .tab::before {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  .tabOn::before {
+    background: Highlight;
+  }
+  .tabBar {
+    border-top-color: CanvasText;
+  }
+}
 
 /* On a listing the right column stays in view down to the footer, so the footer keeps to the left of it: the page sets
    html[data-rail] and --tb-rail-reserve (the column's width and the gap). */
-.footer { position: relative; }
-:global(html[data-rail='on']) .footer { border-top: 0; padding-right: calc(var(--tb-gutter) + var(--tb-rail-reserve, 0px)); }
-:global(html[data-rail='on']) .footerGrid { border-top: 1px solid var(--tb-line); }
+.footer {
+  position: relative;
+}
+:global(html[data-rail='on']) .footer {
+  border-top: 0;
+  padding-right: calc(var(--tb-gutter) + var(--tb-rail-reserve, 0px));
+}
+:global(html[data-rail='on']) .footerGrid {
+  border-top: 1px solid var(--tb-line);
+}
 
 /* the signed-in header at laptop width: the Sell button and the links keep their size, the search is what gives way */
-.header > * { flex-shrink: 0; }
-.header > .headSearch { flex: 1 1 9rem; min-width: 9rem; }
-.header [class*='Button-root'] { white-space: nowrap; }
+.header > * {
+  flex-shrink: 0;
+}
+.header > .headSearch {
+  flex: 1 1 9rem;
+  min-width: 9rem;
+}
+.header [class*='Button-root'] {
+  white-space: nowrap;
+}
 /* the orange Sell button reads in dark text (white on #ff6b35 is 2.8:1, below the 4.5:1 of WCAG AA) */
-:root[data-theme='dark'] .header [class*='Button-root'] { --button-color: #0a1018; color: #0a1018; }
-.header [class*='Button-label'] { overflow: visible; }
+:root[data-theme='dark'] .header [class*='Button-root'] {
+  --button-color: #0a1018;
+  color: #0a1018;
+}
+.header [class*='Button-label'] {
+  overflow: visible;
+}
 
 /* the confirmation dialog in the ruled look: a hairline panel, the action in vermilion, Cancel as an outline */
-.dialog { background: var(--tb-sheet); color: var(--tb-text); border: 1px solid var(--tb-border); border-radius: 4px; padding: 1.5rem; }
-.dialog::backdrop { background: rgb(0 0 0 / 0.6); }
-.dialog h2 { font-family: var(--tb-font-display); font-weight: var(--tb-display-weight); font-size: 1.5rem; letter-spacing: -0.02em; margin: 0 0 0.75rem; }
-.dialog p { margin: 0 0 0.75rem; line-height: 1.5; }
-.dialogActions { gap: 0.625rem; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--tb-line); }
-.dialogActions button { min-height: 48px; padding: 0 1.25rem; border-radius: 6px; font: inherit; font-weight: 700; cursor: pointer; border: 1px solid var(--tb-border); background: none; color: var(--tb-text); }
-.dialogActions button:first-child { border-color: var(--tb-action); background: var(--tb-action); color: var(--tb-action-text); }
-.dialogActions button:first-child:hover:not(:disabled) { background: var(--tb-hot-hover); }
-.dialogActions button:last-child:hover:not(:disabled) { border-color: var(--tb-hot); }
-.dialogActions button:disabled { opacity: 0.6; cursor: not-allowed; }
-.dialogActions button:focus-visible { outline: 2px solid var(--tb-text); outline-offset: 3px; }
+.dialog {
+  background: var(--tb-sheet);
+  color: var(--tb-text);
+  border: 1px solid var(--tb-border);
+  border-radius: 4px;
+  padding: 1.5rem;
+}
+.dialog::backdrop {
+  background: rgb(0 0 0 / 0.6);
+}
+.dialog h2 {
+  font-family: var(--tb-font-display);
+  font-weight: var(--tb-display-weight);
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.75rem;
+}
+.dialog p {
+  margin: 0 0 0.75rem;
+  line-height: 1.5;
+}
+.dialogActions {
+  gap: 0.625rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--tb-line);
+}
+.dialogActions button {
+  min-height: 48px;
+  padding: 0 1.25rem;
+  border-radius: 6px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--tb-border);
+  background: none;
+  color: var(--tb-text);
+}
+.dialogActions button:first-child {
+  border-color: var(--tb-action);
+  background: var(--tb-action);
+  color: var(--tb-action-text);
+}
+.dialogActions button:first-child:hover:not(:disabled) {
+  background: var(--tb-hot-hover);
+}
+.dialogActions button:last-child:hover:not(:disabled) {
+  border-color: var(--tb-hot);
+}
+.dialogActions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.dialogActions button:focus-visible {
+  outline: 2px solid var(--tb-text);
+  outline-offset: 3px;
+}
 
 /* the signed-in header's links as a ruled grid of icon cells (the names stay for screen readers and as tooltips) */
-.navGrid { display: flex; flex: none; border: 1px solid var(--tb-line); border-radius: 4px; overflow: hidden; }
-.navCell { position: relative; display: grid; place-items: center; width: 52px; height: 48px; color: var(--tb-text); text-decoration: none; background: none; transition: background 140ms; }
-.navCell + .navCell { border-left: 1px solid var(--tb-line); }
-.navCell:hover { background: var(--tb-surface); }
-.navCell svg { width: 22px; height: 22px; }
-.navCell:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
-.navCell .badge { position: absolute; top: 5px; right: 5px; min-width: 1.25rem; margin: 0; padding: 0 0.25rem; font-size: 0.75rem; line-height: 1.35; }
-@media (prefers-reduced-motion: reduce) { .navCell { transition: none; } }
+.navGrid {
+  display: flex;
+  flex: none;
+  border: 1px solid var(--tb-line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.navCell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 48px;
+  color: var(--tb-text);
+  text-decoration: none;
+  background: none;
+  transition: background 140ms;
+}
+.navCell + .navCell {
+  border-left: 1px solid var(--tb-line);
+}
+.navCell:hover {
+  background: var(--tb-surface);
+}
+.navCell svg {
+  width: 22px;
+  height: 22px;
+}
+.navCell:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: -3px;
+}
+.navCell .badge {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  min-width: 1.25rem;
+  margin: 0;
+  padding: 0 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+@media (prefers-reduced-motion: reduce) {
+  .navCell {
+    transition: none;
+  }
+}
 
 /* the language switch lives in the footer of the user app: a ruled row (label left, the switch as an outlined cell right) */
-.footerLang { display: flex; align-items: center; justify-content: space-between; gap: 1rem; max-width: var(--tb-max-width); margin-inline: auto; padding: 1rem 0 0; border-top: 1px solid var(--tb-line); }
-.footerLang .footerLabel { margin: 0; }
-.footerLang .langSwitch { min-width: 7rem; min-height: 44px; padding: 0 1.25rem; border: 1px solid var(--tb-border); border-radius: 4px; background: none; color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
-.footerLang .langSwitch:hover { border-color: var(--tb-hot); }
-.footerLang .langSwitch:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
-:global(html[data-rail='on']) .footerLang { border-top: 0; }
+.footerLang {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: var(--tb-max-width);
+  margin-inline: auto;
+  padding: 1rem 0 0;
+  border-top: 1px solid var(--tb-line);
+}
+.footerLang .footerLabel {
+  margin: 0;
+}
+.footerLang .langSwitch {
+  min-width: 7rem;
+  min-height: 44px;
+  padding: 0 1.25rem;
+  border: 1px solid var(--tb-border);
+  border-radius: 4px;
+  background: none;
+  color: var(--tb-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.footerLang .langSwitch:hover {
+  border-color: var(--tb-hot);
+}
+.footerLang .langSwitch:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: 2px;
+}
+:global(html[data-rail='on']) .footerLang {
+  border-top: 0;
+}
 /* the promise line is one line on every screen: the long sentence, or a short one on narrow phones */
-.promiseBar { white-space: nowrap; overflow: hidden; }
-.promiseShort { display: none; }
-@media (max-width: 25rem) { .promiseLong { display: none; } .promiseShort { display: inline; } }
-.promiseLong, .promiseShort { overflow: hidden; text-overflow: ellipsis; }
+.promiseBar {
+  white-space: nowrap;
+  overflow: hidden;
+}
+.promiseShort {
+  display: none;
+}
+@media (max-width: 25rem) {
+  .promiseLong {
+    display: none;
+  }
+  .promiseShort {
+    display: inline;
+  }
+}
+.promiseLong,
+.promiseShort {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* ruled, not boxed (owner's review): the header's icon cells and the language switch have dividers and rules, no outlines or rounded boxes */
-.navGrid { border: 0; border-radius: 0; overflow: visible; }
-.navCell { border-radius: 0; }
-.navCell + .navCell { border-left: 1px solid var(--tb-line); }
-.navGrid .navCell:first-child { border-left: 1px solid var(--tb-line); }
-.footerLang .langSwitch { min-width: 44px; min-height: 44px; padding: 0 0.5rem; border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; }
-.footerLang .langSwitch:hover { border-bottom-color: var(--tb-hot); }
+.navGrid {
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+}
+.navCell {
+  border-radius: 0;
+}
+.navCell + .navCell {
+  border-left: 1px solid var(--tb-line);
+}
+.navGrid .navCell:first-child {
+  border-left: 1px solid var(--tb-line);
+}
+.footerLang .langSwitch {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 0.5rem;
+  border: 0;
+  border-bottom: 1px solid var(--tb-border);
+  border-radius: 0;
+}
+.footerLang .langSwitch:hover {
+  border-bottom-color: var(--tb-hot);
+}
 
 /* the confirmation dialog, ruled: a vermilion rule on top and a hairline under, no outline; Cancel is a ruled cell; the paragraphs wrap with no lone last word */
-.dialog { border: 0; border-top: 2px solid var(--tb-hot); border-bottom: 1px solid var(--tb-border); border-radius: 0; }
-.dialog p { text-wrap: pretty; margin: 0 0 0.75rem; }
-.dialogActions button:last-child { border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; background: none; }
-.dialogActions button:last-child:hover:not(:disabled) { border-bottom-color: var(--tb-hot); }
+.dialog {
+  border: 0;
+  border-top: 2px solid var(--tb-hot);
+  border-bottom: 1px solid var(--tb-border);
+  border-radius: 0;
+}
+.dialog p {
+  text-wrap: pretty;
+  margin: 0 0 0.75rem;
+}
+.dialogActions button:last-child {
+  border: 0;
+  border-bottom: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: none;
+}
+.dialogActions button:last-child:hover:not(:disabled) {
+  border-bottom-color: var(--tb-hot);
+}
 /* the phone header's bell and account: ruled cells (a hairline between them), not filled round tiles */
 @media (max-width: 47.99em) {
-  .iconLink { border-radius: 0; background: none; min-width: 48px; min-height: 48px; border-left: 1px solid var(--tb-line); }
-  .iconLink .badge { top: 5px; right: 5px; }
+  .iconLink {
+    border-radius: 0;
+    background: none;
+    min-width: 48px;
+    min-height: 48px;
+    border-left: 1px solid var(--tb-line);
+  }
+  .iconLink .badge {
+    top: 5px;
+    right: 5px;
+  }
 }
 
 /* the "test mode" strip on payment screens: a ruled band with a warning line above and below, not a filled box */
-.notice { margin: var(--tb-space-3) 0; padding: var(--tb-space-2) 0; background: none; border: 0; border-block: 1px solid var(--tb-warning-border); border-radius: 0; }
+.notice {
+  margin: var(--tb-space-3) 0;
+  padding: var(--tb-space-2) 0;
+  background: none;
+  border: 0;
+  border-block: 1px solid var(--tb-warning-border);
+  border-radius: 0;
+}
 
 /* U10-25: the fresh page of sign-in and registration: the logo and the language switch in the corners, the page in the middle, nothing else */
 .bare {
@@ -454,7 +1028,9 @@
   padding: 0;
 }
 
-.bareMain:focus { outline: none; }
+.bareMain:focus {
+  outline: none;
+}
 
 /* on the fresh page the language switch is a line, not a filled box (the ruled grid rule) */
 .bareTop .langSwitch {
@@ -469,9 +1045,43 @@
 }
 
 /* the theme switch (U10-28): a ruled square with the sun or the moon, in the header (wide screens, the console, the ID check) and next to the language in the footer */
-.headTools { display: inline-flex; align-items: center; gap: 0.5rem; }
-.themeSwitch { display: inline-grid; flex: none; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--tb-line); border-radius: 0; background: none; color: var(--tb-text); cursor: pointer; transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), border-color 140ms ease, color 140ms ease; }
-.themeSwitch:active { transform: scale(0.94); }
-@media (hover: hover) and (pointer: fine) { .themeSwitch:hover { border-color: var(--tb-hot); color: var(--tb-hot); } }
-.themeSwitch:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
-@media (prefers-reduced-motion: reduce) { .themeSwitch:active { transform: none; } }
+.headTools {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.themeSwitch {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--tb-line);
+  border-radius: 0;
+  background: none;
+  color: var(--tb-text);
+  cursor: pointer;
+  transition:
+    transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 140ms ease,
+    color 140ms ease;
+}
+.themeSwitch:active {
+  transform: scale(0.94);
+}
+@media (hover: hover) and (pointer: fine) {
+  .themeSwitch:hover {
+    border-color: var(--tb-hot);
+    color: var(--tb-hot);
+  }
+}
+.themeSwitch:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .themeSwitch:active {
+    transform: none;
+  }
+}

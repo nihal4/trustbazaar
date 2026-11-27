@@ -27,7 +27,10 @@ const ref = (channel: string) => `sim-${channel}-${Date.now().toString(36)}-${(n
 export class LogEmailAdapter implements EmailAdapter {
   readonly simulated = true;
   private readonly log = new Logger('EmailAdapter');
-  constructor(private readonly mailbox: DevMailbox, private readonly clock: Clock) {}
+  constructor(
+    private readonly mailbox: DevMailbox,
+    private readonly clock: Clock,
+  ) {}
 
   async send(to: string, subject: string, text: string, html?: string): Promise<{ ref: string }> {
     await this.mailbox.put({ channel: 'email', to, subject, text, html }, this.clock.now());
@@ -39,7 +42,10 @@ export class LogEmailAdapter implements EmailAdapter {
 export class LogSmsAdapter implements SmsAdapter {
   readonly simulated = true;
   private readonly log = new Logger('SmsAdapter');
-  constructor(private readonly mailbox: DevMailbox, private readonly clock: Clock) {}
+  constructor(
+    private readonly mailbox: DevMailbox,
+    private readonly clock: Clock,
+  ) {}
 
   async send(to: string, text: string): Promise<{ ref: string }> {
     await this.mailbox.put({ channel: 'sms', to, subject: null, text }, this.clock.now());
@@ -52,7 +58,10 @@ export class LogSmsAdapter implements SmsAdapter {
 export class SmtpEmailAdapter implements EmailAdapter {
   readonly simulated = false;
   private readonly log = new Logger('EmailAdapter');
-  constructor(private readonly transport: Pick<Transporter, 'sendMail'>, private readonly from: string) {}
+  constructor(
+    private readonly transport: Pick<Transporter, 'sendMail'>,
+    private readonly from: string,
+  ) {}
 
   async send(to: string, subject: string, text: string, html?: string): Promise<{ ref: string }> {
     const info = await this.transport.sendMail({ from: this.from, to, subject, text, ...(html ? { html } : {}) });
@@ -61,13 +70,20 @@ export class SmtpEmailAdapter implements EmailAdapter {
   }
 }
 
-export interface TwilioSettings { accountSid: string; authToken: string; from: string }
+export interface TwilioSettings {
+  accountSid: string;
+  authToken: string;
+  from: string;
+}
 
 /** SMS through Twilio's REST API (U6-07). Test credentials or a trial account only reach verified numbers. */
 export class TwilioSmsAdapter implements SmsAdapter {
   readonly simulated = false;
   private readonly log = new Logger('SmsAdapter');
-  constructor(private readonly s: TwilioSettings, private readonly http: typeof fetch = fetch) {}
+  constructor(
+    private readonly s: TwilioSettings,
+    private readonly http: typeof fetch = fetch,
+  ) {}
 
   async send(to: string, text: string): Promise<{ ref: string }> {
     const res = await this.http(`https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(this.s.accountSid)}/Messages.json`, {
@@ -107,7 +123,8 @@ export function channelsFor(modes: ChannelModes, mailbox: DevMailbox, clock: Clo
   if (modes.smsMode === 'log') sms = new LogSmsAdapter(mailbox, clock);
   else if (modes.smsMode === 'twilio') {
     const p = modes.providers ?? {};
-    if (!p.twilioAccountSid || !p.twilioAuthToken || !p.twilioFrom) throw new Error('SMS_MODE=twilio needs TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN and TWILIO_FROM');
+    if (!p.twilioAccountSid || !p.twilioAuthToken || !p.twilioFrom)
+      throw new Error('SMS_MODE=twilio needs TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN and TWILIO_FROM');
     sms = new TwilioSmsAdapter({ accountSid: p.twilioAccountSid.reveal(), authToken: p.twilioAuthToken.reveal(), from: p.twilioFrom.reveal() });
   } else throw new Error(`SMS_MODE=${modes.smsMode} has no adapter; use log or twilio`);
   return { email, sms };

@@ -115,7 +115,12 @@ export class GameAccountsController {
 
   @Staff('administrator')
   @Patch('admin/games/:id')
-  updateGame(@Param('id', new ParseIntPipe({ exceptionFactory: () => new Problem('not-found') })) id: number, @Body() dto: GamePatchDto, @CurrentPrincipal() p: Principal, @Req() req: Request) {
+  updateGame(
+    @Param('id', new ParseIntPipe({ exceptionFactory: () => new Problem('not-found') })) id: number,
+    @Body() dto: GamePatchDto,
+    @CurrentPrincipal() p: Principal,
+    @Req() req: Request,
+  ) {
     return this.ownership.updateGame(staffOf(p), id, dto, ctx(req));
   }
 

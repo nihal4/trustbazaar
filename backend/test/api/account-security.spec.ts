@@ -88,7 +88,12 @@ describe('step-up, passwords and contact changes', () => {
       expect(((await (await b.get('/me')).json()) as { emailTwoStep: boolean }).emailTwoStep).toBe(false);
       expect((await b.post('/me/security/email-code/enable', {})).status).toBe(200);
       expect(((await (await b.get('/me')).json()) as { emailTwoStep: boolean }).emailTwoStep).toBe(true);
-      const actions = (await fx.query<{ action: string }>(`SELECT action FROM audit.events WHERE actor_id = $1 AND action LIKE 'identity.email_two_step.%' ORDER BY chain_pos`, [a.userId])).map((x) => x.action);
+      const actions = (
+        await fx.query<{ action: string }>(
+          `SELECT action FROM audit.events WHERE actor_id = $1 AND action LIKE 'identity.email_two_step.%' ORDER BY chain_pos`,
+          [a.userId],
+        )
+      ).map((x) => x.action);
       expect(actions).toEqual(['identity.email_two_step.disabled', 'identity.email_two_step.enabled']);
     });
 
@@ -118,7 +123,8 @@ describe('step-up, passwords and contact changes', () => {
       await b.post('/auth/step-up/start', { action: 'account.close' });
       const code = sms(a.phone, 'otp_step_up').at(-1)!.vars.code;
       const wrong = String((Number(code) + 1) % 1e6).padStart(6, '0');
-      for (let i = 0; i < 5; i++) expect((await problem(await b.post('/auth/step-up/verify', { action: 'account.close', code: wrong }))).type).toBe('/problems/otp-failed');
+      for (let i = 0; i < 5; i++)
+        expect((await problem(await b.post('/auth/step-up/verify', { action: 'account.close', code: wrong }))).type).toBe('/problems/otp-failed');
       expect((await problem(await b.post('/auth/step-up/verify', { action: 'account.close', code }))).type).toBe('/problems/otp-expired');
     });
   });
@@ -173,7 +179,9 @@ describe('step-up, passwords and contact changes', () => {
       expect((await browser().post('/auth/password/reset', { token, newPassword: NEW_PASSWORD })).status).toBe(204);
       expect((await b.get('/auth/sessions')).status).toBe(401);
       expect((await browser().post('/auth/signin', { login: a.phone, password: NEW_PASSWORD })).status).toBe(204);
-      expect((await problem(await browser().post('/auth/password/reset', { token, newPassword: `${NEW_PASSWORD} again` }))).type).toBe('/problems/link-invalid');
+      expect((await problem(await browser().post('/auth/password/reset', { token, newPassword: `${NEW_PASSWORD} again` }))).type).toBe(
+        '/problems/link-invalid',
+      );
       const [ev] = await fx.query(`SELECT payload FROM identity.outbox WHERE aggregate_id = $1 AND event_type = 'identity.password.changed'`, [a.userId]);
       expect(ev.payload).toEqual({ userId: a.userId, via: 'reset' });
     });
@@ -196,7 +204,9 @@ describe('step-up, passwords and contact changes', () => {
       await browser().post('/auth/password/forgot', { login: a.email });
       const token = tokenOf(mail(a.email, 'password_reset').at(-1)!.vars.link);
       expect((await problem(await browser().post('/auth/password/reset', { token, newPassword: NEW_PASSWORD }))).type).toBe('/problems/mfa-required');
-      expect((await problem(await browser().post('/auth/password/reset', { token, newPassword: NEW_PASSWORD, mfaCode: '000000' }))).type).toBe('/problems/mfa-failed');
+      expect((await problem(await browser().post('/auth/password/reset', { token, newPassword: NEW_PASSWORD, mfaCode: '000000' }))).type).toBe(
+        '/problems/mfa-failed',
+      );
       const r = await browser().post('/auth/password/reset', { token, newPassword: NEW_PASSWORD, mfaCode: a.recoveryCodes[0] });
       expect(r.status).toBe(204);
     });

@@ -57,17 +57,21 @@
   /* not a filled box: the ground's own colour, so the grid does not run behind the text, framed by hairlines that lie on the grid's lines, one hot rule on top */
   background: var(--tb-bg);
   border: 1px solid var(--tb-border);
-  box-shadow: inset 0 2px 0 var(--tb-hot);            /* the one hot rule, drawn inside the first hairline so the frame's lines stay on the grid */
+  box-shadow: inset 0 2px 0 var(--tb-hot); /* the one hot rule, drawn inside the first hairline so the frame's lines stay on the grid */
   display: flex;
   flex-direction: column;
-  overflow: clip;                                    /* a step slides in inside the frame; the bands' rules never leave it */
+  overflow: clip; /* a step slides in inside the frame; the bands' rules never leave it */
   animation: frameDraw 620ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 /* the frame is drawn from the top down, as a ruled line is */
 @keyframes frameDraw {
-  from { clip-path: inset(0 0 100% 0); }
-  to { clip-path: inset(0 0 -1px 0); }
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 -1px 0);
+  }
 }
 
 .stageStep {
@@ -76,8 +80,14 @@
 }
 
 @keyframes stepIn {
-  from { opacity: 0; transform: translateX(28px); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .stageStep h1 {
@@ -92,7 +102,7 @@
 :lang(bn) .stageStep h1 {
   letter-spacing: 0;
   line-height: 1.35;
-  font-weight: 500;                                  /* the Bangla face rule: headings drop to 500 */
+  font-weight: 500; /* the Bangla face rule: headings drop to 500 */
 }
 
 .stageStep .lead {
@@ -116,7 +126,7 @@
 
 @media (max-width: 32.5rem) {
   .stageStep {
-    padding: 1.25rem 1.125rem 7.5rem;                /* the foot's note takes two lines here */
+    padding: 1.25rem 1.125rem 7.5rem; /* the foot's note takes two lines here */
   }
 }
 
@@ -295,8 +305,6 @@
   padding: 0.75rem 1rem;
 }
 
-
-
 .subsection {
   margin-top: 1.5rem;
 }
@@ -324,7 +332,11 @@
 }
 
 /* the "Forgot your password?" link is a stand-alone target: 44 px */
-.forgot a { display: inline-flex; align-items: center; min-height: 44px; }
+.forgot a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
 
 /* U10-25 (redesign v3): no filled or rounded panels: a notice, the facts, a session, the key and the recovery codes are ruled blocks on hairlines */
 .secret,
@@ -355,7 +367,7 @@
   font-weight: 600;
   color: var(--tb-text);
   overflow: hidden;
-  text-overflow: ellipsis;                           /* a long address stays on one line inside the head band */
+  text-overflow: ellipsis; /* a long address stays on one line inside the head band */
   white-space: nowrap;
 }
 
@@ -385,11 +397,11 @@
    cells, set in `--head` and `--foot`), so the page's grid seems to run on through the card; the free room in the form band is shared out evenly between the
    parts of the form. Each band keeps its own place whether it is full or not, so the card has one height for every step. */
 .banded {
-  flex: 1 0 auto;                                    /* the step fills the card, so the bands share the card's whole height */
+  flex: 1 0 auto; /* the step fills the card, so the bands share the card's whole height */
   padding: 0;
   display: grid;
   grid-template-rows: calc(var(--head) * var(--cell)) minmax(0, 1fr) calc(var(--foot) * var(--cell));
-  grid-template-columns: minmax(0, 1fr);             /* a long word never widens the bands past the card */
+  grid-template-columns: minmax(0, 1fr); /* a long word never widens the bands past the card */
 }
 
 .bandHead {
@@ -450,7 +462,7 @@
 }
 
 .fieldGroup > div:not(.slot) + div:not(.slot) {
-  margin-top: 0.75rem;                              /* two fields in one step (the password and its confirmation) */
+  margin-top: 0.75rem; /* two fields in one step (the password and its confirmation) */
 }
 
 .bandFoot {
@@ -581,7 +593,6 @@
   white-space: nowrap;
 }
 
-
 /* The step of registration with the age and the terms: two ruled boxes and the line under them (U10-25). */
 .checks {
   display: flex;
@@ -701,7 +712,6 @@
   outline-offset: -2px;
 }
 
-
 /* A link inside a sentence (the terms and the privacy notice in the label of the box): it is part of the line, not a target of its own, so it neither
    stretches the line nor sits apart from the words; the label around it is the target of 44 px. */
 .textLink {
@@ -765,9 +775,7 @@
   display: grid;
   place-items: center;
   border: 1px solid var(--tb-border);
-  background-image:
-    linear-gradient(to right, var(--tb-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--tb-line) 1px, transparent 1px);
+  background-image: linear-gradient(to right, var(--tb-line) 1px, transparent 1px), linear-gradient(to bottom, var(--tb-line) 1px, transparent 1px);
   background-size: 32px 32px;
 }
 

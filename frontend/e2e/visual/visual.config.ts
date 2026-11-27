@@ -19,5 +19,7 @@ export default defineConfig({
   expect: { toHaveScreenshot: { maxDiffPixels: 0, threshold: 0.1, animations: 'disabled', caret: 'hide', scale: 'css' } },
   use: { baseURL: base, locale: 'en-GB', timezoneId: 'Asia/Dhaka', reducedMotion: 'reduce', deviceScaleFactor: 1 },
   // the production build, served as the web container serves it (e2e/serve.mjs); needs `npm run build` first
-  webServer: process.env.VISUAL_BASE_URL ? undefined : { command: 'node e2e/serve.mjs', cwd: `${here}/../..`, url: `${base}/healthz`, reuseExistingServer: true, timeout: 30_000 },
+  webServer: process.env.VISUAL_BASE_URL
+    ? undefined
+    : { command: 'node e2e/serve.mjs', cwd: `${here}/../..`, url: `${base}/healthz`, reuseExistingServer: true, timeout: 30_000 },
 });

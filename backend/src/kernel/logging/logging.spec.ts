@@ -9,21 +9,47 @@ import { mask, REDACTED, redact } from './redact';
 describe('redaction (SEC-DAT-07)', () => {
   it('SEC-DAT-07 the keys of the redaction list are removed at any depth, also inside longer keys', () => {
     const out = redact({
-      password: 'hunter2', otp: '123456', sessionToken: 'abc', 'set-cookie': 'tb=1', Authorization: 'Bearer x', nid: '1990123',
-      payout: { accountNumber: '0123456789', account_number: '987', bank: 'City' }, ciphertext: 'AAAA', credentials: { user: 'u' },
-      list: [{ refreshToken: 't' }], ok: 'value', n: 3, big: 5n, when: new Date('2026-11-17T00:00:00Z'), raw: Buffer.from('abc'),
+      password: 'hunter2',
+      otp: '123456',
+      sessionToken: 'abc',
+      'set-cookie': 'tb=1',
+      Authorization: 'Bearer x',
+      nid: '1990123',
+      payout: { accountNumber: '0123456789', account_number: '987', bank: 'City' },
+      ciphertext: 'AAAA',
+      credentials: { user: 'u' },
+      list: [{ refreshToken: 't' }],
+      ok: 'value',
+      n: 3,
+      big: 5n,
+      when: new Date('2026-11-17T00:00:00Z'),
+      raw: Buffer.from('abc'),
     }) as Record<string, unknown>;
     expect(out).toEqual({
-      password: REDACTED, otp: REDACTED, sessionToken: REDACTED, 'set-cookie': REDACTED, Authorization: REDACTED, nid: REDACTED,
-      payout: { accountNumber: REDACTED, account_number: REDACTED, bank: 'City' }, ciphertext: REDACTED, credentials: REDACTED,
-      list: [{ refreshToken: REDACTED }], ok: 'value', n: 3, big: '5', when: '2026-11-17T00:00:00.000Z', raw: '[3 bytes]',
+      password: REDACTED,
+      otp: REDACTED,
+      sessionToken: REDACTED,
+      'set-cookie': REDACTED,
+      Authorization: REDACTED,
+      nid: REDACTED,
+      payout: { accountNumber: REDACTED, account_number: REDACTED, bank: 'City' },
+      ciphertext: REDACTED,
+      credentials: REDACTED,
+      list: [{ refreshToken: REDACTED }],
+      ok: 'value',
+      n: 3,
+      big: '5',
+      when: '2026-11-17T00:00:00.000Z',
+      raw: '[3 bytes]',
     });
   });
 
   it('SEC-DAT-07 phone numbers and e-mail addresses are masked to their last characters; other numbers are kept', () => {
     expect(mask('sms to +8801711000002 and 01811000345 or 8801911000777')).toBe('sms to ***002 and ***345 or ***777');
     expect(mask('mail rahim.uddin@example.com.bd')).toBe('mail ***in@example.com.bd');
-    expect(mask('took 1793491200002 ms, order 42, id 00000000-0000-4000-8000-000000000002')).toBe('took 1793491200002 ms, order 42, id 00000000-0000-4000-8000-000000000002');
+    expect(mask('took 1793491200002 ms, order 42, id 00000000-0000-4000-8000-000000000002')).toBe(
+      'took 1793491200002 ms, order 42, id 00000000-0000-4000-8000-000000000002',
+    );
   });
 
   it('SEC-DAT-07 errors keep name, masked message and stack; cycles and depth are bounded', () => {
@@ -42,7 +68,14 @@ describe('JsonLogger (NFR-OBS-02)', () => {
   const NOW = new Date('2026-11-17T08:00:00Z');
   const capture = (level: 'error' | 'warn' | 'info' | 'debug' = 'info') => {
     const lines: LogLine[] = [];
-    return { lines, logger: new JsonLogger(level, (l) => lines.push(JSON.parse(l)), () => NOW) };
+    return {
+      lines,
+      logger: new JsonLogger(
+        level,
+        (l) => lines.push(JSON.parse(l)),
+        () => NOW,
+      ),
+    };
   };
 
   it('NFR-OBS-02 one JSON line with time, level, module, message and the correlation id; fields are redacted', () => {
@@ -55,7 +88,15 @@ describe('JsonLogger (NFR-OBS-02)', () => {
     logger.verbose('detail', 'X');
     expect(lines).toEqual([
       { time: '2026-11-17T08:00:00.000Z', level: 'info', module: 'PaymentService', msg: 'payment attempt failed' },
-      { time: '2026-11-17T08:00:00.000Z', level: 'warn', module: 'RefundService', msg: 'refund retry', correlationId: '11111111-1111-4111-8111-111111111111', refundId: 'r1', token: REDACTED },
+      {
+        time: '2026-11-17T08:00:00.000Z',
+        level: 'warn',
+        module: 'RefundService',
+        msg: 'refund retry',
+        correlationId: '11111111-1111-4111-8111-111111111111',
+        refundId: 'r1',
+        token: REDACTED,
+      },
       { time: '2026-11-17T08:00:00.000Z', level: 'error', module: 'ProblemFilter', msg: 'boom for ***002', stack: 'Error: stack at x' },
       { time: '2026-11-17T08:00:00.000Z', level: 'info', module: 'app', msg: 'from message' },
       { time: '2026-11-17T08:00:00.000Z', level: 'fatal', module: 'config', msg: 'down', error: expect.objectContaining({ name: 'Error', message: 'down' }) },
@@ -76,7 +117,7 @@ describe('JsonLogger (NFR-OBS-02)', () => {
     expect(capture('error').logger.enabled('warn')).toBe(false);
   });
 
-  it('NFR-OBS-02 Nest\'s Logger in any service writes through the installed logger', () => {
+  it("NFR-OBS-02 Nest's Logger in any service writes through the installed logger", () => {
     const { lines, logger } = capture();
     Logger.overrideLogger(logger);
     try {
@@ -89,7 +130,7 @@ describe('JsonLogger (NFR-OBS-02)', () => {
 });
 
 describe('correlation (SEC-INP-06, NFR-OBS-02)', () => {
-  it('SEC-INP-06 the request\'s id is current while it is handled and on its one access line, without the query', () => {
+  it("SEC-INP-06 the request's id is current while it is handled and on its one access line, without the query", () => {
     const lines: LogLine[] = [];
     Logger.overrideLogger(new JsonLogger('info', (l) => lines.push(JSON.parse(l))));
     try {
@@ -107,7 +148,15 @@ describe('correlation (SEC-INP-06, NFR-OBS-02)', () => {
     } finally {
       Logger.overrideLogger(false);
     }
-    expect(lines[0]).toMatchObject({ module: 'http', msg: 'request', level: 'info', method: 'GET', path: '/api/v1/callbacks/bkash/a', status: 200, correlationId: 'aaaaaaaa-1111-4111-8111-111111111111' });
+    expect(lines[0]).toMatchObject({
+      module: 'http',
+      msg: 'request',
+      level: 'info',
+      method: 'GET',
+      path: '/api/v1/callbacks/bkash/a',
+      status: 200,
+      correlationId: 'aaaaaaaa-1111-4111-8111-111111111111',
+    });
     expect(JSON.stringify(lines)).not.toContain('SECRET');
     expect(lines[1]).toMatchObject({ level: 'warn', status: 503, correlationId: expect.stringMatching(/^[0-9a-f-]{36}$/) });
     expect(lines[1].correlationId).not.toBe('not-a-uuid');

@@ -52,7 +52,11 @@ describe('auctions', () => {
   const guest = (method: string, path: string, body?: unknown) =>
     fetch(t.url(path), {
       method,
-      headers: { origin, 'x-forwarded-for': `192.0.2.${randomInt(1, 255)}, 10.3.${randomInt(0, 255)}.${randomInt(1, 255)}`, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
+      headers: {
+        origin,
+        'x-forwarded-for': `192.0.2.${randomInt(1, 255)}, 10.3.${randomInt(0, 255)}.${randomInt(1, 255)}`,
+        ...(body !== undefined ? { 'content-type': 'application/json' } : {}),
+      },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
 
@@ -68,7 +72,13 @@ describe('auctions', () => {
   };
 
   function connect(cookie: string): Promise<Socket> {
-    const s = io(new URL(t.url('/')).origin, { path: '/socket.io', transports: ['websocket'], extraHeaders: { cookie, origin }, reconnection: false, forceNew: true });
+    const s = io(new URL(t.url('/')).origin, {
+      path: '/socket.io',
+      transports: ['websocket'],
+      extraHeaders: { cookie, origin },
+      reconnection: false,
+      forceNew: true,
+    });
     sockets.push(s);
     return new Promise((resolve, reject) => {
       s.once('connect', () => resolve(s));
@@ -84,7 +94,7 @@ describe('auctions', () => {
       });
     });
 
-  it('FR-AUC-06 the worked example: proxy answers, the tie to the earlier maximum, raising one\'s own maximum', async () => {
+  it("FR-AUC-06 the worked example: proxy answers, the tie to the earlier maximum, raising one's own maximum", async () => {
     const { id } = await auction();
     const [asha, babu, chaya] = [await member(), await member(), await member()];
     const placed = async (u: Who, max: string) => {
@@ -93,8 +103,18 @@ describe('auctions', () => {
       return (await r.json()) as { outcome: string; yourMaximum: string; state: Record<string, unknown> };
     };
 
-    expect(await placed(asha, '150000')).toMatchObject({ outcome: 'leading', yourMaximum: '150000', state: { price: '100000', leaderAlias: 1, bidCount: 1, minimumBid: '105000' } });
-    expect(await refusal(await babu.bid(id, '104900'))).toEqual({ status: 422, type: '/problems/bid-refused', field: 'maximum', reason: 'below_minimum', minimum: '105000' });
+    expect(await placed(asha, '150000')).toMatchObject({
+      outcome: 'leading',
+      yourMaximum: '150000',
+      state: { price: '100000', leaderAlias: 1, bidCount: 1, minimumBid: '105000' },
+    });
+    expect(await refusal(await babu.bid(id, '104900'))).toEqual({
+      status: 422,
+      type: '/problems/bid-refused',
+      field: 'maximum',
+      reason: 'below_minimum',
+      minimum: '105000',
+    });
     expect(await placed(babu, '120000')).toMatchObject({ outcome: 'outbid', state: { price: '125000', leaderAlias: 1 } });
     expect(await placed(babu, '150000')).toMatchObject({ outcome: 'outbid', state: { price: '150000', leaderAlias: 1 } });
     expect(await placed(chaya, '200000')).toMatchObject({ outcome: 'leading', state: { price: '155000', leaderAlias: 3 } });
@@ -104,28 +124,46 @@ describe('auctions', () => {
     // FR-AUC-13: aliases and the amounts shown, newest first; the leader's maximum never appears
     const history = (await (await guest('GET', `/auctions/${id}/bids`)).json()) as { items: Record<string, unknown>[] };
     expect(history.items.map((b) => [b.bidderAlias, b.amount, b.leading])).toEqual([
-      [3, '155000', true], [3, '155000', true], [2, '150000', false], [2, '120000', false], [1, '100000', true],
+      [3, '155000', true],
+      [3, '155000', true],
+      [2, '150000', false],
+      [2, '120000', false],
+      [1, '100000', true],
     ]);
     // newest first by the numeric id, also where the ids differ in length (as text, 100 sorts before 99)
     const ids = history.items.map((b) => BigInt(b.id as string));
     expect(ids).toEqual([...ids].sort((a, b) => (a > b ? -1 : a < b ? 1 : 0)));
     const s = await state(id);
     expect(s).toMatchObject({ status: 'open', price: '155000', bidCount: 5, leaderAlias: 3, minimumBid: '160000', hasReserve: false, reserveMet: true });
-    expect(s.seq).toBe((raised.state.seq as number));
+    expect(s.seq).toBe(raised.state.seq as number);
     const shown = JSON.stringify([history, s]);
     for (const hidden of ['200000', '250000', asha.userId, babu.userId, chaya.userId]) expect(shown).not.toContain(hidden);
   });
 
-  it('FR-AUC-08 my-status shows a bidder their own maximum and lead, and nobody else\'s', async () => {
+  it("FR-AUC-08 my-status shows a bidder their own maximum and lead, and nobody else's", async () => {
     const { id } = await auction();
     const [asha, babu] = [await member(), await member()];
     expect((await asha.bid(id, '180000')).status).toBe(201);
-    expect(await (await asha.call('GET', `/auctions/${id}/my-status`)).json()).toEqual({ hasBid: true, yourMaximum: '180000', leading: true, yourAlias: 1, orderId: null, secondChanceOffer: null });
-    expect(await (await babu.call('GET', `/auctions/${id}/my-status`)).json()).toEqual({ hasBid: false, yourMaximum: null, leading: false, yourAlias: null, orderId: null, secondChanceOffer: null });
+    expect(await (await asha.call('GET', `/auctions/${id}/my-status`)).json()).toEqual({
+      hasBid: true,
+      yourMaximum: '180000',
+      leading: true,
+      yourAlias: 1,
+      orderId: null,
+      secondChanceOffer: null,
+    });
+    expect(await (await babu.call('GET', `/auctions/${id}/my-status`)).json()).toEqual({
+      hasBid: false,
+      yourMaximum: null,
+      leading: false,
+      yourAlias: null,
+      orderId: null,
+      secondChanceOffer: null,
+    });
     expect((await guest('GET', `/auctions/${id}/my-status`)).status).toBe(401);
   });
 
-  it('FR-AUC-09 the price rises to the reserve once the leader\'s maximum reaches it; the reserve itself is never shown', async () => {
+  it("FR-AUC-09 the price rises to the reserve once the leader's maximum reaches it; the reserve itself is never shown", async () => {
     const { id } = await auction({ reserve: '140000' });
     const [asha, babu] = [await member(), await member()];
     expect((await asha.bid(id, '130000')).status).toBe(201);
@@ -169,7 +207,9 @@ describe('auctions', () => {
     expect(await refusal(await asha.bid(id, '150000'))).toMatchObject({ status: 422, reason: 'max_not_higher' });
 
     const struck = await member();
-    await fx.query(`INSERT INTO auctions.bidding_restrictions (user_id, until, reason) VALUES ($1, now() + interval '7 days', 'test strikes')`, [struck.userId]);
+    await fx.query(`INSERT INTO auctions.bidding_restrictions (user_id, until, reason) VALUES ($1, now() + interval '7 days', 'test strikes')`, [
+      struck.userId,
+    ]);
     const r = await refusal(await struck.bid(id, '300000'));
     expect(r).toMatchObject({ status: 422, reason: 'bidder_restricted' });
     expect(Date.parse(r.until!)).toBeGreaterThan(Date.now() + 6 * 86_400_000);
@@ -268,7 +308,8 @@ describe('auctions', () => {
     expect(JSON.stringify(second)).not.toContain('200000');
 
     const events = await fx.query<{ payload: Record<string, unknown> }>(
-      `SELECT payload FROM auctions.outbox WHERE event_type = 'auctions.bid.outbid' AND aggregate_id = $1`, [id],
+      `SELECT payload FROM auctions.outbox WHERE event_type = 'auctions.bid.outbid' AND aggregate_id = $1`,
+      [id],
     );
     expect(events.map((e) => e.payload)).toEqual([expect.objectContaining({ auctionId: id, userId: asha.userId, price: '125000' })]);
   });

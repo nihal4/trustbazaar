@@ -7,7 +7,10 @@ describe('FeaturedConsumers', () => {
     const bus = { on: jest.fn() };
     const c = new FeaturedConsumers(db as never, bus as never);
     c.onModuleInit();
-    expect(bus.on.mock.calls.map((x) => [x[0], x[1]])).toEqual([['payments.featured.started', 'listings.featured'], ['payments.featured.ended', 'listings.featured']]);
+    expect(bus.on.mock.calls.map((x) => [x[0], x[1]])).toEqual([
+      ['payments.featured.started', 'listings.featured'],
+      ['payments.featured.ended', 'listings.featured'],
+    ]);
     const e = (payload: Record<string, unknown>) => ({ outbox: 'orders', id: '1', type: 't', aggregateId: 'P', payload, createdAt: new Date(), attempt: 1 });
     await bus.on.mock.calls[0][2](e({ listingId: 'L', endsAt: '2026-11-18T10:00:00.000Z' }));
     expect(db.query).toHaveBeenLastCalledWith(expect.stringContaining('greatest(featured_until'), ['L', '2026-11-18T10:00:00.000Z']);

@@ -55,16 +55,19 @@ export class Live {
     const opened = this.open();
     if (!(opened instanceof Promise)) return this.attach(opened);
     this.opening = attempt;
-    void opened.then((s) => {
-      if (this.opening !== attempt) {
-        s.disconnect(); // stopped while loading
-        return;
-      }
-      this.opening = 0;
-      this.attach(s);
-    }, () => {
-      if (this.opening === attempt) this.opening = 0; // the next sign-in tries again
-    });
+    void opened.then(
+      (s) => {
+        if (this.opening !== attempt) {
+          s.disconnect(); // stopped while loading
+          return;
+        }
+        this.opening = 0;
+        this.attach(s);
+      },
+      () => {
+        if (this.opening === attempt) this.opening = 0; // the next sign-in tries again
+      },
+    );
   }
 
   private generation = 0;
@@ -78,9 +81,11 @@ export class Live {
     s.on('connect_error', ((e: { message?: string }) => {
       if (this.socket !== s) return;
       if (e?.message === TOKEN_EXPIRED) {
-        void this.renew().catch(() => undefined).then(() => {
-          if (this.socket === s) s.connect();
-        });
+        void this.renew()
+          .catch(() => undefined)
+          .then(() => {
+            if (this.socket === s) s.connect();
+          });
       } else if (e?.message === SESSION_ENDED) {
         this.stop();
       }

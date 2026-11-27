@@ -13,7 +13,9 @@ const sharp = require('sharp') as typeof import('sharp').default;
 // pipeline (docs/design/03_listings_auctions.pdf sections 3.1, 3.3, 6.1 and 6.2), and the stock port.
 let shade = 0;
 const jpeg = (w = 900, h = 600) =>
-  sharp({ create: { width: w, height: h, channels: 3, background: { r: (shade += 9) % 255, g: 120, b: 80 } } }).jpeg().toBuffer();
+  sharp({ create: { width: w, height: h, channels: 3, background: { r: (shade += 9) % 255, g: 120, b: 80 } } })
+    .jpeg()
+    .toBuffer();
 
 describe('listings', () => {
   let t: TestApp;
@@ -29,10 +31,12 @@ describe('listings', () => {
     origin = loadConfig(process.env).publicOrigin;
     const tag = randomUUID().slice(0, 8);
     const cat = async (slug: string, kind: string, prohibited = false) =>
-      (await fx.query<{ id: number }>(
-        `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind, prohibited) VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-        [`${slug}-${tag}`, slug, 'বিভাগ', kind, prohibited],
-      ))[0].id;
+      (
+        await fx.query<{ id: number }>(
+          `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind, prohibited) VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+          [`${slug}-${tag}`, slug, 'বিভাগ', kind, prohibited],
+        )
+      )[0].id;
     phones = await cat('phones', 'physical');
     games = await cat('games', 'game_account');
     banned = await cat('weapons', 'physical', true);
@@ -61,15 +65,29 @@ describe('listings', () => {
   const guest = (method: string, path: string, body?: unknown) =>
     fetch(t.url(path), {
       method,
-      headers: { origin, 'x-forwarded-for': `192.0.2.${randomInt(1, 255)}, 10.2.${randomInt(0, 255)}.${randomInt(1, 255)}`, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
+      headers: {
+        origin,
+        'x-forwarded-for': `192.0.2.${randomInt(1, 255)}, 10.2.${randomInt(0, 255)}.${randomInt(1, 255)}`,
+        ...(body !== undefined ? { 'content-type': 'application/json' } : {}),
+      },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
 
   const phoneDraft = (o: Record<string, unknown> = {}) => ({
-    itemKind: 'physical', saleFormat: 'fixed_price', categoryId: phones, title: 'Used Android phone',
-    description: 'Used phone in good condition, battery healthy, charger included.', condition: 'used', noVisibleDefects: true,
-    fulfilmentOptions: 'pickup_or_courier', weightClass: 'up_to_1kg', sizeClass: 'small', price: '1500000', quantity: 2,
-    area: { district: 'Dhaka', lat: 23.81049, lng: 90.41234 }, ...o,
+    itemKind: 'physical',
+    saleFormat: 'fixed_price',
+    categoryId: phones,
+    title: 'Used Android phone',
+    description: 'Used phone in good condition, battery healthy, charger included.',
+    condition: 'used',
+    noVisibleDefects: true,
+    fulfilmentOptions: 'pickup_or_courier',
+    weightClass: 'up_to_1kg',
+    sizeClass: 'small',
+    price: '1500000',
+    quantity: 2,
+    area: { district: 'Dhaka', lat: 23.81049, lng: 90.41234 },
+    ...o,
   });
   async function draft(u: Who, o: Record<string, unknown> = {}) {
     const r = await u.call('POST', '/listings', phoneDraft(o));
@@ -91,7 +109,9 @@ describe('listings', () => {
     return l.id;
   }
   const outbox = (id: string) =>
-    fx.query<{ event_type: string; payload: Record<string, unknown> }>(`SELECT event_type, payload FROM auctions.outbox WHERE aggregate_id = $1 ORDER BY id`, [id]);
+    fx.query<{ event_type: string; payload: Record<string, unknown> }>(`SELECT event_type, payload FROM auctions.outbox WHERE aggregate_id = $1 ORDER BY id`, [
+      id,
+    ]);
   const errorsOf = async (r: Response) => ((await r.json()).errors ?? []).map((e: { field: string; reason: string }) => `${e.field}:${e.reason}`);
 
   // ---------------------------------------------------------------- categories and drafts
@@ -116,7 +136,7 @@ describe('listings', () => {
     expect(h).toEqual({ from_status: null, to_status: 'draft', actor_type: 'user', actor_id: u.userId });
   });
 
-  it('FR-LST-06 without an area the draft takes the seller\'s saved area (I-24)', async () => {
+  it("FR-LST-06 without an area the draft takes the seller's saved area (I-24)", async () => {
     const u = await member();
     await fx.query(`UPDATE identity.users SET area_district = 'Sylhet', approx_lat = 24.895, approx_lng = 91.869 WHERE id = $1`, [u.userId]);
     const rest = { ...phoneDraft(), area: undefined }; // dropped by JSON.stringify
@@ -168,7 +188,9 @@ describe('listings', () => {
     expect(await errorsOf(heavy)).toContain('weightClass:no-courier-over-10kg');
     const big = await u.call('POST', '/listings', phoneDraft({ sizeClass: 'oversize', fulfilmentOptions: 'courier_only' }));
     expect(await errorsOf(big)).toContain('sizeClass:no-courier-oversize');
-    expect((await u.call('POST', '/listings', phoneDraft({ weightClass: 'over_10kg', sizeClass: 'oversize', fulfilmentOptions: 'pickup_only' }))).status).toBe(201);
+    expect((await u.call('POST', '/listings', phoneDraft({ weightClass: 'over_10kg', sizeClass: 'oversize', fulfilmentOptions: 'pickup_only' }))).status).toBe(
+      201,
+    );
   });
 
   // ---------------------------------------------------------------- photos
@@ -244,7 +266,10 @@ describe('listings', () => {
     const l = await draft(u, { serial: '35-209900 176148 1' });
     expect(l).toMatchObject({ serialLast4: '1481' });
     expect(JSON.stringify(l)).not.toContain('352099001761481');
-    const [row] = await fx.query<{ serial_last4: string; kept: boolean }>(`SELECT serial_last4, serial_hmac IS NOT NULL AS kept FROM listings.listings WHERE id = $1`, [l.id]);
+    const [row] = await fx.query<{ serial_last4: string; kept: boolean }>(
+      `SELECT serial_last4, serial_hmac IS NOT NULL AS kept FROM listings.listings WHERE id = $1`,
+      [l.id],
+    );
     expect(row).toEqual({ serial_last4: '1481', kept: true });
     expect(await errorsOf(await u.call('PATCH', `/listings/${l.id}`, { serial: 'ab' }))).toEqual(['serial:format']);
     expect((await (await u.call('PATCH', `/listings/${l.id}`, { serial: '' })).json()).serialLast4).toBeNull();
@@ -291,8 +316,12 @@ describe('listings', () => {
   it('FR-LST-12 a game-account listing waits for the ownership approval of Unit 5', async () => {
     const u = await member();
     const r = await u.call('POST', '/listings', {
-      itemKind: 'game_account', saleFormat: 'fixed_price', categoryId: games, title: 'PUBG account level 70',
-      description: 'Level 70 account with many skins and two seasons of passes.', price: '500000',
+      itemKind: 'game_account',
+      saleFormat: 'fixed_price',
+      categoryId: games,
+      title: 'PUBG account level 70',
+      description: 'Level 70 account with many skins and two seasons of passes.',
+      price: '500000',
     });
     expect(r.status).toBe(201);
     const { id } = await r.json();
@@ -300,7 +329,7 @@ describe('listings', () => {
     expect((await p.json()).status).toBe('pending_review');
   });
 
-  it('FR-LST-09 the listing limit CP-28 counts the seller\'s active listings', async () => {
+  it("FR-LST-09 the listing limit CP-28 counts the seller's active listings", async () => {
     const u = await member();
     for (let i = 0; i < 10; i++) {
       const [{ id }] = await fx.query<{ id: string }>(
@@ -411,7 +440,7 @@ describe('listings', () => {
 
   // ---------------------------------------------------------------- SEC-SDL-09's four negative cases
 
-  it('SEC-SDL-09 another user\'s listing, a lower role, no session and an expired session are all refused', async () => {
+  it("SEC-SDL-09 another user's listing, a lower role, no session and an expired session are all refused", async () => {
     const owner = await member();
     const d = await draft(owner);
     const other = await member();
@@ -424,7 +453,9 @@ describe('listings', () => {
     expect((await guest('PATCH', `/listings/${d.id}`, { title: 'No session at all' })).status).toBe(401);
     const sid = await fx.session({ userId: owner.userId }, { idleSeconds: -60 });
     const expired = await fetch(t.url(`/listings/${d.id}`), {
-      method: 'PATCH', headers: { ...fx.headers(sid, owner.userId, 'user'), 'content-type': 'application/json' }, body: JSON.stringify({ title: 'Expired session edit' }),
+      method: 'PATCH',
+      headers: { ...fx.headers(sid, owner.userId, 'user'), 'content-type': 'application/json' },
+      body: JSON.stringify({ title: 'Expired session edit' }),
     });
     expect(expired.status).toBe(401);
   });
@@ -475,8 +506,13 @@ describe('listings', () => {
     await u.call('POST', `/listings/${id}/clarifications`, { body: 'Screen protector fitted.' });
     const snap = await t.app.get<ListingsPort>(LISTINGS_PORT).snapshot(id);
     expect(snap).toMatchObject({
-      listingId: id, sellerId: u.userId, price: '1500000', district: 'Dhaka', status: 'active',
-      category: { id: phones }, clarifications: [{ body: 'Screen protector fitted.' }],
+      listingId: id,
+      sellerId: u.userId,
+      price: '1500000',
+      district: 'Dhaka',
+      status: 'active',
+      category: { id: phones },
+      clarifications: [{ body: 'Screen protector fitted.' }],
     });
     expect(snap.photoKeys).toHaveLength(2);
     await expect(t.app.get<ListingsPort>(LISTINGS_PORT).snapshot(randomUUID())).rejects.toThrow();
@@ -486,8 +522,11 @@ describe('listings', () => {
     const seller = await member({ kyc: 'verified' });
     const terms = await (await seller.call('GET', '/me/selling-terms')).json();
     expect(terms).toEqual({
-      pro: false, commissionBps: expect.any(Number), auctionDurations: expect.arrayContaining(['24 hours']),
-      photos: { max: expect.any(Number), maxBytes: expect.any(Number), min: 2 }, activeListings: { count: 0, limit: expect.any(Number) },
+      pro: false,
+      commissionBps: expect.any(Number),
+      auctionDurations: expect.arrayContaining(['24 hours']),
+      photos: { max: expect.any(Number), maxBytes: expect.any(Number), min: 2 },
+      activeListings: { count: 0, limit: expect.any(Number) },
     });
     expect(terms.photos.max).toBeLessThanOrEqual(10);
     expect((await (await member({ kyc: 'unsubmitted' })).call('GET', '/me/selling-terms')).status).toBe(403);

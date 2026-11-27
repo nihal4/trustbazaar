@@ -45,10 +45,16 @@ export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang:
   const act = useMutation({
     mutationFn: (a: Action): Promise<OrderView> => {
       switch (a) {
-        case 'confirm': return api.post(`/orders/${id}/confirm-receipt`, {}) as Promise<OrderView>;
-        case 'request': return api.post(`/orders/${id}/cancellation-requests`, { reason: reason.trim() }) as Promise<OrderView>;
-        case 'cancel': return api.post(`/orders/${id}/cancel`, { reason: reason.trim() }) as Promise<OrderView>;
-        default: return api.post(`/orders/${id}/cancellation-requests/${encodeURIComponent(o.cancellationRequest?.id ?? '')}/decision`, { decision: a }) as Promise<OrderView>;
+        case 'confirm':
+          return api.post(`/orders/${id}/confirm-receipt`, {}) as Promise<OrderView>;
+        case 'request':
+          return api.post(`/orders/${id}/cancellation-requests`, { reason: reason.trim() }) as Promise<OrderView>;
+        case 'cancel':
+          return api.post(`/orders/${id}/cancel`, { reason: reason.trim() }) as Promise<OrderView>;
+        default:
+          return api.post(`/orders/${id}/cancellation-requests/${encodeURIComponent(o.cancellationRequest?.id ?? '')}/decision`, {
+            decision: a,
+          }) as Promise<OrderView>;
       }
     },
     onSuccess: (next) => {
@@ -69,7 +75,11 @@ export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang:
     if (sending.current) return;
     sending.current = true;
     setMessage(null);
-    act.mutate(a, { onSettled: () => { sending.current = false; } });
+    act.mutate(a, {
+      onSettled: () => {
+        sending.current = false;
+      },
+    });
   };
 
   const allowed = actionsOf(o);
@@ -99,64 +109,121 @@ export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang:
         {extra}
         {allowed.includes('confirm') && (
           <div className={styles.actionCell}>
-            <button type="button" className={styles.primary} onClick={() => setOpen('confirm')} disabled={act.isPending}>{t('actions.confirm_receipt')}</button>
+            <button type="button" className={styles.primary} onClick={() => setOpen('confirm')} disabled={act.isPending}>
+              {t('actions.confirm_receipt')}
+            </button>
           </div>
         )}
         {allowed.includes('accept') && (
           <div className={styles.actionCell}>
-            <button type="button" className={styles.primary} onClick={() => setOpen('accept')} disabled={act.isPending}>{t('actions.accept_request')}</button>
+            <button type="button" className={styles.primary} onClick={() => setOpen('accept')} disabled={act.isPending}>
+              {t('actions.accept_request')}
+            </button>
           </div>
         )}
         {allowed.includes('decline') && (
           <div className={styles.actionCell}>
-            <button type="button" className={styles.secondary} onClick={() => run('decline')} disabled={act.isPending}>{t('actions.decline_request')}</button>
+            <button type="button" className={styles.secondary} onClick={() => run('decline')} disabled={act.isPending}>
+              {t('actions.decline_request')}
+            </button>
           </div>
         )}
         {allowed.includes('request') && open !== 'request' && (
           <div className={styles.actionCell}>
-            <button type="button" className={`${styles.secondary} ${styles.quiet}`} onClick={() => setOpen('request')}>{t('actions.ask_cancel')}</button>
+            <button type="button" className={`${styles.secondary} ${styles.quiet}`} onClick={() => setOpen('request')}>
+              {t('actions.ask_cancel')}
+            </button>
           </div>
         )}
         {allowed.includes('cancel') && open !== 'cancel' && (
           <div className={styles.actionCell}>
-            <button type="button" className={styles.secondary} onClick={() => setOpen('cancel')}>{t('actions.seller_cancel')}</button>
+            <button type="button" className={styles.secondary} onClick={() => setOpen('cancel')}>
+              {t('actions.seller_cancel')}
+            </button>
           </div>
         )}
       </div>
 
       {needsReason && !confirming && (
-        <Popup id="action-reason" title={t(open === 'request' ? 'actions.ask_cancel' : 'actions.seller_cancel')} closeLabel={t('actions.back')} busy={act.isPending} onClose={() => { setOpen(null); setReason(''); setMessage(null); }}>
-        <form onSubmit={submitReason} noValidate className={styles.form}>
-          {message && <FormMessage kind="error">{message}</FormMessage>}
-          <p>{t(open === 'request' ? 'actions.ask_cancel_note' : 'actions.seller_cancel_note')}</p>
-          <label htmlFor="action-reason">{t('actions.reason')}</label>
-          <textarea id="action-reason" aria-invalid={!reasonOk && !!message} value={reason} maxLength={500} rows={3} onChange={(e) => setReason(e.target.value)} />
-          <div className={styles.popupButtons}>
-            <button type="submit" className={styles.primary} disabled={act.isPending}>{t(open === 'request' ? 'actions.send_request' : 'actions.continue')}</button>
-            <button type="button" className={styles.secondary} onClick={() => { setOpen(null); setReason(''); setMessage(null); }}>{t('actions.back')}</button>
-          </div>
-        </form>
+        <Popup
+          id="action-reason"
+          title={t(open === 'request' ? 'actions.ask_cancel' : 'actions.seller_cancel')}
+          closeLabel={t('actions.back')}
+          busy={act.isPending}
+          onClose={() => {
+            setOpen(null);
+            setReason('');
+            setMessage(null);
+          }}
+        >
+          <form onSubmit={submitReason} noValidate className={styles.form}>
+            {message && <FormMessage kind="error">{message}</FormMessage>}
+            <p>{t(open === 'request' ? 'actions.ask_cancel_note' : 'actions.seller_cancel_note')}</p>
+            <label htmlFor="action-reason">{t('actions.reason')}</label>
+            <textarea
+              id="action-reason"
+              aria-invalid={!reasonOk && !!message}
+              value={reason}
+              maxLength={500}
+              rows={3}
+              onChange={(e) => setReason(e.target.value)}
+            />
+            <div className={styles.popupButtons}>
+              <button type="submit" className={styles.primary} disabled={act.isPending}>
+                {t(open === 'request' ? 'actions.send_request' : 'actions.continue')}
+              </button>
+              <button
+                type="button"
+                className={styles.secondary}
+                onClick={() => {
+                  setOpen(null);
+                  setReason('');
+                  setMessage(null);
+                }}
+              >
+                {t('actions.back')}
+              </button>
+            </div>
+          </form>
         </Popup>
       )}
 
       {open === 'confirm' && (
-        <ConfirmDialog id="confirm-receipt" title={t('actions.confirm_receipt')} busy={act.isPending}
-          confirmLabel={t('actions.release_button', { amount: toSeller })} cancelLabel={t('actions.back')}
-          onConfirm={() => run('confirm')} onCancel={() => setOpen(null)}>
+        <ConfirmDialog
+          id="confirm-receipt"
+          title={t('actions.confirm_receipt')}
+          busy={act.isPending}
+          confirmLabel={t('actions.release_button', { amount: toSeller })}
+          cancelLabel={t('actions.back')}
+          onConfirm={() => run('confirm')}
+          onCancel={() => setOpen(null)}
+        >
           <p>{t('confirm.confirm_receipt', { amount: toSeller })}</p>
         </ConfirmDialog>
       )}
       {open === 'accept' && (
-        <ConfirmDialog id="accept-request" title={t('actions.accept_request')} busy={act.isPending}
-          confirmLabel={t('actions.refund_button', { amount: refund })} cancelLabel={t('actions.back')}
-          onConfirm={() => run('accept')} onCancel={() => setOpen(null)}>
+        <ConfirmDialog
+          id="accept-request"
+          title={t('actions.accept_request')}
+          busy={act.isPending}
+          confirmLabel={t('actions.refund_button', { amount: refund })}
+          cancelLabel={t('actions.back')}
+          onConfirm={() => run('accept')}
+          onCancel={() => setOpen(null)}
+        >
           <p>{t('actions.accept_note', { amount: refund })}</p>
         </ConfirmDialog>
       )}
       {open === 'cancel' && confirming && (
-        <ConfirmDialog id="seller-cancel" title={t('actions.seller_cancel')} busy={act.isPending}
-          confirmLabel={t('actions.cancel_button', { amount: refund })} cancelLabel={t('actions.back')}
-          onConfirm={() => run('cancel')} onCancel={() => setConfirming(false)}>
+        <ConfirmDialog
+          id="seller-cancel"
+          title={t('actions.seller_cancel')}
+          busy={act.isPending}
+          confirmLabel={t('actions.cancel_button', { amount: refund })}
+          cancelLabel={t('actions.back')}
+          onConfirm={() => run('cancel')}
+          onCancel={() => setConfirming(false)}
+        >
           <p>{t('confirm.seller_cancel', { amount: refund })}</p>
         </ConfirmDialog>
       )}
@@ -170,7 +237,9 @@ function RequestStatus({ o, t }: { o: OrderView; t: T }) {
   const who = o.role === 'buyer' ? 'buyer' : 'seller';
   return (
     <div className={styles.request}>
-      <p><strong>{t(`actions.request.${r.status}.${who}`)}</strong></p>
+      <p>
+        <strong>{t(`actions.request.${r.status}.${who}`)}</strong>
+      </p>
       <p>{t('actions.request_reason', { reason: r.reason })}</p>
     </div>
   );

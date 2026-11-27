@@ -52,12 +52,26 @@ describe('payments (Stripe webhook, sandbox mode)', () => {
     JSON.stringify({
       id: o.id ?? `evt_${randomUUID().replace(/-/g, '')}`,
       type: o.type ?? 'checkout.session.completed',
-      data: { object: { id: a.session, client_reference_id: a.attemptId, amount_total: o.amount ?? 1_500_000, currency: 'bdt', payment_status: 'paid', status: 'complete', payment_intent: `pi_${randomInt(1e6, 1e7)}` } },
+      data: {
+        object: {
+          id: a.session,
+          client_reference_id: a.attemptId,
+          amount_total: o.amount ?? 1_500_000,
+          currency: 'bdt',
+          payment_status: 'paid',
+          status: 'complete',
+          payment_intent: `pi_${randomInt(1e6, 1e7)}`,
+        },
+      },
     });
   const sign = (body: string, secret = WEBHOOK_SECRET, at = Math.floor(Date.now() / 1000)) =>
     `t=${at},v1=${createHmac('sha256', secret).update(`${at}.${body}`).digest('hex')}`;
   const post = (body: string, signature?: string) =>
-    fetch(t.url('/webhooks/stripe'), { method: 'POST', headers: { 'content-type': 'application/json', ...(signature ? { 'stripe-signature': signature } : {}) }, body });
+    fetch(t.url('/webhooks/stripe'), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...(signature ? { 'stripe-signature': signature } : {}) },
+      body,
+    });
 
   it('SEC-PAY-03 a correctly signed checkout.session.completed confirms the payment', async () => {
     const a = await attempt();
@@ -103,7 +117,9 @@ describe('payments (Stripe webhook, sandbox mode)', () => {
     const buyer = await fx.user();
     const sid = await fx.session({ userId: buyer });
     const r = await fetch(t.url(`/orders/${randomUUID()}/payments`), {
-      method: 'POST', headers: { ...fx.headers(sid, buyer, 'user'), 'content-type': 'application/json' }, body: '{"provider":"bkash"}',
+      method: 'POST',
+      headers: { ...fx.headers(sid, buyer, 'user'), 'content-type': 'application/json' },
+      body: '{"provider":"bkash"}',
     });
     expect(r.status).toBe(409);
     expect((await r.json()).errors).toEqual([{ field: 'provider', reason: 'not-available-in-this-mode' }]);

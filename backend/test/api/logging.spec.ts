@@ -26,15 +26,25 @@ describe('logging', () => {
     expect(r.headers.get('x-correlation-id')).toBe(id);
     await new Promise((resolve) => setImmediate(resolve));
     expect(lineOf(id)).toEqual({
-      time: expect.stringMatching(/Z$/), level: 'info', module: 'http', msg: 'request', correlationId: id,
-      method: 'GET', path: '/api/v1/health/live', status: 200, ms: expect.any(Number), actor: 'anonymous', ip: expect.any(String),
+      time: expect.stringMatching(/Z$/),
+      level: 'info',
+      module: 'http',
+      msg: 'request',
+      correlationId: id,
+      method: 'GET',
+      path: '/api/v1/health/live',
+      status: 200,
+      ms: expect.any(Number),
+      actor: 'anonymous',
+      ip: expect.any(String),
     });
   });
 
   it('SEC-DAT-07 neither the body, the headers nor the query of a request reach the log', async () => {
     const id = randomUUID();
     await fetch(t.url('/auth/signin?token=QUERYSECRET'), {
-      method: 'POST', headers: { 'content-type': 'application/json', 'x-correlation-id': id, cookie: 'tb_session=COOKIESECRET', 'x-forwarded-for': '203.0.113.9' },
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-correlation-id': id, cookie: 'tb_session=COOKIESECRET', 'x-forwarded-for': '203.0.113.9' },
       body: JSON.stringify({ identifier: '+8801711000999', password: 'BODYSECRET-password-1' }),
     });
     await new Promise((resolve) => setImmediate(resolve));

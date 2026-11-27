@@ -43,14 +43,33 @@ export interface OrderView {
 
 /** Unit 4 section 3.1: a curated public meetup point, with a map link built from its public coordinates. */
 export interface MeetupPoint {
-  id: string; kind: 'police_station' | 'shopping_mall' | 'bank_branch' | 'other_public'; nameEn: string; nameBn: string; district: string;
-  lat: number; lng: number; guidance: string | null; active: boolean; mapUrl: string;
+  id: string;
+  kind: 'police_station' | 'shopping_mall' | 'bank_branch' | 'other_public';
+  nameEn: string;
+  nameBn: string;
+  district: string;
+  lat: number;
+  lng: number;
+  guidance: string | null;
+  active: boolean;
+  mapUrl: string;
 }
 /** A place of the parties' own (Decisions log, U4-03): shown with a safety notice, never with a map link. */
-export interface OwnPlace { name: string; lat: number | null; lng: number | null; mapUrl: string | null }
+export interface OwnPlace {
+  name: string;
+  lat: number | null;
+  lng: number | null;
+  mapUrl: string | null;
+}
 export interface Proposal {
-  id: string; byMe: boolean; meetAt: string; note: string | null; point: MeetupPoint | null; place: OwnPlace | null;
-  status: 'proposed' | 'accepted' | 'declined' | 'withdrawn' | 'superseded' | 'lapsed'; createdAt: string;
+  id: string;
+  byMe: boolean;
+  meetAt: string;
+  note: string | null;
+  point: MeetupPoint | null;
+  place: OwnPlace | null;
+  status: 'proposed' | 'accepted' | 'declined' | 'withdrawn' | 'superseded' | 'lapsed';
+  createdAt: string;
 }
 export interface HandoverView {
   orderId: string;
@@ -73,7 +92,12 @@ export interface HandoverView {
 }
 
 export type ShipmentStatus = 'preparing' | 'booked' | 'picked_up' | 'in_transit' | 'delivered' | 'delivery_failed' | 'returned_to_seller' | 'cancelled';
-export interface Area { id: number; district: string; nameEn: string; nameBn: string }
+export interface Area {
+  id: number;
+  district: string;
+  nameEn: string;
+  nameBn: string;
+}
 export interface Shipment {
   id: string;
   direction: 'forward' | 'return';
@@ -99,9 +123,25 @@ export interface Shipment {
 }
 
 export interface SavedAddress {
-  id: string; kind: 'pickup' | 'dropoff'; label: string; line1: string; line2?: string; landmark?: string; contactName: string; area: Area; createdAt: string;
+  id: string;
+  kind: 'pickup' | 'dropoff';
+  label: string;
+  line1: string;
+  line2?: string;
+  landmark?: string;
+  contactName: string;
+  area: Area;
+  createdAt: string;
 }
-export interface Quote { id: string; listingId: string; quantity: number; addressId: string; fee: string; expiresAt: string; distanceKm: number }
+export interface Quote {
+  id: string;
+  listingId: string;
+  quantity: number;
+  addressId: string;
+  fee: string;
+  expiresAt: string;
+  distanceKm: number;
+}
 
 export const orderKey = (id: string) => ['orders', id] as const;
 export const handoverKey = (id: string) => ['orders', id, 'handover'] as const;

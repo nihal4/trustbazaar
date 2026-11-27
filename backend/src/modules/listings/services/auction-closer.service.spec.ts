@@ -38,14 +38,20 @@ describe('AuctionCloser', () => {
     expect(await t.closer.closeDue()).toBe(1);
     expect(t.sql.find((q) => q.includes('close_if_due'))).toBeDefined();
     expect(t.orders.createAuctionOrder).toHaveBeenCalledWith({ listingId: A, winnerId: 'asha', price: 125000n, kind: 'auction' }, expect.anything());
-    expect(t.inserted).toContainEqual(expect.objectContaining({
-      eventType: 'auctions.auction.awarded', payload: expect.objectContaining({ winnerId: 'asha', price: '125000', orderId: 'order-1' }),
-    }));
+    expect(t.inserted).toContainEqual(
+      expect.objectContaining({
+        eventType: 'auctions.auction.awarded',
+        payload: expect.objectContaining({ winnerId: 'asha', price: '125000', orderId: 'order-1' }),
+      }),
+    );
     expect(t.audit.record).toHaveBeenCalledWith(expect.objectContaining({ action: 'auctions.auction.awarded', objectId: A }), expect.anything());
     expect(t.live.toRoom).toHaveBeenCalledWith(`auction:${A}`, 'auction.closed', { auctionId: A, status: 'sold', finalPrice: '125000' });
   });
 
-  it.each([[0, 'no_bids'], [3, 'reserve_not_met']])('FR-AUC-09 unsold with %i bids: the listing ends unsold (%s)', async (bidCount, reason) => {
+  it.each([
+    [0, 'no_bids'],
+    [3, 'reserve_not_met'],
+  ])('FR-AUC-09 unsold with %i bids: the listing ends unsold (%s)', async (bidCount, reason) => {
     const t = setup({ outcome: { [A]: 'unsold' }, bidCount });
     expect(await t.closer.closeOne(A)).toEqual({ auctionId: A, status: 'unsold', price: null });
     expect(t.sql.some((q) => q.includes(`SET status = 'ended_unsold'`))).toBe(true);

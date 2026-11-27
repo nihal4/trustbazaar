@@ -20,8 +20,10 @@ import { LegalDialog } from './LegalDocs';
 import styles from './account.module.css';
 
 type Step = 'name' | 'email' | 'password' | 'code' | 'phone' | 'terms';
-interface Started { registrationId: string; resendAt: string }
-
+interface Started {
+  registrationId: string;
+  resendAt: string;
+}
 
 export function Component() {
   const { t, lang } = useAccountT();
@@ -61,12 +63,20 @@ export function Component() {
   const [resending, setResending] = useState(false);
   const [dialog, setDialog] = useState<{ kind: 'terms' | 'privacy'; opener: HTMLElement | null } | null>(null);
 
-  useEffect(() => { document.title = `${t(step === 'code' ? 'register.code_title' : 'register.title')} – TrustBazaar`; }, [step, t]);
+  useEffect(() => {
+    document.title = `${t(step === 'code' ? 'register.code_title' : 'register.title')} – TrustBazaar`;
+  }, [step, t]);
 
-  const say = (text: string | null, ok = false) => { setMessage(text); setNotice(ok); };
+  const say = (text: string | null, ok = false) => {
+    setMessage(text);
+    setNotice(ok);
+  };
   const button = waitFor > 0 ? t('wait.seconds', { time: formatWait(waitFor, lang) }) : null;
   const restart = (to: Step, text: string | null) => {
-    setStarted(null); setCode(''); setAdult(false); setAccept(false);
+    setStarted(null);
+    setCode('');
+    setAdult(false);
+    setAccept(false);
     reached.current = new Set(['name', 'email', 'password']);
     say(text);
     setStep(to);
@@ -83,7 +93,10 @@ export function Component() {
   const toEmail = (ev: FormEvent) => {
     ev.preventDefault();
     const n = name.trim();
-    if (n.length < 2 || n.length > 40) { say(t('register.name_invalid')); return; }
+    if (n.length < 2 || n.length > 40) {
+      say(t('register.name_invalid'));
+      return;
+    }
     say(null);
     setStep('email');
   };
@@ -93,7 +106,10 @@ export function Component() {
     ev.preventDefault();
     if (busy) return;
     const entered = email.trim();
-    if (!looksLikeEmail(entered)) { say(t('field.email_invalid')); return; }
+    if (!looksLikeEmail(entered)) {
+      say(t('field.email_invalid'));
+      return;
+    }
     setBusy(true);
     say(null);
     try {
@@ -104,7 +120,11 @@ export function Component() {
         return;
       }
     } catch (err) {
-      if (isApiError(err, 429)) { say(otherError(err, t, lang)); setBusy(false); return; }
+      if (isApiError(err, 429)) {
+        say(otherError(err, t, lang));
+        setBusy(false);
+        return;
+      }
       // a check that cannot be answered does not stop the sign-up
     }
     setBusy(false);
@@ -116,8 +136,14 @@ export function Component() {
     ev.preventDefault();
     if (busy) return;
     const problem = passwordLengthProblem(password);
-    if (problem) { say(passwordReasonText(problem, t, lang)); return; }
-    if (password !== confirm) { say(t('register.password_mismatch')); return; }
+    if (problem) {
+      say(passwordReasonText(problem, t, lang));
+      return;
+    }
+    if (password !== confirm) {
+      say(t('register.password_mismatch'));
+      return;
+    }
     setBusy(true);
     say(null);
     try {
@@ -138,7 +164,10 @@ export function Component() {
   const verify = async (ev: FormEvent) => {
     ev.preventDefault();
     if (busy || !started) return;
-    if (!isSixDigits(code)) { say(t('register.code_digits')); return; }
+    if (!isSixDigits(code)) {
+      say(t('register.code_digits'));
+      return;
+    }
     setBusy(true);
     say(null);
     try {
@@ -176,7 +205,10 @@ export function Component() {
   // 5. the mobile number (its code is not asked at sign-up)
   const toTerms = (ev: FormEvent) => {
     ev.preventDefault();
-    if (!bangladeshiMobile(phone)) { say(t('field.phone_invalid')); return; }
+    if (!bangladeshiMobile(phone)) {
+      say(t('field.phone_invalid'));
+      return;
+    }
     say(null);
     setStep('terms');
   };
@@ -185,18 +217,35 @@ export function Component() {
   const finish = async (ev: FormEvent) => {
     ev.preventDefault();
     if (busy || !started) return;
-    if (!adult) { say(t('register.adult_required')); return; }
-    if (!accept) { say(t('register.accept_required')); return; }
+    if (!adult) {
+      say(t('register.adult_required'));
+      return;
+    }
+    if (!accept) {
+      say(t('register.accept_required'));
+      return;
+    }
     const number = bangladeshiMobile(phone);
-    if (!number) { say(t('field.phone_invalid')); setStep('phone'); return; }
+    if (!number) {
+      say(t('field.phone_invalid'));
+      setStep('phone');
+      return;
+    }
     setBusy(true);
     say(null);
     try {
       await api.post('/auth/register/complete', {
-        registrationId: started.registrationId, phone: number, password, adultConfirmed: adult,
-        termsVersion: LEGAL_VERSIONS.terms, privacyVersion: LEGAL_VERSIONS.privacy,
+        registrationId: started.registrationId,
+        phone: number,
+        password,
+        adultConfirmed: adult,
+        termsVersion: LEGAL_VERSIONS.terms,
+        privacyVersion: LEGAL_VERSIONS.privacy,
       });
-      navigate({ pathname: '/signin', search: next ? `?next=${encodeURIComponent(next)}` : '' }, { replace: true, state: { login: email.trim().toLowerCase(), created: true } });
+      navigate(
+        { pathname: '/signin', search: next ? `?next=${encodeURIComponent(next)}` : '' },
+        { replace: true, state: { login: email.trim().toLowerCase(), created: true } },
+      );
       return;
     } catch (err) {
       const fields = fieldErrors(err);
@@ -206,8 +255,10 @@ export function Component() {
       else if (pn === 'registration-refused') restart('name', t('register.refused'));
       else if (pn === 'otp-expired' || pn === 'not-found') restart('name', t('register.start_again'));
       else if (fields.some((f) => (f.field === 'termsVersion' || f.field === 'privacyVersion') && f.reason === 'not-current')) say(t('register.terms_changed'));
-      else if (fields.some((f) => f.field === 'phone')) { say(t('field.phone_invalid')); setStep('phone'); }
-      else if (fields.some((f) => f.field === 'adultConfirmed')) say(t('register.adult_required'));
+      else if (fields.some((f) => f.field === 'phone')) {
+        say(t('field.phone_invalid'));
+        setStep('phone');
+      } else if (fields.some((f) => f.field === 'adultConfirmed')) say(t('register.adult_required'));
       else if (!tooMany(err)) say(otherError(err, t, lang));
     }
     setBusy(false);
@@ -215,21 +266,36 @@ export function Component() {
 
   const signIn = (
     <p className={styles.footNote}>
-      {t('register.have_account')}{' '}
-      <Link to={next ? `/signin?next=${encodeURIComponent(next)}` : '/signin'}>{t('signin.link')}</Link>
+      {t('register.have_account')} <Link to={next ? `/signin?next=${encodeURIComponent(next)}` : '/signin'}>{t('signin.link')}</Link>
     </p>
   );
   const heading = <h1 id="register-head">{t('register.title')}</h1>;
   const aria = (ok = false) => fieldAria(message, ok, 'register-message', 'register-head');
-  const open = (kind: 'terms' | 'privacy') => (ev: MouseEvent<HTMLButtonElement>) => { ev.preventDefault(); setDialog({ kind, opener: ev.currentTarget }); };
-  const backTo = (to: Step) => () => { say(null); setStep(to); };
+  const open = (kind: 'terms' | 'privacy') => (ev: MouseEvent<HTMLButtonElement>) => {
+    ev.preventDefault();
+    setDialog({ kind, opener: ev.currentTarget });
+  };
+  const backTo = (to: Step) => () => {
+    say(null);
+    setStep(to);
+  };
 
   // the words of the box with two links in them, in the order each language puts them
   const acceptLabel: ReactNode = t('register.accept_text', { terms: '{terms}', privacy: '{privacy}' })
     .split(/(\{terms\}|\{privacy\})/)
     .map((part, i) => {
-      if (part === '{terms}') return <button key={i} type="button" className={`${styles.link} ${styles.textLink}`} onClick={open('terms')}>{t('legal.terms_name')}</button>;
-      if (part === '{privacy}') return <button key={i} type="button" className={`${styles.link} ${styles.textLink}`} onClick={open('privacy')}>{t('legal.privacy_name')}</button>;
+      if (part === '{terms}')
+        return (
+          <button key={i} type="button" className={`${styles.link} ${styles.textLink}`} onClick={open('terms')}>
+            {t('legal.terms_name')}
+          </button>
+        );
+      if (part === '{privacy}')
+        return (
+          <button key={i} type="button" className={`${styles.link} ${styles.textLink}`} onClick={open('privacy')}>
+            {t('legal.privacy_name')}
+          </button>
+        );
       return part;
     });
 
@@ -239,8 +305,17 @@ export function Component() {
       <AuthSplit stepKey="name" rows={rows} headCells={head} head={heading} foot={signIn}>
         <form onSubmit={toEmail} noValidate className={styles.stepForm}>
           <div className={styles.fieldGroup}>
-            <TextField id="register-name" label={t('register.name')} hint={t('register.name_hint')} value={name} onChange={setName}
-              autoComplete="name" maxLength={40} autoFocus {...aria()} />
+            <TextField
+              id="register-name"
+              label={t('register.name')}
+              hint={t('register.name_hint')}
+              value={name}
+              onChange={setName}
+              autoComplete="name"
+              maxLength={40}
+              autoFocus
+              {...aria()}
+            />
             <Slot id="register-message" message={message} ok={notice} />
           </div>
           <SubmitButton busy={false}>{t('signin.continue')}</SubmitButton>
@@ -265,34 +340,65 @@ export function Component() {
         <form onSubmit={(e) => void begin(e)} noValidate className={styles.stepForm}>
           <input type="text" name="username" autoComplete="username" value={email} readOnly tabIndex={-1} aria-hidden="true" className={styles.srOnly} />
           <div className={styles.fieldGroup}>
-            <TextField id="register-password" label={t('field.password')} hint={t('register.password_hint', { min: digits(PASSWORD.minSingleFactor, lang) })}
-              value={password} onChange={setPassword} type="password" autoComplete="new-password" autoFocus {...aria(message === t('register.password_mismatch'))} />
-            <TextField id="register-confirm" label={t('register.confirm')} value={confirm} onChange={setConfirm}
-              type="password" autoComplete="new-password" {...aria(message !== t('register.password_mismatch'))} />
+            <TextField
+              id="register-password"
+              label={t('field.password')}
+              hint={t('register.password_hint', { min: digits(PASSWORD.minSingleFactor, lang) })}
+              value={password}
+              onChange={setPassword}
+              type="password"
+              autoComplete="new-password"
+              autoFocus
+              {...aria(message === t('register.password_mismatch'))}
+            />
+            <TextField
+              id="register-confirm"
+              label={t('register.confirm')}
+              value={confirm}
+              onChange={setConfirm}
+              type="password"
+              autoComplete="new-password"
+              {...aria(message !== t('register.password_mismatch'))}
+            />
             <Slot id="register-message" message={message} ok={notice} />
           </div>
-          <SubmitButton busy={busy} disabled={waitFor > 0}>{button ?? t('signin.continue')}</SubmitButton>
+          <SubmitButton busy={busy} disabled={waitFor > 0}>
+            {button ?? t('signin.continue')}
+          </SubmitButton>
         </form>
       </AuthSplit>
     );
   } else if (step === 'code') {
     card = (
-      <AuthSplit stepKey="code" rows={rows} headCells={head}
-        head={<><h1 id="register-head">{t('register.code_title')}</h1><p className={styles.lead}>{t('register.code_sent_email', { email: email.trim() })}</p></>}
-        foot={(
+      <AuthSplit
+        stepKey="code"
+        rows={rows}
+        headCells={head}
+        head={
+          <>
+            <h1 id="register-head">{t('register.code_title')}</h1>
+            <p className={styles.lead}>{t('register.code_sent_email', { email: email.trim() })}</p>
+          </>
+        }
+        foot={
           <div className={styles.footLinks}>
-            <button type="button" className={styles.link} onClick={backTo('password')}>{t('register.change_details')}</button>
+            <button type="button" className={styles.link} onClick={backTo('password')}>
+              {t('register.change_details')}
+            </button>
             <button type="button" className={styles.link} aria-disabled={resending || resendIn > 0} onClick={() => void resend()}>
               {resendIn > 0 ? t('signin.resend_wait', { time: formatWait(resendIn, lang) }) : t('signin.resend')}
             </button>
           </div>
-        )}>
+        }
+      >
         <form onSubmit={(e) => void verify(e)} noValidate className={styles.stepForm}>
           <div className={styles.fieldGroup}>
             <CodeField id="register-code" label={t('code.label')} value={code} onChange={setCode} autoFocus {...aria(notice)} />
             <Slot id="register-message" message={message} ok={notice} />
           </div>
-          <SubmitButton busy={busy} disabled={waitFor > 0}>{button ?? t('register.verify')}</SubmitButton>
+          <SubmitButton busy={busy} disabled={waitFor > 0}>
+            {button ?? t('register.verify')}
+          </SubmitButton>
         </form>
       </AuthSplit>
     );
@@ -301,8 +407,18 @@ export function Component() {
       <AuthSplit stepKey="phone" rows={rows} headCells={head} head={heading} foot={signIn}>
         <form onSubmit={toTerms} noValidate className={styles.stepForm}>
           <div className={styles.fieldGroup}>
-            <TextField id="register-phone" label={t('field.phone')} hint={t('field.phone_hint')} value={phone} onChange={setPhone}
-              type="tel" inputMode="tel" autoComplete="tel" autoFocus {...aria()} />
+            <TextField
+              id="register-phone"
+              label={t('field.phone')}
+              hint={t('field.phone_hint')}
+              value={phone}
+              onChange={setPhone}
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              autoFocus
+              {...aria()}
+            />
             <Slot id="register-message" message={message} ok={notice} />
           </div>
           <SubmitButton busy={false}>{t('signin.continue')}</SubmitButton>
@@ -311,15 +427,32 @@ export function Component() {
     );
   } else {
     card = (
-      <AuthSplit stepKey="terms" rows={rows} headCells={head} head={heading}
-        foot={<div className={styles.footLinks}><button type="button" className={styles.link} onClick={backTo('phone')}>{t('signin.back')}</button></div>}>
+      <AuthSplit
+        stepKey="terms"
+        rows={rows}
+        headCells={head}
+        head={heading}
+        foot={
+          <div className={styles.footLinks}>
+            <button type="button" className={styles.link} onClick={backTo('phone')}>
+              {t('signin.back')}
+            </button>
+          </div>
+        }
+      >
         <form onSubmit={(e) => void finish(e)} noValidate className={styles.stepForm}>
           <div className={styles.checks}>
-            <div className={styles.extra}><CheckboxField id="register-adult" label={t('register.adult')} checked={adult} onChange={setAdult} autoFocus /></div>
-            <div className={styles.extra}><CheckboxField id="register-accept" label={acceptLabel} checked={accept} onChange={setAccept} /></div>
+            <div className={styles.extra}>
+              <CheckboxField id="register-adult" label={t('register.adult')} checked={adult} onChange={setAdult} autoFocus />
+            </div>
+            <div className={styles.extra}>
+              <CheckboxField id="register-accept" label={acceptLabel} checked={accept} onChange={setAccept} />
+            </div>
             <Slot id="register-message" message={message} ok={notice} />
           </div>
-          <SubmitButton busy={busy} disabled={waitFor > 0}>{button ?? t('register.submit')}</SubmitButton>
+          <SubmitButton busy={busy} disabled={waitFor > 0}>
+            {button ?? t('register.submit')}
+          </SubmitButton>
         </form>
       </AuthSplit>
     );

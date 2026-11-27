@@ -47,7 +47,14 @@ export class OwnershipReviewService {
       [limit],
     )) as { id: string; listing_id: string; seller_id: string; name: string; platform: string; player_id: string; submitted_at: Date; expires_at: Date }[];
     return rows.map((r) => ({
-      proofId: r.id, listingId: r.listing_id, sellerId: r.seller_id, game: r.name, platform: r.platform, playerId: r.player_id, submittedAt: r.submitted_at, codeExpiresAt: r.expires_at,
+      proofId: r.id,
+      listingId: r.listing_id,
+      sellerId: r.seller_id,
+      game: r.name,
+      platform: r.platform,
+      playerId: r.player_id,
+      submittedAt: r.submitted_at,
+      codeExpiresAt: r.expires_at,
     }));
   }
 
@@ -69,10 +76,17 @@ export class OwnershipReviewService {
   }
 
   /** POST /staff/game/ownership-proofs/{id}/review. */
-  async review(staffId: string, proofId: string, d: { approve: boolean; liveCheck: LiveCheck; reason?: string }, ctx: CallContext = {}, tx?: EntityManager): Promise<{ status: 'approved' | 'rejected' }> {
+  async review(
+    staffId: string,
+    proofId: string,
+    d: { approve: boolean; liveCheck: LiveCheck; reason?: string },
+    ctx: CallContext = {},
+    tx?: EntityManager,
+  ): Promise<{ status: 'approved' | 'rejected' }> {
     const reason = d.reason?.normalize('NFC').trim() || null;
     if (!d.approve && (reason?.length ?? 0) < 10) throw new Problem('validation-failed', { errors: [{ field: 'reason', reason: 'required' }] });
-    if (d.approve && d.liveCheck === 'not_matched') throw new Problem('validation-failed', { errors: [{ field: 'liveCheck', reason: 'live-check-not-matched' }] });
+    if (d.approve && d.liveCheck === 'not_matched')
+      throw new Problem('validation-failed', { errors: [{ field: 'liveCheck', reason: 'live-check-not-matched' }] });
     if (d.approve && (await this.params.current()).get<boolean>('CP-36') !== true) throw new Problem('feature-off'); // FR-GAM-01
     const run = async (m: EntityManager) => {
       const [p] = (await m.query(
@@ -81,14 +95,29 @@ export class OwnershipReviewService {
       )) as { listing_id: string; seller_id: string }[];
       if (!p) throw new Problem('not-found');
       await this.staff.assertNoConflict(staffId, [p.seller_id]);
-      const [{ status }] = (await m.query(`SELECT game_accounts.review_proof($1, $2, $3, $4, $5) AS status`, [proofId, staffId, d.approve, d.liveCheck, reason])) as
-        { status: 'approved' | 'rejected' }[];
+      const [{ status }] = (await m.query(`SELECT game_accounts.review_proof($1, $2, $3, $4, $5) AS status`, [
+        proofId,
+        staffId,
+        d.approve,
+        d.liveCheck,
+        reason,
+      ])) as { status: 'approved' | 'rejected' }[];
       if (d.approve) await this.listings.approveForPublication(p.listing_id, staffId, reason ?? 'game-account ownership approved', m);
       else await this.listings.returnToDraft(p.listing_id, staffId, `game-account ownership rejected: ${reason}`, m);
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: `games.ownership.${status}`, objectType: 'listing', objectId: p.listing_id,
-        after: { proofId, liveCheck: d.liveCheck }, reason, sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null,
-      }, m);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: `games.ownership.${status}`,
+          objectType: 'listing',
+          objectId: p.listing_id,
+          after: { proofId, liveCheck: d.liveCheck },
+          reason,
+          sourceIp: ctx.ip ?? null,
+          correlationId: ctx.correlationId ?? null,
+        },
+        m,
+      );
       return { status };
     };
     try {

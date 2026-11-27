@@ -81,7 +81,18 @@ describe('receipts, statements and the revenue log', () => {
       role: 'seller',
       order: { id: o.id, status: 'closed' },
       // FR-PAY-13, FR-PAY-14: the SRS example, BDT 500 + 15 + 135 + 9,500 = 10,150
-      settlement: { amountCollected: '1015000', itemPrice: '1000000', deliveryFee: '15000', commission: '50000', commissionBps: 500, courierPayout: '13500', deliveryMargin: '1500', deliveryMarginBps: 1000, sellerPayout: '950000', refundTotal: '0' },
+      settlement: {
+        amountCollected: '1015000',
+        itemPrice: '1000000',
+        deliveryFee: '15000',
+        commission: '50000',
+        commissionBps: 500,
+        courierPayout: '13500',
+        deliveryMargin: '1500',
+        deliveryMarginBps: 1000,
+        sellerPayout: '950000',
+        refundTotal: '0',
+      },
       payouts: [expect.objectContaining({ amount: '950000', status: 'waiting_account' })],
     });
     expect(seller.payments).toBeUndefined();
@@ -126,7 +137,12 @@ describe('receipts, statements and the revenue log', () => {
     expect(r.status).toBe(200);
     const body = await r.json();
     expect(body.items).toHaveLength(2);
-    expect(body.items[0]).toMatchObject({ title: 'Desk lamp', sellerPayout: '950000', commission: '50000', payout: { amount: '950000', status: 'waiting_account' } });
+    expect(body.items[0]).toMatchObject({
+      title: 'Desk lamp',
+      sellerPayout: '950000',
+      commission: '50000',
+      payout: { amount: '950000', status: 'waiting_account' },
+    });
     expect(body.items[0].settledAt >= body.items[1].settledAt).toBe(true);
     expect(body).toMatchObject({ owed: '1900000', nextCursor: null }); // seller_payable: nothing sent yet
 
@@ -166,7 +182,9 @@ describe('receipts, statements and the revenue log', () => {
     const all: { entryId: string }[] = [];
     let cursor: string | null = '';
     for (let n = 0; cursor !== null && n < 50; n++) {
-      const body: { items: { entryId: string }[]; nextCursor: string | null } = await (await admin('GET', `/staff/payments/revenue-log?${q}${cursor ? `&cursor=${cursor}` : ''}`)).json();
+      const body: { items: { entryId: string }[]; nextCursor: string | null } = await (
+        await admin('GET', `/staff/payments/revenue-log?${q}${cursor ? `&cursor=${cursor}` : ''}`)
+      ).json();
       if (cursor) expect(body.items.every((l) => BigInt(l.entryId) < BigInt(cursor!))).toBe(true);
       all.push(...body.items);
       cursor = body.nextCursor;

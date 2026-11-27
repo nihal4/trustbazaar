@@ -78,15 +78,30 @@ describe('Auction concurrency (FR-AUC-01–FR-AUC-18, NFR-MNT-02)', () => {
     const bids = await fx.query<{ id: string; bidder_id: string; max_amount: string; outcome: string; price_after: string; leader_after: string }>(
       // ordered by the numeric id (b.id), not the text column of the same name: as text, 67 sorts before 9
       `SELECT b.id::text AS id, b.bidder_id, b.max_amount::text AS max_amount, b.outcome, b.price_after::text AS price_after, b.leader_after
-         FROM auctions.bids b WHERE b.auction_id = $1 AND b.voided_at IS NULL ORDER BY b.id`, [auctionId]);
+         FROM auctions.bids b WHERE b.auction_id = $1 AND b.voided_at IS NULL ORDER BY b.id`,
+      [auctionId],
+    );
     const replay = await fx.query<{ bid_id: string; leader: string; leader_max: string; price: string; is_leading: boolean; counted: boolean }>(
-      `SELECT r.bid_id::text, r.leader, r.leader_max::text, r.price::text, r.is_leading, r.counted FROM auctions.replay($1) r ORDER BY r.bid_id`, [auctionId]);
-    expect(replay.map((r) => [r.bid_id, r.counted, r.leader, r.price, r.is_leading]))
-      .toEqual(bids.map((b) => [b.id, true, b.leader_after, b.price_after, b.outcome !== 'outbid']));
+      `SELECT r.bid_id::text, r.leader, r.leader_max::text, r.price::text, r.is_leading, r.counted FROM auctions.replay($1) r ORDER BY r.bid_id`,
+      [auctionId],
+    );
+    expect(replay.map((r) => [r.bid_id, r.counted, r.leader, r.price, r.is_leading])).toEqual(
+      bids.map((b) => [b.id, true, b.leader_after, b.price_after, b.outcome !== 'outbid']),
+    );
     for (let i = 1; i < bids.length; i++) expect(BigInt(bids[i].price_after)).toBeGreaterThanOrEqual(BigInt(bids[i - 1].price_after));
 
-    const a = await one<{ leader_id: string; leader_max: string; current_price: string; bid_count: number; start_price: string; inc_bps: number; inc_min: string }>(
-      `SELECT leader_id, leader_max::text, current_price::text, bid_count, start_price::text, inc_bps, inc_min::text FROM auctions.auctions WHERE listing_id = $1`, [auctionId]);
+    const a = await one<{
+      leader_id: string;
+      leader_max: string;
+      current_price: string;
+      bid_count: number;
+      start_price: string;
+      inc_bps: number;
+      inc_min: string;
+    }>(
+      `SELECT leader_id, leader_max::text, current_price::text, bid_count, start_price::text, inc_bps, inc_min::text FROM auctions.auctions WHERE listing_id = $1`,
+      [auctionId],
+    );
     const last = bids[bids.length - 1];
     expect([a.leader_id, a.current_price, a.bid_count]).toEqual([last.leader_after, last.price_after, bids.length]);
     expect(BigInt(a.current_price)).toBeLessThanOrEqual(BigInt(a.leader_max));
@@ -111,14 +126,18 @@ describe('Auction concurrency (FR-AUC-01–FR-AUC-18, NFR-MNT-02)', () => {
     const id = await auction();
     const bidders = await people(30);
     // as in Appendix B: every bidder raises their own bid ten times, all bidders at once
-    const results = (await Promise.all(bidders.map(async (b, i) => {
-      const mine: ({ who: string } & Awaited<ReturnType<Who["bid"]>>)[] = [];
-      for (let k = 0; k < 10; k++) {
-        await jitter();
-        mine.push({ who: b.userId, ...(await b.bid(id, String(100000 + (k * 30 + i) * 5000))) });
-      }
-      return mine;
-    }))).flat();
+    const results = (
+      await Promise.all(
+        bidders.map(async (b, i) => {
+          const mine: ({ who: string } & Awaited<ReturnType<Who['bid']>>)[] = [];
+          for (let k = 0; k < 10; k++) {
+            await jitter();
+            mine.push({ who: b.userId, ...(await b.bid(id, String(100000 + (k * 30 + i) * 5000))) });
+          }
+          return mine;
+        }),
+      )
+    ).flat();
     expectAnswered(results);
     const { bids } = await expectConsistent(id);
     const placed = results.filter((r) => r.status === 201);
@@ -133,14 +152,18 @@ describe('Auction concurrency (FR-AUC-01–FR-AUC-18, NFR-MNT-02)', () => {
   it('NFR-MNT-02 a bid placed inside the anti-sniping window extends end_time by the configured amount exactly once, even under concurrent bids', async () => {
     const id = await auction({ endsIn: '30 seconds', window: '2 minutes', extension: '1 minute' });
     const bidders = await people(20);
-    const results = await Promise.all(bidders.map(async (b, i) => {
-      await jitter(50);
-      return b.bid(id, String(100000 + i * 10000));
-    }));
+    const results = await Promise.all(
+      bidders.map(async (b, i) => {
+        await jitter(50);
+        return b.bid(id, String(100000 + i * 10000));
+      }),
+    );
     expectAnswered(results);
     await expectConsistent(id);
     const rows = await fx.query<{ received_at: Date; extended_to: Date }>(
-      `SELECT received_at, extended_to FROM auctions.bids WHERE auction_id = $1 ORDER BY id`, [id]);
+      `SELECT received_at, extended_to FROM auctions.bids WHERE auction_id = $1 ORDER BY id`,
+      [id],
+    );
     expect(rows.length).toBeGreaterThan(0);
     for (let i = 0; i < rows.length; i++) {
       // each accepted bid in the window moved the end to at least its own receipt plus the extension, never earlier
@@ -157,10 +180,12 @@ describe('Auction concurrency (FR-AUC-01–FR-AUC-18, NFR-MNT-02)', () => {
     const id = await auction();
     const [proxy, ...rivals] = await people(16);
     expect((await proxy.bid(id, '400000')).status).toBe(201);
-    const results = await Promise.all(rivals.map(async (r, i) => {
-      await jitter();
-      return r.bid(id, String(150000 + i * 20000)); // up to 450000: some below the proxy's maximum, some above
-    }));
+    const results = await Promise.all(
+      rivals.map(async (r, i) => {
+        await jitter();
+        return r.bid(id, String(150000 + i * 20000)); // up to 450000: some below the proxy's maximum, some above
+      }),
+    );
     expectAnswered(results);
     const { bids, auction: a } = await expectConsistent(id);
     // while the proxy led, its answers never went past its maximum
@@ -181,10 +206,14 @@ describe('Auction concurrency (FR-AUC-01–FR-AUC-18, NFR-MNT-02)', () => {
         await new Promise((r) => setTimeout(r, 100));
       }
     });
-    const results = await Promise.all(bidders.flatMap((b, i) => [0, 1, 2].map(async (k) => {
-      await new Promise((r) => setTimeout(r, randomInt(0, 2600)));
-      return b.bid(id, String(100000 + (k * 20 + i) * 5000));
-    })));
+    const results = await Promise.all(
+      bidders.flatMap((b, i) =>
+        [0, 1, 2].map(async (k) => {
+          await new Promise((r) => setTimeout(r, randomInt(0, 2600)));
+          return b.bid(id, String(100000 + (k * 20 + i) * 5000));
+        }),
+      ),
+    );
     await new Promise((r) => setTimeout(r, 4500)); // past end_at + DV-17 for the last possible extension
     running = false;
     await Promise.all(closers);
@@ -194,9 +223,13 @@ describe('Auction concurrency (FR-AUC-01–FR-AUC-18, NFR-MNT-02)', () => {
       if (r.status === 422) expect(['below_minimum', 'max_not_higher', 'auction_ended', 'auction_not_open']).toContain(r.body.errors?.[0]?.reason);
     }
     const a = await one<{ status: string; winner_id: string | null; final_price: string | null; end_at: Date; closed_at: Date }>(
-      `SELECT status, winner_id, final_price::text, end_at, closed_at FROM auctions.auctions WHERE listing_id = $1`, [id]);
+      `SELECT status, winner_id, final_price::text, end_at, closed_at FROM auctions.auctions WHERE listing_id = $1`,
+      [id],
+    );
     const bids = await fx.query<{ received_at: Date; leader_after: string; price_after: string }>(
-      `SELECT received_at, leader_after, price_after::text FROM auctions.bids WHERE auction_id = $1 ORDER BY id`, [id]);
+      `SELECT received_at, leader_after, price_after::text FROM auctions.bids WHERE auction_id = $1 ORDER BY id`,
+      [id],
+    );
     expect(bids.length).toBeGreaterThan(0);
     expect(a.status).toBe('awarded');
     for (const b of bids) expect(b.received_at.getTime()).toBeLessThan(a.end_at.getTime());
@@ -227,17 +260,29 @@ describe('Auction concurrency (FR-AUC-01–FR-AUC-18, NFR-MNT-02)', () => {
       `INSERT INTO listings.listings (seller_id, item_kind, sale_format, category_id, title, description, condition, no_visible_defects,
           fulfilment_options, area_district, approx_lat, approx_lng, price, quantity_total, quantity_available)
        VALUES ($1, 'physical', 'fixed_price', $2, 'Last two lamps', 'Two lamps in good condition, for the race test.', 'used', true,
-               'pickup_only', 'Dhaka', 23.81, 90.41, 100000, 2, 2) RETURNING id`, [seller.userId, category]);
-    for (const n of [1, 2]) await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [id, n, randomUUID().replace(/-/g, '')]);
+               'pickup_only', 'Dhaka', 23.81, 90.41, 100000, 2, 2) RETURNING id`,
+      [seller.userId, category],
+    );
+    for (const n of [1, 2])
+      await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [
+        id,
+        n,
+        randomUUID().replace(/-/g, ''),
+      ]);
     await fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [id]);
     const port = t.app.get<ListingsPort>(LISTINGS_PORT);
-    const granted = await Promise.all(Array.from({ length: 50 }, async () => {
-      await jitter(10);
-      return db.transaction((m) => port.reserve(id, 1, m));
-    }));
+    const granted = await Promise.all(
+      Array.from({ length: 50 }, async () => {
+        await jitter(10);
+        return db.transaction((m) => port.reserve(id, 1, m));
+      }),
+    );
     expect(granted.filter(Boolean)).toHaveLength(2);
-    expect(await one(`SELECT quantity_available, quantity_reserved, quantity_sold FROM listings.listings WHERE id = $1`, [id]))
-      .toEqual({ quantity_available: 0, quantity_reserved: 2, quantity_sold: 0 });
+    expect(await one(`SELECT quantity_available, quantity_reserved, quantity_sold FROM listings.listings WHERE id = $1`, [id])).toEqual({
+      quantity_available: 0,
+      quantity_reserved: 2,
+      quantity_sold: 0,
+    });
 
     // the paid and cancelled events of two orders, each delivered ten times at once: each unit moves exactly once
     const stock = t.app.get(StockService);
@@ -246,8 +291,12 @@ describe('Auction concurrency (FR-AUC-01–FR-AUC-18, NFR-MNT-02)', () => {
       ...Array.from({ length: 10 }, () => stock.onOrder({ aggregateId: sold, payload: { listingId: id, quantity: 1 } }, 'sold')),
       ...Array.from({ length: 10 }, () => stock.onOrder({ aggregateId: released, payload: { listingId: id, quantity: 1 } }, 'released')),
     ]);
-    expect(await one(`SELECT quantity_available, quantity_reserved, quantity_sold, status FROM listings.listings WHERE id = $1`, [id]))
-      .toEqual({ quantity_available: 1, quantity_reserved: 0, quantity_sold: 1, status: 'active' });
+    expect(await one(`SELECT quantity_available, quantity_reserved, quantity_sold, status FROM listings.listings WHERE id = $1`, [id])).toEqual({
+      quantity_available: 1,
+      quantity_reserved: 0,
+      quantity_sold: 1,
+      status: 'active',
+    });
     expect((await one<{ n: number }>(`SELECT count(*)::int AS n FROM listings.stock_moves WHERE listing_id = $1`, [id])).n).toBe(2);
   }, 30_000);
 
@@ -255,7 +304,12 @@ describe('Auction concurrency (FR-AUC-01–FR-AUC-18, NFR-MNT-02)', () => {
   async function offered() {
     const id = await auction();
     const [winner, second, third] = await people(3);
-    for (const [who, max] of [[third, '110000'], [second, '120000'], [winner, '150000']] as [Who, string][]) expect((await who.bid(id, max)).status).toBe(201);
+    for (const [who, max] of [
+      [third, '110000'],
+      [second, '120000'],
+      [winner, '150000'],
+    ] as [Who, string][])
+      expect((await who.bid(id, max)).status).toBe(201);
     await endAuction(fx, id);
     await t.app.get(AuctionCloser).closeOne(id);
     const { id: orderId } = await one<{ id: string }>(`SELECT id FROM orders.orders WHERE listing_id = $1`, [id]);
@@ -279,11 +333,13 @@ describe('Auction concurrency (FR-AUC-01–FR-AUC-18, NFR-MNT-02)', () => {
 
   it('FR-AUC-15 accepting and declining one offer at the same moment: exactly one outcome, at most one open offer and one live order', async () => {
     const o = await offered();
-    const results = await Promise.all(Array.from({ length: 10 }, async (_, i) => {
-      await jitter(10);
-      const r = await o.second.call('POST', `/auctions/${o.id}/second-chance/${o.offerId}/decision`, { decision: i % 2 ? 'accept' : 'decline' });
-      return { status: r.status, body: (await r.json()) as { status?: string; type?: string } };
-    }));
+    const results = await Promise.all(
+      Array.from({ length: 10 }, async (_, i) => {
+        await jitter(10);
+        const r = await o.second.call('POST', `/auctions/${o.id}/second-chance/${o.offerId}/decision`, { decision: i % 2 ? 'accept' : 'decline' });
+        return { status: r.status, body: (await r.json()) as { status?: string; type?: string } };
+      }),
+    );
     const decided = results.filter((r) => r.status === 200);
     expect(decided).toHaveLength(1);
     for (const r of results.filter((x) => x.status !== 200)) expect([r.status, r.body.type]).toEqual([409, '/problems/offer-closed']);
@@ -307,9 +363,17 @@ describe('Auction concurrency (FR-AUC-01–FR-AUC-18, NFR-MNT-02)', () => {
     ]);
     expect(accept.status).toBe(409); // expired on the database clock: never accepted late
     expect((await one<{ status: string }>(`SELECT status FROM auctions.second_chance_offers WHERE id = $1`, [o.offerId])).status).toBe('expired');
-    const next = await fx.query<{ bidder_id: string }>(`SELECT bidder_id FROM auctions.second_chance_offers WHERE auction_id = $1 AND status = 'offered'`, [o.id]);
+    const next = await fx.query<{ bidder_id: string }>(`SELECT bidder_id FROM auctions.second_chance_offers WHERE auction_id = $1 AND status = 'offered'`, [
+      o.id,
+    ]);
     expect(next).toEqual([{ bidder_id: o.third.userId }]);
-    expect((await one<{ n: number }>(`SELECT count(*)::int AS n FROM auctions.outbox WHERE event_type = 'auctions.offer.expired' AND payload->>'offerId' = $1`, [o.offerId])).n).toBe(1);
+    expect(
+      (
+        await one<{ n: number }>(`SELECT count(*)::int AS n FROM auctions.outbox WHERE event_type = 'auctions.offer.expired' AND payload->>'offerId' = $1`, [
+          o.offerId,
+        ])
+      ).n,
+    ).toBe(1);
   }, 60_000);
 });
 

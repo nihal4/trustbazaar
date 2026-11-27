@@ -11,7 +11,13 @@ type Answer = (sql: string, params: unknown[]) => unknown;
 function setup(answer: Answer, o: { escrow?: (id: string) => unknown; query?: (id: string) => Promise<unknown>; leased?: string[] } = {}) {
   const query = jest.fn(async (sql: string, params: unknown[] = []) => answer(sql, params));
   const statuses = { query: jest.fn(o.query ?? (async () => ({ outcome: 'applied' }))) };
-  const orders = { getEscrow: jest.fn(async (id: string) => { const e = o.escrow?.(id); if (e instanceof Error) throw e; return e; }) };
+  const orders = {
+    getEscrow: jest.fn(async (id: string) => {
+      const e = o.escrow?.(id);
+      if (e instanceof Error) throw e;
+      return e;
+    }),
+  };
   const params = { current: async () => ({ ms: (k: string, sub: string) => (k === 'CP-32' && sub === 'retention' ? 30 * DAY : 0) }) };
   const store = new Map<string, string>((o.leased ?? []).map((k) => [k, '1']));
   const redis = {
@@ -30,11 +36,27 @@ function setup(answer: Answer, o: { escrow?: (id: string) => unknown; query?: (i
 describe('UpkeepService', () => {
   it('DV-31 FR-DLV-10 shipments in flight silent for 6 hours are asked about once per lease; one failure does not stop the rest', async () => {
     const s = setup(
-      (sql) => (sql.includes('shipment_history') ? [{ id: 'S1', consignment_id: 'C1' }, { id: 'S2', consignment_id: 'C2' }, { id: 'S3', consignment_id: 'C3' }] : []),
-      { leased: ['delivery:reconcile:S3'], query: async (id) => { if (id === 'S1') throw new Error('courier down'); return {}; } },
+      (sql) =>
+        sql.includes('shipment_history')
+          ? [
+              { id: 'S1', consignment_id: 'C1' },
+              { id: 'S2', consignment_id: 'C2' },
+              { id: 'S3', consignment_id: 'C3' },
+            ]
+          : [],
+      {
+        leased: ['delivery:reconcile:S3'],
+        query: async (id) => {
+          if (id === 'S1') throw new Error('courier down');
+          return {};
+        },
+      },
     );
     expect(await s.svc.reconcile()).toEqual({ done: 1, failed: 1 });
-    expect(s.statuses.query.mock.calls).toEqual([['S1', 'C1'], ['S2', 'C2']]); // S3 is leased by another instance
+    expect(s.statuses.query.mock.calls).toEqual([
+      ['S1', 'C1'],
+      ['S2', 'C2'],
+    ]); // S3 is leased by another instance
     const [, params] = s.query.mock.calls[0];
     expect(params).toEqual([['booked', 'picked_up', 'in_transit', 'delivery_failed'], ago(DV_31.silentMs), '00000000-0000-0000-0000-000000000000']);
     expect(s.redis.set).toHaveBeenCalledWith('delivery:reconcile:S1', '1', 'EX', DV_31.leaseSeconds, 'NX');
@@ -44,7 +66,10 @@ describe('UpkeepService', () => {
     const ids = Array.from({ length: 150 }, (_, i) => `00000000-0000-0000-0000-${String(i + 1).padStart(12, '0')}`);
     const s = setup((sql, params) => {
       if (!sql.includes('shipment_history')) return [];
-      return ids.filter((id) => id > (params[2] as string)).slice(0, 100).map((id) => ({ id, consignment_id: `C-${id}` }));
+      return ids
+        .filter((id) => id > (params[2] as string))
+        .slice(0, 100)
+        .map((id) => ({ id, consignment_id: `C-${id}` }));
     });
     const asked = () => s.statuses.query.mock.calls.map(([id]) => id as string);
     await s.svc.reconcile();
@@ -82,14 +107,17 @@ describe('UpkeepService', () => {
       O5: { closedAt: ago(40 * DAY), openDisputeId: 'D1' },
       O6: new Error('not-found'),
     };
-    const s = setup((sql, params) => {
-      if (sql.includes('addresses_erased_at IS NULL AND status IN')) return rows;
-      if (sql.includes('SET pickup_address_enc = NULL')) {
-        if (params[0] === 'update-fails') throw new Error('connection lost');
-        return [[{ id: params[0] }], 1];
-      }
-      return [];
-    }, { escrow: (id) => escrow[id] });
+    const s = setup(
+      (sql, params) => {
+        if (sql.includes('addresses_erased_at IS NULL AND status IN')) return rows;
+        if (sql.includes('SET pickup_address_enc = NULL')) {
+          if (params[0] === 'update-fails') throw new Error('connection lost');
+          return [[{ id: params[0] }], 1];
+        }
+        return [];
+      },
+      { escrow: (id) => escrow[id] },
+    );
     expect(await s.svc.eraseAddresses()).toEqual({ done: 2, failed: 1 });
     const erased = s.query.mock.calls.filter(([q]) => String(q).includes('SET pickup_address_enc = NULL')).map(([, p]) => (p as string[])[0]);
     expect(erased).toEqual(['cancelled', 'closed-long-ago', 'update-fails']);
@@ -97,7 +125,7 @@ describe('UpkeepService', () => {
     expect(s.orders.getEscrow.mock.calls.filter(([id]) => id === 'O2')).toHaveLength(1); // asked once per order
   });
 
-  it('SEC-PAY-04 provider event ids are deleted after CP-32\'s retention, and only those', async () => {
+  it("SEC-PAY-04 provider event ids are deleted after CP-32's retention, and only those", async () => {
     const s = setup((sql) => (sql.startsWith('DELETE') ? [[], 7] : []));
     expect(await s.svc.purgeProviderEvents()).toBe(7);
     expect(s.query.mock.calls[0]).toEqual(['DELETE FROM delivery.provider_events WHERE received_at < $1', [ago(30 * DAY)]]);

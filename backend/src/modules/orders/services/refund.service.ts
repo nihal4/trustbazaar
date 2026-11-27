@@ -60,21 +60,35 @@ export class RefundService {
     let result;
     try {
       result = await adapter.refund({
-        attempt: { id: a.id, provider: a.provider, orderId: a.orderId, amount: BigInt(a.amount), idempotencyKey: a.idempotencyKey, providerPaymentId: a.providerPaymentId, expiresAt: a.expiresAt },
-        providerTxnId: a.providerTxnId, amount: BigInt(r.amount), idempotencyKey: r.idempotencyKey,
+        attempt: {
+          id: a.id,
+          provider: a.provider,
+          orderId: a.orderId,
+          amount: BigInt(a.amount),
+          idempotencyKey: a.idempotencyKey,
+          providerPaymentId: a.providerPaymentId,
+          expiresAt: a.expiresAt,
+        },
+        providerTxnId: a.providerTxnId,
+        amount: BigInt(r.amount),
+        idempotencyKey: r.idempotencyKey,
       });
     } catch (err) {
       if (!(err instanceof ProviderUnavailable)) throw err;
       providerErrors.inc({ provider: a.provider, operation: 'refund' });
       const made = r.attemptsMade + 1;
       if (made >= MAX_REFUND_ATTEMPTS) return this.manual(m, r, 'refund_failed', err.message, made);
-      await m.getRepository(Refund).update({ id: r.id }, { status: 'failed', attemptsMade: made, nextAttemptAt: new Date(now.getTime() + RETRY_DELAYS_MS[made - 1]) });
+      await m
+        .getRepository(Refund)
+        .update({ id: r.id }, { status: 'failed', attemptsMade: made, nextAttemptAt: new Date(now.getTime() + RETRY_DELAYS_MS[made - 1]) });
       this.log.warn(`refund ${r.id} attempt ${made} failed: ${err.message}`);
       return 'retry';
     }
     if (result.status === 'unsupported') return this.manual(m, r, 'manual_refund_required', `${a.provider} cannot refund this payment`);
     if (result.status === 'pending') {
-      await m.getRepository(Refund).update({ id: r.id }, { status: 'sent', providerRefundId: result.providerRefundId ?? null, attemptsMade: r.attemptsMade + 1 });
+      await m
+        .getRepository(Refund)
+        .update({ id: r.id }, { status: 'sent', providerRefundId: result.providerRefundId ?? null, attemptsMade: r.attemptsMade + 1 });
       return 'sent'; // confirmed later by reconciliation (U2-07)
     }
     await this.succeed(m, r, a, result.providerRefundId ?? null, r.attemptsMade + 1);
@@ -117,9 +131,19 @@ export class RefundService {
   private async succeed(m: EntityManager, r: Refund, a: PaymentAttempt, providerRefundId: string | null, attemptsMade: number): Promise<void> {
     await m.getRepository(Refund).update({ id: r.id }, { status: 'succeeded', providerRefundId, attemptsMade, completedAt: this.clock.now() });
     const buyer = await this.buyerOf(m, r, a);
-    await post(m, 'refund_paid', r.orderId, r.id, `refund ${r.reason} paid out by ${a.provider}`, [['buyer_refund_payable', buyer, BigInt(r.amount)], ['provider_clearing', null, -BigInt(r.amount)]]);
-    await m.getRepository(OrdersOutboxEvent).insert({ eventType: 'payments.refund.succeeded', aggregateId: r.orderId ?? r.id, payload: { refundId: r.id, orderId: r.orderId, buyerId: buyer, amount: r.amount, reason: r.reason } });
-    await this.audit.record({ actorType: 'system', action: 'payments.refund.succeeded', objectType: 'refund', objectId: r.id, after: { amount: r.amount, provider: a.provider } }, m);
+    await post(m, 'refund_paid', r.orderId, r.id, `refund ${r.reason} paid out by ${a.provider}`, [
+      ['buyer_refund_payable', buyer, BigInt(r.amount)],
+      ['provider_clearing', null, -BigInt(r.amount)],
+    ]);
+    await m.getRepository(OrdersOutboxEvent).insert({
+      eventType: 'payments.refund.succeeded',
+      aggregateId: r.orderId ?? r.id,
+      payload: { refundId: r.id, orderId: r.orderId, buyerId: buyer, amount: r.amount, reason: r.reason },
+    });
+    await this.audit.record(
+      { actorType: 'system', action: 'payments.refund.succeeded', objectType: 'refund', objectId: r.id, after: { amount: r.amount, provider: a.provider } },
+      m,
+    );
   }
 
   /** The buyer of the refund's order, else the payer of its attempt. */
@@ -129,10 +153,22 @@ export class RefundService {
   }
 
   /** FR-PAY-12: an operator takes over, and the buyer is told when to expect the money. */
-  private async manual(m: EntityManager, r: Refund, kind: 'refund_failed' | 'manual_refund_required', detail: string, made = r.attemptsMade): Promise<RefundOutcome> {
+  private async manual(
+    m: EntityManager,
+    r: Refund,
+    kind: 'refund_failed' | 'manual_refund_required',
+    detail: string,
+    made = r.attemptsMade,
+  ): Promise<RefundOutcome> {
     await m.getRepository(Refund).update({ id: r.id }, { status: 'manual_required', attemptsMade: made });
-    await m.getRepository(ReconciliationIssue).insert({ kind, orderId: r.orderId, attemptId: r.attemptId, refundId: r.id, detail: { reason: r.reason, amount: r.amount, detail } });
-    await m.getRepository(OrdersOutboxEvent).insert({ eventType: 'payments.refund.manual_required', aggregateId: r.orderId ?? r.id, payload: { refundId: r.id, orderId: r.orderId, buyerId: await this.buyerOf(m, r), amount: r.amount } });
+    await m
+      .getRepository(ReconciliationIssue)
+      .insert({ kind, orderId: r.orderId, attemptId: r.attemptId, refundId: r.id, detail: { reason: r.reason, amount: r.amount, detail } });
+    await m.getRepository(OrdersOutboxEvent).insert({
+      eventType: 'payments.refund.manual_required',
+      aggregateId: r.orderId ?? r.id,
+      payload: { refundId: r.id, orderId: r.orderId, buyerId: await this.buyerOf(m, r), amount: r.amount },
+    });
     this.log.error(`refund ${r.id} needs an operator: ${detail}`);
     return 'manual_required';
   }

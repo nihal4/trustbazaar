@@ -27,12 +27,12 @@ const PARAM: Record<string, string> = { kind: 'doc_front', step: 'password_chang
  */
 const OPEN_TO_MEMBERS: Record<string, string> = {
   'POST /auctions/:id/bids': 'any verified member bids on an open auction (FR-AUC-03)',
-  'GET /auctions/:id/my-status': 'the caller\'s own standing on any auction (FR-AUC-12)',
+  'GET /auctions/:id/my-status': "the caller's own standing on any auction (FR-AUC-12)",
   'POST /blocks/:userId': 'a member may block any other member (FR-CHT-08)',
-  'DELETE /blocks/:userId': 'the caller\'s own block list (FR-CHT-08)',
-  'GET /listings/:id/fulfilment-options': 'a buyer\'s quote for any active listing (FR-DLV-02)',
+  'DELETE /blocks/:userId': "the caller's own block list (FR-CHT-08)",
+  'GET /listings/:id/fulfilment-options': "a buyer's quote for any active listing (FR-DLV-02)",
   'POST /listings/:id/threads': 'a buyer opens a thread on any active listing (FR-CHT-01)',
-  'POST /kyc/files/:kind/view': 'the caller\'s own KYC files; the parameter is a file kind, not an object (SEC-DAT-04)',
+  'POST /kyc/files/:kind/view': "the caller's own KYC files; the parameter is a file kind, not an object (SEC-DAT-04)",
 };
 
 describe('negative authorisation (SEC-SDL-09)', () => {
@@ -130,7 +130,7 @@ describe('negative authorisation (SEC-SDL-09)', () => {
     expect(await answers(us, () => admin.headers)).toEqual(expecting(us, () => 401));
   });
 
-  it('SEC-SDL-09 another user\'s object: every user endpoint that takes one refuses a member who is not a party', async () => {
+  it("SEC-SDL-09 another user's object: every user endpoint that takes one refuses a member who is not a party", async () => {
     const seller = await user();
     const buyer = await user();
     const stranger = await user();
@@ -153,14 +153,23 @@ describe('negative authorisation (SEC-SDL-09)', () => {
 
     // the seller's objects: listings, an address, a session; the buyer's: an order, a thread, a dispute, a rating
     const [{ id: category }] = await fx.query<{ id: number }>(
-      `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'Lamps', 'বাতি', 'physical') RETURNING id`, [`authz-${randomUUID().slice(0, 8)}`]);
+      `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'Lamps', 'বাতি', 'physical') RETURNING id`,
+      [`authz-${randomUUID().slice(0, 8)}`],
+    );
     const listing = async (status: 'draft' | 'active') => {
       const [{ id }] = await fx.query<{ id: string }>(
         `INSERT INTO listings.listings (seller_id, item_kind, sale_format, category_id, title, description, condition, no_visible_defects,
             fulfilment_options, weight_class, size_class, area_district, approx_lat, approx_lng, price, quantity_total, quantity_available)
          VALUES ($1, 'physical', 'fixed_price', $2, 'Brass desk lamp', 'A brass desk lamp, written by the authorisation test.', 'used', true,
-            'pickup_or_courier', 'up_to_1kg', 'small', 'Dhaka', 23.81, 90.41, 1500000, 1, 1) RETURNING id`, [seller.userId, category]);
-      for (const n of [1, 2]) await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [id, n, randomUUID().replace(/-/g, '')]);
+            'pickup_or_courier', 'up_to_1kg', 'small', 'Dhaka', 23.81, 90.41, 1500000, 1, 1) RETURNING id`,
+        [seller.userId, category],
+      );
+      for (const n of [1, 2])
+        await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [
+          id,
+          n,
+          randomUUID().replace(/-/g, ''),
+        ]);
       if (status === 'active') await fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [id]);
       return id;
     };
@@ -171,33 +180,45 @@ describe('negative authorisation (SEC-SDL-09)', () => {
       `INSERT INTO orders.orders (kind, listing_id, item_kind, buyer_id, seller_id, quantity, unit_price, item_price, fulfilment, delivery_fee, total,
           listing_snapshot, commission_bps, delivery_margin_bps, params_version, payment_due_at, status, paid_at, fulfilment_step, fulfilment_due_at)
        VALUES ('fixed_price', $1, 'physical', $2, $3, 1, 1500000, 1500000, 'self_pickup', 0, 1500000, '{"title":"Brass desk lamp"}', 500, 1000, 1,
-               now(), 'paid', now(), 'meetup_handover', now() + interval '3 days') RETURNING id`, [active, buyer.userId, seller.userId]);
+               now(), 'paid', now(), 'meetup_handover', now() + interval '3 days') RETURNING id`,
+      [active, buyer.userId, seller.userId],
+    );
     const thread = await (await call(buyer, 'POST', `/listings/${active}/threads`, {})).json();
     expect(thread.id).toEqual(expect.any(String));
     const [{ id: dispute }] = await fx.query<{ id: string }>(
       `INSERT INTO disputes.disputes (order_id, buyer_id, seller_id, item_kind, type, description, item_price, amount_collected, seller_due_at)
        VALUES ($1, $2, $3, 'physical', 'not_as_described', 'The lamp does not work at all.', 1500000, 1500000, now() + interval '2 days') RETURNING id`,
-      [order, buyer.userId, seller.userId]);
+      [order, buyer.userId, seller.userId],
+    );
     const [{ id: closedOrder }] = await fx.query<{ id: string }>(
       `INSERT INTO orders.orders (kind, listing_id, item_kind, buyer_id, seller_id, quantity, unit_price, item_price, fulfilment, delivery_fee, total,
           listing_snapshot, commission_bps, delivery_margin_bps, params_version, payment_due_at, status, paid_at, fulfilment_step, fulfilment_due_at)
        VALUES ('fixed_price', $1, 'physical', $2, $3, 1, 1500000, 1500000, 'self_pickup', 0, 1500000, '{"title":"Brass desk lamp"}', 500, 1000, 1,
                now(), 'paid', now(), 'meetup_handover', now() + interval '3 days')
-       RETURNING id`, [randomUUID(), buyer.userId, seller.userId]);
-    await fx.query(`INSERT INTO trust.rating_eligibility (order_id, buyer_id, seller_id, closed_at, rate_until, completed) VALUES ($1, $2, $3, now(), now() + interval '14 days', true)`,
-      [closedOrder, buyer.userId, seller.userId]);
+       RETURNING id`,
+      [randomUUID(), buyer.userId, seller.userId],
+    );
+    await fx.query(
+      `INSERT INTO trust.rating_eligibility (order_id, buyer_id, seller_id, closed_at, rate_until, completed) VALUES ($1, $2, $3, now(), now() + interval '14 days', true)`,
+      [closedOrder, buyer.userId, seller.userId],
+    );
     const [{ id: rating }] = await fx.query<{ id: string }>(
       `INSERT INTO trust.ratings (order_id, rater_id, ratee_id, stars, text, edit_until) VALUES ($1, $2, $3, 5, 'Fine', now() + interval '1 day') RETURNING id`,
-      [closedOrder, buyer.userId, seller.userId]);
+      [closedOrder, buyer.userId, seller.userId],
+    );
     await seedAreas(t.app.get(DataSource)); // idempotent; a fresh database has none
     const [{ id: area }] = await fx.query<{ id: number }>(`SELECT id FROM delivery.areas WHERE active ORDER BY id LIMIT 1`, []);
-    const address = await (await call(seller, 'POST', '/me/addresses', { kind: 'pickup', label: 'Shop', areaId: area, line1: 'House 12, Road 5', contactName: 'Karim Seller' })).json();
+    const address = await (
+      await call(seller, 'POST', '/me/addresses', { kind: 'pickup', label: 'Shop', areaId: area, line1: 'House 12, Road 5', contactName: 'Karim Seller' })
+    ).json();
     expect(address.id).toEqual(expect.any(String));
     const auction = await openAuction(fx, seller.userId, category);
 
     /** Every user endpoint that takes an object: the seller's or the buyer's object, and a body that passes validation. */
     const key = await generateBuyerKey();
-    const image = await sharp({ create: { width: 320, height: 240, channels: 3, background: 'white' } }).jpeg().toBuffer();
+    const image = await sharp({ create: { width: 320, height: 240, channels: 3, background: 'white' } })
+      .jpeg()
+      .toBuffer();
     const table: Record<string, { path: string; body?: unknown; form?: Record<string, string | Buffer> }> = {
       'POST /auctions/:id/second-chance/:oid/decision': { path: `/auctions/${auction}/second-chance/${randomUUID()}/decision`, body: { decision: 'accept' } },
       'DELETE /auth/sessions/:id': { path: `/auth/sessions/${seller.sid}` },
@@ -213,7 +234,10 @@ describe('negative authorisation (SEC-SDL-09)', () => {
       'POST /listings/:id/cancel': { path: `/listings/${active}/cancel` },
       'POST /listings/:id/clarifications': { path: `/listings/${active}/clarifications`, body: { body: 'The shade is green.' } },
       'POST /listings/:id/feature': { path: `/listings/${active}/feature`, body: { hours: 24, provider: 'stripe' } },
-      'PUT /listings/:id/game-details': { path: `/listings/${draft}/game-details`, body: { gameId: 1, platform: 'PC', playerId: 'player-1', contents: 'Level 80 account with skins' } },
+      'PUT /listings/:id/game-details': {
+        path: `/listings/${draft}/game-details`,
+        body: { gameId: 1, platform: 'PC', playerId: 'player-1', contents: 'Level 80 account with skins' },
+      },
       'GET /listings/:id/ownership': { path: `/listings/${draft}/ownership` },
       'POST /listings/:id/ownership-code': { path: `/listings/${draft}/ownership-code` },
       'POST /listings/:id/ownership-proof': { path: `/listings/${draft}/ownership-proof`, form: { file: image } },
@@ -224,12 +248,18 @@ describe('negative authorisation (SEC-SDL-09)', () => {
       'GET /orders/:id': { path: `/orders/${order}` },
       'POST /orders/:id/cancel': { path: `/orders/${order}/cancel`, body: { reason: 'Not mine to cancel' } },
       'POST /orders/:id/cancellation-requests': { path: `/orders/${order}/cancellation-requests`, body: { reason: 'Not mine to cancel' } },
-      'POST /orders/:id/cancellation-requests/:rid/decision': { path: `/orders/${order}/cancellation-requests/${randomUUID()}/decision`, body: { decision: 'accept' } },
+      'POST /orders/:id/cancellation-requests/:rid/decision': {
+        path: `/orders/${order}/cancellation-requests/${randomUUID()}/decision`,
+        body: { decision: 'accept' },
+      },
       'POST /orders/:id/confirm-receipt': { path: `/orders/${order}/confirm-receipt` },
       'GET /orders/:id/dispute-types': { path: `/orders/${order}/dispute-types` },
       'POST /orders/:id/terms-acceptances': { path: `/orders/${order}/terms-acceptances`, body: { kind: 'dispute', version: 1 } },
       'GET /orders/:id/disputes': { path: `/orders/${order}/disputes` },
-      'POST /orders/:id/disputes': { path: `/orders/${order}/disputes`, body: { type: 'not_as_described', description: 'The lamp does not work at all, not as described.' } },
+      'POST /orders/:id/disputes': {
+        path: `/orders/${order}/disputes`,
+        body: { type: 'not_as_described', description: 'The lamp does not work at all, not as described.' },
+      },
       'PUT /orders/:id/fulfilment': { path: `/orders/${order}/fulfilment`, body: { fulfilment: 'self_pickup' } },
       'GET /orders/:id/game': { path: `/orders/${order}/game` },
       'POST /orders/:id/game/acknowledge': { path: `/orders/${order}/game/acknowledge`, body: { version: 1 } },
@@ -265,7 +295,9 @@ describe('negative authorisation (SEC-SDL-09)', () => {
       'POST /threads/:id/reports': { path: `/threads/${thread.id}/reports`, body: { category: 'abusive' } },
     };
 
-    const withObject = userRoutes().filter((r) => r.path.includes(':')).map(routeName);
+    const withObject = userRoutes()
+      .filter((r) => r.path.includes(':'))
+      .map(routeName);
     expect(withObject.filter((n) => !(n in table) && !(n in OPEN_TO_MEMBERS))).toEqual([]); // a new endpoint needs its case here
     expect(Object.keys(table).filter((n) => !withObject.includes(n))).toEqual([]);
 
@@ -273,7 +305,10 @@ describe('negative authorisation (SEC-SDL-09)', () => {
     const admin = await fx.staff('administrator');
     const setFee = async (fee: number | null) => {
       await fx.query(`SELECT staff.publish_config($1::jsonb, $2, $3)`, [
-        JSON.stringify({ 'CP-37': { periods: ['24 hours', '48 hours'], fee_poisha: fee } }), admin, 'Featured fee for the authorisation tests']);
+        JSON.stringify({ 'CP-37': { periods: ['24 hours', '48 hours'], fee_poisha: fee } }),
+        admin,
+        'Featured fee for the authorisation tests',
+      ]);
       (t.app.get(CONFIG_PORT) as unknown as { invalidate(): void }).invalidate();
     };
     await setFee(10_000);
@@ -283,7 +318,7 @@ describe('negative authorisation (SEC-SDL-09)', () => {
       for (const r of ordered) {
         const c = table[routeName(r)];
         const extra: Record<string, string> = r.stepUp ? { 'x-step-up': await fx.stepUpGrant(stranger.sid, r.stepUp) } : {};
-        const body = c.form ? formOf(c.form) : c.body ?? (r.method === 'GET' || r.method === 'DELETE' ? undefined : {});
+        const body = c.form ? formOf(c.form) : (c.body ?? (r.method === 'GET' || r.method === 'DELETE' ? undefined : {}));
         const res = await call(stranger, r.method, c.path, body, extra);
         refused.push(`${routeName(r)} ${[403, 404].includes(res.status) ? 'refused' : `${res.status} ${await res.text()}`}`);
       }
@@ -293,10 +328,14 @@ describe('negative authorisation (SEC-SDL-09)', () => {
     expect(refused).toEqual(ordered.map((r) => `${routeName(r)} refused`));
     // and nothing of theirs changed
     expect(await fx.query(`SELECT ended_at FROM identity.sessions WHERE id = $1`, [seller.sid])).toEqual([{ ended_at: null }]);
-    expect(await fx.query(`SELECT status, title FROM listings.listings WHERE id = ANY($1) ORDER BY status::text`, [[draft, active]]))
-      .toEqual([{ status: 'active', title: 'Brass desk lamp' }, { status: 'draft', title: 'Brass desk lamp' }]);
+    expect(await fx.query(`SELECT status, title FROM listings.listings WHERE id = ANY($1) ORDER BY status::text`, [[draft, active]])).toEqual([
+      { status: 'active', title: 'Brass desk lamp' },
+      { status: 'draft', title: 'Brass desk lamp' },
+    ]);
     expect(await fx.query(`SELECT status::text FROM orders.orders WHERE id = $1`, [order])).toEqual([{ status: 'paid' }]);
-    expect(await fx.query(`SELECT status::text, withdrawn_at FROM disputes.disputes WHERE id = $1`, [dispute])).toEqual([{ status: 'open', withdrawn_at: null }]);
+    expect(await fx.query(`SELECT status::text, withdrawn_at FROM disputes.disputes WHERE id = $1`, [dispute])).toEqual([
+      { status: 'open', withdrawn_at: null },
+    ]);
     expect(await fx.query(`SELECT stars, reply_text FROM trust.ratings WHERE id = $1`, [rating])).toEqual([{ stars: 5, reply_text: null }]);
     expect(await fx.query(`SELECT deleted_at FROM delivery.saved_addresses WHERE id = $1`, [address.id])).toEqual([{ deleted_at: null }]);
     expect(await fx.query(`SELECT last_seq::int FROM chat.threads WHERE id = $1`, [thread.id])).toEqual([{ last_seq: 0 }]);

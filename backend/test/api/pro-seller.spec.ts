@@ -19,7 +19,11 @@ describe('Pro Seller subscription', () => {
   let category: number;
 
   async function setPrice(monthly: number | null) {
-    await fx.query(`SELECT staff.publish_config($1::jsonb, $2, $3)`, [JSON.stringify({ 'CP-48': { monthly_poisha: monthly } }), staffId, 'Pro Seller price for the subscription tests']);
+    await fx.query(`SELECT staff.publish_config($1::jsonb, $2, $3)`, [
+      JSON.stringify({ 'CP-48': { monthly_poisha: monthly } }),
+      staffId,
+      'Pro Seller price for the subscription tests',
+    ]);
     (t.app.get(CONFIG_PORT) as unknown as { invalidate(): void }).invalidate();
   }
 
@@ -28,7 +32,10 @@ describe('Pro Seller subscription', () => {
     fx = await IdentityFixtures.open();
     monetization = t.app.get(MonetizationService);
     staffId = await fx.staff('administrator');
-    [{ id: category }] = await fx.query<{ id: number }>(`INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'c', 'বি', 'physical') RETURNING id`, [`pro-${randomUUID().slice(0, 8)}`]);
+    [{ id: category }] = await fx.query<{ id: number }>(
+      `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'c', 'বি', 'physical') RETURNING id`,
+      [`pro-${randomUUID().slice(0, 8)}`],
+    );
     await setPrice(50_000);
   });
   afterAll(async () => {
@@ -42,7 +49,8 @@ describe('Pro Seller subscription', () => {
     const ip = `203.0.113.${randomInt(1, 255)}, 10.5.${randomInt(0, 255)}.${randomInt(1, 255)}`;
     const call = (method: string, path: string, body?: unknown, extra: Record<string, string> = {}) =>
       fetch(t.url(path), {
-        method, redirect: 'manual',
+        method,
+        redirect: 'manual',
         headers: { ...fx.headers(sid, userId, 'user'), 'x-forwarded-for': ip, ...(body !== undefined ? { 'content-type': 'application/json' } : {}), ...extra },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
@@ -51,22 +59,41 @@ describe('Pro Seller subscription', () => {
   async function pay(redirectUrl: string, outcome: 'succeeded' | 'failed' = 'succeeded') {
     const page = new URL(redirectUrl);
     const form = await fetch(t.url(page.pathname.replace('/api/v1', '') + page.search), {
-      method: 'POST', redirect: 'manual', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: `outcome=${outcome}`,
+      method: 'POST',
+      redirect: 'manual',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: `outcome=${outcome}`,
     });
     const cb = new URL(form.headers.get('location')!);
     const back = await fetch(t.url(cb.pathname.replace('/api/v1', '') + cb.search), { redirect: 'manual' });
     return new URL(back.headers.get('location')!).searchParams.get('result');
   }
   const row = async <T = Record<string, unknown>>(sql: string, p: unknown[]) => (await fx.query<T>(sql, p))[0];
-  const sub = (userId: string) => row<{ id: string; status: string; current_period_end: Date; failed_renewals: number }>(
-    `SELECT id, status, current_period_end, failed_renewals FROM payments.subscriptions WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1`, [userId]);
+  const sub = (userId: string) =>
+    row<{ id: string; status: string; current_period_end: Date; failed_renewals: number }>(
+      `SELECT id, status, current_period_end, failed_renewals FROM payments.subscriptions WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1`,
+      [userId],
+    );
   const isPro = (userId: string) => t.app.get<ProStatusQuery>(PRO_STATUS).isPro(userId);
   /** Runs the notification consumer of the latest subscription event of a user, as the dispatcher would. */
   async function notify(subscriptionId: string) {
     const e = await row<{ id: string; payload: Record<string, unknown>; created_at: Date }>(
-      `SELECT id::text, payload, created_at FROM orders.outbox WHERE event_type = 'payments.subscription.changed' AND aggregate_id = $1 ORDER BY id DESC LIMIT 1`, [subscriptionId]);
-    const c = t.app.get(EventBus).consumersOf('payments.subscription.changed').find((x) => x.name === 'chat.notifications')!;
-    await c.handler({ outbox: 'orders', id: e.id, type: 'payments.subscription.changed', aggregateId: subscriptionId, payload: e.payload, createdAt: e.created_at, attempt: 1 } as OutboxEvent);
+      `SELECT id::text, payload, created_at FROM orders.outbox WHERE event_type = 'payments.subscription.changed' AND aggregate_id = $1 ORDER BY id DESC LIMIT 1`,
+      [subscriptionId],
+    );
+    const c = t.app
+      .get(EventBus)
+      .consumersOf('payments.subscription.changed')
+      .find((x) => x.name === 'chat.notifications')!;
+    await c.handler({
+      outbox: 'orders',
+      id: e.id,
+      type: 'payments.subscription.changed',
+      aggregateId: subscriptionId,
+      payload: e.payload,
+      createdAt: e.created_at,
+      attempt: 1,
+    } as OutboxEvent);
     return e.payload;
   }
   async function subscribed() {
@@ -84,7 +111,10 @@ describe('Pro Seller subscription', () => {
     const r = await seller.call('POST', '/me/subscription', { provider: 'nagad' });
     const a = await r.json();
     expect(a).toMatchObject({ resumed: false, renewal: false, amount: '50000', provider: 'nagad', subscriptionId: expect.any(String) });
-    expect(await row(`SELECT purpose, subject_id FROM payments.attempts WHERE id = $1`, [a.attemptId])).toEqual({ purpose: 'subscription', subject_id: a.subscriptionId });
+    expect(await row(`SELECT purpose, subject_id FROM payments.attempts WHERE id = $1`, [a.attemptId])).toEqual({
+      purpose: 'subscription',
+      subject_id: a.subscriptionId,
+    });
     expect(await isPro(seller.userId)).toBe(false);
     expect(await pay(a.redirectUrl)).toBe('paid');
 
@@ -97,11 +127,19 @@ describe('Pro Seller subscription', () => {
     expect(await t.app.get<ProStatusQuery>(LISTING_PRO_STATUS).isPro(seller.userId)).toBe(true); // Listings' CP-28 check
     const trust = await (await fetch(t.url(`/users/${seller.userId}/trust`))).json();
     expect(trust.badges).toEqual({ verified: true, pro: true });
-    expect(await fx.query(`SELECT l.account_code, l.amount::text FROM payments.journal_entries e JOIN payments.journal_lines l ON l.entry_id = e.id
-                            WHERE e.source_id = $1 ORDER BY l.amount`, [a.attemptId])).toEqual([
-      { account_code: 'revenue_subscription', amount: '-50000' }, { account_code: 'provider_clearing', amount: '50000' },
+    expect(
+      await fx.query(
+        `SELECT l.account_code, l.amount::text FROM payments.journal_entries e JOIN payments.journal_lines l ON l.entry_id = e.id
+                            WHERE e.source_id = $1 ORDER BY l.amount`,
+        [a.attemptId],
+      ),
+    ).toEqual([
+      { account_code: 'revenue_subscription', amount: '-50000' },
+      { account_code: 'provider_clearing', amount: '50000' },
     ]);
-    expect(await row(`SELECT payload->>'change' AS change FROM orders.outbox WHERE event_type = 'payments.subscription.changed' AND aggregate_id = $1`, [s.id])).toEqual({ change: 'started' });
+    expect(
+      await row(`SELECT payload->>'change' AS change FROM orders.outbox WHERE event_type = 'payments.subscription.changed' AND aggregate_id = $1`, [s.id]),
+    ).toEqual({ change: 'started' });
   });
 
   it('FR-MON-02 an order created while the seller is Pro keeps the Pro commission rate', async () => {
@@ -113,7 +151,12 @@ describe('Pro Seller subscription', () => {
           'pickup_only', 'Dhaka', 23.81, 90.41, 100000, 2, 2) RETURNING id`,
       [seller.userId, category],
     );
-    for (const n of [1, 2]) await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 1, 1)`, [listingId, n, randomUUID().replace(/-/g, '')]);
+    for (const n of [1, 2])
+      await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 1, 1)`, [
+        listingId,
+        n,
+        randomUUID().replace(/-/g, ''),
+      ]);
     await fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [listingId]);
     const buyer = await member();
     const r = await buyer.call('POST', '/orders', { listingId, quantity: 1, fulfilment: 'self_pickup' });
@@ -159,7 +202,8 @@ describe('Pro Seller subscription', () => {
     expect(await isPro(seller.userId)).toBe(false); // standard terms until paid
     expect(await notify(s.id)).toMatchObject({ change: 'renewal_due', status: 'past_due', amount: '50000' });
     expect(await row(`SELECT template_code, params FROM notify.notifications WHERE user_id = $1`, [seller.userId])).toEqual({
-      template_code: 'payment.pro_renewal_due', params: { amount_bdt: 500 },
+      template_code: 'payment.pro_renewal_due',
+      params: { amount_bdt: 500 },
     });
 
     const renewal = await (await seller.call('POST', '/me/subscription', { provider: 'bkash' })).json();
@@ -169,7 +213,9 @@ describe('Pro Seller subscription', () => {
     await monetization.processSubscriptions();
     expect(await sub(seller.userId)).toMatchObject({ status: 'lapsed' });
     await notify(s.id);
-    expect(await row(`SELECT count(*)::int AS n FROM notify.notifications WHERE user_id = $1 AND template_code = 'payment.pro_lapsed'`, [seller.userId])).toEqual({ n: 1 });
+    expect(
+      await row(`SELECT count(*)::int AS n FROM notify.notifications WHERE user_id = $1 AND template_code = 'payment.pro_lapsed'`, [seller.userId]),
+    ).toEqual({ n: 1 });
     expect(await monetization.processSubscriptions()).toBe(0);
   });
 

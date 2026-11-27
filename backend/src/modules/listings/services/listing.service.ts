@@ -30,8 +30,21 @@ import { LISTING_PRO_STATUS } from '../adapters/pro-status';
 export type FieldError = { field: string; reason: string };
 type Fields = Pick<
   Listing,
-  | 'itemKind' | 'saleFormat' | 'categoryId' | 'title' | 'description' | 'condition' | 'noVisibleDefects' | 'fulfilmentOptions'
-  | 'weightClass' | 'sizeClass' | 'price' | 'quantityTotal' | 'areaDistrict' | 'approxLat' | 'approxLng'
+  | 'itemKind'
+  | 'saleFormat'
+  | 'categoryId'
+  | 'title'
+  | 'description'
+  | 'condition'
+  | 'noVisibleDefects'
+  | 'fulfilmentOptions'
+  | 'weightClass'
+  | 'sizeClass'
+  | 'price'
+  | 'quantityTotal'
+  | 'areaDistrict'
+  | 'approxLat'
+  | 'approxLng'
 >;
 
 /** What an editable active listing may still change (FR-LST-07); a draft may change everything. */
@@ -47,8 +60,21 @@ const round3 = (x: number) => (Math.round(x * 1000) / 1000).toFixed(3);
 const userOf = (p: Principal | undefined) => (p?.type === 'user' ? p.userId : undefined);
 
 const FIELD_KEYS = [
-  'itemKind', 'saleFormat', 'categoryId', 'title', 'description', 'condition', 'noVisibleDefects', 'fulfilmentOptions',
-  'weightClass', 'sizeClass', 'price', 'quantityTotal', 'areaDistrict', 'approxLat', 'approxLng',
+  'itemKind',
+  'saleFormat',
+  'categoryId',
+  'title',
+  'description',
+  'condition',
+  'noVisibleDefects',
+  'fulfilmentOptions',
+  'weightClass',
+  'sizeClass',
+  'price',
+  'quantityTotal',
+  'areaDistrict',
+  'approxLat',
+  'approxLng',
 ] as const satisfies readonly (keyof Fields)[];
 const fieldsOf = (l: Listing): Fields => Object.fromEntries(FIELD_KEYS.map((k) => [k, l[k]])) as Fields;
 
@@ -56,7 +82,8 @@ const fieldsOf = (l: Listing): Fields => Object.fromEntries(FIELD_KEYS.map((k) =
 export function fieldErrors(f: Fields, category: Pick<Category, 'itemKind' | 'prohibited'> | null): FieldError[] {
   const e: FieldError[] = [];
   if (!category) e.push({ field: 'categoryId', reason: 'unknown' });
-  else if (category.prohibited) e.push({ field: 'categoryId', reason: 'prohibited' }); // FR-LST-10
+  else if (category.prohibited)
+    e.push({ field: 'categoryId', reason: 'prohibited' }); // FR-LST-10
   else if (category.itemKind !== f.itemKind) e.push({ field: 'categoryId', reason: 'item-kind' });
   if (f.saleFormat === 'fixed_price' && f.price === null) e.push({ field: 'price', reason: 'required' });
   if (f.saleFormat === 'auction' && f.price !== null) e.push({ field: 'price', reason: 'auction-sets-start-price-at-publication' });
@@ -116,7 +143,12 @@ export class ListingService {
   async categories() {
     const rows = await this.db.getRepository(Category).find({ order: { sortOrder: 'ASC', id: 'ASC' } });
     return rows.map((c) => ({
-      id: c.id, parentId: c.parentId, slug: c.slug, nameEn: c.nameEn, nameBn: c.nameBn, itemKind: c.itemKind,
+      id: c.id,
+      parentId: c.parentId,
+      slug: c.slug,
+      nameEn: c.nameEn,
+      nameBn: c.nameBn,
+      itemKind: c.itemKind,
       selectable: !c.prohibited, // prohibited categories are shown as policy only
     }));
   }
@@ -128,13 +160,21 @@ export class ListingService {
     const { id, repeated } = await this.idempotency.once('listing', userId, idempotencyKey, async () => {
       const area = dto.area ?? (dto.itemKind === 'physical' ? await this.identity.getApproxArea(userId) : null);
       const f: Fields = {
-        itemKind: dto.itemKind, saleFormat: dto.saleFormat, categoryId: dto.categoryId,
-        title: dto.title.trim(), description: dto.description.trim(),
-        condition: dto.condition ?? null, noVisibleDefects: dto.noVisibleDefects ?? null,
-        fulfilmentOptions: dto.fulfilmentOptions ?? null, weightClass: dto.weightClass ?? null, sizeClass: dto.sizeClass ?? null,
-        price: dto.price ?? null, quantityTotal: dto.quantity ?? 1,
+        itemKind: dto.itemKind,
+        saleFormat: dto.saleFormat,
+        categoryId: dto.categoryId,
+        title: dto.title.trim(),
+        description: dto.description.trim(),
+        condition: dto.condition ?? null,
+        noVisibleDefects: dto.noVisibleDefects ?? null,
+        fulfilmentOptions: dto.fulfilmentOptions ?? null,
+        weightClass: dto.weightClass ?? null,
+        sizeClass: dto.sizeClass ?? null,
+        price: dto.price ?? null,
+        quantityTotal: dto.quantity ?? 1,
         areaDistrict: area?.district?.trim() || null,
-        approxLat: area ? round3(area.lat) : null, approxLng: area ? round3(area.lng) : null,
+        approxLat: area ? round3(area.lat) : null,
+        approxLng: area ? round3(area.lng) : null,
       };
       if (f.areaDistrict === null) [f.approxLat, f.approxLng] = [null, null];
       return this.db
@@ -142,7 +182,11 @@ export class ListingService {
           const errors = fieldErrors(f, await m.getRepository(Category).findOneBy({ id: f.categoryId }));
           if (errors.length) throw new Problem('validation-failed', { errors });
           const { identifiers } = await m.getRepository(Listing).insert({
-            ...f, ...(dto.serial !== undefined ? this.serialColumns(dto.serial) : {}), sellerId: userId, quantityAvailable: f.quantityTotal, status: 'draft',
+            ...f,
+            ...(dto.serial !== undefined ? this.serialColumns(dto.serial) : {}),
+            sellerId: userId,
+            quantityAvailable: f.quantityTotal,
+            status: 'draft',
           });
           const listingId = identifiers[0].id as string;
           await this.history(m, listingId, null, 'draft', userId, 'created');
@@ -181,7 +225,14 @@ export class ListingService {
         const errors = fieldErrors(f, await m.getRepository(Category).findOneBy({ id: f.categoryId }));
         if (errors.length) throw new Problem('validation-failed', { errors });
         // unlocked: nothing is reserved or sold yet, so every unit is available
-        await m.getRepository(Listing).update({ id }, { ...f, ...(dto.serial !== undefined ? this.serialColumns(dto.serial) : {}), quantityAvailable: f.quantityTotal - l.quantityReserved - l.quantitySold });
+        await m.getRepository(Listing).update(
+          { id },
+          {
+            ...f,
+            ...(dto.serial !== undefined ? this.serialColumns(dto.serial) : {}),
+            quantityAvailable: f.quantityTotal - l.quantityReserved - l.quantitySold,
+          },
+        );
       })
       .catch(fromDatabase);
     return this.view(id, { userId });
@@ -209,7 +260,12 @@ export class ListingService {
         if (taken.size >= Math.min(cp33.photos, 10)) throw new Problem('photo-limit');
         const position = [...Array(10).keys()].map((i) => i + 1).find((p) => !taken.has(p))!;
         const { identifiers } = await m.getRepository(ListingPhoto).insert({
-          listingId: id, position, storageKey: stored.key, width: stored.width, height: stored.height, showsDefects,
+          listingId: id,
+          position,
+          storageKey: stored.key,
+          width: stored.width,
+          height: stored.height,
+          showsDefects,
         });
         return { id: identifiers[0].id as string, position };
       });
@@ -232,7 +288,8 @@ export class ListingService {
       // an active physical listing keeps what publication required (FR-LST-02)
       if (l.status === 'active' && l.itemKind === 'physical') {
         if (rest.length < 2) throw new Problem('listing-state', { errors: [{ field: 'photos', reason: 'two-needed' }] });
-        if (!l.noVisibleDefects && !rest.some((p) => p.showsDefects)) throw new Problem('listing-state', { errors: [{ field: 'photos', reason: 'defect-photo-needed' }] });
+        if (!l.noVisibleDefects && !rest.some((p) => p.showsDefects))
+          throw new Problem('listing-state', { errors: [{ field: 'photos', reason: 'defect-photo-needed' }] });
       }
       await m.getRepository(ListingPhoto).update({ id: photoId }, { removedAt: new Date() });
       return photo.storageKey;
@@ -265,7 +322,8 @@ export class ListingService {
         if (l.saleFormat === 'auction') {
           if (!dto.startPrice) errors.push({ field: 'startPrice', reason: 'required' });
           if (!dto.duration || !durations.includes(dto.duration)) errors.push({ field: 'duration', reason: 'one-of-cp-07' });
-          if (dto.startPrice && dto.reservePrice && BigInt(dto.reservePrice) < BigInt(dto.startPrice)) errors.push({ field: 'reservePrice', reason: 'below-start-price' });
+          if (dto.startPrice && dto.reservePrice && BigInt(dto.reservePrice) < BigInt(dto.startPrice))
+            errors.push({ field: 'reservePrice', reason: 'below-start-price' });
         } else {
           for (const k of ['startPrice', 'reservePrice', 'duration'] as const) if (dto[k] !== undefined) errors.push({ field: k, reason: 'auctions-only' });
         }
@@ -289,7 +347,9 @@ export class ListingService {
         await m.getRepository(Listing).update({ id }, { status: to, publishedAt: held ? null : now });
         const reason = matches.length
           ? `held for review: screening terms ${matches.map((t) => `"${t.term}" (${t.severity})`).join(', ')}`
-          : l.itemKind === 'game_account' ? 'held for review: game-account ownership approval' : 'published';
+          : l.itemKind === 'game_account'
+            ? 'held for review: game-account ownership approval'
+            : 'published';
         await this.history(m, id, 'draft', to, userId, reason);
 
         if (l.saleFormat === 'auction') {
@@ -337,7 +397,13 @@ export class ListingService {
       [userId, l.title, l.id, l.categoryId, RELISTING.window, RELISTING.similarity, disputed],
     )) as { id: string; reason: 'cancelled' | 'disputed'; sim: number }[];
     if (similar) {
-      await publish(m, 'listings.listing.relisting_flagged', l.id, { listingId: l.id, sellerId: userId, previousListingId: similar.id, similarity: similar.sim, reason: similar.reason });
+      await publish(m, 'listings.listing.relisting_flagged', l.id, {
+        listingId: l.id,
+        sellerId: userId,
+        previousListingId: similar.id,
+        similarity: similar.sim,
+        reason: similar.reason,
+      });
     }
   }
 
@@ -369,7 +435,8 @@ export class ListingService {
         return;
       }
       if (from === 'active') {
-        if (l.saleFormat === 'fixed_price' && l.quantityReserved > 0) throw new Problem('listing-state', { errors: [{ field: 'listing', reason: 'order-in-progress' }] });
+        if (l.saleFormat === 'fixed_price' && l.quantityReserved > 0)
+          throw new Problem('listing-state', { errors: [{ field: 'listing', reason: 'order-in-progress' }] });
         if (l.saleFormat === 'auction') {
           const a = await m.getRepository(Auction).findOne({ where: { listingId: id }, lock: { mode: 'pessimistic_write' } });
           if (a && a.bidCount > 0) throw new Problem('listing-state', { errors: [{ field: 'listing', reason: 'auction-has-bids' }] }); // operators only (U3-08)
@@ -379,7 +446,14 @@ export class ListingService {
         throw new Problem('listing-state');
       }
       await m.getRepository(Listing).update({ id }, { status: 'cancelled' });
-      await this.history(m, id, from, 'cancelled', userId, closing ? 'account closed' : from === 'draft' ? 'discarded by the seller' : 'cancelled by the seller');
+      await this.history(
+        m,
+        id,
+        from,
+        'cancelled',
+        userId,
+        closing ? 'account closed' : from === 'draft' ? 'discarded by the seller' : 'cancelled by the seller',
+      );
       if (from === 'active') await publish(m, 'listings.listing.cancelled', id, { listingId: id, sellerId: userId, itemKind: l.itemKind }); // I-30
     });
     return this.view(id, { userId });
@@ -438,15 +512,24 @@ export class ListingService {
       locked: l.lockedAt !== null,
       photos: photos
         .filter((p) => p.removedAt === null)
-        .map((p) => ({ id: p.id, position: p.position, url: photoUrl(p.storageKey), thumbUrl: photoUrl(p.storageKey, 'thumb'), width: p.width, height: p.height, showsDefects: p.showsDefects })),
+        .map((p) => ({
+          id: p.id,
+          position: p.position,
+          url: photoUrl(p.storageKey),
+          thumbUrl: photoUrl(p.storageKey, 'thumb'),
+          width: p.width,
+          height: p.height,
+          showsDefects: p.showsDefects,
+        })),
       clarifications: clarifications.map((c) => ({ id: c.id, body: c.body, at: c.createdAt.toISOString() })),
       // the public state of GET /auctions/{id}/state (U3-04), currentPrice kept for U3-02's readers; serverTime
       // is the database's clock, which also decides bids (FR-AUC-01, AS-2)
-      auction: auction && state && {
-        ...state,
-        currentPrice: state.price,
-        ...(own ? { reservePrice: auction.reservePrice } : {}),
-      },
+      auction: auction &&
+        state && {
+          ...state,
+          currentPrice: state.price,
+          ...(own ? { reservePrice: auction.reservePrice } : {}),
+        },
       seller: { id: seller.id, displayName: seller.displayName, verified: seller.verified, joinMonth: seller.joinMonth },
       publishedAt: l.publishedAt?.toISOString() ?? null,
       createdAt: l.createdAt.toISOString(),
@@ -475,7 +558,9 @@ export class ListingService {
     const cp25 = params.get<{ standard_bps: number; pro_bps: number }>('CP-25');
     const cp28 = params.get<{ standard: number; pro: number }>('CP-28');
     const cp33 = params.get<{ image_bytes: number; photos: number }>('CP-33');
-    const [{ n }] = (await this.db.query(`SELECT count(*)::int AS n FROM listings.listings WHERE seller_id = $1 AND status = 'active'`, [userId])) as { n: number }[];
+    const [{ n }] = (await this.db.query(`SELECT count(*)::int AS n FROM listings.listings WHERE seller_id = $1 AND status = 'active'`, [userId])) as {
+      n: number;
+    }[];
     return {
       pro,
       commissionBps: pro ? cp25.pro_bps : cp25.standard_bps,
@@ -501,10 +586,16 @@ export class ListingService {
     const last = page[page.length - 1];
     return {
       items: page.map((r) => ({
-        id: r.id, title: r.title, status: r.status, itemKind: r.item_kind, saleFormat: r.sale_format, price: r.price,
+        id: r.id,
+        title: r.title,
+        status: r.status,
+        itemKind: r.item_kind,
+        saleFormat: r.sale_format,
+        price: r.price,
         quantity: { total: r.quantity_total, available: r.quantity_available },
         thumbUrl: r.photo_key ? photoUrl(r.photo_key as string, 'thumb') : null,
-        createdAt: (r.created_at as Date).toISOString(), publishedAt: (r.published_at as Date | null)?.toISOString() ?? null,
+        createdAt: (r.created_at as Date).toISOString(),
+        publishedAt: (r.published_at as Date | null)?.toISOString() ?? null,
       })),
       nextCursor: rows.length > PAGE && last ? encodeCursor(last.cursor_at as string, last.id as string) : null,
     };

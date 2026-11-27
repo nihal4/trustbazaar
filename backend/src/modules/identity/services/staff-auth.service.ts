@@ -59,18 +59,20 @@ export class StaffAuthService {
     const email = emailInput.trim().toLowerCase();
     const login = `staff:${email}`;
     await this.throttle.check(login);
-    const [staff] = await this.db.query(
-      `SELECT id, status, password_hash FROM identity.staff_accounts WHERE email = $1 AND status <> 'disabled'`,
-      [email],
-    );
+    const [staff] = await this.db.query(`SELECT id, status, password_hash FROM identity.staff_accounts WHERE email = $1 AND status <> 'disabled'`, [email]);
     const ok = await this.passwords.verifyOrDummy(staff?.password_hash, password);
     if (!ok || !staff) {
       securityEvents.signinFailed.inc({ kind: 'staff' }); // SEC-LOG-05
       await this.throttle.failed(login);
       await this.db.transaction((m) =>
         this.audit.record(m, {
-          actorType: staff ? 'staff' : 'system', actorId: staff?.id ?? null, action: 'staff.signin.failed',
-          objectType: staff ? 'staff' : null, objectId: staff?.id ?? null, sourceIp: ctx.ip, correlationId: ctx.correlationId,
+          actorType: staff ? 'staff' : 'system',
+          actorId: staff?.id ?? null,
+          action: 'staff.signin.failed',
+          objectType: staff ? 'staff' : null,
+          objectId: staff?.id ?? null,
+          sourceIp: ctx.ip,
+          correlationId: ctx.correlationId,
         }),
       );
       throw new Problem('signin-failed');
@@ -95,7 +97,15 @@ export class StaffAuthService {
     const now = this.clock.now();
     if (!(await this.secondFactor.checkStaff(t.staffId, code, now))) {
       await this.db.transaction((m) =>
-        this.audit.record(m, { actorType: 'staff', actorId: t.staffId, action: 'staff.mfa.failed', objectType: 'staff', objectId: t.staffId, sourceIp: ctx.ip, correlationId: ctx.correlationId }),
+        this.audit.record(m, {
+          actorType: 'staff',
+          actorId: t.staffId,
+          action: 'staff.mfa.failed',
+          objectType: 'staff',
+          objectId: t.staffId,
+          sourceIp: ctx.ip,
+          correlationId: ctx.correlationId,
+        }),
       );
       const remainingMs = t.until - now.getTime();
       if (t.attempts + 1 < MFA_ATTEMPTS && remainingMs > 0) {
@@ -125,12 +135,23 @@ export class StaffAuthService {
       await m.query(`UPDATE identity.totp_factors SET removed_at = $2 WHERE staff_id = $1 AND removed_at IS NULL`, [staffId, now]);
       await m.query(
         `INSERT INTO identity.totp_factors (id, principal_type, staff_id, secret_enc, key_version, created_at) VALUES ($1, 'staff', $2, $3, $4, $5)`,
-        [factorId, staffId, encryptField(this.config.keys.field, Buffer.from(secret), { table: 'totp_factors', column: 'secret_enc', rowId: factorId }),
-         this.config.keys.field.current, now],
+        [
+          factorId,
+          staffId,
+          encryptField(this.config.keys.field, Buffer.from(secret), { table: 'totp_factors', column: 'secret_enc', rowId: factorId }),
+          this.config.keys.field.current,
+          now,
+        ],
       );
       await this.audit.record(m, {
-        actorType: 'staff', actorId: staffId, action: 'staff.password.changed', objectType: 'staff', objectId: staffId,
-        reason: 'enrolment', sourceIp: ctx.ip, correlationId: ctx.correlationId,
+        actorType: 'staff',
+        actorId: staffId,
+        action: 'staff.password.changed',
+        objectType: 'staff',
+        objectId: staffId,
+        reason: 'enrolment',
+        sourceIp: ctx.ip,
+        correlationId: ctx.correlationId,
       });
     });
     return { otpauthUri: authenticator.keyuri(s.email, 'TrustBazaar Staff', secret), secret };
@@ -148,12 +169,16 @@ export class StaffAuthService {
   async me(staffId: string, sessionId?: string): Promise<StaffMe> {
     const [s] = await this.db.query(`SELECT id, email, display_name, role FROM identity.staff_accounts WHERE id = $1`, [staffId]);
     const [ses] = sessionId
-      ? ((await this.db.query(
-        `SELECT idle_expires_at, absolute_expires_at FROM identity.sessions WHERE id = $1 AND staff_id = $2 AND ended_at IS NULL`, [sessionId, staffId],
-      )) as { idle_expires_at: Date; absolute_expires_at: Date }[])
+      ? ((await this.db.query(`SELECT idle_expires_at, absolute_expires_at FROM identity.sessions WHERE id = $1 AND staff_id = $2 AND ended_at IS NULL`, [
+          sessionId,
+          staffId,
+        ])) as { idle_expires_at: Date; absolute_expires_at: Date }[])
       : [];
     return {
-      id: s.id, email: s.email, displayName: s.display_name, role: s.role,
+      id: s.id,
+      email: s.email,
+      displayName: s.display_name,
+      role: s.role,
       session: ses ? { idleExpiresAt: ses.idle_expires_at.toISOString(), absoluteExpiresAt: ses.absolute_expires_at.toISOString() } : null,
     };
   }
@@ -172,16 +197,29 @@ export class StaffAuthService {
       if (activate) {
         await m.query(`UPDATE identity.staff_accounts SET status = 'active' WHERE id = $1 AND status = 'pending_mfa'`, [staffId]);
         await this.audit.record(m, {
-          actorType: 'staff', actorId: staffId, action: 'staff.mfa.enrolled', objectType: 'staff', objectId: staffId,
-          before: { status: 'pending_mfa' }, after: { status: 'active' }, sourceIp: ctx.ip, correlationId: ctx.correlationId,
+          actorType: 'staff',
+          actorId: staffId,
+          action: 'staff.mfa.enrolled',
+          objectType: 'staff',
+          objectId: staffId,
+          before: { status: 'pending_mfa' },
+          after: { status: 'active' },
+          sourceIp: ctx.ip,
+          correlationId: ctx.correlationId,
         });
       }
       const [live] = await m.query(`SELECT 1 FROM identity.staff_accounts WHERE id = $1 AND status = 'active'`, [staffId]);
       if (!live) throw new Problem('session-ended');
       const { sessionId, cookies } = await this.sessions.createStaff(m, staffId, ctx);
       await this.audit.record(m, {
-        actorType: 'staff', actorId: staffId, action: 'staff.signin.succeeded', objectType: 'session', objectId: sessionId,
-        reason: method, sourceIp: ctx.ip, correlationId: ctx.correlationId,
+        actorType: 'staff',
+        actorId: staffId,
+        action: 'staff.signin.succeeded',
+        objectType: 'session',
+        objectId: sessionId,
+        reason: method,
+        sourceIp: ctx.ip,
+        correlationId: ctx.correlationId,
       });
       return cookies;
     });

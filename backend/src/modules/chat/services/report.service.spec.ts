@@ -29,7 +29,9 @@ describe('ReportService', () => {
     const { svc, commands, limiter } = setup();
     expect(await svc.report(BUYER, THREAD, { category: 'fraudulent', messageSeq: 1, text: '  Asked to pay outside.  ' })).toEqual({ reportId: 'r-1' });
     expect(commands.report).toHaveBeenCalledWith({
-      reporterId: BUYER, category: 'fraudulent', text: 'Asked to pay outside.',
+      reporterId: BUYER,
+      category: 'fraudulent',
+      text: 'Asked to pay outside.',
       target: { type: 'message', id: THREAD, messageId: '41', subjectUserId: SELLER },
     });
     expect(limiter.consume).toHaveBeenCalledWith('chat-report', `user:${BUYER}`);
@@ -38,7 +40,12 @@ describe('ReportService', () => {
   it('FR-CHT-06 a reported thread is about the other participant', async () => {
     const { svc, commands } = setup();
     await svc.report(SELLER, THREAD, { category: 'abusive' });
-    expect(commands.report).toHaveBeenCalledWith({ reporterId: SELLER, category: 'abusive', text: undefined, target: { type: 'thread', id: THREAD, subjectUserId: BUYER } });
+    expect(commands.report).toHaveBeenCalledWith({
+      reporterId: SELLER,
+      category: 'abusive',
+      text: undefined,
+      target: { type: 'thread', id: THREAD, subjectUserId: BUYER },
+    });
   });
 
   it('FR-CHT-06 own messages, unknown messages and outsiders are refused before any limit is used', async () => {
@@ -52,7 +59,8 @@ describe('ReportService', () => {
   it('FR-CHT-06 without Unit 7 the answer is feature-off and no limit is used', async () => {
     const { svc, limiter } = setup({ commands: false });
     await expect(svc.report(BUYER, THREAD, { category: 'abusive' })).rejects.toMatchObject({
-      problem: 'feature-off', extra: { errors: [{ field: 'report', reason: 'reports-not-yet-available' }] },
+      problem: 'feature-off',
+      extra: { errors: [{ field: 'report', reason: 'reports-not-yet-available' }] },
     });
     expect(limiter.consume).not.toHaveBeenCalled();
   });

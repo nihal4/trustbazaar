@@ -11,8 +11,9 @@ export async function publish(m: EntityManager, eventType: string, orderId: stri
  * (issues_one_open_per_kind), so it is not announced again. now() is the transaction's start, as created_at's default.
  */
 export async function announceNewIssues(m: EntityManager, orderId: string): Promise<void> {
-  const opened = (await m.query(
-    `SELECT id, kind FROM delivery.issues WHERE order_id = $1 AND status = 'open' AND created_at = now()`, [orderId],
-  )) as { id: string; kind: string }[];
+  const opened = (await m.query(`SELECT id, kind FROM delivery.issues WHERE order_id = $1 AND status = 'open' AND created_at = now()`, [orderId])) as {
+    id: string;
+    kind: string;
+  }[];
   for (const i of opened) await publish(m, 'delivery.issue.opened', orderId, { issueId: i.id, orderId, kind: i.kind });
 }

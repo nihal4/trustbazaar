@@ -14,9 +14,38 @@ import styles from './orders.module.css';
 /** The version of the terms texts; raise it when their wording changes. */
 export const TERMS_VERSION = 1;
 
-export function Terms({ id, t, lang, order, kind, title, intro, prefix, count, check, agree, back, busy = false, onAgree, onClose }: {
-  id: string; t: T; lang: Lang; order: string; kind: 'handover_code' | 'courier' | 'dispute'; title: string; intro: string; prefix: string; count: number;
-  check: string; agree: string; back: string; busy?: boolean; onAgree: () => void; onClose: () => void;
+export function Terms({
+  id,
+  t,
+  lang,
+  order,
+  kind,
+  title,
+  intro,
+  prefix,
+  count,
+  check,
+  agree,
+  back,
+  busy = false,
+  onAgree,
+  onClose,
+}: {
+  id: string;
+  t: T;
+  lang: Lang;
+  order: string;
+  kind: 'handover_code' | 'courier' | 'dispute';
+  title: string;
+  intro: string;
+  prefix: string;
+  count: number;
+  check: string;
+  agree: string;
+  back: string;
+  busy?: boolean;
+  onAgree: () => void;
+  onClose: () => void;
 }) {
   const api = useApi();
   const [accepted, setAccepted] = useState(false);
@@ -40,7 +69,9 @@ export function Terms({ id, t, lang, order, kind, title, intro, prefix, count, c
     <Popup id={id} title={title} closeLabel={back} busy={working} onClose={onClose}>
       <p className={styles.hint}>{intro}</p>
       <ol className={styles.terms} role="list">
-        {Array.from({ length: count }, (_, i) => <li key={i}>{t(`${prefix}.${i + 1}`)}</li>)}
+        {Array.from({ length: count }, (_, i) => (
+          <li key={i}>{t(`${prefix}.${i + 1}`)}</li>
+        ))}
       </ol>
       <label className={styles.accept}>
         <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} />
@@ -48,8 +79,12 @@ export function Terms({ id, t, lang, order, kind, title, intro, prefix, count, c
       </label>
       {message && <FormMessage kind="error">{message}</FormMessage>}
       <div className={styles.popupButtons}>
-        <button type="button" className={styles.primary} disabled={!accepted || working} aria-busy={working} onClick={() => void accept()}>{agree}</button>
-        <button type="button" className={styles.secondary} disabled={working} onClick={onClose}>{back}</button>
+        <button type="button" className={styles.primary} disabled={!accepted || working} aria-busy={working} onClick={() => void accept()}>
+          {agree}
+        </button>
+        <button type="button" className={styles.secondary} disabled={working} onClick={onClose}>
+          {back}
+        </button>
       </div>
     </Popup>
   );

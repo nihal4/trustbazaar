@@ -18,7 +18,12 @@ describe('SEC-AUTH-03 password storage', () => {
     const hash = await hashOf(a.userId);
     const m = /^\$argon2id\$v=19\$([a-z=0-9,]+)\$([A-Za-z0-9+/]+)\$[A-Za-z0-9+/]+$/.exec(hash);
     expect(m).not.toBeNull();
-    const params = Object.fromEntries(m![1].split(',').map((kv) => kv.split('=')).map(([k, v]) => [k, Number(v)]));
+    const params = Object.fromEntries(
+      m![1]
+        .split(',')
+        .map((kv) => kv.split('='))
+        .map(([k, v]) => [k, Number(v)]),
+    );
     expect(params.m).toBeGreaterThanOrEqual(19 * 1024);
     expect(params.t).toBeGreaterThanOrEqual(2);
     expect(params.p).toBe(1);

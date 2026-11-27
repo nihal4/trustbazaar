@@ -21,12 +21,36 @@ export interface AreaView {
   active: boolean;
 }
 
-interface AreaRow { id: number; district: string; name_en: string; name_bn: string; zone: Zone; lat: string; lng: string; active: boolean }
+interface AreaRow {
+  id: number;
+  district: string;
+  name_en: string;
+  name_bn: string;
+  zone: Zone;
+  lat: string;
+  lng: string;
+  active: boolean;
+}
 const view = (r: AreaRow): AreaView => ({
-  id: r.id, district: r.district, nameEn: r.name_en, nameBn: r.name_bn, zone: r.zone, lat: Number(r.lat), lng: Number(r.lng), active: r.active,
+  id: r.id,
+  district: r.district,
+  nameEn: r.name_en,
+  nameBn: r.name_bn,
+  zone: r.zone,
+  lat: Number(r.lat),
+  lng: Number(r.lng),
+  active: r.active,
 });
 
-export interface AreaInput { district: string; nameEn: string; nameBn: string; zone: Zone; lat: number; lng: number; active?: boolean }
+export interface AreaInput {
+  district: string;
+  nameEn: string;
+  nameBn: string;
+  zone: Zone;
+  lat: number;
+  lng: number;
+  active?: boolean;
+}
 
 @Injectable()
 export class AreasService {
@@ -44,7 +68,9 @@ export class AreasService {
   }
 
   async get(id: number): Promise<AreaView | null> {
-    const [r] = (await this.db.query(`SELECT id, district, name_en, name_bn, zone, lat::text, lng::text, active FROM delivery.areas WHERE id = $1`, [id])) as AreaRow[];
+    const [r] = (await this.db.query(`SELECT id, district, name_en, name_bn, zone, lat::text, lng::text, active FROM delivery.areas WHERE id = $1`, [
+      id,
+    ])) as AreaRow[];
     return r ? view(r) : null;
   }
 
@@ -56,7 +82,10 @@ export class AreasService {
          RETURNING id, district, name_en, name_bn, zone, lat::text, lng::text, active`,
         [a.district.trim(), a.nameEn.trim(), a.nameBn.trim(), a.zone, a.lat, a.lng, a.active ?? true],
       )) as AreaRow[];
-      await this.audit.record({ actorType: 'staff', actorId: staffId, action: 'delivery.area.added', objectType: 'area', objectId: null, after: { ...view(r) } }, m);
+      await this.audit.record(
+        { actorType: 'staff', actorId: staffId, action: 'delivery.area.added', objectType: 'area', objectId: null, after: { ...view(r) } },
+        m,
+      );
       return view(r);
     });
   }
@@ -64,7 +93,10 @@ export class AreasService {
   /** PATCH /admin/areas/{id}: names, zone, centroid or active; the district and English name are its identity. */
   async update(staffId: string, id: number, a: Partial<Omit<AreaInput, 'district'>>): Promise<AreaView> {
     return this.write(async (m) => {
-      const [before] = (await m.query(`SELECT id, district, name_en, name_bn, zone, lat::text, lng::text, active FROM delivery.areas WHERE id = $1 FOR UPDATE`, [id])) as AreaRow[];
+      const [before] = (await m.query(
+        `SELECT id, district, name_en, name_bn, zone, lat::text, lng::text, active FROM delivery.areas WHERE id = $1 FOR UPDATE`,
+        [id],
+      )) as AreaRow[];
       if (!before) throw new Problem('not-found');
       const res = (await m.query(
         `UPDATE delivery.areas SET name_en = coalesce($2, name_en), name_bn = coalesce($3, name_bn), zone = coalesce($4::delivery.zone, zone),
@@ -73,9 +105,18 @@ export class AreasService {
         [id, a.nameEn?.trim() ?? null, a.nameBn?.trim() ?? null, a.zone ?? null, a.lat ?? null, a.lng ?? null, a.active ?? null],
       )) as unknown[];
       const [r] = (Array.isArray(res[0]) ? res[0] : res) as AreaRow[];
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: 'delivery.area.changed', objectType: 'area', objectId: null, before: { ...view(before) }, after: { ...view(r) },
-      }, m);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: 'delivery.area.changed',
+          objectType: 'area',
+          objectId: null,
+          before: { ...view(before) },
+          after: { ...view(r) },
+        },
+        m,
+      );
       return view(r);
     });
   }

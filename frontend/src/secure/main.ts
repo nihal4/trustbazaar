@@ -21,7 +21,13 @@ export const CATALOGUES = { en: { ...libEn, ...en }, bn: { ...libBn, ...bn } } a
 
 export const browserKeys: KeyStore = { store: storeKey, load: loadKey };
 
-export interface Options { fetch?: typeof fetch; keys?: KeyStore; strict?: boolean; now?: () => number; location?: { pathname: string; assign(url: string): void } }
+export interface Options {
+  fetch?: typeof fetch;
+  keys?: KeyStore;
+  strict?: boolean;
+  now?: () => number;
+  location?: { pathname: string; assign(url: string): void };
+}
 
 /** Renders the screen of this address; the returned function stops the countdowns (tests). */
 /** The theme switch of the page's own header (U10-28): this document loads no shared code, so it keeps its own small switch; the choice is the one the app keeps (tb-theme). */
@@ -29,12 +35,18 @@ function wireTheme(t: (key: string) => string): void {
   const button = document.getElementById('theme');
   const label = document.getElementById('theme-label');
   if (!button || !label) return;
-  const set = () => { label.textContent = t(document.documentElement.dataset.theme === 'light' ? 'secure.theme.to_dark' : 'secure.theme.to_light'); };
+  const set = () => {
+    label.textContent = t(document.documentElement.dataset.theme === 'light' ? 'secure.theme.to_dark' : 'secure.theme.to_light');
+  };
   set();
   button.addEventListener('click', () => {
     const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
     document.documentElement.dataset.theme = next;
-    try { localStorage.setItem('tb-theme', next); } catch { /* blocked storage: the choice lasts for this visit */ }
+    try {
+      localStorage.setItem('tb-theme', next);
+    } catch {
+      /* blocked storage: the choice lasts for this visit */
+    }
     set();
   });
 }
@@ -52,7 +64,7 @@ export async function start(root: HTMLElement, o: Options = {}): Promise<() => v
   }
   document.documentElement.lang = lang;
   const t = createT(CATALOGUES[lang], { strict: o.strict ?? false });
-  document.querySelector('.brand')?.setAttribute('aria-label', t('secure.home_link'));   // the static header's logo link
+  document.querySelector('.brand')?.setAttribute('aria-label', t('secure.home_link')); // the static header's logo link
   if (lang === 'bn') {
     document.querySelector('.logoDark')?.setAttribute('src', '/brand/trustbazaar-bn-reversed.svg');
     document.querySelector('.logoLight')?.setAttribute('src', '/brand/trustbazaar-bn.svg');
@@ -69,8 +81,12 @@ export async function start(root: HTMLElement, o: Options = {}): Promise<() => v
   try {
     await SCREENS[m[2] as keyof typeof SCREENS](ctx);
   } catch (e) {
-    show(root, h('h1', { tabindex: '-1' }, t(`secure.${m[2]}.title`)), h('p', { class: 'error', role: 'alert' }, errorText(e, t)),
-      h('p', {}, h('a', { href: `/orders/${ctx.orderId}` }, t('secure.back_to_order'))));
+    show(
+      root,
+      h('h1', { tabindex: '-1' }, t(`secure.${m[2]}.title`)),
+      h('p', { class: 'error', role: 'alert' }, errorText(e, t)),
+      h('p', {}, h('a', { href: `/orders/${ctx.orderId}` }, t('secure.back_to_order'))),
+    );
   }
   const timer = setInterval(() => tick(now), 1000);
   return () => clearInterval(timer);

@@ -10,7 +10,12 @@ import { IDENTITY_CRYPTO, IdentityCryptoPort } from '../../identity/ports';
 // ciphertext copied to another row does not decrypt. A user sees and changes only their own; deleting erases it.
 
 export type AddressKind = 'pickup' | 'dropoff';
-export interface AddressLines { line1: string; line2?: string; landmark?: string; contactName: string }
+export interface AddressLines {
+  line1: string;
+  line2?: string;
+  landmark?: string;
+  contactName: string;
+}
 export interface AddressView extends AddressLines {
   id: string;
   kind: AddressKind;
@@ -36,14 +41,30 @@ export class AddressService {
          FROM delivery.saved_addresses s JOIN delivery.areas a ON a.id = s.area_id
         WHERE s.user_id = $1 AND s.deleted_at IS NULL ORDER BY s.created_at DESC, s.id`,
       [userId],
-    )) as { id: string; kind: AddressKind; label: string; address_enc: Buffer; created_at: Date; area_id: number; district: string; name_en: string; name_bn: string }[];
-    const items = await Promise.all(rows.map(async (r) => {
-      const lines = JSON.parse(await this.crypto.decrypt(r.address_enc, contextOf(r.id))) as AddressLines;
-      return {
-        id: r.id, kind: r.kind, label: r.label, ...lines,
-        area: { id: r.area_id, district: r.district, nameEn: r.name_en, nameBn: r.name_bn }, createdAt: r.created_at.toISOString(),
-      };
-    }));
+    )) as {
+      id: string;
+      kind: AddressKind;
+      label: string;
+      address_enc: Buffer;
+      created_at: Date;
+      area_id: number;
+      district: string;
+      name_en: string;
+      name_bn: string;
+    }[];
+    const items = await Promise.all(
+      rows.map(async (r) => {
+        const lines = JSON.parse(await this.crypto.decrypt(r.address_enc, contextOf(r.id))) as AddressLines;
+        return {
+          id: r.id,
+          kind: r.kind,
+          label: r.label,
+          ...lines,
+          area: { id: r.area_id, district: r.district, nameEn: r.name_en, nameBn: r.name_bn },
+          createdAt: r.created_at.toISOString(),
+        };
+      }),
+    );
     return { items };
   }
 
@@ -61,12 +82,20 @@ export class AddressService {
     else if (label.length > LIMITS.label) errors.push({ field: 'label', reason: 'too-long' });
     if (!lines.line1) errors.push({ field: 'line1', reason: 'required' });
     if (!lines.contactName) errors.push({ field: 'contactName', reason: 'required' });
-    for (const [k, max] of [['line1', LIMITS.line], ['line2', LIMITS.line], ['landmark', LIMITS.landmark], ['contactName', LIMITS.contactName]] as const) {
+    for (const [k, max] of [
+      ['line1', LIMITS.line],
+      ['line2', LIMITS.line],
+      ['landmark', LIMITS.landmark],
+      ['contactName', LIMITS.contactName],
+    ] as const) {
       if ((lines[k]?.length ?? 0) > max) errors.push({ field: k, reason: 'too-long' });
     }
     if (errors.length) throw new Problem('validation-failed', { errors });
     const [area] = (await this.db.query(`SELECT id, district, name_en, name_bn FROM delivery.areas WHERE id = $1 AND active`, [a.areaId])) as {
-      id: number; district: string; name_en: string; name_bn: string;
+      id: number;
+      district: string;
+      name_en: string;
+      name_bn: string;
     }[];
     if (!area) throw new Problem('validation-failed', { errors: [{ field: 'areaId', reason: 'unknown' }] });
 
@@ -77,15 +106,20 @@ export class AddressService {
       [id, userId, a.kind, label, area.id, Buffer.from(sealed)],
     )) as { created_at: Date }[];
     return {
-      id, kind: a.kind, label: label!, ...lines,
-      area: { id: area.id, district: area.district, nameEn: area.name_en, nameBn: area.name_bn }, createdAt: r.created_at.toISOString(),
+      id,
+      kind: a.kind,
+      label: label!,
+      ...lines,
+      area: { id: area.id, district: area.district, nameEn: area.name_en, nameBn: area.name_bn },
+      createdAt: r.created_at.toISOString(),
     };
   }
 
   /** DELETE /me/addresses/{id}: the ciphertext is erased (saved_address_erased); quotes keep their area. */
   async remove(userId: string, id: string): Promise<void> {
     const res = (await this.db.query(
-      `UPDATE delivery.saved_addresses SET deleted_at = now(), address_enc = NULL WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL RETURNING id`, [id, userId],
+      `UPDATE delivery.saved_addresses SET deleted_at = now(), address_enc = NULL WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL RETURNING id`,
+      [id, userId],
     )) as unknown[];
     const rows = (Array.isArray(res[0]) ? res[0] : res) as unknown[];
     if (rows.length === 0) throw new Problem('not-found');

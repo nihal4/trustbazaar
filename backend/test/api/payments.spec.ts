@@ -18,7 +18,10 @@ describe('payments (mock providers)', () => {
     t = await startApp();
     fx = await IdentityFixtures.open();
     redis = new Redis(requireEnv('REDIS_URL'));
-    [{ id: phones }] = await fx.query<{ id: number }>(`INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'c', 'বি', 'physical') RETURNING id`, [`pay-${randomUUID().slice(0, 8)}`]);
+    [{ id: phones }] = await fx.query<{ id: number }>(
+      `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'c', 'বি', 'physical') RETURNING id`,
+      [`pay-${randomUUID().slice(0, 8)}`],
+    );
   });
   afterAll(async () => {
     redis?.disconnect();
@@ -32,7 +35,8 @@ describe('payments (mock providers)', () => {
     const ip = `203.0.113.${randomInt(1, 255)}, 10.9.${randomInt(0, 255)}.${randomInt(1, 255)}`;
     const call = (method: string, path: string, body?: unknown, extra: Record<string, string> = {}) =>
       fetch(t.url(path), {
-        method, redirect: 'manual',
+        method,
+        redirect: 'manual',
         headers: { ...fx.headers(sid, userId, 'user'), 'x-forwarded-for': ip, ...(body !== undefined ? { 'content-type': 'application/json' } : {}), ...extra },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
@@ -49,7 +53,12 @@ describe('payments (mock providers)', () => {
           'pickup_only', 'Dhaka', 23.81, 90.41, $3, $4, $4) RETURNING id`,
       [seller.userId, phones, o.price ?? 1_500_000, o.quantity ?? 1],
     );
-    for (const n of [1, 2]) await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 1, 1)`, [listingId, n, randomUUID().replace(/-/g, '')]);
+    for (const n of [1, 2])
+      await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 1, 1)`, [
+        listingId,
+        n,
+        randomUUID().replace(/-/g, ''),
+      ]);
     await fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [listingId]);
     const r = await buyer.call('POST', '/orders', { listingId, quantity: 1, ...(o.fulfilment === false ? {} : { fulfilment: 'self_pickup' }) });
     expect(r.status).toBe(201);
@@ -61,7 +70,10 @@ describe('payments (mock providers)', () => {
   async function pay(redirectUrl: string, outcome: 'succeeded' | 'failed' = 'succeeded') {
     const page = new URL(redirectUrl);
     const form = await fetch(t.url(page.pathname.replace('/api/v1', '') + page.search), {
-      method: 'POST', redirect: 'manual', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: `outcome=${outcome}`,
+      method: 'POST',
+      redirect: 'manual',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: `outcome=${outcome}`,
     });
     expect(form.status).toBe(303);
     const cb = new URL(form.headers.get('location')!);
@@ -71,14 +83,16 @@ describe('payments (mock providers)', () => {
   }
   const row = async <T = Record<string, unknown>>(sql: string, p: unknown[]) => (await fx.query<T>(sql, p))[0];
 
-  it('FR-PAY-01 starting a payment records the attempt at the order total and sends the buyer to the provider\'s page', async () => {
+  it("FR-PAY-01 starting a payment records the attempt at the order total and sends the buyer to the provider's page", async () => {
     const { buyer, order: o } = await order();
     const r = await start(buyer, o.id, 'nagad');
     expect(r.status).toBe(201);
     const a = await r.json();
     expect(a).toMatchObject({ provider: 'nagad', amount: '1500000', redirectUrl: expect.stringMatching(/\/api\/v1\/mock-provider\/[0-9a-f-]{36}\?state=/) });
     expect(await row(`SELECT status, amount, provider_payment_id FROM payments.attempts WHERE id = $1`, [a.attemptId])).toEqual({
-      status: 'redirected', amount: '1500000', provider_payment_id: `mock_nagad_${a.attemptId}`,
+      status: 'redirected',
+      amount: '1500000',
+      provider_payment_id: `mock_nagad_${a.attemptId}`,
     });
     // DV-11: the hold is extended once, to the attempt's expiry, if that is later
     const { payment_due_at } = await row<{ payment_due_at: Date }>(`SELECT payment_due_at FROM orders.orders WHERE id = $1`, [o.id]);
@@ -95,15 +109,35 @@ describe('payments (mock providers)', () => {
     expect(landing.pathname).toBe(`/orders/${o.id}`);
     expect(landing.searchParams.get('result')).toBe('paid');
     const view = await (await buyer.call('GET', `/orders/${o.id}`)).json();
-    expect(view).toMatchObject({ status: 'paid', fulfilmentStep: 'meetup_handover', escrow: { state: 'held', releasePolicy: 'standard', amountCollected: '1500000', amountRefunded: '0' } });
+    expect(view).toMatchObject({
+      status: 'paid',
+      fulfilmentStep: 'meetup_handover',
+      escrow: { state: 'held', releasePolicy: 'standard', amountCollected: '1500000', amountRefunded: '0' },
+    });
     expect(Date.parse(view.fulfilmentDueAt) - Date.parse(view.paidAt)).toBe(7 * 86_400_000); // CP-15
     const lines = await fx.query<{ account_code: string; amount: string }>(
-      `SELECT l.account_code, l.amount FROM payments.journal_lines l JOIN payments.journal_entries e ON e.id = l.entry_id WHERE e.order_id = $1 ORDER BY l.account_code`, [o.id]);
-    expect(lines).toEqual([{ account_code: 'escrow_liability', amount: '-1500000' }, { account_code: 'provider_clearing', amount: '1500000' }]);
-    const [ev] = await fx.query<{ payload: Record<string, unknown> }>(`SELECT payload FROM orders.outbox WHERE aggregate_id = $1 AND event_type = 'orders.order.paid'`, [o.id]);
-    expect(ev.payload).toMatchObject({ orderId: o.id, listingId, quantity: 1, buyerId: buyer.userId, sellerId: seller.userId, fulfilment: 'self_pickup', fulfilmentDueAt: view.fulfilmentDueAt });
+      `SELECT l.account_code, l.amount FROM payments.journal_lines l JOIN payments.journal_entries e ON e.id = l.entry_id WHERE e.order_id = $1 ORDER BY l.account_code`,
+      [o.id],
+    );
+    expect(lines).toEqual([
+      { account_code: 'escrow_liability', amount: '-1500000' },
+      { account_code: 'provider_clearing', amount: '1500000' },
+    ]);
+    const [ev] = await fx.query<{ payload: Record<string, unknown> }>(
+      `SELECT payload FROM orders.outbox WHERE aggregate_id = $1 AND event_type = 'orders.order.paid'`,
+      [o.id],
+    );
+    expect(ev.payload).toMatchObject({
+      orderId: o.id,
+      listingId,
+      quantity: 1,
+      buyerId: buyer.userId,
+      sellerId: seller.userId,
+      fulfilment: 'self_pickup',
+      fulfilmentDueAt: view.fulfilmentDueAt,
+    });
     expect(await row(`SELECT status FROM payments.attempts WHERE id = $1`, [a.attemptId])).toEqual({ status: 'succeeded' });
-    expect((await (await fetch(t.url(`/payments/return/bkash?attempt=${a.attemptId}`))).json())).toEqual({ status: 'succeeded' });
+    expect(await (await fetch(t.url(`/payments/return/bkash?attempt=${a.attemptId}`))).json()).toEqual({ status: 'succeeded' });
   });
 
   it('SEC-PAY-04 the same confirmation delivered again has no effect', async () => {
@@ -145,7 +179,11 @@ describe('payments (mock providers)', () => {
     await pay(a.redirectUrl);
     expect((await pay(b.redirectUrl)).landing.searchParams.get('result')).toBe('duplicate');
     expect(await row(`SELECT status FROM payments.attempts WHERE id = $1`, [b.attemptId])).toEqual({ status: 'succeeded_duplicate' });
-    expect(await row(`SELECT amount, reason, status FROM payments.refunds WHERE attempt_id = $1`, [b.attemptId])).toEqual({ amount: '1500000', reason: 'duplicate_payment', status: 'pending' });
+    expect(await row(`SELECT amount, reason, status FROM payments.refunds WHERE attempt_id = $1`, [b.attemptId])).toEqual({
+      amount: '1500000',
+      reason: 'duplicate_payment',
+      status: 'pending',
+    });
     expect(await row(`SELECT count(*)::int AS n FROM orders.escrows WHERE order_id = $1`, [o.id])).toEqual({ n: 1 });
   });
 
@@ -157,8 +195,14 @@ describe('payments (mock providers)', () => {
     expect((await pay(a.redirectUrl)).landing.searchParams.get('result')).toBe('rejected');
     expect(await row(`SELECT status FROM orders.orders WHERE id = $1`, [o.id])).toEqual({ status: 'awaiting_payment' });
     expect(await row(`SELECT status FROM payments.attempts WHERE id = $1`, [a.attemptId])).toEqual({ status: 'succeeded_rejected' });
-    expect(await row(`SELECT amount, reason FROM payments.refunds WHERE attempt_id = $1`, [a.attemptId])).toEqual({ amount: '1400000', reason: 'amount_mismatch' });
-    const issue = await row<{ kind: string; detail: Record<string, unknown> }>(`SELECT kind, detail FROM payments.reconciliation_issues WHERE attempt_id = $1`, [a.attemptId]);
+    expect(await row(`SELECT amount, reason FROM payments.refunds WHERE attempt_id = $1`, [a.attemptId])).toEqual({
+      amount: '1400000',
+      reason: 'amount_mismatch',
+    });
+    const issue = await row<{ kind: string; detail: Record<string, unknown> }>(
+      `SELECT kind, detail FROM payments.reconciliation_issues WHERE attempt_id = $1`,
+      [a.attemptId],
+    );
     expect(issue).toMatchObject({ kind: 'amount_mismatch', detail: { verifiedAmount: '1400000', attemptAmount: '1500000' } });
   });
 
@@ -191,9 +235,16 @@ describe('payments (mock providers)', () => {
     expect((await start(await member(), o.id)).status).toBe(404);
     expect((await start(seller, o.id)).status).toBe(403);
     expect((await start(await member({ kyc: 'revoked' }), o.id)).status).toBe(403);
-    expect((await fetch(t.url(`/orders/${o.id}/payments`), { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{"provider":"bkash"}' })).status).toBe(401);
+    expect(
+      (await fetch(t.url(`/orders/${o.id}/payments`), { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{"provider":"bkash"}' }))
+        .status,
+    ).toBe(401);
     const sid = await fx.session({ userId: buyer.userId }, { idleSeconds: -60 });
-    const expired = await fetch(t.url(`/orders/${o.id}/payments`), { method: 'POST', headers: { ...fx.headers(sid, buyer.userId, 'user'), 'content-type': 'application/json' }, body: '{"provider":"bkash"}' });
+    const expired = await fetch(t.url(`/orders/${o.id}/payments`), {
+      method: 'POST',
+      headers: { ...fx.headers(sid, buyer.userId, 'user'), 'content-type': 'application/json' },
+      body: '{"provider":"bkash"}',
+    });
     expect(expired.status).toBe(401);
     expect((await fetch(t.url('/webhooks/stripe'), { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' })).status).toBe(404); // mock mode: no webhook
   });

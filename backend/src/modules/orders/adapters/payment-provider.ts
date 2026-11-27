@@ -30,7 +30,10 @@ export interface PaymentProvider {
   readonly id: ProviderId;
   /** How confirmation arrives: a signed webhook (Stripe) or a browser callback followed by a query. */
   readonly confirmation: 'webhook' | 'callback';
-  createPayment(a: AttemptRef, urls: { returnUrl: string; cancelUrl: string; callbackUrl: string; title: string }): Promise<{ providerPaymentId: string; redirectUrl: string }>;
+  createPayment(
+    a: AttemptRef,
+    urls: { returnUrl: string; cancelUrl: string; callbackUrl: string; title: string },
+  ): Promise<{ providerPaymentId: string; redirectUrl: string }>;
   /** The provider's page again, for a repeated start request (I-52). */
   redirectUrl(a: AttemptRef): Promise<string>;
   /** Reconciliation, expiry checks and browser callbacks: the provider's own answer. */
@@ -40,7 +43,12 @@ export interface PaymentProvider {
    * 'pending' means the provider accepted it and will confirm later; 'unsupported' sends it to an operator.
    * Throws ProviderUnavailable when the provider cannot be reached (retried by the worker).
    */
-  refund(r: { attempt: AttemptRef; providerTxnId: string | null; amount: bigint; idempotencyKey: string }): Promise<{ status: 'succeeded' | 'pending' | 'unsupported'; providerRefundId?: string }>;
+  refund(r: {
+    attempt: AttemptRef;
+    providerTxnId: string | null;
+    amount: bigint;
+    idempotencyKey: string;
+  }): Promise<{ status: 'succeeded' | 'pending' | 'unsupported'; providerRefundId?: string }>;
   /** Reconciliation (section 5.12): the outcome of a refund the provider took for later; absent if it never does. */
   queryRefund?(providerRefundId: string): Promise<'succeeded' | 'pending' | 'failed'>;
 }

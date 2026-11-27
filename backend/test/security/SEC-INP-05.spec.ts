@@ -19,7 +19,10 @@ describe('SEC-INP-05 no fetching of user-supplied addresses', () => {
   let hits = 0;
   let url = '';
   beforeAll(async () => {
-    trap = createServer((_q, r) => { hits++; r.end('x'); });
+    trap = createServer((_q, r) => {
+      hits++;
+      r.end('x');
+    });
     await new Promise<void>((ok) => trap.listen(0, '127.0.0.1', ok));
     url = `http://127.0.0.1:${(trap.address() as AddressInfo).port}/probe.png`;
   });
@@ -29,7 +32,12 @@ describe('SEC-INP-05 no fetching of user-supplied addresses', () => {
     const seller = await s.signedIn({ kyc: 'verified' });
     const id = await draftListing(s, seller.b, { description: `See the photo at ${url} before buying, it shows the box.` });
     await seller.b.request('PATCH', `/listings/${id}`, { title: `Lamp ${url}` });
-    for (const n of [1, 2]) await s.fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 1, 1)`, [id, n, `k${n}${Date.now()}`]);
+    for (const n of [1, 2])
+      await s.fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 1, 1)`, [
+        id,
+        n,
+        `k${n}${Date.now()}`,
+      ]);
     await s.fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [id]);
     const buyer = await s.signedIn({ kyc: 'verified' });
     const thread = (await (await buyer.b.post(`/listings/${id}/threads`, {})).json()) as { id: string };
@@ -40,8 +48,11 @@ describe('SEC-INP-05 no fetching of user-supplied addresses', () => {
   });
 
   it('SEC-INP-05 no route takes an address to fetch: no body field is a URL to be loaded', () => {
-    const named = walk(join(SRC, 'modules')).filter((f) => /\.dto\.ts$|http\/.*\.ts$/.test(f))
-      .flatMap((f) => [...readFileSync(f, 'utf8').matchAll(/^\s+(\w*(?:url|Url|URL|uri|Uri|href|link|Link)\w*)[!?]?:/gm)].map((m) => `${relative(SRC, f)}: ${m[1]}`));
+    const named = walk(join(SRC, 'modules'))
+      .filter((f) => /\.dto\.ts$|http\/.*\.ts$/.test(f))
+      .flatMap((f) =>
+        [...readFileSync(f, 'utf8').matchAll(/^\s+(\w*(?:url|Url|URL|uri|Uri|href|link|Link)\w*)[!?]?:/gm)].map((m) => `${relative(SRC, f)}: ${m[1]}`),
+      );
     expect(named).toEqual([]);
   });
 

@@ -11,8 +11,23 @@ import { FilePurpose, FileVault } from '../crypto/file-vault';
 import { IdentityCrypto } from '../crypto/identity-crypto';
 import { reencodeImage } from '../crypto/images';
 import type {
-  Approval, ApprovalServicePort, AuditEntry, AuditServicePort, BlacklistSource, CallContext, FileVaultPort, IdentityCommands,
-  IdentityQuery, PrincipalInfo, PublicProfile, RateLimiterPort, SessionEndReason, StaffQuery, StaffRole, StoredFile, TransactAction,
+  Approval,
+  ApprovalServicePort,
+  AuditEntry,
+  AuditServicePort,
+  BlacklistSource,
+  CallContext,
+  FileVaultPort,
+  IdentityCommands,
+  IdentityQuery,
+  PrincipalInfo,
+  PublicProfile,
+  RateLimiterPort,
+  SessionEndReason,
+  StaffQuery,
+  StaffRole,
+  StoredFile,
+  TransactAction,
   KycQueueItem,
 } from '../ports';
 import { signFileLink } from '../security/file-links';
@@ -30,8 +45,7 @@ import { mimeOf, parseVaultKey, videoKind } from './vault-key';
 // The implementations behind Unit 1's ports (ports/index.ts; U1-08). Each adapts the unit's services to the
 // interfaces of the design, so other units never depend on the services themselves (DC-1).
 const ctxOf = (c?: CallContext): RequestContext => ({ ip: c?.ip ?? null, userAgent: null, correlationId: c?.correlationId ?? null });
-const rowsOf = <T>(result: unknown): T[] =>
-  (Array.isArray(result) && Array.isArray(result[0]) && typeof result[1] === 'number' ? result[0] : result) as T[];
+const rowsOf = <T>(result: unknown): T[] => (Array.isArray(result) && Array.isArray(result[0]) && typeof result[1] === 'number' ? result[0] : result) as T[];
 
 @Injectable()
 export class IdentityQueryService implements IdentityQuery {
@@ -53,23 +67,31 @@ export class IdentityQueryService implements IdentityQuery {
     );
     if (!u) throw new Problem('not-found');
     return {
-      id: u.id, displayName: u.display_name, kycStatus: u.kyc_status, accountStatus: u.account_status,
-      emailVerified: u.email_verified, verifiedAt: u.verified_at ?? null,
+      id: u.id,
+      displayName: u.display_name,
+      kycStatus: u.kyc_status,
+      accountStatus: u.account_status,
+      emailVerified: u.email_verified,
+      verifiedAt: u.verified_at ?? null,
     };
   }
 
   /** FR-KYC-07, FR-TNS-05, I-43: the same rule as @Verified(action), for calls that are not HTTP routes. */
   async assertCanTransact(userId: string, action: TransactAction): Promise<void> {
-    const [u] = await this.db.query(
-      `SELECT account_status, kyc_status, email_verified_at IS NOT NULL AS email_verified FROM identity.users WHERE id = $1`,
-      [userId],
-    );
-    const reason = !u ? 'not-found'
-      : u.account_status !== 'active' ? u.account_status // suspended or closed
-      : u.kyc_status !== 'verified' ? 'kyc-not-verified'
-      : !u.email_verified ? 'email-not-verified'
-      : (await this.restrictions.isRestricted(userId, action)) ? 'restricted'
-      : null;
+    const [u] = await this.db.query(`SELECT account_status, kyc_status, email_verified_at IS NOT NULL AS email_verified FROM identity.users WHERE id = $1`, [
+      userId,
+    ]);
+    const reason = !u
+      ? 'not-found'
+      : u.account_status !== 'active'
+        ? u.account_status // suspended or closed
+        : u.kyc_status !== 'verified'
+          ? 'kyc-not-verified'
+          : !u.email_verified
+            ? 'email-not-verified'
+            : (await this.restrictions.isRestricted(userId, action))
+              ? 'restricted'
+              : null;
     if (reason) throw new Problem('transaction-not-allowed', { errors: [{ action, reason }] });
   }
 
@@ -99,8 +121,13 @@ export class IdentityQueryService implements IdentityQuery {
     const name = this.crypto.openField(s.full_name_enc, { table: 'kyc_submissions', column: 'full_name_enc', rowId: s.id });
     await this.db.transaction((m) =>
       this.audit.record(m, {
-        actorType: 'system', action: 'identity.kyc.legal_name_read', objectType: 'user', objectId: userId, reason: purpose,
-        sourceIp: ctx?.ip ?? null, correlationId: ctx?.correlationId ?? null,
+        actorType: 'system',
+        action: 'identity.kyc.legal_name_read',
+        objectType: 'user',
+        objectId: userId,
+        reason: purpose,
+        sourceIp: ctx?.ip ?? null,
+        correlationId: ctx?.correlationId ?? null,
       }),
     );
     return name;
@@ -117,10 +144,7 @@ export class IdentityQueryService implements IdentityQuery {
   }
 
   async getContact(userId: string): Promise<{ email: string | null; phone: string | null; emailVerified: boolean }> {
-    const [u] = await this.db.query(
-      `SELECT email, phone_e164, email_verified_at IS NOT NULL AS email_verified FROM identity.users WHERE id = $1`,
-      [userId],
-    );
+    const [u] = await this.db.query(`SELECT email, phone_e164, email_verified_at IS NOT NULL AS email_verified FROM identity.users WHERE id = $1`, [userId]);
     if (!u) throw new Problem('not-found');
     return { email: u.email, phone: u.phone_e164, emailVerified: u.email_verified };
   }
@@ -142,7 +166,12 @@ export class IdentityCommandsService implements IdentityCommands, OnModuleInit {
     this.approvals.registerHandler('account.reinstate', (a, m) => this.reinstateAccount(a.targetId, a.id, m));
   }
 
-  async suspendAccount(userId: string, reason: string, byStaffId: string, o: { fraud?: boolean; ctx?: CallContext; tx?: EntityManager; sanctionId?: string } = {}): Promise<void> {
+  async suspendAccount(
+    userId: string,
+    reason: string,
+    byStaffId: string,
+    o: { fraud?: boolean; ctx?: CallContext; tx?: EntityManager; sanctionId?: string } = {},
+  ): Promise<void> {
     const work = async (m: EntityManager) => {
       const [u] = await m.query(`SELECT account_status FROM identity.users WHERE id = $1 FOR UPDATE`, [userId]);
       if (!u) throw new Problem('not-found');
@@ -150,9 +179,16 @@ export class IdentityCommandsService implements IdentityCommands, OnModuleInit {
       await m.query(`UPDATE identity.users SET account_status = 'suspended', updated_at = now() WHERE id = $1`, [userId]);
       await this.sessions.endAllIn(m, userId, null, 'suspended', ctxOf(o.ctx), { type: 'staff', id: byStaffId });
       await this.audit.record(m, {
-        actorType: 'staff', actorId: byStaffId, action: 'identity.account.suspended', objectType: 'user', objectId: userId,
-        before: { accountStatus: u.account_status }, after: { accountStatus: 'suspended', fraud: o.fraud === true }, reason,
-        sourceIp: o.ctx?.ip ?? null, correlationId: o.ctx?.correlationId ?? null,
+        actorType: 'staff',
+        actorId: byStaffId,
+        action: 'identity.account.suspended',
+        objectType: 'user',
+        objectId: userId,
+        before: { accountStatus: u.account_status },
+        after: { accountStatus: 'suspended', fraud: o.fraud === true },
+        reason,
+        sourceIp: o.ctx?.ip ?? null,
+        correlationId: o.ctx?.correlationId ?? null,
       });
       // I-8: the fraud flag lets Unit 2 hold payouts.
       await publish(m, 'identity.account.suspended', userId, { userId, fraud: o.fraud === true, sanctionId: o.sanctionId ?? null });
@@ -168,12 +204,20 @@ export class IdentityCommandsService implements IdentityCommands, OnModuleInit {
       );
       if (!a) throw new Problem('forbidden');
       const [row] = rowsOf<{ id: string }>(
-        await m.query(`UPDATE identity.users SET account_status = 'active', updated_at = now() WHERE id = $1 AND account_status = 'suspended' RETURNING id`, [userId]),
+        await m.query(`UPDATE identity.users SET account_status = 'active', updated_at = now() WHERE id = $1 AND account_status = 'suspended' RETURNING id`, [
+          userId,
+        ]),
       );
       if (!row) throw new Problem('approval-closed');
       await this.audit.record(m, {
-        actorType: 'staff', actorId: a.decided_by, action: 'identity.account.reinstated', objectType: 'user', objectId: userId,
-        before: { accountStatus: 'suspended' }, after: { accountStatus: 'active' }, approvalId,
+        actorType: 'staff',
+        actorId: a.decided_by,
+        action: 'identity.account.reinstated',
+        objectType: 'user',
+        objectId: userId,
+        before: { accountStatus: 'suspended' },
+        after: { accountStatus: 'active' },
+        approvalId,
       });
       // U7-04: Unit 7 lifts the account suspension with this approval, its decider and its reason
       await publish(m, 'identity.account.reinstated', userId, { userId, approvalId, decidedBy: a.decided_by, reason: a.reason });
@@ -186,7 +230,14 @@ export class IdentityCommandsService implements IdentityCommands, OnModuleInit {
     await (tx ? work(tx) : this.db.transaction(work));
   }
 
-  proposeBlacklist(userId: string, source: BlacklistSource, relatedOrderId: string | null, reason: string, byStaffId: string, ctx?: CallContext): Promise<Approval> {
+  proposeBlacklist(
+    userId: string,
+    source: BlacklistSource,
+    relatedOrderId: string | null,
+    reason: string,
+    byStaffId: string,
+    ctx?: CallContext,
+  ): Promise<Approval> {
     return this.kyc.proposeBlacklist(byStaffId, userId, source, relatedOrderId, reason, ctxOf(ctx));
   }
 
@@ -195,7 +246,10 @@ export class IdentityCommandsService implements IdentityCommands, OnModuleInit {
     if (!u) throw new Problem('not-found');
     if (u.account_status !== 'suspended') throw new Problem('approval-closed');
     if (await this.staff.hasConflict(byStaffId, userId)) throw new Problem('conflict-of-interest');
-    return this.approvals.propose({ action: 'account.reinstate', targetType: 'user', targetId: userId, reason, requiredRole: 'operator', byStaffId }, ctxOf(ctx));
+    return this.approvals.propose(
+      { action: 'account.reinstate', targetType: 'user', targetId: userId, reason, requiredRole: 'operator', byStaffId },
+      ctxOf(ctx),
+    );
   }
 }
 
@@ -216,7 +270,9 @@ export class StaffQueryService implements StaffQuery {
   }
 
   async activeAdministrators(): Promise<{ staffId: string; email: string }[]> {
-    const rows = (await this.db.query(`SELECT id, email FROM identity.staff_accounts WHERE role = 'administrator' AND status = 'active' ORDER BY created_at`)) as { id: string; email: string }[];
+    const rows = (await this.db.query(
+      `SELECT id, email FROM identity.staff_accounts WHERE role = 'administrator' AND status = 'active' ORDER BY created_at`,
+    )) as { id: string; email: string }[];
     return rows.map((r) => ({ staffId: r.id, email: r.email }));
   }
 }
@@ -283,7 +339,6 @@ export class RateLimiterPortAdapter implements RateLimiterPort {
   }
 }
 
-
 @Injectable()
 export class FileVaultPortAdapter implements FileVaultPort {
   constructor(
@@ -324,8 +379,14 @@ export class FileVaultPortAdapter implements FileVaultPort {
       if (!reason || reason.trim().length < 10) throw new Problem('validation-failed', { errors: [{ field: 'reason', reason: 'required' }] });
       await this.db.transaction((m) =>
         this.audit.record(m, {
-          actorType: 'staff', actorId: viewer.staffId, action: 'files.file.viewed', objectType: k.purpose, objectId: k.fileId,
-          reason: reason.trim(), sourceIp: ctx?.ip ?? null, correlationId: ctx?.correlationId ?? null,
+          actorType: 'staff',
+          actorId: viewer.staffId,
+          action: 'files.file.viewed',
+          objectType: k.purpose,
+          objectId: k.fileId,
+          reason: reason.trim(),
+          sourceIp: ctx?.ip ?? null,
+          correlationId: ctx?.correlationId ?? null,
         }),
       );
     }

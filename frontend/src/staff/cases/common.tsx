@@ -16,8 +16,15 @@ export const short = (id: string | null | undefined) => (id ? id.slice(0, 8) : '
 /** The server's refusals the console puts in words; anything else is the shared text. */
 const KNOWN = new Set(['not-claimed', 'conflict-of-interest', 'already-claimed', 'feature-off', 'listing-state', 'kyc-cannot-approve']);
 const KNOWN_FIELDS = new Set([
-  'too-short', 'required', 'between-zero-and-item-price', 'partial-refund-only', 'not-for-this-item', 'live-check-not-matched',
-  'use-the-ownership-review', 'underage', 'out-of-range',
+  'too-short',
+  'required',
+  'between-zero-and-item-price',
+  'partial-refund-only',
+  'not-for-this-item',
+  'live-check-not-matched',
+  'use-the-ownership-review',
+  'underage',
+  'out-of-range',
 ]);
 export function staffError(e: unknown, t: T, lang: Lang): string {
   const name = problemName(e);
@@ -30,7 +37,11 @@ export function staffError(e: unknown, t: T, lang: Lang): string {
 export function CaseFrame({ title, back, children, t }: { title: string; back: string; children: ReactNode; t: T }) {
   return (
     <div>
-      <p><Link className={styles.back} to={back}>{t('staff.case.back')}</Link></p>
+      <p>
+        <Link className={styles.back} to={back}>
+          {t('staff.case.back')}
+        </Link>
+      </p>
       <h1>{title}</h1>
       {children}
     </div>
@@ -40,7 +51,14 @@ export function CaseFrame({ title, back, children, t }: { title: string; back: s
 export function Facts({ rows }: { rows: [string, ReactNode][] }) {
   return (
     <dl className={styles.facts}>
-      {rows.filter(([, v]) => v !== null && v !== undefined && v !== '').map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}
+      {rows
+        .filter(([, v]) => v !== null && v !== undefined && v !== '')
+        .map(([k, v]) => (
+          <div key={k}>
+            <dt>{k}</dt>
+            <dd>{v}</dd>
+          </div>
+        ))}
     </dl>
   );
 }
@@ -49,7 +67,8 @@ interface ActionProps {
   title: string;
   button: string;
   consequence: string;
-  t: T; lang: Lang;
+  t: T;
+  lang: Lang;
   /** The reason's label and its minimum length (FR-OPS-02: every action has a reason). */
   reasonLabel?: string;
   minReason?: number;
@@ -64,21 +83,50 @@ interface ActionProps {
 }
 
 /** An action with a required reason, confirmed first (IF-UI-10). */
-export function Action({ title, button, consequence, t, lang, reasonLabel, minReason = 10, maxReason = 1000, children, valid = true, invalidText, run, done, onDone }: ActionProps) {
+export function Action({
+  title,
+  button,
+  consequence,
+  t,
+  lang,
+  reasonLabel,
+  minReason = 10,
+  maxReason = 1000,
+  children,
+  valid = true,
+  invalidText,
+  run,
+  done,
+  onDone,
+}: ActionProps) {
   const id = useId();
   const [reason, setReason] = useState('');
   const [confirming, setConfirming] = useState(false);
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
   const action = useMutation({
     mutationFn: () => run(reason.trim()),
-    onSuccess: (r) => { setConfirming(false); setReason(''); setMessage({ kind: 'success', text: done(r) }); onDone?.(r); },
-    onError: (e) => { setConfirming(false); setMessage({ kind: 'error', text: staffError(e, t, lang) }); },
+    onSuccess: (r) => {
+      setConfirming(false);
+      setReason('');
+      setMessage({ kind: 'success', text: done(r) });
+      onDone?.(r);
+    },
+    onError: (e) => {
+      setConfirming(false);
+      setMessage({ kind: 'error', text: staffError(e, t, lang) });
+    },
   });
   const submit = (e: FormEvent) => {
     e.preventDefault();
     setMessage(null);
-    if (!valid) { setMessage({ kind: 'error', text: invalidText ?? t('staff.action.incomplete') }); return; }
-    if (reason.trim().length < minReason) { setMessage({ kind: 'error', text: t('staff.action.reason_short', { min: String(minReason) }) }); return; }
+    if (!valid) {
+      setMessage({ kind: 'error', text: invalidText ?? t('staff.action.incomplete') });
+      return;
+    }
+    if (reason.trim().length < minReason) {
+      setMessage({ kind: 'error', text: t('staff.action.reason_short', { min: String(minReason) }) });
+      return;
+    }
     setConfirming(true);
   };
   return (
@@ -86,13 +134,34 @@ export function Action({ title, button, consequence, t, lang, reasonLabel, minRe
       <h2 id={`${id}-title`}>{title}</h2>
       {children}
       <label htmlFor={`${id}-reason`}>{reasonLabel ?? t('staff.action.reason')}</label>
-      <textarea id={`${id}-reason`} rows={3} maxLength={maxReason} value={reason} onChange={(e) => setReason(e.target.value)} aria-describedby={`${id}-hint`} className={styles.wide} />
-      <p id={`${id}-hint`} className={styles.hint}>{t('staff.action.reason_hint', { min: String(minReason) })}</p>
+      <textarea
+        id={`${id}-reason`}
+        rows={3}
+        maxLength={maxReason}
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        aria-describedby={`${id}-hint`}
+        className={styles.wide}
+      />
+      <p id={`${id}-hint`} className={styles.hint}>
+        {t('staff.action.reason_hint', { min: String(minReason) })}
+      </p>
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
-      <p><button type="submit" className={styles.primary} disabled={action.isPending}>{button}</button></p>
+      <p>
+        <button type="submit" className={styles.primary} disabled={action.isPending}>
+          {button}
+        </button>
+      </p>
       {confirming && (
-        <ConfirmDialog id={`${id}-confirm`} title={title} busy={action.isPending} confirmLabel={button} cancelLabel={t('staff.approvals.back')}
-          onConfirm={() => action.mutate()} onCancel={() => setConfirming(false)}>
+        <ConfirmDialog
+          id={`${id}-confirm`}
+          title={title}
+          busy={action.isPending}
+          confirmLabel={button}
+          cancelLabel={t('staff.approvals.back')}
+          onConfirm={() => action.mutate()}
+          onCancel={() => setConfirming(false)}
+        >
           <p>{consequence}</p>
         </ConfirmDialog>
       )}
@@ -101,7 +170,19 @@ export function Action({ title, button, consequence, t, lang, reasonLabel, minRe
 }
 
 /** A choice between a few values, as radio buttons (44 px rows). */
-export function Choice<V extends string>({ legend, name, value, options, onChange }: { legend: string; name: string; value: V | ''; options: [V, string][]; onChange: (v: V) => void }) {
+export function Choice<V extends string>({
+  legend,
+  name,
+  value,
+  options,
+  onChange,
+}: {
+  legend: string;
+  name: string;
+  value: V | '';
+  options: [V, string][];
+  onChange: (v: V) => void;
+}) {
   return (
     <fieldset className={styles.choice}>
       <legend>{legend}</legend>

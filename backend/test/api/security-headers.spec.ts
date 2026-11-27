@@ -26,7 +26,7 @@ describe('security headers and CORS', () => {
     }
   });
 
-  it('SEC-WEB-03 only the web client\'s origin may read API responses across origins, with credentials', async () => {
+  it("SEC-WEB-03 only the web client's origin may read API responses across origins, with credentials", async () => {
     const ok = await fetch(t.url('/health/live'), { headers: { origin: web } });
     expect(ok.headers.get('access-control-allow-origin')).toBe(web);
     expect(ok.headers.get('access-control-allow-credentials')).toBe('true');
@@ -36,7 +36,10 @@ describe('security headers and CORS', () => {
     expect(evil.headers.get('access-control-allow-origin')).toBeNull();
 
     const pre = (origin: string) =>
-      fetch(t.url('/orders'), { method: 'OPTIONS', headers: { origin, 'access-control-request-method': 'POST', 'access-control-request-headers': 'content-type,idempotency-key' } });
+      fetch(t.url('/orders'), {
+        method: 'OPTIONS',
+        headers: { origin, 'access-control-request-method': 'POST', 'access-control-request-headers': 'content-type,idempotency-key' },
+      });
     const good = await pre(web);
     expect(good.status).toBe(204);
     expect(good.headers.get('access-control-allow-origin')).toBe(web);

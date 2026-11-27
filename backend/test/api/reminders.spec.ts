@@ -30,8 +30,15 @@ describe('deadline reminders', () => {
 
   const HOUR = 3_600_000;
   const DAY = 24 * HOUR;
-  const event = (type: string, orderId: string, payload: Record<string, unknown>): OutboxEvent =>
-    ({ outbox: type.split('.')[0], id: String(randomInt(1, 2 ** 31)), type, aggregateId: orderId, payload: { orderId, ...payload }, createdAt: new Date(), attempt: 1 });
+  const event = (type: string, orderId: string, payload: Record<string, unknown>): OutboxEvent => ({
+    outbox: type.split('.')[0],
+    id: String(randomInt(1, 2 ** 31)),
+    type,
+    aggregateId: orderId,
+    payload: { orderId, ...payload },
+    createdAt: new Date(),
+    attempt: 1,
+  });
 
   /** An order in the given state: awaiting payment (an auction win), or paid with its escrow held. */
   async function order(o: { status: 'awaiting_payment' | 'paid'; fulfilment?: 'self_pickup' | 'courier'; dueIn?: number; disputeIn?: number }) {
@@ -44,45 +51,87 @@ describe('deadline reminders', () => {
           listing_snapshot, commission_bps, delivery_margin_bps, params_version, payment_due_at, status, paid_at, fulfilment_step, fulfilment_due_at)
        VALUES ('auction', $1, 'physical', $2, $3, 1, 1000000, 1000000, $4, $5, $6, $7, '{"title":"Walton fridge"}', 500, 1000, 1, $8, $9, $10, $11, $12)
        RETURNING id`,
-      [randomUUID(), buyerId, sellerId, fulfilment, fulfilment === 'courier' ? randomUUID() : null, fulfilment === 'courier' ? 15000 : 0,
-       fulfilment === 'courier' ? 1015000 : 1000000, paid ? new Date() : due, o.status, paid ? new Date() : null,
-       paid ? (fulfilment === 'courier' ? 'courier_pickup' : 'meetup_handover') : null, paid ? due : null],
+      [
+        randomUUID(),
+        buyerId,
+        sellerId,
+        fulfilment,
+        fulfilment === 'courier' ? randomUUID() : null,
+        fulfilment === 'courier' ? 15000 : 0,
+        fulfilment === 'courier' ? 1015000 : 1000000,
+        paid ? new Date() : due,
+        o.status,
+        paid ? new Date() : null,
+        paid ? (fulfilment === 'courier' ? 'courier_pickup' : 'meetup_handover') : null,
+        paid ? due : null,
+      ],
     );
     if (paid) {
-      await fx.query(`INSERT INTO payments.attempts (purpose, order_id, payer_id, provider, amount, status, expires_at, confirmed_at) VALUES ('order', $1, $2, 'bkash', $3, 'succeeded', now(), now())`,
-        [id, buyerId, fulfilment === 'courier' ? 1015000 : 1000000]);
+      await fx.query(
+        `INSERT INTO payments.attempts (purpose, order_id, payer_id, provider, amount, status, expires_at, confirmed_at) VALUES ('order', $1, $2, 'bkash', $3, 'succeeded', now(), now())`,
+        [id, buyerId, fulfilment === 'courier' ? 1015000 : 1000000],
+      );
       // the escrow holds what was paid: the item and, for a courier order, the delivery fee
-      await fx.query(`INSERT INTO orders.escrows (order_id, release_policy, amount_collected, dispute_window_ends_at) VALUES ($1, 'standard', $2, $3)`,
-        [id, fulfilment === 'courier' ? 1015000 : 1000000, o.disputeIn ? new Date(Date.now() + o.disputeIn) : null]);
+      await fx.query(`INSERT INTO orders.escrows (order_id, release_policy, amount_collected, dispute_window_ends_at) VALUES ($1, 'standard', $2, $3)`, [
+        id,
+        fulfilment === 'courier' ? 1015000 : 1000000,
+        o.disputeIn ? new Date(Date.now() + o.disputeIn) : null,
+      ]);
     }
     return { id, buyerId, sellerId, due, fulfilment };
   }
   const paidEvent = (o: Awaited<ReturnType<typeof order>>) =>
-    event('orders.order.paid', o.id, { kind: 'auction', itemKind: 'physical', buyerId: o.buyerId, sellerId: o.sellerId, fulfilment: o.fulfilment,
-      fulfilmentStep: o.fulfilment === 'courier' ? 'courier_pickup' : 'meetup_handover', fulfilmentDueAt: o.due.toISOString(), listingTitle: 'Walton fridge', total: '1000000' });
+    event('orders.order.paid', o.id, {
+      kind: 'auction',
+      itemKind: 'physical',
+      buyerId: o.buyerId,
+      sellerId: o.sellerId,
+      fulfilment: o.fulfilment,
+      fulfilmentStep: o.fulfilment === 'courier' ? 'courier_pickup' : 'meetup_handover',
+      fulfilmentDueAt: o.due.toISOString(),
+      listingTitle: 'Walton fridge',
+      total: '1000000',
+    });
   const rows = (orderId: string) =>
     fx.query<{ user_id: string; kind: string; lead: string; status: string; due_at: Date }>(
-      `SELECT user_id, kind, lead::text AS lead, status, due_at FROM notify.reminders WHERE subject_id = $1 ORDER BY kind, user_id, lead`, [orderId]);
+      `SELECT user_id, kind, lead::text AS lead, status, due_at FROM notify.reminders WHERE subject_id = $1 ORDER BY kind, user_id, lead`,
+      [orderId],
+    );
   const notices = (userId: string) =>
     fx.query<{ template_code: string; params: Record<string, unknown>; subject_id: string }>(
-      `SELECT template_code, params, subject_id FROM notify.notifications WHERE user_id = $1 AND template_code LIKE 'reminder.%'`, [userId]);
+      `SELECT template_code, params, subject_id FROM notify.notifications WHERE user_id = $1 AND template_code LIKE 'reminder.%'`,
+      [userId],
+    );
   /** As if minutes had passed: the order's fulfilment deadline and its reminders move that much closer. */
   async function minutesPass(orderId: string, minutes: number) {
     await fx.query(`UPDATE orders.orders SET fulfilment_due_at = fulfilment_due_at - $2::interval WHERE id = $1`, [orderId, `${minutes} minutes`]);
-    await fx.query(`UPDATE notify.reminders SET due_at = due_at - $2::interval, fire_at = fire_at - $2::interval WHERE subject_id = $1`, [orderId, `${minutes} minutes`]);
+    await fx.query(`UPDATE notify.reminders SET due_at = due_at - $2::interval, fire_at = fire_at - $2::interval WHERE subject_id = $1`, [
+      orderId,
+      `${minutes} minutes`,
+    ]);
   }
   /** Runs the job until none of the order's reminders is still due (other suites' due reminders may share a batch). */
   async function runJob(orderId: string) {
     for (let i = 0; i < 20; i++) {
       await reminders.sendDue();
-      const [{ n }] = await fx.query<{ n: number }>(`SELECT count(*)::int AS n FROM notify.reminders WHERE subject_id = $1 AND status = 'scheduled' AND fire_at <= now()`, [orderId]);
+      const [{ n }] = await fx.query<{ n: number }>(
+        `SELECT count(*)::int AS n FROM notify.reminders WHERE subject_id = $1 AND status = 'scheduled' AND fire_at <= now()`,
+        [orderId],
+      );
       if (n === 0) return;
     }
   }
 
-  it('FR-NTF-07 CP-38 an auction win schedules the buyer\'s payment reminders 24 and 2 hours before; paying cancels them and schedules the handover\'s for both', async () => {
+  it("FR-NTF-07 CP-38 an auction win schedules the buyer's payment reminders 24 and 2 hours before; paying cancels them and schedules the handover's for both", async () => {
     const o = await order({ status: 'awaiting_payment' });
-    const created = event('orders.order.created', o.id, { kind: 'auction', buyerId: o.buyerId, sellerId: o.sellerId, listingTitle: 'Walton fridge', total: '1000000', paymentDueAt: o.due.toISOString() });
+    const created = event('orders.order.created', o.id, {
+      kind: 'auction',
+      buyerId: o.buyerId,
+      sellerId: o.sellerId,
+      listingTitle: 'Walton fridge',
+      total: '1000000',
+      paymentDueAt: o.due.toISOString(),
+    });
     await consumers.handle(created);
     await consumers.handle(created); // delivered twice: no duplicate (DC-6)
     expect(await rows(o.id)).toEqual([
@@ -93,15 +142,31 @@ describe('deadline reminders', () => {
     expect(fire).toEqual(new Date(o.due.getTime() - DAY));
     // a fixed-price checkout's window is minutes long: no reminder
     const fixed = await order({ status: 'awaiting_payment' });
-    await consumers.handle(event('orders.order.created', fixed.id, { kind: 'fixed_price', buyerId: fixed.buyerId, sellerId: fixed.sellerId, paymentDueAt: fixed.due.toISOString() }));
+    await consumers.handle(
+      event('orders.order.created', fixed.id, { kind: 'fixed_price', buyerId: fixed.buyerId, sellerId: fixed.sellerId, paymentDueAt: fixed.due.toISOString() }),
+    );
     expect(await rows(fixed.id)).toEqual([]);
 
-    await fx.query(`UPDATE orders.orders SET status = 'paid', paid_at = now(), fulfilment = 'self_pickup', fulfilment_step = 'meetup_handover', fulfilment_due_at = $2 WHERE id = $1`, [o.id, o.due]);
+    await fx.query(
+      `UPDATE orders.orders SET status = 'paid', paid_at = now(), fulfilment = 'self_pickup', fulfilment_step = 'meetup_handover', fulfilment_due_at = $2 WHERE id = $1`,
+      [o.id, o.due],
+    );
     await consumers.handle(paidEvent({ ...o, fulfilment: 'self_pickup' }));
     const after = await rows(o.id);
     expect(after.filter((r) => r.kind === 'payment_window').map((r) => r.status)).toEqual(['cancelled', 'cancelled']);
-    expect(after.filter((r) => r.kind === 'meetup_handover').map((r) => [r.user_id, r.lead]).sort()).toEqual(
-      [[o.buyerId, '02:00:00'], [o.buyerId, '24:00:00'], [o.sellerId, '02:00:00'], [o.sellerId, '24:00:00']].sort());
+    expect(
+      after
+        .filter((r) => r.kind === 'meetup_handover')
+        .map((r) => [r.user_id, r.lead])
+        .sort(),
+    ).toEqual(
+      [
+        [o.buyerId, '02:00:00'],
+        [o.buyerId, '24:00:00'],
+        [o.sellerId, '02:00:00'],
+        [o.sellerId, '24:00:00'],
+      ].sort(),
+    );
   });
 
   it('FR-NTF-07 a moved deadline moves its reminders instead of adding new ones; a lead whose time has passed is not scheduled', async () => {
@@ -130,11 +195,15 @@ describe('deadline reminders', () => {
     await runJob(o.id);
     expect((await rows(o.id)).map((r) => r.status)).toEqual(['sent', 'sent']);
     for (const user of [o.buyerId, o.sellerId]) {
-      expect(await notices(user)).toEqual([{ template_code: 'reminder.meetup_handover', params: { listing_title: 'Walton fridge', hours: 2 }, subject_id: o.id }]);
+      expect(await notices(user)).toEqual([
+        { template_code: 'reminder.meetup_handover', params: { listing_title: 'Walton fridge', hours: 2 }, subject_id: o.id },
+      ]);
     }
     const [{ channel, category }] = await fx.query<{ channel: string; category: string }>(
       `SELECT d.channel, t.category FROM notify.notifications n JOIN notify.deliveries d ON d.notification_id = n.id
-         JOIN notify.templates t ON t.code = n.template_code AND t.version = n.template_version WHERE n.user_id = $1`, [o.buyerId]);
+         JOIN notify.templates t ON t.code = n.template_code AND t.version = n.template_version WHERE n.user_id = $1`,
+      [o.buyerId],
+    );
     expect({ channel, category }).toEqual({ channel: 'email', category: 'reminder' }); // never SMS (FR-NTF-05)
     await runJob(o.id);
     expect(await notices(o.buyerId)).toHaveLength(1); // sent once
@@ -155,20 +224,36 @@ describe('deadline reminders', () => {
     await runJob(moved.id);
     expect((await rows(done.id)).map((r) => r.status)).toEqual(['cancelled', 'cancelled']);
     expect(await notices(done.buyerId)).toEqual([]);
-    expect((await rows(moved.id)).map((r) => [r.status, r.due_at])).toEqual([['scheduled', extended], ['scheduled', extended]]);
+    expect((await rows(moved.id)).map((r) => [r.status, r.due_at])).toEqual([
+      ['scheduled', extended],
+      ['scheduled', extended],
+    ]);
     expect(await notices(moved.buyerId)).toEqual([]);
-    expect(await t.app.get<EscrowQuery>(ESCROW_QUERY, { strict: false }).deadline(moved.id, 'meetup_handover')).toEqual({ dueAt: extended, listingTitle: 'Walton fridge' });
+    expect(await t.app.get<EscrowQuery>(ESCROW_QUERY, { strict: false }).deadline(moved.id, 'meetup_handover')).toEqual({
+      dueAt: extended,
+      listingTitle: 'Walton fridge',
+    });
     expect(await t.app.get<EscrowQuery>(ESCROW_QUERY, { strict: false }).deadline(moved.id, 'courier_pickup')).toBeNull(); // not this order's step
   });
 
-  it('FR-NTF-07 FR-DSP-11 the delivery event starts the buyer\'s dispute-window reminders and ends the handover\'s; a dispute freezing the escrow cancels them', async () => {
+  it("FR-NTF-07 FR-DSP-11 the delivery event starts the buyer's dispute-window reminders and ends the handover's; a dispute freezing the escrow cancels them", async () => {
     const o = await order({ status: 'paid', disputeIn: 3 * DAY });
     await consumers.handle(paidEvent(o));
     const windowEnds = new Date(Date.now() + 3 * DAY);
-    await consumers.handle(event('orders.order.delivered', o.id, { buyerId: o.buyerId, sellerId: o.sellerId, source: 'handover_code', disputeWindowEndsAt: windowEnds.toISOString() }));
+    await consumers.handle(
+      event('orders.order.delivered', o.id, {
+        buyerId: o.buyerId,
+        sellerId: o.sellerId,
+        source: 'handover_code',
+        disputeWindowEndsAt: windowEnds.toISOString(),
+      }),
+    );
     const r = await rows(o.id);
     expect(r.filter((x) => x.kind === 'meetup_handover').map((x) => x.status)).toEqual(['cancelled', 'cancelled', 'cancelled', 'cancelled']);
-    expect(r.filter((x) => x.kind === 'dispute_window').map((x) => [x.user_id, x.lead, x.status])).toEqual([[o.buyerId, '02:00:00', 'scheduled'], [o.buyerId, '24:00:00', 'scheduled']]);
+    expect(r.filter((x) => x.kind === 'dispute_window').map((x) => [x.user_id, x.lead, x.status])).toEqual([
+      [o.buyerId, '02:00:00', 'scheduled'],
+      [o.buyerId, '24:00:00', 'scheduled'],
+    ]);
     await consumers.handle(event('orders.escrow.frozen', o.id, { buyerId: o.buyerId, sellerId: o.sellerId }));
     expect((await rows(o.id)).every((x) => x.status === 'cancelled')).toBe(true);
   });
@@ -176,7 +261,9 @@ describe('deadline reminders', () => {
   it('FR-NTF-07 FR-NTF-08 every reminder kind Unit 2 answers for has an active template with the parameters a reminder carries', async () => {
     const kinds = ['payment_window', 'meetup_handover', 'courier_pickup', 'credential_delivery', 'dispute_window'];
     const found = await fx.query<{ code: string; category: string; channels: string; allowed: string }>(
-      `SELECT code, category, channels::text, allowed_params::text AS allowed FROM notify.templates WHERE active AND code = ANY($1) ORDER BY code`, [kinds.map((k) => `reminder.${k}`)]);
+      `SELECT code, category, channels::text, allowed_params::text AS allowed FROM notify.templates WHERE active AND code = ANY($1) ORDER BY code`,
+      [kinds.map((k) => `reminder.${k}`)],
+    );
     expect(found.map((f) => f.code)).toEqual(kinds.map((k) => `reminder.${k}`).sort());
     for (const f of found) expect(f).toMatchObject({ category: 'reminder', channels: '{email}', allowed: '{listing_title,hours}' });
   });

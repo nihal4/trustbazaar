@@ -34,10 +34,23 @@ class Repo {
 const NOW = new Date('2026-11-01T12:00:00Z');
 
 function setup(refund: jest.Mock | null, extra: Record<string, unknown> = {}) {
-  const repos = new Map<unknown, Repo>([JournalEntry, JournalLine, Order, OrdersOutboxEvent, PaymentAttempt, ReconciliationIssue, Refund].map((e) => [e, new Repo()]));
-  const due = () => repos.get(Refund)!.rows.filter((r) => ['pending', 'failed'].includes(r.status as string) && (r.nextAttemptAt as Date) <= NOW).slice(0, 1).map((r) => ({ id: r.id }));
-  const sent = (id?: string) => repos.get(Refund)!.rows.filter((r) => r.status === 'sent' && (id === undefined || r.id === id)).map((r) => ({ id: r.id }));
-  const query = jest.fn(async (sql: string, p: unknown[] = []) => (sql.includes("status = 'sent'") ? sent(sql.includes('id = $1') ? (p[0] as string) : undefined) : sql.includes('FROM payments.refunds') ? due() : []));
+  const repos = new Map<unknown, Repo>(
+    [JournalEntry, JournalLine, Order, OrdersOutboxEvent, PaymentAttempt, ReconciliationIssue, Refund].map((e) => [e, new Repo()]),
+  );
+  const due = () =>
+    repos
+      .get(Refund)!
+      .rows.filter((r) => ['pending', 'failed'].includes(r.status as string) && (r.nextAttemptAt as Date) <= NOW)
+      .slice(0, 1)
+      .map((r) => ({ id: r.id }));
+  const sent = (id?: string) =>
+    repos
+      .get(Refund)!
+      .rows.filter((r) => r.status === 'sent' && (id === undefined || r.id === id))
+      .map((r) => ({ id: r.id }));
+  const query = jest.fn(async (sql: string, p: unknown[] = []) =>
+    sql.includes("status = 'sent'") ? sent(sql.includes('id = $1') ? (p[0] as string) : undefined) : sql.includes('FROM payments.refunds') ? due() : [],
+  );
   const manager = { getRepository: (e: unknown) => repos.get(e)!, query };
   const db = { query, transaction: (cb: (m: typeof manager) => unknown) => cb(manager) };
   const providers = (refund ? { bkash: { refund, ...extra } } : {}) as unknown as ProviderRegistry;
@@ -45,10 +58,31 @@ function setup(refund: jest.Mock | null, extra: Record<string, unknown> = {}) {
   const clock: Clock = { now: () => NOW };
   const svc = new RefundService(db as unknown as DataSource, providers, audit as unknown as AuditServicePort, clock);
   const attemptId = randomUUID();
-  repos.get(PaymentAttempt)!.rows.push({ id: attemptId, provider: 'bkash', orderId: 'O1', payerId: 'P', amount: '1000000', idempotencyKey: 'k', providerPaymentId: 'pp', providerTxnId: 'txn', expiresAt: NOW });
+  repos.get(PaymentAttempt)!.rows.push({
+    id: attemptId,
+    provider: 'bkash',
+    orderId: 'O1',
+    payerId: 'P',
+    amount: '1000000',
+    idempotencyKey: 'k',
+    providerPaymentId: 'pp',
+    providerTxnId: 'txn',
+    expiresAt: NOW,
+  });
   repos.get(Order)!.rows.push({ id: 'O1', buyerId: 'B' });
   const add = (x: Row = {}) => {
-    const r = { id: randomUUID(), orderId: 'O1', attemptId, amount: '400000', reason: 'cancellation', idempotencyKey: `refund-${randomUUID()}`, status: 'pending', attemptsMade: 0, nextAttemptAt: NOW, ...x };
+    const r = {
+      id: randomUUID(),
+      orderId: 'O1',
+      attemptId,
+      amount: '400000',
+      reason: 'cancellation',
+      idempotencyKey: `refund-${randomUUID()}`,
+      status: 'pending',
+      attemptsMade: 0,
+      nextAttemptAt: NOW,
+      ...x,
+    };
     repos.get(Refund)!.rows.push(r);
     return r;
   };
@@ -66,7 +100,10 @@ describe('RefundService', () => {
     expect(refund).toHaveBeenCalledWith(expect.objectContaining({ providerTxnId: 'txn', amount: 400000n, idempotencyKey: r.idempotencyKey }));
     expect(r).toMatchObject({ status: 'succeeded', providerRefundId: 'rf_1', attemptsMade: 1, completedAt: NOW });
     expect(s.repo(JournalEntry).rows).toEqual([expect.objectContaining({ kind: 'refund_paid', sourceId: r.id })]);
-    expect(s.repo(JournalLine).rows.map((l) => [l.accountCode, l.partyId, l.amount])).toEqual([['buyer_refund_payable', 'B', '400000'], ['provider_clearing', null, '-400000']]);
+    expect(s.repo(JournalLine).rows.map((l) => [l.accountCode, l.partyId, l.amount])).toEqual([
+      ['buyer_refund_payable', 'B', '400000'],
+      ['provider_clearing', null, '-400000'],
+    ]);
     expect(events(s)).toEqual(['payments.refund.succeeded']);
     expect(await s.svc.processDue()).toEqual([]);
   });
@@ -80,7 +117,11 @@ describe('RefundService', () => {
   });
 
   it('FR-PAY-12 DV-13 failures retry on the schedule, then an operator takes over', async () => {
-    const s = setup(jest.fn(async () => { throw new ProviderUnavailable('timeout'); }));
+    const s = setup(
+      jest.fn(async () => {
+        throw new ProviderUnavailable('timeout');
+      }),
+    );
     const r = s.add();
     expect(await s.svc.processDue()).toEqual(['retry']);
     expect(r).toMatchObject({ status: 'failed', attemptsMade: 1, nextAttemptAt: new Date(NOW.getTime() + RETRY_DELAYS_MS[0]) });
@@ -102,14 +143,21 @@ describe('RefundService', () => {
   });
 
   it('FR-PAY-12 an unexpected error is not swallowed, so the transaction rolls back', async () => {
-    const s = setup(jest.fn(async () => { throw new Error('bug'); }) as jest.Mock<ReturnType<PaymentProvider['refund']>>);
+    const s = setup(
+      jest.fn(async () => {
+        throw new Error('bug');
+      }) as jest.Mock<ReturnType<PaymentProvider['refund']>>,
+    );
     s.add();
     await expect(s.svc.processDue()).rejects.toThrow('bug');
   });
 
   it('FR-PAY-15 reconciliation confirms refunds the provider took for later, or hands failures to an operator', async () => {
     const answers: Record<string, 'succeeded' | 'pending' | 'failed'> = { rf_ok: 'succeeded', rf_wait: 'pending', rf_bad: 'failed' };
-    const queryRefund = jest.fn(async (id: string) => { if (id === 'rf_down') throw new ProviderUnavailable('timeout'); return answers[id]; });
+    const queryRefund = jest.fn(async (id: string) => {
+      if (id === 'rf_down') throw new ProviderUnavailable('timeout');
+      return answers[id];
+    });
     const s = setup(jest.fn(), { queryRefund });
     const ok = s.add({ status: 'sent', providerRefundId: 'rf_ok', attemptsMade: 1 });
     const wait = s.add({ status: 'sent', providerRefundId: 'rf_wait' });
@@ -125,7 +173,11 @@ describe('RefundService', () => {
     const plain = setup(jest.fn()); // a provider without queryRefund (the mock): nothing to ask
     plain.add({ status: 'sent', providerRefundId: 'x' });
     expect(await plain.svc.confirmSent()).toBe(0);
-    const broken = setup(jest.fn(), { queryRefund: async () => { throw new Error('bug'); } });
+    const broken = setup(jest.fn(), {
+      queryRefund: async () => {
+        throw new Error('bug');
+      },
+    });
     broken.add({ status: 'sent', providerRefundId: 'x' });
     await expect(broken.svc.confirmSent()).rejects.toThrow('bug');
   });

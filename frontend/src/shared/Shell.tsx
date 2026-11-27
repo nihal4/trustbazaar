@@ -45,7 +45,7 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
   const shownPath = useRef(pathname);
 
   useEffect(() => {
-    if (shownPath.current === pathname) return;   // first render (also when StrictMode runs it twice)
+    if (shownPath.current === pathname) return; // first render (also when StrictMode runs it twice)
     shownPath.current = pathname;
     main.current?.focus();
   }, [pathname]);
@@ -56,12 +56,23 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
   if (accountLinks && BARE_PATHS.has(pathname)) {
     return (
       <div className={styles.bare}>
-        <a className={styles.skip} href="#main">{t('shell.skip_to_content')}</a>
+        <a className={styles.skip} href="#main">
+          {t('shell.skip_to_content')}
+        </a>
         <header className={styles.bareTop}>
-          {home.sameDocument
-            ? <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo onDark={theme === 'dark'} /></Link>
-            : <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}><Logo onDark={theme === 'dark'} /></a>}
-          <span className={styles.headTools}><ThemeSwitch /><LanguageSwitch /></span>
+          {home.sameDocument ? (
+            <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}>
+              <Logo onDark={theme === 'dark'} />
+            </Link>
+          ) : (
+            <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}>
+              <Logo onDark={theme === 'dark'} />
+            </a>
+          )}
+          <span className={styles.headTools}>
+            <ThemeSwitch />
+            <LanguageSwitch />
+          </span>
         </header>
         <main id="main" ref={main} tabIndex={-1} className={styles.bareMain}>
           <Suspense fallback={<p role="status">{t('shell.loading')}</p>}>
@@ -73,19 +84,53 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
   }
   return (
     <div className={styles.page}>
-      <a className={styles.skip} href="#main">{t('shell.skip_to_content')}</a>
-      {accountLinks && <p className={styles.promiseBar}><ShieldIcon /><span className={styles.promiseLong}>{t('shell.promise_bar')}</span><span className={styles.promiseShort}>{t('shell.promise_bar_short')}</span></p>}
+      <a className={styles.skip} href="#main">
+        {t('shell.skip_to_content')}
+      </a>
+      {accountLinks && (
+        <p className={styles.promiseBar}>
+          <ShieldIcon />
+          <span className={styles.promiseLong}>{t('shell.promise_bar')}</span>
+          <span className={styles.promiseShort}>{t('shell.promise_bar_short')}</span>
+        </p>
+      )}
       <header className={exit ? `${styles.header} ${styles.withExit}` : styles.header}>
-        {home.sameDocument
-          ? <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo onDark={theme === 'dark'} /></Link>
-          : <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}><Logo onDark={theme === 'dark'} /></a>}
+        {home.sameDocument ? (
+          <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}>
+            <Logo onDark={theme === 'dark'} />
+          </Link>
+        ) : (
+          <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}>
+            <Logo onDark={theme === 'dark'} />
+          </a>
+        )}
         {titleKey && <span className={styles.docTitle}>{t(titleKey)}</span>}
-        {accountLinks && !phone && pathname !== '/' && pathname !== '/search' ? <><HeaderSearch /><span className={styles.spacerSmall} /></> : <span className={styles.spacer} />}
+        {accountLinks && !phone && pathname !== '/' && pathname !== '/search' ? (
+          <>
+            <HeaderSearch />
+            <span className={styles.spacerSmall} />
+          </>
+        ) : (
+          <span className={styles.spacer} />
+        )}
         {accountLinks && <AccountLink phone={phone} />}
-        {!accountLinks && <span className={styles.headTools}><ThemeSwitch /><LanguageSwitch /></span>}
-        {exit && <a className={styles.exit} href={exit.href}>{t(exit.labelKey)}</a>}
+        {!accountLinks && (
+          <span className={styles.headTools}>
+            <ThemeSwitch />
+            <LanguageSwitch />
+          </span>
+        )}
+        {exit && (
+          <a className={styles.exit} href={exit.href}>
+            {t(exit.labelKey)}
+          </a>
+        )}
         {accountLinks && !phone && <ThemeSwitch />}
-        {accountLinks && !phone && <Button component={Link} to="/sell/new">{t('shell.sell')}</Button>}
+        {accountLinks && !phone && (
+          <Button component={Link} to="/sell/new">
+            {t('shell.sell')}
+          </Button>
+        )}
       </header>
       <SignedOutNotice />
       <PendingStepUp />
@@ -120,7 +165,9 @@ function HeaderSearch() {
   };
   return (
     <form role="search" aria-label={t('shell.search_label')} className={styles.headSearch} onSubmit={go}>
-      <label htmlFor="head-q" className={styles.visuallyHidden}>{t('shell.search_label')}</label>
+      <label htmlFor="head-q" className={styles.visuallyHidden}>
+        {t('shell.search_label')}
+      </label>
       <SearchIcon />
       <input id="head-q" type="search" maxLength={100} value={words} placeholder={t('shell.search_placeholder')} onChange={(e) => setWords(e.target.value)} />
     </form>
@@ -139,23 +186,40 @@ function Footer() {
           <p>{t('shell.footer.tagline')}</p>
         </div>
         <nav className={styles.footerCol} aria-labelledby="footer-explore">
-          <p id="footer-explore" className={styles.footerLabel}>{t('shell.footer.explore')}</p>
+          <p id="footer-explore" className={styles.footerLabel}>
+            {t('shell.footer.explore')}
+          </p>
           <ul className={styles.footerLinks}>
-            <li><Link to="/search">{t('shell.tab.search')}</Link></li>
-            <li><Link to="/sell/new">{t('shell.sell')}</Link></li>
+            <li>
+              <Link to="/search">{t('shell.tab.search')}</Link>
+            </li>
+            <li>
+              <Link to="/sell/new">{t('shell.sell')}</Link>
+            </li>
           </ul>
         </nav>
         <nav className={styles.footerCol} aria-labelledby="footer-help">
-          <p id="footer-help" className={styles.footerLabel}>{t('shell.footer.help')}</p>
+          <p id="footer-help" className={styles.footerLabel}>
+            {t('shell.footer.help')}
+          </p>
           <ul className={styles.footerLinks}>
-            <li><Link to="/help/terms">{t('shell.footer.terms')}</Link></li>
-            <li><Link to="/help/privacy">{t('shell.footer.privacy')}</Link></li>
+            <li>
+              <Link to="/help/terms">{t('shell.footer.terms')}</Link>
+            </li>
+            <li>
+              <Link to="/help/privacy">{t('shell.footer.privacy')}</Link>
+            </li>
           </ul>
         </nav>
       </div>
       <div className={styles.footerLang}>
-        <span id="footer-language" className={styles.footerLabel}>{t('shell.footer.language')}</span>
-        <span className={styles.headTools}><ThemeSwitch /><LanguageSwitch /></span>
+        <span id="footer-language" className={styles.footerLabel}>
+          {t('shell.footer.language')}
+        </span>
+        <span className={styles.headTools}>
+          <ThemeSwitch />
+          <LanguageSwitch />
+        </span>
       </div>
     </footer>
   );
@@ -167,14 +231,30 @@ function TabBar() {
   const me = useMe();
   const unreadMessages = useUnreadMessages();
   const tab = (to: string, icon: JSX.Element, label: string, end = false, count: number | null = null) => (
-    <li><NavLink to={to} end={end} className={({ isActive }) => (isActive ? `${styles.tab} ${styles.tabOn}` : styles.tab)}>{icon}<span className={styles.tabLabel}>{label}</span>{count ? <UnreadCount n={count} /> : null}</NavLink></li>
+    <li>
+      <NavLink to={to} end={end} className={({ isActive }) => (isActive ? `${styles.tab} ${styles.tabOn}` : styles.tab)}>
+        {icon}
+        <span className={styles.tabLabel}>{label}</span>
+        {count ? <UnreadCount n={count} /> : null}
+      </NavLink>
+    </li>
   );
   return (
     <nav className={styles.tabBar} aria-label={t('shell.tabs.label')}>
       <ul>
         {tab('/', <HomeIcon />, t('shell.tab.home'), true)}
         {tab('/search', <SearchIcon />, t('shell.tab.search'))}
-        <li><NavLink to="/sell/new" className={({ isActive }) => (isActive ? `${styles.tab} ${styles.tabHot} ${styles.tabOn}` : `${styles.tab} ${styles.tabHot}`)}><span className={styles.tabSell}><PlusIcon /></span><span className={styles.tabLabel}>{t('shell.tab.sell')}</span></NavLink></li>
+        <li>
+          <NavLink
+            to="/sell/new"
+            className={({ isActive }) => (isActive ? `${styles.tab} ${styles.tabHot} ${styles.tabOn}` : `${styles.tab} ${styles.tabHot}`)}
+          >
+            <span className={styles.tabSell}>
+              <PlusIcon />
+            </span>
+            <span className={styles.tabLabel}>{t('shell.tab.sell')}</span>
+          </NavLink>
+        </li>
         {me.isSuccess && tab('/messages', <ChatIcon />, t('shell.messages'), false, unreadMessages)}
         {me.isSuccess && tab('/orders', <OrdersIcon />, t('shell.orders'))}
       </ul>
@@ -189,7 +269,9 @@ function SignedOutNotice() {
   return (
     <div role="alert" className={styles.notice}>
       <p>{t('error.session_ended')}</p>
-      <button type="button" onClick={dismiss}>{t('shell.close')}</button>
+      <button type="button" onClick={dismiss}>
+        {t('shell.close')}
+      </button>
     </div>
   );
 }
@@ -209,22 +291,39 @@ function AccountLink({ phone }: { phone: boolean }) {
     return (
       <>
         <NotificationsLink unread={unread} icon />
-        <Link className={styles.iconLink} to="/account"><UserIcon /><span className={styles.visuallyHidden}>{t('shell.account')}</span></Link>
+        <Link className={styles.iconLink} to="/account">
+          <UserIcon />
+          <span className={styles.visuallyHidden}>{t('shell.account')}</span>
+        </Link>
       </>
     );
   }
   if (me.isSuccess) {
     return (
       <div className={styles.navGrid}>
-        <Link className={styles.navCell} to="/orders" title={t('shell.orders')}><OrdersIcon /><span className={styles.visuallyHidden}>{t('shell.orders')}</span></Link>
-        <Link className={styles.navCell} to="/messages" title={t('shell.messages')}><ChatIcon /><span className={styles.visuallyHidden}>{t('shell.messages')}</span>{unreadMessages ? <UnreadCount n={unreadMessages} /> : null}</Link>
+        <Link className={styles.navCell} to="/orders" title={t('shell.orders')}>
+          <OrdersIcon />
+          <span className={styles.visuallyHidden}>{t('shell.orders')}</span>
+        </Link>
+        <Link className={styles.navCell} to="/messages" title={t('shell.messages')}>
+          <ChatIcon />
+          <span className={styles.visuallyHidden}>{t('shell.messages')}</span>
+          {unreadMessages ? <UnreadCount n={unreadMessages} /> : null}
+        </Link>
         <NotificationsLink unread={unread} icon cell />
-        <Link className={styles.navCell} to="/account" title={t('shell.account')}><UserIcon /><span className={styles.visuallyHidden}>{t('shell.account')}</span></Link>
+        <Link className={styles.navCell} to="/account" title={t('shell.account')}>
+          <UserIcon />
+          <span className={styles.visuallyHidden}>{t('shell.account')}</span>
+        </Link>
       </div>
     );
   }
   if (pathname === '/signin' || pathname === '/register') return null;
-  return <Link className={styles.account} to={`/signin?next=${encodeURIComponent(pathname + search)}`}>{t('shell.sign_in')}</Link>;
+  return (
+    <Link className={styles.account} to={`/signin?next=${encodeURIComponent(pathname + search)}`}>
+      {t('shell.sign_in')}
+    </Link>
+  );
 }
 
 function PendingStepUp() {
@@ -236,7 +335,12 @@ function PendingStepUp() {
 function UnreadCount({ n }: { n: number }) {
   const { t, lang } = useLanguage();
   const count = toLocalDigits(String(n > 99 ? 99 : n), lang) + (n > 99 ? '+' : '');
-  return <><span className={styles.badge}>{count}</span><span className={styles.visuallyHidden}>{t('shell.notifications_unread')}</span></>;
+  return (
+    <>
+      <span className={styles.badge}>{count}</span>
+      <span className={styles.visuallyHidden}>{t('shell.notifications_unread')}</span>
+    </>
+  );
 }
 
 /** The notification centre, with the unread count in words as well as a number (not colour alone). */
@@ -248,8 +352,21 @@ function NotificationsLink({ unread, icon = false, cell = false }: { unread: num
   return (
     // The name is the visible text, the count in words after it (WCAG 2.5.3, Label in Name).
     <Link className={cell ? styles.navCell : icon ? styles.iconLink : styles.account} to="/notifications" title={cell ? t('shell.notifications') : undefined}>
-      {icon ? <><BellIcon /><span className={styles.visuallyHidden}>{t('shell.notifications')}</span></> : t('shell.notifications')}
-      {n > 0 && <>{' '}<span className={styles.badge}>{count}</span><span className={styles.visuallyHidden}>{label}</span></>}
+      {icon ? (
+        <>
+          <BellIcon />
+          <span className={styles.visuallyHidden}>{t('shell.notifications')}</span>
+        </>
+      ) : (
+        t('shell.notifications')
+      )}
+      {n > 0 && (
+        <>
+          {' '}
+          <span className={styles.badge}>{count}</span>
+          <span className={styles.visuallyHidden}>{label}</span>
+        </>
+      )}
     </Link>
   );
 }

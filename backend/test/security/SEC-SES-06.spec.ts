@@ -13,7 +13,7 @@ describe('SEC-SES-06 staff session limits', () => {
       )
     )[0];
 
-  it('SEC-SES-06 a staff session is created with CP-03\'s limits, shorter than a member\'s', async () => {
+  it("SEC-SES-06 a staff session is created with CP-03's limits, shorter than a member's", async () => {
     const { s: st } = await s.signedInStaff('operator');
     const { a } = await s.signedIn();
     const staff = await limits(st.staffId);
@@ -36,17 +36,24 @@ describe('SEC-SES-06 staff session limits', () => {
     const old = await s.signedInStaff('administrator');
     const r2 = await limits(old.s.staffId);
     // in use a minute ago, but created more than 8 hours ago: the idle limit cannot outlast the absolute one (a CHECK)
-    await s.fx.query(`UPDATE identity.sessions SET last_seen_at = now() - interval '1 minute', idle_expires_at = now() - interval '1 second', absolute_expires_at = now() - interval '1 second' WHERE id = $1`, [r2.id]);
+    await s.fx.query(
+      `UPDATE identity.sessions SET last_seen_at = now() - interval '1 minute', idle_expires_at = now() - interval '1 second', absolute_expires_at = now() - interval '1 second' WHERE id = $1`,
+      [r2.id],
+    );
     expect((await old.b.get('/staff/me')).status).toBe(401);
   });
 
   it('SEC-SES-06 refreshing moves the idle limit on by 15 minutes, but never past the absolute one', async () => {
     const { s: st, b } = await s.signedInStaff('operator');
     const row = await limits(st.staffId);
-    await s.fx.query(`UPDATE identity.sessions SET idle_expires_at = now() + interval '1 minute', absolute_expires_at = now() + interval '5 minutes' WHERE id = $1`, [row.id]);
+    await s.fx.query(
+      `UPDATE identity.sessions SET idle_expires_at = now() + interval '1 minute', absolute_expires_at = now() + interval '5 minutes' WHERE id = $1`,
+      [row.id],
+    );
     expect((await b.post('/staff/auth/refresh')).status).toBe(204);
     const [after] = await s.fx.query<{ capped: boolean }>(
-      `SELECT abs(extract(epoch FROM absolute_expires_at - idle_expires_at)) < 0.001 AS capped FROM identity.sessions WHERE staff_id = $1 AND ended_at IS NULL`, [st.staffId],
+      `SELECT abs(extract(epoch FROM absolute_expires_at - idle_expires_at)) < 0.001 AS capped FROM identity.sessions WHERE staff_id = $1 AND ended_at IS NULL`,
+      [st.staffId],
     );
     expect(after.capped).toBe(true);
   });

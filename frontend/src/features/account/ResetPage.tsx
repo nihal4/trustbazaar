@@ -31,7 +31,10 @@ export function Component() {
   const ask = async (ev: FormEvent) => {
     ev.preventDefault();
     if (busy) return;
-    if (!login.trim()) { setMessage(t('signin.login_invalid')); return; }
+    if (!login.trim()) {
+      setMessage(t('signin.login_invalid'));
+      return;
+    }
     setBusy(true);
     setMessage(null);
     try {
@@ -40,8 +43,10 @@ export function Component() {
       setSentTo({ kind, phone: kind === 'phone' ? bangladeshiMobile(login) : null });
     } catch (err) {
       const wait = retryAfter(err);
-      if (wait !== null) { setWaitUntil(untilAfter(wait)); setMessage(t('signin.too_many')); }
-      else setMessage(otherError(err, t, lang));
+      if (wait !== null) {
+        setWaitUntil(untilAfter(wait));
+        setMessage(t('signin.too_many'));
+      } else setMessage(otherError(err, t, lang));
     }
     setBusy(false);
   };
@@ -50,29 +55,74 @@ export function Component() {
   if (done) return <ResetDone rows={rows} head={head} />;
 
   if (sentTo) {
-    const again = <div className={styles.footLinks}><button type="button" className={styles.link} onClick={() => { setSentTo(null); setMessage(null); }}>{t('reset.again')}</button></div>;
-    return sentTo.kind === 'phone' && sentTo.phone
-      ? (
-        <AuthSplit stepKey="code" rows={rows} headCells={head} foot={again}
-          head={<>{heading}<p className={styles.lead}>{t('reset.sent_phone')}</p></>}>
-          <NewPasswordForm proof={{ phone: sentTo.phone }} onDone={() => setDone(true)} />
-        </AuthSplit>
-      )
-      : (
-        <AuthSplit stepKey="sent" rows={rows} headCells={head} head={heading} foot={again}>
-          <StepNote><p role="status">{t('reset.sent_email')}</p></StepNote>
-        </AuthSplit>
-      );
+    const again = (
+      <div className={styles.footLinks}>
+        <button
+          type="button"
+          className={styles.link}
+          onClick={() => {
+            setSentTo(null);
+            setMessage(null);
+          }}
+        >
+          {t('reset.again')}
+        </button>
+      </div>
+    );
+    return sentTo.kind === 'phone' && sentTo.phone ? (
+      <AuthSplit
+        stepKey="code"
+        rows={rows}
+        headCells={head}
+        foot={again}
+        head={
+          <>
+            {heading}
+            <p className={styles.lead}>{t('reset.sent_phone')}</p>
+          </>
+        }
+      >
+        <NewPasswordForm proof={{ phone: sentTo.phone }} onDone={() => setDone(true)} />
+      </AuthSplit>
+    ) : (
+      <AuthSplit stepKey="sent" rows={rows} headCells={head} head={heading} foot={again}>
+        <StepNote>
+          <p role="status">{t('reset.sent_email')}</p>
+        </StepNote>
+      </AuthSplit>
+    );
   }
 
   return (
-    <AuthSplit stepKey="ask" rows={rows} headCells={head}
-      head={<>{heading}<p className={styles.lead}>{t('reset.intro')}</p></>}
-      foot={<div className={styles.footLinks}><Link to="/signin" className={styles.link}>{t('signin.back')}</Link></div>}>
+    <AuthSplit
+      stepKey="ask"
+      rows={rows}
+      headCells={head}
+      head={
+        <>
+          {heading}
+          <p className={styles.lead}>{t('reset.intro')}</p>
+        </>
+      }
+      foot={
+        <div className={styles.footLinks}>
+          <Link to="/signin" className={styles.link}>
+            {t('signin.back')}
+          </Link>
+        </div>
+      }
+    >
       <form onSubmit={(e) => void ask(e)} noValidate className={styles.stepForm}>
         <div className={styles.fieldGroup}>
-          <TextField id="reset-login" label={t('signin.login')} value={login} onChange={setLogin} autoComplete="username" autoFocus
-            {...fieldAria(message, false, 'reset-message', 'reset-head')} />
+          <TextField
+            id="reset-login"
+            label={t('signin.login')}
+            value={login}
+            onChange={setLogin}
+            autoComplete="username"
+            autoFocus
+            {...fieldAria(message, false, 'reset-message', 'reset-head')}
+          />
           <Slot id="reset-message" message={message} />
         </div>
         <SubmitButton busy={busy} disabled={waitFor > 0}>

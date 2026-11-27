@@ -43,7 +43,7 @@ export const PROBLEMS = {
   'not-available': { status: 409, title: 'This item is no longer available in that quantity.' },
   'bid-refused': { status: 422, title: 'This bid cannot be accepted.' },
   'offer-closed': { status: 409, title: 'This offer is no longer open.' },
-  'blocked': { status: 403, title: 'You cannot do this with this member.' },
+  blocked: { status: 403, title: 'You cannot do this with this member.' },
   'thread-closed': { status: 409, title: 'This conversation is closed.' },
   // Unit 4 (section 3.1): a delivery refusal, with the stable code in errors[0].reason
   'delivery-refused': { status: 422, title: 'Delivery cannot be arranged this way.' },

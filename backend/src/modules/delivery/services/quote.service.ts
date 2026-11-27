@@ -29,7 +29,9 @@ export interface FulfilmentOptionsView {
   distanceKm: number;
   recommended: FulfilmentMethod;
   /** indicative: computed as a quote would be, not stored (section 5.5, step 1) */
-  courier: { available: true; fee: string; billedKg: number; zone: Zone; fareVersion: number } | { available: false; reason: 'courier_not_offered' | 'parcel_too_large' };
+  courier:
+    | { available: true; fee: string; billedKg: number; zone: Zone; fareVersion: number }
+    | { available: false; reason: 'courier_not_offered' | 'parcel_too_large' };
 }
 
 export interface QuoteView {
@@ -69,7 +71,18 @@ export class QuoteService {
               CASE WHEN k.kg IS NULL OR v.v IS NULL THEN NULL
                    ELSE delivery.fare(v.v, delivery.route_zone(delivery.zone_at($10, $2, $3), a.zone), k.kg)::text END AS fee
          FROM a, k, v`,
-      [areaId, facts.approxLat, facts.approxLng, OPTIONS_ENUM(facts.options), facts.weightClass, facts.sizeClass, quantity, MAX_COURIER_KG, threshold, facts.district],
+      [
+        areaId,
+        facts.approxLat,
+        facts.approxLng,
+        OPTIONS_ENUM(facts.options),
+        facts.weightClass,
+        facts.sizeClass,
+        quantity,
+        MAX_COURIER_KG,
+        threshold,
+        facts.district,
+      ],
     )) as { distance: number; recommended: FulfilmentMethod; kg: number | null; version: number | null; zone: Zone; fee: string | null }[];
     if (!r) throw new Problem('validation-failed', { errors: [{ field: 'areaId', reason: 'unknown' }] });
 
@@ -80,41 +93,76 @@ export class QuoteService {
         ? { available: false, reason: 'parcel_too_large' }
         : { available: true, fee: r.fee, billedKg: r.kg, zone: r.zone, fareVersion: r.version! };
     // a courier recommendation that cannot be priced falls back to self pickup where the seller allows it
-    const recommended: FulfilmentMethod = r.recommended === 'courier' && !courier.available && facts.options.includes('self_pickup') ? 'self_pickup' : r.recommended;
+    const recommended: FulfilmentMethod =
+      r.recommended === 'courier' && !courier.available && facts.options.includes('self_pickup') ? 'self_pickup' : r.recommended;
     return { listingId, areaId, quantity, methods: facts.options, distanceKm: Math.round(r.distance), recommended, courier };
   }
 
   /** POST /delivery/quotes: a binding quote to the buyer's saved drop-off address (FR-DLV-08). */
   async issue(buyerId: string, q: { listingId: string; quantity: number; addressId: string }): Promise<QuoteView> {
     const [addr] = (await this.db.query(
-      `SELECT area_id FROM delivery.saved_addresses WHERE id = $1 AND user_id = $2 AND kind = 'dropoff' AND deleted_at IS NULL`, [q.addressId, buyerId],
+      `SELECT area_id FROM delivery.saved_addresses WHERE id = $1 AND user_id = $2 AND kind = 'dropoff' AND deleted_at IS NULL`,
+      [q.addressId, buyerId],
     )) as { area_id: number }[];
     if (!addr) throw new Problem('validation-failed', { errors: [{ field: 'addressId', reason: 'not-a-dropoff-address-of-yours' }] });
     const facts = await this.facts(buyerId, q.listingId);
     if (!facts.options.includes('courier')) throw refusal('fulfilment', 'courier_not_offered');
     // NFR-REL-04: while bookings keep failing, new courier checkouts are refused with a clear message (section 7.2)
     if (await this.breaker.isOpen()) throw new Problem('courier-unavailable', { errors: [{ field: 'fulfilment', reason: 'courier_unavailable' }] });
-    const [row] = (await this.db.query(
-      `SELECT id, listing_id, quantity, dropoff_address_id, to_area_id, zone, billed_kg, distance_km::float AS distance_km, fee::text, fare_version, expires_at
+    const [row] = (await this.db
+      .query(
+        `SELECT id, listing_id, quantity, dropoff_address_id, to_area_id, zone, billed_kg, distance_km::float AS distance_km, fee::text, fare_version, expires_at
          FROM delivery.make_quote('checkout', $1, $2, $3, $4::listings.fulfilment_options, $5::listings.weight_class, $6::listings.size_class,
                                   $7, $8, $9, $10, $11::interval, $12, $13)`,
-      [buyerId, q.listingId, q.quantity, OPTIONS_ENUM(facts.options), facts.weightClass, facts.sizeClass, facts.district, facts.approxLat, facts.approxLng,
-       addr.area_id, QUOTE_VALIDITY, MAX_COURIER_KG, q.addressId],
-    ).catch(fromDeliveryDb)) as {
-      id: string; listing_id: string; quantity: number; dropoff_address_id: string; to_area_id: number; zone: Zone; billed_kg: number; distance_km: number;
-      fee: string; fare_version: number; expires_at: Date;
+        [
+          buyerId,
+          q.listingId,
+          q.quantity,
+          OPTIONS_ENUM(facts.options),
+          facts.weightClass,
+          facts.sizeClass,
+          facts.district,
+          facts.approxLat,
+          facts.approxLng,
+          addr.area_id,
+          QUOTE_VALIDITY,
+          MAX_COURIER_KG,
+          q.addressId,
+        ],
+      )
+      .catch(fromDeliveryDb)) as {
+      id: string;
+      listing_id: string;
+      quantity: number;
+      dropoff_address_id: string;
+      to_area_id: number;
+      zone: Zone;
+      billed_kg: number;
+      distance_km: number;
+      fee: string;
+      fare_version: number;
+      expires_at: Date;
     }[];
     return {
-      id: row.id, listingId: row.listing_id, quantity: row.quantity, addressId: row.dropoff_address_id, areaId: row.to_area_id, zone: row.zone,
-      billedKg: row.billed_kg, distanceKm: Math.round(row.distance_km), fee: row.fee, fareVersion: row.fare_version, expiresAt: row.expires_at.toISOString(),
+      id: row.id,
+      listingId: row.listing_id,
+      quantity: row.quantity,
+      addressId: row.dropoff_address_id,
+      areaId: row.to_area_id,
+      zone: row.zone,
+      billedKg: row.billed_kg,
+      distanceKm: Math.round(row.distance_km),
+      fee: row.fee,
+      fareVersion: row.fare_version,
+      expiresAt: row.expires_at.toISOString(),
     };
   }
 
   /** DeliveryPort.claimQuote (I-21), inside Unit 2's order transaction (DC-13); answered through DeliveryPorts. */
   async claimQuote(q: { quoteId: string; orderId: string; buyerId: string; listingId: string; quantity: number }, tx: EntityManager): Promise<bigint> {
-    const [r] = (await tx.query(
-      `SELECT delivery.claim_quote($1, $2, $3, $4, $5)::text AS fee`, [q.quoteId, q.orderId, q.buyerId, q.listingId, q.quantity],
-    ).catch(fromDeliveryDb)) as { fee: string }[];
+    const [r] = (await tx
+      .query(`SELECT delivery.claim_quote($1, $2, $3, $4, $5)::text AS fee`, [q.quoteId, q.orderId, q.buyerId, q.listingId, q.quantity])
+      .catch(fromDeliveryDb)) as { fee: string }[];
     return BigInt(r.fee);
   }
 

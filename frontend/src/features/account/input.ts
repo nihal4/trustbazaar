@@ -20,7 +20,7 @@ export function loginKind(login: string): 'phone' | 'email' {
 /** What the sign-in and reset forms send: digits made ASCII, numbers in Unit 1's form. */
 export function normaliseLogin(login: string): string {
   const s = login.trim();
-  return loginKind(s) === 'phone' ? bangladeshiMobile(s) ?? toAsciiDigits(s) : s;
+  return loginKind(s) === 'phone' ? (bangladeshiMobile(s) ?? toAsciiDigits(s)) : s;
 }
 
 /**
@@ -34,8 +34,10 @@ export function loginProblem(login: string): 'invalid' | null {
   if (!s.includes('@')) return bangladeshiMobile(s) ? null : 'invalid';
   if (s.length > 254) return 'invalid';
   const at = s.lastIndexOf('@');
-  const local = s.slice(0, at), domain = s.slice(at + 1);
-  if (!local || local.length > 64 || !/^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+$/.test(local) || local.startsWith('.') || local.endsWith('.') || local.includes('..')) return 'invalid';
+  const local = s.slice(0, at),
+    domain = s.slice(at + 1);
+  if (!local || local.length > 64 || !/^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+$/.test(local) || local.startsWith('.') || local.endsWith('.') || local.includes('..'))
+    return 'invalid';
   const labels = domain.split('.');
   if (labels.length < 2 || !/^[A-Za-z]{2,}$/.test(labels[labels.length - 1])) return 'invalid';
   if (labels.some((l) => !l || l.length > 63 || !/^[A-Za-z0-9-]+$/.test(l) || l.startsWith('-') || l.endsWith('-'))) return 'invalid';

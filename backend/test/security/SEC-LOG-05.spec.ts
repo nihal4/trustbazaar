@@ -30,7 +30,14 @@ const value = async (name: string, labels: Record<string, string> = {}) => {
 describe('SEC-LOG-05 alert signals', () => {
   it('SEC-LOG-05 every event the requirement names has its counter in the scraped metrics', async () => {
     const text = await registry.metrics();
-    for (const name of ['tb_signin_failures_total', 'tb_otp_sent_total', 'tb_kyc_views_total', 'tb_audit_chain_breaks_total', 'tb_webhook_signature_failures_total', 'tb_escrow_transitions_rejected_total']) {
+    for (const name of [
+      'tb_signin_failures_total',
+      'tb_otp_sent_total',
+      'tb_kyc_views_total',
+      'tb_audit_chain_breaks_total',
+      'tb_webhook_signature_failures_total',
+      'tb_escrow_transitions_rejected_total',
+    ]) {
       expect(text).toContain(`# TYPE ${name} counter`);
     }
   });

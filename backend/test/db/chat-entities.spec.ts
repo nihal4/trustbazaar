@@ -15,8 +15,16 @@ describe('chat and notify entities', () => {
       const templates = q.manager.getRepository(NotificationTemplate);
       await templates.save(
         templates.create({
-          code, version: 1, category: 'security', channels: ['sms', 'email'], allowedParams: ['code'],
-          titleEn: 'Probe', titleBn: 'প্রোব', bodyEn: 'Your code is {code}.', bodyBn: 'আপনার কোড {code}।', active: true,
+          code,
+          version: 1,
+          category: 'security',
+          channels: ['sms', 'email'],
+          allowedParams: ['code'],
+          titleEn: 'Probe',
+          titleBn: 'প্রোব',
+          bodyEn: 'Your code is {code}.',
+          bodyBn: 'আপনার কোড {code}।',
+          active: true,
         }),
       );
       return templates.findOneByOrFail({ code, version: 1 });
@@ -26,7 +34,10 @@ describe('chat and notify entities', () => {
 
   it('DC-6 the chat outbox accepts only chat event names', async () => {
     await expect(
-      inRolledBackTransaction((q) => q.manager.getRepository(ChatOutboxEvent).insert({ eventType: 'delivery.issue.opened', aggregateId: randomUUID(), payload: {} }), ENTITIES),
+      inRolledBackTransaction(
+        (q) => q.manager.getRepository(ChatOutboxEvent).insert({ eventType: 'delivery.issue.opened', aggregateId: randomUUID(), payload: {} }),
+        ENTITIES,
+      ),
     ).rejects.toThrow();
     const ok = await inRolledBackTransaction(
       (q) => q.manager.getRepository(ChatOutboxEvent).insert({ eventType: 'chat.message.flagged', aggregateId: randomUUID(), payload: {} }),

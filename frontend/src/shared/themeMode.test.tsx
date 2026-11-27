@@ -6,7 +6,10 @@ import { ThemeSwitch } from './ThemeSwitch';
 import { currentTheme, setTheme } from './themeMode';
 
 // NFR-USE-06 (U10-28): the colour theme is a choice of the person: dark (the app's look) or light, set on <html data-theme>, kept in this browser, named in words by its switch.
-beforeEach(() => { localStorage.clear(); document.documentElement.setAttribute('data-theme', 'dark'); });
+beforeEach(() => {
+  localStorage.clear();
+  document.documentElement.setAttribute('data-theme', 'dark');
+});
 afterEach(cleanup);
 
 describe('the colour theme', () => {
@@ -19,13 +22,21 @@ describe('the colour theme', () => {
   });
 
   it('NFR-USE-06 the switch names what it does, in both languages, and changes the theme each time it is pressed', () => {
-    const { unmount } = render(<LanguageProvider initial="en"><ThemeSwitch /></LanguageProvider>);
+    const { unmount } = render(
+      <LanguageProvider initial="en">
+        <ThemeSwitch />
+      </LanguageProvider>,
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Switch to light mode' }));
     expect(document.documentElement.dataset.theme).toBe('light');
     fireEvent.click(screen.getByRole('button', { name: 'Switch to dark mode' }));
     expect(document.documentElement.dataset.theme).toBe('dark');
     unmount();
-    render(<LanguageProvider initial="bn"><ThemeSwitch /></LanguageProvider>);
+    render(
+      <LanguageProvider initial="bn">
+        <ThemeSwitch />
+      </LanguageProvider>,
+    );
     expect(screen.getByRole('button', { name: 'হালকা মোডে যান' })).toBeTruthy();
   });
 

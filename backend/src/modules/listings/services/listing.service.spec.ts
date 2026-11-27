@@ -55,10 +55,19 @@ class Repo {
 
 function fakeDb(query: (sql: string, params: unknown[]) => unknown[] = () => []) {
   const repos = new Map<unknown, Repo>([
-    [Listing, new Repo('id', () => ({
-      status: 'draft', quantityReserved: 0, quantitySold: 0, lockedAt: null, sellerVisible: true, publishedAt: null,
-      createdAt: new Date(), updatedAt: new Date(),
-    }))],
+    [
+      Listing,
+      new Repo('id', () => ({
+        status: 'draft',
+        quantityReserved: 0,
+        quantitySold: 0,
+        lockedAt: null,
+        sellerVisible: true,
+        publishedAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })),
+    ],
     [Category, new Repo('id')],
     [ListingPhoto, new Repo('id', () => ({ removedAt: null, createdAt: new Date() }))],
     [Clarification, new Repo('id', () => ({ createdAt: new Date() }))],
@@ -72,25 +81,38 @@ function fakeDb(query: (sql: string, params: unknown[]) => unknown[] = () => [])
     if (!a) return [];
     const price = a.currentPrice === null || a.currentPrice === undefined ? null : BigInt(a.currentPrice as string);
     const reserve = a.reservePrice === null || a.reservePrice === undefined ? null : BigInt(a.reservePrice as string);
-    return [{
-      listing_id: id, status: a.status ?? 'open', start_price: a.startPrice, current_price: price === null ? null : String(price),
-      bid_count: a.bidCount ?? 0, end_at: a.endAt ?? new Date(), version: String(a.version ?? 0), has_reserve: reserve !== null,
-      reserve_met: reserve === null || (price ?? 0n) >= reserve, leader_alias: price === null ? null : 1,
-      minimum_bid: price === null ? a.startPrice : String(price + (price / 50n > 50n ? price / 50n : 50n)), server_time: new Date(),
-    }];
+    return [
+      {
+        listing_id: id,
+        status: a.status ?? 'open',
+        start_price: a.startPrice,
+        current_price: price === null ? null : String(price),
+        bid_count: a.bidCount ?? 0,
+        end_at: a.endAt ?? new Date(),
+        version: String(a.version ?? 0),
+        has_reserve: reserve !== null,
+        reserve_met: reserve === null || (price ?? 0n) >= reserve,
+        leader_alias: price === null ? null : 1,
+        minimum_bid: price === null ? a.startPrice : String(price + (price / 50n > 50n ? price / 50n : 50n)),
+        server_time: new Date(),
+      },
+    ];
   };
   const manager = {
     getRepository: (e: unknown) => repos.get(e)!,
-    query: jest.fn(async (sql: string, params: unknown[] = []) =>
-      sql.includes('FROM auctions.auctions a') ? auctionState(params[0]) : query(sql, params)),
+    query: jest.fn(async (sql: string, params: unknown[] = []) => (sql.includes('FROM auctions.auctions a') ? auctionState(params[0]) : query(sql, params))),
   };
   const db = { ...manager, manager, transaction: (cb: (m: typeof manager) => unknown) => cb(manager) };
   return { db, manager, repo: (e: unknown) => repos.get(e)! };
 }
 
 const PARAMS = {
-  'CP-07': ['1 hour', '24 hours'], 'CP-08': { bps: 200, min_poisha: 5000 }, 'CP-09': { window: '2 minutes', extension: '2 minutes' },
-  'CP-28': { standard: 2, pro: 5 }, 'CP-33': { image_bytes: 1000, photos: 3 }, 'CP-36': true,
+  'CP-07': ['1 hour', '24 hours'],
+  'CP-08': { bps: 200, min_poisha: 5000 },
+  'CP-09': { window: '2 minutes', extension: '2 minutes' },
+  'CP-28': { standard: 2, pro: 5 },
+  'CP-33': { image_bytes: 1000, photos: 3 },
+  'CP-36': true,
 };
 
 function setup(o: { query?: (sql: string, params: unknown[]) => unknown[]; params?: Row; matches?: { term: string; severity: string }[]; pro?: boolean } = {}) {
@@ -109,8 +131,12 @@ function setup(o: { query?: (sql: string, params: unknown[]) => unknown[]; param
   const values = parameterValues({ ...PARAMS, ...(o.params ?? {}) });
   const params = { current: async () => ({ ...values, version: 1 }) } as unknown as ConfigPort;
   const svc = new ListingService(
-    f.db as unknown as DataSource, media as unknown as MediaPipeline, screening as unknown as ScreeningService,
-    idempotency as unknown as IdempotencyKeys, identity as unknown as IdentityQuery, params,
+    f.db as unknown as DataSource,
+    media as unknown as MediaPipeline,
+    screening as unknown as ScreeningService,
+    idempotency as unknown as IdempotencyKeys,
+    identity as unknown as IdentityQuery,
+    params,
     { isPro: jest.fn(async () => o.pro === true) } as never,
     { disputedListings: jest.fn(async () => []) } as never,
     { secrets: { handoverKey: { reveal: () => 'test-handover-key' } } } as never,
@@ -124,16 +150,26 @@ function setup(o: { query?: (sql: string, params: unknown[]) => unknown[]; param
 }
 
 const SELLER = 'seller-1';
-const phone = (o: Row = {}) => ({
-  itemKind: 'physical', saleFormat: 'fixed_price', categoryId: 1, title: '  Used phone  ', description: 'A used phone in good condition.',
-  condition: 'used', noVisibleDefects: true, fulfilmentOptions: 'pickup_only', price: '100000', ...o,
-}) as never;
+const phone = (o: Row = {}) =>
+  ({
+    itemKind: 'physical',
+    saleFormat: 'fixed_price',
+    categoryId: 1,
+    title: '  Used phone  ',
+    description: 'A used phone in good condition.',
+    condition: 'used',
+    noVisibleDefects: true,
+    fulfilmentOptions: 'pickup_only',
+    price: '100000',
+    ...o,
+  }) as never;
 
 const problemOf = async (p: Promise<unknown>) => {
   try {
     await p;
   } catch (err) {
-    if (err instanceof Problem) return { problem: err.problem, errors: (err.extra.errors as { field: string; reason: string }[] | undefined)?.map((e) => `${e.field}:${e.reason}`) };
+    if (err instanceof Problem)
+      return { problem: err.problem, errors: (err.extra.errors as { field: string; reason: string }[] | undefined)?.map((e) => `${e.field}:${e.reason}`) };
     throw err;
   }
   throw new Error('no problem raised');
@@ -141,7 +177,17 @@ const problemOf = async (p: Promise<unknown>) => {
 
 async function withPhotos(s: ReturnType<typeof setup>, o: Row = {}, n = 2) {
   const { listing } = await s.svc.create(SELLER, phone(o), undefined);
-  for (let i = 1; i <= n; i++) s.repo(ListingPhoto).rows.push({ id: `p${i}`, listingId: listing.id, position: i, storageKey: `${i}`.repeat(32), width: 1, height: 1, showsDefects: false, removedAt: null });
+  for (let i = 1; i <= n; i++)
+    s.repo(ListingPhoto).rows.push({
+      id: `p${i}`,
+      listingId: listing.id,
+      position: i,
+      storageKey: `${i}`.repeat(32),
+      width: 1,
+      height: 1,
+      showsDefects: false,
+      removedAt: null,
+    });
   return listing.id;
 }
 
@@ -149,7 +195,11 @@ describe('ListingService', () => {
   it('FR-MON-01 CP-07 CP-28 CP-33 the selling terms: the commission for this seller, durations, photo and listing limits', async () => {
     const s = setup({ query: (sql) => (sql.includes('count(*)') ? [{ n: 1 }] : []), params: { 'CP-25': { standard_bps: 500, pro_bps: 300 } } });
     expect(await s.svc.sellingTerms(SELLER)).toEqual({
-      pro: false, commissionBps: 500, auctionDurations: ['1 hour', '24 hours'], photos: { max: 3, maxBytes: 1000, min: 2 }, activeListings: { count: 1, limit: 2 },
+      pro: false,
+      commissionBps: 500,
+      auctionDurations: ['1 hour', '24 hours'],
+      photos: { max: 3, maxBytes: 1000, min: 2 },
+      activeListings: { count: 1, limit: 2 },
     });
     const pro = setup({ query: (sql) => (sql.includes('count(*)') ? [{ n: 4 }] : []), params: { 'CP-25': { standard_bps: 500, pro_bps: 300 } }, pro: true });
     expect(await pro.svc.sellingTerms(SELLER)).toMatchObject({ pro: true, commissionBps: 300, activeListings: { count: 4, limit: 5 } });
@@ -157,7 +207,11 @@ describe('ListingService', () => {
 
   it('FR-LST-10 categories: prohibited ones are listed but not selectable', async () => {
     const s = setup();
-    expect((await s.svc.categories()).map((c) => [c.id, c.selectable])).toEqual([[1, true], [2, true], [3, false]]);
+    expect((await s.svc.categories()).map((c) => [c.id, c.selectable])).toEqual([
+      [1, true],
+      [2, true],
+      [3, false],
+    ]);
   });
 
   it('FR-LST-01 a draft is created with trimmed text and its history; the saved area is the default, rounded (FR-LST-06)', async () => {
@@ -171,7 +225,11 @@ describe('ListingService', () => {
 
   it('FR-LST-10 unknown, prohibited and mismatched categories are refused', async () => {
     const s = setup();
-    for (const [categoryId, reason] of [[9, 'unknown'], [3, 'prohibited'], [2, 'item-kind']] as const) {
+    for (const [categoryId, reason] of [
+      [9, 'unknown'],
+      [3, 'prohibited'],
+      [2, 'item-kind'],
+    ] as const) {
       expect((await problemOf(s.svc.create(SELLER, phone({ categoryId }), undefined))).errors).toContain(`categoryId:${reason}`);
     }
   });
@@ -186,13 +244,39 @@ describe('ListingService', () => {
   });
 
   it('FR-LST-03 and I-23 the item details: courier parcels, game accounts, single units', () => {
-    const base = { itemKind: 'physical', saleFormat: 'fixed_price', categoryId: 1, title: 't', description: 'd', condition: 'used', noVisibleDefects: true, fulfilmentOptions: 'courier_only', weightClass: 'over_10kg', sizeClass: 'oversize', price: '1', quantityTotal: 1, areaDistrict: 'Dhaka', approxLat: '23', approxLng: '90' } as never;
+    const base = {
+      itemKind: 'physical',
+      saleFormat: 'fixed_price',
+      categoryId: 1,
+      title: 't',
+      description: 'd',
+      condition: 'used',
+      noVisibleDefects: true,
+      fulfilmentOptions: 'courier_only',
+      weightClass: 'over_10kg',
+      sizeClass: 'oversize',
+      price: '1',
+      quantityTotal: 1,
+      areaDistrict: 'Dhaka',
+      approxLat: '23',
+      approxLng: '90',
+    } as never;
     const cat = { itemKind: 'physical', prohibited: false } as never;
-    expect(fieldErrors(base, cat)).toEqual([{ field: 'weightClass', reason: 'no-courier-over-10kg' }, { field: 'sizeClass', reason: 'no-courier-oversize' }]);
-    expect(fieldErrors({ ...(base as object), weightClass: null, sizeClass: null } as never, cat).map((e) => e.reason)).toEqual(['required-for-courier', 'required-for-courier']);
+    expect(fieldErrors(base, cat)).toEqual([
+      { field: 'weightClass', reason: 'no-courier-over-10kg' },
+      { field: 'sizeClass', reason: 'no-courier-oversize' },
+    ]);
+    expect(fieldErrors({ ...(base as object), weightClass: null, sizeClass: null } as never, cat).map((e) => e.reason)).toEqual([
+      'required-for-courier',
+      'required-for-courier',
+    ]);
     const game = { ...(base as object), itemKind: 'game_account', saleFormat: 'auction', price: null, quantityTotal: 2 } as never;
     expect(fieldErrors(game, { itemKind: 'game_account', prohibited: false } as never).map((e) => `${e.field}:${e.reason}`)).toEqual([
-      'quantity:single-unit', 'condition:not-for-game-accounts', 'fulfilmentOptions:not-for-game-accounts', 'weightClass:not-for-game-accounts', 'sizeClass:not-for-game-accounts',
+      'quantity:single-unit',
+      'condition:not-for-game-accounts',
+      'fulfilmentOptions:not-for-game-accounts',
+      'weightClass:not-for-game-accounts',
+      'sizeClass:not-for-game-accounts',
     ]);
   });
 
@@ -201,15 +285,24 @@ describe('ListingService', () => {
     const { listing } = await s.svc.create(SELLER, phone(), undefined);
     const id = listing.id;
     const edited = await s.svc.update(SELLER, id, {
-      categoryId: 1, title: 'New title', description: 'A new description of the phone.', condition: 'like_new', noVisibleDefects: false,
-      fulfilmentOptions: 'pickup_or_courier', weightClass: 'up_to_1kg', sizeClass: 'small', price: '90000', quantity: 3,
+      categoryId: 1,
+      title: 'New title',
+      description: 'A new description of the phone.',
+      condition: 'like_new',
+      noVisibleDefects: false,
+      fulfilmentOptions: 'pickup_or_courier',
+      weightClass: 'up_to_1kg',
+      sizeClass: 'small',
+      price: '90000',
+      quantity: 3,
       area: { district: 'Dhaka', lat: 23.81, lng: 90.41 },
     });
     expect(edited).toMatchObject({ title: 'New title', price: '90000', quantity: { total: 3, available: 3 }, district: 'Dhaka' });
     const row = s.repo(Listing).rows[0];
     row.status = 'active';
     expect(await problemOf(s.svc.update(SELLER, id, { categoryId: 1, condition: 'used' }))).toEqual({
-      problem: 'listing-state', errors: ['categoryId:fixed-after-publication', 'condition:fixed-after-publication'],
+      problem: 'listing-state',
+      errors: ['categoryId:fixed-after-publication', 'condition:fixed-after-publication'],
     });
     expect((await s.svc.update(SELLER, id, { title: 'Active title' })).title).toBe('Active title');
     row.lockedAt = new Date();
@@ -234,7 +327,12 @@ describe('ListingService', () => {
     const id = await withPhotos(s, {}, 0);
     expect((await problemOf(s.svc.addPhoto(SELLER, id, undefined, false))).errors).toEqual(['photo:required']);
     const p = await s.svc.addPhoto(SELLER, id, Buffer.from('x'), true);
-    expect(p).toMatchObject({ position: 1, showsDefects: true, url: `/api/v1/listing-photos/${'a'.repeat(32)}`, thumbUrl: expect.stringMatching(/size=thumb$/) });
+    expect(p).toMatchObject({
+      position: 1,
+      showsDefects: true,
+      url: `/api/v1/listing-photos/${'a'.repeat(32)}`,
+      thumbUrl: expect.stringMatching(/size=thumb$/),
+    });
     expect(s.media.store).toHaveBeenCalledWith(Buffer.from('x'), 1000);
     s.repo(ListingPhoto).rows[0].removedAt = new Date();
     expect((await s.svc.addPhoto(SELLER, id, Buffer.from('x'), false)).position).toBe(1);
@@ -297,7 +395,10 @@ describe('ListingService', () => {
     const s = setup({ query: () => [{ n: 0 }] });
     const id = await withPhotos(s, { noVisibleDefects: false }, 1);
     expect((await problemOf(s.svc.publish(SELLER, id, { startPrice: '1', duration: '1 hour' }))).errors).toEqual([
-      'startPrice:auctions-only', 'duration:auctions-only', 'photos:two-needed', 'photos:defect-photo-or-declaration',
+      'startPrice:auctions-only',
+      'duration:auctions-only',
+      'photos:two-needed',
+      'photos:defect-photo-or-declaration',
     ]);
   });
 
@@ -319,7 +420,18 @@ describe('ListingService', () => {
 
   it('I-30 game accounts wait for review, and are refused while CP-36 is off', async () => {
     const s = setup({ query: () => [{ n: 0 }] });
-    const { listing } = await s.svc.create(SELLER, { itemKind: 'game_account', saleFormat: 'fixed_price', categoryId: 2, title: 'Game account', description: 'An account with many skins.', price: '5000' } as never, undefined);
+    const { listing } = await s.svc.create(
+      SELLER,
+      {
+        itemKind: 'game_account',
+        saleFormat: 'fixed_price',
+        categoryId: 2,
+        title: 'Game account',
+        description: 'An account with many skins.',
+        price: '5000',
+      } as never,
+      undefined,
+    );
     expect(s.identity.getApproxArea).not.toHaveBeenCalled();
     const off = setup({ params: { 'CP-36': false } });
     off.repo(Listing).rows.push({ ...s.repo(Listing).rows[0] });
@@ -332,7 +444,9 @@ describe('ListingService', () => {
     const s = setup({ query: () => [{ n: 0 }] });
     const id = await withPhotos(s, { saleFormat: 'auction', price: undefined });
     expect((await problemOf(s.svc.publish(SELLER, id, { reservePrice: '50' }))).errors).toEqual(['startPrice:required', 'duration:one-of-cp-07']);
-    expect((await problemOf(s.svc.publish(SELLER, id, { startPrice: '100', reservePrice: '50', duration: '1 hour' }))).errors).toEqual(['reservePrice:below-start-price']);
+    expect((await problemOf(s.svc.publish(SELLER, id, { startPrice: '100', reservePrice: '50', duration: '1 hour' }))).errors).toEqual([
+      'reservePrice:below-start-price',
+    ]);
     s.repo(Auction).rows.push({ listingId: id, status: 'open', startPrice: '100', currentPrice: null, reservePrice: '200', bidCount: 0, endAt: new Date() });
     const v = await s.svc.publish(SELLER, id, { startPrice: '100', reservePrice: '200', duration: '24 hours' });
     const insert = s.manager.query.mock.calls.find((c) => String(c[0]).includes('INSERT INTO auctions.auctions'))!;
@@ -393,7 +507,20 @@ describe('ListingService', () => {
 
   it('FR-LST-12 my listings in pages of 50, with a cursor', async () => {
     const at = new Date('2026-11-01T10:00:00Z');
-    const rows = Array.from({ length: 51 }, (_, i) => ({ id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`, title: 't', status: 'draft', item_kind: 'physical', sale_format: 'fixed_price', price: '1', quantity_total: 1, quantity_available: 1, created_at: at, cursor_at: '2026-11-01T10:00:00.123456Z', published_at: null, photo_key: i === 0 ? 'b'.repeat(32) : null }));
+    const rows = Array.from({ length: 51 }, (_, i) => ({
+      id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`,
+      title: 't',
+      status: 'draft',
+      item_kind: 'physical',
+      sale_format: 'fixed_price',
+      price: '1',
+      quantity_total: 1,
+      quantity_available: 1,
+      created_at: at,
+      cursor_at: '2026-11-01T10:00:00.123456Z',
+      published_at: null,
+      photo_key: i === 0 ? 'b'.repeat(32) : null,
+    }));
     const s = setup({ query: () => rows });
     const page = await s.svc.mine(SELLER, 'draft', undefined);
     expect(page.items).toHaveLength(50);
@@ -416,7 +543,18 @@ describe('StockService (ListingsPort, I-9)', () => {
     svc.onModuleInit();
     f.repo(Category).rows.push({ id: 1, slug: 'phones', nameEn: 'Phones', nameBn: 'ফোন' });
     const listing = (o: Row = {}) => {
-      const row = { id: randomUUID(), sellerId: SELLER, itemKind: 'physical', saleFormat: 'fixed_price', status: 'active', categoryId: 1, title: 't', description: 'd', price: '100', ...o };
+      const row = {
+        id: randomUUID(),
+        sellerId: SELLER,
+        itemKind: 'physical',
+        saleFormat: 'fixed_price',
+        status: 'active',
+        categoryId: 1,
+        title: 't',
+        description: 'd',
+        price: '100',
+        ...o,
+      };
       f.repo(Listing).rows.push(row);
       return row;
     };
@@ -429,7 +567,12 @@ describe('StockService (ListingsPort, I-9)', () => {
     expect(await s.svc.reserve(l.id, 2, s.manager as never)).toBe(true);
     await s.svc.release(l.id, 1, s.manager as never);
     await s.svc.markSold(l.id, 1, s.manager as never);
-    expect(s.manager.query.mock.calls.map((c) => String(c[0]).match(/listings\.\w+/)?.[0])).toEqual(['listings.reserve', 'listings.release', 'listings.mark_sold', 'listings.listings']);
+    expect(s.manager.query.mock.calls.map((c) => String(c[0]).match(/listings\.\w+/)?.[0])).toEqual([
+      'listings.reserve',
+      'listings.release',
+      'listings.mark_sold',
+      'listings.listings',
+    ]);
     expect(s.repo(AuctionsOutboxEvent).rows).toEqual([]);
     await expect(s.svc.markSold(randomUUID(), 1, s.manager as never)).rejects.toBeInstanceOf(Problem);
   });
@@ -444,7 +587,9 @@ describe('StockService (ListingsPort, I-9)', () => {
 
   it('I-9 the order events are registered and move stock once per order', async () => {
     let inserted = true;
-    const s = stock((sql) => (sql.includes('stock_moves') ? (inserted ? [{ order_id: 'o' }] : []) : sql.includes('SELECT status') ? [{ status: 'active' }] : []));
+    const s = stock((sql) =>
+      sql.includes('stock_moves') ? (inserted ? [{ order_id: 'o' }] : []) : sql.includes('SELECT status') ? [{ status: 'active' }] : [],
+    );
     expect(s.bus.consumersOf('orders.order.paid').map((c) => c.name)).toEqual(['listings.stock']);
     expect(s.bus.consumersOf('orders.order.cancelled').map((c) => c.name)).toEqual(['listings.stock']);
     const l = s.listing();
@@ -472,11 +617,28 @@ describe('StockService (ListingsPort, I-9)', () => {
 
   it('FR-FIX-01 the order keeps a copy of the listing as shown, the photos in order (DR-03)', async () => {
     const s = stock();
-    const l = s.listing({ condition: 'used', noVisibleDefects: true, fulfilmentOptions: 'pickup_only', weightClass: null, sizeClass: null, areaDistrict: 'Dhaka' });
-    s.repo(ListingPhoto).rows.push({ listingId: l.id, position: 2, storageKey: 'k2', removedAt: null }, { listingId: l.id, position: 1, storageKey: 'k1', removedAt: null }, { listingId: l.id, position: 3, storageKey: 'k3', removedAt: new Date() });
+    const l = s.listing({
+      condition: 'used',
+      noVisibleDefects: true,
+      fulfilmentOptions: 'pickup_only',
+      weightClass: null,
+      sizeClass: null,
+      areaDistrict: 'Dhaka',
+    });
+    s.repo(ListingPhoto).rows.push(
+      { listingId: l.id, position: 2, storageKey: 'k2', removedAt: null },
+      { listingId: l.id, position: 1, storageKey: 'k1', removedAt: null },
+      { listingId: l.id, position: 3, storageKey: 'k3', removedAt: new Date() },
+    );
     s.repo(Clarification).rows.push({ listingId: l.id, body: 'Box included', createdAt: new Date() });
     const snap = await s.svc.snapshot(l.id);
-    expect(snap).toMatchObject({ listingId: l.id, district: 'Dhaka', photoKeys: ['k1', 'k2'], clarifications: [{ body: 'Box included' }], category: { slug: 'phones' } });
+    expect(snap).toMatchObject({
+      listingId: l.id,
+      district: 'Dhaka',
+      photoKeys: ['k1', 'k2'],
+      clarifications: [{ body: 'Box included' }],
+      category: { slug: 'phones' },
+    });
     await expect(s.svc.snapshot(randomUUID())).rejects.toBeInstanceOf(Problem);
   });
 });

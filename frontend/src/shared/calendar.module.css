@@ -1,27 +1,159 @@
 /* The calendar of the date field (U10-26) on the line grid: a ruled line with the month and the year to choose and the arrows, the weekdays over a grid of day cells divided by
    hairlines; today has a vermilion mark, the chosen day a vermilion line over a faint wash; the days that cannot be chosen are dim. */
-.head { display: grid; grid-template-columns: 40px minmax(0, 1fr) 5.25rem 40px; align-items: stretch; border: 1px solid var(--tb-line); }
-.nav { display: grid; place-items: center; min-height: 48px; border: 0; background: none; color: var(--tb-text); cursor: pointer; transition: background-color 140ms ease, color 140ms ease; }
-.nav:disabled { color: var(--tb-muted); opacity: 0.4; cursor: not-allowed; }
-.nav:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
-.select { position: relative; display: block; border-left: 1px solid var(--tb-line); }
-.select:nth-of-type(2) { border-right: 1px solid var(--tb-line); }
-.select select { appearance: none; width: 100%; height: 100%; min-height: 48px; padding: 0 1.5rem 0 0.625rem; border: 0; border-radius: 0; background: transparent; color: var(--tb-text); font: inherit; font-size: 0.9375rem; font-weight: 600; text-overflow: ellipsis; cursor: pointer; }
-.select::after { content: ''; position: absolute; right: 0.625rem; top: 50%; width: 0.4rem; height: 0.4rem; margin-top: -0.3rem; border: solid var(--tb-muted); border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); pointer-events: none; }
-.select select:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
-.select option { background: var(--tb-sheet); color: var(--tb-text); }
-.hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.head {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 5.25rem 40px;
+  align-items: stretch;
+  border: 1px solid var(--tb-line);
+}
+.nav {
+  display: grid;
+  place-items: center;
+  min-height: 48px;
+  border: 0;
+  background: none;
+  color: var(--tb-text);
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+.nav:disabled {
+  color: var(--tb-muted);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.nav:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: -3px;
+}
+.select {
+  position: relative;
+  display: block;
+  border-left: 1px solid var(--tb-line);
+}
+.select:nth-of-type(2) {
+  border-right: 1px solid var(--tb-line);
+}
+.select select {
+  appearance: none;
+  width: 100%;
+  height: 100%;
+  min-height: 48px;
+  padding: 0 1.5rem 0 0.625rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--tb-text);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.select::after {
+  content: '';
+  position: absolute;
+  right: 0.625rem;
+  top: 50%;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-top: -0.3rem;
+  border: solid var(--tb-muted);
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+.select select:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: -3px;
+}
+.select option {
+  background: var(--tb-sheet);
+  color: var(--tb-text);
+}
+.hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
 
-.weekdays { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); margin-top: 0.25rem; color: var(--tb-muted); font-size: 0.8125rem; font-weight: 600; text-align: center; }
-.weekdays span { padding: 0.375rem 0; }
-.days { border-top: 1px solid var(--tb-line); border-left: 1px solid var(--tb-line); }
-.week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
-.day, .empty { min-height: 44px; border: 0; border-right: 1px solid var(--tb-line); border-bottom: 1px solid var(--tb-line); border-radius: 0; background: none; }
-.day { position: relative; color: var(--tb-text); font: inherit; font-variant-numeric: tabular-nums; cursor: pointer; transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 140ms ease; }
-.day:active:not(:disabled) { transform: scale(0.94); }
-@media (hover: hover) and (pointer: fine) { .day:hover:not(:disabled):not(.chosen) { background: var(--tb-surface); } }
-.day:disabled { color: var(--tb-muted); opacity: 0.35; cursor: not-allowed; }
-.day:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
-.today::after { content: ''; position: absolute; left: 50%; bottom: 6px; width: 14px; height: 2px; margin-left: -7px; background: var(--tb-hot); }
-.chosen { background: color-mix(in srgb, var(--tb-hot) 12%, transparent); box-shadow: inset 0 0 0 1px var(--tb-hot); font-weight: 700; }
-@media (prefers-reduced-motion: reduce) { .day:active:not(:disabled) { transform: none; } }
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  margin-top: 0.25rem;
+  color: var(--tb-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: center;
+}
+.weekdays span {
+  padding: 0.375rem 0;
+}
+.days {
+  border-top: 1px solid var(--tb-line);
+  border-left: 1px solid var(--tb-line);
+}
+.week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.day,
+.empty {
+  min-height: 44px;
+  border: 0;
+  border-right: 1px solid var(--tb-line);
+  border-bottom: 1px solid var(--tb-line);
+  border-radius: 0;
+  background: none;
+}
+.day {
+  position: relative;
+  color: var(--tb-text);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition:
+    transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 140ms ease;
+}
+.day:active:not(:disabled) {
+  transform: scale(0.94);
+}
+@media (hover: hover) and (pointer: fine) {
+  .day:hover:not(:disabled):not(.chosen) {
+    background: var(--tb-surface);
+  }
+}
+.day:disabled {
+  color: var(--tb-muted);
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.day:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: -3px;
+}
+.today::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: 14px;
+  height: 2px;
+  margin-left: -7px;
+  background: var(--tb-hot);
+}
+.chosen {
+  background: color-mix(in srgb, var(--tb-hot) 12%, transparent);
+  box-shadow: inset 0 0 0 1px var(--tb-hot);
+  font-weight: 700;
+}
+@media (prefers-reduced-motion: reduce) {
+  .day:active:not(:disabled) {
+    transform: none;
+  }
+}

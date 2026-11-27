@@ -51,7 +51,12 @@ export class OtpService {
   async cp05(): Promise<CP05> {
     const p = await this.params.current();
     const v = p.get<{ attempts: number; sends_per_hour: number; sends_per_day: number }>('CP-05');
-    return { otpValidityMinutes: p.ms('CP-05', 'validity') / 60_000, attemptsPerOtp: v.attempts, sendsPerNumberHour: v.sends_per_hour, sendsPerNumberDay: v.sends_per_day };
+    return {
+      otpValidityMinutes: p.ms('CP-05', 'validity') / 60_000,
+      attemptsPerOtp: v.attempts,
+      sendsPerNumberHour: v.sends_per_hour,
+      sendsPerNumberDay: v.sends_per_day,
+    };
   }
 
   /** CP-05 send limits per number (Redis otp:send:{phone}:h and :d) and the gap before the next send. */
@@ -91,8 +96,17 @@ export class OtpService {
       `INSERT INTO identity.otp_challenges (purpose, user_id, pending_registration_id, phone_e164, code_hash, bound_to,
                                             max_attempts, created_at, expires_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-      [spec.purpose, spec.userId ?? null, spec.pendingRegistrationId ?? null, spec.phone, hashOtp(this.pepper, code), spec.boundTo ?? null,
-       cp05.attemptsPerOtp, now, expiresAt],
+      [
+        spec.purpose,
+        spec.userId ?? null,
+        spec.pendingRegistrationId ?? null,
+        spec.phone,
+        hashOtp(this.pepper, code),
+        spec.boundTo ?? null,
+        cp05.attemptsPerOtp,
+        now,
+        expiresAt,
+      ],
     );
     return expiresAt;
   }

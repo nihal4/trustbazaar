@@ -12,7 +12,14 @@ import {
   IDENTITY_ACCOUNT_LINKS,
   IDENTITY_DATA_EXPORT,
   ACCOUNT_CLOSURE_CHECKS,
-  APPROVAL_SERVICE, AUDIT_SERVICE, FILE_VAULT, IDENTITY_COMMANDS, IDENTITY_CRYPTO, IDENTITY_QUERY, RATE_LIMITER, STAFF_QUERY,
+  APPROVAL_SERVICE,
+  AUDIT_SERVICE,
+  FILE_VAULT,
+  IDENTITY_COMMANDS,
+  IDENTITY_CRYPTO,
+  IDENTITY_QUERY,
+  RATE_LIMITER,
+  STAFF_QUERY,
 } from './ports';
 import { AccountController } from './http/account.controller';
 import { AuthController } from './http/auth.controller';
@@ -30,7 +37,12 @@ import { StaffService } from './services/staff.service';
 import { ContactService } from './services/contact.service';
 import { MfaService } from './services/mfa.service';
 import {
-  ApprovalPortAdapter, AuditPortAdapter, FileVaultPortAdapter, IdentityCommandsService, IdentityQueryService, RateLimiterPortAdapter,
+  ApprovalPortAdapter,
+  AuditPortAdapter,
+  FileVaultPortAdapter,
+  IdentityCommandsService,
+  IdentityQueryService,
+  RateLimiterPortAdapter,
   StaffQueryService,
 } from './services/identity-ports';
 import { KycReviewService } from './services/kyc-review.service';
@@ -59,7 +71,17 @@ import { IdentityDataExport } from './services/data-export';
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
 @Module({
   imports: [TypeOrmModule.forFeature(ENTITIES)],
-  controllers: [AuthController, RegistrationController, AccountController, StaffAuthController, StaffController, AdminController, KycController, StaffKycController, FilesController],
+  controllers: [
+    AuthController,
+    RegistrationController,
+    AccountController,
+    StaffAuthController,
+    StaffController,
+    AdminController,
+    KycController,
+    StaffKycController,
+    FilesController,
+  ],
   providers: [
     IdentityDataExport,
     { provide: IDENTITY_DATA_EXPORT, useExisting: IdentityDataExport },
@@ -109,6 +131,18 @@ import { IdentityDataExport } from './services/data-export';
     { provide: RESTRICTIONS, inject: [ModuleRef], useFactory: (m: ModuleRef) => sanctionRestrictions(m) },
     ...pipelineGuards,
   ],
-  exports: [IDENTITY_ACCOUNT_LINKS, IDENTITY_DATA_EXPORT, IDENTITY_QUERY, IDENTITY_COMMANDS, STAFF_QUERY, APPROVAL_SERVICE, AUDIT_SERVICE, RATE_LIMITER, FILE_VAULT, IDENTITY_CRYPTO, ACCOUNT_CLOSURE_CHECKS],
+  exports: [
+    IDENTITY_ACCOUNT_LINKS,
+    IDENTITY_DATA_EXPORT,
+    IDENTITY_QUERY,
+    IDENTITY_COMMANDS,
+    STAFF_QUERY,
+    APPROVAL_SERVICE,
+    AUDIT_SERVICE,
+    RATE_LIMITER,
+    FILE_VAULT,
+    IDENTITY_CRYPTO,
+    ACCOUNT_CLOSURE_CHECKS,
+  ],
 })
 export class IdentityModule {}

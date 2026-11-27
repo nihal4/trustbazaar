@@ -45,51 +45,76 @@ export function Component() {
       <div className={styles.page}>
         <h1>{t('chat.title')}</h1>
         <p>{t('chat.signed_out')}</p>
-        <p><Link to={`/signin?next=${encodeURIComponent('/messages')}`}>{t('shell.sign_in')}</Link></p>
+        <p>
+          <Link to={`/signin?next=${encodeURIComponent('/messages')}`}>{t('shell.sign_in')}</Link>
+        </p>
       </div>
     );
   }
   if (pages.isPending) return <p role="status">{t('shell.loading')}</p>;
-  if (pages.isError) return <div className={styles.page}><h1>{t('chat.title')}</h1><FormMessage kind="error">{errorText(pages.error, t, lang)}</FormMessage></div>;
+  if (pages.isError)
+    return (
+      <div className={styles.page}>
+        <h1>{t('chat.title')}</h1>
+        <FormMessage kind="error">{errorText(pages.error, t, lang)}</FormMessage>
+      </div>
+    );
 
   const items = pages.data.pages.flatMap((p) => p.items);
   return (
     <div className={styles.page}>
       <AccountTabs t={t} />
       <h1>{t('chat.title')}</h1>
-      {items.length === 0
-        ? <p>{t('chat.empty')}</p>
-        : (
-          <ul className={styles.threads} aria-label={t('chat.list')}>
-            {items.map((th) => (
-              <li key={th.id} className={th.unread > 0 ? styles.unreadThread : undefined}>
-                <Link to={`/messages/${encodeURIComponent(th.id)}`} className={styles.threadLink}>
-                  <span className={styles.avatar} aria-hidden="true">{initialOf(th.other?.displayName ?? '?')}</span>
-                  <span className={styles.threadMain}>
-                    <span className={styles.name}>
-                      {th.other?.displayName ?? t('chat.closed_account')}
-                      {th.other?.verified && <span className={styles.tick} title={t('chat.verified')}><Tick /><span className={styles.visuallyHidden}>{t('chat.verified')}</span></span>}
-                    </span>
-                    <span className={styles.about}>
-                      <span className={styles.productTag}>{t('chat.about', { title: th.listing.title ?? t('chat.listing_gone') })}</span>
-                      <span className={styles.role}>
-                        {t(th.role === 'buyer' ? 'chat.buying' : 'chat.selling')}
-                        {th.closed && <> · {t('chat.closed')}</>}
+      {items.length === 0 ? (
+        <p>{t('chat.empty')}</p>
+      ) : (
+        <ul className={styles.threads} aria-label={t('chat.list')}>
+          {items.map((th) => (
+            <li key={th.id} className={th.unread > 0 ? styles.unreadThread : undefined}>
+              <Link to={`/messages/${encodeURIComponent(th.id)}`} className={styles.threadLink}>
+                <span className={styles.avatar} aria-hidden="true">
+                  {initialOf(th.other?.displayName ?? '?')}
+                </span>
+                <span className={styles.threadMain}>
+                  <span className={styles.name}>
+                    {th.other?.displayName ?? t('chat.closed_account')}
+                    {th.other?.verified && (
+                      <span className={styles.tick} title={t('chat.verified')}>
+                        <Tick />
+                        <span className={styles.visuallyHidden}>{t('chat.verified')}</span>
                       </span>
+                    )}
+                  </span>
+                  <span className={styles.about}>
+                    <span className={styles.productTag}>{t('chat.about', { title: th.listing.title ?? t('chat.listing_gone') })}</span>
+                    <span className={styles.role}>
+                      {t(th.role === 'buyer' ? 'chat.buying' : 'chat.selling')}
+                      {th.closed && <> · {t('chat.closed')}</>}
                     </span>
                   </span>
-                  <span className={styles.threadSide}>
-                    {th.lastMessageAt && (() => {
+                </span>
+                <span className={styles.threadSide}>
+                  {th.lastMessageAt &&
+                    (() => {
                       const p = dateParts(Date.parse(th.lastMessageAt), lang);
-                      return <time dateTime={th.lastMessageAt} className={styles.when}><span className={styles.whenDate}>{p.day} {p.month} {p.year}</span><span className={styles.whenTime}>{p.weekday}, {p.time} {p.period}</span></time>;
+                      return (
+                        <time dateTime={th.lastMessageAt} className={styles.when}>
+                          <span className={styles.whenDate}>
+                            {p.day} {p.month} {p.year}
+                          </span>
+                          <span className={styles.whenTime}>
+                            {p.weekday}, {p.time} {p.period}
+                          </span>
+                        </time>
+                      );
                     })()}
-                    {th.unread > 0 && <span className={styles.unread}>{t('chat.unread', { count: toLocalDigits(String(th.unread), lang) })}</span>}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+                  {th.unread > 0 && <span className={styles.unread}>{t('chat.unread', { count: toLocalDigits(String(th.unread), lang) })}</span>}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
       {pages.hasNextPage && (
         <button type="button" className={styles.secondary} onClick={() => void pages.fetchNextPage()} disabled={pages.isFetchingNextPage}>
           {t('chat.more')}

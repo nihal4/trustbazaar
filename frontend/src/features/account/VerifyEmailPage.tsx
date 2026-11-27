@@ -28,30 +28,53 @@ export function Component() {
   useEffect(() => {
     if (!token || sent.current) return;
     sent.current = true;
-    api.post('/auth/email/verify', { token })
-      .then(() => { setState('done'); void queryClient.invalidateQueries({ queryKey: ME_KEY }); })
-      .catch((err: unknown) => setState(problemName(err) === 'link-invalid' || problemName(err) === 'validation-failed'
-        ? 'invalid' : { error: otherError(err, t, lang) }));
+    api
+      .post('/auth/email/verify', { token })
+      .then(() => {
+        setState('done');
+        void queryClient.invalidateQueries({ queryKey: ME_KEY });
+      })
+      .catch((err: unknown) =>
+        setState(problemName(err) === 'link-invalid' || problemName(err) === 'validation-failed' ? 'invalid' : { error: otherError(err, t, lang) }),
+      );
   }, [token, api, queryClient, t, lang]);
 
   const rows = authRows(vw, lang === 'bn');
   return (
-    <AuthSplit stepKey="verify" rows={rows} headCells={head} head={<h1 id="verify-head">{t('verify_email.title')}</h1>}
-      foot={<div className={styles.footLinks}><Link to="/signin" className={styles.link}>{t('signin.link')}</Link></div>}>
-      {state === 'done'
-        ? (
-          <form onSubmit={(e) => { e.preventDefault(); navigate('/account'); }} noValidate className={styles.stepForm}>
-            <p role="status" className={styles.stepText}>{t('verify_email.done')}</p>
-            <SubmitButton busy={false}>{t('account.link')}</SubmitButton>
-          </form>
-        )
-        : (
-          <StepNote>
-            {state === 'working' && <p role="status">{t('verify_email.working')}</p>}
-            {state === 'invalid' && <p role="alert">{t('link.invalid')}</p>}
-            {typeof state === 'object' && <p role="alert">{state.error}</p>}
-          </StepNote>
-        )}
+    <AuthSplit
+      stepKey="verify"
+      rows={rows}
+      headCells={head}
+      head={<h1 id="verify-head">{t('verify_email.title')}</h1>}
+      foot={
+        <div className={styles.footLinks}>
+          <Link to="/signin" className={styles.link}>
+            {t('signin.link')}
+          </Link>
+        </div>
+      }
+    >
+      {state === 'done' ? (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            navigate('/account');
+          }}
+          noValidate
+          className={styles.stepForm}
+        >
+          <p role="status" className={styles.stepText}>
+            {t('verify_email.done')}
+          </p>
+          <SubmitButton busy={false}>{t('account.link')}</SubmitButton>
+        </form>
+      ) : (
+        <StepNote>
+          {state === 'working' && <p role="status">{t('verify_email.working')}</p>}
+          {state === 'invalid' && <p role="alert">{t('link.invalid')}</p>}
+          {typeof state === 'object' && <p role="alert">{state.error}</p>}
+        </StepNote>
+      )}
     </AuthSplit>
   );
 }

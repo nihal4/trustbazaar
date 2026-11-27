@@ -38,9 +38,17 @@ function When({ ms, now, lang, left = false }: { ms: number; now: number; lang: 
   const c = formatCountdown(ms - now, lang);
   return (
     <div className={styles.when}>
-      <span className={styles.whenDate}>{p.day} {p.month} {p.year}</span>
-      <span className={styles.whenTime}>{p.weekday}, {p.time} {p.period}</span>
-      {left && <span className={c.urgent || c.ended ? `${styles.whenLeft} ${styles.whenUrgent}` : styles.whenLeft}>{c.ended ? c.text : lang === 'bn' ? `আর ${c.text}` : `in ${c.text}`}</span>}
+      <span className={styles.whenDate}>
+        {p.day} {p.month} {p.year}
+      </span>
+      <span className={styles.whenTime}>
+        {p.weekday}, {p.time} {p.period}
+      </span>
+      {left && (
+        <span className={c.urgent || c.ended ? `${styles.whenLeft} ${styles.whenUrgent}` : styles.whenLeft}>
+          {c.ended ? c.text : lang === 'bn' ? `আর ${c.text}` : `in ${c.text}`}
+        </span>
+      )}
     </div>
   );
 }
@@ -48,13 +56,36 @@ const LISTING_STATES = ['active', 'pending_review', 'draft', 'sold', 'ended_unso
 type ListingState = (typeof LISTING_STATES)[number];
 
 interface MyListing {
-  id: string; title: string; status: ListingState; saleFormat: 'fixed_price' | 'auction'; price: string | null;
-  quantity: { total: number; available: number }; createdAt: string; publishedAt: string | null;
+  id: string;
+  title: string;
+  status: ListingState;
+  saleFormat: 'fixed_price' | 'auction';
+  price: string | null;
+  quantity: { total: number; available: number };
+  createdAt: string;
+  publishedAt: string | null;
 }
-interface PayoutRow { id: string; orderId: string; amount: string; status: string; simulated: boolean; createdAt: string; sentAt: string | null }
+interface PayoutRow {
+  id: string;
+  orderId: string;
+  amount: string;
+  status: string;
+  simulated: boolean;
+  createdAt: string;
+  sentAt: string | null;
+}
 interface Statement {
-  orderId: string; title: string | null; settledAt: string; amountCollected: string; itemPrice: string; deliveryFee: string; commission: string;
-  courierPayout: string; sellerPayout: string; refundTotal: string; payout: { id: string; amount: string; status: string; simulated: boolean } | null;
+  orderId: string;
+  title: string | null;
+  settledAt: string;
+  amountCollected: string;
+  itemPrice: string;
+  deliveryFee: string;
+  commission: string;
+  courierPayout: string;
+  sellerPayout: string;
+  refundTotal: string;
+  payout: { id: string; amount: string; status: string; simulated: boolean } | null;
 }
 
 export function Component() {
@@ -66,7 +97,12 @@ export function Component() {
     staleTime: FRESHNESS.money,
     retry: false,
   });
-  if (orders.isError && isApiError(orders.error, 401)) return <p><Link to={signInPath('/seller')}>{t('seller.sign_in')}</Link></p>;
+  if (orders.isError && isApiError(orders.error, 401))
+    return (
+      <p>
+        <Link to={signInPath('/seller')}>{t('seller.sign_in')}</Link>
+      </p>
+    );
   return (
     <div className={styles.page}>
       {/* the header's Sell an item is the one way to a new listing: no second button here */}
@@ -117,10 +153,22 @@ function Figures({ orders, t, lang }: { orders: SellerOrder[] | null; t: T; lang
   const dash = '–';
   return (
     <dl className={styles.figures}>
-      <div><dt>{t('seller.action_title')}</dt><dd>{orders ? toLocalDigits(String(needingAction(orders).length), lang) : dash}</dd></div>
-      <div><dt>{t('seller.fig_owed')}</dt><dd>{owed.data ? formatMoney(BigInt(owed.data.owed), lang) : dash}</dd></div>
-      <div><dt>{t('seller.account_title')}</dt><dd className={styles.figText}>{account.isSuccess ? (a ? accountStatus(a, t, lang) : t('seller.fig_none')) : dash}</dd></div>
-      <div><dt>{t('seller.fig_completed')}</dt><dd>{trust.data ? toLocalDigits(String(trust.data.completedTransactions), lang) : dash}</dd></div>
+      <div>
+        <dt>{t('seller.action_title')}</dt>
+        <dd>{orders ? toLocalDigits(String(needingAction(orders).length), lang) : dash}</dd>
+      </div>
+      <div>
+        <dt>{t('seller.fig_owed')}</dt>
+        <dd>{owed.data ? formatMoney(BigInt(owed.data.owed), lang) : dash}</dd>
+      </div>
+      <div>
+        <dt>{t('seller.account_title')}</dt>
+        <dd className={styles.figText}>{account.isSuccess ? (a ? accountStatus(a, t, lang) : t('seller.fig_none')) : dash}</dd>
+      </div>
+      <div>
+        <dt>{t('seller.fig_completed')}</dt>
+        <dd>{trust.data ? toLocalDigits(String(trust.data.completedTransactions), lang) : dash}</dd>
+      </div>
     </dl>
   );
 }
@@ -138,14 +186,20 @@ function ActionNeeded({ orders, error, t, lang }: { orders: SellerOrder[] | null
         {list.map(({ order: o, why, due }) => (
           <li key={o.id} className={styles.orderRow}>
             <div className={styles.orderMain}>
-              <Link to={`/orders/${encodeURIComponent(o.id)}`}><strong>{o.listing.title}</strong></Link>
+              <Link to={`/orders/${encodeURIComponent(o.id)}`}>
+                <strong>{o.listing.title}</strong>
+              </Link>
               <p>{t(`seller.why.${why}`)}</p>
             </div>
             {due !== null && <When ms={due} now={now} lang={lang} left />}
           </li>
         ))}
       </ul>
-      <p><Link to="/orders?role=seller" className={styles.ruledButton}>{t('seller.all_sales')}</Link></p>
+      <p>
+        <Link to="/orders?role=seller" className={styles.ruledButton}>
+          {t('seller.all_sales')}
+        </Link>
+      </p>
     </section>
   );
 }
@@ -156,7 +210,10 @@ function Listings({ t, lang }: { t: T; lang: Lang }) {
   const listings = useInfiniteQuery({
     queryKey: ['me', 'listings', state],
     queryFn: ({ pageParam, signal }) =>
-      api.get(`/me/listings?status=${state}${pageParam ? `&cursor=${encodeURIComponent(pageParam)}` : ''}`, { signal }) as Promise<{ items: MyListing[]; nextCursor: string | null }>,
+      api.get(`/me/listings?status=${state}${pageParam ? `&cursor=${encodeURIComponent(pageParam)}` : ''}`, { signal }) as Promise<{
+        items: MyListing[];
+        nextCursor: string | null;
+      }>,
     initialPageParam: '',
     getNextPageParam: (last) => last.nextCursor ?? undefined,
     staleTime: FRESHNESS.search,
@@ -168,7 +225,11 @@ function Listings({ t, lang }: { t: T; lang: Lang }) {
       <h2 id="listings-title">{t('seller.listings_title')}</h2>
       <label htmlFor="listing-state">{t('seller.listing_state')}</label>
       <select id="listing-state" value={state} onChange={(e) => setState(e.target.value as ListingState)} className={styles.select}>
-        {LISTING_STATES.map((s) => <option key={s} value={s}>{t(`seller.state.${s}`)}</option>)}
+        {LISTING_STATES.map((s) => (
+          <option key={s} value={s}>
+            {t(`seller.state.${s}`)}
+          </option>
+        ))}
       </select>
       {listings.isPending && <p role="status">{t('shell.loading')}</p>}
       {listings.isError && <FormMessage kind="error">{listingsError(listings.error, t, lang)}</FormMessage>}
@@ -176,16 +237,24 @@ function Listings({ t, lang }: { t: T; lang: Lang }) {
       <ul className={styles.list}>
         {items.map((l) => (
           <li key={l.id} className={styles.row}>
-            <Link to={l.status === 'draft' || l.status === 'pending_review' ? `/sell/${encodeURIComponent(l.id)}` : `/listings/${encodeURIComponent(l.id)}`}><strong>{l.title}</strong></Link>
+            <Link to={l.status === 'draft' || l.status === 'pending_review' ? `/sell/${encodeURIComponent(l.id)}` : `/listings/${encodeURIComponent(l.id)}`}>
+              <strong>{l.title}</strong>
+            </Link>
             <p>
               {t(`seller.format.${l.saleFormat}`)}
               {l.price ? ` · ${formatMoney(BigInt(l.price), lang)}` : ''}
-              {l.saleFormat === 'fixed_price' ? ` · ${t('seller.available', { available: toLocalDigits(String(l.quantity.available), lang), total: toLocalDigits(String(l.quantity.total), lang) })}` : ''}
+              {l.saleFormat === 'fixed_price'
+                ? ` · ${t('seller.available', { available: toLocalDigits(String(l.quantity.available), lang), total: toLocalDigits(String(l.quantity.total), lang) })}`
+                : ''}
             </p>
           </li>
         ))}
       </ul>
-      {listings.hasNextPage && <button type="button" className={styles.secondary} onClick={() => void listings.fetchNextPage()}>{t('seller.more')}</button>}
+      {listings.hasNextPage && (
+        <button type="button" className={styles.secondary} onClick={() => void listings.fetchNextPage()}>
+          {t('seller.more')}
+        </button>
+      )}
     </section>
   );
 }
@@ -214,8 +283,18 @@ function Payouts({ t, lang }: { t: T; lang: Lang }) {
       <h3>{t('seller.account_title')}</h3>
       {account.isError && <FormMessage kind="error">{listingsError(account.error, t, lang)}</FormMessage>}
       {account.isSuccess && !a && <p>{t('seller.account_none')}</p>}
-      {a && <p>{accountLine(a, t)} · <strong>{accountStatus(a, t, lang)}</strong></p>}
-      {(account.isSuccess || isApiError(account.error, 404)) && <p><Link to="/account/payout" className={styles.ruledButton}>{t(a ? 'seller.account_change' : 'seller.account_add')}</Link></p>}
+      {a && (
+        <p>
+          {accountLine(a, t)} · <strong>{accountStatus(a, t, lang)}</strong>
+        </p>
+      )}
+      {(account.isSuccess || isApiError(account.error, 404)) && (
+        <p>
+          <Link to="/account/payout" className={styles.ruledButton}>
+            {t(a ? 'seller.account_change' : 'seller.account_add')}
+          </Link>
+        </p>
+      )}
       <h3>{t('seller.payouts_list')}</h3>
       {payouts.isSuccess && payouts.data.items.length === 0 && <p className={styles.hint}>{t('seller.payouts_none')}</p>}
       <ul className={styles.list}>
@@ -224,7 +303,9 @@ function Payouts({ t, lang }: { t: T; lang: Lang }) {
             <div>
               <strong className={styles.amount}>{formatMoney(BigInt(p.amount), lang)}</strong> · {t(`seller.payout.${p.status}`)}
               {p.simulated ? ` · ${t('seller.simulated')}` : ''}
-              <p className={styles.hint}><Link to={`/orders/${encodeURIComponent(p.orderId)}`}>{t('seller.payout_order')}</Link></p>
+              <p className={styles.hint}>
+                <Link to={`/orders/${encodeURIComponent(p.orderId)}`}>{t('seller.payout_order')}</Link>
+              </p>
             </div>
             <When ms={Date.parse(p.sentAt ?? p.createdAt)} now={0} lang={lang} />
           </li>
@@ -239,7 +320,11 @@ function Statements({ t, lang }: { t: T; lang: Lang }) {
   const statements = useInfiniteQuery({
     queryKey: ['me', 'statements'],
     queryFn: ({ pageParam, signal }) =>
-      api.get(`/me/statements${pageParam ? `?cursor=${encodeURIComponent(pageParam)}` : ''}`, { signal }) as Promise<{ items: Statement[]; owed: string; nextCursor: string | null }>,
+      api.get(`/me/statements${pageParam ? `?cursor=${encodeURIComponent(pageParam)}` : ''}`, { signal }) as Promise<{
+        items: Statement[];
+        owed: string;
+        nextCursor: string | null;
+      }>,
     initialPageParam: '',
     getNextPageParam: (last) => last.nextCursor ?? undefined,
     staleTime: FRESHNESS.money,
@@ -258,7 +343,11 @@ function Statements({ t, lang }: { t: T; lang: Lang }) {
   return (
     <section aria-labelledby="statements-title" className={styles.panel}>
       <h2 id="statements-title">{t('seller.statements_title')}</h2>
-      {pages[0] && <p><strong>{t('seller.owed', { amount: formatMoney(BigInt(pages[0].owed), lang) })}</strong></p>}
+      {pages[0] && (
+        <p>
+          <strong>{t('seller.owed', { amount: formatMoney(BigInt(pages[0].owed), lang) })}</strong>
+        </p>
+      )}
       {statements.isError && <FormMessage kind="error">{listingsError(statements.error, t, lang)}</FormMessage>}
       {statements.isSuccess && items.length === 0 && <p className={styles.hint}>{t('seller.statements_none')}</p>}
       {items.map((s) => (
@@ -266,22 +355,45 @@ function Statements({ t, lang }: { t: T; lang: Lang }) {
           {/* a statement is a ruled line: the order, the payout as the one big figure, then the breakdown on hairlines; the day the payout was sent is
               plain text (U10-24) */}
           <div className={styles.stmtHead}>
-            <h3 className={styles.stubHeading}><Link to={`/orders/${encodeURIComponent(s.orderId)}`}>{s.title ?? t('seller.untitled')}</Link></h3>
+            <h3 className={styles.stubHeading}>
+              <Link to={`/orders/${encodeURIComponent(s.orderId)}`}>{s.title ?? t('seller.untitled')}</Link>
+            </h3>
             <p className={styles.stubNote}>{t('seller.settled', { at: shortWhen(Date.parse(s.settledAt), lang) })}</p>
           </div>
-          <p className={styles.figure} aria-hidden="true">{formatMoney(BigInt(s.sellerPayout), lang)}</p>
+          <p className={styles.figure} aria-hidden="true">
+            {formatMoney(BigInt(s.sellerPayout), lang)}
+          </p>
           <dl className={styles.breakdown}>
-            <dt>{t('seller.line.collected')}</dt><dd>{money(s.amountCollected)}</dd>
-            <dt>{t('seller.line.item')}</dt><dd>{money(s.itemPrice)}</dd>
-            <dt>{t('seller.line.delivery')}</dt><dd>{money(s.deliveryFee)}</dd>
-            <dt>{t('seller.line.commission')}</dt><dd>−{money(s.commission)}</dd>
-            {s.refundTotal !== '0' && <><dt>{t('seller.line.refund')}</dt><dd>−{money(s.refundTotal)}</dd></>}
-            <dt className={styles.total}>{t('seller.line.payout')}</dt><dd className={styles.total}>{money(s.sellerPayout)}</dd>
+            <dt>{t('seller.line.collected')}</dt>
+            <dd>{money(s.amountCollected)}</dd>
+            <dt>{t('seller.line.item')}</dt>
+            <dd>{money(s.itemPrice)}</dd>
+            <dt>{t('seller.line.delivery')}</dt>
+            <dd>{money(s.deliveryFee)}</dd>
+            <dt>{t('seller.line.commission')}</dt>
+            <dd>−{money(s.commission)}</dd>
+            {s.refundTotal !== '0' && (
+              <>
+                <dt>{t('seller.line.refund')}</dt>
+                <dd>−{money(s.refundTotal)}</dd>
+              </>
+            )}
+            <dt className={styles.total}>{t('seller.line.payout')}</dt>
+            <dd className={styles.total}>{money(s.sellerPayout)}</dd>
           </dl>
-          {s.payout && <p className={styles.hint}>{t('seller.statement_payout', { status: t(`seller.payout.${s.payout.status}`) })}{s.payout && sentAt.has(s.payout.id) ? ` · ${postmarkDate(sentAt.get(s.payout.id)!, lang)}` : ''}</p>}
+          {s.payout && (
+            <p className={styles.hint}>
+              {t('seller.statement_payout', { status: t(`seller.payout.${s.payout.status}`) })}
+              {s.payout && sentAt.has(s.payout.id) ? ` · ${postmarkDate(sentAt.get(s.payout.id)!, lang)}` : ''}
+            </p>
+          )}
         </article>
       ))}
-      {statements.hasNextPage && <button type="button" className={styles.secondary} onClick={() => void statements.fetchNextPage()}>{t('seller.more')}</button>}
+      {statements.hasNextPage && (
+        <button type="button" className={styles.secondary} onClick={() => void statements.fetchNextPage()}>
+          {t('seller.more')}
+        </button>
+      )}
     </section>
   );
 }

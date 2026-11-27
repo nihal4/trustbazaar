@@ -1,17 +1,90 @@
 /* The three steps of an order's money as balls on a line (docs/design/10_visual_v3.md): a step the money has reached is a filled green ball and the line
    up to it is green; a step it has not reached is an empty ring on a grey line. The home page and the listing pass their own classes; the checkout and the
    order page use these. */
-.list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; }
-.list li { position: relative; padding: 1.75rem 0.75rem 0 0; color: var(--tb-muted); font-size: 0.875rem; line-height: 1.35; overflow-wrap: anywhere; }
-.list li::before { content: ''; position: absolute; left: 0; top: 0; z-index: 1; box-sizing: border-box; width: 16px; height: 16px; border: 2px solid var(--tb-border); border-radius: 50%; background: var(--tb-bg); }
-.list li::after { content: ''; position: absolute; left: 16px; right: 0; top: 7px; height: 2px; background: var(--tb-line); }
-.list li:last-child::after { content: none; }
-.list li.done, .list li.current { color: var(--tb-text); }
-.list li.done::before, .list li.current::before { border-color: var(--tb-protect); background: var(--tb-protect); }
-.list li.done::after { background: var(--tb-protect); }
-.list li.current { font-weight: 600; color: var(--tb-protect); }
-.sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-@media (forced-colors: active) { .list li::before { border-color: CanvasText; } .list li.done::before, .list li.current::before { background: Highlight; } .list li::after { background: CanvasText; } }
+.list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.list li {
+  position: relative;
+  padding: 1.75rem 0.75rem 0 0;
+  color: var(--tb-muted);
+  font-size: 0.875rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--tb-border);
+  border-radius: 50%;
+  background: var(--tb-bg);
+}
+.list li::after {
+  content: '';
+  position: absolute;
+  left: 16px;
+  right: 0;
+  top: 7px;
+  height: 2px;
+  background: var(--tb-line);
+}
+.list li:last-child::after {
+  content: none;
+}
+.list li.done,
+.list li.current {
+  color: var(--tb-text);
+}
+.list li.done::before,
+.list li.current::before {
+  border-color: var(--tb-protect);
+  background: var(--tb-protect);
+}
+.list li.done::after {
+  background: var(--tb-protect);
+}
+.list li.current {
+  font-weight: 600;
+  color: var(--tb-protect);
+}
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+@media (forced-colors: active) {
+  .list li::before {
+    border-color: CanvasText;
+  }
+  .list li.done::before,
+  .list li.current::before {
+    background: Highlight;
+  }
+  .list li::after {
+    background: CanvasText;
+  }
+}
 /* while the payment is the step the order is at (not paid yet), its ring is vermilion (the action to take), not green: green is for what is held or done */
-.list li.current:first-child { color: var(--tb-text); }
-.list li.current:first-child::before { background: var(--tb-bg); border-color: var(--tb-hot); }
+.list li.current:first-child {
+  color: var(--tb-text);
+}
+.list li.current:first-child::before {
+  background: var(--tb-bg);
+  border-color: var(--tb-hot);
+}

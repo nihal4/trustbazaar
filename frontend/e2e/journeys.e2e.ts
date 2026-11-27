@@ -42,7 +42,9 @@ test.use({
   launchOptions: { args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] },
 });
 
-test('IF-UI-01 IF-UI-02 IF-UI-03 IF-UI-04 IF-UI-05 a new member registers, passes KYC, lists an item; a buyer pays with the mock bKash, collects it with the handover code and confirms receipt', async ({ browser }) => {
+test('IF-UI-01 IF-UI-02 IF-UI-03 IF-UI-04 IF-UI-05 a new member registers, passes KYC, lists an item; a buyer pays with the mock bKash, collects it with the handover code and confirms receipt', async ({
+  browser,
+}) => {
   test.setTimeout(240_000);
   const n = unique();
   const phone = `017${n}`;
@@ -74,7 +76,7 @@ test('IF-UI-01 IF-UI-02 IF-UI-03 IF-UI-04 IF-UI-05 a new member registers, passe
   await next();
   await page.getByLabel('Password', { exact: true }).fill('copper lantern river breakfast');
   await page.getByRole('button', { name: 'Sign in' }).click();
-  await expect.poll(() => codeSentTo(operator.request, email), { timeout: 15_000 }).not.toBe(code);        // the sign-in code is the newest message
+  await expect.poll(() => codeSentTo(operator.request, email), { timeout: 15_000 }).not.toBe(code); // the sign-in code is the newest message
   await page.getByLabel('Code').fill(await codeSentTo(operator.request, email));
   await page.getByRole('button', { name: 'Sign in' }).click();
   await page.waitForURL((u) => !u.pathname.startsWith('/signin'));
@@ -202,7 +204,9 @@ test('SEC-SES-05 signing out on one tab ends the session in the other tabs too',
   await context.close();
 });
 
-test('FR-AUC-11 FR-AUC-12 FR-AUC-13 IF-COM-02 two browsers bid live on one auction: each sees the other\'s bid and the outbid notice without reloading', async ({ browser }) => {
+test("FR-AUC-11 FR-AUC-12 FR-AUC-13 IF-COM-02 two browsers bid live on one auction: each sees the other's bid and the outbid notice without reloading", async ({
+  browser,
+}) => {
   const one = await browser.newContext({ storageState: state('buyer') });
   const two = await browser.newContext();
   const a = await one.newPage();
@@ -235,7 +239,9 @@ test('FR-AUC-11 FR-AUC-12 FR-AUC-13 IF-COM-02 two browsers bid live on one aucti
   await Promise.all([one.close(), two.close()]);
 });
 
-test('FR-DSP-01 FR-DSP-06 FR-OPS-05 a dispute is decided in the console and, at BDT 20,000 or more, carried out only after a second operator approves', async ({ browser }) => {
+test('FR-DSP-01 FR-DSP-06 FR-OPS-05 a dispute is decided in the console and, at BDT 20,000 or more, carried out only after a second operator approves', async ({
+  browser,
+}) => {
   test.setTimeout(180_000);
   const buyer = await browser.newContext({ storageState: state('buyer') });
   const shopper = await buyer.newPage();
@@ -279,7 +285,7 @@ test('FR-DSP-01 FR-DSP-06 FR-OPS-05 a dispute is decided in the console and, at 
   const decide = op.getByRole('form', { name: 'Decide the dispute' });
   await expect(decide.getByText("This decision needs a second operator's approval.")).toBeVisible();
   await decide.getByLabel('Refund the buyer in full').check();
-  await decide.getByLabel('Reason (recorded with the action)').fill('The buyer\'s photo shows fungus in the lens; the listing declared no defects.');
+  await decide.getByLabel('Reason (recorded with the action)').fill("The buyer's photo shows fungus in the lens; the listing declared no defects.");
   await decide.getByRole('button', { name: 'Decide' }).click();
   await op.getByRole('dialog', { name: 'Decide the dispute' }).getByRole('button', { name: 'Decide' }).click();
   const ref = `dispute ${disputeId.slice(0, 8)}`;
@@ -313,7 +319,9 @@ test('FR-DSP-01 FR-DSP-06 FR-OPS-05 a dispute is decided in the console and, at 
   await Promise.all([buyer.close(), sellerContext.close(), first.close(), secondContext.close()]);
 });
 
-test('FR-GAM-05 FR-GAM-07 FR-GAM-10 FR-GAM-13 SEC-GAM-01 the sealed game-account handover between two browsers: the buyer\'s key, the seller seals, the buyer opens', async ({ browser }) => {
+test("FR-GAM-05 FR-GAM-07 FR-GAM-10 FR-GAM-13 SEC-GAM-01 the sealed game-account handover between two browsers: the buyer's key, the seller seals, the buyer opens", async ({
+  browser,
+}) => {
   test.setTimeout(180_000);
   const buyer = await browser.newContext({ storageState: state('buyer') });
   const shopper = await buyer.newPage();

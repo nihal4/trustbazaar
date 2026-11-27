@@ -1,7 +1,5 @@
 import { Type } from 'class-transformer';
-import {
-  IsBoolean, IsIn, IsInt, IsNumber, IsOptional, IsString, Length, Matches, Max, MaxLength, Min, ValidateIf, ValidateNested,
-} from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsNumber, IsOptional, IsString, Length, Matches, Max, MaxLength, Min, ValidateIf, ValidateNested } from 'class-validator';
 import { FULFILMENT_OPTIONS, ITEM_CONDITION, ITEM_KIND, SALE_FORMAT, SIZE_CLASS, STATUS, WEIGHT_CLASS } from '../db/enums';
 import type { Fulfilment, ItemCondition, ItemKind, ListingStatus, SaleFormat, SizeClass, WeightClass } from '../ports';
 

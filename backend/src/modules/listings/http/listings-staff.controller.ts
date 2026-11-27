@@ -94,7 +94,11 @@ export class ListingsStaffController {
   @Staff('operator')
   @Delete('screening-terms/:id')
   @HttpCode(204)
-  async deleteTerm(@Param('id', new ParseIntPipe({ exceptionFactory: () => new Problem('not-found') })) id: number, @CurrentPrincipal() p: Principal, @Req() req: Request): Promise<void> {
+  async deleteTerm(
+    @Param('id', new ParseIntPipe({ exceptionFactory: () => new Problem('not-found') })) id: number,
+    @CurrentPrincipal() p: Principal,
+    @Req() req: Request,
+  ): Promise<void> {
     await this.review.deleteTerm(staffOf(p).staffId, id, ctx(req));
   }
 }

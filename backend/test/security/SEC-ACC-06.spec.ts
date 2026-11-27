@@ -31,7 +31,9 @@ describe('SEC-ACC-06 KYC image access', () => {
     expect((await assigned.b.get(url.replace('/api/v1', ''))).status).toBe(200);
     expect((await other.b.get(url.replace('/api/v1', ''))).status).toBe(410); // the link is the viewer's own
     const views = await s.fx.query(
-      `SELECT e.actor_id, e.reason FROM audit.events e JOIN identity.kyc_files f ON f.id = e.object_id WHERE e.action = 'kyc.file.viewed' AND f.submission_id = $1`, [id]);
+      `SELECT e.actor_id, e.reason FROM audit.events e JOIN identity.kyc_files f ON f.id = e.object_id WHERE e.action = 'kyc.file.viewed' AND f.submission_id = $1`,
+      [id],
+    );
     expect(views).toEqual([{ actor_id: assigned.s.staffId, reason: why }]);
   });
 

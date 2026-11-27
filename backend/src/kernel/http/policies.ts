@@ -17,8 +17,15 @@ export type StaffRoleName = (typeof STAFF_ROLES)[number];
 
 // The fixed list of section 6.3 (Unit 1, step-up authentication).
 export const STEP_UP_ACTIONS = [
-  'password.change', 'phone.change', 'email.change', 'mfa.disable', 'recovery.regenerate',
-  'payout.change', 'game.release_early', 'account.close', 'data.export',
+  'password.change',
+  'phone.change',
+  'email.change',
+  'mfa.disable',
+  'recovery.regenerate',
+  'payout.change',
+  'game.release_early',
+  'account.close',
+  'data.export',
 ] as const;
 export type StepUpAction = (typeof STEP_UP_ACTIONS)[number];
 
@@ -54,10 +61,8 @@ export const Verified = (action?: VerifiedAction) => SetMetadata(POLICY_KEY, { k
 /** An active staff account with one of the roles (none listed: any role); staff sessions exist only after MFA. */
 export const Staff = (...roles: StaffRoleName[]) => SetMetadata(POLICY_KEY, { kind: 'staff', roles } satisfies Policy);
 /** No session: the endpoint's service verifies this credential itself. */
-export const Credential = (credential: CredentialKind) =>
-  SetMetadata(POLICY_KEY, { kind: 'credential', credential } satisfies Policy);
+export const Credential = (credential: CredentialKind) => SetMetadata(POLICY_KEY, { kind: 'credential', credential } satisfies Policy);
 /** In addition to the policy: a fresh single-use step-up grant for the action, in X-Step-Up (SEC-AUTH-08). */
 export const StepUp = (action: StepUpAction) => SetMetadata(STEP_UP_KEY, action);
 /** The rate-limit rule of Unit 1 section 5.4 that applies to this route (SEC-ABU-01). */
 export const RateLimit = (rule: string) => SetMetadata(RATE_LIMIT_KEY, rule);
-

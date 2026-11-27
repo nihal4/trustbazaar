@@ -13,8 +13,12 @@ describe('SEC-PAY-07 idempotency keys', () => {
   it('SEC-PAY-07 starting a payment again with the same key gives the same attempt, not a second charge', async () => {
     const o = await pendingOrder(s);
     const key = randomUUID();
-    const one = (await (await o.buyer.b.post(`/orders/${o.orderId}/payments`, { provider: 'bkash' }, { 'idempotency-key': key })).json()) as { attemptId: string };
-    const two = (await (await o.buyer.b.post(`/orders/${o.orderId}/payments`, { provider: 'bkash' }, { 'idempotency-key': key })).json()) as { attemptId: string };
+    const one = (await (await o.buyer.b.post(`/orders/${o.orderId}/payments`, { provider: 'bkash' }, { 'idempotency-key': key })).json()) as {
+      attemptId: string;
+    };
+    const two = (await (await o.buyer.b.post(`/orders/${o.orderId}/payments`, { provider: 'bkash' }, { 'idempotency-key': key })).json()) as {
+      attemptId: string;
+    };
     expect(two.attemptId).toBe(one.attemptId);
     expect(await s.fx.query(`SELECT 1 FROM payments.attempts WHERE order_id = $1`, [o.orderId])).toHaveLength(1);
   });
@@ -34,12 +38,22 @@ describe('SEC-PAY-07 idempotency keys', () => {
   });
 
   it('SEC-PAY-07 the stored refunds and payouts carry their key, unique per operation', async () => {
-    for (const [table, column] of [['payments.attempts', 'idempotency_key'], ['payments.refunds', 'idempotency_key'], ['payments.payouts', 'idempotency_key']]) {
+    for (const [table, column] of [
+      ['payments.attempts', 'idempotency_key'],
+      ['payments.refunds', 'idempotency_key'],
+      ['payments.payouts', 'idempotency_key'],
+    ]) {
       const [schema, name] = table.split('.');
-      const cols = await s.fx.query(`SELECT 1 FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2 AND column_name = $3`, [schema, name, column]);
+      const cols = await s.fx.query(`SELECT 1 FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2 AND column_name = $3`, [
+        schema,
+        name,
+        column,
+      ]);
       expect(cols).toHaveLength(1);
       const unique = await s.fx.query(
-        `SELECT 1 FROM pg_indexes WHERE schemaname = $1 AND tablename = $2 AND indexdef ILIKE '%UNIQUE%' AND indexdef ILIKE '%' || $3 || '%'`, [schema, name, column]);
+        `SELECT 1 FROM pg_indexes WHERE schemaname = $1 AND tablename = $2 AND indexdef ILIKE '%UNIQUE%' AND indexdef ILIKE '%' || $3 || '%'`,
+        [schema, name, column],
+      );
       expect(unique.length).toBeGreaterThan(0);
     }
   });

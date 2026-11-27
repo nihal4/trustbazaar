@@ -56,8 +56,18 @@ export function Handover({ o, h, t, lang, after, before }: { o: OrderView; h: Ha
       <h2 id="handover-title">{t('handover.title')}</h2>
       {before}
       <dl className={styles.statusGrid}>
-        <div><dt>{t('handover.status_label')}</dt><dd>{t(`handover.state.${h.status}`)}</dd></div>
-        {h.status === 'completed' && h.completedAt && <div><dt>{t('handover.done_label')}</dt><dd><DateCells at={Date.parse(h.completedAt)} t={t} lang={lang} label={false} /></dd></div>}
+        <div>
+          <dt>{t('handover.status_label')}</dt>
+          <dd>{t(`handover.state.${h.status}`)}</dd>
+        </div>
+        {h.status === 'completed' && h.completedAt && (
+          <div>
+            <dt>{t('handover.done_label')}</dt>
+            <dd>
+              <DateCells at={Date.parse(h.completedAt)} t={t} lang={lang} label={false} />
+            </dd>
+          </div>
+        )}
       </dl>
       {h.status === 'locked' && <FormMessage kind="error">{t('handover.locked')}</FormMessage>}
       {h.agreed && <Agreed a={h.agreed} t={t} lang={lang} />}
@@ -79,7 +89,15 @@ function Where({ point, place, t, lang }: { point: MeetupPoint | null; place: Ow
   return (
     <>
       <span>{placeName(point, place, lang)}</span>
-      {point && <> · <a href={point.mapUrl} target="_blank" rel="noopener noreferrer">{t('handover.map')}</a></>}
+      {point && (
+        <>
+          {' '}
+          ·{' '}
+          <a href={point.mapUrl} target="_blank" rel="noopener noreferrer">
+            {t('handover.map')}
+          </a>
+        </>
+      )}
       {point?.guidance && <span className={styles.hint}> · {point.guidance}</span>}
       {place && <span className={styles.notice}>{t('handover.own_place_notice')}</span>}
     </>
@@ -89,43 +107,99 @@ function Where({ point, place, t, lang }: { point: MeetupPoint | null; place: Ow
 function Agreed({ a, t, lang }: { a: NonNullable<HandoverView['agreed']>; t: T; lang: Lang }) {
   return (
     <dl className={styles.statusGrid}>
-      <div><dt>{t('handover.place_label')}</dt><dd><Where point={a.point} place={a.place} t={t} lang={lang} /></dd></div>
-      <div><dt>{t('handover.when_label')}</dt><dd><DateCells at={Date.parse(a.meetAt)} t={t} lang={lang} label={false} /></dd></div>
+      <div>
+        <dt>{t('handover.place_label')}</dt>
+        <dd>
+          <Where point={a.point} place={a.place} t={t} lang={lang} />
+        </dd>
+      </div>
+      <div>
+        <dt>{t('handover.when_label')}</dt>
+        <dd>
+          <DateCells at={Date.parse(a.meetAt)} t={t} lang={lang} label={false} />
+        </dd>
+      </div>
     </dl>
   );
 }
 
 /** The buyer's code: first the terms in a popup (check the item properly, what giving the code means), and only on agreeing the code in a second popup. */
-function BuyerCode({ order, code, device, t, lang }: { order: string; code: string | null; device: NonNullable<HandoverView['deviceCheck']> | null; t: T; lang: Lang }) {
+function BuyerCode({
+  order,
+  code,
+  device,
+  t,
+  lang,
+}: {
+  order: string;
+  code: string | null;
+  device: NonNullable<HandoverView['deviceCheck']> | null;
+  t: T;
+  lang: Lang;
+}) {
   const [step, setStep] = useState<'closed' | 'terms' | 'device' | 'code'>('closed');
   const needsDevice = device !== null && !device.matched;
   return (
     <>
-    <div className={styles.code}>
-      <h3>{t('handover.code_title')}</h3>
-      <p>{t('confirm.share_handover_code')}</p>
-      <button type="button" className={styles.primary} onClick={() => setStep('terms')}>{t('handover.show_code')}</button>
-    </div>
-    {step === 'terms' && (
-      <Terms id="code-terms" t={t} lang={lang} order={order} kind="handover_code" title={t('handover.terms_title')} intro={t('handover.terms_intro')} prefix="handover.terms" count={7}
-        check={t('handover.terms_check')} agree={t('handover.agree_show')} back={t('actions.back')} onAgree={() => setStep(needsDevice ? 'device' : 'code')} onClose={() => setStep('closed')} />
-    )}
-    {step === 'device' && device && <DeviceCheck order={order} device={device} t={t} lang={lang} onMatched={() => setStep('code')} onClose={() => setStep('closed')} />}
-    {step === 'code' && (
-      <Popup id="code-show" title={t('handover.code_title')} closeLabel={t('handover.hide_code')} onClose={() => setStep('closed')}>
-        <p className={styles.codeNote}>{t('confirm.share_handover_code')}</p>
-        <p className={`${styles.codeDigits} ${styles.codeCentre}`}>{code ? spaced(code, lang) : t('shell.loading')}</p>
-        <div className={styles.popupButtons}>
-          <button type="button" className={styles.secondary} onClick={() => setStep('closed')}>{t('handover.close_code')}</button>
-        </div>
-      </Popup>
-    )}
+      <div className={styles.code}>
+        <h3>{t('handover.code_title')}</h3>
+        <p>{t('confirm.share_handover_code')}</p>
+        <button type="button" className={styles.primary} onClick={() => setStep('terms')}>
+          {t('handover.show_code')}
+        </button>
+      </div>
+      {step === 'terms' && (
+        <Terms
+          id="code-terms"
+          t={t}
+          lang={lang}
+          order={order}
+          kind="handover_code"
+          title={t('handover.terms_title')}
+          intro={t('handover.terms_intro')}
+          prefix="handover.terms"
+          count={7}
+          check={t('handover.terms_check')}
+          agree={t('handover.agree_show')}
+          back={t('actions.back')}
+          onAgree={() => setStep(needsDevice ? 'device' : 'code')}
+          onClose={() => setStep('closed')}
+        />
+      )}
+      {step === 'device' && device && (
+        <DeviceCheck order={order} device={device} t={t} lang={lang} onMatched={() => setStep('code')} onClose={() => setStep('closed')} />
+      )}
+      {step === 'code' && (
+        <Popup id="code-show" title={t('handover.code_title')} closeLabel={t('handover.hide_code')} onClose={() => setStep('closed')}>
+          <p className={styles.codeNote}>{t('confirm.share_handover_code')}</p>
+          <p className={`${styles.codeDigits} ${styles.codeCentre}`}>{code ? spaced(code, lang) : t('shell.loading')}</p>
+          <div className={styles.popupButtons}>
+            <button type="button" className={styles.secondary} onClick={() => setStep('closed')}>
+              {t('handover.close_code')}
+            </button>
+          </div>
+        </Popup>
+      )}
     </>
   );
 }
 
 /** U10-23: before the code, the buyer types the identifier the device shows (*#06# on a phone); the server compares it with the listing's. */
-function DeviceCheck({ order, device, t, lang, onMatched, onClose }: { order: string; device: NonNullable<HandoverView['deviceCheck']>; t: T; lang: Lang; onMatched: () => void; onClose: () => void }) {
+function DeviceCheck({
+  order,
+  device,
+  t,
+  lang,
+  onMatched,
+  onClose,
+}: {
+  order: string;
+  device: NonNullable<HandoverView['deviceCheck']>;
+  t: T;
+  lang: Lang;
+  onMatched: () => void;
+  onClose: () => void;
+}) {
   const api = useApi();
   const queryClient = useQueryClient();
   const [value, setValue] = useState('');
@@ -133,28 +207,49 @@ function DeviceCheck({ order, device, t, lang, onMatched, onClose }: { order: st
   const [wrong, setWrong] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const check = useMutation({
-    mutationFn: () => api.post(`/orders/${encodeURIComponent(order)}/device-check`, { value: value.trim() }) as Promise<{ matched: boolean; attemptsLeft: number }>,
+    mutationFn: () =>
+      api.post(`/orders/${encodeURIComponent(order)}/device-check`, { value: value.trim() }) as Promise<{ matched: boolean; attemptsLeft: number }>,
     onSuccess: (r) => {
       setLeft(r.attemptsLeft);
-      if (r.matched) { void queryClient.invalidateQueries({ queryKey: handoverKey(order) }); onMatched(); } else { setWrong(true); setMessage(null); }
+      if (r.matched) {
+        void queryClient.invalidateQueries({ queryKey: handoverKey(order) });
+        onMatched();
+      } else {
+        setWrong(true);
+        setMessage(null);
+      }
     },
     onError: (e) => setMessage(problemName(e) === 'validation-failed' && left <= 0 ? t('handover.device_locked') : errorText(e, t, lang)),
   });
   const locked = left <= 0;
   return (
     <Popup id="device-check" title={t('handover.device_title')} closeLabel={t('actions.back')} busy={check.isPending} onClose={onClose}>
-      <form className={styles.form} noValidate onSubmit={(e) => { e.preventDefault(); if (value.trim().length >= 6 && !locked) check.mutate(); }}>
+      <form
+        className={styles.form}
+        noValidate
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (value.trim().length >= 6 && !locked) check.mutate();
+        }}
+      >
         {wrong && !locked && <FormMessage kind="error">{t('handover.device_wrong', { n: toLocalDigits(String(left), lang) })}</FormMessage>}
         {locked && <FormMessage kind="error">{t('handover.device_locked')}</FormMessage>}
         {message && <FormMessage kind="error">{message}</FormMessage>}
         <dl className={styles.statusGrid}>
-          <div><dt>{t('handover.device_listing')}</dt><dd>•••• {device.last4}</dd></div>
+          <div>
+            <dt>{t('handover.device_listing')}</dt>
+            <dd>•••• {device.last4}</dd>
+          </div>
         </dl>
         <label htmlFor="device-value">{t('handover.device_label')}</label>
         <input id="device-value" value={value} maxLength={40} autoComplete="off" disabled={locked} onChange={(e) => setValue(e.target.value)} />
         <div className={styles.popupButtons}>
-          <button type="submit" className={styles.primary} disabled={check.isPending || locked || value.trim().length < 6}>{t('handover.device_check')}</button>
-          <button type="button" className={styles.secondary} disabled={check.isPending} onClick={onClose}>{t('actions.back')}</button>
+          <button type="submit" className={styles.primary} disabled={check.isPending || locked || value.trim().length < 6}>
+            {t('handover.device_check')}
+          </button>
+          <button type="button" className={styles.secondary} disabled={check.isPending} onClick={onClose}>
+            {t('actions.back')}
+          </button>
         </div>
       </form>
     </Popup>
@@ -179,8 +274,10 @@ function SellerCode({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: T; la
       void queryClient.invalidateQueries({ queryKey: orderKey(o.id) });
     },
     onError: (e) => {
-      const wrong = isApiError(e) && problemName(e) === 'delivery-refused'
-        ? (Array.isArray(e.errors) ? (e.errors as { reason?: string; attemptsLeft?: number }[]) : []).find((x) => x.reason === 'wrong_code') : undefined;
+      const wrong =
+        isApiError(e) && problemName(e) === 'delivery-refused'
+          ? (Array.isArray(e.errors) ? (e.errors as { reason?: string; attemptsLeft?: number }[]) : []).find((x) => x.reason === 'wrong_code')
+          : undefined;
       setMessage(wrong ? t('handover.wrong_code', { left: toLocalDigits(String(wrong.attemptsLeft ?? 0), lang) }) : errorText(e, t, lang));
       void queryClient.invalidateQueries({ queryKey: handoverKey(o.id) });
     },
@@ -192,7 +289,10 @@ function SellerCode({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: T; la
       form.set('file', f, f.name);
       return api.post(`/orders/${encodeURIComponent(o.id)}/handover-photos`, form);
     },
-    onSuccess: () => { setMessage(null); void queryClient.invalidateQueries({ queryKey: handoverKey(o.id) }); },
+    onSuccess: () => {
+      setMessage(null);
+      void queryClient.invalidateQueries({ queryKey: handoverKey(o.id) });
+    },
     onError: (e) => setMessage(errorText(e, t, lang)),
   });
   const picked = (list: FileList | null, input: HTMLInputElement) => {
@@ -209,33 +309,68 @@ function SellerCode({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: T; la
     if (sending.current) return;
     sending.current = true;
     setMessage(null);
-    enter.mutate(c, { onSettled: () => { sending.current = false; } });
+    enter.mutate(c, {
+      onSettled: () => {
+        sending.current = false;
+      },
+    });
   };
-  const close = () => { setStep(0); setMessage(null); };
+  const close = () => {
+    setStep(0);
+    setMessage(null);
+  };
   const names = [t('handover.photos_label'), t('handover.code_field')];
   return (
     <>
       <div className={styles.code}>
         <h3>{t('handover.enter_title')}</h3>
         <p>{t('handover.enter_note')}</p>
-        <button type="button" className={styles.primary} onClick={() => { setMessage(null); setStep(1); }}>{t('handover.start')}</button>
+        <button
+          type="button"
+          className={styles.primary}
+          onClick={() => {
+            setMessage(null);
+            setStep(1);
+          }}
+        >
+          {t('handover.start')}
+        </button>
       </div>
       {step > 0 && (
         <Popup id="seller-code" title={t('handover.enter_title')} closeLabel={t('actions.back')} busy={enter.isPending || photo.isPending} onClose={close}>
           <div className={styles.hoStepper}>
-            <p><strong>{t('handover.step_of', { n: toLocalDigits(String(step), lang), total: toLocalDigits('2', lang) })}</strong> · {names[step - 1]}</p>
-            <ol aria-hidden="true">{names.map((n, i) => <li key={n} data-state={i + 1 < step ? 'done' : i + 1 === step ? 'now' : 'next'} />)}</ol>
+            <p>
+              <strong>{t('handover.step_of', { n: toLocalDigits(String(step), lang), total: toLocalDigits('2', lang) })}</strong> · {names[step - 1]}
+            </p>
+            <ol aria-hidden="true">
+              {names.map((n, i) => (
+                <li key={n} data-state={i + 1 < step ? 'done' : i + 1 === step ? 'now' : 'next'} />
+              ))}
+            </ol>
           </div>
           {message && <FormMessage kind="error">{message}</FormMessage>}
           {step === 1 ? (
             <div className={styles.hoStep}>
               <p className={styles.hint}>{t('handover.photo_hint')}</p>
               <div className={styles.photoCell}>
-                <input id="handover-photo" className={styles.fileHidden} type="file" accept="image/jpeg,image/png,image/webp" capture="environment"
-                  disabled={photo.isPending || photos >= 3} onChange={(e) => picked(e.target.files, e.target)} />
+                <input
+                  id="handover-photo"
+                  className={styles.fileHidden}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  capture="environment"
+                  disabled={photo.isPending || photos >= 3}
+                  onChange={(e) => picked(e.target.files, e.target)}
+                />
                 <label htmlFor="handover-photo">
                   <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false">
-                    <path d="M3 8.5a2 2 0 0 1 2-2h2.2l1.3-2h7l1.3 2H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                    <path
+                      d="M3 8.5a2 2 0 0 1 2-2h2.2l1.3-2h7l1.3 2H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinejoin="round"
+                    />
                     <circle cx="12" cy="13" r="3.6" fill="none" stroke="currentColor" strokeWidth="1.6" />
                   </svg>
                   <span>{t('handover.photo_add')}</span>
@@ -243,18 +378,51 @@ function SellerCode({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: T; la
                 <strong aria-label={t('handover.photos_label')}>{toLocalDigits(String(photos), lang)} / 3</strong>
               </div>
               <div className={styles.popupButtons}>
-                <button type="button" className={styles.primary} disabled={photo.isPending} onClick={() => { setMessage(null); setStep(2); }}>{t('dispute.continue')}</button>
-                <button type="button" className={styles.secondary} disabled={photo.isPending} onClick={close}>{t('actions.back')}</button>
+                <button
+                  type="button"
+                  className={styles.primary}
+                  disabled={photo.isPending}
+                  onClick={() => {
+                    setMessage(null);
+                    setStep(2);
+                  }}
+                >
+                  {t('dispute.continue')}
+                </button>
+                <button type="button" className={styles.secondary} disabled={photo.isPending} onClick={close}>
+                  {t('actions.back')}
+                </button>
               </div>
             </div>
           ) : (
             <form onSubmit={submit} noValidate className={styles.hoStep}>
               <p>{t('handover.enter_note')}</p>
-              <CodeField id="handover-code" label={t('handover.code_field')} value={code} onChange={setCode} data-autofocus aria-describedby="handover-attempts" />
-              <p id="handover-attempts" className={styles.hint}>{t('handover.attempts_left', { left: toLocalDigits(String(h.attemptsLeft ?? 0), lang) })}</p>
+              <CodeField
+                id="handover-code"
+                label={t('handover.code_field')}
+                value={code}
+                onChange={setCode}
+                data-autofocus
+                aria-describedby="handover-attempts"
+              />
+              <p id="handover-attempts" className={styles.hint}>
+                {t('handover.attempts_left', { left: toLocalDigits(String(h.attemptsLeft ?? 0), lang) })}
+              </p>
               <div className={styles.popupButtons}>
-                <button type="submit" className={styles.primary} disabled={enter.isPending}>{t('handover.enter_button')}</button>
-                <button type="button" className={styles.secondary} disabled={enter.isPending} onClick={() => { setMessage(null); setStep(1); }}>{t('actions.back')}</button>
+                <button type="submit" className={styles.primary} disabled={enter.isPending}>
+                  {t('handover.enter_button')}
+                </button>
+                <button
+                  type="button"
+                  className={styles.secondary}
+                  disabled={enter.isPending}
+                  onClick={() => {
+                    setMessage(null);
+                    setStep(1);
+                  }}
+                >
+                  {t('actions.back')}
+                </button>
               </div>
             </form>
           )}
@@ -289,18 +457,33 @@ function Proposals({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: T; lan
       {current && (
         <div className={styles.proposal}>
           <h3>{t(current.byMe ? 'handover.your_proposal' : 'handover.their_proposal')}</h3>
-          <p><Where point={current.point} place={current.place} t={t} lang={lang} /></p>
-          <dl className={styles.statusGrid}><div><dt>{t('handover.when_label')}</dt><dd><DateCells at={Date.parse(current.meetAt)} t={t} lang={lang} label={false} /></dd></div></dl>
+          <p>
+            <Where point={current.point} place={current.place} t={t} lang={lang} />
+          </p>
+          <dl className={styles.statusGrid}>
+            <div>
+              <dt>{t('handover.when_label')}</dt>
+              <dd>
+                <DateCells at={Date.parse(current.meetAt)} t={t} lang={lang} label={false} />
+              </dd>
+            </div>
+          </dl>
           {current.note && <p>{t('handover.note_shown', { note: current.note })}</p>}
           <div className={styles.buttons}>
-            {current.byMe
-              ? <button type="button" className={styles.secondary} disabled={respond.isPending} onClick={() => respond.mutate({ p: current, verb: 'withdraw' })}>{t('handover.withdraw')}</button>
-              : (
-                <>
-                  <button type="button" className={styles.primary} disabled={respond.isPending} onClick={() => respond.mutate({ p: current, verb: 'accept' })}>{t('handover.accept')}</button>
-                  <button type="button" className={styles.secondary} disabled={respond.isPending} onClick={() => respond.mutate({ p: current, verb: 'decline' })}>{t('handover.decline')}</button>
-                </>
-              )}
+            {current.byMe ? (
+              <button type="button" className={styles.secondary} disabled={respond.isPending} onClick={() => respond.mutate({ p: current, verb: 'withdraw' })}>
+                {t('handover.withdraw')}
+              </button>
+            ) : (
+              <>
+                <button type="button" className={styles.primary} disabled={respond.isPending} onClick={() => respond.mutate({ p: current, verb: 'accept' })}>
+                  {t('handover.accept')}
+                </button>
+                <button type="button" className={styles.secondary} disabled={respond.isPending} onClick={() => respond.mutate({ p: current, verb: 'decline' })}>
+                  {t('handover.decline')}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -336,8 +519,14 @@ export function ProposeForm({ o, h, t, lang }: { o: OrderView; h: HandoverView; 
     if (!('geolocation' in navigator)) return setMessage(t('handover.pin_unavailable'));
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (p) => { setLocating(false); setPin({ lat: Math.round(p.coords.latitude * 1e5) / 1e5, lng: Math.round(p.coords.longitude * 1e5) / 1e5 }); },
-      () => { setLocating(false); setMessage(t('handover.pin_unavailable')); },
+      (p) => {
+        setLocating(false);
+        setPin({ lat: Math.round(p.coords.latitude * 1e5) / 1e5, lng: Math.round(p.coords.longitude * 1e5) / 1e5 });
+      },
+      () => {
+        setLocating(false);
+        setMessage(t('handover.pin_unavailable'));
+      },
       { enableHighAccuracy: false, timeout: 10_000, maximumAge: 60_000 },
     );
   };
@@ -361,54 +550,81 @@ export function ProposeForm({ o, h, t, lang }: { o: OrderView; h: HandoverView; 
     const own = where === 'own';
     if (own && name.trim().length < 3) return setMessage(t('handover.place_needed'));
     const body: Record<string, unknown> = {
-      meetAt, ...(own ? { placeName: name.trim(), ...(pin ? { placeLat: pin.lat, placeLng: pin.lng } : {}) } : { pointId: where }), ...(note.trim() ? { note: note.trim() } : {}),
+      meetAt,
+      ...(own ? { placeName: name.trim(), ...(pin ? { placeLat: pin.lat, placeLng: pin.lng } : {}) } : { pointId: where }),
+      ...(note.trim() ? { note: note.trim() } : {}),
     };
     propose.mutate(body);
   };
-  const button = <div className={styles.actionCell}><button type="button" className={styles.secondary} onClick={() => setShown(true)}>{t(h.agreed ? 'handover.propose_other' : 'handover.propose')}</button></div>;
+  const button = (
+    <div className={styles.actionCell}>
+      <button type="button" className={styles.secondary} onClick={() => setShown(true)}>
+        {t(h.agreed ? 'handover.propose_other' : 'handover.propose')}
+      </button>
+    </div>
+  );
   if (!shown) return button;
   return (
     <>
-    {button}
-    <Popup id="propose" title={t('handover.propose')} closeLabel={t('actions.back')} busy={propose.isPending} onClose={() => setShown(false)}>
-    <form onSubmit={submit} noValidate className={styles.form}>
-      {message && <FormMessage kind="error">{message}</FormMessage>}
-      <fieldset className={styles.choice}>
-        <legend>{t('handover.where')}</legend>
-        {h.suggestions.length === 0 && <p className={styles.hint}>{t('handover.no_suggestions')}</p>}
-        {h.suggestions.map((p) => (
-          <div key={p.id}>
-            <input id={`point-${p.id}`} type="radio" name="where" value={p.id} checked={where === p.id} onChange={() => setWhere(p.id)} />
-            <label htmlFor={`point-${p.id}`}>{placeName(p, null, lang)}</label>
-            <a href={p.mapUrl} target="_blank" rel="noopener noreferrer">{t('handover.map')}</a>
+      {button}
+      <Popup id="propose" title={t('handover.propose')} closeLabel={t('actions.back')} busy={propose.isPending} onClose={() => setShown(false)}>
+        <form onSubmit={submit} noValidate className={styles.form}>
+          {message && <FormMessage kind="error">{message}</FormMessage>}
+          <fieldset className={styles.choice}>
+            <legend>{t('handover.where')}</legend>
+            {h.suggestions.length === 0 && <p className={styles.hint}>{t('handover.no_suggestions')}</p>}
+            {h.suggestions.map((p) => (
+              <div key={p.id}>
+                <input id={`point-${p.id}`} type="radio" name="where" value={p.id} checked={where === p.id} onChange={() => setWhere(p.id)} />
+                <label htmlFor={`point-${p.id}`}>{placeName(p, null, lang)}</label>
+                <a href={p.mapUrl} target="_blank" rel="noopener noreferrer">
+                  {t('handover.map')}
+                </a>
+              </div>
+            ))}
+            <div>
+              <input id="point-own" type="radio" name="where" value="own" checked={where === 'own'} onChange={() => setWhere('own')} />
+              <label htmlFor="point-own">{t('handover.own_place')}</label>
+            </div>
+          </fieldset>
+          {where === 'own' && (
+            <>
+              <p className={styles.notice}>{t('handover.own_place_notice')}</p>
+              <label htmlFor="place-name">{t('handover.place_name')}</label>
+              <input id="place-name" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} />
+              {pin ? (
+                <p>
+                  {t('handover.pin_added')}{' '}
+                  <button type="button" className={styles.secondary} onClick={() => setPin(null)}>
+                    {t('handover.pin_remove')}
+                  </button>
+                </p>
+              ) : (
+                <p>
+                  <button type="button" className={styles.secondary} disabled={locating} aria-busy={locating} onClick={locate}>
+                    {t('handover.pin_add')}
+                  </button>
+                </p>
+              )}
+            </>
+          )}
+          <label htmlFor="meet-at">{t('handover.when')}</label>
+          <input id="meet-at" type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} aria-describedby="meet-at-hint" />
+          <p id="meet-at-hint" className={styles.hint}>
+            {t('handover.when_hint', { due: formatDateTime(Date.parse(h.dueAt), lang) })}
+          </p>
+          <label htmlFor="meet-note">{t('handover.note')}</label>
+          <input id="meet-note" value={note} maxLength={200} onChange={(e) => setNote(e.target.value)} />
+          <div className={styles.popupButtons}>
+            <button type="submit" className={styles.primary} disabled={propose.isPending}>
+              {t('handover.send_proposal')}
+            </button>
+            <button type="button" className={styles.secondary} onClick={() => setShown(false)}>
+              {t('actions.back')}
+            </button>
           </div>
-        ))}
-        <div>
-          <input id="point-own" type="radio" name="where" value="own" checked={where === 'own'} onChange={() => setWhere('own')} />
-          <label htmlFor="point-own">{t('handover.own_place')}</label>
-        </div>
-      </fieldset>
-      {where === 'own' && (
-        <>
-          <p className={styles.notice}>{t('handover.own_place_notice')}</p>
-          <label htmlFor="place-name">{t('handover.place_name')}</label>
-          <input id="place-name" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} />
-          {pin
-            ? <p>{t('handover.pin_added')} <button type="button" className={styles.secondary} onClick={() => setPin(null)}>{t('handover.pin_remove')}</button></p>
-            : <p><button type="button" className={styles.secondary} disabled={locating} aria-busy={locating} onClick={locate}>{t('handover.pin_add')}</button></p>}
-        </>
-      )}
-      <label htmlFor="meet-at">{t('handover.when')}</label>
-      <input id="meet-at" type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} aria-describedby="meet-at-hint" />
-      <p id="meet-at-hint" className={styles.hint}>{t('handover.when_hint', { due: formatDateTime(Date.parse(h.dueAt), lang) })}</p>
-      <label htmlFor="meet-note">{t('handover.note')}</label>
-      <input id="meet-note" value={note} maxLength={200} onChange={(e) => setNote(e.target.value)} />
-      <div className={styles.popupButtons}>
-        <button type="submit" className={styles.primary} disabled={propose.isPending}>{t('handover.send_proposal')}</button>
-        <button type="button" className={styles.secondary} onClick={() => setShown(false)}>{t('actions.back')}</button>
-      </div>
-    </form>
-    </Popup>
+        </form>
+      </Popup>
     </>
   );
 }

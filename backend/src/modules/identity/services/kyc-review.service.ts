@@ -27,8 +27,15 @@ import { securityEvents } from '../../../kernel/metrics/metrics';
 // account" a database guarantee. Revocation and blacklisting are four-eyes actions with handlers here.
 export const CLAIM_MINUTES = 30; // DV-6
 export const REJECTION_REASONS = [
-  'image_unreadable', 'selfie_mismatch', 'liveness_failed', 'document_expired', 'details_mismatch', 'underage',
-  'duplicate_identity', 'blacklisted', 'other',
+  'image_unreadable',
+  'selfie_mismatch',
+  'liveness_failed',
+  'document_expired',
+  'details_mismatch',
+  'underage',
+  'duplicate_identity',
+  'blacklisted',
+  'other',
 ] as const;
 export type RejectionReason = (typeof REJECTION_REASONS)[number];
 export const BLACKLIST_SOURCES = ['game_account_recovery', 'fraud_decision'] as const;
@@ -45,8 +52,7 @@ export interface QueueItem {
   claimedUntil: Date | null;
 }
 
-const rowsOf = <T>(result: unknown): T[] =>
-  (Array.isArray(result) && Array.isArray(result[0]) && typeof result[1] === 'number' ? result[0] : result) as T[];
+const rowsOf = <T>(result: unknown): T[] => (Array.isArray(result) && Array.isArray(result[0]) && typeof result[1] === 'number' ? result[0] : result) as T[];
 const isUniqueViolation = (e: unknown) => e instanceof QueryFailedError && (e as unknown as { code?: string }).code === '23505';
 
 @Injectable()
@@ -112,8 +118,13 @@ export class KycReviewService implements OnModuleInit {
       );
       if (!row) throw new Problem('already-claimed');
       await this.audit.record(m, {
-        actorType: 'staff', actorId: staffId, action: 'kyc.submission.claimed', objectType: 'kyc_submission', objectId: submissionId,
-        sourceIp: ctx.ip, correlationId: ctx.correlationId,
+        actorType: 'staff',
+        actorId: staffId,
+        action: 'kyc.submission.claimed',
+        objectType: 'kyc_submission',
+        objectId: submissionId,
+        sourceIp: ctx.ip,
+        correlationId: ctx.correlationId,
       });
       return { claimedUntil: until };
     });
@@ -126,8 +137,13 @@ export class KycReviewService implements OnModuleInit {
     const files = await this.db.query(`SELECT kind FROM identity.kyc_files WHERE submission_id = $1 AND erased_at IS NULL ORDER BY kind`, [s.id]);
     await this.db.transaction((m) =>
       this.audit.record(m, {
-        actorType: 'staff', actorId: staffId, action: 'kyc.details.viewed', objectType: 'kyc_submission', objectId: s.id,
-        sourceIp: ctx.ip, correlationId: ctx.correlationId,
+        actorType: 'staff',
+        actorId: staffId,
+        action: 'kyc.details.viewed',
+        objectType: 'kyc_submission',
+        objectId: s.id,
+        sourceIp: ctx.ip,
+        correlationId: ctx.correlationId,
       }),
     );
     return {
@@ -162,27 +178,41 @@ export class KycReviewService implements OnModuleInit {
           if (!s.is_adult) throw new Problem('kyc-cannot-approve', { errors: [{ field: 'decision', reason: 'underage' }] });
           const [black] = await m.query(`SELECT 1 FROM identity.nid_blacklist WHERE doc_number_bidx = $1 AND removed_at IS NULL`, [s.doc_number_bidx]);
           if (black) throw new Problem('kyc-cannot-approve', { errors: [{ field: 'decision', reason: 'blacklisted' }] });
-          await m.query(
-            `INSERT INTO identity.identity_claims (doc_number_bidx, user_id, submission_id, claimed_at) VALUES ($1, $2, $3, $4)`,
-            [s.doc_number_bidx, s.user_id, s.id, now],
-          );
+          await m.query(`INSERT INTO identity.identity_claims (doc_number_bidx, user_id, submission_id, claimed_at) VALUES ($1, $2, $3, $4)`, [
+            s.doc_number_bidx,
+            s.user_id,
+            s.id,
+            now,
+          ]);
         }
         const status = d.decision === 'approve' ? 'approved' : 'rejected';
         await m.query(
           `UPDATE identity.kyc_submissions SET status = $2, decided_by = $3, decided_at = $4, rejection_reason = $5, rejection_note = $6,
                   claimed_by = NULL, claimed_until = NULL WHERE id = $1`,
-          [s.id, status, staffId, now, d.decision === 'reject' ? d.reason : null, d.decision === 'reject' ? (d.note?.trim() || null) : null],
+          [s.id, status, staffId, now, d.decision === 'reject' ? d.reason : null, d.decision === 'reject' ? d.note?.trim() || null : null],
         );
         await this.kyc.moveStatus(m, s.user_id, d.decision === 'approve' ? 'verified' : 'rejected', {
-          actorType: 'staff', actorId: staffId, submissionId: s.id, reason: d.decision === 'reject' ? d.reason : undefined,
+          actorType: 'staff',
+          actorId: staffId,
+          submissionId: s.id,
+          reason: d.decision === 'reject' ? d.reason : undefined,
         });
         await this.audit.record(m, {
-          actorType: 'staff', actorId: staffId, action: `kyc.submission.${status}`, objectType: 'kyc_submission', objectId: s.id,
-          before: { status: 'pending_review', flags: s.routed_flags }, after: { status, reason: d.reason ?? null },
-          reason: d.note?.trim() || null, sourceIp: ctx.ip, correlationId: ctx.correlationId,
+          actorType: 'staff',
+          actorId: staffId,
+          action: `kyc.submission.${status}`,
+          objectType: 'kyc_submission',
+          objectId: s.id,
+          before: { status: 'pending_review', flags: s.routed_flags },
+          after: { status, reason: d.reason ?? null },
+          reason: d.note?.trim() || null,
+          sourceIp: ctx.ip,
+          correlationId: ctx.correlationId,
         });
         await publish(m, d.decision === 'approve' ? 'identity.kyc.verified' : 'identity.kyc.rejected', s.user_id, {
-          userId: s.user_id, submissionId: s.id, ...(d.decision === 'reject' ? { reason: userFacing(d.reason!, null).reason } : {}), // tells the user (FR-TNS-06)
+          userId: s.user_id,
+          submissionId: s.id,
+          ...(d.decision === 'reject' ? { reason: userFacing(d.reason!, null).reason } : {}), // tells the user (FR-TNS-06)
         });
         return { status } as const;
       });
@@ -201,8 +231,14 @@ export class KycReviewService implements OnModuleInit {
     securityEvents.kycViews.inc({ staff: staffId }); // SEC-LOG-05: many views by one staff member
     await this.db.transaction((m) =>
       this.audit.record(m, {
-        actorType: 'staff', actorId: staffId, action: 'kyc.file.viewed', objectType: 'kyc_file', objectId: file.id,
-        reason: reason.trim(), sourceIp: ctx.ip, correlationId: ctx.correlationId,
+        actorType: 'staff',
+        actorId: staffId,
+        action: 'kyc.file.viewed',
+        objectType: 'kyc_file',
+        objectId: file.id,
+        reason: reason.trim(),
+        sourceIp: ctx.ip,
+        correlationId: ctx.correlationId,
       }),
     );
     return link;
@@ -255,7 +291,15 @@ export class KycReviewService implements OnModuleInit {
     if (!claim) throw new Problem('kyc-not-allowed'); // nothing to blacklist without a verified identity
     if (await this.staff.hasConflict(staffId, userId)) throw new Problem('conflict-of-interest');
     return this.approvals.propose(
-      { action: 'blacklist.add', targetType: 'user', targetId: userId, payload: { source, relatedOrderId }, reason, requiredRole: 'operator', byStaffId: staffId },
+      {
+        action: 'blacklist.add',
+        targetType: 'user',
+        targetId: userId,
+        payload: { source, relatedOrderId },
+        reason,
+        requiredRole: 'operator',
+        byStaffId: staffId,
+      },
       ctx,
     );
   }
@@ -263,16 +307,27 @@ export class KycReviewService implements OnModuleInit {
   async proposeUnblacklist(staffId: string, entryId: string, reason: string, ctx: RequestContext) {
     const [e] = await this.db.query(`SELECT 1 FROM identity.nid_blacklist WHERE id = $1 AND removed_at IS NULL`, [entryId]);
     if (!e) throw new Problem('not-found');
-    return this.approvals.propose({ action: 'blacklist.remove', targetType: 'blacklist_entry', targetId: entryId, reason, requiredRole: 'operator', byStaffId: staffId }, ctx);
+    return this.approvals.propose(
+      { action: 'blacklist.remove', targetType: 'blacklist_entry', targetId: entryId, reason, requiredRole: 'operator', byStaffId: staffId },
+      ctx,
+    );
   }
 
   private async revokeIn(m: EntityManager, a: ApprovalView, ctx: RequestContext): Promise<void> {
     if (await this.staff.hasConflict(a.decidedBy!, a.targetId)) throw new Problem('conflict-of-interest');
     await this.kyc.moveStatus(m, a.targetId, 'revoked', { actorType: 'staff', actorId: a.decidedBy!, approvalId: a.id, reason: a.reason });
     await this.audit.record(m, {
-      actorType: 'staff', actorId: a.decidedBy, action: 'kyc.verification.revoked', objectType: 'user', objectId: a.targetId,
-      before: { kycStatus: 'verified' }, after: { kycStatus: 'revoked' }, reason: a.reason, approvalId: a.id,
-      sourceIp: ctx.ip, correlationId: ctx.correlationId,
+      actorType: 'staff',
+      actorId: a.decidedBy,
+      action: 'kyc.verification.revoked',
+      objectType: 'user',
+      objectId: a.targetId,
+      before: { kycStatus: 'verified' },
+      after: { kycStatus: 'revoked' },
+      reason: a.reason,
+      approvalId: a.id,
+      sourceIp: ctx.ip,
+      correlationId: ctx.correlationId,
     });
     await publish(m, 'identity.kyc.revoked', a.targetId, { userId: a.targetId, approvalId: a.id });
   }
@@ -289,8 +344,16 @@ export class KycReviewService implements OnModuleInit {
         [claim.doc_number_bidx, p.source, a.reason, p.relatedOrderId, a.proposedBy, a.id],
       );
       await this.audit.record(m, {
-        actorType: 'staff', actorId: a.decidedBy, action: 'kyc.blacklist.added', objectType: 'blacklist_entry', objectId: entry.id,
-        after: { userId: a.targetId, source: p.source }, reason: a.reason, approvalId: a.id, sourceIp: ctx.ip, correlationId: ctx.correlationId,
+        actorType: 'staff',
+        actorId: a.decidedBy,
+        action: 'kyc.blacklist.added',
+        objectType: 'blacklist_entry',
+        objectId: entry.id,
+        after: { userId: a.targetId, source: p.source },
+        reason: a.reason,
+        approvalId: a.id,
+        sourceIp: ctx.ip,
+        correlationId: ctx.correlationId,
       });
     } catch (e) {
       if (!isUniqueViolation(e)) throw e;
@@ -307,8 +370,15 @@ export class KycReviewService implements OnModuleInit {
     );
     if (!row) throw new Problem('not-found');
     await this.audit.record(m, {
-      actorType: 'staff', actorId: a.decidedBy, action: 'kyc.blacklist.removed', objectType: 'blacklist_entry', objectId: a.targetId,
-      reason: a.reason, approvalId: a.id, sourceIp: ctx.ip, correlationId: ctx.correlationId,
+      actorType: 'staff',
+      actorId: a.decidedBy,
+      action: 'kyc.blacklist.removed',
+      objectType: 'blacklist_entry',
+      objectId: a.targetId,
+      reason: a.reason,
+      approvalId: a.id,
+      sourceIp: ctx.ip,
+      correlationId: ctx.correlationId,
     });
   }
 

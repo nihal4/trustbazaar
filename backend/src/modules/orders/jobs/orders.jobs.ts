@@ -130,10 +130,10 @@ export class OrdersJobs implements OnModuleInit {
         await m.query(`SELECT pg_advisory_xact_lock(hashtext('stalled-delivery:' || $1))`, [r.id]); // one issue, even with several instances
         const [found] = (await m.query(`SELECT 1 FROM payments.reconciliation_issues WHERE order_id = $1 AND kind = 'stalled_delivery'`, [r.id])) as unknown[];
         if (found) return false;
-        await m.query(
-          `INSERT INTO payments.reconciliation_issues (kind, order_id, detail) VALUES ('stalled_delivery', $1, $2)`,
-          [r.id, JSON.stringify({ pickedUpAt: r.fulfilment_done_at.toISOString(), stalledAt: stalledAt.toISOString() })],
-        );
+        await m.query(`INSERT INTO payments.reconciliation_issues (kind, order_id, detail) VALUES ('stalled_delivery', $1, $2)`, [
+          r.id,
+          JSON.stringify({ pickedUpAt: r.fulfilment_done_at.toISOString(), stalledAt: stalledAt.toISOString() }),
+        ]);
         return true;
       });
       if (raised) n++;
@@ -175,10 +175,11 @@ export class OrdersJobs implements OnModuleInit {
         LIMIT ${BATCH}`,
     )) as { id: string; order_id: string }[];
     for (const a of missing) {
-      await this.db.query(
-        `INSERT INTO payments.reconciliation_issues (kind, order_id, attempt_id, detail) VALUES ('provider_disagrees', $1, $2, $3)`,
-        [a.order_id, a.id, JSON.stringify({ problem: 'paid without a provider transaction id' })],
-      );
+      await this.db.query(`INSERT INTO payments.reconciliation_issues (kind, order_id, attempt_id, detail) VALUES ('provider_disagrees', $1, $2, $3)`, [
+        a.order_id,
+        a.id,
+        JSON.stringify({ problem: 'paid without a provider transaction id' }),
+      ]);
       n++;
     }
     return n;

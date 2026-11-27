@@ -26,7 +26,7 @@ export class NotificationsController {
   @Post('notifications/read')
   @HttpCode(200)
   read(@CurrentPrincipal() p: Principal, @Body() dto: MarkReadDto) {
-    return this.notices.markRead(userOf(p).userId, dto.all === true ? 'all' : dto.ids ?? []);
+    return this.notices.markRead(userOf(p).userId, dto.all === true ? 'all' : (dto.ids ?? []));
   }
 
   /** FR-NTF-05 */

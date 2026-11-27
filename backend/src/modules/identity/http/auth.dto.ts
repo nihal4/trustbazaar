@@ -266,10 +266,27 @@ export class KycDecisionDto {
   decision!: 'approve' | 'reject';
 
   @IsOptional()
-  @IsIn(['image_unreadable', 'selfie_mismatch', 'liveness_failed', 'document_expired', 'details_mismatch', 'underage',
-    'duplicate_identity', 'blacklisted', 'other'])
-  reason?: 'image_unreadable' | 'selfie_mismatch' | 'liveness_failed' | 'document_expired' | 'details_mismatch' | 'underage'
-    | 'duplicate_identity' | 'blacklisted' | 'other';
+  @IsIn([
+    'image_unreadable',
+    'selfie_mismatch',
+    'liveness_failed',
+    'document_expired',
+    'details_mismatch',
+    'underage',
+    'duplicate_identity',
+    'blacklisted',
+    'other',
+  ])
+  reason?:
+    | 'image_unreadable'
+    | 'selfie_mismatch'
+    | 'liveness_failed'
+    | 'document_expired'
+    | 'details_mismatch'
+    | 'underage'
+    | 'duplicate_identity'
+    | 'blacklisted'
+    | 'other';
 
   /** Shown to the user with the reason (FR-KYC-06). */
   @IsOptional()

@@ -16,13 +16,22 @@ import { createDocument, DocumentRoot, signInHere } from '../shared/document';
 import type { LiveSocket } from '../shared/live';
 import type { Me } from '../shared/me';
 
-export interface Call { method: string; path: string; query: URLSearchParams; body: unknown; headers: Headers }
+export interface Call {
+  method: string;
+  path: string;
+  query: URLSearchParams;
+  body: unknown;
+  headers: Headers;
+}
 type Answer = (call: Call) => Response | Promise<Response>;
 
-export const json = (status: number, body?: unknown, headers: Record<string, string> = {}) => () =>
-  new Response(body === undefined ? null : JSON.stringify(body), {
-    status, headers: { 'Content-Type': status >= 400 ? 'application/problem+json' : 'application/json', ...headers },
-  });
+export const json =
+  (status: number, body?: unknown, headers: Record<string, string> = {}) =>
+  () =>
+    new Response(body === undefined ? null : JSON.stringify(body), {
+      status,
+      headers: { 'Content-Type': status >= 400 ? 'application/problem+json' : 'application/json', ...headers },
+    });
 export const problem = (status: number, name: string, extra: Record<string, unknown> = {}, headers: Record<string, string> = {}) =>
   json(status, { type: `/problems/${name}`, title: name, status, ...extra }, headers);
 export const noContent = () => () => new Response(null, { status: 204 });
@@ -129,16 +138,46 @@ export class FakeSocket implements LiveSocket {
 }
 
 export function renderApp(at: string, be: ReturnType<typeof fakeBackend>, lang: 'en' | 'bn' = 'en', socket?: FakeSocket) {
-  return renderDocument(at, be, lang, {
-    home: { path: '/', sameDocument: true }, accountLinks: true,
-    routes: [{ index: true, element: <h1>Home</h1> }, ...searchRoutes.filter((r) => !r.index), ...listingRoutes, ...checkoutRoutes, ...orderRoutes, ...sellerRoutes, ...privacyRoutes, ...accountRoutes, ...notificationRoutes, ...chatRoutes],
-  }, undefined, socket);
+  return renderDocument(
+    at,
+    be,
+    lang,
+    {
+      home: { path: '/', sameDocument: true },
+      accountLinks: true,
+      routes: [
+        { index: true, element: <h1>Home</h1> },
+        ...searchRoutes.filter((r) => !r.index),
+        ...listingRoutes,
+        ...checkoutRoutes,
+        ...orderRoutes,
+        ...sellerRoutes,
+        ...privacyRoutes,
+        ...accountRoutes,
+        ...notificationRoutes,
+        ...chatRoutes,
+      ],
+    },
+    undefined,
+    socket,
+  );
 }
 
 /** Any user document (the user app, kyc.html) on a memory router; `wrap` adds providers around it. */
-export function renderDocument(at: string, be: ReturnType<typeof fakeBackend>, lang: 'en' | 'bn',
-  setup: { routes: RouteObject[]; home: { path: string; sameDocument: boolean }; accountLinks?: boolean; titleKey?: string; exit?: { href: string; labelKey: string } },
-  wrap: (root: ReactNode) => ReactNode = (r) => r, socket?: FakeSocket) {
+export function renderDocument(
+  at: string,
+  be: ReturnType<typeof fakeBackend>,
+  lang: 'en' | 'bn',
+  setup: {
+    routes: RouteObject[];
+    home: { path: string; sameDocument: boolean };
+    accountLinks?: boolean;
+    titleKey?: string;
+    exit?: { href: string; labelKey: string };
+  },
+  wrap: (root: ReactNode) => ReactNode = (r) => r,
+  socket?: FakeSocket,
+) {
   const doc = createDocument(
     { kind: 'user', signIn: signInHere, ...setup },
     {

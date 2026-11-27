@@ -69,10 +69,11 @@ export class DeliveryService {
         [now, MAX_ATTEMPTS],
       )) as Due[];
       for (const r of rows) {
-        await m.query(
-          `UPDATE notify.deliveries SET attempts = attempts + 1, next_attempt_at = $3 WHERE notification_id = $1 AND channel = $2`,
-          [r.notification_id, r.channel, new Date(now.getTime() + LEASE_MS)],
-        );
+        await m.query(`UPDATE notify.deliveries SET attempts = attempts + 1, next_attempt_at = $3 WHERE notification_id = $1 AND channel = $2`, [
+          r.notification_id,
+          r.channel,
+          new Date(now.getTime() + LEASE_MS),
+        ]);
       }
       return rows;
     });
@@ -135,7 +136,12 @@ export class DeliveryService {
       const count = (r: unknown) => (Array.isArray(r) && typeof r[1] === 'number' ? r[1] : 0);
       let n = count(await m.query(`DELETE FROM notify.deliveries d USING notify.notifications o WHERE d.notification_id = o.id AND o.created_at < $1`, [year]));
       n += count(await m.query(`DELETE FROM notify.notifications WHERE created_at < $1`, [year]));
-      n += count(await m.query(`DELETE FROM notify.deliveries WHERE status IN ('sent', 'failed', 'suppressed') AND COALESCE(sent_at, next_attempt_at) < $1 AND (status <> 'failed' OR attempts >= $2)`, [days90, MAX_ATTEMPTS]));
+      n += count(
+        await m.query(
+          `DELETE FROM notify.deliveries WHERE status IN ('sent', 'failed', 'suppressed') AND COALESCE(sent_at, next_attempt_at) < $1 AND (status <> 'failed' OR attempts >= $2)`,
+          [days90, MAX_ATTEMPTS],
+        ),
+      );
       n += count(await m.query(`DELETE FROM notify.sms_log WHERE at < $1`, [days90]));
       return n;
     });

@@ -13,9 +13,6 @@ export const normaliseForScreening = (text: string) => text.normalize('NFC').toL
 export class ScreeningService {
   async matches(m: EntityManager, title: string, description: string): Promise<{ term: string; severity: string }[]> {
     const text = normaliseForScreening(`${title} ${description}`);
-    return m.query(
-      `SELECT term, severity FROM listings.screening_terms WHERE strpos($1, lower(term)) > 0 ORDER BY severity, term`,
-      [text],
-    );
+    return m.query(`SELECT term, severity FROM listings.screening_terms WHERE strpos($1, lower(term)) > 0 ORDER BY severity, term`, [text]);
   }
 }

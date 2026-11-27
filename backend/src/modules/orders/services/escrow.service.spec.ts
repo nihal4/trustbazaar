@@ -4,7 +4,19 @@ import type { Clock } from '../../../kernel/clock';
 import { ConfigPort, parameterValues } from '../../../kernel/config-port';
 import { Problem } from '../../../kernel/http/problems';
 import type { AuditServicePort, IdentityQuery } from '../../identity/ports';
-import { CancellationRequest, Escrow, EscrowHistory, JournalEntry, JournalLine, Order, OrdersOutboxEvent, PaymentAttempt, Payout, Refund, Settlement } from '../db/entities';
+import {
+  CancellationRequest,
+  Escrow,
+  EscrowHistory,
+  JournalEntry,
+  JournalLine,
+  Order,
+  OrdersOutboxEvent,
+  PaymentAttempt,
+  Payout,
+  Refund,
+  Settlement,
+} from '../db/entities';
 import { EscrowService } from './escrow.service';
 import { split } from './split';
 
@@ -40,7 +52,12 @@ const NOW = new Date('2026-11-01T12:00:00Z');
 const DAY = 86_400_000;
 
 function setup(o: { account?: { id: string; status: string; effective_at: Date }; suspended?: boolean } = {}) {
-  const repos = new Map<unknown, Repo>([CancellationRequest, Order, Escrow, EscrowHistory, JournalEntry, JournalLine, OrdersOutboxEvent, PaymentAttempt, Payout, Refund, Settlement].map((e) => [e, new Repo(e === CancellationRequest ? { status: 'pending' } : {})]));
+  const repos = new Map<unknown, Repo>(
+    [CancellationRequest, Order, Escrow, EscrowHistory, JournalEntry, JournalLine, OrdersOutboxEvent, PaymentAttempt, Payout, Refund, Settlement].map((e) => [
+      e,
+      new Repo(e === CancellationRequest ? { status: 'pending' } : {}),
+    ]),
+  );
   const manager = { getRepository: (e: unknown) => repos.get(e)!, query: jest.fn(async () => (o.account ? [o.account] : [])) };
   const db = { ...manager, manager, transaction: (cb: (m: typeof manager) => unknown) => cb(manager) };
   const identity = { getPrincipal: jest.fn(async () => ({ accountStatus: o.suspended ? 'suspended' : 'active' })) };
@@ -53,12 +70,37 @@ function setup(o: { account?: { id: string; status: string; effective_at: Date }
     const id = randomUUID();
     const game = x.itemKind === 'game_account';
     const row = {
-      id, status: 'paid', itemKind: 'physical', buyerId: 'B', sellerId: 'S', fulfilment: 'self_pickup', fulfilmentStep: 'meetup_handover', fulfilmentDoneAt: null,
-      deliveryEventAt: null, closedAt: null, itemPrice: '1000000', deliveryFee: '0', commissionBps: 500, deliveryMarginBps: 1000, paramsVersion: 1, ...x,
+      id,
+      status: 'paid',
+      itemKind: 'physical',
+      buyerId: 'B',
+      sellerId: 'S',
+      fulfilment: 'self_pickup',
+      fulfilmentStep: 'meetup_handover',
+      fulfilmentDoneAt: null,
+      deliveryEventAt: null,
+      closedAt: null,
+      itemPrice: '1000000',
+      deliveryFee: '0',
+      commissionBps: 500,
+      deliveryMarginBps: 1000,
+      paramsVersion: 1,
+      ...x,
     };
     repos.get(Order)!.rows.push(row);
     const total = (BigInt(row.itemPrice as string) + BigInt(row.deliveryFee as string)).toString();
-    const e = { orderId: id, state: 'held', releasePolicy: game ? 'game_protection' : 'standard', amountCollected: total, amountReleased: '0', amountRefunded: '0', disputeWindowEndsAt: null, autoReleaseAt: null, openDisputeId: null, ...ex };
+    const e = {
+      orderId: id,
+      state: 'held',
+      releasePolicy: game ? 'game_protection' : 'standard',
+      amountCollected: total,
+      amountReleased: '0',
+      amountRefunded: '0',
+      disputeWindowEndsAt: null,
+      autoReleaseAt: null,
+      openDisputeId: null,
+      ...ex,
+    };
     repos.get(Escrow)!.rows.push(e);
     repos.get(PaymentAttempt)!.rows.push({ id: randomUUID(), orderId: id, status: 'succeeded' });
     return { o: row, e };
@@ -67,7 +109,10 @@ function setup(o: { account?: { id: string; status: string; effective_at: Date }
   return { svc, repo: (e: unknown) => repos.get(e)!, order, m, audit };
 }
 const reason = async (p: Promise<unknown>) =>
-  p.then(() => 'none', (e: unknown) => (e instanceof Problem ? ((e.extra.errors as { reason: string }[] | undefined)?.[0]?.reason ?? e.problem) : String(e)));
+  p.then(
+    () => 'none',
+    (e: unknown) => (e instanceof Problem ? ((e.extra.errors as { reason: string }[] | undefined)?.[0]?.reason ?? e.problem) : String(e)),
+  );
 
 describe('EscrowService', () => {
   it('FR-PAY-07 steps and delivery events: recorded once, in order, with the windows of the release policy', async () => {
@@ -109,7 +154,7 @@ describe('EscrowService', () => {
     expect(await reason(s.svc.getEscrow(randomUUID()))).toBe('not-found');
   });
 
-  it('FR-NTF-07 the deadline query: each kind answers only while its step is still open, with the listing\'s title', async () => {
+  it("FR-NTF-07 the deadline query: each kind answers only while its step is still open, with the listing's title", async () => {
     const s = setup();
     const due = new Date(NOW.getTime() + DAY);
     const title = { listingSnapshot: { title: 'Fridge' } };
@@ -122,7 +167,13 @@ describe('EscrowService', () => {
     expect(await s.svc.deadline(meetup.o.id, 'courier_pickup')).toBeNull(); // not its step
     (meetup.o as Row).fulfilmentDoneAt = NOW;
     expect(await s.svc.deadline(meetup.o.id, 'meetup_handover')).toBeNull(); // done
-    const game = s.order({ itemKind: 'game_account', fulfilment: 'game_account', fulfilmentStep: 'credentials_delivered', fulfilmentDueAt: due, listingSnapshot: null });
+    const game = s.order({
+      itemKind: 'game_account',
+      fulfilment: 'game_account',
+      fulfilmentStep: 'credentials_delivered',
+      fulfilmentDueAt: due,
+      listingSnapshot: null,
+    });
     expect(await s.svc.deadline(game.o.id, 'credential_delivery')).toEqual({ dueAt: due, listingTitle: null });
     expect(await s.svc.deadline(game.o.id, 'dispute_window')).toBeNull(); // the protection period instead (Unit 5)
     const delivered = s.order({}, { disputeWindowEndsAt: due });
@@ -133,12 +184,14 @@ describe('EscrowService', () => {
     expect(await s.svc.deadline(randomUUID(), 'payment_window')).toBeNull();
   });
 
-  it('FR-DSP-05 the outcome preview gives each outcome\'s amounts from the split, the fee kept once the courier picked up', async () => {
+  it("FR-DSP-05 the outcome preview gives each outcome's amounts from the split, the fee kept once the courier picked up", async () => {
     const s = setup();
     const meetup = s.order();
     expect(await s.svc.previewOutcomes(meetup.o.id, 400000n)).toEqual({
-      itemPrice: '1000000', deliveryFee: '0',
-      release: { refunded: '0', sellerPayout: '950000' }, fullRefund: { refunded: '1000000', sellerPayout: '0' },
+      itemPrice: '1000000',
+      deliveryFee: '0',
+      release: { refunded: '0', sellerPayout: '950000' },
+      fullRefund: { refunded: '1000000', sellerPayout: '0' },
       partialRefund: { itemRefund: '400000', refunded: '400000', sellerPayout: '570000' },
     });
     const courier = s.order({ fulfilment: 'courier', fulfilmentStep: 'courier_pickup', fulfilmentDoneAt: NOW, deliveryFee: '15000' });
@@ -170,8 +223,18 @@ describe('EscrowService', () => {
     await s.svc.applyDisputeOutcome(p.o.id, 'd', { kind: 'partial', itemRefund: 300000n }, s.m);
     expect(p.e).toMatchObject({ state: 'partially_refunded', amountRefunded: '300000' });
     expect(s.repo(Refund).rows.map((x) => x.reason)).toEqual(['dispute_full', 'dispute_partial']);
-    expect(s.repo(OrdersOutboxEvent).rows.filter((x) => (x.eventType as string).startsWith('orders.escrow.')).map((x) => x.eventType)).toEqual([
-      'orders.escrow.frozen', 'orders.escrow.released', 'orders.escrow.frozen', 'orders.escrow.partially_refunded', 'orders.escrow.frozen', 'orders.escrow.partially_refunded',
+    expect(
+      s
+        .repo(OrdersOutboxEvent)
+        .rows.filter((x) => (x.eventType as string).startsWith('orders.escrow.'))
+        .map((x) => x.eventType),
+    ).toEqual([
+      'orders.escrow.frozen',
+      'orders.escrow.released',
+      'orders.escrow.frozen',
+      'orders.escrow.partially_refunded',
+      'orders.escrow.frozen',
+      'orders.escrow.partially_refunded',
     ]);
   });
 
@@ -187,9 +250,13 @@ describe('EscrowService', () => {
     expect(s.repo(JournalEntry).rows).toHaveLength(2);
   });
 
-  it('FR-PAY-17 the payout\'s status: pending, cooling off, or held while the seller is suspended', async () => {
+  it("FR-PAY-17 the payout's status: pending, cooling off, or held while the seller is suspended", async () => {
     const statuses: string[] = [];
-    for (const o of [{ account: { id: 'a', status: 'active', effective_at: new Date(0) } }, { account: { id: 'a', status: 'cooling_off', effective_at: new Date(NOW.getTime() + DAY) } }, { suspended: true }]) {
+    for (const o of [
+      { account: { id: 'a', status: 'active', effective_at: new Date(0) } },
+      { account: { id: 'a', status: 'cooling_off', effective_at: new Date(NOW.getTime() + DAY) } },
+      { suspended: true },
+    ]) {
       const s = setup(o);
       const r = s.order();
       await s.svc.freezeForDispute(r.o.id, 'd', s.m);
@@ -266,7 +333,9 @@ describe('EscrowService: release and cancellation by the parties (U2-05)', () =>
     await s.svc.decideCancellation('S', o.id, second, 'accept');
     expect(e).toMatchObject({ state: 'refunded', amountRefunded: '1015000' });
     expect(s.repo(Refund).rows[0]).toMatchObject({ amount: '1015000', reason: 'cancellation' });
-    expect(s.repo(OrdersOutboxEvent).rows.map((r) => r.eventType)).toEqual(expect.arrayContaining(['orders.cancellation.requested', 'orders.cancellation.declined']));
+    expect(s.repo(OrdersOutboxEvent).rows.map((r) => r.eventType)).toEqual(
+      expect.arrayContaining(['orders.cancellation.requested', 'orders.cancellation.declined']),
+    );
     const late = s.order(delivered);
     expect(await reason(s.svc.requestCancellation('B', late.o.id, 'x'))).toBe('order-state');
     const pending = s.order();
@@ -283,7 +352,13 @@ describe('EscrowService: release and cancellation by the parties (U2-05)', () =>
     await s.svc.sellerCancel('S', o.id, ' Damaged ');
     expect(e.state).toBe('refunded');
     expect(s.repo(CancellationRequest).rows.find((r) => r.id === rid)).toMatchObject({ status: 'lapsed' });
-    expect(s.repo(OrdersOutboxEvent).rows.find((r) => r.eventType === 'orders.order.cancelled_by_seller')?.payload).toEqual({ orderId: o.id, sellerId: 'S', buyerId: 'B', reason: 'Damaged', listingTitle: null });
+    expect(s.repo(OrdersOutboxEvent).rows.find((r) => r.eventType === 'orders.order.cancelled_by_seller')?.payload).toEqual({
+      orderId: o.id,
+      sellerId: 'S',
+      buyerId: 'B',
+      reason: 'Damaged',
+      listingTitle: null,
+    });
     expect(await reason(s.svc.sellerCancel('S', s.order(delivered).o.id, 'x'))).toBe('order-state');
     expect(await reason(s.svc.sellerCancel('S', o.id, 'x'))).toBe('order-state');
   });
@@ -308,7 +383,13 @@ describe('EscrowService: missed fulfilment deadline (U2-07)', () => {
 
 describe('split (section 4.4)', () => {
   it('FR-PAY-14 the SRS example and its parts always add up', () => {
-    expect(split(1_000_000n, 15_000n, 0n, true, 500, 1000)).toEqual({ commission: 50_000n, courierPayout: 13_500n, deliveryMargin: 1_500n, sellerPayout: 950_000n, refundTotal: 0n });
+    expect(split(1_000_000n, 15_000n, 0n, true, 500, 1000)).toEqual({
+      commission: 50_000n,
+      courierPayout: 13_500n,
+      deliveryMargin: 1_500n,
+      sellerPayout: 950_000n,
+      refundTotal: 0n,
+    });
     expect(split(33n, 0n, 0n, true, 500, 1000).commission).toBe(2n); // half-up: 1.65 -> 2
     expect(() => split(100n, 0n, 101n, false, 500, 1000)).toThrow(RangeError);
     expect(() => split(100n, 0n, -1n, false, 500, 1000)).toThrow(RangeError);

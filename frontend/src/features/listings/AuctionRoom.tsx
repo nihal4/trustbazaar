@@ -33,7 +33,10 @@ const money = (p: string | bigint, lang: Lang) => formatMoney(p, lang);
 const MAX_SEATS = 9;
 /** The live list shows the newest ten bids and never scrolls. */
 const FEED_ROWS = 10;
-const formatTime = (iso: string, lang: Lang) => new Intl.DateTimeFormat(lang === 'bn' ? 'bn-BD' : 'en-GB', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Dhaka' }).format(Date.parse(iso));
+const formatTime = (iso: string, lang: Lang) =>
+  new Intl.DateTimeFormat(lang === 'bn' ? 'bn-BD' : 'en-GB', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Dhaka' }).format(
+    Date.parse(iso),
+  );
 
 export function Component() {
   const { id = '' } = useParams();
@@ -43,20 +46,36 @@ export function Component() {
   const { pathname } = useLocation();
   const listing = useQuery({
     queryKey: listingKey(id),
-    queryFn: async ({ signal }) => (await takeEarly<ListingView>(`/listings/${id}`)) ?? (api.get(`/listings/${encodeURIComponent(id)}`, { signal }) as Promise<ListingView>),
+    queryFn: async ({ signal }) =>
+      (await takeEarly<ListingView>(`/listings/${id}`)) ?? (api.get(`/listings/${encodeURIComponent(id)}`, { signal }) as Promise<ListingView>),
     staleTime: FRESHNESS.search,
     retry: false,
   });
   if (listing.isPending || me.isPending) return <p role="status">{t('shell.loading')}</p>;
   if (me.isError) return <Navigate to={signInPath(pathname)} replace />;
   if (listing.isError) {
-    return isApiError(listing.error, 404)
-      ? <div><h1>{t('listing.not_found')}</h1><p><Link to="/search">{t('shell.home_link')}</Link></p></div>
-      : <FormMessage kind="error">{errorText(listing.error, t, lang)}</FormMessage>;
+    return isApiError(listing.error, 404) ? (
+      <div>
+        <h1>{t('listing.not_found')}</h1>
+        <p>
+          <Link to="/search">{t('shell.home_link')}</Link>
+        </p>
+      </div>
+    ) : (
+      <FormMessage kind="error">{errorText(listing.error, t, lang)}</FormMessage>
+    );
   }
   const l = listing.data;
   if (l.saleFormat !== 'auction' || !l.auction) {
-    return <div><h1>{l.title}</h1><p>{t('room.not_auction')}</p><p><Link to={`/listings/${encodeURIComponent(id)}`}>{t('room.back')}</Link></p></div>;
+    return (
+      <div>
+        <h1>{l.title}</h1>
+        <p>{t('room.not_auction')}</p>
+        <p>
+          <Link to={`/listings/${encodeURIComponent(id)}`}>{t('room.back')}</Link>
+        </p>
+      </div>
+    );
   }
   return <Room l={l} auction={l.auction} own={me.data.id === l.seller.id} t={t} lang={lang} />;
 }
@@ -77,7 +96,9 @@ function Room({ l, auction, own, t, lang }: { l: ListingView; auction: NonNullab
   const aliases = [...new Set([...items].reverse().map((b) => b.bidderAlias))];
   // more than nine: the leader and the viewer always keep a seat, the rest are the earliest bidders; the count above still shows everyone
   const keep = new Set<number | null | undefined>([state.leaderAlias, mine?.yourAlias]);
-  const seats = [...aliases.filter((a) => keep.has(a)), ...aliases.filter((a) => !keep.has(a))].slice(0, MAX_SEATS).sort((a, b) => aliases.indexOf(a) - aliases.indexOf(b));
+  const seats = [...aliases.filter((a) => keep.has(a)), ...aliases.filter((a) => !keep.has(a))]
+    .slice(0, MAX_SEATS)
+    .sort((a, b) => aliases.indexOf(a) - aliases.indexOf(b));
   const you = mine?.yourAlias ?? null;
   const nameOf = (alias: number) => (alias === you ? t('room.you') : t('room.seat', { alias: toLocalDigits(String(alias), lang) }));
   // a row that arrives after the room opened flashes once (not with reduced motion; see the stylesheet)
@@ -96,17 +117,29 @@ function Room({ l, auction, own, t, lang }: { l: ListingView; auction: NonNullab
   const minP = BigInt(state.minimumBid ?? state.price ?? state.startPrice);
   const stepP = state.price && state.minimumBid && minP > priceP ? minP - priceP : priceP / 50n + 1n;
   const wholeTaka = (x: bigint) => ((x + 99n) / 100n) * 100n;
-  const quick = mine?.leading && mine.yourMaximum
-    ? [1n, 2n, 3n].map((k) => wholeTaka(BigInt(mine.yourMaximum!) + k * stepP))
-    : [0n, 1n, 2n].map((k) => wholeTaka(minP + k * stepP));
+  const quick =
+    mine?.leading && mine.yourMaximum
+      ? [1n, 2n, 3n].map((k) => wholeTaka(BigInt(mine.yourMaximum!) + k * stepP))
+      : [0n, 1n, 2n].map((k) => wholeTaka(minP + k * stepP));
   const photo = l.photos[0];
   return (
     <div className={styles.room}>
       <header className={styles.roomHead}>
         {photo && <img className={styles.roomThumb} src={photo.thumbUrl} alt="" width={64} height={64} />}
         <div className={styles.roomTitle}>
-          <p className={styles.roomLive}>{open ? <><span className={styles.liveDot} aria-hidden="true" />{t('room.live')}</> : t('room.closed')}</p>
-          <h1><TitleParts text={l.title} /></h1>
+          <p className={styles.roomLive}>
+            {open ? (
+              <>
+                <span className={styles.liveDot} aria-hidden="true" />
+                {t('room.live')}
+              </>
+            ) : (
+              t('room.closed')
+            )}
+          </p>
+          <h1>
+            <TitleParts text={l.title} />
+          </h1>
         </div>
         <div className={styles.roomStats}>
           {open && <Countdown left={left} text={countdown.text} urgent={countdown.urgent} t={t} lang={lang} />}
@@ -124,11 +157,15 @@ function Room({ l, auction, own, t, lang }: { l: ListingView; auction: NonNullab
           <path d="M70 225 A330 165 0 0 1 730 225" fill="none" stroke="var(--tb-line)" strokeWidth="1" />
           {seats.map((alias, i) => {
             const { x, y } = seatAt(i, seats.length);
-            const cls = [styles.seat, alias === state.leaderAlias ? styles.seatLead : '', alias === mine?.yourAlias ? styles.seatMe : ''].filter(Boolean).join(' ');
+            const cls = [styles.seat, alias === state.leaderAlias ? styles.seatLead : '', alias === mine?.yourAlias ? styles.seatMe : '']
+              .filter(Boolean)
+              .join(' ');
             return (
               <g key={alias} className={cls}>
                 <circle cx={x} cy={y} r="30" />
-                <text x={x} y={y + 5}>{alias === you ? t('room.you') : t('room.seat_short', { alias: toLocalDigits(String(alias), lang) })}</text>
+                <text x={x} y={y + 5}>
+                  {alias === you ? t('room.you') : t('room.seat_short', { alias: toLocalDigits(String(alias), lang) })}
+                </text>
               </g>
             );
           })}
@@ -148,43 +185,81 @@ function Room({ l, auction, own, t, lang }: { l: ListingView; auction: NonNullab
       <section className={styles.roomControls} aria-label={t('auction.place_bid')}>
         {biddingOpen ? (
           <>
-            <BidForm id={state.auctionId} state={state} mine={mine} t={t} lang={lang} quick={quick} quickHint={t('room.quick_hint')}
+            <BidForm
+              id={state.auctionId}
+              state={state}
+              mine={mine}
+              t={t}
+              lang={lang}
+              quick={quick}
+              quickHint={t('room.quick_hint')}
               onPlaced={(r, sentAt) => {
                 const at = Date.parse(r.state.serverTime);
                 if (Number.isFinite(at)) serverClock.sampleHttp(at, sentAt, Date.now());
                 accept(r.state);
                 refreshMine();
-              }} onRefused={() => void refetch()} />
+              }}
+              onRefused={() => void refetch()}
+            />
             <div className={styles.roomActions}>
               <button type="button" className={sitOut ? `${styles.roomAction} ${styles.roomActionOn}` : styles.roomAction} onClick={() => setSitOut((v) => !v)}>
-                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M2 12 C5 6 9 4 12 4 C15 4 19 6 22 12 C19 18 15 20 12 20 C9 20 5 18 2 12 Z M12 9 a3 3 0 1 0 0.01 0 Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+                  <path
+                    d="M2 12 C5 6 9 4 12 4 C15 4 19 6 22 12 C19 18 15 20 12 20 C9 20 5 18 2 12 Z M12 9 a3 3 0 1 0 0.01 0 Z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinejoin="round"
+                  />
+                </svg>
                 {sitOut ? t('room.join_in') : t('room.sit_out')}
               </button>
               <Link className={styles.roomAction} to={`/listings/${encodeURIComponent(l.id)}`}>
-                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M15 5 L8 12 L15 19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+                  <path d="M15 5 L8 12 L15 19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
                 {t('room.back_short')}
               </Link>
             </div>
-            <p className={styles.muted} role="status">{sitOut ? t('room.sit_out_note') : ''}</p>
+            <p className={styles.muted} role="status">
+              {sitOut ? t('room.sit_out_note') : ''}
+            </p>
           </>
         ) : (
           <p role="status">{own ? t('room.own') : !open ? t('room.closed') : t('auction.ending')}</p>
         )}
-        {!biddingOpen && <p><Link className={styles.roomAction} to={`/listings/${encodeURIComponent(l.id)}`}>{t('room.back_short')}</Link></p>}
+        {!biddingOpen && (
+          <p>
+            <Link className={styles.roomAction} to={`/listings/${encodeURIComponent(l.id)}`}>
+              {t('room.back_short')}
+            </Link>
+          </p>
+        )}
       </section>
 
       <aside className={styles.roomFeed} aria-labelledby="room-feed-title">
         <h2 id="room-feed-title">{t('room.feed')}</h2>
-        {items.length === 0 ? <p className={styles.muted}>{t('room.feed_empty')}</p> : (
+        {items.length === 0 ? (
+          <p className={styles.muted}>{t('room.feed_empty')}</p>
+        ) : (
           <ol className={styles.bidList} aria-label={t('room.feed_caption')}>
             {items.slice(0, FEED_ROWS).map((b, i) => {
               const mineRow = b.bidderAlias === you;
               return (
                 <li key={b.id} className={[i === 0 ? styles.bidNewest : '', fresh.has(b.id) ? styles.flash : ''].filter(Boolean).join(' ') || undefined}>
-                  <span className={mineRow ? `${styles.bidSeat} ${styles.bidSeatMe}` : styles.bidSeat} aria-hidden="true">{mineRow ? t('room.you') : t('room.seat_short', { alias: toLocalDigits(String(b.bidderAlias), lang) })}</span>
+                  <span className={mineRow ? `${styles.bidSeat} ${styles.bidSeatMe}` : styles.bidSeat} aria-hidden="true">
+                    {mineRow ? t('room.you') : t('room.seat_short', { alias: toLocalDigits(String(b.bidderAlias), lang) })}
+                  </span>
                   <span className={styles.bidWho}>
-                    <strong>{mineRow ? t('room.you_as', { alias: toLocalDigits(String(b.bidderAlias), lang) }) : t('auction.history_bidder', { alias: toLocalDigits(String(b.bidderAlias), lang) })}</strong>
-                    <small>{formatTime(b.at, lang)}{b.leading ? ` · ${t('auction.history_leading')}` : ''}</small>
+                    <strong>
+                      {mineRow
+                        ? t('room.you_as', { alias: toLocalDigits(String(b.bidderAlias), lang) })
+                        : t('auction.history_bidder', { alias: toLocalDigits(String(b.bidderAlias), lang) })}
+                    </strong>
+                    <small>
+                      {formatTime(b.at, lang)}
+                      {b.leading ? ` · ${t('auction.history_leading')}` : ''}
+                    </small>
                   </span>
                   <span className={styles.bidAmount}>{money(b.amount, lang)}</span>
                 </li>
@@ -193,7 +268,9 @@ function Room({ l, auction, own, t, lang }: { l: ListingView; auction: NonNullab
           </ol>
         )}
       </aside>
-      <p className={styles.visuallyHidden} aria-live="polite" role="status">{sitOut ? '' : announcement}</p>
+      <p className={styles.visuallyHidden} aria-live="polite" role="status">
+        {sitOut ? '' : announcement}
+      </p>
     </div>
   );
 }

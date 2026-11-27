@@ -56,11 +56,23 @@ describe('webhooks under concurrency', () => {
     JSON.stringify({
       id: o.id ?? `evt_${randomUUID().replace(/-/g, '')}`,
       type: o.type ?? 'checkout.session.completed',
-      data: { object: { id: a.session, client_reference_id: a.attemptId, amount_total: a.amount, currency: 'bdt', payment_status: 'paid', status: 'complete', payment_intent: `pi_${randomInt(1e6, 1e7)}` } },
+      data: {
+        object: {
+          id: a.session,
+          client_reference_id: a.attemptId,
+          amount_total: a.amount,
+          currency: 'bdt',
+          payment_status: 'paid',
+          status: 'complete',
+          payment_intent: `pi_${randomInt(1e6, 1e7)}`,
+        },
+      },
     });
   const sign = (body: string, at = Math.floor(Date.now() / 1000)) => `t=${at},v1=${createHmac('sha256', WEBHOOK_SECRET).update(`${at}.${body}`).digest('hex')}`;
   const post = (body: string) =>
-    fetch(t.url('/webhooks/stripe'), { method: 'POST', headers: { 'content-type': 'application/json', 'stripe-signature': sign(body) }, body }).then(async (r) => ({ status: r.status, ...(await r.json()) }));
+    fetch(t.url('/webhooks/stripe'), { method: 'POST', headers: { 'content-type': 'application/json', 'stripe-signature': sign(body) }, body }).then(
+      async (r) => ({ status: r.status, ...(await r.json()) }),
+    );
 
   it('AC-4 the same signed event delivered 15 times at once: one payment, one escrow, one journal entry', async () => {
     const o = await order();
@@ -90,8 +102,12 @@ describe('webhooks under concurrency', () => {
     const [first, second] = [await attempt(o), await attempt(o)];
     await Promise.all([post(event(first)), post(event(second)), post(event(first)), post(event(second))]);
     expect(await count(`orders.escrows WHERE order_id = $1`, [o.orderId])).toBe(1);
-    expect(await fx.query(`SELECT reason, amount FROM payments.refunds WHERE order_id = $1`, [o.orderId])).toEqual([{ reason: 'duplicate_payment', amount: '1500000' }]);
-    const statuses = (await fx.query<{ status: string }>(`SELECT status FROM payments.attempts WHERE order_id = $1 ORDER BY status`, [o.orderId])).map((r) => r.status);
+    expect(await fx.query(`SELECT reason, amount FROM payments.refunds WHERE order_id = $1`, [o.orderId])).toEqual([
+      { reason: 'duplicate_payment', amount: '1500000' },
+    ]);
+    const statuses = (await fx.query<{ status: string }>(`SELECT status FROM payments.attempts WHERE order_id = $1 ORDER BY status`, [o.orderId])).map(
+      (r) => r.status,
+    );
     expect(statuses).toEqual(['succeeded', 'succeeded_duplicate']);
     // money in twice, and owed back once: the ledger shows both receipts, and one of them as owed to the buyer
     expect(await count(`payments.journal_entries WHERE order_id = $1 AND kind = 'payment_received'`, [o.orderId])).toBe(2);

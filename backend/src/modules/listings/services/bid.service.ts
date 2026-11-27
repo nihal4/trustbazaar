@@ -59,8 +59,16 @@ export function fromPlaceBid(err: unknown): never {
       }
       if (reason === 'bidder_restricted') {
         // 'bidder_restricted until 2026-11-20 10:00:00+00': the end of the restriction, so the bidder knows (FR-AUC-16)
-        const until = Date.parse(m.slice('bidder_restricted until '.length).trim().replace(' ', 'T').replace(/([+-]\d\d)$/, '$1:00'));
-        throw new Problem('bid-refused', { errors: [{ field: 'maximum', reason, ...(Number.isFinite(until) ? { until: new Date(until).toISOString() } : {}) }] });
+        const until = Date.parse(
+          m
+            .slice('bidder_restricted until '.length)
+            .trim()
+            .replace(' ', 'T')
+            .replace(/([+-]\d\d)$/, '$1:00'),
+        );
+        throw new Problem('bid-refused', {
+          errors: [{ field: 'maximum', reason, ...(Number.isFinite(until) ? { until: new Date(until).toISOString() } : {}) }],
+        });
       }
       if (reason) throw new Problem('bid-refused', { errors: [{ field: 'maximum', reason }] });
     }
@@ -115,7 +123,10 @@ export class BidService implements AuctionQuery {
         // the lead changed hands: the previous leader's notification history (FR-NTF-01), in the same transaction (DC-6)
         if (this.leadTaken(placed, userId)) {
           await publish(m, 'auctions.bid.outbid', auctionId, {
-            auctionId, userId: placed.previous_leader, price: placed.price, bidId: placed.bid_id,
+            auctionId,
+            userId: placed.previous_leader,
+            price: placed.price,
+            bidId: placed.bid_id,
           });
         }
         state = await readAuctionState(m, auctionId);
@@ -154,8 +165,13 @@ export class BidService implements AuctionQuery {
       [auctionId],
     )) as { id: string; auction_id: string; kind: Flag['kind']; score: number; detail: Record<string, unknown>; created_at: Date; reviewed_at: Date | null }[];
     return rows.map((r) => ({
-      id: r.id, auctionId: r.auction_id, kind: r.kind, score: r.score, detail: r.detail,
-      createdAt: r.created_at.toISOString(), reviewedAt: r.reviewed_at?.toISOString() ?? null,
+      id: r.id,
+      auctionId: r.auction_id,
+      kind: r.kind,
+      score: r.score,
+      detail: r.detail,
+      createdAt: r.created_at.toISOString(),
+      reviewedAt: r.reviewed_at?.toISOString() ?? null,
     }));
   }
 
@@ -208,8 +224,13 @@ export class BidService implements AuctionQuery {
          FROM auctions.auctions a WHERE a.listing_id = $1`,
       [auctionId, userId],
     )) as {
-      leading: boolean | null; won: boolean | null; maximum: string | null; alias: number | null;
-      won_order: string | null; offer_order: string | null; offer: { id: string; price: string; expiresAt: string } | null;
+      leading: boolean | null;
+      won: boolean | null;
+      maximum: string | null;
+      alias: number | null;
+      won_order: string | null;
+      offer_order: string | null;
+      offer: { id: string; price: string; expiresAt: string } | null;
     }[];
     if (!r) throw new Problem('not-found');
     return {
@@ -221,5 +242,4 @@ export class BidService implements AuctionQuery {
       secondChanceOffer: r.offer ? { id: r.offer.id, price: r.offer.price, expiresAt: new Date(r.offer.expiresAt).toISOString() } : null,
     };
   }
-
 }

@@ -18,13 +18,29 @@ import helmet from 'helmet';
 //    origin gets no Access-Control-Allow-Origin, so the browser refuses it the response; a preflight from it is refused.
 
 export const PERMISSIONS_POLICY = [
-  'accelerometer=()', 'autoplay=()', 'bluetooth=()', 'camera=()', 'display-capture=()', 'geolocation=()', 'gyroscope=()',
-  'hid=()', 'magnetometer=()', 'microphone=()', 'midi=()', 'payment=()', 'serial=()', 'usb=()', 'xr-spatial-tracking=()',
+  'accelerometer=()',
+  'autoplay=()',
+  'bluetooth=()',
+  'camera=()',
+  'display-capture=()',
+  'geolocation=()',
+  'gyroscope=()',
+  'hid=()',
+  'magnetometer=()',
+  'microphone=()',
+  'midi=()',
+  'payment=()',
+  'serial=()',
+  'usb=()',
+  'xr-spatial-tracking=()',
 ].join(', ');
 
 export function securityHeaders(production: boolean) {
   const h = helmet({
-    contentSecurityPolicy: { useDefaults: false, directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"], baseUri: ["'none'"], formAction: ["'none'"] } },
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"], baseUri: ["'none'"], formAction: ["'none'"] },
+    },
     crossOriginOpenerPolicy: { policy: 'same-origin' },
     crossOriginResourcePolicy: { policy: 'same-origin' },
     referrerPolicy: { policy: 'no-referrer' },

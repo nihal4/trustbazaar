@@ -19,10 +19,14 @@ const JITTER_ONLY = new Set([
 
 describe('SEC-DAT-09 secure randomness', () => {
   it('SEC-DAT-09 Math.random appears only to spread retry and polling times', () => {
-    const users = walk(SRC).filter((f) => /Math\.random/.test(readFileSync(f, 'utf8'))).map((f) => relative(SRC, f));
+    const users = walk(SRC)
+      .filter((f) => /Math\.random/.test(readFileSync(f, 'utf8')))
+      .map((f) => relative(SRC, f));
     expect(users.filter((f) => !JITTER_ONLY.has(f))).toEqual([]);
     for (const f of users) {
-      for (const line of readFileSync(join(SRC, f), 'utf8').split('\n').filter((l) => /Math\.random/.test(l))) {
+      for (const line of readFileSync(join(SRC, f), 'utf8')
+        .split('\n')
+        .filter((l) => /Math\.random/.test(l))) {
         expect(line).not.toMatch(/token|code|key|secret|nonce|otp|password|id\s*=/i);
       }
     }

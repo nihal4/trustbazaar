@@ -26,7 +26,12 @@ export class DevMailbox {
 
   async put(e: Omit<MailboxEntry, 'at' | 'simulated'>, now: Date): Promise<void> {
     const entry: MailboxEntry = { at: now.toISOString(), ...e, simulated: true };
-    await this.redis.multi().lpush(DEV_MAILBOX_KEY, JSON.stringify(entry)).ltrim(DEV_MAILBOX_KEY, 0, KEEP - 1).expire(DEV_MAILBOX_KEY, TTL_SECONDS).exec();
+    await this.redis
+      .multi()
+      .lpush(DEV_MAILBOX_KEY, JSON.stringify(entry))
+      .ltrim(DEV_MAILBOX_KEY, 0, KEEP - 1)
+      .expire(DEV_MAILBOX_KEY, TTL_SECONDS)
+      .exec();
   }
 
   /** Newest first; optionally only the messages to one number or address. */

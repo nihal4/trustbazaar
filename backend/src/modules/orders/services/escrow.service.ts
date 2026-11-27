@@ -23,7 +23,11 @@ import { split } from './split';
 // and a fraud hold), the order's closing, the escrow event and the audit entry.
 const DAY = 86_400_000;
 /** The reminder kind of each fulfilment step (FR-NTF-07). */
-const STEP_OF: Record<string, FulfilmentStep> = { meetup_handover: 'meetup_handover', courier_pickup: 'courier_pickup', credential_delivery: 'credentials_delivered' };
+const STEP_OF: Record<string, FulfilmentStep> = {
+  meetup_handover: 'meetup_handover',
+  courier_pickup: 'courier_pickup',
+  credential_delivery: 'credentials_delivered',
+};
 
 @Injectable()
 export class EscrowService implements EscrowCommands, EscrowQuery {
@@ -42,11 +46,16 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
   async recordFulfilmentStep(orderId: string, step: FulfilmentStep, at: Date, tx: EntityManager): Promise<void> {
     const { o } = await this.lock(tx, orderId);
     if (o.status !== 'paid' || o.fulfilmentStep !== step || o.fulfilmentDoneAt !== null) {
-      this.log.warn(`order ${orderId}: step ${step} ignored (status ${o.status}, expected ${o.fulfilmentStep}, done ${o.fulfilmentDoneAt?.toISOString() ?? 'no'})`);
+      this.log.warn(
+        `order ${orderId}: step ${step} ignored (status ${o.status}, expected ${o.fulfilmentStep}, done ${o.fulfilmentDoneAt?.toISOString() ?? 'no'})`,
+      );
       return;
     }
     await tx.getRepository(Order).update({ id: orderId }, { fulfilmentDoneAt: at });
-    await this.audit.record({ actorType: 'system', action: 'orders.fulfilment.recorded', objectType: 'order', objectId: orderId, after: { step, at: at.toISOString() } }, tx);
+    await this.audit.record(
+      { actorType: 'system', action: 'orders.fulfilment.recorded', objectType: 'order', objectId: orderId, after: { step, at: at.toISOString() } },
+      tx,
+    );
   }
 
   /** A meetup handover is the step and the delivery event at once (handover_code). */
@@ -54,7 +63,9 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     const { o, e } = await this.lock(tx, orderId);
     const stepDone = o.fulfilmentDoneAt !== null || (source === 'handover_code' && o.fulfilmentStep === 'meetup_handover');
     if (o.status !== 'paid' || !e || o.deliveryEventAt !== null || !stepDone) {
-      this.log.warn(`order ${orderId}: delivery event ${source} ignored (status ${o.status}, event ${o.deliveryEventAt?.toISOString() ?? 'none'}, step done ${stepDone})`);
+      this.log.warn(
+        `order ${orderId}: delivery event ${source} ignored (status ${o.status}, event ${o.deliveryEventAt?.toISOString() ?? 'none'}, step done ${stepDone})`,
+      );
       return;
     }
     // section 5.2: from the order's own parameter version (FR-OPS-08)
@@ -65,9 +76,18 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     await tx.getRepository(Order).update({ id: orderId }, { fulfilmentDoneAt: o.fulfilmentDoneAt ?? at, deliveryEventAt: at, deliveryEventSource: source });
     await tx.getRepository(Escrow).update({ orderId }, { disputeWindowEndsAt: windowEnds, autoReleaseAt: autoRelease });
     await this.event(tx, 'orders.order.delivered', orderId, {
-      orderId, buyerId: o.buyerId, sellerId: o.sellerId, source, at: at.toISOString(), disputeWindowEndsAt: windowEnds.toISOString(), autoReleaseAt: autoRelease.toISOString(),
+      orderId,
+      buyerId: o.buyerId,
+      sellerId: o.sellerId,
+      source,
+      at: at.toISOString(),
+      disputeWindowEndsAt: windowEnds.toISOString(),
+      autoReleaseAt: autoRelease.toISOString(),
     });
-    await this.audit.record({ actorType: 'system', action: 'orders.order.delivered', objectType: 'order', objectId: orderId, after: { source, at: at.toISOString() } }, tx);
+    await this.audit.record(
+      { actorType: 'system', action: 'orders.order.delivered', objectType: 'order', objectId: orderId, after: { source, at: at.toISOString() } },
+      tx,
+    );
   }
 
   async refundCourierReturned(orderId: string, courierCharge: bigint, tx: EntityManager): Promise<void> {
@@ -77,14 +97,21 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
       return;
     }
     // FR-DLV-12: everything back, the fee included, whatever the courier did
-    await this.settle(tx, o, e, { itemRefund: BigInt(o.itemPrice), courierDone: false, reason: 'courier_returned', actor: 'system', note: 'returned to the seller by the courier' });
+    await this.settle(tx, o, e, {
+      itemRefund: BigInt(o.itemPrice),
+      courierDone: false,
+      reason: 'courier_returned',
+      actor: 'system',
+      note: 'returned to the seller by the courier',
+    });
     if (courierCharge > 0n) await this.recordCourierCost(orderId, courierCharge, tx);
   }
 
   async recordCourierCost(orderId: string, amount: bigint, tx: EntityManager): Promise<void> {
     if (amount <= 0n) return;
     await post(tx, 'courier_return_charge', orderId, null, 'courier charge for a failed delivery (FR-DLV-12)', [
-      ['expense_courier_returns', null, amount], ['courier_payable', null, -amount],
+      ['expense_courier_returns', null, amount],
+      ['courier_payable', null, -amount],
     ]);
   }
 
@@ -100,7 +127,8 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
 
   async applyDisputeOutcome(orderId: string, disputeId: string, outcome: DisputeOutcome, tx: EntityManager): Promise<void> {
     const { o, e } = await this.lock(tx, orderId);
-    if (!e || e.state !== 'frozen_disputed' || e.openDisputeId !== disputeId) throw new Problem('order-state', { errors: [{ field: 'dispute', reason: 'not-the-open-dispute' }] });
+    if (!e || e.state !== 'frozen_disputed' || e.openDisputeId !== disputeId)
+      throw new Problem('order-state', { errors: [{ field: 'dispute', reason: 'not-the-open-dispute' }] });
     const item = BigInt(o.itemPrice);
     const courierDone = this.courierDone(o);
     const actor = 'staff' as const;
@@ -110,10 +138,25 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
       case 'full':
       case 'return_completed':
         // the item price back, and the fee too unless the courier picked up (then the escrow ends partially refunded)
-        return this.settle(tx, o, e, { itemRefund: item, courierDone, reason: 'dispute_full', actor, note: `dispute ${disputeId}: ${outcome.kind === 'full' ? 'full refund' : 'refund after return'}`, disputeId });
+        return this.settle(tx, o, e, {
+          itemRefund: item,
+          courierDone,
+          reason: 'dispute_full',
+          actor,
+          note: `dispute ${disputeId}: ${outcome.kind === 'full' ? 'full refund' : 'refund after return'}`,
+          disputeId,
+        });
       case 'partial':
-        if (outcome.itemRefund <= 0n || outcome.itemRefund >= item) throw new Problem('validation-failed', { errors: [{ field: 'itemRefund', reason: 'between-zero-and-item-price' }] });
-        return this.settle(tx, o, e, { itemRefund: outcome.itemRefund, courierDone, reason: 'dispute_partial', actor, note: `dispute ${disputeId}: partial refund`, disputeId });
+        if (outcome.itemRefund <= 0n || outcome.itemRefund >= item)
+          throw new Problem('validation-failed', { errors: [{ field: 'itemRefund', reason: 'between-zero-and-item-price' }] });
+        return this.settle(tx, o, e, {
+          itemRefund: outcome.itemRefund,
+          courierDone,
+          reason: 'dispute_partial',
+          actor,
+          note: `dispute ${disputeId}: partial refund`,
+          disputeId,
+        });
       case 'after_return':
         // (d) stays frozen; the refund follows with return_completed (Unit 7, I-44)
         await this.history(tx, orderId, 'frozen_disputed', 'frozen_disputed', actor, `dispute ${disputeId}: refund after the item is returned`, disputeId);
@@ -123,7 +166,8 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
 
   async withdrawDispute(orderId: string, disputeId: string, tx: EntityManager): Promise<void> {
     const { e } = await this.lock(tx, orderId);
-    if (!e || e.state !== 'frozen_disputed' || e.openDisputeId !== disputeId) throw new Problem('order-state', { errors: [{ field: 'dispute', reason: 'not-the-open-dispute' }] });
+    if (!e || e.state !== 'frozen_disputed' || e.openDisputeId !== disputeId)
+      throw new Problem('order-state', { errors: [{ field: 'dispute', reason: 'not-the-open-dispute' }] });
     const later = new Date(this.clock.now().getTime() + DAY);
     const autoReleaseAt = e.autoReleaseAt === null ? null : e.autoReleaseAt > later ? e.autoReleaseAt : later;
     await tx.getRepository(Escrow).update({ orderId }, { state: 'held', openDisputeId: null, autoReleaseAt });
@@ -137,7 +181,14 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     await this.db.transaction(async (m) => {
       const { o, e } = await this.party(m, orderId, buyerId, 'buyer');
       if (!e || e.state !== 'held' || o.deliveryEventAt === null || e.releasePolicy !== 'standard') throw new Problem('order-state');
-      await this.settle(m, o, e, { itemRefund: 0n, courierDone: this.courierDone(o), reason: null, actor: 'user', actorId: buyerId, note: 'buyer confirmed receipt' });
+      await this.settle(m, o, e, {
+        itemRefund: 0n,
+        courierDone: this.courierDone(o),
+        reason: null,
+        actor: 'user',
+        actorId: buyerId,
+        note: 'buyer confirmed receipt',
+      });
     });
   }
 
@@ -146,7 +197,14 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     await this.db.transaction(async (m) => {
       const { o, e } = await this.party(m, orderId, buyerId, 'buyer');
       if (!e || e.state !== 'held' || o.deliveryEventAt === null || e.releasePolicy !== 'game_protection') throw new Problem('order-state');
-      await this.settle(m, o, e, { itemRefund: 0n, courierDone: false, reason: null, actor: 'user', actorId: buyerId, note: 'buyer released early (FR-GAM-17)' });
+      await this.settle(m, o, e, {
+        itemRefund: 0n,
+        courierDone: false,
+        reason: null,
+        actor: 'user',
+        actorId: buyerId,
+        note: 'buyer released early (FR-GAM-17)',
+      });
     });
   }
 
@@ -156,7 +214,13 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
       const { o, e } = await this.lock(m, orderId);
       // AC-3: a timeout counts only from a recorded delivery event, whatever date the escrow holds
       if (!e || e.state !== 'held' || o.deliveryEventAt === null || e.autoReleaseAt === null || e.autoReleaseAt > this.clock.now()) return false;
-      await this.settle(m, o, e, { itemRefund: 0n, courierDone: this.courierDone(o), reason: null, actor: 'system', note: e.releasePolicy === 'game_protection' ? 'protection period ended' : 'auto-release after the delivery event' });
+      await this.settle(m, o, e, {
+        itemRefund: 0n,
+        courierDone: this.courierDone(o),
+        reason: null,
+        actor: 'system',
+        note: e.releasePolicy === 'game_protection' ? 'protection period ended' : 'auto-release after the delivery event',
+      });
       return true;
     });
   }
@@ -173,7 +237,13 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
       const now = this.clock.now();
       if (o.status !== 'paid' || !e || e.state !== 'held' || o.fulfilmentDoneAt !== null || !o.fulfilmentDueAt || o.fulfilmentDueAt > now) return false;
       await m.getRepository(CancellationRequest).update({ orderId, status: 'pending' }, { status: 'lapsed', decidedAt: now });
-      await this.settle(m, o, e, { itemRefund: BigInt(o.itemPrice), courierDone: false, reason: 'fulfilment_deadline', actor: 'system', note: `fulfilment step ${o.fulfilmentStep} missed its deadline` });
+      await this.settle(m, o, e, {
+        itemRefund: BigInt(o.itemPrice),
+        courierDone: false,
+        reason: 'fulfilment_deadline',
+        actor: 'system',
+        note: `fulfilment step ${o.fulfilmentStep} missed its deadline`,
+      });
       return true;
     });
   }
@@ -183,7 +253,8 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     return this.db.transaction(async (m) => {
       const { o, e } = await this.party(m, orderId, buyerId, 'buyer');
       if (!e || e.state !== 'held' || o.deliveryEventAt !== null) throw new Problem('order-state');
-      if (await m.getRepository(CancellationRequest).findOneBy({ orderId, status: 'pending' })) throw new Problem('order-state', { errors: [{ field: 'request', reason: 'already-pending' }] });
+      if (await m.getRepository(CancellationRequest).findOneBy({ orderId, status: 'pending' }))
+        throw new Problem('order-state', { errors: [{ field: 'request', reason: 'already-pending' }] });
       const { identifiers } = await m.getRepository(CancellationRequest).insert({ orderId, requestedBy: buyerId, reason: reason.trim() });
       await this.event(m, 'orders.cancellation.requested', orderId, { orderId, buyerId, sellerId: o.sellerId, requestId: identifiers[0].id });
       return identifiers[0].id as string;
@@ -206,7 +277,14 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
       if (!e || e.state !== 'held' || o.deliveryEventAt !== null) throw new Problem('order-state');
       await m.getRepository(CancellationRequest).update({ id: requestId }, { status: 'accepted', decidedAt: now });
       // "refund the buyer in full": the item and the delivery fee
-      await this.settle(m, o, e, { itemRefund: BigInt(o.itemPrice), courierDone: false, reason: 'cancellation', actor: 'user', actorId: sellerId, note: `cancellation request ${requestId} accepted by the seller` });
+      await this.settle(m, o, e, {
+        itemRefund: BigInt(o.itemPrice),
+        courierDone: false,
+        reason: 'cancellation',
+        actor: 'user',
+        actorId: sellerId,
+        note: `cancellation request ${requestId} accepted by the seller`,
+      });
     });
   }
 
@@ -216,7 +294,14 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
       const { o, e } = await this.party(m, orderId, sellerId, 'seller');
       if (!e || e.state !== 'held' || o.deliveryEventAt !== null) throw new Problem('order-state');
       await m.getRepository(CancellationRequest).update({ orderId, status: 'pending' }, { status: 'lapsed', decidedAt: this.clock.now() });
-      await this.settle(m, o, e, { itemRefund: BigInt(o.itemPrice), courierDone: false, reason: 'cancellation', actor: 'user', actorId: sellerId, note: `cancelled by the seller: ${reason.trim()}` });
+      await this.settle(m, o, e, {
+        itemRefund: BigInt(o.itemPrice),
+        courierDone: false,
+        reason: 'cancellation',
+        actor: 'user',
+        actorId: sellerId,
+        note: `cancelled by the seller: ${reason.trim()}`,
+      });
       await this.event(m, 'orders.order.cancelled_by_seller', orderId, { orderId, sellerId, buyerId: o.buyerId, reason: reason.trim() }); // strike (Unit 7)
     });
   }
@@ -228,8 +313,17 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     const e = await this.db.getRepository(Escrow).findOneBy({ orderId });
     if (!o || !e) throw new Problem('not-found');
     return {
-      orderId, orderStatus: o.status, state: e.state, releasePolicy: e.releasePolicy, amountCollected: e.amountCollected, amountReleased: e.amountReleased,
-      amountRefunded: e.amountRefunded, disputeWindowEndsAt: e.disputeWindowEndsAt, autoReleaseAt: e.autoReleaseAt, openDisputeId: e.openDisputeId, deliveryEventAt: o.deliveryEventAt,
+      orderId,
+      orderStatus: o.status,
+      state: e.state,
+      releasePolicy: e.releasePolicy,
+      amountCollected: e.amountCollected,
+      amountReleased: e.amountReleased,
+      amountRefunded: e.amountRefunded,
+      disputeWindowEndsAt: e.disputeWindowEndsAt,
+      autoReleaseAt: e.autoReleaseAt,
+      openDisputeId: e.openDisputeId,
+      deliveryEventAt: o.deliveryEventAt,
       closedAt: o.closedAt,
     };
   }
@@ -275,7 +369,15 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     m: EntityManager,
     o: Order,
     e: Escrow,
-    s: { itemRefund: bigint; courierDone: boolean; reason: RefundReason | null; actor: 'system' | 'staff' | 'user'; actorId?: string; note: string; disputeId?: string },
+    s: {
+      itemRefund: bigint;
+      courierDone: boolean;
+      reason: RefundReason | null;
+      actor: 'system' | 'staff' | 'user';
+      actorId?: string;
+      note: string;
+      disputeId?: string;
+    },
   ): Promise<void> {
     const item = BigInt(o.itemPrice);
     const fee = BigInt(o.deliveryFee);
@@ -285,14 +387,29 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     const state = p.refundTotal === 0n ? 'released' : released === 0n ? 'refunded' : 'partially_refunded';
     const now = this.clock.now();
 
-    await m.getRepository(Escrow).update({ orderId: o.id }, {
-      state, amountReleased: released.toString(), amountRefunded: p.refundTotal.toString(), openDisputeId: null, terminalAt: now,
-    });
+    await m.getRepository(Escrow).update(
+      { orderId: o.id },
+      {
+        state,
+        amountReleased: released.toString(),
+        amountRefunded: p.refundTotal.toString(),
+        openDisputeId: null,
+        terminalAt: now,
+      },
+    );
     await this.history(m, o.id, e.state, state, s.actor, s.note, s.disputeId ?? null, released, p.refundTotal, s.actorId);
     await m.getRepository(Settlement).insert({
-      orderId: o.id, amountCollected: total.toString(), itemPrice: item.toString(), deliveryFee: fee.toString(), commission: p.commission.toString(),
-      courierPayout: p.courierPayout.toString(), deliveryMargin: p.deliveryMargin.toString(), sellerPayout: p.sellerPayout.toString(),
-      refundTotal: p.refundTotal.toString(), commissionBps: o.commissionBps, deliveryMarginBps: o.deliveryMarginBps,
+      orderId: o.id,
+      amountCollected: total.toString(),
+      itemPrice: item.toString(),
+      deliveryFee: fee.toString(),
+      commission: p.commission.toString(),
+      courierPayout: p.courierPayout.toString(),
+      deliveryMargin: p.deliveryMargin.toString(),
+      sellerPayout: p.sellerPayout.toString(),
+      refundTotal: p.refundTotal.toString(),
+      commissionBps: o.commissionBps,
+      deliveryMarginBps: o.deliveryMarginBps,
     });
     const kind = state === 'released' ? 'escrow_release' : state === 'refunded' ? 'escrow_refund' : 'escrow_partial';
     await post(m, kind, o.id, s.disputeId ?? null, s.note, [
@@ -306,15 +423,36 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     let refundId: string | null = null;
     if (p.refundTotal > 0n) {
       const paid = await m.getRepository(PaymentAttempt).findOneByOrFail({ orderId: o.id, status: 'succeeded' });
-      const { identifiers } = await m.getRepository(Refund).insert({ attemptId: paid.id, orderId: o.id, amount: p.refundTotal.toString(), reason: s.reason ?? 'fee_refund' }); // a release keeps back an unused delivery fee
+      const { identifiers } = await m
+        .getRepository(Refund)
+        .insert({ attemptId: paid.id, orderId: o.id, amount: p.refundTotal.toString(), reason: s.reason ?? 'fee_refund' }); // a release keeps back an unused delivery fee
       refundId = identifiers[0].id as string;
     }
     if (p.sellerPayout > 0n) await this.createPayout(m, o, p.sellerPayout);
     await m.getRepository(Order).update({ id: o.id }, { status: 'closed', closedAt: now });
     await this.event(m, `orders.escrow.${state}`, o.id, {
-      orderId: o.id, buyerId: o.buyerId, sellerId: o.sellerId, reason: s.reason, refunded: p.refundTotal.toString(), sellerPayout: p.sellerPayout.toString(), disputeId: s.disputeId ?? null, refundId,
+      orderId: o.id,
+      buyerId: o.buyerId,
+      sellerId: o.sellerId,
+      reason: s.reason,
+      refunded: p.refundTotal.toString(),
+      sellerPayout: p.sellerPayout.toString(),
+      disputeId: s.disputeId ?? null,
+      refundId,
     });
-    await this.audit.record({ actorType: s.actor, actorId: s.actorId ?? null, action: `orders.escrow.${state}`, objectType: 'order', objectId: o.id, before: { state: e.state }, after: { state, released: released.toString(), refunded: p.refundTotal.toString() }, reason: s.note }, m);
+    await this.audit.record(
+      {
+        actorType: s.actor,
+        actorId: s.actorId ?? null,
+        action: `orders.escrow.${state}`,
+        objectType: 'order',
+        objectId: o.id,
+        before: { state: e.state },
+        after: { state, released: released.toString(), refunded: p.refundTotal.toString() },
+        reason: s.note,
+      },
+      m,
+    );
   }
 
   /** Section 5.7: the payout's status from the seller's payout account, or a hold while the seller is suspended (FR-TNS-05). */
@@ -329,8 +467,13 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     const held = seller.accountStatus === 'suspended';
     const status = held ? 'held' : !account ? 'waiting_account' : account.effective_at > now ? 'waiting_cooling_off' : 'pending';
     await m.getRepository(Payout).insert({
-      orderId: o.id, sellerId: o.sellerId, payoutAccountId: account?.id ?? null, amount: amount.toString(), status,
-      holdReason: held ? 'seller account suspended' : null, simulated: true, // no disbursement sandbox (SRS OI-4, FR-PAY-19)
+      orderId: o.id,
+      sellerId: o.sellerId,
+      payoutAccountId: account?.id ?? null,
+      amount: amount.toString(),
+      status,
+      holdReason: held ? 'seller account suspended' : null,
+      simulated: true, // no disbursement sandbox (SRS OI-4, FR-PAY-19)
     });
   }
 
@@ -355,9 +498,28 @@ export class EscrowService implements EscrowCommands, EscrowQuery {
     return { o, e };
   }
 
-  private history(m: EntityManager, orderId: string, from: Escrow['state'], to: Escrow['state'], actor: 'system' | 'staff' | 'user', reason: string, relatedId: string | null, released = 0n, refunded = 0n, actorId?: string) {
+  private history(
+    m: EntityManager,
+    orderId: string,
+    from: Escrow['state'],
+    to: Escrow['state'],
+    actor: 'system' | 'staff' | 'user',
+    reason: string,
+    relatedId: string | null,
+    released = 0n,
+    refunded = 0n,
+    actorId?: string,
+  ) {
     return m.getRepository(EscrowHistory).insert({
-      orderId, fromState: from, toState: to, actorType: actor, actorId: actorId ?? null, reason, relatedId, amountReleased: released.toString(), amountRefunded: refunded.toString(),
+      orderId,
+      fromState: from,
+      toState: to,
+      actorType: actor,
+      actorId: actorId ?? null,
+      reason,
+      relatedId,
+      amountReleased: released.toString(),
+      amountRefunded: refunded.toString(),
     });
   }
 

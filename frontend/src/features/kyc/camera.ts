@@ -27,8 +27,7 @@ export const browserCamera: Camera = {
     const ctx = canvas.getContext('2d');
     if (!ctx || canvas.width === 0) return Promise.reject(new Error('camera not ready'));
     ctx.drawImage(video, 0, 0);
-    return new Promise((resolve, reject) =>
-      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('capture failed'))), 'image/jpeg', 0.92));
+    return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('capture failed'))), 'image/jpeg', 0.92));
   },
 };
 

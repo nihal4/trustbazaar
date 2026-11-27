@@ -11,10 +11,23 @@ export function Countdown({ left, text, urgent, t, lang }: { left: number; text:
   const h = Math.floor((total % 86400) / 3600);
   const m = Math.floor((total % 3600) / 60);
   const sec = total % 60;
-  const cells: [number, 'd' | 'h' | 'm' | 's'][] = d > 0 ? [[d, 'd'], [h, 'h'], [m, 'm']] : [[h, 'h'], [m, 'm'], [sec, 's']];
+  const cells: [number, 'd' | 'h' | 'm' | 's'][] =
+    d > 0
+      ? [
+          [d, 'd'],
+          [h, 'h'],
+          [m, 'm'],
+        ]
+      : [
+          [h, 'h'],
+          [m, 'm'],
+          [sec, 's'],
+        ];
   return (
     <>
-      <span role="timer" aria-live="off" className={styles.visuallyHidden}>{text}</span>
+      <span role="timer" aria-live="off" className={styles.visuallyHidden}>
+        {text}
+      </span>
       <span className={urgent ? `${styles.countGrid} ${styles.urgent}` : styles.countGrid} aria-hidden="true">
         {cells.map(([n, u]) => (
           <span key={u} className={styles.countCell}>

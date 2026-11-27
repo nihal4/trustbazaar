@@ -76,7 +76,14 @@ export class LedgerService {
       [from, to],
     )) as { account_code: string; total: string }[];
     return {
-      items: page.map((r) => ({ entryId: r.entry_id, createdAt: r.created_at.toISOString(), kind: r.kind, orderId: r.order_id, account: r.account_code, revenue: r.revenue })),
+      items: page.map((r) => ({
+        entryId: r.entry_id,
+        createdAt: r.created_at.toISOString(),
+        kind: r.kind,
+        orderId: r.order_id,
+        account: r.account_code,
+        revenue: r.revenue,
+      })),
       totals: Object.fromEntries(totals.map((t) => [t.account_code, t.total])),
       nextCursor: more ? entries[PAGE_ENTRIES - 1] : null,
     };

@@ -9,9 +9,21 @@ import { decodeSearchCursor, encodeSearchCursor, FEATURED, PAGE, SearchService }
 
 const ID = '7c1c2a3e-1111-4a5b-8c9d-000000000001';
 const row = (i: number) => ({
-  id: `7c1c2a3e-1111-4a5b-8c9d-${String(i).padStart(12, '0')}`, title: 'Phone', item_kind: 'physical', sale_format: 'fixed_price', condition: 'used',
-  area_district: 'Dhaka', price: '100000', auction_end_at: null, reserve_not_met: false, featured: false, currently_reserved: false,
-  bid_count: null, photo_key: 'a'.repeat(32), distance_km: null, k: ['2026-11-01T10:00:00.000000Z'],
+  id: `7c1c2a3e-1111-4a5b-8c9d-${String(i).padStart(12, '0')}`,
+  title: 'Phone',
+  item_kind: 'physical',
+  sale_format: 'fixed_price',
+  condition: 'used',
+  area_district: 'Dhaka',
+  price: '100000',
+  auction_end_at: null,
+  reserve_not_met: false,
+  featured: false,
+  currently_reserved: false,
+  bid_count: null,
+  photo_key: 'a'.repeat(32),
+  distance_km: null,
+  k: ['2026-11-01T10:00:00.000000Z'],
 });
 
 function setup(o: { rows?: number; cp36?: boolean; area?: { district: string; lat: number; lng: number } | null } = {}) {
@@ -27,7 +39,11 @@ function setup(o: { rows?: number; cp36?: boolean; area?: { district: string; la
   const svc = new SearchService(db as never, identity as unknown as IdentityQuery, params);
   return { svc, calls, identity };
 }
-const problem = (p: Promise<unknown>) => p.then(() => null, (e: Problem) => ({ problem: e.problem, errors: e.extra.errors }));
+const problem = (p: Promise<unknown>) =>
+  p.then(
+    () => null,
+    (e: Problem) => ({ problem: e.problem, errors: e.extra.errors }),
+  );
 
 describe('SearchService', () => {
   it('FR-SRC-01 words search the vector and the title, and order by best match first', async () => {
@@ -51,7 +67,14 @@ describe('SearchService', () => {
 
   it('FR-SRC-02 filters become parameters, never part of the SQL text', async () => {
     const t = setup();
-    await t.svc.search(undefined, { category: 4, itemKind: 'physical', saleFormat: 'auction', condition: 'new', minPrice: '100', maxPrice: '900' } as SearchQuery);
+    await t.svc.search(undefined, {
+      category: 4,
+      itemKind: 'physical',
+      saleFormat: 'auction',
+      condition: 'new',
+      minPrice: '100',
+      maxPrice: '900',
+    } as SearchQuery);
     const [main] = t.calls;
     expect(main.values).toEqual([4, 'physical', 'auction', 'new', '100', '900']);
     expect(main.sql).toContain('WITH RECURSIVE');
@@ -73,7 +96,9 @@ describe('SearchService', () => {
     const t = setup();
     expect(await problem(t.svc.search(undefined, { lat: 23.8 } as SearchQuery))).toMatchObject({ errors: [{ field: 'lng', reason: 'lat-and-lng-together' }] });
     expect(await problem(t.svc.search(undefined, { minPrice: '500', maxPrice: '100' } as SearchQuery))).toMatchObject({ errors: [{ field: 'maxPrice' }] });
-    expect(await problem(t.svc.search(undefined, { sort: 'relevance', q: '  ' } as SearchQuery))).toMatchObject({ errors: [{ reason: 'relevance-needs-words' }] });
+    expect(await problem(t.svc.search(undefined, { sort: 'relevance', q: '  ' } as SearchQuery))).toMatchObject({
+      errors: [{ reason: 'relevance-needs-words' }],
+    });
     expect(await problem(t.svc.search(undefined, { maxKm: 5 } as SearchQuery))).toMatchObject({ errors: [{ field: 'maxKm', reason: 'needs-a-search-point' }] });
     expect(await problem(t.svc.search('user-1', { sort: 'distance' } as SearchQuery))).toMatchObject({ errors: [{ field: 'sort' }] });
   });
@@ -88,10 +113,12 @@ describe('SearchService', () => {
     expect(next.featured).toEqual([]);
     expect(t.calls[2].sql).toContain('(s.published_at, s.id) < ($1::timestamptz, $2::uuid)');
     expect(t.calls[2].values).toEqual(['2026-11-01T10:00:00.000000Z', row(PAGE).id]);
-    expect(first.items[0]).toEqual(expect.objectContaining({ thumbUrl: `/api/v1/listing-photos/${'a'.repeat(32)}?size=thumb`, auction: null, distanceKm: null }));
+    expect(first.items[0]).toEqual(
+      expect.objectContaining({ thumbUrl: `/api/v1/listing-photos/${'a'.repeat(32)}?size=thumb`, auction: null, distanceKm: null }),
+    );
   });
 
-  it('FR-SRC-03 cursors are checked: their sort, their id and each value\'s form', () => {
+  it("FR-SRC-03 cursors are checked: their sort, their id and each value's form", () => {
     const c = encodeSearchCursor('price_asc', ['100000'], ID);
     expect(decodeSearchCursor(c, 'price_asc', ['bigint'])).toEqual({ k: ['100000'], id: ID });
     expect(decodeSearchCursor(undefined, 'newest', ['timestamptz'])).toBeNull();

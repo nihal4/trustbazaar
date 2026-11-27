@@ -16,7 +16,9 @@ describe('SEC-AUTH-10 password reset tokens', () => {
     const a = await s.fx.account();
     const token = await linkFor(a.email);
     expect(Buffer.from(token, 'base64url').length * 8).toBeGreaterThanOrEqual(128);
-    const rows = await s.fx.query<{ token_hash: Buffer }>(`SELECT token_hash FROM identity.one_time_tokens WHERE user_id = $1 AND purpose = 'password_reset'`, [a.userId]);
+    const rows = await s.fx.query<{ token_hash: Buffer }>(`SELECT token_hash FROM identity.one_time_tokens WHERE user_id = $1 AND purpose = 'password_reset'`, [
+      a.userId,
+    ]);
     expect(rows).toHaveLength(1);
     expect(rows[0].token_hash).toHaveLength(32); // a SHA-256 digest
     expect(rows[0].token_hash.equals(Buffer.from(token, 'base64url'))).toBe(false); // not the token itself
@@ -33,13 +35,17 @@ describe('SEC-AUTH-10 password reset tokens', () => {
     const a = await s.fx.account();
     const token = await linkFor(a.email);
     expect((await s.browser().post('/auth/password/reset', { token, newPassword: `first ${randomUUID()}` })).status).toBe(204);
-    expect((await problem(await s.browser().post('/auth/password/reset', { token, newPassword: `second ${randomUUID()}` }))).type).toBe('/problems/link-invalid');
+    expect((await problem(await s.browser().post('/auth/password/reset', { token, newPassword: `second ${randomUUID()}` }))).type).toBe(
+      '/problems/link-invalid',
+    );
   });
 
   it('SEC-AUTH-10 an expired token is refused', async () => {
     const a = await s.fx.account();
     const token = await linkFor(a.email);
-    await s.fx.query(`UPDATE identity.one_time_tokens SET expires_at = now() - interval '1 second' WHERE user_id = $1 AND purpose = 'password_reset'`, [a.userId]);
+    await s.fx.query(`UPDATE identity.one_time_tokens SET expires_at = now() - interval '1 second' WHERE user_id = $1 AND purpose = 'password_reset'`, [
+      a.userId,
+    ]);
     expect((await problem(await s.browser().post('/auth/password/reset', { token, newPassword: `late ${randomUUID()}` }))).type).toBe('/problems/link-invalid');
   });
 

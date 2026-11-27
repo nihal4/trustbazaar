@@ -13,8 +13,17 @@ import styles from '../staff.module.css';
 import { Action, CaseFrame, Choice, Facts, short, staffError } from './common';
 
 interface Pending {
-  id: string; userId: string; kind: string; status: string; bankName: string | null; branchName: string | null; accountName: string | null;
-  accountLast4: string | null; routingNumber: string | null; kycLegalName: string; createdAt: string;
+  id: string;
+  userId: string;
+  kind: string;
+  status: string;
+  bankName: string | null;
+  branchName: string | null;
+  accountName: string | null;
+  accountLast4: string | null;
+  routingNumber: string | null;
+  kycLegalName: string;
+  createdAt: string;
 }
 
 export function Component() {
@@ -40,23 +49,43 @@ export function Component() {
           <section className={styles.panel} aria-labelledby="payout-facts">
             <h2 id="payout-facts">{t('staff.payout.compare')}</h2>
             <p className={styles.hint}>{t('staff.payout.explain')}</p>
-            <Facts rows={[
-              [t('staff.payout.account_name'), <strong key="n">{a.accountName ?? '—'}</strong>],
-              [t('staff.payout.legal_name'), <strong key="k">{a.kycLegalName}</strong>],
-              [t('staff.payout.bank'), [a.bankName, a.branchName].filter(Boolean).join(', ')],
-              [t('staff.payout.account'), a.accountLast4 ? `•••• ${a.accountLast4}` : null],
-              [t('staff.payout.routing'), a.routingNumber],
-              [t('staff.payout.added'), formatDateTime(Date.parse(a.createdAt), lang)],
-            ]} />
+            <Facts
+              rows={[
+                [t('staff.payout.account_name'), <strong key="n">{a.accountName ?? '—'}</strong>],
+                [t('staff.payout.legal_name'), <strong key="k">{a.kycLegalName}</strong>],
+                [t('staff.payout.bank'), [a.bankName, a.branchName].filter(Boolean).join(', ')],
+                [t('staff.payout.account'), a.accountLast4 ? `•••• ${a.accountLast4}` : null],
+                [t('staff.payout.routing'), a.routingNumber],
+                [t('staff.payout.added'), formatDateTime(Date.parse(a.createdAt), lang)],
+              ]}
+            />
           </section>
-          <Action title={t('staff.payout.decide_title')} button={t('staff.payout.decide_button')} t={t} lang={lang} maxReason={500}
+          <Action
+            title={t('staff.payout.decide_title')}
+            button={t('staff.payout.decide_button')}
+            t={t}
+            lang={lang}
+            maxReason={500}
             consequence={t(decision === 'reject' ? 'staff.payout.reject_consequence' : 'staff.payout.approve_consequence')}
-            valid={decision !== ''} invalidText={t('staff.report.choose')}
+            valid={decision !== ''}
+            invalidText={t('staff.report.choose')}
             run={(reason) => api.post(`/staff/payout-accounts/${encodeURIComponent(id)}/decision`, { decision, reason })}
             done={() => t(decision === 'reject' ? 'staff.payout.rejected' : 'staff.payout.approved')}
-            onDone={() => { void queryClient.invalidateQueries({ queryKey: queueKey('payout_accounts') }); void queryClient.invalidateQueries({ queryKey: ['staff', 'payout-accounts', 'pending'] }); }}>
-            <Choice legend={t('staff.payout.decision')} name="payout-decision" value={decision}
-              options={[['approve', t('staff.payout.approve')], ['reject', t('staff.payout.reject')]]} onChange={setDecision} />
+            onDone={() => {
+              void queryClient.invalidateQueries({ queryKey: queueKey('payout_accounts') });
+              void queryClient.invalidateQueries({ queryKey: ['staff', 'payout-accounts', 'pending'] });
+            }}
+          >
+            <Choice
+              legend={t('staff.payout.decision')}
+              name="payout-decision"
+              value={decision}
+              options={[
+                ['approve', t('staff.payout.approve')],
+                ['reject', t('staff.payout.reject')],
+              ]}
+              onChange={setDecision}
+            />
           </Action>
         </>
       )}

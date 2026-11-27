@@ -82,7 +82,13 @@ describe('the live connection', () => {
   it('I-65 the client may load after the first paint; a connection loaded after sign-out is closed at once', async () => {
     const socket = new FakeSocket();
     let loaded: (s: FakeSocket) => void = () => undefined;
-    const l = new Live(() => new Promise((r) => { loaded = r; }), async () => undefined);
+    const l = new Live(
+      () =>
+        new Promise((r) => {
+          loaded = r;
+        }),
+      async () => undefined,
+    );
     l.start();
     l.start();
     l.stop();
@@ -91,17 +97,30 @@ describe('the live connection', () => {
     expect(socket.disconnects).toBe(1);
     expect(l.connected).toBe(false);
     const again = new FakeSocket();
-    const l2 = new Live(() => Promise.resolve(again), async () => undefined);
+    const l2 = new Live(
+      () => Promise.resolve(again),
+      async () => undefined,
+    );
     l2.start();
-    await waitFor(() => { again.accept(); expect(l2.connected).toBe(true); });
+    await waitFor(() => {
+      again.accept();
+      expect(l2.connected).toBe(true);
+    });
   });
 
   it('I-65 the user app opens one connection after sign-in, and none for a guest', async () => {
     const signedIn = new FakeSocket();
-    renderApp('/notifications', fakeBackend({
-      'GET /me': json(200, standInMe), 'GET /notifications': json(200, { items: [], unread: 0, nextCursor: null }),
-      'GET /notifications/unread-count': json(200, { unread: 0 }), 'GET /me/notification-preferences': json(200, { language: 'en', emailTransactional: true }),
-    }), 'en', signedIn);
+    renderApp(
+      '/notifications',
+      fakeBackend({
+        'GET /me': json(200, standInMe),
+        'GET /notifications': json(200, { items: [], unread: 0, nextCursor: null }),
+        'GET /notifications/unread-count': json(200, { unread: 0 }),
+        'GET /me/notification-preferences': json(200, { language: 'en', emailTransactional: true }),
+      }),
+      'en',
+      signedIn,
+    );
     await screen.findByRole('heading', { name: 'Notifications' });
     await waitFor(() => expect(signedIn.opened).toBe(1));
     cleanup();

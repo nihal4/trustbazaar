@@ -27,9 +27,12 @@ describe('staff queues', () => {
     await t?.close();
   });
 
-  const call = (headers: Record<string, string>) => (method: string, path: string, body?: unknown) => fetch(t.url(path), {
-    method, headers: { ...headers, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) }, body: body === undefined ? undefined : JSON.stringify(body),
-  });
+  const call = (headers: Record<string, string>) => (method: string, path: string, body?: unknown) =>
+    fetch(t.url(path), {
+      method,
+      headers: { ...headers, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
   async function member() {
     const userId = await fx.user();
     const sid = await fx.session({ userId });
@@ -47,16 +50,28 @@ describe('staff queues', () => {
       `INSERT INTO listings.listings (seller_id, item_kind, sale_format, category_id, title, description, condition, no_visible_defects,
           fulfilment_options, weight_class, size_class, area_district, approx_lat, approx_lng, price, quantity_total, quantity_available)
        VALUES ($1, 'physical', 'fixed_price', $2, 'Kettle for the queue tests', 'A kettle in good condition, written by the queue tests.', 'used', true,
-          'pickup_only', 'up_to_1kg', 'small', 'Dhaka', 23.81, 90.41, 300000, 1, 1) RETURNING id`, [seller.userId, category]);
+          'pickup_only', 'up_to_1kg', 'small', 'Dhaka', 23.81, 90.41, 300000, 1, 1) RETURNING id`,
+      [seller.userId, category],
+    );
     const [{ id: orderId }] = await fx.query<{ id: string }>(
       `INSERT INTO orders.orders (kind, listing_id, item_kind, buyer_id, seller_id, quantity, unit_price, item_price, fulfilment, delivery_fee, total,
           listing_snapshot, commission_bps, delivery_margin_bps, params_version, payment_due_at, status, paid_at, fulfilment_step, fulfilment_due_at,
           fulfilment_done_at, delivery_event_at, delivery_event_source, delivery_quote_id)
        VALUES ('fixed_price', $1, 'physical', $2, $3, 1, 300000, 300000, 'courier', 0, 300000, '{"title":"Kettle"}', 500, 1000, 1, now(), 'paid', now(),
-          'courier_pickup', now() + interval '3 days', now(), now(), 'courier_delivered', gen_random_uuid()) RETURNING id`, [listingId, buyer.userId, seller.userId]);
-    await fx.query(`INSERT INTO payments.attempts (purpose, order_id, payer_id, provider, amount, status, expires_at, confirmed_at) VALUES ('order', $1, $2, 'bkash', 300000, 'succeeded', now(), now())`, [orderId, buyer.userId]);
-    await fx.query(`INSERT INTO orders.escrows (order_id, release_policy, amount_collected, dispute_window_ends_at, auto_release_at) VALUES ($1, 'standard', 300000, now() + interval '3 days', now() + interval '5 days')`, [orderId]);
-    const { disputeId } = (await (await buyer.call('POST', `/orders/${orderId}/disputes`, { type: 'damaged', description: 'The kettle leaks from the base when filled.' })).json()) as { disputeId: string };
+          'courier_pickup', now() + interval '3 days', now(), now(), 'courier_delivered', gen_random_uuid()) RETURNING id`,
+      [listingId, buyer.userId, seller.userId],
+    );
+    await fx.query(
+      `INSERT INTO payments.attempts (purpose, order_id, payer_id, provider, amount, status, expires_at, confirmed_at) VALUES ('order', $1, $2, 'bkash', 300000, 'succeeded', now(), now())`,
+      [orderId, buyer.userId],
+    );
+    await fx.query(
+      `INSERT INTO orders.escrows (order_id, release_policy, amount_collected, dispute_window_ends_at, auto_release_at) VALUES ($1, 'standard', 300000, now() + interval '3 days', now() + interval '5 days')`,
+      [orderId],
+    );
+    const { disputeId } = (await (
+      await buyer.call('POST', `/orders/${orderId}/disputes`, { type: 'damaged', description: 'The kettle leaks from the base when filled.' })
+    ).json()) as { disputeId: string };
     await seller.call('POST', `/disputes/${disputeId}/statements`, { text: 'It did not leak when I sold it.' });
     return { disputeId, orderId, buyer, seller };
   }
@@ -84,10 +99,19 @@ describe('staff queues', () => {
     await fx.query(`UPDATE disputes.disputes SET decision_target_at = now() - interval '1 hour' WHERE id = $1`, [late.disputeId]);
     const page = (await (await op.call('GET', '/staff/queues/disputes')).json()) as Page;
     const mine = page.items.filter((i) => [older.disputeId, late.disputeId].includes(i.id));
-    expect(mine.map((i) => [i.id, i.overdue])).toEqual([[late.disputeId, true], [older.disputeId, false]]);
+    expect(mine.map((i) => [i.id, i.overdue])).toEqual([
+      [late.disputeId, true],
+      [older.disputeId, false],
+    ]);
     expect(page.items.findIndex((i) => i.overdue === false)).toBeGreaterThan(page.items.findIndex((i) => i.id === late.disputeId)); // every overdue one before any other
     const o = mine.find((i) => i.id === older.disputeId)!;
-    expect(o).toMatchObject({ status: 'under_review', orderId: older.orderId, type: 'damaged', fourEyes: false, path: `/staff/disputes/${older.disputeId}/case-file` });
+    expect(o).toMatchObject({
+      status: 'under_review',
+      orderId: older.orderId,
+      type: 'damaged',
+      fourEyes: false,
+      path: `/staff/disputes/${older.disputeId}/case-file`,
+    });
     expect(o.ageHours).toBeGreaterThanOrEqual(0);
     expect(Date.parse(o.since as string)).toBeLessThanOrEqual(Date.parse(mine[0].since as string)); // created first: older
   });
@@ -95,11 +119,22 @@ describe('staff queues', () => {
   it('FR-OPS-01 reports and flagged activity list their open items, oldest first, linked to their actions', async () => {
     const op = await operator();
     const [reporter, subject] = [await member(), await member()];
-    const { reportId } = (await (await reporter.call('POST', '/reports', { targetType: 'user', targetId: subject.userId, category: 'abusive', text: 'Insulted me in the chat twice.' })).json()) as { reportId: string };
+    const { reportId } = (await (
+      await reporter.call('POST', '/reports', { targetType: 'user', targetId: subject.userId, category: 'abusive', text: 'Insulted me in the chat twice.' })
+    ).json()) as { reportId: string };
     const listingId = randomUUID();
-    await fx.query(`INSERT INTO trust.signals (kind, source_ref, subject_user, detail) VALUES ('relisting', $1, $2, '{}')`, [`listing:${listingId}`, subject.userId]);
+    await fx.query(`INSERT INTO trust.signals (kind, source_ref, subject_user, detail) VALUES ('relisting', $1, $2, '{}')`, [
+      `listing:${listingId}`,
+      subject.userId,
+    ]);
     const reports = (await (await op.call('GET', '/staff/queues/reports')).json()) as Page;
-    expect(reports.items.find((i) => i.id === reportId)).toMatchObject({ status: 'open', assignedTo: null, subjectUser: subject.userId, text: 'Insulted me in the chat twice.', path: `/staff/reports/${reportId}/resolution` });
+    expect(reports.items.find((i) => i.id === reportId)).toMatchObject({
+      status: 'open',
+      assignedTo: null,
+      subjectUser: subject.userId,
+      text: 'Insulted me in the chat twice.',
+      path: `/staff/reports/${reportId}/resolution`,
+    });
     const since = reports.items.map((i) => i.since as string);
     expect([...since].sort()).toEqual(since);
     const flagged = (await (await op.call('GET', '/staff/queues/flagged_activity')).json()) as Page;
@@ -117,7 +152,9 @@ describe('staff queues', () => {
     const queues = t.app.get(QueueService);
     const mail = t.app.get<DirectMessages>(NOTIFICATION_PORT);
     expect(await queues.alertOverdue()).toBeGreaterThanOrEqual(1);
-    expect(mail.sent.filter((m) => m.to === email)).toEqual([expect.objectContaining({ channel: 'email', template: 'disputes_overdue', vars: expect.objectContaining({ oldest_days: expect.any(String) }) })]);
+    expect(mail.sent.filter((m) => m.to === email)).toEqual([
+      expect.objectContaining({ channel: 'email', template: 'disputes_overdue', vars: expect.objectContaining({ oldest_days: expect.any(String) }) }),
+    ]);
     expect(await queues.alertOverdue()).toBe(0); // the same day: not again
     expect(mail.sent.filter((m) => m.to === email)).toHaveLength(1);
   });

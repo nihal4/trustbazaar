@@ -20,8 +20,18 @@ export async function readAuctionState(q: Pick<EntityManager, 'query'>, auctionI
       WHERE a.listing_id = $1`,
     [auctionId],
   )) as {
-    listing_id: string; status: AuctionState['status']; start_price: string; current_price: string | null; bid_count: number;
-    end_at: Date; version: string; has_reserve: boolean; reserve_met: boolean; leader_alias: number | null; minimum_bid: string; server_time: Date;
+    listing_id: string;
+    status: AuctionState['status'];
+    start_price: string;
+    current_price: string | null;
+    bid_count: number;
+    end_at: Date;
+    version: string;
+    has_reserve: boolean;
+    reserve_met: boolean;
+    leader_alias: number | null;
+    minimum_bid: string;
+    server_time: Date;
   }[];
   if (!r) return null;
   return {

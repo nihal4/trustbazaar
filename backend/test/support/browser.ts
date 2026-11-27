@@ -29,7 +29,12 @@ export class Browser {
   }
 
   private async send(method: string, path: string, body: unknown, extra: Record<string, string>): Promise<Response> {
-    const headers: Record<string, string> = { origin: this.origin, 'x-forwarded-for': this.ip, 'user-agent': 'Mozilla/5.0 (Linux; Android 14) Chrome/130.0', ...extra };
+    const headers: Record<string, string> = {
+      origin: this.origin,
+      'x-forwarded-for': this.ip,
+      'user-agent': 'Mozilla/5.0 (Linux; Android 14) Chrome/130.0',
+      ...extra,
+    };
     if (this.cookies.size > 0) headers.cookie = [...this.cookies].map(([k, v]) => `${k}=${v}`).join('; ');
     const csrf = this.cookies.get(this.csrfCookie);
     if (csrf && method !== 'GET') headers['x-csrf-token'] = csrf;
@@ -66,10 +71,13 @@ export class Browser {
     const line = [...this.setCookieLines].reverse().find((l) => l.startsWith(`${name}=`));
     if (!line) return {};
     return Object.fromEntries(
-      line.split(';').slice(1).map((a) => {
-        const [k, v] = a.trim().split('=');
-        return [k.toLowerCase(), v === undefined ? true : v];
-      }),
+      line
+        .split(';')
+        .slice(1)
+        .map((a) => {
+          const [k, v] = a.trim().split('=');
+          return [k.toLowerCase(), v === undefined ? true : v];
+        }),
     );
   }
 }

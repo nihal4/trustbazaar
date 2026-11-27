@@ -21,7 +21,14 @@ export type Decision = 'accept' | 'decline';
 const BATCH = 100;
 
 /** expired: decided on the database's clock, as bids are (AS-2) */
-interface OfferRow { id: string; auction_id: string; bidder_id: string; price: string; status: string; expired: boolean }
+interface OfferRow {
+  id: string;
+  auction_id: string;
+  bidder_id: string;
+  price: string;
+  status: string;
+  expired: boolean;
+}
 
 @Injectable()
 export class SecondChanceService implements OnModuleInit {
@@ -53,18 +60,28 @@ export class SecondChanceService implements OnModuleInit {
       const locked = await m.query(`SELECT 1 FROM auctions.auctions WHERE listing_id = $1 FOR UPDATE`, [listingId]);
       if (locked.length === 0) throw new Error(`payment_expired ${e.aggregateId}: no auction ${listingId}`);
       if ((await m.query(`SELECT 1 FROM auctions.strikes WHERE order_id = $1`, [e.aggregateId])).length > 0) return; // handled before
-      const [{ restricted }] = (await m.query(
-        `SELECT auctions.record_strike($1, $2, $3, $4, $5::interval, $6::interval) AS restricted`,
-        [buyerId, listingId, e.aggregateId, cp12.strikes, cp12.window, cp12.suspension],
-      )) as { restricted: boolean }[];
+      const [{ restricted }] = (await m.query(`SELECT auctions.record_strike($1, $2, $3, $4, $5::interval, $6::interval) AS restricted`, [
+        buyerId,
+        listingId,
+        e.aggregateId,
+        cp12.strikes,
+        cp12.window,
+        cp12.suspension,
+      ])) as { restricted: boolean }[];
       if (restricted) {
         const [{ until }] = (await m.query(`SELECT until FROM auctions.bidding_restrictions WHERE user_id = $1`, [buyerId])) as { until: Date }[];
         await publish(m, 'auctions.bidder.restricted', listingId, { userId: buyerId, until: until.toISOString(), reason: 'non_payment_strikes' });
       }
-      await this.audit.record({
-        actorType: 'system', action: 'auctions.strike.recorded', objectType: 'user', objectId: buyerId,
-        after: { auctionId: listingId, orderId: e.aggregateId, restricted },
-      }, m);
+      await this.audit.record(
+        {
+          actorType: 'system',
+          action: 'auctions.strike.recorded',
+          objectType: 'user',
+          objectId: buyerId,
+          after: { auctionId: listingId, orderId: e.aggregateId, restricted },
+        },
+        m,
+      );
       await this.offerNext(m, listingId, window);
     });
   }
@@ -77,7 +94,8 @@ export class SecondChanceService implements OnModuleInit {
    */
   private async offerNext(m: EntityManager, auctionId: string, windowMs: number): Promise<void> {
     const [next] = (await m.query(`SELECT bidder, price::text AS price FROM auctions.next_second_chance($1)`, [auctionId])) as {
-      bidder: string | null; price: string | null;
+      bidder: string | null;
+      price: string | null;
     }[];
     if (!next?.bidder) {
       await m.query(`SELECT listings.release($1, 1)`, [auctionId]);
@@ -90,7 +108,11 @@ export class SecondChanceService implements OnModuleInit {
       [auctionId, next.bidder, next.price, windowMs],
     )) as { id: string; expires_at: Date }[];
     await publish(m, 'auctions.offer.made', auctionId, {
-      offerId: offer.id, auctionId, userId: next.bidder, price: next.price, expiresAt: offer.expires_at.toISOString(),
+      offerId: offer.id,
+      auctionId,
+      userId: next.bidder,
+      price: next.price,
+      expiresAt: offer.expires_at.toISOString(),
     });
   }
 
@@ -114,10 +136,17 @@ export class SecondChanceService implements OnModuleInit {
       if (l) await this.blocks.assertNotBlocked(l.seller_id, userId, m);
       const order = await this.orders.createAuctionOrder({ listingId: auctionId, winnerId: userId, price: BigInt(o.price), kind: 'second_chance' }, m);
       await m.query(`UPDATE auctions.second_chance_offers SET status = 'accepted', decided_at = now(), order_id = $2 WHERE id = $1`, [offerId, order.id]);
-      await this.audit.record({
-        actorType: 'user', actorId: userId, action: 'auctions.offer.accepted', objectType: 'auction', objectId: auctionId,
-        after: { offerId, price: o.price, orderId: order.id },
-      }, m);
+      await this.audit.record(
+        {
+          actorType: 'user',
+          actorId: userId,
+          action: 'auctions.offer.accepted',
+          objectType: 'auction',
+          objectId: auctionId,
+          after: { offerId, price: o.price, orderId: order.id },
+        },
+        m,
+      );
       return { offerId, status: 'accepted' as const, orderId: order.id };
     });
   }

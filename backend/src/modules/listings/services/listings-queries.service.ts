@@ -18,7 +18,12 @@ export class ListingsQueriesService implements ListingsQueries {
   constructor(private readonly db: DataSource) {}
 
   async fulfilmentFacts(listingId: string): Promise<{
-    options: FulfilmentMethod[]; weightClass: WeightClass | null; sizeClass: SizeClass | null; district: string; approxLat: number; approxLng: number;
+    options: FulfilmentMethod[];
+    weightClass: WeightClass | null;
+    sizeClass: SizeClass | null;
+    district: string;
+    approxLat: number;
+    approxLng: number;
   }> {
     const l = await this.db.getRepository(Listing).findOne({
       where: { id: listingId },

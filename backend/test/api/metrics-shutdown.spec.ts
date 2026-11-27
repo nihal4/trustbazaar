@@ -46,7 +46,8 @@ describe('metrics and graceful shutdown', () => {
     expect(text).toMatch(/tb_http_requests_total\{method="GET",route="\/api\/v1\/orders\/:id",status="4xx"\}/);
     expect(text).not.toMatch(/route="[^"]*[0-9a-f]{8}-[0-9a-f]{4}/); // no ids in labels
     expect(text).toContain('tb_http_request_duration_seconds_bucket');
-    for (const o of ['identity', 'orders', 'auctions', 'delivery', 'game_accounts', 'chat', 'disputes']) expect(text).toContain(`tb_outbox_pending{outbox="${o}"}`);
+    for (const o of ['identity', 'orders', 'auctions', 'delivery', 'game_accounts', 'chat', 'disputes'])
+      expect(text).toContain(`tb_outbox_pending{outbox="${o}"}`);
     expect(text).toContain('tb_outbox_oldest_seconds{outbox="orders"}');
     expect(text).toMatch(/tb_job_runs\{job="orders\.payment\.expire"\} \d+/);
     expect(text).toMatch(/tb_websocket_connections \d+/);
@@ -83,7 +84,10 @@ describe('metrics and graceful shutdown', () => {
   it('DV-66 a request still open at the end of the grace period is cut', async () => {
     const s = await startApp([SlowController]);
     SlowController.ms = 3_000;
-    const inFlight = fetch(s.url('/test-slow')).then((r) => r.status, () => 'cut');
+    const inFlight = fetch(s.url('/test-slow')).then(
+      (r) => r.status,
+      () => 'cut',
+    );
     await new Promise((r) => setTimeout(r, 100));
     const started = Date.now();
     await drainAndClose(s.app, 300);

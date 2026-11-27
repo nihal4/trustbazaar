@@ -20,8 +20,7 @@ const STAFF: ApiOptions = {
  * `stepUp` obtains a grant for a step-up action (the user app's dialog). `overrides` are for tests
  * (fetch, cookies, locks, store); the application passes none.
  */
-export function createDocumentApi(kind: DocumentKind, onSignedOut: () => void, overrides: ApiOptions = {},
-  stepUp?: (action: string) => Promise<string>): Api {
+export function createDocumentApi(kind: DocumentKind, onSignedOut: () => void, overrides: ApiOptions = {}, stepUp?: (action: string) => Promise<string>): Api {
   // Every request may meet the human check (SEC-ABU-02, I-64); the wrapper answers it and sends the request again.
   const fetch = withHumanCheck(overrides.fetch ?? globalThis.fetch.bind(globalThis));
   return createApi({ ...(kind === 'staff' ? STAFF : {}), stepUp, ...overrides, fetch, onSignedOut });

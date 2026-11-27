@@ -6,9 +6,16 @@ import { ACTIONS, kycStepsOf, maySubmit, normaliseDocNumber, reasonKey, REASONS,
 
 describe('document details', () => {
   it.each([
-    ['nid', '1234567890', true], ['nid', '1234567890123', true], ['nid', '12345678901234567', true],
-    ['nid', '১২৩৪ ৫৬৭৮৯০', true], ['nid', '123456789012', false], ['nid', 'A123456789', false],
-    ['passport', 'A01234567', true], ['passport', 'ab1234567', true], ['passport', '01234567', false], ['passport', 'ABC1234567', false],
+    ['nid', '1234567890', true],
+    ['nid', '1234567890123', true],
+    ['nid', '12345678901234567', true],
+    ['nid', '১২৩৪ ৫৬৭৮৯০', true],
+    ['nid', '123456789012', false],
+    ['nid', 'A123456789', false],
+    ['passport', 'A01234567', true],
+    ['passport', 'ab1234567', true],
+    ['passport', '01234567', false],
+    ['passport', 'ABC1234567', false],
   ] as const)('FR-KYC-01 a %s number %s is %s', (type, number, ok) => {
     expect(validDocNumber(type, number)).toBe(ok);
   });
@@ -29,8 +36,13 @@ describe('document details', () => {
 });
 
 describe('who may submit', () => {
-  const s = (status: KycStatusView['status'], left = 3): KycStatusView =>
-    ({ status, changedAt: '', rejection: null, submissionsLeft: left, expectedReviewHours: 24 });
+  const s = (status: KycStatusView['status'], left = 3): KycStatusView => ({
+    status,
+    changedAt: '',
+    rejection: null,
+    submissionsLeft: left,
+    expectedReviewHours: 24,
+  });
 
   it('FR-KYC-09 unsubmitted and rejected may submit within the limit; pending, verified and revoked may not', () => {
     expect(maySubmit(s('unsubmitted'))).toBe(true);

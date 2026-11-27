@@ -31,4 +31,4 @@ export function videoKind(bytes: Uint8Array): 'video/webm' | 'video/mp4' | null 
 }
 
 export const mimeOf = (purpose: FilePurpose, bytes?: Uint8Array) =>
-  purpose === 'data_export' ? 'application/octet-stream' : purpose === 'dispute_video' ? (bytes ? videoKind(bytes) : null) ?? 'video/mp4' : 'image/jpeg';
+  purpose === 'data_export' ? 'application/octet-stream' : purpose === 'dispute_video' ? ((bytes ? videoKind(bytes) : null) ?? 'video/mp4') : 'image/jpeg';

@@ -45,7 +45,10 @@ export class TrustConsumers implements OnModuleInit {
     this.bus.on('staff.disclosure.made', 'trust.privacy', (e) => this.privacy.onDisclosed(e)); // FR-PRV-06, after the approval's commit
     this.bus.on('identity.account.reinstated', 'trust.sanctions', async (e) => {
       await this.sanctions.onReinstated({
-        userId: str(e.payload.userId) || e.aggregateId, approvalId: str(e.payload.approvalId), decidedBy: str(e.payload.decidedBy) || null, reason: str(e.payload.reason) || null,
+        userId: str(e.payload.userId) || e.aggregateId,
+        approvalId: str(e.payload.approvalId),
+        decidedBy: str(e.payload.decidedBy) || null,
+        reason: str(e.payload.reason) || null,
       });
     });
   }

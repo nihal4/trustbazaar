@@ -26,7 +26,11 @@ void main(){
 const hex = (s: string): [number, number, number] => [1, 3, 5].map((i) => parseInt(s.slice(i, i + 2), 16) / 255) as [number, number, number];
 const FALLBACK = ['#0A1018', '#15263B', '#FF6B35', '#FFB08A'];
 /** the shader's colours come from the --tb-glow-0 to -3 tokens, so the palette lives in tokens.css only */
-const colours = (): string[] => FALLBACK.map((d, i) => { const v = getComputedStyle(document.documentElement).getPropertyValue(`--tb-glow-${i}`).trim(); return /^#[0-9a-f]{6}$/i.test(v) ? v : d; });
+const colours = (): string[] =>
+  FALLBACK.map((d, i) => {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(`--tb-glow-${i}`).trim();
+    return /^#[0-9a-f]{6}$/i.test(v) ? v : d;
+  });
 
 export function GlowGround({ area }: { area: React.RefObject<HTMLElement> }) {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -39,8 +43,13 @@ export function GlowGround({ area }: { area: React.RefObject<HTMLElement> }) {
     afterLoad(() => {
       if (cancelled.v) return;
       const gl = c.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'low-power' });
-      if (!gl) return;   // the CSS gradient stays
-      const sh = (type: number, src: string) => { const s = gl.createShader(type)!; gl.shaderSource(s, src); gl.compileShader(s); return s; };
+      if (!gl) return; // the CSS gradient stays
+      const sh = (type: number, src: string) => {
+        const s = gl.createShader(type)!;
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        return s;
+      };
       const prog = gl.createProgram()!;
       gl.attachShader(prog, sh(gl.VERTEX_SHADER, VERT));
       gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FRAG));
@@ -60,26 +69,62 @@ export function GlowGround({ area }: { area: React.RefObject<HTMLElement> }) {
       let visible = true;
       const size = () => {
         const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-        const w = Math.max(1, Math.round(c.clientWidth * dpr)), h = Math.max(1, Math.round(c.clientHeight * dpr));
-        if (c.width !== w || c.height !== h) { c.width = w; c.height = h; gl.viewport(0, 0, w, h); }
+        const w = Math.max(1, Math.round(c.clientWidth * dpr)),
+          h = Math.max(1, Math.round(c.clientHeight * dpr));
+        if (c.width !== w || c.height !== h) {
+          c.width = w;
+          c.height = h;
+          gl.viewport(0, 0, w, h);
+        }
       };
       const draw = (time: number) => {
         size();
-        pointer.x += (pointer.tx - pointer.x) * 0.06; pointer.y += (pointer.ty - pointer.y) * 0.06;
-        gl.uniform2f(u('r'), c.width, c.height); gl.uniform1f(u('t'), time); gl.uniform2f(u('m'), pointer.x, pointer.y);
+        pointer.x += (pointer.tx - pointer.x) * 0.06;
+        pointer.y += (pointer.ty - pointer.y) * 0.06;
+        gl.uniform2f(u('r'), c.width, c.height);
+        gl.uniform1f(u('t'), time);
+        gl.uniform2f(u('m'), pointer.x, pointer.y);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
       };
-      const frame = (ms: number) => { if (visible && !document.hidden) draw(ms / 1000); raf = requestAnimationFrame(frame); };
-      const move = (e: PointerEvent) => { const b = c.getBoundingClientRect(); pointer.tx = (e.clientX - b.left) / b.width; pointer.ty = 1 - (e.clientY - b.top) / b.height; };
+      const frame = (ms: number) => {
+        if (visible && !document.hidden) draw(ms / 1000);
+        raf = requestAnimationFrame(frame);
+      };
+      const move = (e: PointerEvent) => {
+        const b = c.getBoundingClientRect();
+        pointer.tx = (e.clientX - b.left) / b.width;
+        pointer.ty = 1 - (e.clientY - b.top) / b.height;
+      };
       const host = area.current;
-      const io = new IntersectionObserver(([en]) => { visible = en.isIntersecting; });
+      const io = new IntersectionObserver(([en]) => {
+        visible = en.isIntersecting;
+      });
       io.observe(c);
-      const lost = (e: Event) => { e.preventDefault(); cancelAnimationFrame(raf); };
+      const lost = (e: Event) => {
+        e.preventDefault();
+        cancelAnimationFrame(raf);
+      };
       c.addEventListener('webglcontextlost', lost);
-      if (reduced) { draw(2.5); c.dataset.live = 'still'; } else { host?.addEventListener('pointermove', move); raf = requestAnimationFrame(frame); c.dataset.live = 'moving'; }
-      dispose = () => { cancelAnimationFrame(raf); io.disconnect(); host?.removeEventListener('pointermove', move); c.removeEventListener('webglcontextlost', lost); gl.getExtension('WEBGL_lose_context')?.loseContext(); };
+      if (reduced) {
+        draw(2.5);
+        c.dataset.live = 'still';
+      } else {
+        host?.addEventListener('pointermove', move);
+        raf = requestAnimationFrame(frame);
+        c.dataset.live = 'moving';
+      }
+      dispose = () => {
+        cancelAnimationFrame(raf);
+        io.disconnect();
+        host?.removeEventListener('pointermove', move);
+        c.removeEventListener('webglcontextlost', lost);
+        gl.getExtension('WEBGL_lose_context')?.loseContext();
+      };
     });
-    return () => { cancelled.v = true; dispose(); };
+    return () => {
+      cancelled.v = true;
+      dispose();
+    };
   }, [area]);
   return <canvas ref={canvas} className={styles.ground} aria-hidden="true" />;
 }

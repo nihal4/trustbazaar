@@ -31,13 +31,19 @@ describe('listing review, removal, screening terms and seller visibility', () =>
     await t?.close();
   });
 
-  const caller = (headers: Record<string, string>) => (method: string, path: string, body?: unknown) => fetch(t.url(path), {
-    method, headers: { ...headers, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) }, body: body === undefined ? undefined : JSON.stringify(body),
-  });
+  const caller = (headers: Record<string, string>) => (method: string, path: string, body?: unknown) =>
+    fetch(t.url(path), {
+      method,
+      headers: { ...headers, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
   async function member() {
     const userId = await fx.user();
     const sid = await fx.session({ userId });
-    return { userId, call: caller({ ...fx.headers(sid, userId, 'user'), 'x-forwarded-for': `203.0.113.${randomInt(1, 255)}, 198.51.100.${randomInt(1, 255)}` }) };
+    return {
+      userId,
+      call: caller({ ...fx.headers(sid, userId, 'user'), 'x-forwarded-for': `203.0.113.${randomInt(1, 255)}, 198.51.100.${randomInt(1, 255)}` }),
+    };
   }
   async function operator() {
     const staffId = await fx.staff('operator');
@@ -52,11 +58,17 @@ describe('listing review, removal, screening terms and seller visibility', () =>
           'pickup_only', 'up_to_1kg', 'small', 'Dhaka', 23.81, 90.41, 250000, 1, 1) RETURNING id`,
       [sellerId, category, title],
     );
-    for (const n of [1, 2]) await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [id, n, randomUUID().replace(/-/g, '')]);
+    for (const n of [1, 2])
+      await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [
+        id,
+        n,
+        randomUUID().replace(/-/g, ''),
+      ]);
     return id;
   }
   const status = async (id: string) => (await fx.query<{ status: string }>(`SELECT status FROM listings.listings WHERE id = $1`, [id]))[0].status;
-  const events = (id: string, type: string) => fx.query<{ payload: Record<string, unknown> }>(`SELECT payload FROM auctions.outbox WHERE aggregate_id = $1 AND event_type = $2`, [id, type]);
+  const events = (id: string, type: string) =>
+    fx.query<{ payload: Record<string, unknown> }>(`SELECT payload FROM auctions.outbox WHERE aggregate_id = $1 AND event_type = $2`, [id, type]);
   const errors = async (r: Response) => ((await r.json()) as { errors?: unknown[] }).errors;
 
   it('FR-LST-11 operators maintain the terms; a matching listing waits in the queue, readable by the operator; returned with a reason, then approved and published', async () => {
@@ -64,7 +76,9 @@ describe('listing review, removal, screening terms and seller visibility', () =>
     const word = `replica${randomInt(10_000, 99_999)}`;
     const added = await op.call('POST', '/staff/screening-terms', { term: `  ${word.toUpperCase()} `, severity: 'high_risk' });
     expect([added.status, await added.json()]).toEqual([201, { id: expect.any(Number), term: word, severity: 'high_risk' }]);
-    const { id: termId } = (await (await op.call('GET', '/staff/screening-terms')).json() as { items: { id: number; term: string }[] }).items.find((i) => i.term === word)!;
+    const { id: termId } = ((await (await op.call('GET', '/staff/screening-terms')).json()) as { items: { id: number; term: string }[] }).items.find(
+      (i) => i.term === word,
+    )!;
     expect(await errors(await op.call('POST', '/staff/screening-terms', { term: word, severity: 'prohibited' }))).toEqual([{ field: 'term', reason: 'taken' }]);
     expect((await seller.call('POST', '/staff/screening-terms', { term: 'x1', severity: 'prohibited' })).status).toBe(401);
 
@@ -82,18 +96,31 @@ describe('listing review, removal, screening terms and seller visibility', () =>
     expect((await seller.call('GET', `/staff/listings/${id}`)).status).toBe(401);
     expect((await op.call('GET', `/staff/listings/${randomUUID()}`)).status).toBe(404);
 
-    expect(await errors(await op.call('POST', `/staff/listings/${id}/review`, { decision: 'return', reason: 'short' }))).toEqual([{ field: 'reason', reason: 'too-short' }]);
-    const back = await op.call('POST', `/staff/listings/${id}/review`, { decision: 'return', reason: 'Replica watches may not be sold; describe the original.' });
+    expect(await errors(await op.call('POST', `/staff/listings/${id}/review`, { decision: 'return', reason: 'short' }))).toEqual([
+      { field: 'reason', reason: 'too-short' },
+    ]);
+    const back = await op.call('POST', `/staff/listings/${id}/review`, {
+      decision: 'return',
+      reason: 'Replica watches may not be sold; describe the original.',
+    });
     expect([back.status, await back.json()]).toEqual([200, { status: 'draft' }]);
-    expect((await events(id, 'listings.listing.returned'))[0].payload).toMatchObject({ sellerId: seller.userId, reason: 'Replica watches may not be sold; describe the original.' });
+    expect((await events(id, 'listings.listing.returned'))[0].payload).toMatchObject({
+      sellerId: seller.userId,
+      reason: 'Replica watches may not be sold; describe the original.',
+    });
     expect((await op.call('POST', `/staff/listings/${id}/review`, { decision: 'return', reason: 'Returned a second time, by mistake.' })).status).toBe(409);
 
     expect((await seller.call('POST', `/listings/${id}/publish`, {})).status).toBe(200); // still matches: held again
-    expect(await (await op.call('POST', `/staff/listings/${id}/review`, { decision: 'approve', reason: 'An original; the word is the model name.' })).json()).toEqual({ status: 'active' });
+    expect(
+      await (await op.call('POST', `/staff/listings/${id}/review`, { decision: 'approve', reason: 'An original; the word is the model name.' })).json(),
+    ).toEqual({ status: 'active' });
     expect(await status(id)).toBe('active');
     expect(await events(id, 'listings.listing.published')).toHaveLength(1);
-    expect((await fx.query<{ action: string }>(`SELECT action FROM audit.events WHERE object_id = $1 AND action LIKE 'listings.listing.%' ORDER BY id`, [id])).map((a) => a.action))
-      .toEqual(['listings.listing.staff_viewed', 'listings.listing.returned', 'listings.listing.approved']);
+    expect(
+      (await fx.query<{ action: string }>(`SELECT action FROM audit.events WHERE object_id = $1 AND action LIKE 'listings.listing.%' ORDER BY id`, [id])).map(
+        (a) => a.action,
+      ),
+    ).toEqual(['listings.listing.staff_viewed', 'listings.listing.returned', 'listings.listing.approved']);
 
     expect((await op.call('DELETE', `/staff/screening-terms/${termId}`)).status).toBe(204);
     expect((await op.call('DELETE', `/staff/screening-terms/${termId}`)).status).toBe(404);
@@ -106,9 +133,16 @@ describe('listing review, removal, screening terms and seller visibility', () =>
     const fixed = await draft(seller.userId, 'Counterfeit-looking chronograph');
     expect((await seller.call('POST', `/listings/${fixed}/publish`, {})).status).toBe(200);
     expect(await errors(await op.call('POST', `/staff/listings/${fixed}/remove`, { reason: 'too short' }))).toEqual([{ field: 'reason', reason: 'too-short' }]);
-    expect(await (await op.call('POST', `/staff/listings/${fixed}/remove`, { reason: 'The photos show a counterfeit brand mark.' })).json()).toEqual({ status: 'removed' });
+    expect(await (await op.call('POST', `/staff/listings/${fixed}/remove`, { reason: 'The photos show a counterfeit brand mark.' })).json()).toEqual({
+      status: 'removed',
+    });
     expect(await status(fixed)).toBe('removed');
-    expect((await events(fixed, 'listings.listing.removed'))[0].payload).toEqual({ listingId: fixed, sellerId: seller.userId, itemKind: 'physical', reason: 'The photos show a counterfeit brand mark.' });
+    expect((await events(fixed, 'listings.listing.removed'))[0].payload).toEqual({
+      listingId: fixed,
+      sellerId: seller.userId,
+      itemKind: 'physical',
+      reason: 'The photos show a counterfeit brand mark.',
+    });
     expect((await op.call('POST', `/staff/listings/${fixed}/remove`, { reason: 'The photos show a counterfeit brand mark.' })).status).toBe(409);
     expect((await (await member()).call('GET', `/listings/${fixed}`)).status).toBe(404);
 
@@ -120,13 +154,25 @@ describe('listing review, removal, screening terms and seller visibility', () =>
     expect((await bidder.call('POST', `/auctions/${auction}/bids`, { maximum: '200000' })).status).not.toBe(201);
   });
 
-  it('FR-SRC-04 FR-TNS-05 I-45 a seller\'s listings are hidden while they may not list and shown again after, whatever the order of the events', async () => {
+  it("FR-SRC-04 FR-TNS-05 I-45 a seller's listings are hidden while they may not list and shown again after, whatever the order of the events", async () => {
     const seller = await member();
     const id = await draft(seller.userId, 'Steel diver watch');
     expect((await seller.call('POST', `/listings/${id}/publish`, {})).status).toBe(200);
     const visible = async () => (await fx.query<{ v: boolean }>(`SELECT seller_visible AS v FROM listings.listings WHERE id = $1`, [id]))[0].v;
-    const event = (type: string): OutboxEvent => ({ outbox: 'identity', id: String(randomInt(1, 2 ** 31)), type, aggregateId: seller.userId, payload: { userId: seller.userId }, createdAt: new Date(), attempt: 1 });
-    const consume = (type: string) => bus.consumersOf(type).find((c) => c.name === 'listings.visibility')!.handler(event(type));
+    const event = (type: string): OutboxEvent => ({
+      outbox: 'identity',
+      id: String(randomInt(1, 2 ** 31)),
+      type,
+      aggregateId: seller.userId,
+      payload: { userId: seller.userId },
+      createdAt: new Date(),
+      attempt: 1,
+    });
+    const consume = (type: string) =>
+      bus
+        .consumersOf(type)
+        .find((c) => c.name === 'listings.visibility')!
+        .handler(event(type));
 
     await fx.query(`UPDATE identity.users SET account_status = 'suspended' WHERE id = $1`, [seller.userId]);
     await consume('identity.account.suspended');
@@ -140,15 +186,20 @@ describe('listing review, removal, screening terms and seller visibility', () =>
     expect(await t.app.get(ListingReviewService).onSellerChanged(event('trust.sanction.lifted'))).toBe(0); // nothing to change
   });
 
-  it('FR-LST-11 a game-account listing is approved only through Unit 5\'s ownership review', async () => {
+  it("FR-LST-11 a game-account listing is approved only through Unit 5's ownership review", async () => {
     const [op, seller] = [await operator(), await member()];
-    const [{ id: games }] = await fx.query<{ id: number }>(`INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'Games', 'গেম', 'game_account') RETURNING id`, [`rg-${randomUUID().slice(0, 8)}`]);
+    const [{ id: games }] = await fx.query<{ id: number }>(
+      `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'Games', 'গেম', 'game_account') RETURNING id`,
+      [`rg-${randomUUID().slice(0, 8)}`],
+    );
     const [{ id }] = await fx.query<{ id: string }>(
       `INSERT INTO listings.listings (seller_id, item_kind, sale_format, category_id, title, description, price, quantity_total, quantity_available, status)
        VALUES ($1, 'game_account', 'fixed_price', $2, 'PUBG account, conqueror', 'A conqueror-rank account, written by the review tests.', 300000, 1, 1, 'pending_review') RETURNING id`,
       [seller.userId, games],
     );
-    expect(await errors(await op.call('POST', `/staff/listings/${id}/review`, { decision: 'approve', reason: 'Looks fine to me, approving it.' }))).toEqual([{ field: 'listing', reason: 'use-the-ownership-review' }]);
+    expect(await errors(await op.call('POST', `/staff/listings/${id}/review`, { decision: 'approve', reason: 'Looks fine to me, approving it.' }))).toEqual([
+      { field: 'listing', reason: 'use-the-ownership-review' },
+    ]);
     expect(await status(id)).toBe('pending_review');
     expect((await op.call('POST', `/staff/listings/${id}/remove`, { reason: 'The account is advertised as stolen.' })).status).toBe(200); // removal works for any item
   });

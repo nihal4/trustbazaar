@@ -15,7 +15,14 @@ describe('job runner (NFR-REL-03, DV-67)', () => {
   it('NFR-REL-03 runs record the count handled, the duration and failures; a failure does not stop the job', async () => {
     const r = new JobRunner(clock);
     let fail = true;
-    r.register({ name: 'orders.release', intervalMs: 60_000, run: async () => { if (fail) throw new Error('db down'); return 3; } });
+    r.register({
+      name: 'orders.release',
+      intervalMs: 60_000,
+      run: async () => {
+        if (fail) throw new Error('db down');
+        return 3;
+      },
+    });
     expect(await r.runNow('orders.release')).toMatchObject({ runs: 1, failures: 1, handled: 0, lastError: 'db down' });
     fail = false;
     expect(await r.runNow('orders.release')).toMatchObject({ runs: 2, failures: 1, handled: 3, lastError: null });
@@ -26,7 +33,16 @@ describe('job runner (NFR-REL-03, DV-67)', () => {
     const r = new JobRunner(clock);
     let active = 0;
     let max = 0;
-    r.register({ name: 'auctions.close', intervalMs: 1_000, run: async () => { active++; max = Math.max(max, active); await sleep(30); active--; } });
+    r.register({
+      name: 'auctions.close',
+      intervalMs: 1_000,
+      run: async () => {
+        active++;
+        max = Math.max(max, active);
+        await sleep(30);
+        active--;
+      },
+    });
     await Promise.all([r.runNow('auctions.close'), r.runNow('auctions.close'), r.runNow('auctions.close')]);
     expect(max).toBe(1);
     expect(r.stats()[0].runs).toBe(1);

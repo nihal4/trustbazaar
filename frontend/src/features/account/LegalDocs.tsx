@@ -23,7 +23,12 @@ export function TermsBody({ level = 2 }: { level?: 2 | 3 }) {
           {createElement(`h${level}`, null, `${n(i + 1)}. ${s.title}`)}
           <ol>
             {s.clauses.map((c, j) => (
-              <li key={j}><span className={styles.clauseNo}>{n(i + 1)}.{n(j + 1)}</span> {c}</li>
+              <li key={j}>
+                <span className={styles.clauseNo}>
+                  {n(i + 1)}.{n(j + 1)}
+                </span>{' '}
+                {c}
+              </li>
             ))}
           </ol>
         </section>
@@ -47,14 +52,23 @@ export function LegalDialog({ kind, opener, onClose }: { kind: 'terms' | 'privac
     document.body.style.overflow = 'hidden';
     box.current?.querySelector<HTMLElement>('[data-first]')?.focus();
     const key = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { e.stopPropagation(); close.current(); return; }
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        close.current();
+        return;
+      }
       if (e.key !== 'Tab' || !box.current) return;
       const items = Array.from(box.current.querySelectorAll<HTMLElement>(FOCUSABLE));
       if (items.length === 0) return;
       const [first, last] = [items[0], items[items.length - 1]];
       const active = document.activeElement;
-      if (e.shiftKey && (active === first || !box.current.contains(active))) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && (active === last || !box.current.contains(active))) { e.preventDefault(); first.focus(); }
+      if (e.shiftKey && (active === first || !box.current.contains(active))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (active === last || !box.current.contains(active))) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener('keydown', key, true);
     return () => {
@@ -68,16 +82,25 @@ export function LegalDialog({ kind, opener, onClose }: { kind: 'terms' | 'privac
   const version = toLocalDigits(kind === 'terms' ? LEGAL_VERSIONS.terms : LEGAL_VERSIONS.privacy, lang);
   const body: ReactNode = kind === 'terms' ? <TermsBody level={3} /> : <PrivacyPoints />;
   return createPortal(
-    <div className={styles.dialogBackdrop} onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+    <div
+      className={styles.dialogBackdrop}
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div ref={box} role="dialog" aria-modal="true" aria-labelledby="legal-dialog-title" className={styles.dialog}>
         <div className={styles.dialogHead}>
           <div>
             <h2 id="legal-dialog-title">{title}</h2>
             <p className={styles.version}>{t('help.version', { version })}</p>
           </div>
-          <button type="button" className={styles.dialogClose} onClick={onClose} aria-label={t('legal.close')}>×</button>
+          <button type="button" className={styles.dialogClose} onClick={onClose} aria-label={t('legal.close')}>
+            ×
+          </button>
         </div>
-        <div className={styles.dialogBody} tabIndex={0} role="region" aria-labelledby="legal-dialog-title" data-first>{body}</div>
+        <div className={styles.dialogBody} tabIndex={0} role="region" aria-labelledby="legal-dialog-title" data-first>
+          {body}
+        </div>
       </div>
     </div>,
     document.body,

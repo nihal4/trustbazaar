@@ -38,13 +38,21 @@ export function Component() {
   const orders = useInfiniteQuery({
     queryKey: ordersKey(role, stage),
     queryFn: ({ pageParam, signal }) =>
-      api.get(`/orders?role=${role}&stage=${stage}${pageParam ? `&cursor=${encodeURIComponent(pageParam)}` : ''}`, { signal }) as Promise<{ items: OrderView[]; nextCursor: string | null }>,
+      api.get(`/orders?role=${role}&stage=${stage}${pageParam ? `&cursor=${encodeURIComponent(pageParam)}` : ''}`, { signal }) as Promise<{
+        items: OrderView[];
+        nextCursor: string | null;
+      }>,
     initialPageParam: '',
     getNextPageParam: (last) => last.nextCursor ?? undefined,
     staleTime: FRESHNESS.money,
     retry: false,
   });
-  if (orders.isError && isApiError(orders.error, 401)) return <p><Link to={signInPath('/orders')}>{t('order.sign_in')}</Link></p>;
+  if (orders.isError && isApiError(orders.error, 401))
+    return (
+      <p>
+        <Link to={signInPath('/orders')}>{t('order.sign_in')}</Link>
+      </p>
+    );
   const items = orders.data?.pages.flatMap((p) => p.items) ?? [];
   return (
     <div className={`${styles.page} ${styles.wide}`}>
@@ -58,8 +66,17 @@ export function Component() {
       </nav>
       <nav aria-label={t('orders.stages')} className={styles.stageTabs}>
         {ORDER_STAGES.map((x, i) => (
-          <button key={x} type="button" aria-pressed={stage === x} className={stage === x ? styles.stageOn : styles.stageTab} onClick={() => setParams({ role, stage: x })}>
-            <span className={styles.stageNo} aria-hidden="true">{i + 1}</span>{t(`orders.stage.${x}.${role}`)}
+          <button
+            key={x}
+            type="button"
+            aria-pressed={stage === x}
+            className={stage === x ? styles.stageOn : styles.stageTab}
+            onClick={() => setParams({ role, stage: x })}
+          >
+            <span className={styles.stageNo} aria-hidden="true">
+              {i + 1}
+            </span>
+            {t(`orders.stage.${x}.${role}`)}
           </button>
         ))}
       </nav>
@@ -69,7 +86,12 @@ export function Component() {
       {items.length > 0 && (
         <section aria-label={t(`orders.stage.${stage}.${role}`)} className={styles.ordersSection}>
           <div className={styles.gridHead} aria-hidden="true">
-            <span /><span>{t('orders.col.item')}</span><span>{t('orders.col.status')}</span><span>{t(`orders.col.${role === 'buyer' ? 'seller' : 'buyer'}`)}</span><span className={styles.alignEnd}>{t('orders.col.money')}</span><span />
+            <span />
+            <span>{t('orders.col.item')}</span>
+            <span>{t('orders.col.status')}</span>
+            <span>{t(`orders.col.${role === 'buyer' ? 'seller' : 'buyer'}`)}</span>
+            <span className={styles.alignEnd}>{t('orders.col.money')}</span>
+            <span />
           </div>
           <ul className={styles.list}>
             {items.map((o) => {
@@ -77,10 +99,14 @@ export function Component() {
               return (
                 <li key={o.id} className={styles.gridRow}>
                   <div className={styles.thumb}>
-                    {o.listing.photoKey && <img src={`/api/v1/listing-photos/${encodeURIComponent(o.listing.photoKey)}?size=thumb`} alt="" width={64} height={64} loading="lazy" />}
+                    {o.listing.photoKey && (
+                      <img src={`/api/v1/listing-photos/${encodeURIComponent(o.listing.photoKey)}?size=thumb`} alt="" width={64} height={64} loading="lazy" />
+                    )}
                   </div>
                   <div className={styles.cellMain}>
-                    <Link to={`/orders/${encodeURIComponent(o.id)}`}><strong>{o.listing.title}</strong></Link>
+                    <Link to={`/orders/${encodeURIComponent(o.id)}`}>
+                      <strong>{o.listing.title}</strong>
+                    </Link>
                     {o.createdAt && <p className={styles.hint}>{formatDateTime(Date.parse(o.createdAt), lang)}</p>}
                   </div>
                   <div className={styles.cell} data-label={t('orders.col.status')}>
@@ -94,8 +120,22 @@ export function Component() {
                   </div>
                   <div className={styles.cellAction}>
                     {hasReceipt(o) && (
-                      <button type="button" className={styles.receipt} aria-label={t('orders.receipt_for', { title: o.listing.title })} onClick={() => downloadReceipt(o, t, lang, role === 'buyer' ? who || null : null)}>
-                        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M8 2v8m0 0L4.5 6.5M8 10l3.5-3.5M3 13h10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      <button
+                        type="button"
+                        className={styles.receipt}
+                        aria-label={t('orders.receipt_for', { title: o.listing.title })}
+                        onClick={() => downloadReceipt(o, t, lang, role === 'buyer' ? who || null : null)}
+                      >
+                        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+                          <path
+                            d="M8 2v8m0 0L4.5 6.5M8 10l3.5-3.5M3 13h10"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.6"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
                         <span>{t('orders.receipt')}</span>
                       </button>
                     )}
@@ -107,7 +147,9 @@ export function Component() {
         </section>
       )}
       {orders.hasNextPage && (
-        <button type="button" className={styles.secondary} disabled={orders.isFetchingNextPage} onClick={() => void orders.fetchNextPage()}>{t('orders.more')}</button>
+        <button type="button" className={styles.secondary} disabled={orders.isFetchingNextPage} onClick={() => void orders.fetchNextPage()}>
+          {t('orders.more')}
+        </button>
       )}
     </div>
   );

@@ -37,7 +37,12 @@ describe('game accounts controller', () => {
     await c.decide('p1', { decision: 'reject', liveCheck: 'not_matched', reason: 'Not visible on the profile.' }, staff, req);
     expect(r.queue).toHaveBeenCalledWith();
     expect(r.screenshot).toHaveBeenCalledWith(staff, 'p1', expect.objectContaining({ ip: '203.0.113.9' }));
-    expect(r.review).toHaveBeenCalledWith('st', 'p1', { approve: false, liveCheck: 'not_matched', reason: 'Not visible on the profile.' }, expect.objectContaining({ ip: '203.0.113.9' }));
+    expect(r.review).toHaveBeenCalledWith(
+      'st',
+      'p1',
+      { approve: false, liveCheck: 'not_matched', reason: 'Not visible on the profile.' },
+      expect.objectContaining({ ip: '203.0.113.9' }),
+    );
     expect(() => c.screenshot('p1', user as never, req)).toThrow(Problem);
     expect(() => c.proof('l1', undefined, user)).toThrow(Problem);
     expect(() => c.addGame(game, user as never, req)).toThrow(Problem);

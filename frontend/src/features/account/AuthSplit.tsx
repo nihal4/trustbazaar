@@ -32,7 +32,7 @@ function useFrame(content: RefObject<HTMLDivElement>, rows: number, stepKey: str
     const watch = typeof ResizeObserver === 'function' ? new ResizeObserver(read) : null;
     watch?.observe(el);
     return () => watch?.disconnect();
-  // each step is a new element (the key restarts its slide), so the measure follows the step
+    // each step is a new element (the key restarts its slide), so the measure follows the step
   }, [content, stepKey, bands]);
   const cell = CELL;
   const total = Math.floor(vw / cell);
@@ -69,8 +69,15 @@ export function AuthSplit({ children, stepKey = 'step', rows = 8, head, headCell
 
   // the grid answers each step: a ring runs out from the middle of the slab (and on arrival, after the slab has risen)
   useEffect(() => {
-    const send = () => { const b = slab.current?.getBoundingClientRect(); if (b) pulseGrid(b.left + b.width / 2, b.top + b.height / 2); };
-    if (first.current) { first.current = false; const id = window.setTimeout(send, 380); return () => window.clearTimeout(id); }
+    const send = () => {
+      const b = slab.current?.getBoundingClientRect();
+      if (b) pulseGrid(b.left + b.width / 2, b.top + b.height / 2);
+    };
+    if (first.current) {
+      first.current = false;
+      const id = window.setTimeout(send, 380);
+      return () => window.clearTimeout(id);
+    }
     send();
     return undefined;
   }, [stepKey]);
@@ -84,12 +91,16 @@ export function AuthSplit({ children, stepKey = 'step', rows = 8, head, headCell
         {banded ? (
           <div key={stepKey} className={`${styles.stageStep} ${styles.banded}`} style={{ '--head': headCells, '--foot': footCells } as CSSProperties}>
             <div className={styles.bandHead}>{head}</div>
-            <div ref={face} className={styles.bandBody}>{children}</div>
+            <div ref={face} className={styles.bandBody}>
+              {children}
+            </div>
             {foot !== undefined && <div className={styles.bandFoot}>{foot}</div>}
           </div>
         ) : (
           <div key={stepKey} className={styles.stageStep}>
-            <div ref={face} className={styles.stepFlow}>{children}</div>
+            <div ref={face} className={styles.stepFlow}>
+              {children}
+            </div>
           </div>
         )}
       </div>

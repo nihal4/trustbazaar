@@ -11,7 +11,16 @@ const sharp = require('sharp') as typeof import('sharp').default;
 // U6-02: threads, messages, images, marks, the live messages, the recipient's notice and blocks, against PostgreSQL
 // and Redis (docs/design/06_chat_notifications.pdf sections 3.1, 3.2, 6 and 7.4).
 
-interface Msg { clientId: string | null; seq: number; fromMe: boolean; kind: string; text: string | null; caption: string | null; image: { url: string; expiresAt: string } | null; flags: string[] }
+interface Msg {
+  clientId: string | null;
+  seq: number;
+  fromMe: boolean;
+  kind: string;
+  text: string | null;
+  caption: string | null;
+  image: { url: string; expiresAt: string } | null;
+  flags: string[];
+}
 
 describe('chat', () => {
   let t: TestApp;
@@ -42,7 +51,8 @@ describe('chat', () => {
     const headers = { ...fx.headers(sid, userId, 'user'), 'x-forwarded-for': ip };
     const call = (method: string, path: string, body?: unknown) =>
       fetch(t.url(path), {
-        method, headers: { ...headers, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
+        method,
+        headers: { ...headers, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
     const json = async <T = Record<string, unknown>>(method: string, path: string, body?: unknown, status = 200) => {
@@ -58,9 +68,19 @@ describe('chat', () => {
       form.set('image', new Blob([new Uint8Array(bytes)], { type: 'image/jpeg' }), 'i.jpg');
       return fetch(t.url(`/threads/${thread}/images`), { method: 'POST', headers, body: form });
     };
-    const messages = (thread: string, after = 0) => json<{ items: Msg[]; more: boolean; lastSeq: number; otherMarks: { delivered: number; read: number } }>('GET', `/threads/${thread}/messages?after=${after}`);
+    const messages = (thread: string, after = 0) =>
+      json<{ items: Msg[]; more: boolean; lastSeq: number; otherMarks: { delivered: number; read: number } }>(
+        'GET',
+        `/threads/${thread}/messages?after=${after}`,
+      );
     const connect = async () => {
-      const s = io(new URL(t.url('/')).origin, { path: '/socket.io', transports: ['websocket'], extraHeaders: { cookie: fx.headers(sid, userId, 'user').cookie, origin }, reconnection: false, forceNew: true });
+      const s = io(new URL(t.url('/')).origin, {
+        path: '/socket.io',
+        transports: ['websocket'],
+        extraHeaders: { cookie: fx.headers(sid, userId, 'user').cookie, origin },
+        reconnection: false,
+        forceNew: true,
+      });
       sockets.push(s);
       await new Promise<void>((resolve) => s.once('connect', () => resolve()));
       return s;
@@ -78,7 +98,11 @@ describe('chat', () => {
       [sellerId, category],
     );
     for (const n of [1, 2]) {
-      await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [id, n, randomUUID().replace(/-/g, '')]);
+      await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [
+        id,
+        n,
+        randomUUID().replace(/-/g, ''),
+      ]);
     }
     if (status === 'active') await fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [id]);
     return id;
@@ -104,7 +128,9 @@ describe('chat', () => {
     expect((await buyer.call('POST', `/listings/${sold}/threads`)).status).toBe(200);
 
     await buyer.send(thread, 'Is it still available?');
-    const list = await seller.json<{ items: { id: string; role: string; unread: number; other: { displayName: string; verified: boolean }; listing: { title: string } }[] }>('GET', '/threads');
+    const list = await seller.json<{
+      items: { id: string; role: string; unread: number; other: { displayName: string; verified: boolean }; listing: { title: string } }[];
+    }>('GET', '/threads');
     const mine = list.items.find((i) => i.id === thread)!;
     expect(mine).toMatchObject({ role: 'seller', unread: 1, listing: { title: 'Phone for the chat tests' } });
     expect(Object.keys(mine.other).sort()).toEqual(['displayName', 'id', 'verified']); // FR-ACC-10: the public id, no phone or e-mail
@@ -121,7 +147,10 @@ describe('chat', () => {
     expect(await (await seller.send(thread, 'Hi, yes')).json()).toMatchObject({ seq: 2 });
 
     const page = await buyer.messages(thread);
-    expect(page.items.map((m) => [m.seq, m.fromMe, m.text, m.clientId])).toEqual([[1, true, 'Hello', clientId], [2, false, 'Hi, yes', null]]);
+    expect(page.items.map((m) => [m.seq, m.fromMe, m.text, m.clientId])).toEqual([
+      [1, true, 'Hello', clientId],
+      [2, false, 'Hi, yes', null],
+    ]);
     expect((await seller.messages(thread)).items[0].clientId).toBeNull(); // only the sender sees their own client id
     expect((await buyer.messages(thread, 1)).items.map((m) => m.seq)).toEqual([2]); // the resync after a gap
 
@@ -135,14 +164,19 @@ describe('chat', () => {
   it('FR-CHT-07 a message with a payment phrase is kept with its flag, and the event for review is written', async () => {
     const { buyer, thread } = await pair();
     expect(await (await buyer.send(thread, 'Please send money first')).json()).toMatchObject({ flags: ['payment_phrase'] });
-    const [e] = await fx.query<{ payload: { flags: string[] } }>(`SELECT payload FROM chat.outbox WHERE event_type = 'chat.message.flagged' AND aggregate_id = $1`, [thread]);
+    const [e] = await fx.query<{ payload: { flags: string[] } }>(
+      `SELECT payload FROM chat.outbox WHERE event_type = 'chat.message.flagged' AND aggregate_id = $1`,
+      [thread],
+    );
     expect(e.payload.flags).toEqual(['payment_phrase']);
   });
 
   it('FR-CHT-03 an image is re-encoded without metadata and shown to participants through a signed link', async () => {
     const { seller, buyer, thread } = await pair();
     const withGps = await sharp({ create: { width: 1200, height: 900, channels: 3, background: '#7a7' } })
-      .jpeg().withMetadata({ exif: { IFD0: { Copyright: 'chat test' } } }).toBuffer();
+      .jpeg()
+      .withMetadata({ exif: { IFD0: { Copyright: 'chat test' } } })
+      .toBuffer();
     const r = await buyer.image(thread, withGps, 'The box');
     expect(r.status).toBe(200);
     const [m] = (await seller.messages(thread)).items;
@@ -185,7 +219,9 @@ describe('chat', () => {
     const notices = await fx.query<{ id: string; params: Record<string, string>; subject_type: string; email: string | null }>(
       `SELECT n.id, n.params, n.subject_type, d.status AS email FROM notify.notifications n
          LEFT JOIN notify.deliveries d ON d.notification_id = n.id AND d.channel = 'email'
-        WHERE n.user_id = $1 AND n.template_code = 'chat.message_received' ORDER BY n.created_at`, [seller.userId]);
+        WHERE n.user_id = $1 AND n.template_code = 'chat.message_received' ORDER BY n.created_at`,
+      [seller.userId],
+    );
     expect(notices).toHaveLength(2);
     expect(notices[0].params).toEqual({ listing_title: 'Phone for the chat tests', sender_name: expect.any(String) });
     expect(JSON.stringify(notices)).not.toContain('question');
@@ -198,7 +234,9 @@ describe('chat', () => {
     await b2.send(t2, 'Are you there?');
     const [n] = await fx.query<{ email: string }>(
       `SELECT d.status AS email FROM notify.notifications n JOIN notify.deliveries d ON d.notification_id = n.id AND d.channel = 'email'
-        WHERE n.user_id = $1 AND n.template_code = 'chat.message_received'`, [s2.userId]);
+        WHERE n.user_id = $1 AND n.template_code = 'chat.message_received'`,
+      [s2.userId],
+    );
     expect(n.email).toBe('suppressed');
     expect(t2).toBeDefined();
   });
@@ -207,7 +245,10 @@ describe('chat', () => {
     const { seller, buyer, listingId, thread } = await pair();
     expect((await seller.call('POST', `/blocks/${buyer.userId}`)).status).toBe(204);
     expect((await seller.call('POST', `/blocks/${buyer.userId}`)).status).toBe(204); // idempotent
-    for (const [who, text] of [[buyer, 'hello?'], [seller, 'no']] as const) {
+    for (const [who, text] of [
+      [buyer, 'hello?'],
+      [seller, 'no'],
+    ] as const) {
       const r = await who.send(thread, text);
       expect(r.status).toBe(403);
       expect((await r.json()).type).toMatch(/blocked$/);

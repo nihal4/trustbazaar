@@ -47,9 +47,11 @@ const FULFILMENT: Record<string, { step: 'meetup_handover' | 'courier_pickup' | 
 export type Outcome = 'paid' | 'failed' | 'pending' | 'rejected' | 'duplicate' | 'late' | 'already-processed' | 'no-change';
 
 /** What a confirmed featured-listing or subscription payment does, in the confirming transaction. */
-export type SubjectHandler = (m: EntityManager, attempt: PaymentAttempt, now: Date) => Promise<
-  { accepted: true; account: 'revenue_featured' | 'revenue_subscription'; memo: string } | { accepted: false; reason: string }
->;
+export type SubjectHandler = (
+  m: EntityManager,
+  attempt: PaymentAttempt,
+  now: Date,
+) => Promise<{ accepted: true; account: 'revenue_featured' | 'revenue_subscription'; memo: string } | { accepted: false; reason: string }>;
 /** What a failed featured-listing or subscription payment does, in the confirming transaction. */
 export type FailureHandler = (m: EntityManager, attempt: PaymentAttempt, now: Date) => Promise<void>;
 
@@ -88,7 +90,12 @@ export class PaymentService {
         const earlier = await m.getRepository(PaymentAttempt).countBy({ orderId });
         const expiresAt = new Date(now.getTime() + (provider === 'stripe' && adapter.confirmation === 'webhook' ? STRIPE_MIN_SESSION_MS : ATTEMPT_LIFETIME_MS));
         const { identifiers } = await m.getRepository(PaymentAttempt).insert({
-          purpose: 'order', orderId, payerId: buyerId, provider, amount: o.total, expiresAt,
+          purpose: 'order',
+          orderId,
+          payerId: buyerId,
+          provider,
+          amount: o.total,
+          expiresAt,
         });
         // DV-11: the first attempt extends the hold once, so a buyer on the provider's page is not cancelled
         if (earlier === 0 && expiresAt > o.paymentDueAt) await m.getRepository(Order).update({ id: orderId }, { paymentDueAt: expiresAt });
@@ -124,7 +131,13 @@ export class PaymentService {
   async startView(attemptId: string) {
     const a = await this.db.getRepository(PaymentAttempt).findOneByOrFail({ id: attemptId });
     if (a.status !== 'redirected') throw new Problem('order-state', { errors: [{ field: 'attempt', reason: a.status }] });
-    return { attemptId: a.id, provider: a.provider, amount: a.amount, expiresAt: a.expiresAt.toISOString(), redirectUrl: await this.providers[a.provider]!.redirectUrl(this.ref(a)) };
+    return {
+      attemptId: a.id,
+      provider: a.provider,
+      amount: a.amount,
+      expiresAt: a.expiresAt.toISOString(),
+      redirectUrl: await this.providers[a.provider]!.redirectUrl(this.ref(a)),
+    };
   }
 
   /** Monetization registers what a confirmed featured-listing or subscription payment does (section 5.14). */
@@ -212,7 +225,8 @@ export class PaymentService {
     if (r.status === 'pending') return 'pending';
     const now = this.clock.now();
     if (r.status === 'failed') {
-      if (a.status === 'created' || a.status === 'redirected') await m.getRepository(PaymentAttempt).update({ id: a.id }, { status: 'failed', failureCode: r.eventType.slice(0, 60) });
+      if (a.status === 'created' || a.status === 'redirected')
+        await m.getRepository(PaymentAttempt).update({ id: a.id }, { status: 'failed', failureCode: r.eventType.slice(0, 60) });
       return 'failed';
     }
     const ids = { providerPaymentId: r.providerPaymentId, providerTxnId: r.providerTxnId ?? null };
@@ -227,13 +241,30 @@ export class PaymentService {
         const { identifiers } = await m.getRepository(Refund).insert({ attemptId: a.id, orderId: o.id, amount: back.toString(), reason: kind });
         // money in, owed straight back (section 4.3)
         await this.journal(m, 'payment_received', o.id, a.id, `${kind}: owed back`, [
-          ['provider_clearing', null, back], ['buyer_refund_payable', o.buyerId, -back],
+          ['provider_clearing', null, back],
+          ['buyer_refund_payable', o.buyerId, -back],
         ]);
         if (kind !== 'duplicate_payment') {
-          await this.raise(m, kind, o.id, a.id, { verifiedAmount: r.amount.toString(), attemptAmount: a.amount, currency: r.currency, reference: r.merchantReference, refundId: identifiers[0].id, orderStatus: o.status });
+          await this.raise(m, kind, o.id, a.id, {
+            verifiedAmount: r.amount.toString(),
+            attemptAmount: a.amount,
+            currency: r.currency,
+            reference: r.merchantReference,
+            refundId: identifiers[0].id,
+            orderStatus: o.status,
+          });
         }
       }
-      await this.audit.record({ actorType: 'provider', action: `payments.attempt.${status}`, objectType: 'payment_attempt', objectId: a.id, after: { kind, amount: r.amount.toString() } }, m);
+      await this.audit.record(
+        {
+          actorType: 'provider',
+          action: `payments.attempt.${status}`,
+          objectType: 'payment_attempt',
+          objectId: a.id,
+          after: { kind, amount: r.amount.toString() },
+        },
+        m,
+      );
       return kind === 'duplicate_payment' ? 'duplicate' : kind === 'late_payment' ? 'late' : 'rejected';
     }
 
@@ -243,19 +274,52 @@ export class PaymentService {
     const due = new Date(now.getTime() + values.ms(f.cp));
     await m.getRepository(PaymentAttempt).update({ id: a.id }, { ...ids, status: 'succeeded', confirmedAt: now });
     await m.getRepository(Order).update({ id: o.id }, { status: 'paid', paidAt: now, fulfilmentStep: f.step, fulfilmentDueAt: due });
-    await m.getRepository(Escrow).insert({ orderId: o.id, releasePolicy: o.itemKind === 'game_account' ? 'game_protection' : 'standard', amountCollected: o.total });
-    await m.getRepository(EscrowHistory).insert({ orderId: o.id, fromState: null, toState: 'held', actorType: 'provider', reason: `payment ${a.id} confirmed by ${r.verifiedBy}`, relatedId: a.id });
+    await m
+      .getRepository(Escrow)
+      .insert({ orderId: o.id, releasePolicy: o.itemKind === 'game_account' ? 'game_protection' : 'standard', amountCollected: o.total });
+    await m.getRepository(EscrowHistory).insert({
+      orderId: o.id,
+      fromState: null,
+      toState: 'held',
+      actorType: 'provider',
+      reason: `payment ${a.id} confirmed by ${r.verifiedBy}`,
+      relatedId: a.id,
+    });
     const total = BigInt(o.total);
-    await this.journal(m, 'payment_received', o.id, a.id, `payment ${provider}`, [['provider_clearing', null, total], ['escrow_liability', o.id, -total]]);
+    await this.journal(m, 'payment_received', o.id, a.id, `payment ${provider}`, [
+      ['provider_clearing', null, total],
+      ['escrow_liability', o.id, -total],
+    ]);
     await m.getRepository(OrdersOutboxEvent).insert({
-      eventType: 'orders.order.paid', aggregateId: o.id,
+      eventType: 'orders.order.paid',
+      aggregateId: o.id,
       // I-19 (Delivery), U3-02 (Listings: listingId and quantity), Unit 5 and Notifications
       payload: {
-        orderId: o.id, kind: o.kind, itemKind: o.itemKind, listingId: o.listingId, listingTitle: (o.listingSnapshot as { title?: string } | null)?.title ?? null, quantity: o.quantity, buyerId: o.buyerId, sellerId: o.sellerId,
-        fulfilment: o.fulfilment, fulfilmentStep: f.step, fulfilmentDueAt: due.toISOString(), deliveryQuoteId: o.deliveryQuoteId, total: o.total,
+        orderId: o.id,
+        kind: o.kind,
+        itemKind: o.itemKind,
+        listingId: o.listingId,
+        listingTitle: (o.listingSnapshot as { title?: string } | null)?.title ?? null,
+        quantity: o.quantity,
+        buyerId: o.buyerId,
+        sellerId: o.sellerId,
+        fulfilment: o.fulfilment,
+        fulfilmentStep: f.step,
+        fulfilmentDueAt: due.toISOString(),
+        deliveryQuoteId: o.deliveryQuoteId,
+        total: o.total,
       },
     });
-    await this.audit.record({ actorType: 'provider', action: 'orders.order.paid', objectType: 'order', objectId: o.id, after: { attemptId: a.id, provider, total: o.total, verifiedBy: r.verifiedBy } }, m);
+    await this.audit.record(
+      {
+        actorType: 'provider',
+        action: 'orders.order.paid',
+        objectType: 'order',
+        objectId: o.id,
+        after: { attemptId: a.id, provider, total: o.total, verifiedBy: r.verifiedBy },
+      },
+      m,
+    );
     return 'paid';
   }
 
@@ -287,8 +351,20 @@ export class PaymentService {
     if (verdict?.accepted) {
       await m.getRepository(PaymentAttempt).update({ id: a.id }, { ...ids, status: 'succeeded', confirmedAt: now });
       const amount = BigInt(a.amount);
-      await post(m, 'fee_received', null, a.id, verdict.memo, [['provider_clearing', null, amount], [verdict.account, a.payerId, -amount]]);
-      await this.audit.record({ actorType: 'provider', action: `payments.${a.purpose}.paid`, objectType: 'payment_attempt', objectId: a.id, after: { subjectId: a.subjectId, provider, amount: a.amount, verifiedBy: r.verifiedBy } }, m);
+      await post(m, 'fee_received', null, a.id, verdict.memo, [
+        ['provider_clearing', null, amount],
+        [verdict.account, a.payerId, -amount],
+      ]);
+      await this.audit.record(
+        {
+          actorType: 'provider',
+          action: `payments.${a.purpose}.paid`,
+          objectType: 'payment_attempt',
+          objectId: a.id,
+          after: { subjectId: a.subjectId, provider, amount: a.amount, verifiedBy: r.verifiedBy },
+        },
+        m,
+      );
       return 'paid';
     }
     const kind = mismatch ? 'amount_mismatch' : 'fee_refund';
@@ -296,10 +372,29 @@ export class PaymentService {
     const back = r.amount < BigInt(a.amount) ? r.amount : BigInt(a.amount); // never more than this attempt (refund cap)
     if (back > 0n) {
       const { identifiers } = await m.getRepository(Refund).insert({ attemptId: a.id, orderId: null, amount: back.toString(), reason: kind });
-      await post(m, 'payment_received', null, a.id, `${kind}: owed back`, [['provider_clearing', null, back], ['buyer_refund_payable', a.payerId, -back]]);
-      if (mismatch) await this.raise(m, kind, null, a.id, { verifiedAmount: r.amount.toString(), attemptAmount: a.amount, currency: r.currency, reference: r.merchantReference, refundId: identifiers[0].id });
+      await post(m, 'payment_received', null, a.id, `${kind}: owed back`, [
+        ['provider_clearing', null, back],
+        ['buyer_refund_payable', a.payerId, -back],
+      ]);
+      if (mismatch)
+        await this.raise(m, kind, null, a.id, {
+          verifiedAmount: r.amount.toString(),
+          attemptAmount: a.amount,
+          currency: r.currency,
+          reference: r.merchantReference,
+          refundId: identifiers[0].id,
+        });
     }
-    await this.audit.record({ actorType: 'provider', action: 'payments.attempt.succeeded_rejected', objectType: 'payment_attempt', objectId: a.id, after: { kind, purpose: a.purpose, reason: verdict && !verdict.accepted ? verdict.reason : null } }, m);
+    await this.audit.record(
+      {
+        actorType: 'provider',
+        action: 'payments.attempt.succeeded_rejected',
+        objectType: 'payment_attempt',
+        objectId: a.id,
+        after: { kind, purpose: a.purpose, reason: verdict && !verdict.accepted ? verdict.reason : null },
+      },
+      m,
+    );
     return mismatch ? 'rejected' : 'late';
   }
 
@@ -318,7 +413,15 @@ export class PaymentService {
   }
 
   private ref(a: PaymentAttempt): AttemptRef {
-    return { id: a.id, provider: a.provider, orderId: a.orderId!, amount: BigInt(a.amount), idempotencyKey: a.idempotencyKey, providerPaymentId: a.providerPaymentId, expiresAt: a.expiresAt };
+    return {
+      id: a.id,
+      provider: a.provider,
+      orderId: a.orderId!,
+      amount: BigInt(a.amount),
+      idempotencyKey: a.idempotencyKey,
+      providerPaymentId: a.providerPaymentId,
+      expiresAt: a.expiresAt,
+    };
   }
 
   private urls(a: Pick<PaymentAttempt, 'id' | 'orderId' | 'provider'>) {
@@ -330,5 +433,4 @@ export class PaymentService {
       callbackUrl: `${this.config.publicOrigin}/api/v1/callbacks/${a.provider}/${a.id}?state=${this.signState(a.id)}`,
     };
   }
-
 }

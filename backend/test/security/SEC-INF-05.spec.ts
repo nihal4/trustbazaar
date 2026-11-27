@@ -27,7 +27,9 @@ describe('SEC-INF-05 production configuration', () => {
   });
 
   it('SEC-INF-05 debug logging is refused in production', () => {
-    expect(() => loadConfig({ ...process.env, TB_ENV: 'production', NODE_ENV: 'production', LOG_LEVEL: 'debug' })).toThrow(/LOG_LEVEL: debug output is off in production \(SEC-INF-05\)/);
+    expect(() => loadConfig({ ...process.env, TB_ENV: 'production', NODE_ENV: 'production', LOG_LEVEL: 'debug' })).toThrow(
+      /LOG_LEVEL: debug output is off in production \(SEC-INF-05\)/,
+    );
   });
 
   it('SEC-INF-05 the database connection never synchronises the schema, nor runs migrations itself', async () => {

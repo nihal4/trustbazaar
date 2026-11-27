@@ -6,12 +6,37 @@ import { StatementService } from './statement.service';
 describe('StatementService', () => {
   const at = new Date('2026-11-10T09:00:00Z');
   const order = {
-    id: 'o1', buyer_id: 'B', seller_id: 'S', kind: 'fixed_price', title: 'Lamp', quantity: 1, unit_price: '1000000', item_price: '1000000', delivery_fee: '15000',
-    total: '1015000', status: 'closed', created_at: at, paid_at: at, closed_at: at, cancelled_at: null,
+    id: 'o1',
+    buyer_id: 'B',
+    seller_id: 'S',
+    kind: 'fixed_price',
+    title: 'Lamp',
+    quantity: 1,
+    unit_price: '1000000',
+    item_price: '1000000',
+    delivery_fee: '15000',
+    total: '1015000',
+    status: 'closed',
+    created_at: at,
+    paid_at: at,
+    closed_at: at,
+    cancelled_at: null,
   };
   const settlement = {
-    order_id: 'o1', title: 'Lamp', created_at: at, amount_collected: '1015000', item_price: '1000000', delivery_fee: '15000', commission: '50000', commission_bps: 500,
-    courier_payout: '13500', delivery_margin: '1500', delivery_margin_bps: 1000, seller_payout: '950000', refund_total: '0', cursor_at: '2026-11-10T09:00:00.000000Z',
+    order_id: 'o1',
+    title: 'Lamp',
+    created_at: at,
+    amount_collected: '1015000',
+    item_price: '1000000',
+    delivery_fee: '15000',
+    commission: '50000',
+    commission_bps: 500,
+    courier_payout: '13500',
+    delivery_margin: '1500',
+    delivery_margin_bps: 1000,
+    seller_payout: '950000',
+    refund_total: '0',
+    cursor_at: '2026-11-10T09:00:00.000000Z',
   };
   const payout = { id: 'p1', order_id: 'o1', amount: '950000', status: 'sent', simulated: true, created_at: at, sent_at: at };
 
@@ -37,12 +62,20 @@ describe('StatementService', () => {
 
   it('FR-PAY-21 the buyer sees payments, refunds and the refund total, not the commission', async () => {
     const { svc } = fake({
-      orders: [order], settlements: [settlement],
-      attempts: [{ id: 'a1', provider: 'bkash', amount: '1015000', status: 'succeeded', confirmed_at: at }, { id: 'a2', provider: 'stripe', amount: '1015000', status: 'succeeded_duplicate', confirmed_at: at }],
+      orders: [order],
+      settlements: [settlement],
+      attempts: [
+        { id: 'a1', provider: 'bkash', amount: '1015000', status: 'succeeded', confirmed_at: at },
+        { id: 'a2', provider: 'stripe', amount: '1015000', status: 'succeeded_duplicate', confirmed_at: at },
+      ],
       refunds: [{ id: 'r1', attempt_id: 'a2', amount: '1015000', reason: 'duplicate_payment', status: 'succeeded', created_at: at, completed_at: at }],
     });
     const r = await svc.receipt('o1', 'B');
-    expect(r).toMatchObject({ role: 'buyer', order: { id: 'o1', total: '1015000', cancelledAt: null }, settlement: { amountCollected: '1015000', refundTotal: '0' } });
+    expect(r).toMatchObject({
+      role: 'buyer',
+      order: { id: 'o1', total: '1015000', cancelledAt: null },
+      settlement: { amountCollected: '1015000', refundTotal: '0' },
+    });
     if (r.role !== 'buyer') throw new Error('buyer expected');
     expect(r.payments.map((p) => p.accepted)).toEqual([true, false]);
     expect(r.refunds[0]).toMatchObject({ attemptId: 'a2', reason: 'duplicate_payment', completedAt: at.toISOString() });

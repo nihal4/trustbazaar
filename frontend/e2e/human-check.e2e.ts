@@ -10,9 +10,15 @@ test('SEC-ABU-02 I-64 a login asked for the human check: the page solves it, wit
   const proofs: string[] = [];
   const statuses: number[] = [];
   const violations: string[] = [];
-  page.on('request', (r) => { if (r.url().endsWith('/api/v1/auth/signin') && r.headers()['x-human-proof']) proofs.push(r.headers()['x-human-proof']); });
-  page.on('response', (r) => { if (r.url().endsWith('/api/v1/auth/signin')) statuses.push(r.status()); });
-  page.on('console', (m) => { if (m.type() === 'error' && /Content Security Policy|Trusted Type/i.test(m.text())) violations.push(m.text()); });
+  page.on('request', (r) => {
+    if (r.url().endsWith('/api/v1/auth/signin') && r.headers()['x-human-proof']) proofs.push(r.headers()['x-human-proof']);
+  });
+  page.on('response', (r) => {
+    if (r.url().endsWith('/api/v1/auth/signin')) statuses.push(r.status());
+  });
+  page.on('console', (m) => {
+    if (m.type() === 'error' && /Content Security Policy|Trusted Type/i.test(m.text())) violations.push(m.text());
+  });
 
   await page.goto('/signin');
   await page.getByLabel('Mobile number or e-mail').fill(f.seller.local);

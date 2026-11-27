@@ -34,13 +34,24 @@ async function stepUp() {
   fireEvent.click(within(dialog).getByRole('button', { name: 'Confirm' }));
 }
 
-describe('a copy of one\'s data', () => {
+describe("a copy of one's data", () => {
   it('FR-PRV-03 SEC-AUTH-08 asking needs step-up; the copy is prepared, then downloaded behind a signed link until it is deleted', async () => {
-    const ready = { id: 'x-1', status: 'ready', requestedAt: iso(-HOUR), readyAt: iso(-HOUR), expiresAt: iso(7 * 24 * HOUR), download: { url: '/api/v1/files/v/abc', expiresAt: iso(HOUR) } };
+    const ready = {
+      id: 'x-1',
+      status: 'ready',
+      requestedAt: iso(-HOUR),
+      readyAt: iso(-HOUR),
+      expiresAt: iso(7 * 24 * HOUR),
+      download: { url: '/api/v1/files/v/abc', expiresAt: iso(HOUR) },
+    };
     let asked = false;
     const be = backend({
-      'GET /me/data-export': () => (asked ? json(200, { id: 'x-1', status: 'preparing', requestedAt: iso(0), readyAt: null, expiresAt: null, download: null }) : noContent())(),
-      'POST /me/data-export': () => { asked = true; return json(202, { id: 'x-1', status: 'preparing', requestedAt: iso(0), readyAt: null, expiresAt: null, download: null })(); },
+      'GET /me/data-export': () =>
+        (asked ? json(200, { id: 'x-1', status: 'preparing', requestedAt: iso(0), readyAt: null, expiresAt: null, download: null }) : noContent())(),
+      'POST /me/data-export': () => {
+        asked = true;
+        return json(202, { id: 'x-1', status: 'preparing', requestedAt: iso(0), readyAt: null, expiresAt: null, download: null })();
+      },
     });
     renderApp('/account/privacy', be);
     fireEvent.click(await screen.findByRole('button', { name: 'Ask for a copy' }));
@@ -56,10 +67,20 @@ describe('a copy of one\'s data', () => {
   });
 
   it('DV-49 once in 7 days: a refusal says from when a new copy can be asked', async () => {
-    renderApp('/account/privacy', backend({
-      'GET /me/data-export': json(200, { id: 'x-1', status: 'expired', requestedAt: iso(-24 * HOUR), readyAt: iso(-24 * HOUR), expiresAt: iso(-HOUR), download: null }),
-      'POST /me/data-export': problem(429, 'rate-limited', {}, { 'Retry-After': String(6 * 24 * 3600) }),
-    }));
+    renderApp(
+      '/account/privacy',
+      backend({
+        'GET /me/data-export': json(200, {
+          id: 'x-1',
+          status: 'expired',
+          requestedAt: iso(-24 * HOUR),
+          readyAt: iso(-24 * HOUR),
+          expiresAt: iso(-HOUR),
+          download: null,
+        }),
+        'POST /me/data-export': problem(429, 'rate-limited', {}, { 'Retry-After': String(6 * 24 * 3600) }),
+      }),
+    );
     expect(await screen.findByText('Your last copy has been deleted.')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Ask for a new copy' }));
     await stepUp();
@@ -71,7 +92,12 @@ describe('closing the account', () => {
   it('FR-ACC-11 closing states its consequence, needs step-up, and is refused with the reasons while something is open', async () => {
     const be = backend({
       'POST /me/close': [
-        problem(409, 'account-not-closable', { errors: [{ field: 'account', reason: 'open-order' }, { field: 'account', reason: 'balance-owed' }] }),
+        problem(409, 'account-not-closable', {
+          errors: [
+            { field: 'account', reason: 'open-order' },
+            { field: 'account', reason: 'balance-owed' },
+          ],
+        }),
         noContent(),
       ],
     });
@@ -101,7 +127,17 @@ describe('closing the account', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Close my account' }));
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Keep my account' }));
     expect(be.called('POST /me/close')).toEqual([]);
-    for (const r of ['open-order', 'auction-with-bids', 'leading-bid', 'offer-open', 'open-dispute', 'balance-owed', 'payout-pending', 'refund-pending', 'kyc-under-review']) {
+    for (const r of [
+      'open-order',
+      'auction-with-bids',
+      'leading-bid',
+      'offer-open',
+      'open-dispute',
+      'balance-owed',
+      'payout-pending',
+      'refund-pending',
+      'kyc-under-review',
+    ]) {
       expect(en[`close.reason.${r}` as keyof typeof en]).toBeTruthy();
     }
     expect(Object.keys(bn).sort()).toEqual(Object.keys(en).sort());

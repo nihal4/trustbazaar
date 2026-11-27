@@ -6,9 +6,7 @@ import { CONFIG_PORT, ConfigPort } from '../../../kernel/config-port';
 import { EventBus, OutboxEvent } from '../../../kernel/events/event-bus';
 import { cursorAt, decodeCursor, encodeCursor } from '../../../kernel/http/cursor';
 import { Problem } from '../../../kernel/http/problems';
-import {
-  AUDIT_SERVICE, AuditServicePort, CallContext, IDENTITY_CRYPTO, IDENTITY_QUERY, IdentityCryptoPort, IdentityQuery,
-} from '../../identity/ports';
+import { AUDIT_SERVICE, AuditServicePort, CallContext, IDENTITY_CRYPTO, IDENTITY_QUERY, IdentityCryptoPort, IdentityQuery } from '../../identity/ports';
 import { PAYOUT_PROVIDER, PayoutProvider } from '../adapters/payout-provider';
 import { OrdersOutboxEvent, Payout, PayoutAccount, ReconciliationIssue } from '../db/entities';
 import { post } from './ledger';
@@ -73,8 +71,7 @@ export const BANK_ACCOUNT_INDEX = 'payments.bank_account';
  * A bank account is its bank (the first three digits of the routing number) and its number: the same account entered
  * with another branch's routing number is still found.
  */
-export const bankAccountKey = (routingNumber: string, accountNumber: string): string =>
-  `${routingNumber.slice(0, 3)}|${accountNumber}`;
+export const bankAccountKey = (routingNumber: string, accountNumber: string): string => `${routingNumber.slice(0, 3)}|${accountNumber}`;
 
 @Injectable()
 export class PayoutService implements OnModuleInit {
@@ -110,8 +107,14 @@ export class PayoutService implements OnModuleInit {
     let fields: Partial<PayoutAccount>;
     if (input.kind === 'bank') {
       fields = {
-        kind: 'bank', bankName: input.bankName.trim(), branchName: input.branchName?.trim() || null, routingNumber: input.routingNumber,
-        accountName: input.accountName.trim(), accountLast4: input.accountNumber.slice(-4), status: 'pending_review', effectiveAt: null,
+        kind: 'bank',
+        bankName: input.bankName.trim(),
+        branchName: input.branchName?.trim() || null,
+        routingNumber: input.routingNumber,
+        accountName: input.accountName.trim(),
+        accountLast4: input.accountNumber.slice(-4),
+        status: 'pending_review',
+        effectiveAt: null,
       };
     } else {
       const wallet = walletE164(input.walletNumber);
@@ -125,20 +128,43 @@ export class PayoutService implements OnModuleInit {
     return this.db.transaction(async (m) => {
       await m.query(`SELECT pg_advisory_xact_lock(hashtext('payout-account:' || $1))`, [userId]); // one change at a time per seller
       const repo = m.getRepository(PayoutAccount);
-      const old = await repo.findOne({ where: [{ userId, status: 'pending_review' }, { userId, status: 'cooling_off' }, { userId, status: 'active' }] });
+      const old = await repo.findOne({
+        where: [
+          { userId, status: 'pending_review' },
+          { userId, status: 'cooling_off' },
+          { userId, status: 'active' },
+        ],
+      });
       if (old) await repo.update({ id: old.id }, { status: 'replaced', replacedAt: now });
       const id = randomUUID(); // known before the insert: the encryption context names the row (the table needs the number with the bank fields)
-      const sealed = input.kind === 'bank' ? Buffer.from(await this.crypto.encrypt(input.accountNumber, `payments.payout_accounts.account_number:${id}`)) : null;
-      const bidx = input.kind === 'bank' ? Buffer.from(await this.crypto.blindIndex(bankAccountKey(input.routingNumber, input.accountNumber), BANK_ACCOUNT_INDEX)) : null;
+      const sealed =
+        input.kind === 'bank' ? Buffer.from(await this.crypto.encrypt(input.accountNumber, `payments.payout_accounts.account_number:${id}`)) : null;
+      const bidx =
+        input.kind === 'bank' ? Buffer.from(await this.crypto.blindIndex(bankAccountKey(input.routingNumber, input.accountNumber), BANK_ACCOUNT_INDEX)) : null;
       await repo.insert({ id, userId, ...fields, accountNumberEnc: sealed, accountNumberBidx: bidx });
       const account = await repo.findOneByOrFail({ id });
       await this.attachWaiting(m, userId, account);
-      await this.event(m, 'payments.payout_account.changed', userId, { userId, accountId: id, kind: account.kind, status: account.status, replaced: old !== null });
-      await this.audit.record({
-        actorType: 'user', actorId: userId, action: 'payments.payout_account.changed', objectType: 'payout_account', objectId: id,
-        before: old ? { id: old.id, kind: old.kind } : null, after: { kind: account.kind, status: account.status, last4: account.accountLast4 ?? account.walletE164?.slice(-3) },
-        sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null,
-      }, m);
+      await this.event(m, 'payments.payout_account.changed', userId, {
+        userId,
+        accountId: id,
+        kind: account.kind,
+        status: account.status,
+        replaced: old !== null,
+      });
+      await this.audit.record(
+        {
+          actorType: 'user',
+          actorId: userId,
+          action: 'payments.payout_account.changed',
+          objectType: 'payout_account',
+          objectId: id,
+          before: old ? { id: old.id, kind: old.kind } : null,
+          after: { kind: account.kind, status: account.status, last4: account.accountLast4 ?? account.walletE164?.slice(-3) },
+          sourceIp: ctx.ip ?? null,
+          correlationId: ctx.correlationId ?? null,
+        },
+        m,
+      );
       return this.view(account);
     });
   }
@@ -151,11 +177,28 @@ export class PayoutService implements OnModuleInit {
         WHERE seller_id = $1 AND ($2::timestamptz IS NULL OR (created_at, id) < ($2::timestamptz, $3::uuid))
         ORDER BY created_at DESC, id DESC LIMIT 51`,
       [userId, after?.at ?? null, after?.id ?? null],
-    )) as { id: string; order_id: string; amount: string; status: Payout['status']; simulated: boolean; created_at: Date; sent_at: Date | null; cursor_at: string }[];
+    )) as {
+      id: string;
+      order_id: string;
+      amount: string;
+      status: Payout['status'];
+      simulated: boolean;
+      created_at: Date;
+      sent_at: Date | null;
+      cursor_at: string;
+    }[];
     const page = rows.slice(0, 50);
     const last = page[page.length - 1];
     return {
-      items: page.map((r) => ({ id: r.id, orderId: r.order_id, amount: String(r.amount), status: r.status, simulated: r.simulated, createdAt: r.created_at.toISOString(), sentAt: r.sent_at?.toISOString() ?? null })),
+      items: page.map((r) => ({
+        id: r.id,
+        orderId: r.order_id,
+        amount: String(r.amount),
+        status: r.status,
+        simulated: r.simulated,
+        createdAt: r.created_at.toISOString(),
+        sentAt: r.sent_at?.toISOString() ?? null,
+      })),
       nextCursor: rows.length > 50 ? encodeCursor(last.cursor_at, last.id) : null,
     };
   }
@@ -180,7 +223,13 @@ export class PayoutService implements OnModuleInit {
   }
 
   /** FR-PAY-17: approve (then cooling-off CP-29) or reject a bank account, with a reason and an audit entry. */
-  async decideBankAccount(staffId: string, accountId: string, decision: 'approve' | 'reject', reason: string, ctx: CallContext = {}): Promise<PayoutAccountView> {
+  async decideBankAccount(
+    staffId: string,
+    accountId: string,
+    decision: 'approve' | 'reject',
+    reason: string,
+    ctx: CallContext = {},
+  ): Promise<PayoutAccountView> {
     const now = this.clock.now();
     const cooling = (await this.params.current()).ms('CP-29');
     return this.db.transaction(async (m) => {
@@ -188,17 +237,29 @@ export class PayoutService implements OnModuleInit {
       const a = await repo.findOne({ where: { id: accountId }, lock: { mode: 'pessimistic_write' } });
       if (!a) throw new Problem('not-found');
       if (a.status !== 'pending_review') throw new Problem('payout-state');
-      const patch = decision === 'approve'
-        ? { status: 'cooling_off' as const, effectiveAt: new Date(now.getTime() + cooling), reviewedBy: staffId, reviewedAt: now }
-        : { status: 'rejected' as const, reviewedBy: staffId, reviewedAt: now };
+      const patch =
+        decision === 'approve'
+          ? { status: 'cooling_off' as const, effectiveAt: new Date(now.getTime() + cooling), reviewedBy: staffId, reviewedAt: now }
+          : { status: 'rejected' as const, reviewedBy: staffId, reviewedAt: now };
       await repo.update({ id: a.id }, patch);
       const after = await repo.findOneByOrFail({ id: a.id });
       if (decision === 'approve') await this.attachWaiting(m, a.userId, after);
       await this.event(m, 'payments.payout_account.reviewed', a.userId, { userId: a.userId, accountId: a.id, decision });
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: `payments.payout_account.${decision === 'approve' ? 'approved' : 'rejected'}`, objectType: 'payout_account',
-        objectId: a.id, before: { status: a.status }, after: { status: after.status }, reason, sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null,
-      }, m);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: `payments.payout_account.${decision === 'approve' ? 'approved' : 'rejected'}`,
+          objectType: 'payout_account',
+          objectId: a.id,
+          before: { status: a.status },
+          after: { status: after.status },
+          reason,
+          sourceIp: ctx.ip ?? null,
+          correlationId: ctx.correlationId ?? null,
+        },
+        m,
+      );
       return this.view(after);
     });
   }
@@ -213,10 +274,21 @@ export class PayoutService implements OnModuleInit {
       const now = this.clock.now();
       const status = !account ? 'waiting_account' : account.effectiveAt! > now ? 'waiting_cooling_off' : 'pending';
       await m.getRepository(Payout).update({ id: p.id }, { status, holdReason: null, payoutAccountId: account?.id ?? null, nextAttemptAt: now });
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: 'payments.payout.hold_released', objectType: 'payout', objectId: p.id,
-        before: { status: 'held', holdReason: p.holdReason }, after: { status }, reason, sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null,
-      }, m);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: 'payments.payout.hold_released',
+          objectType: 'payout',
+          objectId: p.id,
+          before: { status: 'held', holdReason: p.holdReason },
+          after: { status },
+          reason,
+          sourceIp: ctx.ip ?? null,
+          correlationId: ctx.correlationId ?? null,
+        },
+        m,
+      );
       return this.payoutView({ ...p, status, sentAt: null });
     });
   }
@@ -235,7 +307,17 @@ export class PayoutService implements OnModuleInit {
       )) as unknown;
       const ids = (Array.isArray(held) && Array.isArray(held[0]) ? held[0] : held) as { id: string }[];
       if (ids.length) {
-        await this.audit.record({ actorType: 'system', action: 'payments.payout.held', objectType: 'user', objectId: userId, after: { payouts: ids.map((r) => r.id) }, reason: 'fraud suspension' }, m);
+        await this.audit.record(
+          {
+            actorType: 'system',
+            action: 'payments.payout.held',
+            objectType: 'user',
+            objectId: userId,
+            after: { payouts: ids.map((r) => r.id) },
+            reason: 'fraud suspension',
+          },
+          m,
+        );
       }
     });
   }
@@ -275,7 +357,9 @@ export class PayoutService implements OnModuleInit {
     let r: { status: 'sent' | 'failed'; ref?: string };
     try {
       r = await this.provider.send({
-        payoutId: p.id, amount: BigInt(p.amount), idempotencyKey: p.idempotencyKey,
+        payoutId: p.id,
+        amount: BigInt(p.amount),
+        idempotencyKey: p.idempotencyKey,
         destination: { kind: a.kind, walletE164: a.walletE164, bankName: a.bankName, routingNumber: a.routingNumber, accountLast4: a.accountLast4 },
       });
     } catch (err) {
@@ -285,17 +369,30 @@ export class PayoutService implements OnModuleInit {
     }
     if (r.status === 'sent') {
       await m.getRepository(Payout).update({ id: p.id }, { status: 'sent', sentAt: now, providerRef: r.ref ?? null, attemptsMade: made });
-      await post(m, 'payout_sent', p.orderId, p.id, `payout to the seller${p.simulated ? ' (simulated)' : ''}`, [['seller_payable', p.sellerId, BigInt(p.amount)], ['payout_clearing', null, -BigInt(p.amount)]]);
-      await this.event(m, 'payments.payout.sent', p.orderId, { payoutId: p.id, orderId: p.orderId, sellerId: p.sellerId, amount: p.amount, simulated: p.simulated });
+      await post(m, 'payout_sent', p.orderId, p.id, `payout to the seller${p.simulated ? ' (simulated)' : ''}`, [
+        ['seller_payable', p.sellerId, BigInt(p.amount)],
+        ['payout_clearing', null, -BigInt(p.amount)],
+      ]);
+      await this.event(m, 'payments.payout.sent', p.orderId, {
+        payoutId: p.id,
+        orderId: p.orderId,
+        sellerId: p.sellerId,
+        amount: p.amount,
+        simulated: p.simulated,
+      });
       return 'sent';
     }
     if (made >= MAX_PAYOUT_ATTEMPTS) {
       await m.getRepository(Payout).update({ id: p.id }, { status: 'failed', attemptsMade: made });
-      await m.getRepository(ReconciliationIssue).insert({ kind: 'payout_failed', orderId: p.orderId, payoutId: p.id, detail: { payoutId: p.id, amount: p.amount, attempts: made } });
+      await m
+        .getRepository(ReconciliationIssue)
+        .insert({ kind: 'payout_failed', orderId: p.orderId, payoutId: p.id, detail: { payoutId: p.id, amount: p.amount, attempts: made } });
       await this.event(m, 'payments.payout.failed', p.orderId, { payoutId: p.id, orderId: p.orderId, sellerId: p.sellerId, amount: p.amount });
       return 'failed';
     }
-    await m.getRepository(Payout).update({ id: p.id }, { status: 'failed', attemptsMade: made, nextAttemptAt: new Date(now.getTime() + PAYOUT_RETRY_DELAYS_MS[made - 1]) });
+    await m
+      .getRepository(Payout)
+      .update({ id: p.id }, { status: 'failed', attemptsMade: made, nextAttemptAt: new Date(now.getTime() + PAYOUT_RETRY_DELAYS_MS[made - 1]) });
     return 'retry';
   }
 
@@ -304,7 +401,10 @@ export class PayoutService implements OnModuleInit {
   /** Payouts waiting for an account or a cooling-off move to the seller's new usable account. */
   private async attachWaiting(m: EntityManager, userId: string, account: PayoutAccount): Promise<void> {
     if (account.status === 'pending_review' || account.status === 'rejected') {
-      await m.query(`UPDATE payments.payouts SET status = 'waiting_account', payout_account_id = NULL WHERE seller_id = $1 AND status = 'waiting_cooling_off'`, [userId]);
+      await m.query(
+        `UPDATE payments.payouts SET status = 'waiting_account', payout_account_id = NULL WHERE seller_id = $1 AND status = 'waiting_cooling_off'`,
+        [userId],
+      );
       return;
     }
     await m.query(
@@ -314,7 +414,12 @@ export class PayoutService implements OnModuleInit {
   }
 
   private usable(m: EntityManager, userId: string): Promise<PayoutAccount | null> {
-    return m.getRepository(PayoutAccount).findOne({ where: [{ userId, status: 'cooling_off' }, { userId, status: 'active' }] });
+    return m.getRepository(PayoutAccount).findOne({
+      where: [
+        { userId, status: 'cooling_off' },
+        { userId, status: 'active' },
+      ],
+    });
   }
 
   private event(m: EntityManager, eventType: string, aggregateId: string, payload: Record<string, unknown>) {
@@ -323,12 +428,28 @@ export class PayoutService implements OnModuleInit {
 
   private view(a: PayoutAccount): PayoutAccountView {
     return {
-      id: a.id, kind: a.kind, status: a.status, walletMasked: mask(a.walletE164), bankName: a.bankName, branchName: a.branchName, accountName: a.accountName,
-      accountLast4: a.accountLast4, effectiveAt: a.effectiveAt?.toISOString() ?? null, createdAt: a.createdAt.toISOString(),
+      id: a.id,
+      kind: a.kind,
+      status: a.status,
+      walletMasked: mask(a.walletE164),
+      bankName: a.bankName,
+      branchName: a.branchName,
+      accountName: a.accountName,
+      accountLast4: a.accountLast4,
+      effectiveAt: a.effectiveAt?.toISOString() ?? null,
+      createdAt: a.createdAt.toISOString(),
     };
   }
 
   private payoutView(p: Pick<Payout, 'id' | 'orderId' | 'amount' | 'status' | 'simulated' | 'createdAt' | 'sentAt'>): PayoutView {
-    return { id: p.id, orderId: p.orderId, amount: p.amount, status: p.status, simulated: p.simulated, createdAt: p.createdAt.toISOString(), sentAt: p.sentAt?.toISOString() ?? null };
+    return {
+      id: p.id,
+      orderId: p.orderId,
+      amount: p.amount,
+      status: p.status,
+      simulated: p.simulated,
+      createdAt: p.createdAt.toISOString(),
+      sentAt: p.sentAt?.toISOString() ?? null,
+    };
   }
 }

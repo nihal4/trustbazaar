@@ -2,7 +2,17 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DataSource, EntityManager, QueryFailedError } from 'typeorm';
 import { Problem } from '../../../kernel/http/problems';
 import { CHAT_COMMANDS, ChatCommands } from '../../chat/ports';
-import { AUDIT_SERVICE, AuditServicePort, CallContext, IDENTITY_QUERY, IdentityQuery, RATE_LIMITER, RateLimiterPort, STAFF_QUERY, StaffQuery } from '../../identity/ports';
+import {
+  AUDIT_SERVICE,
+  AuditServicePort,
+  CallContext,
+  IDENTITY_QUERY,
+  IdentityQuery,
+  RATE_LIMITER,
+  RateLimiterPort,
+  STAFF_QUERY,
+  StaffQuery,
+} from '../../identity/ports';
 import { LISTINGS_PORT, ListingsPort } from '../../listings/ports';
 import type { CaseQuery, ReportCategory, ReportCommands, ReportTarget, StaffCaseType } from '../ports';
 
@@ -19,7 +29,15 @@ import type { CaseQuery, ReportCategory, ReportCommands, ReportTarget, StaffCase
 export const MAX_REPORT_TEXT = 2000;
 const OPEN = ['open', 'under_review'];
 
-interface ReportRow { id: string; reporter_id: string; subject_user: string; target_type: string; target_id: string; status: string; assigned_to: string | null }
+interface ReportRow {
+  id: string;
+  reporter_id: string;
+  subject_user: string;
+  target_type: string;
+  target_id: string;
+  status: string;
+  assigned_to: string | null;
+}
 
 @Injectable()
 export class TrustReportService implements ReportCommands, CaseQuery {
@@ -36,7 +54,10 @@ export class TrustReportService implements ReportCommands, CaseQuery {
   ) {}
 
   /** POST /reports: a listing (about its seller) or a user. Chat threads and messages are reported in the chat. */
-  async reportFromApi(userId: string, r: { targetType: 'listing' | 'user'; targetId: string; category: ReportCategory; text?: string }): Promise<{ reportId: string }> {
+  async reportFromApi(
+    userId: string,
+    r: { targetType: 'listing' | 'user'; targetId: string; category: ReportCategory; text?: string },
+  ): Promise<{ reportId: string }> {
     let subjectUserId = r.targetId;
     if (r.targetType === 'listing') {
       const listing = await this.listings.snapshot(r.targetId).catch(() => null);
@@ -46,7 +67,12 @@ export class TrustReportService implements ReportCommands, CaseQuery {
       await this.identity.getPublicProfile(r.targetId); // not-found for an unknown user
     }
     await this.limiter.consume('chat-report', `user:${userId}`); // CP-35 reports_per_day, shared with chat (SEC-ABU-01)
-    const reportId = await this.report({ reporterId: userId, target: { type: r.targetType, id: r.targetId, subjectUserId }, category: r.category, text: r.text });
+    const reportId = await this.report({
+      reporterId: userId,
+      target: { type: r.targetType, id: r.targetId, subjectUserId },
+      category: r.category,
+      text: r.text,
+    });
     return { reportId };
   }
 
@@ -85,27 +111,61 @@ export class TrustReportService implements ReportCommands, CaseQuery {
         [reportId, staffId],
       )) as unknown[];
       if ((Array.isArray(rows[0]) ? rows[0] : rows).length === 0) throw new Problem('already-claimed'); // another operator was quicker
-      await this.audit.record({ actorType: 'staff', actorId: staffId, action: 'trust.report.claimed', objectType: 'report', objectId: reportId, sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null }, m);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: 'trust.report.claimed',
+          objectType: 'report',
+          objectId: reportId,
+          sourceIp: ctx.ip ?? null,
+          correlationId: ctx.correlationId ?? null,
+        },
+        m,
+      );
     });
     return { reportId, status: 'under_review' };
   }
 
   /** POST /staff/reports/{id}/resolution: the assigned operator dismisses or actions it, with a reason. */
-  async resolve(staffId: string, reportId: string, d: { outcome: 'dismissed' | 'actioned'; resolution: string }, ctx: CallContext = {}): Promise<{ reportId: string; status: string }> {
+  async resolve(
+    staffId: string,
+    reportId: string,
+    d: { outcome: 'dismissed' | 'actioned'; resolution: string },
+    ctx: CallContext = {},
+  ): Promise<{ reportId: string; status: string }> {
     const resolution = d.resolution.normalize('NFC').trim();
     if (resolution.length < 10) throw new Problem('validation-failed', { errors: [{ field: 'resolution', reason: 'too-short' }] });
     const r = await this.db.transaction(async (m) => {
       const row = await this.find(m, reportId, true);
       if (!OPEN.includes(row.status)) throw new Problem('validation-failed', { errors: [{ field: 'report', reason: 'closed' }] });
       if (row.assigned_to !== staffId) throw new Problem('not-claimed');
-      await m.query(`UPDATE trust.reports SET status = $2, resolution = $3, resolved_by = $4, resolved_at = now() WHERE id = $1`, [reportId, d.outcome, resolution, staffId]);
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: `trust.report.${d.outcome}`, objectType: 'report', objectId: reportId,
-        before: { status: row.status }, after: { status: d.outcome }, reason: resolution, sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null,
-      }, m);
+      await m.query(`UPDATE trust.reports SET status = $2, resolution = $3, resolved_by = $4, resolved_at = now() WHERE id = $1`, [
+        reportId,
+        d.outcome,
+        resolution,
+        staffId,
+      ]);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: `trust.report.${d.outcome}`,
+          objectType: 'report',
+          objectId: reportId,
+          before: { status: row.status },
+          after: { status: d.outcome },
+          reason: resolution,
+          sourceIp: ctx.ip ?? null,
+          correlationId: ctx.correlationId ?? null,
+        },
+        m,
+      );
       // FR-TNS-09: the reporter learns only whether action was taken
-      await m.query(`INSERT INTO disputes.outbox (event_type, aggregate_id, payload) VALUES ('trust.report.resolved', $1, $2)`,
-        [reportId, JSON.stringify({ reportId, reporterId: row.reporter_id, actioned: d.outcome === 'actioned' })]);
+      await m.query(`INSERT INTO disputes.outbox (event_type, aggregate_id, payload) VALUES ('trust.report.resolved', $1, $2)`, [
+        reportId,
+        JSON.stringify({ reportId, reporterId: row.reporter_id, actioned: d.outcome === 'actioned' }),
+      ]);
       return row;
     });
     if (r.target_type === 'thread' || r.target_type === 'message') {
@@ -127,7 +187,8 @@ export class TrustReportService implements ReportCommands, CaseQuery {
 
   private async find(m: EntityManager, id: string, lock = false): Promise<ReportRow> {
     const [r] = (await m.query(
-      `SELECT id, reporter_id, subject_user, target_type, target_id, status, assigned_to FROM trust.reports WHERE id = $1${lock ? ' FOR UPDATE' : ''}`, [id],
+      `SELECT id, reporter_id, subject_user, target_type, target_id, status, assigned_to FROM trust.reports WHERE id = $1${lock ? ' FOR UPDATE' : ''}`,
+      [id],
     )) as ReportRow[];
     if (!r) throw new Problem('not-found');
     return r;

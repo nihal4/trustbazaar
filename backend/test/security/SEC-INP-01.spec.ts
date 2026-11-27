@@ -23,7 +23,10 @@ describe('SEC-INP-01 schema validation', () => {
         for (const [key, a] of Object.entries(args)) {
           if (Number(key.split(':')[0]) !== RouteParamtypes.BODY || a.data !== undefined) continue;
           const type = types[a.index] as (new () => unknown) | undefined;
-          const ruled = typeof type === 'function' && ![Object, String, Number, Boolean, Array].includes(type as never) && storage.getTargetValidationMetadatas(type, '', true, false).length > 0;
+          const ruled =
+            typeof type === 'function' &&
+            ![Object, String, Number, Boolean, Array].includes(type as never) &&
+            storage.getTargetValidationMetadatas(type, '', true, false).length > 0;
           if (!ruled) loose.push(`${c.metatype?.name}.${name}`);
         }
       }

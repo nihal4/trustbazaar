@@ -11,7 +11,9 @@ describe('SEC-DAT-03 document numbers', () => {
     const owner = await s.signedIn({ kyc: 'unsubmitted' });
     const { id, docNumber } = await submitKyc(owner.b);
     const [row] = await s.fx.query<{ doc_number_enc: Buffer; doc_number_bidx: Buffer }>(
-      `SELECT doc_number_enc, doc_number_bidx FROM identity.kyc_submissions WHERE id = $1`, [id]);
+      `SELECT doc_number_enc, doc_number_bidx FROM identity.kyc_submissions WHERE id = $1`,
+      [id],
+    );
     expect(row.doc_number_enc.includes(Buffer.from(docNumber))).toBe(false);
     const keyed = createHmac('sha256', s.cfg.secrets.bidxKey.reveal()).update(`doc|nid|${docNumber}`).digest();
     expect(row.doc_number_bidx.equals(keyed)).toBe(true);
@@ -33,7 +35,8 @@ describe('SEC-DAT-03 document numbers', () => {
 
   it('SEC-DAT-03 the blacklist holds indexes only', async () => {
     const cols = await s.fx.query<{ column_name: string }>(
-      `SELECT column_name FROM information_schema.columns WHERE table_schema = 'identity' AND table_name = 'nid_blacklist'`);
+      `SELECT column_name FROM information_schema.columns WHERE table_schema = 'identity' AND table_name = 'nid_blacklist'`,
+    );
     const names = cols.map((c) => c.column_name);
     expect(names).toContain('doc_number_bidx');
     expect(names.filter((n) => /number/.test(n) && !/bidx/.test(n))).toEqual([]);

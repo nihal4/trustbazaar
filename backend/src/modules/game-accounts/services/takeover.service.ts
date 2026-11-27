@@ -55,7 +55,9 @@ export class TakeoverService {
     const r = await this.db
       .transaction(async (m) => {
         await this.lockOwnOrder(m, buyerId, orderId);
-        const [{ done }] = (await m.query(`SELECT game_accounts.confirm_step($1, $2, $3, $4) AS done`, [orderId, buyerId, step, sessionId])) as { done: boolean }[];
+        const [{ done }] = (await m.query(`SELECT game_accounts.confirm_step($1, $2, $3, $4) AS done`, [orderId, buyerId, step, sessionId])) as {
+          done: boolean;
+        }[];
         const [h] = (await m.query(`SELECT taken_over_at FROM game_accounts.handovers WHERE order_id = $1`, [orderId])) as { taken_over_at: Date | null }[];
         if (done) await this.escrow.recordDeliveryEvent(orderId, 'game_takeover', h.taken_over_at!, m); // DC-14: the protection period starts
         return { done, at: h.taken_over_at };
@@ -80,18 +82,30 @@ export class TakeoverService {
   /** POST /orders/{id}/game/rekey (FR-GAM-12): the new browser's public key; the seller seals again within DV-37. */
   async requestRekey(buyerId: string, orderId: string, sessionId: string, publicKey: string): Promise<{ keyVersion: number; redeliveryDueAt: string }> {
     const raw = /^[A-Za-z0-9_-]+$/.test(publicKey) ? Buffer.from(publicKey, 'base64url') : Buffer.alloc(0);
-    if (raw.length !== 65 || raw[0] !== 4 || !onCurve(raw)) throw new Problem('validation-failed', { errors: [{ field: 'publicKey', reason: 'not-a-p256-point' }] });
+    if (raw.length !== 65 || raw[0] !== 4 || !onCurve(raw))
+      throw new Problem('validation-failed', { errors: [{ field: 'publicKey', reason: 'not-a-p256-point' }] });
     const redeliver = (await this.params.current()).get<string>('CP-22'); // DV-37: the same time as the first delivery
     const r = await this.db
       .transaction(async (m) => {
         const facts = await this.lockOwnOrder(m, buyerId, orderId);
-        const [{ version }] = (await m.query(`SELECT game_accounts.request_rekey($1, $2, $3, $4, $5::interval) AS version`, [orderId, buyerId, raw, sessionId, redeliver])) as { version: number }[];
+        const [{ version }] = (await m.query(`SELECT game_accounts.request_rekey($1, $2, $3, $4, $5::interval) AS version`, [
+          orderId,
+          buyerId,
+          raw,
+          sessionId,
+          redeliver,
+        ])) as { version: number }[];
         const [h] = (await m.query(`SELECT rekey_due_at FROM game_accounts.handovers WHERE order_id = $1`, [orderId])) as { rekey_due_at: Date }[];
         return { version, due: h.rekey_due_at, sellerId: facts.sellerId };
       })
       .catch(refusal);
     const o = await this.orders.getOrderForParty(orderId, buyerId);
-    await this.notice(r.sellerId, 'game.rekey_requested', { listing_title: o.listing.title, hours: Math.max(1, Math.round((r.due.getTime() - Date.now()) / 3_600_000)) }, `game:${orderId}:rekey`);
+    await this.notice(
+      r.sellerId,
+      'game.rekey_requested',
+      { listing_title: o.listing.title, hours: Math.max(1, Math.round((r.due.getTime() - Date.now()) / 3_600_000)) },
+      `game:${orderId}:rekey`,
+    );
     return { keyVersion: r.version, redeliveryDueAt: r.due.toISOString() };
   }
 
@@ -113,28 +127,51 @@ export class TakeoverService {
   async evidence(orderId: string): Promise<GameEvidence | null> {
     const [h] = (await this.db.query(`SELECT * FROM game_accounts.handovers WHERE order_id = $1`, [orderId])) as Record<string, never>[];
     if (!h) return null;
-    const [details, proofs, confirmations, log] = await Promise.all([
-      this.db.query(`SELECT g.name, d.platform, d.player_id, d.contents FROM game_accounts.details d JOIN game_accounts.games g ON g.id = d.game_id WHERE d.listing_id = $1`, [h.listing_id]),
+    const [details, proofs, confirmations, log] = (await Promise.all([
+      this.db.query(
+        `SELECT g.name, d.platform, d.player_id, d.contents FROM game_accounts.details d JOIN game_accounts.games g ON g.id = d.game_id WHERE d.listing_id = $1`,
+        [h.listing_id],
+      ),
       this.db.query(
         `SELECT code, status, submitted_at, reviewed_at, reviewed_by, live_check, review_reason, screenshot_key, encode(screenshot_sha256, 'hex') AS sha256
            FROM game_accounts.ownership_proofs WHERE listing_id = $1 ORDER BY (status = 'approved') DESC, issued_at DESC LIMIT 1`,
         [h.listing_id],
       ),
       this.db.query(`SELECT step, at, session_id FROM game_accounts.confirmations WHERE order_id = $1 ORDER BY at`, [orderId]),
-      this.db.query(`SELECT at, user_id, session_id, key_version, host(source_ip) AS ip FROM game_accounts.access_log WHERE order_id = $1 ORDER BY at, id`, [orderId]),
-    ]) as [Record<string, never>[], Record<string, never>[], Record<string, never>[], Record<string, never>[]];
+      this.db.query(`SELECT at, user_id, session_id, key_version, host(source_ip) AS ip FROM game_accounts.access_log WHERE order_id = $1 ORDER BY at, id`, [
+        orderId,
+      ]),
+    ])) as [Record<string, never>[], Record<string, never>[], Record<string, never>[], Record<string, never>[]];
     const d = details[0];
     const p = proofs[0];
     return {
       details: d ? { game: d.name, platform: d.platform, playerId: d.player_id, contents: d.contents } : null,
-      proof: p ? {
-        code: p.code, status: p.status, submittedAt: p.submitted_at, reviewedAt: p.reviewed_at, reviewedBy: p.reviewed_by, liveCheck: p.live_check, reason: p.review_reason,
-        screenshotKey: p.screenshot_key, screenshotSha256: p.sha256,
-      } : null,
+      proof: p
+        ? {
+            code: p.code,
+            status: p.status,
+            submittedAt: p.submitted_at,
+            reviewedAt: p.reviewed_at,
+            reviewedBy: p.reviewed_by,
+            liveCheck: p.live_check,
+            reason: p.review_reason,
+            screenshotKey: p.screenshot_key,
+            screenshotSha256: p.sha256,
+          }
+        : null,
       handover: {
-        status: h.status, disclosureVersion: h.disclosure_version, disclosureAckAt: h.disclosure_ack_at, keyVersion: h.key_version, rekeysUsed: h.rekeys_used,
-        credentialsDueAt: h.credentials_due_at, firstDeliveredAt: h.first_delivered_at, deliveredAt: h.delivered_at, takeoverDueAt: h.takeover_due_at,
-        takenOverAt: h.taken_over_at, takeoverSource: h.takeover_source, disputedAt: h.disputed_at,
+        status: h.status,
+        disclosureVersion: h.disclosure_version,
+        disclosureAckAt: h.disclosure_ack_at,
+        keyVersion: h.key_version,
+        rekeysUsed: h.rekeys_used,
+        credentialsDueAt: h.credentials_due_at,
+        firstDeliveredAt: h.first_delivered_at,
+        deliveredAt: h.delivered_at,
+        takeoverDueAt: h.takeover_due_at,
+        takenOverAt: h.taken_over_at,
+        takeoverSource: h.takeover_source,
+        disputedAt: h.disputed_at,
       },
       confirmations: confirmations.map((c) => ({ step: c.step, at: c.at, sessionId: c.session_id })),
       accessLog: log.map((a) => ({ at: a.at, userId: a.user_id, sessionId: a.session_id, keyVersion: a.key_version, sourceIp: a.ip })),
@@ -145,7 +182,8 @@ export class TakeoverService {
   async completed(orderId: string, partyId: string): Promise<void> {
     const o = await this.orders.getOrderForParty(orderId, partyId);
     const days = Math.round((await this.params.current()).ms('CP-24') / 86_400_000);
-    for (const to of [o.buyerId, o.sellerId]) await this.notice(to, 'game.takeover_completed', { listing_title: o.listing.title, days }, `game:${orderId}:taken-over:${to}`);
+    for (const to of [o.buyerId, o.sellerId])
+      await this.notice(to, 'game.takeover_completed', { listing_title: o.listing.title, days }, `game:${orderId}:taken-over:${to}`);
   }
 
   /** DC-14: the order is locked first; only its buyer acts. */

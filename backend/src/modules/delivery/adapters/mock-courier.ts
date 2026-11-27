@@ -2,7 +2,13 @@ import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
 import type Redis from 'ioredis';
 import type { ShipmentStatus } from '../db/enums';
 import {
-  CourierPort, CourierSignatureError, CourierStatusReport, CourierUnavailableError, CourierWebhookEvent, type CourierAddress, type SizeClass,
+  CourierPort,
+  CourierSignatureError,
+  CourierStatusReport,
+  CourierUnavailableError,
+  CourierWebhookEvent,
+  type CourierAddress,
+  type SizeClass,
 } from './courier-port';
 
 // The mock courier (docs/design/04_delivery.pdf section 7.10; C-3; FR-DLV-14; U4-04). It plays the provider's side
@@ -22,7 +28,12 @@ const KEY = {
 };
 export const MOCK_HEADERS = { timestamp: 'x-mock-courier-timestamp', signature: 'x-mock-courier-signature' } as const;
 
-export interface MockEvent { id: string; status: ShipmentStatus; at: string; charge?: string }
+export interface MockEvent {
+  id: string;
+  status: ShipmentStatus;
+  at: string;
+  charge?: string;
+}
 export interface MockConsignment {
   id: string;
   ref: string;
@@ -43,7 +54,12 @@ export const MOCK_NEXT: Partial<Record<ShipmentStatus, ShipmentStatus[]>> = {
   in_transit: ['delivered', 'delivery_failed', 'returned_to_seller'],
   delivery_failed: ['in_transit', 'delivered', 'returned_to_seller'],
 };
-const HAPPY: Partial<Record<ShipmentStatus, ShipmentStatus>> = { booked: 'picked_up', picked_up: 'in_transit', in_transit: 'delivered', delivery_failed: 'in_transit' };
+const HAPPY: Partial<Record<ShipmentStatus, ShipmentStatus>> = {
+  booked: 'picked_up',
+  picked_up: 'in_transit',
+  in_transit: 'delivered',
+  delivery_failed: 'in_transit',
+};
 
 export type WebhookSink = (headers: Record<string, string>, rawBody: Buffer) => Promise<unknown>;
 
@@ -78,8 +94,14 @@ export class MockCourier implements CourierPort {
     }
     const at = this.now();
     const c: MockConsignment = {
-      id, ref: p.shipmentId, status: 'booked', bookedAt: at.toISOString(), parcel: p.parcel,
-      from: areaOf(p.pickup), to: areaOf(p.dropoff), returnRequested: false,
+      id,
+      ref: p.shipmentId,
+      status: 'booked',
+      bookedAt: at.toISOString(),
+      parcel: p.parcel,
+      from: areaOf(p.pickup),
+      to: areaOf(p.dropoff),
+      returnRequested: false,
       events: [{ id: `${id}-0`, status: 'booked', at: at.toISOString() }],
     };
     await this.save(c);
@@ -122,22 +144,36 @@ export class MockCourier implements CourierPort {
     const expected = Buffer.from(`v1=${this.sign(ts, rawBody)}`);
     const given = Buffer.from(sig);
     if (given.length !== expected.length || !timingSafeEqual(given, expected)) throw new CourierSignatureError('bad signature');
-    const b = JSON.parse(rawBody.toString('utf8')) as { eventId?: unknown; consignmentId?: unknown; status?: unknown; occurredAt?: unknown; returnCharge?: unknown };
+    const b = JSON.parse(rawBody.toString('utf8')) as {
+      eventId?: unknown;
+      consignmentId?: unknown;
+      status?: unknown;
+      occurredAt?: unknown;
+      returnCharge?: unknown;
+    };
     if (typeof b.eventId !== 'string' || typeof b.consignmentId !== 'string' || typeof b.status !== 'string' || typeof b.occurredAt !== 'string') {
       throw new CourierSignatureError('malformed body');
     }
     return {
-      eventId: b.eventId, consignmentId: b.consignmentId, status: b.status as ShipmentStatus, occurredAt: new Date(b.occurredAt),
+      eventId: b.eventId,
+      consignmentId: b.consignmentId,
+      status: b.status as ShipmentStatus,
+      occurredAt: new Date(b.occurredAt),
       ...(typeof b.returnCharge === 'string' ? { returnCharge: BigInt(b.returnCharge) } : {}),
     };
   }
 
   /** The signed request the mock would send: also used by tests to send forged or replayed webhooks. */
   signedWebhook(e: CourierWebhookEvent, at: Date = this.now()): { headers: Record<string, string>; body: Buffer } {
-    const body = Buffer.from(JSON.stringify({
-      eventId: e.eventId, consignmentId: e.consignmentId, status: e.status, occurredAt: e.occurredAt.toISOString(),
-      ...(e.returnCharge !== undefined ? { returnCharge: e.returnCharge.toString() } : {}),
-    }));
+    const body = Buffer.from(
+      JSON.stringify({
+        eventId: e.eventId,
+        consignmentId: e.consignmentId,
+        status: e.status,
+        occurredAt: e.occurredAt.toISOString(),
+        ...(e.returnCharge !== undefined ? { returnCharge: e.returnCharge.toString() } : {}),
+      }),
+    );
     const ts = String(Math.floor(at.getTime() / 1000));
     return { headers: { 'content-type': 'application/json', [MOCK_HEADERS.timestamp]: ts, [MOCK_HEADERS.signature]: `v1=${this.sign(ts, body)}` }, body };
   }
@@ -155,7 +191,11 @@ export class MockCourier implements CourierPort {
    * Moves a parcel: to the status given, or along the happy path (pickup, transit, delivery; a parcel whose return was
    * requested goes back to the seller). Then sends the signed webhook. Refuses a move the provider would not make.
    */
-  async advance(consignmentId: string, to?: ShipmentStatus, returnCharge?: bigint): Promise<{ consignment: MockConsignment; event: MockEvent; webhook: unknown }> {
+  async advance(
+    consignmentId: string,
+    to?: ShipmentStatus,
+    returnCharge?: bigint,
+  ): Promise<{ consignment: MockConsignment; event: MockEvent; webhook: unknown }> {
     const { c, e } = await this.locked(consignmentId, async (c) => {
       const next = to ?? (c.returnRequested && MOCK_NEXT[c.status]?.includes('returned_to_seller') ? 'returned_to_seller' : HAPPY[c.status]);
       if (!next || !MOCK_NEXT[c.status]?.includes(next)) throw new MockMoveRefused(c.status, next ?? null);
@@ -166,7 +206,13 @@ export class MockCourier implements CourierPort {
       else await this.redis.zrem(KEY.auto, c.id);
       return { c, e };
     });
-    const signed = this.signedWebhook({ eventId: e.id, consignmentId: c.id, status: e.status, occurredAt: new Date(e.at), ...(e.charge !== undefined ? { returnCharge: BigInt(e.charge) } : {}) });
+    const signed = this.signedWebhook({
+      eventId: e.id,
+      consignmentId: c.id,
+      status: e.status,
+      occurredAt: new Date(e.at),
+      ...(e.charge !== undefined ? { returnCharge: BigInt(e.charge) } : {}),
+    });
     const webhook = this.sink ? await this.sink(signed.headers, signed.body) : null;
     return { consignment: c, event: e, webhook };
   }
@@ -192,7 +238,12 @@ export class MockCourier implements CourierPort {
   // ---------------------------------------------------------------- the record
 
   private push(c: MockConsignment, status: ShipmentStatus, charge?: bigint): MockEvent {
-    const e: MockEvent = { id: `${c.id}-${c.events.length}`, status, at: this.now().toISOString(), ...(charge !== undefined ? { charge: charge.toString() } : {}) };
+    const e: MockEvent = {
+      id: `${c.id}-${c.events.length}`,
+      status,
+      at: this.now().toISOString(),
+      ...(charge !== undefined ? { charge: charge.toString() } : {}),
+    };
     c.events.push(e);
     c.status = status;
     return e;
@@ -229,7 +280,10 @@ export class MockCourier implements CourierPort {
 }
 
 export class MockMoveRefused extends Error {
-  constructor(readonly from: ShipmentStatus, readonly to: ShipmentStatus | null) {
+  constructor(
+    readonly from: ShipmentStatus,
+    readonly to: ShipmentStatus | null,
+  ) {
     super(`the mock courier cannot move a parcel from ${from} to ${to ?? 'a next status'}`);
     this.name = 'MockMoveRefused';
   }

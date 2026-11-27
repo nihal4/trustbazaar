@@ -25,9 +25,7 @@ async function main(): Promise<void> {
   try {
     const [{ current_user: role }] = await ds.query('SELECT current_user');
     const applied = await ds.runMigrations();
-    console.log(
-      JSON.stringify({ msg: 'migrations applied', role, applied: applied.map((m) => m.name), total: MIGRATIONS.length }),
-    );
+    console.log(JSON.stringify({ msg: 'migrations applied', role, applied: applied.map((m) => m.name), total: MIGRATIONS.length }));
   } finally {
     await ds.destroy();
   }

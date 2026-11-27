@@ -87,7 +87,12 @@ export class OutboxDispatcher implements OnApplicationBootstrap, OnApplicationSh
       const r: DrainResult = { dispatched: 0, failed: 0, givenUp: 0 };
       for (const row of rows) {
         const event: OutboxEvent = {
-          outbox, id: row.id, type: row.event_type, aggregateId: row.aggregate_id, payload: row.payload, createdAt: row.created_at,
+          outbox,
+          id: row.id,
+          type: row.event_type,
+          aggregateId: row.aggregate_id,
+          payload: row.payload,
+          createdAt: row.created_at,
           attempt: row.attempts + 1,
         };
         const failures: string[] = [];
@@ -105,7 +110,9 @@ export class OutboxDispatcher implements OnApplicationBootstrap, OnApplicationSh
         }
         const attempts = row.attempts + 1;
         await m.query(`UPDATE ${table} SET attempts = $2, next_attempt_at = $3 WHERE id = $1`, [
-          row.id, attempts, new Date(this.clock.now().getTime() + retryDelayMs(attempts)),
+          row.id,
+          attempts,
+          new Date(this.clock.now().getTime() + retryDelayMs(attempts)),
         ]);
         if (attempts >= MAX_ATTEMPTS) {
           r.givenUp++;

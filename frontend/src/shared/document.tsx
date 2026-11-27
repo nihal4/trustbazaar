@@ -47,28 +47,36 @@ interface Options {
   openSocket?: OpenSocket;
 }
 
-export function createDocument(setup: DocumentSetup, { createRouter = createBrowserRouter, apiOverrides, openSocket = defaultOpenSocket }: Options = {}): ClientDocument {
+export function createDocument(
+  setup: DocumentSetup,
+  { createRouter = createBrowserRouter, apiOverrides, openSocket = defaultOpenSocket }: Options = {},
+): ClientDocument {
   const queryClient = createQueryClient();
   const session = createSessionNotice();
   const stepUp = createStepUpBroker();
   // The callback runs only after a request, so the router below exists by then.
-  const api = createDocumentApi(setup.kind, () => {
-    // A guest's request answered 401 ended no session: nothing to clear, nothing to say (Decisions
-    // log, U8-02). Someone was signed in when their account is in the cache.
-    // In the console nobody browses as a guest: a first visit without a session goes to the staff sign-in, without
-    // the notice (Decisions log, U8-10).
-    const known = queryClient.getQueryData(setup.kind === 'user' ? ME_KEY : STAFF_ME_KEY) !== undefined;
-    if (!known && setup.kind === 'user') return;
-    if (known) {
-      queryClient.clear();
-      live?.stop();
-      session.signedOut();
-    }
-    if (setup.signIn) {
-      const { pathname, search } = router.state.location;
-      setup.signIn(pathname + search, router);
-    }
-  }, apiOverrides, setup.kind === 'user' ? stepUp.request : undefined);
+  const api = createDocumentApi(
+    setup.kind,
+    () => {
+      // A guest's request answered 401 ended no session: nothing to clear, nothing to say (Decisions
+      // log, U8-02). Someone was signed in when their account is in the cache.
+      // In the console nobody browses as a guest: a first visit without a session goes to the staff sign-in, without
+      // the notice (Decisions log, U8-10).
+      const known = queryClient.getQueryData(setup.kind === 'user' ? ME_KEY : STAFF_ME_KEY) !== undefined;
+      if (!known && setup.kind === 'user') return;
+      if (known) {
+        queryClient.clear();
+        live?.stop();
+        session.signedOut();
+      }
+      if (setup.signIn) {
+        const { pathname, search } = router.state.location;
+        setup.signIn(pathname + search, router);
+      }
+    },
+    apiOverrides,
+    setup.kind === 'user' ? stepUp.request : undefined,
+  );
   const router = createRouter([
     {
       element: <Shell titleKey={setup.titleKey} home={setup.home} accountLinks={setup.accountLinks} exit={setup.exit} />,

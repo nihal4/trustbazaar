@@ -74,9 +74,7 @@
   width: 3rem;
   height: 3rem;
   border: 1px solid var(--tb-border);
-  background-image:
-    linear-gradient(to right, var(--tb-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--tb-line) 1px, transparent 1px);
+  background-image: linear-gradient(to right, var(--tb-line) 1px, transparent 1px), linear-gradient(to bottom, var(--tb-line) 1px, transparent 1px);
   background-size: 16px 16px;
   color: var(--tb-hot);
   font-size: 1.25rem;
@@ -599,7 +597,9 @@
   background: color-mix(in srgb, var(--tb-hot) 10%, transparent);
   color: var(--tb-hot);
   cursor: pointer;
-  transition: background 140ms, opacity 140ms;
+  transition:
+    background 140ms,
+    opacity 140ms;
 }
 
 .sendBtn svg {
@@ -652,7 +652,9 @@
   font: inherit;
   font-weight: 600;
   cursor: pointer;
-  transition: background 140ms, border-color 140ms;
+  transition:
+    background 140ms,
+    border-color 140ms;
 }
 
 .primary {

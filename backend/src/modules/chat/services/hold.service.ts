@@ -53,10 +53,11 @@ export class HoldService implements ChatCommands {
   }
 
   async release(threadId: string, caseType: CaseType, caseId: string): Promise<void> {
-    await this.db.query(
-      `UPDATE chat.thread_holds SET released_at = now() WHERE thread_id = $1 AND case_type = $2 AND case_id = $3 AND released_at IS NULL`,
-      [threadId, caseType, caseId],
-    );
+    await this.db.query(`UPDATE chat.thread_holds SET released_at = now() WHERE thread_id = $1 AND case_type = $2 AND case_id = $3 AND released_at IS NULL`, [
+      threadId,
+      caseType,
+      caseId,
+    ]);
   }
 
   async threadFor(listingId: string, buyerId: string): Promise<string | null> {
@@ -75,10 +76,22 @@ export class HoldService implements ChatCommands {
       throw new Problem('not-found');
     }
     const [t] = (await this.db.query(`SELECT listing_id, buyer_id, seller_id, purged_at FROM chat.threads WHERE id = $1`, [threadId])) as {
-      listing_id: string; buyer_id: string; seller_id: string; purged_at: Date | null;
+      listing_id: string;
+      buyer_id: string;
+      seller_id: string;
+      purged_at: Date | null;
     }[];
     if (!t) throw new Problem('not-found');
-    let rows: { seq: string; sender_id: string; kind: 'text' | 'image'; body: string | null; image_key: string | null; flags: string[]; created_at: Date; purged_at: Date | null }[];
+    let rows: {
+      seq: string;
+      sender_id: string;
+      kind: 'text' | 'image';
+      body: string | null;
+      image_key: string | null;
+      flags: string[];
+      created_at: Date;
+      purged_at: Date | null;
+    }[];
     try {
       rows = await this.db.query(
         `SELECT seq::text, sender_id, kind, body, image_key, flags, created_at, purged_at FROM chat.staff_read($1, $2, $3::chat.case_type, $4)`,
@@ -96,17 +109,19 @@ export class HoldService implements ChatCommands {
       buyer: buyer ? { displayName: buyer.displayName, verified: buyer.verified } : null,
       seller: seller ? { displayName: seller.displayName, verified: seller.verified } : null,
       closed: t.purged_at !== null,
-      messages: await Promise.all(rows.map(async (m): Promise<StaffMessageView> => ({
-        seq: Number(m.seq),
-        from: m.sender_id === t.buyer_id ? 'buyer' : 'seller',
-        kind: m.kind,
-        text: m.kind === 'text' ? m.body : null,
-        caption: m.kind === 'image' ? m.body : null,
-        image: m.kind === 'image' && m.image_key ? await this.vault.signedLink(m.image_key, staff, reason) : null,
-        flags: m.flags,
-        at: m.created_at.toISOString(),
-        removed: m.purged_at !== null,
-      }))),
+      messages: await Promise.all(
+        rows.map(async (m): Promise<StaffMessageView> => ({
+          seq: Number(m.seq),
+          from: m.sender_id === t.buyer_id ? 'buyer' : 'seller',
+          kind: m.kind,
+          text: m.kind === 'text' ? m.body : null,
+          caption: m.kind === 'image' ? m.body : null,
+          image: m.kind === 'image' && m.image_key ? await this.vault.signedLink(m.image_key, staff, reason) : null,
+          flags: m.flags,
+          at: m.created_at.toISOString(),
+          removed: m.purged_at !== null,
+        })),
+      ),
     };
   }
 

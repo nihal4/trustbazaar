@@ -37,7 +37,9 @@ export function Shipments({ o, items, t, lang }: { o: OrderView; items: Shipment
       <h2 id="shipments-title">{t('shipments.title')}</h2>
       {items.some((s) => s.simulated) && <SimulatedBanner kind="courier" />}
       {items.length === 0 && <p className={styles.hint}>{t('shipments.none')}</p>}
-      {items.map((s) => <ShipmentCard key={s.id} o={o} s={s} t={t} lang={lang} />)}
+      {items.map((s) => (
+        <ShipmentCard key={s.id} o={o} s={s} t={t} lang={lang} />
+      ))}
     </section>
   );
 }
@@ -46,20 +48,54 @@ function ShipmentCard({ o, s, t, lang }: { o: OrderView; s: Shipment; t: T; lang
   const seller = o.role === 'seller';
   return (
     <article className={styles.shipment} aria-label={t(`shipments.direction.${s.direction}`)}>
-      <h3 className={styles.srOnly}>{t(`shipments.direction.${s.direction}`)}: {t(`shipments.status.${s.status}`)}</h3>
+      <h3 className={styles.srOnly}>
+        {t(`shipments.direction.${s.direction}`)}: {t(`shipments.status.${s.status}`)}
+      </h3>
       <dl className={styles.shipFacts}>
-        <div className={styles.statusCell}><dt>{t(`shipments.direction.${s.direction}`)}</dt><dd>{t(`shipments.status.${s.status}`)}</dd></div>
-        <div><dt>{t('shipments.fee')}</dt><dd>{formatMoney(BigInt(s.fee), lang)}</dd></div>
-        {s.consignmentId && <div><dt>{t('shipments.consignment')}</dt><dd className={styles.wrap}>{s.consignmentId}</dd></div>}
-        {s.pickupDueAt && <div><dt>{t('shipments.pickup_due')}</dt><dd><DateCells at={Date.parse(s.pickupDueAt)} t={t} lang={lang} label={false} /></dd></div>}
-        {s.failedAttempts > 0 && <div><dt>{t('shipments.failed_attempts')}</dt><dd>{toLocalDigits(String(s.failedAttempts), lang)}</dd></div>}
+        <div className={styles.statusCell}>
+          <dt>{t(`shipments.direction.${s.direction}`)}</dt>
+          <dd>{t(`shipments.status.${s.status}`)}</dd>
+        </div>
+        <div>
+          <dt>{t('shipments.fee')}</dt>
+          <dd>{formatMoney(BigInt(s.fee), lang)}</dd>
+        </div>
+        {s.consignmentId && (
+          <div>
+            <dt>{t('shipments.consignment')}</dt>
+            <dd className={styles.wrap}>{s.consignmentId}</dd>
+          </div>
+        )}
+        {s.pickupDueAt && (
+          <div>
+            <dt>{t('shipments.pickup_due')}</dt>
+            <dd>
+              <DateCells at={Date.parse(s.pickupDueAt)} t={t} lang={lang} label={false} />
+            </dd>
+          </div>
+        )}
+        {s.failedAttempts > 0 && (
+          <div>
+            <dt>{t('shipments.failed_attempts')}</dt>
+            <dd>{toLocalDigits(String(s.failedAttempts), lang)}</dd>
+          </div>
+        )}
         {s.myAddress && (
           <div className={styles.wideCell}>
             <dt>{t('shipments.my_address')}</dt>
-            <dd>{[s.myAddress.contactName, s.myAddress.line1, s.myAddress.line2, s.myAddress.landmark, areaName(s.myAddress.area, lang)].filter(Boolean).join(', ')}</dd>
+            <dd>
+              {[s.myAddress.contactName, s.myAddress.line1, s.myAddress.line2, s.myAddress.landmark, areaName(s.myAddress.area, lang)]
+                .filter(Boolean)
+                .join(', ')}
+            </dd>
           </div>
         )}
-        {s.other.district && <div><dt>{t(seller ? 'shipments.buyer_district' : 'shipments.seller_district')}</dt><dd>{s.other.district}</dd></div>}
+        {s.other.district && (
+          <div>
+            <dt>{t(seller ? 'shipments.buyer_district' : 'shipments.seller_district')}</dt>
+            <dd>{s.other.district}</dd>
+          </div>
+        )}
       </dl>
       {seller && s.direction === 'forward' && s.needsPickupAddress && <PickupAddress o={o} t={t} lang={lang} />}
       {seller && s.direction === 'return' && s.status !== 'cancelled' && <ReturnReceived o={o} t={t} lang={lang} />}
@@ -74,11 +110,18 @@ export function ShipmentHistory({ items, t, lang }: { items: Shipment[]; t: T; l
   if (!s) return null;
   return (
     <div className={styles.historyCell}>
-      <button type="button" className={`${styles.secondary} ${styles.cellButton}`} onClick={() => setOpen(true)}>{t('shipments.history')}</button>
+      <button type="button" className={`${styles.secondary} ${styles.cellButton}`} onClick={() => setOpen(true)}>
+        {t('shipments.history')}
+      </button>
       {open && (
         <Popup id={`history-${s.id}`} title={t('shipments.history')} closeLabel={t('actions.back')} onClose={() => setOpen(false)}>
           <ol className={styles.ruledList} role="list">
-            {s.history.map((h, i) => <li key={i}><span>{t(`shipments.status.${h.to}`)}</span><DateCells at={Date.parse(h.at)} t={t} lang={lang} label={false} /></li>)}
+            {s.history.map((h, i) => (
+              <li key={i}>
+                <span>{t(`shipments.status.${h.to}`)}</span>
+                <DateCells at={Date.parse(h.at)} t={t} lang={lang} label={false} />
+              </li>
+            ))}
           </ol>
         </Popup>
       )}
@@ -115,18 +158,35 @@ function PickupAddress({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
           {pickups.map((a: SavedAddress) => (
             <div key={a.id}>
               <input id={`pickup-${a.id}`} type="radio" name="pickup" checked={selected === a.id} onChange={() => setChosen(a.id)} />
-              <label htmlFor={`pickup-${a.id}`}>{a.label}: {a.line1}, {areaName(a.area, lang)}</label>
+              <label htmlFor={`pickup-${a.id}`}>
+                {a.label}: {a.line1}, {areaName(a.area, lang)}
+              </label>
             </div>
           ))}
         </fieldset>
       )}
       <div className={styles.cellRow}>
-        {selected && <button type="button" className={styles.primary} disabled={set.isPending} onClick={() => set.mutate(selected)}>{t('shipments.pickup_use')}</button>}
-        <button type="button" className={styles.secondary} onClick={() => setAdding(true)}>{t('address.add')}</button>
+        {selected && (
+          <button type="button" className={styles.primary} disabled={set.isPending} onClick={() => set.mutate(selected)}>
+            {t('shipments.pickup_use')}
+          </button>
+        )}
+        <button type="button" className={styles.secondary} onClick={() => setAdding(true)}>
+          {t('address.add')}
+        </button>
       </div>
       {adding && (
         <Popup id="address-pickup-popup" title={t('address.new.pickup')} closeLabel={t('actions.back')} onClose={() => setAdding(false)}>
-          <AddressForm kind="pickup" t={t} lang={lang} onSaved={(a) => { setAdding(false); setChosen(a.id); }} onCancel={() => setAdding(false)} />
+          <AddressForm
+            kind="pickup"
+            t={t}
+            lang={lang}
+            onSaved={(a) => {
+              setAdding(false);
+              setChosen(a.id);
+            }}
+            onCancel={() => setAdding(false)}
+          />
         </Popup>
       )}
     </div>
@@ -150,7 +210,9 @@ function ReturnReceived({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
   return (
     <div>
       {received.isError && <FormMessage kind="error">{errorText(received.error, t, lang)}</FormMessage>}
-      <button type="button" className={styles.secondary} disabled={received.isPending} onClick={() => received.mutate()}>{t('shipments.return_received')}</button>
+      <button type="button" className={styles.secondary} disabled={received.isPending} onClick={() => received.mutate()}>
+        {t('shipments.return_received')}
+      </button>
     </div>
   );
 }

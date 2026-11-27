@@ -3,7 +3,7 @@ import { STAFF_ROLE } from '../db/enums';
 import { PIPELINE } from './guards';
 
 describe('policies', () => {
-  it('DC-7 the kernel\'s staff roles are exactly the database enum identity.staff_role', () => {
+  it("DC-7 the kernel's staff roles are exactly the database enum identity.staff_role", () => {
     expect([...STAFF_ROLES]).toEqual([...STAFF_ROLE]);
   });
 

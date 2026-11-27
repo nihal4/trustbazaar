@@ -19,7 +19,16 @@ import { PAYOUT_CHECKS, PayoutChecksQuery } from '../../orders/ports';
 // The decision-target job (hourly) e-mails the active administrators once a day, in Dhaka's calendar, when disputes
 // are overdue (FR-DSP-08).
 
-export const QUEUES = ['kyc', 'ownership_proofs', 'listings_review', 'reports', 'flagged_activity', 'disputes', 'payout_accounts', 'payment_discrepancies'] as const;
+export const QUEUES = [
+  'kyc',
+  'ownership_proofs',
+  'listings_review',
+  'reports',
+  'flagged_activity',
+  'disputes',
+  'payout_accounts',
+  'payment_discrepancies',
+] as const;
 export type QueueName = (typeof QUEUES)[number];
 const NOT_YET: Partial<Record<QueueName, string>> = {
   payment_discrepancies: 'payment-discrepancies-not-yet-available', // Unit 2's reconciliation
@@ -72,21 +81,57 @@ export class QueueService {
                   decision_target_at IS NOT NULL AND decision_target_at < now() AS overdue
              FROM disputes.disputes WHERE status IN ('open', 'under_review', 'awaiting_seller', 'awaiting_return')
             ORDER BY (decision_target_at IS NOT NULL AND decision_target_at < now()) DESC, opened_at LIMIT ${LIMIT}`,
-        )) as { id: string; order_id: string; type: string; status: string; opened_at: Date; decision_target_at: Date | null; assigned_to: string | null; amount_collected: string; overdue: boolean }[];
+        )) as {
+          id: string;
+          order_id: string;
+          type: string;
+          status: string;
+          opened_at: Date;
+          decision_target_at: Date | null;
+          assigned_to: string | null;
+          amount_collected: string;
+          overdue: boolean;
+        }[];
         return rows.map((r) => ({
-          id: r.id, ageHours: age(r.opened_at), since: r.opened_at.toISOString(), status: r.status, assignedTo: r.assigned_to, overdue: r.overdue,
-          orderId: r.order_id, type: r.type, decisionTargetAt: r.decision_target_at?.toISOString() ?? null, amountCollected: r.amount_collected,
-          fourEyes: BigInt(r.amount_collected) >= 2_000_000n, path: `/staff/disputes/${r.id}/case-file`,
+          id: r.id,
+          ageHours: age(r.opened_at),
+          since: r.opened_at.toISOString(),
+          status: r.status,
+          assignedTo: r.assigned_to,
+          overdue: r.overdue,
+          orderId: r.order_id,
+          type: r.type,
+          decisionTargetAt: r.decision_target_at?.toISOString() ?? null,
+          amountCollected: r.amount_collected,
+          fourEyes: BigInt(r.amount_collected) >= 2_000_000n,
+          path: `/staff/disputes/${r.id}/case-file`,
         }));
       }
       case 'reports': {
         const rows = (await this.db.query(
           `SELECT id, target_type, target_id, category, subject_user, text, status, assigned_to, created_at FROM trust.reports
             WHERE status IN ('open', 'under_review') ORDER BY created_at LIMIT ${LIMIT}`,
-        )) as { id: string; target_type: string; target_id: string; category: string; subject_user: string; text: string | null; status: string; assigned_to: string | null; created_at: Date }[];
+        )) as {
+          id: string;
+          target_type: string;
+          target_id: string;
+          category: string;
+          subject_user: string;
+          text: string | null;
+          status: string;
+          assigned_to: string | null;
+          created_at: Date;
+        }[];
         return rows.map((r) => ({
-          id: r.id, ageHours: age(r.created_at), since: r.created_at.toISOString(), status: r.status, assignedTo: r.assigned_to,
-          targetType: r.target_type, targetId: r.target_id, category: r.category, subjectUser: r.subject_user,
+          id: r.id,
+          ageHours: age(r.created_at),
+          since: r.created_at.toISOString(),
+          status: r.status,
+          assignedTo: r.assigned_to,
+          targetType: r.target_type,
+          targetId: r.target_id,
+          category: r.category,
+          subjectUser: r.subject_user,
           text: r.text, // what the reporter wrote, to resolve it by (Decisions log, U8-10)
           path: `/staff/reports/${r.id}/resolution`,
         }));
@@ -96,30 +141,65 @@ export class QueueService {
           `SELECT id, kind, subject_user, detail, created_at FROM trust.signals WHERE status = 'open' ORDER BY created_at LIMIT ${LIMIT}`,
         )) as { id: string; kind: string; subject_user: string | null; detail: Record<string, unknown>; created_at: Date }[];
         return rows.map((r) => ({
-          id: r.id, ageHours: age(r.created_at), since: r.created_at.toISOString(), status: 'open', assignedTo: null,
-          kind: r.kind, subjectUser: r.subject_user, detail: r.detail, path: `/staff/signals/${r.id}/review`,
+          id: r.id,
+          ageHours: age(r.created_at),
+          since: r.created_at.toISOString(),
+          status: 'open',
+          assignedTo: null,
+          kind: r.kind,
+          subjectUser: r.subject_user,
+          detail: r.detail,
+          path: `/staff/signals/${r.id}/review`,
         }));
       }
       case 'kyc':
         return (await this.staff.kycQueue()).map((k) => ({
-          id: k.id, ageHours: age(k.submittedAt), since: k.submittedAt.toISOString(), status: 'pending_review', overdue: k.overdue,
+          id: k.id,
+          ageHours: age(k.submittedAt),
+          since: k.submittedAt.toISOString(),
+          status: 'pending_review',
+          overdue: k.overdue,
           assignedTo: k.claimedUntil && k.claimedUntil.getTime() > this.clock.now().getTime() ? k.claimedBy : null,
-          userId: k.userId, docType: k.docType, flags: k.flags, path: `/staff/kyc/submissions/${k.id}`,
+          userId: k.userId,
+          docType: k.docType,
+          flags: k.flags,
+          path: `/staff/kyc/submissions/${k.id}`,
         }));
       case 'payout_accounts':
         return (await this.payouts.pendingAccountChecks()).map((a) => ({
-          id: a.id, ageHours: age(a.createdAt), since: a.createdAt.toISOString(), status: 'pending_review', assignedTo: null,
-          userId: a.userId, path: `/staff/payout-accounts/${a.id}/decision`,
+          id: a.id,
+          ageHours: age(a.createdAt),
+          since: a.createdAt.toISOString(),
+          status: 'pending_review',
+          assignedTo: null,
+          userId: a.userId,
+          path: `/staff/payout-accounts/${a.id}/decision`,
         }));
       case 'listings_review':
         return (await this.listings.reviewQueue(LIMIT)).map((l) => ({
-          id: l.listingId, ageHours: age(l.heldAt), since: l.heldAt.toISOString(), status: 'pending_review', assignedTo: null,
-          sellerId: l.sellerId, title: l.title, reason: l.reason, path: `/staff/listings/${l.listingId}/review`,
+          id: l.listingId,
+          ageHours: age(l.heldAt),
+          since: l.heldAt.toISOString(),
+          status: 'pending_review',
+          assignedTo: null,
+          sellerId: l.sellerId,
+          title: l.title,
+          reason: l.reason,
+          path: `/staff/listings/${l.listingId}/review`,
         }));
       case 'ownership_proofs':
         return (await this.games.proofQueue(LIMIT)).map((p) => ({
-          id: p.proofId, ageHours: age(p.submittedAt), since: p.submittedAt.toISOString(), status: 'submitted', assignedTo: null,
-          listingId: p.listingId, sellerId: p.sellerId, game: p.game, platform: p.platform, playerId: p.playerId, codeExpiresAt: p.codeExpiresAt.toISOString(),
+          id: p.proofId,
+          ageHours: age(p.submittedAt),
+          since: p.submittedAt.toISOString(),
+          status: 'submitted',
+          assignedTo: null,
+          listingId: p.listingId,
+          sellerId: p.sellerId,
+          game: p.game,
+          platform: p.platform,
+          playerId: p.playerId,
+          codeExpiresAt: p.codeExpiresAt.toISOString(),
           path: `/staff/game/ownership-proofs/${p.proofId}/review`,
         }));
       default:
@@ -137,7 +217,9 @@ export class QueueService {
         WHERE status IN ('open', 'under_review', 'awaiting_seller', 'awaiting_return') AND decision_target_at < now()`,
     )) as { n: number; oldest: Date | null }[];
     if (n === 0 || !oldest) return 0;
-    const [{ day }] = (await this.db.query(`SELECT to_char($1::timestamptz AT TIME ZONE 'Asia/Dhaka', 'YYYY-MM-DD') AS day`, [this.clock.now()])) as { day: string }[];
+    const [{ day }] = (await this.db.query(`SELECT to_char($1::timestamptz AT TIME ZONE 'Asia/Dhaka', 'YYYY-MM-DD') AS day`, [this.clock.now()])) as {
+      day: string;
+    }[];
     if ((await this.redis.set(`disputes:overdue-alert:${day}`, '1', 'EX', 2 * 86_400, 'NX')) !== 'OK') return 0; // once a day, across instances
     const days = String(Math.floor((this.clock.now().getTime() - oldest.getTime()) / 86_400_000));
     let sent = 0;

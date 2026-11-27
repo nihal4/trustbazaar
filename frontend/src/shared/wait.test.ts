@@ -17,7 +17,7 @@ describe('how a wait is written', () => {
     expect(formatWait(0, 'en')).toBe('1 s');
   });
 
-  it('NFR-USE-04 the same wait in Bangla: the page\'s digits and the names of the units', () => {
+  it("NFR-USE-04 the same wait in Bangla: the page's digits and the names of the units", () => {
     expect(formatWait(45, 'bn')).toBe('৪৫ সেকেন্ড');
     expect(formatWait(2030, 'bn')).toBe('৩৪ মিনিট');
     expect(formatWait(3900, 'bn')).toBe('১ ঘণ্টা ৫ মিনিট');

@@ -107,7 +107,12 @@ export class KycService {
   }
 
   /** FR-KYC-01: the submission; images are given by kind. */
-  async submit(userId: string, input: KycInput, images: Partial<Record<KycFileKind, Buffer>>, ctx: RequestContext): Promise<{ submissionId: string; status: 'pending_review'; expectedReviewHours: number }> {
+  async submit(
+    userId: string,
+    input: KycInput,
+    images: Partial<Record<KycFileKind, Buffer>>,
+    ctx: RequestContext,
+  ): Promise<{ submissionId: string; status: 'pending_review'; expectedReviewHours: number }> {
     await this.assertMaySubmit(userId);
     const errors = this.validate(input, images);
     if (errors.length) throw new Problem('validation-failed', { errors });
@@ -145,8 +150,21 @@ export class KycService {
           `INSERT INTO identity.kyc_submissions (id, user_id, doc_type, doc_number_enc, doc_number_bidx, full_name_enc, dob_enc, person_bidx,
                                                  key_version, is_adult, liveness_action, routed_flags, submitted_at)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
-          [submissionId, userId, input.docType, field('doc_number_enc', docNumber), docBidx, field('full_name_enc', fullName),
-           field('dob_enc', input.dateOfBirth), personBidx, this.crypto.fieldKeyVersion, isAdult, action, flags, now],
+          [
+            submissionId,
+            userId,
+            input.docType,
+            field('doc_number_enc', docNumber),
+            docBidx,
+            field('full_name_enc', fullName),
+            field('dob_enc', input.dateOfBirth),
+            personBidx,
+            this.crypto.fieldKeyVersion,
+            isAdult,
+            action,
+            flags,
+            now,
+          ],
         );
         for (const f of sealed) {
           await m.query(
@@ -157,8 +175,14 @@ export class KycService {
         }
         await this.moveStatus(m, userId, 'pending_review', { actorType: 'user', actorId: userId, submissionId });
         await this.audit.record(m, {
-          actorType: 'user', actorId: userId, action: 'identity.kyc.submitted', objectType: 'kyc_submission', objectId: submissionId,
-          after: { docType: input.docType, flags }, sourceIp: ctx.ip, correlationId: ctx.correlationId,
+          actorType: 'user',
+          actorId: userId,
+          action: 'identity.kyc.submitted',
+          objectType: 'kyc_submission',
+          objectId: submissionId,
+          after: { docType: input.docType, flags },
+          sourceIp: ctx.ip,
+          correlationId: ctx.correlationId,
         });
         await publish(m, 'identity.kyc.submitted', userId, { userId, submissionId, flags });
       });
@@ -227,10 +251,10 @@ export class KycService {
   private async submissionsLeft(userId: string): Promise<number> {
     // CP-34: "3 per 30 days"; the parameter is the number, the 30 days are the SRS's fixed window.
     const cp34 = { submissions: (await this.params.current()).get<number>('CP-34'), days: CP34_WINDOW_DAYS };
-    const [{ n }] = await this.db.query(
-      `SELECT count(*)::int AS n FROM identity.kyc_submissions WHERE user_id = $1 AND submitted_at > $2`,
-      [userId, new Date(this.clock.now().getTime() - cp34.days * 86_400_000)],
-    );
+    const [{ n }] = await this.db.query(`SELECT count(*)::int AS n FROM identity.kyc_submissions WHERE user_id = $1 AND submitted_at > $2`, [
+      userId,
+      new Date(this.clock.now().getTime() - cp34.days * 86_400_000),
+    ]);
     return Math.max(cp34.submissions - n, 0);
   }
 }

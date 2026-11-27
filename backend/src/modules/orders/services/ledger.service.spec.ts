@@ -7,7 +7,12 @@ describe('LedgerService', () => {
   const from = new Date('2026-11-01T00:00:00Z');
   const to = new Date('2026-11-02T00:00:00Z');
   const line = (entry: number, account: string, revenue: string) => ({
-    entry_id: String(entry), created_at: new Date('2026-11-01T10:00:00Z'), kind: 'escrow_release', order_id: 'o', account_code: account, revenue,
+    entry_id: String(entry),
+    created_at: new Date('2026-11-01T10:00:00Z'),
+    kind: 'escrow_release',
+    order_id: 'o',
+    account_code: account,
+    revenue,
   });
 
   it('FR-PAY-13 a balance sums one account, for one party or all; owed is the negated liability', async () => {
@@ -40,13 +45,23 @@ describe('LedgerService', () => {
     for (let e = 99; e >= 51; e--) rows.push(line(e, 'revenue_commission', '100'));
     rows.unshift(line(9, 'revenue_commission', '100'));
     rows.push(line(9, 'revenue_delivery_margin', '10')); // the 51st entry: not on this page
-    const query = jest.fn().mockResolvedValueOnce(rows).mockResolvedValueOnce([{ account_code: 'revenue_commission', total: '55000' }]);
+    const query = jest
+      .fn()
+      .mockResolvedValueOnce(rows)
+      .mockResolvedValueOnce([{ account_code: 'revenue_commission', total: '55000' }]);
     const l = new LedgerService({ query } as never);
     const page = await l.revenueLog(from, to, '101');
     expect(query.mock.calls[0][1]).toEqual([from, to, '101', 51]);
     expect(page.items).toHaveLength(51);
     expect(page.items.some((i) => i.entryId === '9')).toBe(false);
-    expect(page.items[0]).toEqual({ entryId: '100', createdAt: '2026-11-01T10:00:00.000Z', kind: 'escrow_release', orderId: 'o', account: 'revenue_commission', revenue: '50000' });
+    expect(page.items[0]).toEqual({
+      entryId: '100',
+      createdAt: '2026-11-01T10:00:00.000Z',
+      kind: 'escrow_release',
+      orderId: 'o',
+      account: 'revenue_commission',
+      revenue: '50000',
+    });
     expect(page.nextCursor).toBe('51');
     expect(page.totals).toEqual({ revenue_commission: '55000' });
   });

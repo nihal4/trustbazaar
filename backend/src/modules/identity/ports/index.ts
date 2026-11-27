@@ -63,12 +63,24 @@ export interface IdentityCommands {
    * FR-TNS-05: ends every session; identity.account.suspended carries the fraud flag (I-8), and the sanction it
    * comes from when Unit 7 suspends (U7-04: that sanction's own notice gives the reason). Audited.
    */
-  suspendAccount(userId: string, reason: string, byStaffId: string, o?: { fraud?: boolean; ctx?: CallContext; tx?: EntityManager; sanctionId?: string }): Promise<void>;
+  suspendAccount(
+    userId: string,
+    reason: string,
+    byStaffId: string,
+    o?: { fraud?: boolean; ctx?: CallContext; tx?: EntityManager; sanctionId?: string },
+  ): Promise<void>;
   /** Only with an approved account.reinstate approval for this user (CP-30). */
   reinstateAccount(userId: string, approvalId: string, tx?: EntityManager): Promise<void>;
   endAllSessions(userId: string, reason: SessionEndReason, tx?: EntityManager): Promise<void>;
   /** FR-TNS-06, FR-GAM-18: proposes blacklist.add for the user's verified identity. */
-  proposeBlacklist(userId: string, source: BlacklistSource, relatedOrderId: string | null, reason: string, byStaffId: string, ctx?: CallContext): Promise<Approval>;
+  proposeBlacklist(
+    userId: string,
+    source: BlacklistSource,
+    relatedOrderId: string | null,
+    reason: string,
+    byStaffId: string,
+    ctx?: CallContext,
+  ): Promise<Approval>;
   /** Proposes account.reinstate (CP-30); a second operator decides it. */
   proposeReinstatement(userId: string, reason: string, byStaffId: string, ctx?: CallContext): Promise<Approval>;
 }

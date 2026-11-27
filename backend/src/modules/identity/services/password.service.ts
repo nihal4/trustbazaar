@@ -70,11 +70,15 @@ export class PasswordService {
     if ('email' in account) {
       const minutes = (await this.params.current()).ms('CP-06', 'reset') / 60_000;
       const token = generateLinkToken();
-      await this.db.query(
-        `INSERT INTO identity.one_time_tokens (purpose, user_id, token_hash, expires_at) VALUES ('password_reset', $1, $2, $3)`,
-        [user.id, hashLinkToken(token), new Date(this.clock.now().getTime() + minutes * 60_000)],
-      );
-      await this.notify.sendEmail(user.email!, 'password_reset', { link: `${this.config.publicOrigin}/reset-password#token=${token}`, minutes: String(minutes) });
+      await this.db.query(`INSERT INTO identity.one_time_tokens (purpose, user_id, token_hash, expires_at) VALUES ('password_reset', $1, $2, $3)`, [
+        user.id,
+        hashLinkToken(token),
+        new Date(this.clock.now().getTime() + minutes * 60_000),
+      ]);
+      await this.notify.sendEmail(user.email!, 'password_reset', {
+        link: `${this.config.publicOrigin}/reset-password#token=${token}`,
+        minutes: String(minutes),
+      });
     } else {
       if (!(await this.otp.trySend(user.phone_e164!)).allowed) return;
       const code = generateOtp();
@@ -111,7 +115,10 @@ export class PasswordService {
         if (!user) return { problem: 'otp-failed' }; // the same answer as a wrong code
       }
       // 2. The new password; it names no secret, so it is checked first.
-      const refusal = checkPassword(newPassword, { mfa: user.mfa_enabled, context: { displayName: user.display_name, phoneE164: user.phone_e164, email: user.email } });
+      const refusal = checkPassword(newPassword, {
+        mfa: user.mfa_enabled,
+        context: { displayName: user.display_name, phoneE164: user.phone_e164, email: user.email },
+      });
       if (refusal) throw new Problem('password-rejected', { errors: [{ field: 'newPassword', reason: refusal }] });
       // 3. Spend the proof (a wrong code counts an attempt and is committed).
       if (tokenId) {
@@ -135,12 +142,14 @@ export class PasswordService {
 
   /** SEC-AUTH-11: signed in, after step-up, with the current password; ends every other session. */
   async change(userId: string, sessionId: string, currentPassword: string, newPassword: string, ctx: RequestContext): Promise<void> {
-    const [user] = (await this.db.query(
-      `SELECT id, display_name, phone_e164, email, password_hash, mfa_enabled FROM identity.users WHERE id = $1`,
-      [userId],
-    )) as UserRow[];
+    const [user] = (await this.db.query(`SELECT id, display_name, phone_e164, email, password_hash, mfa_enabled FROM identity.users WHERE id = $1`, [
+      userId,
+    ])) as UserRow[];
     if (!user || !(await this.passwords.verifyOrDummy(user.password_hash, currentPassword))) throw new Problem('password-incorrect');
-    const refusal = checkPassword(newPassword, { mfa: user.mfa_enabled, context: { displayName: user.display_name, phoneE164: user.phone_e164, email: user.email } });
+    const refusal = checkPassword(newPassword, {
+      mfa: user.mfa_enabled,
+      context: { displayName: user.display_name, phoneE164: user.phone_e164, email: user.email },
+    });
     if (refusal) throw new Problem('password-rejected', { errors: [{ field: 'newPassword', reason: refusal }] });
     if (await this.passwords.verifyOrDummy(user.password_hash, newPassword)) {
       throw new Problem('password-rejected', { errors: [{ field: 'newPassword', reason: 'unchanged' }] });
@@ -151,15 +160,22 @@ export class PasswordService {
   private async setPassword(m: EntityManager, user: UserRow, password: string, keepSession: string | null, auditAction: string, ctx: RequestContext) {
     const now = this.clock.now();
     const singleFactorOk = [...password.normalize('NFC')].length >= MIN_LENGTH_SINGLE_FACTOR;
-    await m.query(
-      `UPDATE identity.users SET password_hash = $2, password_single_factor_ok = $3, password_changed_at = $4, updated_at = $4 WHERE id = $1`,
-      [user.id, await this.passwords.hash(password), singleFactorOk, now],
-    );
+    await m.query(`UPDATE identity.users SET password_hash = $2, password_single_factor_ok = $3, password_changed_at = $4, updated_at = $4 WHERE id = $1`, [
+      user.id,
+      await this.passwords.hash(password),
+      singleFactorOk,
+      now,
+    ]);
     await this.sessions.endAllIn(m, user.id, keepSession, 'password_changed', ctx);
     await publish(m, 'identity.password.changed', user.id, { userId: user.id, via: keepSession ? 'change' : 'reset' });
     await this.audit.record(m, {
-      actorType: 'user', actorId: user.id, action: auditAction, objectType: 'user', objectId: user.id,
-      sourceIp: ctx.ip, correlationId: ctx.correlationId,
+      actorType: 'user',
+      actorId: user.id,
+      action: auditAction,
+      objectType: 'user',
+      objectId: user.id,
+      sourceIp: ctx.ip,
+      correlationId: ctx.correlationId,
     });
   }
 

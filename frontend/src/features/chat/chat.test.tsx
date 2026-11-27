@@ -20,11 +20,28 @@ const OTHER = '6f1c2b1e-0000-4000-8000-000000000002';
 const AT = '2026-11-02T06:00:00.000Z';
 
 const summary = (o: Partial<ThreadSummary> = {}): ThreadSummary => ({
-  id: THREAD, listing: { id: LISTING, title: 'Desk lamp' }, role: 'buyer',
-  other: { id: OTHER, displayName: 'Karim', verified: true }, lastSeq: 2, unread: 1, lastMessageAt: AT, closed: false, ...o,
+  id: THREAD,
+  listing: { id: LISTING, title: 'Desk lamp' },
+  role: 'buyer',
+  other: { id: OTHER, displayName: 'Karim', verified: true },
+  lastSeq: 2,
+  unread: 1,
+  lastMessageAt: AT,
+  closed: false,
+  ...o,
 });
 const msg = (seq: number, o: Partial<ServerMessage> = {}): ServerMessage => ({
-  clientId: null, seq, fromMe: false, kind: 'text', text: `Message ${seq}`, caption: null, image: null, flags: [], at: AT, removed: false, ...o,
+  clientId: null,
+  seq,
+  fromMe: false,
+  kind: 'text',
+  text: `Message ${seq}`,
+  caption: null,
+  image: null,
+  flags: [],
+  at: AT,
+  removed: false,
+  ...o,
 });
 
 /** A server holding the thread's messages; GET ?after= answers from it, POST adds to it. */
@@ -39,12 +56,14 @@ function server(o: { messages?: ServerMessage[]; thread?: ThreadSummary; post?: 
       const items = messages.filter((m) => m.seq > after).sort((a, b) => a.seq - b.seq);
       return json(200, { items, more: false, lastSeq: messages.length, otherMarks: marks, closed: o.closed ?? false })();
     },
-    [`POST /threads/${THREAD}/messages`]: o.post ?? ((c) => {
-      const body = c.body as { clientId: string; text: string };
-      const seq = messages.length + 1;
-      messages.push(msg(seq, { clientId: body.clientId, fromMe: true, text: body.text }));
-      return json(200, { seq, flags: [], duplicate: false })();
-    }),
+    [`POST /threads/${THREAD}/messages`]:
+      o.post ??
+      ((c) => {
+        const body = c.body as { clientId: string; text: string };
+        const seq = messages.length + 1;
+        messages.push(msg(seq, { clientId: body.clientId, fromMe: true, text: body.text }));
+        return json(200, { seq, flags: [], duplicate: false })();
+      }),
     [`POST /threads/${THREAD}/marks`]: noContent(),
     [`POST /blocks/${OTHER}`]: noContent(),
     [`DELETE /blocks/${OTHER}`]: noContent(),
@@ -61,7 +80,10 @@ async function openThread(s = server(), socket = new FakeSocket()) {
   return { ...s, socket };
 }
 const log = () => screen.getByRole('log', { name: 'Messages' });
-const texts = () => within(log()).queryAllByRole('listitem').map((li) => li.querySelector('p')?.textContent);
+const texts = () =>
+  within(log())
+    .queryAllByRole('listitem')
+    .map((li) => li.querySelector('p')?.textContent);
 
 describe('the thread list', () => {
   it('IF-UI-07 conversations show the other party by name and badge, the listing and the unread count in words', async () => {
@@ -106,7 +128,10 @@ describe('a conversation', () => {
   });
 
   it('FR-CHT-07 a flagged message shows its warning to both parties; login details point the seller to the sealed handover', async () => {
-    const flagged = [msg(1, { text: 'Pay first by bKash', flags: ['payment_phrase'] }), msg(2, { text: 'my password is ...', flags: ['credentials'], fromMe: true })];
+    const flagged = [
+      msg(1, { text: 'Pay first by bKash', flags: ['payment_phrase'] }),
+      msg(2, { text: 'my password is ...', flags: ['credentials'], fromMe: true }),
+    ];
     await openThread(server({ messages: flagged }));
     expect(await within(log()).findByText(/asks for payment outside TrustBazaar/)).toBeTruthy();
     expect(within(log()).getByText(/may contain login details/).textContent).not.toMatch(/sealed handover/); // the buyer
@@ -117,7 +142,12 @@ describe('a conversation', () => {
 
   it('FR-CHT-02 a message shows "Sending…" and is confirmed once by its client id when the server\'s copy arrives', async () => {
     let answer!: (r: Response) => void;
-    const s = server({ post: () => new Promise<Response>((r) => { answer = r; }) });
+    const s = server({
+      post: () =>
+        new Promise<Response>((r) => {
+          answer = r;
+        }),
+    });
     const { socket, be } = await openThread(s);
     await within(log()).findByText('Message 2');
     fireEvent.change(screen.getByLabelText('Your message'), { target: { value: 'Is it still available?' } });
@@ -127,7 +157,9 @@ describe('a conversation', () => {
     const sent = be.called(`POST /threads/${THREAD}/messages`)[0].body as { clientId: string; text: string };
     expect(sent.text).toBe('Is it still available?');
     expect(sent.clientId).toMatch(/^[0-9a-f-]{36}$/);
-    act(() => socket.push('chat.message', { ...msg(3, { clientId: sent.clientId, fromMe: true, text: 'Is it still available?' }), threadId: THREAD, image: false }));
+    act(() =>
+      socket.push('chat.message', { ...msg(3, { clientId: sent.clientId, fromMe: true, text: 'Is it still available?' }), threadId: THREAD, image: false }),
+    );
     await waitFor(() => expect(screen.queryByText('Sending…')).toBeNull());
     expect(within(log()).getAllByText('Is it still available?')).toHaveLength(1);
     await act(async () => answer(json(200, { seq: 3, flags: [], duplicate: false })()));
@@ -171,7 +203,7 @@ describe('a conversation', () => {
     expect(texts()).toHaveLength(6);
   });
 
-  it('FR-CHT-05 shown messages are acknowledged (over the connection when open, else over HTTP); the other side\'s marks show under my last message', async () => {
+  it("FR-CHT-05 shown messages are acknowledged (over the connection when open, else over HTTP); the other side's marks show under my last message", async () => {
     const s = server({ messages: [msg(1), msg(2, { fromMe: true, clientId: 'c-2', text: 'Mine' })] });
     const { socket, be } = await openThread(s);
     await within(log()).findByText('Mine');
@@ -190,12 +222,23 @@ describe('a conversation', () => {
     const withPhoto = fakeBackend({
       'GET /me': json(200, standInMe),
       'GET /threads': json(200, { items: [summary()], nextCursor: null }),
-      [`GET /threads/${THREAD}/messages`]: (c) => json(200, {
-        items: [msg(1), ...(photos.length ? [msg(2, { fromMe: true, clientId: 'x', kind: 'image', text: null, caption: 'The box', image: { url: '/api/v1/files/v/tok', expiresAt: AT } })] : [])]
-          .filter((m) => m.seq > Number(c.query.get('after') ?? 0)),
-        more: false, lastSeq: photos.length ? 2 : 1, otherMarks: { delivered: 0, read: 0 }, closed: false,
-      })(),
-      [`POST /threads/${THREAD}/images`]: (c) => { photos.push(c); return json(200, { seq: 2, flags: [], duplicate: false })(); },
+      [`GET /threads/${THREAD}/messages`]: (c) =>
+        json(200, {
+          items: [
+            msg(1),
+            ...(photos.length
+              ? [msg(2, { fromMe: true, clientId: 'x', kind: 'image', text: null, caption: 'The box', image: { url: '/api/v1/files/v/tok', expiresAt: AT } })]
+              : []),
+          ].filter((m) => m.seq > Number(c.query.get('after') ?? 0)),
+          more: false,
+          lastSeq: photos.length ? 2 : 1,
+          otherMarks: { delivered: 0, read: 0 },
+          closed: false,
+        })(),
+      [`POST /threads/${THREAD}/images`]: (c) => {
+        photos.push(c);
+        return json(200, { seq: 2, flags: [], duplicate: false })();
+      },
     });
     await openThread({ be: withPhoto, messages: [], marks: { delivered: 0, read: 0 } });
     const file = new File([new Uint8Array([0xff, 0xd8, 0xff])], 'box.jpg', { type: 'image/jpeg' });
@@ -210,7 +253,7 @@ describe('a conversation', () => {
     expect(form.get('image')).toBeInstanceOf(File);
   });
 
-  it('FR-CHT-08 blocking states its consequence first, then blocks by the other party\'s id; unblocking is offered', async () => {
+  it("FR-CHT-08 blocking states its consequence first, then blocks by the other party's id; unblocking is offered", async () => {
     const { be } = await openThread();
     fireEvent.click(await screen.findByRole('button', { name: 'Block Karim' }));
     const dialog = await screen.findByRole('dialog', { name: 'Block Karim?' });
@@ -245,10 +288,14 @@ describe('a conversation', () => {
   });
 
   it('IF-UI-07 an unknown conversation says so', async () => {
-    renderApp(`/messages/${THREAD}`, fakeBackend({
-      'GET /me': json(200, standInMe), 'GET /threads': json(200, { items: [], nextCursor: null }),
-      [`GET /threads/${THREAD}/messages`]: problem(404, 'not-found'),
-    }));
+    renderApp(
+      `/messages/${THREAD}`,
+      fakeBackend({
+        'GET /me': json(200, standInMe),
+        'GET /threads': json(200, { items: [], nextCursor: null }),
+        [`GET /threads/${THREAD}/messages`]: problem(404, 'not-found'),
+      }),
+    );
     expect(await screen.findByRole('heading', { name: 'This conversation could not be found.' })).toBeTruthy();
   });
 
@@ -264,9 +311,23 @@ describe('a conversation', () => {
 describe('ways in', () => {
   it('FR-CHT-01 "Message the seller" on a listing opens or finds the thread and goes to it', async () => {
     const listing = {
-      id: LISTING, itemKind: 'physical', saleFormat: 'fixed_price', status: 'active', category: { id: 1, slug: 'lamps', nameEn: 'Lamps', nameBn: 'বাতি' },
-      title: 'Desk lamp', description: 'A lamp.', condition: 'used', noVisibleDefects: true, fulfilmentOptions: 'pickup_only', district: 'Dhaka',
-      price: '150000', quantity: { total: 1, available: 1 }, currentlyReserved: false, photos: [], clarifications: [], auction: null,
+      id: LISTING,
+      itemKind: 'physical',
+      saleFormat: 'fixed_price',
+      status: 'active',
+      category: { id: 1, slug: 'lamps', nameEn: 'Lamps', nameBn: 'বাতি' },
+      title: 'Desk lamp',
+      description: 'A lamp.',
+      condition: 'used',
+      noVisibleDefects: true,
+      fulfilmentOptions: 'pickup_only',
+      district: 'Dhaka',
+      price: '150000',
+      quantity: { total: 1, available: 1 },
+      currentlyReserved: false,
+      photos: [],
+      clarifications: [],
+      auction: null,
       seller: { id: OTHER, displayName: 'Karim', verified: true, joinMonth: '2026-01' },
     };
     const be = fakeBackend({
@@ -285,13 +346,27 @@ describe('ways in', () => {
   it('FR-NTF-04 a chat notice opens its conversation', async () => {
     const be = fakeBackend({
       'GET /me': json(200, standInMe),
-      'GET /notifications': json(200, { items: [{ id: 'n-1', code: 'chat.message_received', title: 'New message', body: 'You have a new message from Karim about Desk lamp.', subject: { type: 'thread', id: THREAD }, readAt: AT, createdAt: AT }], unread: 0, nextCursor: null }),
+      'GET /notifications': json(200, {
+        items: [
+          {
+            id: 'n-1',
+            code: 'chat.message_received',
+            title: 'New message',
+            body: 'You have a new message from Karim about Desk lamp.',
+            subject: { type: 'thread', id: THREAD },
+            readAt: AT,
+            createdAt: AT,
+          },
+        ],
+        unread: 0,
+        nextCursor: null,
+      }),
       'GET /me/notification-preferences': json(200, { language: 'en', emailTransactional: true }),
       'GET /threads': json(200, { items: [summary()], nextCursor: null }),
       [`GET /threads/${THREAD}/messages`]: json(200, { items: [msg(1)], more: false, lastSeq: 1, otherMarks: { delivered: 0, read: 0 }, closed: false }),
     });
     renderApp('/notifications', be);
-    fireEvent.click(await screen.findByRole('button', { name: 'Show all notifications' }));       // a read notice is in the popup
+    fireEvent.click(await screen.findByRole('button', { name: 'Show all notifications' })); // a read notice is in the popup
     fireEvent.click(within(await screen.findByRole('dialog', { name: 'Your notifications' })).getByRole('button', { name: /New message/ }));
     expect(await screen.findByRole('heading', { name: /Conversation with Karim/ })).toBeTruthy();
   });

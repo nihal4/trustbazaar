@@ -39,19 +39,34 @@ const ID = '7e1c2a3e-1111-4a5b-8c9d-0000000000aa';
 const HOUR = 3_600_000;
 const iso = (offset: number) => new Date(Date.now() + offset).toISOString();
 const stops: (() => void)[] = [];
-afterEach(() => { stops.splice(0).forEach((s) => s()); document.body.replaceChildren(); });
+afterEach(() => {
+  stops.splice(0).forEach((s) => s());
+  document.body.replaceChildren();
+});
 
-interface Call { method: string; path: string; body: unknown }
+interface Call {
+  method: string;
+  path: string;
+  body: unknown;
+}
 type Answer = (c: Call) => Response | Promise<Response>;
 const json = (status: number, body?: unknown) => () =>
-  new Response(body === undefined ? null : JSON.stringify(body), { status, headers: { 'Content-Type': status >= 400 ? 'application/problem+json' : 'application/json' } });
-const problem = (status: number, name: string, extra: Record<string, unknown> = {}) => json(status, { type: `/problems/${name}`, title: name, status, ...extra });
+  new Response(body === undefined ? null : JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': status >= 400 ? 'application/problem+json' : 'application/json' },
+  });
+const problem = (status: number, name: string, extra: Record<string, unknown> = {}) =>
+  json(status, { type: `/problems/${name}`, title: name, status, ...extra });
 function backend(answers: Record<string, Answer>) {
   const calls: Call[] = [];
   const all: Record<string, Answer> = { 'GET /me/notification-preferences': json(200, { language: 'en' }), ...answers };
   const fetch = async (url: string | URL | Request, init: RequestInit = {}) => {
     const u = new URL(String(url), 'https://tb.test');
-    const call = { method: (init.method ?? 'GET').toUpperCase(), path: u.pathname.replace(/^\/api\/v1/, ''), body: init.body ? JSON.parse(String(init.body)) : undefined };
+    const call = {
+      method: (init.method ?? 'GET').toUpperCase(),
+      path: u.pathname.replace(/^\/api\/v1/, ''),
+      body: init.body ? JSON.parse(String(init.body)) : undefined,
+    };
     calls.push(call);
     const a = all[`${call.method} ${call.path}`];
     return a ? a(call) : new Response(null, { status: 404 });
@@ -60,7 +75,13 @@ function backend(answers: Record<string, Answer>) {
 }
 function memoryKeys(): KeyStore & { map: Map<string, CryptoKeyPair> } {
   const map = new Map<string, CryptoKeyPair>();
-  return { map, store: async (o, v, p) => { map.set(`${o}:${v}`, p); }, load: async (o, v) => map.get(`${o}:${v}`) ?? null };
+  return {
+    map,
+    store: async (o, v, p) => {
+      map.set(`${o}:${v}`, p);
+    },
+    load: async (o, v) => map.get(`${o}:${v}`) ?? null,
+  };
 }
 async function open(path: string, be: ReturnType<typeof backend>, keys: KeyStore = memoryKeys()) {
   const root = document.createElement('div');
@@ -70,21 +91,35 @@ async function open(path: string, be: ReturnType<typeof backend>, keys: KeyStore
   return { root, assigned };
 }
 const game = (g: Partial<GameView> = {}): GameView => ({
-  orderId: ID, role: 'buyer', disclosure: { currentVersion: 1, acknowledgedVersion: 1, acknowledgedAt: iso(-HOUR) },
-  status: 'preparing', keyVersion: 0, rekeysUsed: 0, credentialsDueAt: null, deliveredAt: null, takeoverDueAt: null, rekeyDueAt: null,
-  takenOverAt: null, steps: { password: null, recovery_email: null, recovery_phone: null, social_logins: null, two_step: null }, protectionEndsAt: null, ...g,
+  orderId: ID,
+  role: 'buyer',
+  disclosure: { currentVersion: 1, acknowledgedVersion: 1, acknowledgedAt: iso(-HOUR) },
+  status: 'preparing',
+  keyVersion: 0,
+  rekeysUsed: 0,
+  credentialsDueAt: null,
+  deliveredAt: null,
+  takeoverDueAt: null,
+  rekeyDueAt: null,
+  takenOverAt: null,
+  steps: { password: null, recovery_email: null, recovery_phone: null, social_logins: null, two_step: null },
+  protectionEndsAt: null,
+  ...g,
 });
 const G = `/orders/${ID}/game`;
 /** A paragraph whose whole text matches, deadlines included (they are a span inside it). */
 const para = (re: RegExp) => (_: string, el: Element | null) => el?.tagName === 'P' && re.test(el.textContent ?? '');
 
-describe('the buyer\'s key', () => {
+describe("the buyer's key", () => {
   it('FR-GAM-07 FR-GAM-08 SEC-GAM-01 the key pair is made here, kept in this browser, only the public point is sent, and the fingerprint is computed here', async () => {
     let current = game();
     const keys = memoryKeys();
     const be = backend({
       [`GET ${G}`]: () => json(200, current)(),
-      [`POST ${G}/key`]: () => { current = game({ keyVersion: 1 }); return json(201, { keyVersion: 1 })(); },
+      [`POST ${G}/key`]: () => {
+        current = game({ keyVersion: 1 });
+        return json(201, { keyVersion: 1 })();
+      },
     });
     await open(`/secure/orders/${ID}/key`, be, keys);
     expect(screen.getByText(/^Use this same browser on this device/)).toBeTruthy();
@@ -106,17 +141,23 @@ describe('the buyer\'s key', () => {
     await open(`/secure/orders/${ID}/key`, backend({ [`GET ${G}`]: json(200, game({ keyVersion: 1 })) }));
     expect(screen.getByText(/^The key for this order was created in another browser\./)).toBeTruthy();
     document.body.replaceChildren();
-    await open(`/secure/orders/${ID}/key`, backend({ [`GET ${G}`]: json(200, game({ disclosure: { currentVersion: 1, acknowledgedVersion: null, acknowledgedAt: null } })) }));
+    await open(
+      `/secure/orders/${ID}/key`,
+      backend({ [`GET ${G}`]: json(200, game({ disclosure: { currentVersion: 1, acknowledgedVersion: null, acknowledgedAt: null } })) }),
+    );
     expect(screen.getByText(/^First confirm the notice/)).toBeTruthy();
     expect(screen.queryByRole('button')).toBeNull();
     document.body.replaceChildren();
-    const { assigned } = await open(`/secure/orders/${ID}/key`, backend({ [`GET ${G}`]: json(401, {}), 'POST /auth/refresh': json(401, {}), 'GET /me': json(401, {}) }));
+    const { assigned } = await open(
+      `/secure/orders/${ID}/key`,
+      backend({ [`GET ${G}`]: json(401, {}), 'POST /auth/refresh': json(401, {}), 'GET /me': json(401, {}) }),
+    );
     expect(assigned).toEqual([`/signin?next=${encodeURIComponent(`/secure/orders/${ID}/key`)}`]);
   });
 });
 
 describe('sealing and opening', () => {
-  it('FR-GAM-08 FR-GAM-09 FR-GAM-11 FR-GAM-13 the seller sees the buyer\'s fingerprint and seals in the page; the buyer opens the same details beside the checklist', async () => {
+  it("FR-GAM-08 FR-GAM-09 FR-GAM-11 FR-GAM-13 the seller sees the buyer's fingerprint and seals in the page; the buyer opens the same details beside the checklist", async () => {
     const buyer = await generateBuyerKey();
     // sealed.js itself first, so a failure of Web Crypto in this environment shows its own error
     const probe = await seal(unb64u(b64u(buyer.publicRaw)), ID, 1, { loginId: 'a', password: 'b', recovery: [], note: '' });
@@ -168,7 +209,10 @@ describe('sealing and opening', () => {
     const be = backend({
       [`GET ${G}`]: () => json(200, view)(),
       [`GET ${G}/sealed`]: () => json(200, sealed)(),
-      [`POST ${G}/takeover-steps/password`]: () => { view = { ...view, steps: { ...view.steps, password: iso(0) } }; return json(200, { step: 'password', takenOverAt: null })(); },
+      [`POST ${G}/takeover-steps/password`]: () => {
+        view = { ...view, steps: { ...view.steps, password: iso(0) } };
+        return json(200, { step: 'password', takenOverAt: null })();
+      },
     });
     await open(`/secure/orders/${ID}/credentials`, be, keys);
     const details = screen.getByRole('heading', { name: 'Login details' }).closest('section')!;
@@ -187,7 +231,10 @@ describe('sealing and opening', () => {
     const be = backend({
       [`GET ${G}`]: () => json(200, view)(),
       [`GET ${G}/sealed`]: problem(404, 'not-found', { errors: [{ field: 'credentials', reason: 'none' }] }),
-      [`POST ${G}/report-invalid`]: () => { view = game({ status: 'disputed', keyVersion: 1 }); return json(201, { disputeId: 'd-1' })(); },
+      [`POST ${G}/report-invalid`]: () => {
+        view = game({ status: 'disputed', keyVersion: 1 });
+        return json(201, { disputeId: 'd-1' })();
+      },
     });
     await open(`/secure/orders/${ID}/credentials`, be);
     expect(screen.getByText('There are no login details to open.')).toBeTruthy();
@@ -202,10 +249,13 @@ describe('sealing and opening', () => {
     expect(be.called(`POST ${G}/report-invalid`)[0].body).toEqual({ description: 'The password is refused by the game.' });
     document.body.replaceChildren();
 
-    await open(`/secure/orders/${ID}/credentials`, backend({
-      [`GET ${G}`]: json(200, game({ status: 'delivered', keyVersion: 1, steps: { ...game().steps, password: iso(-HOUR), recovery_email: iso(-HOUR) } })),
-      [`GET ${G}/sealed`]: problem(404, 'not-found', { errors: [{ field: 'credentials', reason: 'none' }] }),
-    }));
+    await open(
+      `/secure/orders/${ID}/credentials`,
+      backend({
+        [`GET ${G}`]: json(200, game({ status: 'delivered', keyVersion: 1, steps: { ...game().steps, password: iso(-HOUR), recovery_email: iso(-HOUR) } })),
+        [`GET ${G}/sealed`]: problem(404, 'not-found', { errors: [{ field: 'credentials', reason: 'none' }] }),
+      }),
+    );
     expect(screen.queryByRole('button', { name: 'The login details do not work' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Create a new key and ask again' })).toBeNull();
   });

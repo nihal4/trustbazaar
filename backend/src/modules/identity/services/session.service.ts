@@ -24,8 +24,7 @@ const randomToken = () => randomBytes(32).toString('base64url');
 /** The device key this service issues: 32 random bytes, base64url. */
 const DEVICE_KEY = /^[A-Za-z0-9_-]{43}$/;
 // TypeORM's PostgreSQL driver answers UPDATE/DELETE ... RETURNING with [rows, count], INSERT with rows.
-const rowsOf = <T>(result: unknown): T[] =>
-  (Array.isArray(result) && Array.isArray(result[0]) && typeof result[1] === 'number' ? result[0] : result) as T[];
+const rowsOf = <T>(result: unknown): T[] => (Array.isArray(result) && Array.isArray(result[0]) && typeof result[1] === 'number' ? result[0] : result) as T[];
 
 export interface RequestContext {
   ip: string | null;
@@ -94,10 +93,11 @@ export class SessionService {
     const presented = deviceKey && DEVICE_KEY.test(deviceKey) ? deviceKey : undefined;
     if (presented) {
       const [d] = rowsOf<{ id: string }>(
-        await m.query(
-          `UPDATE identity.known_devices SET last_seen_at = $3 WHERE user_id = $1 AND device_key_hash = $2 RETURNING id`,
-          [userId, sha256(presented), now],
-        ),
+        await m.query(`UPDATE identity.known_devices SET last_seen_at = $3 WHERE user_id = $1 AND device_key_hash = $2 RETURNING id`, [
+          userId,
+          sha256(presented),
+          now,
+        ]),
       );
       deviceId = d?.id;
     }
@@ -123,9 +123,7 @@ export class SessionService {
       [userId, deviceId, ctx.userAgent?.slice(0, 300) ?? null, ctx.ip, now, idle, absolute],
     );
     const refreshToken = randomToken();
-    await m.query(`INSERT INTO identity.refresh_tokens (session_id, token_hash, issued_at) VALUES ($1, $2, $3)`, [
-      s.id, sha256(refreshToken), now,
-    ]);
+    await m.query(`INSERT INTO identity.refresh_tokens (session_id, token_hash, issued_at) VALUES ($1, $2, $3)`, [s.id, sha256(refreshToken), now]);
     return {
       sessionId: s.id,
       cookies: {
@@ -162,9 +160,10 @@ export class SessionService {
     if (!raw) throw new Problem('session-ended');
     const now = this.clock.now();
     const { accessMs, idleMs } = await this.limits(kind);
-    return this.db.transaction(async (m) => {
-      const [row] = await m.query(
-        `SELECT rt.id, rt.used_at, s.id AS session_id, s.principal_type, s.user_id, s.staff_id, s.ended_at, s.idle_expires_at,
+    return this.db
+      .transaction(async (m) => {
+        const [row] = await m.query(
+          `SELECT rt.id, rt.used_at, s.id AS session_id, s.principal_type, s.user_id, s.staff_id, s.ended_at, s.idle_expires_at,
                 s.absolute_expires_at, u.account_status, st.status AS staff_status
          FROM identity.refresh_tokens rt
          JOIN identity.sessions s ON s.id = rt.session_id
@@ -172,64 +171,84 @@ export class SessionService {
          LEFT JOIN identity.staff_accounts st ON st.id = s.staff_id
          WHERE rt.token_hash = $1
          FOR UPDATE OF rt, s`,
-        [sha256(raw)],
-      );
-      // Staff sessions refresh on their own path (I-51), user sessions on theirs.
-      if (!row || row.principal_type !== kind) throw new Problem('session-ended');
-      const subject: string = kind === 'staff' ? row.staff_id : row.user_id;
-      const live =
-        row.ended_at === null && now < row.idle_expires_at && now < row.absolute_expires_at &&
-        (kind === 'staff' ? row.staff_status === 'active' : row.account_status !== 'closed');
-      if (!live) throw new Problem('session-ended');
+          [sha256(raw)],
+        );
+        // Staff sessions refresh on their own path (I-51), user sessions on theirs.
+        if (!row || row.principal_type !== kind) throw new Problem('session-ended');
+        const subject: string = kind === 'staff' ? row.staff_id : row.user_id;
+        const live =
+          row.ended_at === null &&
+          now < row.idle_expires_at &&
+          now < row.absolute_expires_at &&
+          (kind === 'staff' ? row.staff_status === 'active' : row.account_status !== 'closed');
+        if (!live) throw new Problem('session-ended');
 
-      if (row.used_at !== null) {
-        if (now.getTime() - new Date(row.used_at).getTime() < REUSE_GRACE_MS) return { kind: 'retry' } as const;
-        // A replaced token presented again after the grace window: it was copied. End the whole session.
-        await this.endIn(m, row.session_id, 'refresh_reuse', subject, ctx, kind);
-        await publish(m, 'identity.session.reuse_detected', subject, { [kind === 'staff' ? 'staffId' : 'userId']: subject, sessionId: row.session_id });
-        return { kind: 'reused' } as const;
-      }
+        if (row.used_at !== null) {
+          if (now.getTime() - new Date(row.used_at).getTime() < REUSE_GRACE_MS) return { kind: 'retry' } as const;
+          // A replaced token presented again after the grace window: it was copied. End the whole session.
+          await this.endIn(m, row.session_id, 'refresh_reuse', subject, ctx, kind);
+          await publish(m, 'identity.session.reuse_detected', subject, { [kind === 'staff' ? 'staffId' : 'userId']: subject, sessionId: row.session_id });
+          return { kind: 'reused' } as const;
+        }
 
-      const r = await this.limiter.hit(`rl:refresh:session:${row.session_id}`, 60, 3600);
-      if (!r.allowed) throw new Problem('rate-limited', { retryAfter: r.retryAfterSeconds });
+        const r = await this.limiter.hit(`rl:refresh:session:${row.session_id}`, 60, 3600);
+        if (!r.allowed) throw new Problem('rate-limited', { retryAfter: r.retryAfterSeconds });
 
-      const next = randomToken();
-      const nextId = randomUUID();
-      // Mark the old token first: only one unused token per session may exist (refresh_one_live);
-      // replaced_by is checked at commit (a deferrable foreign key).
-      await m.query(`UPDATE identity.refresh_tokens SET used_at = $2, replaced_by = $3 WHERE id = $1`, [row.id, now, nextId]);
-      await m.query(`INSERT INTO identity.refresh_tokens (id, session_id, token_hash, issued_at) VALUES ($1, $2, $3, $4)`, [
-        nextId, row.session_id, sha256(next), now,
-      ]);
-      const absolute = new Date(row.absolute_expires_at);
-      const idle = new Date(Math.min(now.getTime() + idleMs, absolute.getTime()));
-      await m.query(`UPDATE identity.sessions SET idle_expires_at = $2, last_seen_at = $3 WHERE id = $1`, [row.session_id, idle, now]);
-      return {
-        kind: 'rotated',
-        cookies: {
-          ...this.tokens(row.session_id, subject, now, accessMs, kind),
-          refreshToken: next,
-          accessMaxAgeMs: accessMs,
-          refreshMaxAgeMs: absolute.getTime() - now.getTime(),
-        },
-      } as const;
-    }).then((r) => {
-      // Reuse is reported after the transaction committed, so the session stays ended.
-      if (r.kind === 'reused') throw new Problem('session-ended');
-      return r;
-    });
+        const next = randomToken();
+        const nextId = randomUUID();
+        // Mark the old token first: only one unused token per session may exist (refresh_one_live);
+        // replaced_by is checked at commit (a deferrable foreign key).
+        await m.query(`UPDATE identity.refresh_tokens SET used_at = $2, replaced_by = $3 WHERE id = $1`, [row.id, now, nextId]);
+        await m.query(`INSERT INTO identity.refresh_tokens (id, session_id, token_hash, issued_at) VALUES ($1, $2, $3, $4)`, [
+          nextId,
+          row.session_id,
+          sha256(next),
+          now,
+        ]);
+        const absolute = new Date(row.absolute_expires_at);
+        const idle = new Date(Math.min(now.getTime() + idleMs, absolute.getTime()));
+        await m.query(`UPDATE identity.sessions SET idle_expires_at = $2, last_seen_at = $3 WHERE id = $1`, [row.session_id, idle, now]);
+        return {
+          kind: 'rotated',
+          cookies: {
+            ...this.tokens(row.session_id, subject, now, accessMs, kind),
+            refreshToken: next,
+            accessMaxAgeMs: accessMs,
+            refreshMaxAgeMs: absolute.getTime() - now.getTime(),
+          },
+        } as const;
+      })
+      .then((r) => {
+        // Reuse is reported after the transaction committed, so the session stays ended.
+        if (r.kind === 'reused') throw new Problem('session-ended');
+        return r;
+      });
   }
 
-  private async endIn(m: EntityManager, sessionId: string, reason: string, actorId: string, ctx: RequestContext, actorType: PrincipalKind = 'user'): Promise<boolean> {
-    const ended = await m.query(
-      `UPDATE identity.sessions SET ended_at = $2, end_reason = $3 WHERE id = $1 AND ended_at IS NULL RETURNING id`,
-      [sessionId, this.clock.now(), reason],
-    );
+  private async endIn(
+    m: EntityManager,
+    sessionId: string,
+    reason: string,
+    actorId: string,
+    ctx: RequestContext,
+    actorType: PrincipalKind = 'user',
+  ): Promise<boolean> {
+    const ended = await m.query(`UPDATE identity.sessions SET ended_at = $2, end_reason = $3 WHERE id = $1 AND ended_at IS NULL RETURNING id`, [
+      sessionId,
+      this.clock.now(),
+      reason,
+    ]);
     if (rowsOf(ended).length === 0) return false;
     this.sockets.ended(m.queryRunner, sessionId); // SEC-SES-07: its live connections close after the commit
     await this.audit.record(m, {
-      actorType, actorId, action: 'identity.session.ended', objectType: 'session', objectId: sessionId,
-      reason, sourceIp: ctx.ip, correlationId: ctx.correlationId,
+      actorType,
+      actorId,
+      action: 'identity.session.ended',
+      objectType: 'session',
+      objectId: sessionId,
+      reason,
+      sourceIp: ctx.ip,
+      correlationId: ctx.correlationId,
     });
     return true;
   }
@@ -251,7 +270,14 @@ export class SessionService {
    * Ends every live session of the user except `keep` (null: all of them), in the caller's transaction:
    * a password change or reset (SEC-AUTH-10, SEC-AUTH-11). Returns how many.
    */
-  async endAllIn(m: EntityManager, userId: string, keep: string | null, reason: 'user_ended' | 'password_changed' | 'suspended' | 'closed' | 'emergency', ctx: RequestContext, actor?: { type: 'user' | 'staff'; id: string }): Promise<number> {
+  async endAllIn(
+    m: EntityManager,
+    userId: string,
+    keep: string | null,
+    reason: 'user_ended' | 'password_changed' | 'suspended' | 'closed' | 'emergency',
+    ctx: RequestContext,
+    actor?: { type: 'user' | 'staff'; id: string },
+  ): Promise<number> {
     const live: { id: string }[] = await m.query(
       `SELECT id FROM identity.sessions WHERE user_id = $1 AND ($2::uuid IS NULL OR id <> $2) AND ended_at IS NULL FOR UPDATE`,
       [userId, keep],
@@ -303,10 +329,28 @@ export class SessionService {
 /** "Chrome on Android" from a user agent, for the session list; never the full string. */
 export function deviceLabel(ua: string | null): string | null {
   if (!ua) return null;
-  const browser = /Edg\//.test(ua) ? 'Edge' : /SamsungBrowser/.test(ua) ? 'Samsung Internet' : /Firefox\//.test(ua) ? 'Firefox'
-    : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : null;
-  const os = /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iOS' : /Windows/.test(ua) ? 'Windows'
-    : /Mac OS X/.test(ua) ? 'macOS' : /Linux/.test(ua) ? 'Linux' : null;
+  const browser = /Edg\//.test(ua)
+    ? 'Edge'
+    : /SamsungBrowser/.test(ua)
+      ? 'Samsung Internet'
+      : /Firefox\//.test(ua)
+        ? 'Firefox'
+        : /Chrome\//.test(ua)
+          ? 'Chrome'
+          : /Safari\//.test(ua)
+            ? 'Safari'
+            : null;
+  const os = /Android/.test(ua)
+    ? 'Android'
+    : /iPhone|iPad/.test(ua)
+      ? 'iOS'
+      : /Windows/.test(ua)
+        ? 'Windows'
+        : /Mac OS X/.test(ua)
+          ? 'macOS'
+          : /Linux/.test(ua)
+            ? 'Linux'
+            : null;
   if (!browser && !os) return 'Unknown device';
   return [browser, os].filter(Boolean).join(' on ');
 }

@@ -15,7 +15,8 @@ describe('HumanCheck', () => {
       }),
     };
   }
-  const challengeOf = async (p: Promise<unknown>) => ((await p.catch((e: unknown) => e)) as Problem).extra.challenge as { id: string; prefix: string; difficulty: number };
+  const challengeOf = async (p: Promise<unknown>) =>
+    ((await p.catch((e: unknown) => e)) as Problem).extra.challenge as { id: string; prefix: string; difficulty: number };
 
   it('SEC-ABU-02 leading zero bits are counted across bytes', () => {
     expect(leadingZeroBits(Buffer.from([0x00, 0x00, 0x80]))).toBe(16);

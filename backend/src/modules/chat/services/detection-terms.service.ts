@@ -29,7 +29,9 @@ export class DetectionTermsService {
   /** GET /staff/chat/detection-terms: newest first (Decisions log, U6-03). */
   async list(): Promise<{ items: DetectionTermView[] }> {
     const rows = (await this.db.query(`SELECT term, flag, added_at FROM chat.detection_terms ORDER BY added_at DESC, id DESC`)) as {
-      term: string; flag: DetectionFlag; added_at: Date;
+      term: string;
+      flag: DetectionFlag;
+      added_at: Date;
     }[];
     return { items: rows.map((r) => ({ term: r.term, flag: r.flag, addedAt: r.added_at.toISOString() })) };
   }
@@ -40,13 +42,22 @@ export class DetectionTermsService {
     if (term.length < 2 || term.length > MAX_TERM) throw new Problem('validation-failed', { errors: [{ field: 'term', reason: 'length' }] });
     try {
       return await this.db.transaction(async (m) => {
-        const [r] = (await m.query(
-          `INSERT INTO chat.detection_terms (term, flag, added_by) VALUES ($1, $2, $3) RETURNING id, added_at`, [term, flag, staffId],
-        )) as { id: number; added_at: Date }[];
-        await this.audit.record({
-          actorType: 'staff', actorId: staffId, action: 'chat.detection_term.added', objectType: 'detection_term', objectId: null, // the term's id is an integer; the audit's object id is a uuid
-          after: { id: r.id, term, flag },
-        }, m);
+        const [r] = (await m.query(`INSERT INTO chat.detection_terms (term, flag, added_by) VALUES ($1, $2, $3) RETURNING id, added_at`, [
+          term,
+          flag,
+          staffId,
+        ])) as { id: number; added_at: Date }[];
+        await this.audit.record(
+          {
+            actorType: 'staff',
+            actorId: staffId,
+            action: 'chat.detection_term.added',
+            objectType: 'detection_term',
+            objectId: null, // the term's id is an integer; the audit's object id is a uuid
+            after: { id: r.id, term, flag },
+          },
+          m,
+        );
         return { term, flag, addedAt: r.added_at.toISOString() };
       });
     } catch (err) {
@@ -64,10 +75,17 @@ export class DetectionTermsService {
       const res = (await m.query(`DELETE FROM chat.detection_terms WHERE term = $1 RETURNING id, flag`, [term])) as unknown[];
       const [row] = (Array.isArray(res[0]) ? res[0] : res) as { id: number; flag: string }[]; // TypeORM: [rows, count] for DELETE
       if (!row) throw new Problem('not-found');
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: 'chat.detection_term.removed', objectType: 'detection_term', objectId: null,
-        before: { id: row.id, term, flag: row.flag },
-      }, m);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: 'chat.detection_term.removed',
+          objectType: 'detection_term',
+          objectId: null,
+          before: { id: row.id, term, flag: row.flag },
+        },
+        m,
+      );
     });
   }
 }

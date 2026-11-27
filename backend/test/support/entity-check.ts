@@ -7,9 +7,23 @@ import { requireEnv } from './env';
 
 // TypeORM column type -> PostgreSQL type name
 const PG: Record<string, string> = {
-  uuid: 'uuid', text: 'text', varchar: 'varchar', citext: 'citext', boolean: 'bool', smallint: 'int2',
-  integer: 'int4', bigint: 'int8', numeric: 'numeric', timestamptz: 'timestamptz', date: 'date', bytea: 'bytea',
-  inet: 'inet', jsonb: 'jsonb', char: 'bpchar', interval: 'interval', tsvector: 'tsvector',
+  uuid: 'uuid',
+  text: 'text',
+  varchar: 'varchar',
+  citext: 'citext',
+  boolean: 'bool',
+  smallint: 'int2',
+  integer: 'int4',
+  bigint: 'int8',
+  numeric: 'numeric',
+  timestamptz: 'timestamptz',
+  date: 'date',
+  bytea: 'bytea',
+  inet: 'inet',
+  jsonb: 'jsonb',
+  char: 'bpchar',
+  interval: 'interval',
+  tsvector: 'tsvector',
 };
 
 interface DbColumn {
@@ -61,7 +75,10 @@ export function entityChecks(o: { label: string; schemas: string[]; entities: Fu
 
   it('DC-4 every entity maps every column of its table, and no column that does not exist', () => {
     for (const m of metas) {
-      const expected = db.filter((c) => c.table === tableOf(m)).map((c) => c.column).sort();
+      const expected = db
+        .filter((c) => c.table === tableOf(m))
+        .map((c) => c.column)
+        .sort();
       expect({ table: tableOf(m), columns: m.columns.map((c) => c.databaseName).sort() }).toEqual({
         table: tableOf(m),
         columns: expected,

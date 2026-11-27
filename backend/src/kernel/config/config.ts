@@ -199,7 +199,8 @@ export function loadConfig(env: Env): TbConfig {
   // DV-63: Prometheus metrics on an internal port nginx does not forward; 0 = any free port (tests), off = none
   const metricsText = get('METRICS_PORT') ?? '9464';
   const metricsPort = metricsText === 'off' ? null : Number(metricsText);
-  if (metricsPort !== null && (!/^\d+$/.test(metricsText) || metricsPort > 65535 || metricsPort === port)) problems.push('METRICS_PORT: a port number other than PORT, 0 or off');
+  if (metricsPort !== null && (!/^\d+$/.test(metricsText) || metricsPort > 65535 || metricsPort === port))
+    problems.push('METRICS_PORT: a port number other than PORT, 0 or off');
 
   const logLevel = oneOf<LogLevel>('LOG_LEVEL', ['error', 'warn', 'info', 'debug'], 'info');
   if (production && logLevel === 'debug') problems.push('LOG_LEVEL: debug output is off in production (SEC-INF-05)');
@@ -235,12 +236,8 @@ export function loadConfig(env: Env): TbConfig {
   const emailMode = oneOf('EMAIL_MODE', ['log', 'smtp'] as const, 'log');
   const smsMode = oneOf('SMS_MODE', ['log', 'twilio'] as const, 'log');
 
-  const secrets = Object.fromEntries(
-    Object.entries(SECRETS).map(([key, name]) => [key, secret(name)]),
-  ) as Record<SecretName, Secret>;
-  const keys = Object.fromEntries(
-    Object.entries(KEYRINGS).map(([key, name]) => [key, keyring(name)]),
-  ) as Record<KeyringName, Keyring>;
+  const secrets = Object.fromEntries(Object.entries(SECRETS).map(([key, name]) => [key, secret(name)])) as Record<SecretName, Secret>;
+  const keys = Object.fromEntries(Object.entries(KEYRINGS).map(([key, name]) => [key, keyring(name)])) as Record<KeyringName, Keyring>;
 
   const providers: Partial<Record<ProviderName, Secret>> = {};
   for (const [key, name] of Object.entries(PROVIDERS) as [ProviderName, string][]) {
@@ -259,7 +256,8 @@ export function loadConfig(env: Env): TbConfig {
   // test keys are required (bKash and Nagad come with U2-09); in mock mode none is used.
   const stripeKey = get('STRIPE_SECRET_KEY');
   const stripeHook = get('STRIPE_WEBHOOK_SECRET');
-  if (stripeKey !== undefined && !stripeKey.startsWith('sk_test_')) problems.push('STRIPE_SECRET_KEY: must be a test key (sk_test_...); live keys are never accepted (C-2)');
+  if (stripeKey !== undefined && !stripeKey.startsWith('sk_test_'))
+    problems.push('STRIPE_SECRET_KEY: must be a test key (sk_test_...); live keys are never accepted (C-2)');
   if (stripeHook !== undefined && !stripeHook.startsWith('whsec_')) problems.push('STRIPE_WEBHOOK_SECRET: must be a webhook signing secret (whsec_...)');
   if (paymentMode === 'sandbox' && (stripeKey === undefined || stripeHook === undefined)) {
     problems.push('STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET: required when PAYMENT_MODE is sandbox');

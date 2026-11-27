@@ -13,8 +13,18 @@ configure({ asyncUtilTimeout: 3000 });
 afterEach(cleanup);
 
 const card = (c: Partial<SearchCard> & { id: string }): SearchCard => ({
-  title: 'Used phone', itemKind: 'physical', saleFormat: 'fixed_price', condition: 'used', district: 'Dhaka', price: '1500000',
-  thumbUrl: null, distanceKm: null, featured: false, currentlyReserved: false, auction: null, ...c,
+  title: 'Used phone',
+  itemKind: 'physical',
+  saleFormat: 'fixed_price',
+  condition: 'used',
+  district: 'Dhaka',
+  price: '1500000',
+  thumbUrl: null,
+  distanceKm: null,
+  featured: false,
+  currentlyReserved: false,
+  auction: null,
+  ...c,
 });
 const categories: Category[] = [
   { id: 1, parentId: null, slug: 'phones', nameEn: 'Phones', nameBn: 'ফোন', itemKind: 'physical', selectable: true },
@@ -29,10 +39,23 @@ function backend() {
     'GET /me': json(401, { type: '/problems/session-ended' }),
     'POST /auth/refresh': json(401, {}),
     'GET /categories': json(200, categories),
-    'GET /search': (c: Call) => json(200, c.query.get('saleFormat') === 'auction'
-      ? { items: [1, 2, 3, 4, 5].map((n) => card({ id: `a-${n}`, title: `Auction ${n}`, saleFormat: 'auction', auction: soon(n === 1 ? 0.5 : n * 3) })), nextCursor: null, featured: [], sort: 'ending_soon' }
-      : { items: [card({ id: 'n-1', title: 'Samsung Galaxy A15' }), card({ id: 'n-2', title: 'Phoenix bicycle', district: 'Chattogram' })], nextCursor: 'x',
-        featured: [card({ id: 'f-1', title: 'Canon camera', featured: true })], sort: 'newest' })(),
+    'GET /search': (c: Call) =>
+      json(
+        200,
+        c.query.get('saleFormat') === 'auction'
+          ? {
+              items: [1, 2, 3, 4, 5].map((n) => card({ id: `a-${n}`, title: `Auction ${n}`, saleFormat: 'auction', auction: soon(n === 1 ? 0.5 : n * 3) })),
+              nextCursor: null,
+              featured: [],
+              sort: 'ending_soon',
+            }
+          : {
+              items: [card({ id: 'n-1', title: 'Samsung Galaxy A15' }), card({ id: 'n-2', title: 'Phoenix bicycle', district: 'Chattogram' })],
+              nextCursor: 'x',
+              featured: [card({ id: 'f-1', title: 'Canon camera', featured: true })],
+              sort: 'newest',
+            },
+      )(),
   });
 }
 
@@ -53,18 +76,28 @@ describe('home', () => {
     renderHome(backend());
     const promise = (await screen.findByRole('heading', { level: 3, name: 'Your money waits with us' })).closest('article')!;
     expect(within(promise).getByText('How your money moves')).toBeTruthy();
-    expect(within(promise).getAllByRole('listitem').map((li) => li.textContent)).toEqual([
-      'You pay TrustBazaar', 'We hold it', 'The seller is paid when you confirm',
-    ]);
-    expect(within(promise).queryByText(/৳|Tk/)).toBeNull();   // an explanation, not an order: no amount is made up
+    expect(
+      within(promise)
+        .getAllByRole('listitem')
+        .map((li) => li.textContent),
+    ).toEqual(['You pay TrustBazaar', 'We hold it', 'The seller is paid when you confirm']);
+    expect(within(promise).queryByText(/৳|Tk/)).toBeNull(); // an explanation, not an order: no amount is made up
   });
 
   it('FR-SRC-02 the top categories that may be chosen link to their results', async () => {
     renderHome(backend());
     const nav = await screen.findByRole('navigation', { name: 'Categories' });
-    await waitFor(() => expect(within(nav).getAllByRole('link').map((a) => [a.textContent, a.getAttribute('href')])).toEqual([
-      ['Everything', '/search'], ['Phones', '/search?category=1'], ['Bicycles', '/search?category=4'],
-    ]));
+    await waitFor(() =>
+      expect(
+        within(nav)
+          .getAllByRole('link')
+          .map((a) => [a.textContent, a.getAttribute('href')]),
+      ).toEqual([
+        ['Everything', '/search'],
+        ['Phones', '/search?category=1'],
+        ['Bicycles', '/search?category=4'],
+      ]),
+    );
   });
 
   it('FR-AUC-01 four auctions ending soonest, each with its time left on the photo, the last hour marked', async () => {
@@ -85,7 +118,11 @@ describe('home', () => {
     expect(within(featured).getByText('Sellers paid to show these listings here.')).toBeTruthy();
     expect(within(featured).getByText('Featured', { selector: 'span' })).toBeTruthy();
     const newest = screen.getByRole('heading', { name: 'Newest listings' }).closest('section')!;
-    expect(within(newest).getAllByRole('listitem').map((li) => within(li).getByRole('link').getAttribute('href'))).toEqual(['/listings/n-1', '/listings/n-2']);
+    expect(
+      within(newest)
+        .getAllByRole('listitem')
+        .map((li) => within(li).getByRole('link').getAttribute('href')),
+    ).toEqual(['/listings/n-1', '/listings/n-2']);
     expect(within(newest).getByText('Chattogram')).toBeTruthy();
     expect(within(newest).getByRole('link', { name: 'See everything new' }).getAttribute('href')).toBe('/search?sort=newest');
   });
@@ -103,9 +140,13 @@ describe('search chips', () => {
   it('FR-SRC-02 the filters in use show as chips; one press removes a filter, "Clear all" removes them all but the words', async () => {
     const doc = renderApp('/search?q=phone&category=1&saleFormat=auction&maxPrice=1500000', backend());
     const chips = await screen.findByRole('group', { name: 'Filters in use' });
-    await waitFor(() => expect(within(chips).getAllByRole('button').map((b) => b.textContent)).toEqual([
-      'Remove filter: Phones', 'Remove filter: Auction', 'Remove filter: Up to ৳15,000', 'Clear all',
-    ]));
+    await waitFor(() =>
+      expect(
+        within(chips)
+          .getAllByRole('button')
+          .map((b) => b.textContent),
+      ).toEqual(['Remove filter: Phones', 'Remove filter: Auction', 'Remove filter: Up to ৳15,000', 'Clear all']),
+    );
     fireEvent.click(within(chips).getByRole('button', { name: 'Remove filter: Auction' }));
     await waitFor(() => expect(doc.router.state.location.search).toBe('?q=phone&category=1&maxPrice=1500000'));
     fireEvent.click(within(await screen.findByRole('group', { name: 'Filters in use' })).getByRole('button', { name: 'Clear all' }));

@@ -12,10 +12,22 @@ export function Breakdown({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
     <section aria-labelledby="breakdown-title" className={styles.previewBlock}>
       <h2 id="breakdown-title">{t('summary.title')}</h2>
       <dl className={styles.breakdownGrid}>
-        <div><dt>{t('summary.quantity')}</dt><dd>{toLocalDigits(String(o.quantity), lang)}</dd></div>
-        <div><dt>{t('pay.item')}</dt><dd>{money(o.itemPrice)}</dd></div>
-        <div><dt>{t('pay.delivery')}</dt><dd>{o.fulfilment ? money(o.deliveryFee) : t('summary.not_chosen')}</dd></div>
-        <div className={styles.totalCell}><dt>{t('pay.total')}</dt><dd>{money(o.total)}</dd></div>
+        <div>
+          <dt>{t('summary.quantity')}</dt>
+          <dd>{toLocalDigits(String(o.quantity), lang)}</dd>
+        </div>
+        <div>
+          <dt>{t('pay.item')}</dt>
+          <dd>{money(o.itemPrice)}</dd>
+        </div>
+        <div>
+          <dt>{t('pay.delivery')}</dt>
+          <dd>{o.fulfilment ? money(o.deliveryFee) : t('summary.not_chosen')}</dd>
+        </div>
+        <div className={styles.totalCell}>
+          <dt>{t('pay.total')}</dt>
+          <dd>{money(o.total)}</dd>
+        </div>
       </dl>
       {o.status === 'awaiting_payment' && o.role === 'buyer' && <p className={styles.hint}>{t('pay.fee_note')}</p>}
     </section>

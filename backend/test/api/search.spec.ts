@@ -36,7 +36,15 @@ describe('search', () => {
     );
     return id;
   }
-  interface Item { title?: string; description?: string; price?: number; at?: { lat: number; lng: number }; condition?: string; auction?: { start: number; endsIn?: string }; sellerId?: string }
+  interface Item {
+    title?: string;
+    description?: string;
+    price?: number;
+    at?: { lat: number; lng: number };
+    condition?: string;
+    auction?: { start: number; endsIn?: string };
+    sellerId?: string;
+  }
   /** An active listing, published as the database allows it; returns its id. */
   async function listing(categoryId: number, o: Item = {}) {
     const at = o.at ?? DHAKA;
@@ -45,11 +53,24 @@ describe('search', () => {
       `INSERT INTO listings.listings (seller_id, item_kind, sale_format, category_id, title, description, condition, no_visible_defects,
                                       fulfilment_options, area_district, approx_lat, approx_lng, price)
        VALUES ($1, 'physical', $2, $3, $4, $5, $6, true, 'pickup_only', 'Dhaka', $7, $8, $9) RETURNING id`,
-      [o.sellerId ?? seller, auction ? 'auction' : 'fixed_price', categoryId, o.title ?? 'Used item for sale', o.description ?? 'A used item in good working order, as described.',
-       o.condition ?? 'used', at.lat, at.lng, auction ? null : (o.price ?? 100000)],
+      [
+        o.sellerId ?? seller,
+        auction ? 'auction' : 'fixed_price',
+        categoryId,
+        o.title ?? 'Used item for sale',
+        o.description ?? 'A used item in good working order, as described.',
+        o.condition ?? 'used',
+        at.lat,
+        at.lng,
+        auction ? null : (o.price ?? 100000),
+      ],
     );
     for (const position of [1, 2]) {
-      await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [id, position, randomUUID().replace(/-/g, '')]);
+      await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [
+        id,
+        position,
+        randomUUID().replace(/-/g, ''),
+      ]);
     }
     await fx.query(`UPDATE listings.listings SET status = 'active', published_at = clock_timestamp() WHERE id = $1`, [id]);
     if (o.auction) {
@@ -65,7 +86,16 @@ describe('search', () => {
   async function search(params: Record<string, string | number>, headers: Record<string, string> = {}) {
     const qs = new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)]));
     const r = await fetch(t.url(`/search?${qs}`), { headers: { origin, 'x-forwarded-for': ip(), ...headers } });
-    return { status: r.status, body: (await r.json()) as { items: Record<string, unknown>[]; nextCursor: string | null; featured: Record<string, unknown>[]; sort: string; errors?: { field: string; reason: string }[] } };
+    return {
+      status: r.status,
+      body: (await r.json()) as {
+        items: Record<string, unknown>[];
+        nextCursor: string | null;
+        featured: Record<string, unknown>[];
+        sort: string;
+        errors?: { field: string; reason: string }[];
+      },
+    };
   }
   const ids = async (params: Record<string, string | number>) => {
     const r = await search(params);
@@ -93,7 +123,10 @@ describe('search', () => {
     const cheap = await listing(parent, { price: 50000, condition: 'new' });
     const dear = await listing(child, { price: 900000 });
     const bidded = await listing(child, { auction: { start: 100000 } });
-    await fx.query(`UPDATE auctions.auctions SET leader_id = $2, leader_max = 400000, current_price = 300000, bid_count = 1 WHERE listing_id = $1`, [bidded, await fx.user()]);
+    await fx.query(`UPDATE auctions.auctions SET leader_id = $2, leader_max = 400000, current_price = 300000, bid_count = 1 WHERE listing_id = $1`, [
+      bidded,
+      await fx.user(),
+    ]);
 
     expect((await ids({ category: parent })).sort()).toEqual([cheap, dear, bidded].sort());
     expect((await ids({ category: child })).sort()).toEqual([dear, bidded].sort());
@@ -112,7 +145,11 @@ describe('search', () => {
     const ctg = await listing(cat, { at: CHATTOGRAM });
     const syl = await listing(cat, { at: SYLHET });
     const r = await search({ category: cat, ...DHAKA, sort: 'distance' });
-    expect(r.body.items.map((i) => [i.id, i.distanceKm])).toEqual([[dhaka, 0], [syl, expect.any(Number)], [ctg, expect.any(Number)]]);
+    expect(r.body.items.map((i) => [i.id, i.distanceKm])).toEqual([
+      [dhaka, 0],
+      [syl, expect.any(Number)],
+      [ctg, expect.any(Number)],
+    ]);
     const km = r.body.items[2].distanceKm as number;
     expect(Number.isInteger(km)).toBe(true);
     expect(km).toBeGreaterThanOrEqual(205);
@@ -188,12 +225,14 @@ describe('search', () => {
     await fx.query(`UPDATE listings.listings SET status = 'cancelled' WHERE id = $1`, [cancelled]);
     const closed = await listing(cat, { auction: { start: 100000 } });
     await fx.query(`UPDATE auctions.auctions SET status = 'unsold', closed_at = now() WHERE listing_id = $1`, [closed]);
-    const draft = (await fx.query<{ id: string }>(
-      `INSERT INTO listings.listings (seller_id, item_kind, sale_format, category_id, title, description, condition, no_visible_defects,
+    const draft = (
+      await fx.query<{ id: string }>(
+        `INSERT INTO listings.listings (seller_id, item_kind, sale_format, category_id, title, description, condition, no_visible_defects,
           fulfilment_options, area_district, approx_lat, approx_lng, price)
        VALUES ($1, 'physical', 'fixed_price', $2, 'Draft item', 'A draft that is not published yet.', 'used', true, 'pickup_only', 'Dhaka', 23.81, 90.41, 1000) RETURNING id`,
-      [seller, cat],
-    ))[0].id;
+        [seller, cat],
+      )
+    )[0].id;
     const found = await ids({ category: cat });
     expect(found).toEqual([shown]);
     expect(found).not.toContain(draft);
@@ -212,7 +251,12 @@ describe('search', () => {
     expect(r.body.featured).toHaveLength(3);
     for (const f of r.body.featured) expect(f).toMatchObject({ featured: true });
     expect(r.body.items.find((i) => i.id === plain)).toMatchObject({ featured: false });
-    expect(r.body.items.filter((i) => i.featured).map((i) => i.id).sort()).toEqual([...featured].sort()); // ranking unchanged, labelled
+    expect(
+      r.body.items
+        .filter((i) => i.featured)
+        .map((i) => i.id)
+        .sort(),
+    ).toEqual([...featured].sort()); // ranking unchanged, labelled
   });
 
   it('FR-SRC-05 guests search; bad parameters are 400; CP-35 limits a source address', async () => {
@@ -220,15 +264,23 @@ describe('search', () => {
     await listing(cat);
     expect((await ids({ category: cat })).length).toBe(1);
     const bads: Record<string, string | number>[] = [
-      { lat: 23.8 }, { sort: 'relevance' }, { minPrice: 500, maxPrice: 100 }, { sort: 'cheapest' }, { lat: 50, lng: 90 },
-      { maxKm: 0, lat: 23.8, lng: 90.4 }, { category: 'phones' }, { minPrice: '12.5' }, { surprise: 1 },
+      { lat: 23.8 },
+      { sort: 'relevance' },
+      { minPrice: 500, maxPrice: 100 },
+      { sort: 'cheapest' },
+      { lat: 50, lng: 90 },
+      { maxKm: 0, lat: 23.8, lng: 90.4 },
+      { category: 'phones' },
+      { minPrice: '12.5' },
+      { surprise: 1 },
     ];
     for (const bad of bads) {
       expect({ bad, status: (await search(bad)).status }).toEqual({ bad, status: 400 });
     }
     const address = `198.18.${randomInt(0, 255)}.${randomInt(1, 255)}`;
     let last = 0;
-    for (let i = 0; i < 61; i++) last = (await fetch(t.url(`/search?category=${cat}`), { headers: { origin, 'x-forwarded-for': `${address}, 10.0.0.1` } })).status;
+    for (let i = 0; i < 61; i++)
+      last = (await fetch(t.url(`/search?category=${cat}`), { headers: { origin, 'x-forwarded-for': `${address}, 10.0.0.1` } })).status;
     expect(last).toBe(429);
   });
 });

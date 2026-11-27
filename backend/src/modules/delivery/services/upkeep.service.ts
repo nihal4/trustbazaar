@@ -20,7 +20,10 @@ const RECONCILE_CURSOR = 'delivery:reconcile:cursor';
 const NIL_ID = '00000000-0000-0000-0000-000000000000';
 const IN_FLIGHT = ['booked', 'picked_up', 'in_transit', 'delivery_failed'] as const;
 
-export interface UpkeepRun { done: number; failed: number }
+export interface UpkeepRun {
+  done: number;
+  failed: number;
+}
 
 @Injectable()
 export class UpkeepService {
@@ -113,7 +116,8 @@ export class UpkeepService {
         if (!since || since > before) continue;
         const res = (await this.db.query(
           `UPDATE delivery.shipments SET pickup_address_enc = NULL, dropoff_address_enc = NULL, addresses_erased_at = now()
-            WHERE id = $1 AND addresses_erased_at IS NULL RETURNING id`, [s.id],
+            WHERE id = $1 AND addresses_erased_at IS NULL RETURNING id`,
+          [s.id],
         )) as unknown[];
         if (((Array.isArray(res[0]) ? res[0] : res) as unknown[]).length > 0) run.done++;
       } catch (err) {
@@ -127,9 +131,7 @@ export class UpkeepService {
   /** Provider events (daily, SEC-PAY-04): event ids are kept CP-32's retention (30 days) to refuse replays, then deleted. */
   async purgeProviderEvents(): Promise<number> {
     const keep = (await this.params.current()).ms('CP-32', 'retention');
-    const res = (await this.db.query(
-      `DELETE FROM delivery.provider_events WHERE received_at < $1`, [new Date(this.clock.now().getTime() - keep)],
-    )) as unknown;
+    const res = (await this.db.query(`DELETE FROM delivery.provider_events WHERE received_at < $1`, [new Date(this.clock.now().getTime() - keep)])) as unknown;
     return Array.isArray(res) && typeof res[1] === 'number' ? res[1] : 0;
   }
 }

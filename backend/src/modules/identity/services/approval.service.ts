@@ -62,8 +62,7 @@ const view = (r: Record<string, unknown>): ApprovalView => ({
   decisionNote: r.decision_note as string | null,
   executedAt: r.executed_at as Date | null,
 });
-const rowsOf = <T>(result: unknown): T[] =>
-  (Array.isArray(result) && Array.isArray(result[0]) && typeof result[1] === 'number' ? result[0] : result) as T[];
+const rowsOf = <T>(result: unknown): T[] => (Array.isArray(result) && Array.isArray(result[0]) && typeof result[1] === 'number' ? result[0] : result) as T[];
 const isUniqueViolation = (e: unknown) => e instanceof QueryFailedError && (e as unknown as { code?: string }).code === '23505';
 
 @Injectable()
@@ -90,13 +89,29 @@ export class ApprovalService {
       const [row] = await m.query(
         `INSERT INTO identity.approvals (action, target_type, target_id, payload, reason, required_role, proposed_by, proposed_at, expires_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING ${COLUMNS}`,
-        [p.action, p.targetType, p.targetId, JSON.stringify(p.payload ?? {}), p.reason.trim(), p.requiredRole, p.byStaffId, now,
-         new Date(now.getTime() + APPROVAL_EXPIRY_HOURS * 3_600_000)],
+        [
+          p.action,
+          p.targetType,
+          p.targetId,
+          JSON.stringify(p.payload ?? {}),
+          p.reason.trim(),
+          p.requiredRole,
+          p.byStaffId,
+          now,
+          new Date(now.getTime() + APPROVAL_EXPIRY_HOURS * 3_600_000),
+        ],
       );
       await this.audit.record(m, {
-        actorType: 'staff', actorId: p.byStaffId, action: 'staff.approval.proposed', objectType: p.targetType, objectId: p.targetId,
-        after: { action: p.action, payload: p.payload ?? {} }, reason: p.reason.trim(), approvalId: row.id,
-        sourceIp: ctx.ip, correlationId: ctx.correlationId,
+        actorType: 'staff',
+        actorId: p.byStaffId,
+        action: 'staff.approval.proposed',
+        objectType: p.targetType,
+        objectId: p.targetId,
+        after: { action: p.action, payload: p.payload ?? {} },
+        reason: p.reason.trim(),
+        approvalId: row.id,
+        sourceIp: ctx.ip,
+        correlationId: ctx.correlationId,
       });
       return view(row);
     };
@@ -109,7 +124,13 @@ export class ApprovalService {
   }
 
   /** FR-OPS-05: a second staff member of the required role decides; an approval runs its handler at once. */
-  async decide(id: string, by: { staffId: string; role: StaffRole }, decision: 'approved' | 'rejected', note: string | undefined, ctx: RequestContext): Promise<ApprovalView> {
+  async decide(
+    id: string,
+    by: { staffId: string; role: StaffRole },
+    decision: 'approved' | 'rejected',
+    note: string | undefined,
+    ctx: RequestContext,
+  ): Promise<ApprovalView> {
     const outcome = await this.db.transaction(async (m): Promise<ApprovalView | 'expired'> => {
       const now = this.clock.now();
       const [row] = await m.query(`SELECT ${COLUMNS} FROM identity.approvals WHERE id = $1 FOR UPDATE`, [id]);
@@ -124,10 +145,13 @@ export class ApprovalService {
       if (a.requiredRole !== by.role) throw new Problem('forbidden');
 
       const [decided] = rowsOf<Record<string, unknown>>(
-        await m.query(
-          `UPDATE identity.approvals SET decided_by = $2, decided_at = $3, decision = $4, decision_note = $5 WHERE id = $1 RETURNING ${COLUMNS}`,
-          [id, by.staffId, now, decision, note?.trim() || null],
-        ),
+        await m.query(`UPDATE identity.approvals SET decided_by = $2, decided_at = $3, decision = $4, decision_note = $5 WHERE id = $1 RETURNING ${COLUMNS}`, [
+          id,
+          by.staffId,
+          now,
+          decision,
+          note?.trim() || null,
+        ]),
       );
       let result = view(decided);
       if (decision === 'approved') {
@@ -140,9 +164,17 @@ export class ApprovalService {
         result = view(executed);
       }
       await this.audit.record(m, {
-        actorType: 'staff', actorId: by.staffId, action: `staff.approval.${decision}`, objectType: a.targetType, objectId: a.targetId,
-        before: { proposedBy: a.proposedBy, action: a.action }, after: { decision, executed: result.executedAt !== null },
-        reason: note?.trim() || null, approvalId: a.id, sourceIp: ctx.ip, correlationId: ctx.correlationId,
+        actorType: 'staff',
+        actorId: by.staffId,
+        action: `staff.approval.${decision}`,
+        objectType: a.targetType,
+        objectId: a.targetId,
+        before: { proposedBy: a.proposedBy, action: a.action },
+        after: { decision, executed: result.executedAt !== null },
+        reason: note?.trim() || null,
+        approvalId: a.id,
+        sourceIp: ctx.ip,
+        correlationId: ctx.correlationId,
       });
       return result;
     });
@@ -165,10 +197,9 @@ export class ApprovalService {
   async expireStale(): Promise<number> {
     return this.db.transaction(async (m) => {
       const now = this.clock.now();
-      const stale: { id: string }[] = await m.query(
-        `SELECT id FROM identity.approvals WHERE decision IS NULL AND expires_at <= $1 FOR UPDATE SKIP LOCKED`,
-        [now],
-      );
+      const stale: { id: string }[] = await m.query(`SELECT id FROM identity.approvals WHERE decision IS NULL AND expires_at <= $1 FOR UPDATE SKIP LOCKED`, [
+        now,
+      ]);
       for (const s of stale) await this.expireIn(m, s.id, now);
       return stale.length;
     });

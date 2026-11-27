@@ -37,7 +37,19 @@ export type ReleasePolicy = (typeof RELEASE_POLICY)[number];
 export const ATTEMPT_STATUS = ['created', 'redirected', 'succeeded', 'failed', 'cancelled', 'expired', 'succeeded_duplicate', 'succeeded_rejected'] as const;
 export type AttemptStatus = (typeof ATTEMPT_STATUS)[number];
 
-export const ENTRY_KIND = ['payment_received', 'escrow_release', 'escrow_refund', 'escrow_partial', 'refund_paid', 'payout_sent', 'courier_settled', 'fee_received', 'courier_return_charge', 'chargeback', 'chargeback_recovery'] as const;
+export const ENTRY_KIND = [
+  'payment_received',
+  'escrow_release',
+  'escrow_refund',
+  'escrow_partial',
+  'refund_paid',
+  'payout_sent',
+  'courier_settled',
+  'fee_received',
+  'courier_return_charge',
+  'chargeback',
+  'chargeback_recovery',
+] as const;
 export type EntryKind = (typeof ENTRY_KIND)[number];
 
 export const PAYOUT_ACCOUNT_KIND = ['bkash_wallet', 'nagad_wallet', 'bank'] as const;
@@ -55,7 +67,17 @@ export type Provider = (typeof PROVIDER)[number];
 export const PURPOSE = ['order', 'featured_listing', 'subscription'] as const;
 export type Purpose = (typeof PURPOSE)[number];
 
-export const REFUND_REASON = ['fulfilment_deadline', 'cancellation', 'dispute_full', 'dispute_partial', 'courier_returned', 'duplicate_payment', 'amount_mismatch', 'late_payment', 'fee_refund'] as const;
+export const REFUND_REASON = [
+  'fulfilment_deadline',
+  'cancellation',
+  'dispute_full',
+  'dispute_partial',
+  'courier_returned',
+  'duplicate_payment',
+  'amount_mismatch',
+  'late_payment',
+  'fee_refund',
+] as const;
 export type RefundReason = (typeof REFUND_REASON)[number];
 
 export const REFUND_STATUS = ['pending', 'sent', 'succeeded', 'failed', 'manual_required'] as const;

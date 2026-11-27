@@ -54,9 +54,12 @@ export class KycController {
   @Post('submissions')
   @HttpCode(202)
   @UseInterceptors(
-    FileFieldsInterceptor(KINDS.map((name) => ({ name, maxCount: 1 })), {
-      limits: { fileSize: MAX_UPLOAD_BYTES, files: 5, fields: 10, fieldSize: 1024, parts: 15 },
-    }),
+    FileFieldsInterceptor(
+      KINDS.map((name) => ({ name, maxCount: 1 })),
+      {
+        limits: { fileSize: MAX_UPLOAD_BYTES, files: 5, fields: 10, fieldSize: 1024, parts: 15 },
+      },
+    ),
   )
   submit(
     @Body() dto: KycSubmissionDto,
@@ -182,7 +185,10 @@ export class FilesController {
         res.status(416).set('Content-Range', `bytes */${size}`).end();
         return;
       }
-      res.status(206).set({ 'Content-Range': `bytes ${start}-${end}/${size}`, 'Content-Length': String(end - start + 1) }).end(bytes.subarray(start, end + 1));
+      res
+        .status(206)
+        .set({ 'Content-Range': `bytes ${start}-${end}/${size}`, 'Content-Length': String(end - start + 1) })
+        .end(bytes.subarray(start, end + 1));
       return;
     }
     res.status(200).end(bytes);

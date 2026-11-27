@@ -52,8 +52,16 @@ export function validDateOfBirth(value: string, today = new Date()): boolean {
 }
 
 /** Rejection reasons shown with their own guidance (FR-KYC-06); `blacklisted` reads as `other`. */
-export const REASONS = ['image_unreadable', 'selfie_mismatch', 'liveness_failed', 'document_expired', 'details_mismatch',
-  'underage', 'duplicate_identity', 'other'] as const;
+export const REASONS = [
+  'image_unreadable',
+  'selfie_mismatch',
+  'liveness_failed',
+  'document_expired',
+  'details_mismatch',
+  'underage',
+  'duplicate_identity',
+  'other',
+] as const;
 
 export function reasonKey(reason: string): string {
   return (REASONS as readonly string[]).includes(reason) ? reason : 'other';

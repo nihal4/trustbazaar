@@ -6,7 +6,7 @@ import { submitKyc, suite } from './setup';
 const s = suite();
 
 describe('SEC-ACC-05 masking in staff views', () => {
-  it('SEC-ACC-05 the queues and case files carry no member\'s phone number or e-mail address', async () => {
+  it("SEC-ACC-05 the queues and case files carry no member's phone number or e-mail address", async () => {
     const member = await s.signedIn({ kyc: 'unsubmitted' });
     await submitKyc(member.b);
     const op = await s.signedInStaff('operator');

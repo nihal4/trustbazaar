@@ -29,17 +29,43 @@ const THREAD_PAGE = 50;
 export const CHAT_EMAIL_WINDOW = '15 minutes';
 
 interface ThreadRow {
-  id: string; listing_id: string; buyer_id: string; seller_id: string; last_seq: string; last_message_at: Date | null; created_at: Date;
-  buyer_delivered_seq: string; buyer_read_seq: string; seller_delivered_seq: string; seller_read_seq: string; purged_at: Date | null;
+  id: string;
+  listing_id: string;
+  buyer_id: string;
+  seller_id: string;
+  last_seq: string;
+  last_message_at: Date | null;
+  created_at: Date;
+  buyer_delivered_seq: string;
+  buyer_read_seq: string;
+  seller_delivered_seq: string;
+  seller_read_seq: string;
+  purged_at: Date | null;
 }
 interface MessageRow {
-  id: string; seq: string; sender_id: string; client_msg_id: string; kind: 'text' | 'image'; body: string | null; image_key: string | null; flags: string[]; created_at: Date; purged_at: Date | null;
+  id: string;
+  seq: string;
+  sender_id: string;
+  client_msg_id: string;
+  kind: 'text' | 'image';
+  body: string | null;
+  image_key: string | null;
+  flags: string[];
+  created_at: Date;
+  purged_at: Date | null;
 }
 export interface MessageView {
   /** The sender's own client id, on the sender's own messages only: the client confirms its pending copy by it. */
   clientId: string | null;
-  seq: number; fromMe: boolean; kind: 'text' | 'image'; text: string | null; caption: string | null;
-  image: { url: string; expiresAt: string } | null; flags: string[]; at: string; removed: boolean;
+  seq: number;
+  fromMe: boolean;
+  kind: 'text' | 'image';
+  text: string | null;
+  caption: string | null;
+  image: { url: string; expiresAt: string } | null;
+  flags: string[];
+  at: string;
+  removed: boolean;
 }
 
 /** Maps the database's refusals of chat.post, chat.open_thread and chat.mark to problems. */
@@ -93,23 +119,25 @@ export class ChatService {
       after ? [userId, after.at, after.id] : [userId],
     )) as (ThreadRow & { cursor_at: string })[];
     const page = rows.slice(0, THREAD_PAGE);
-    const items = await Promise.all(page.map(async (t) => {
-      const buyer = t.buyer_id === userId;
-      const other = await this.identity.getPublicProfile(buyer ? t.seller_id : t.buyer_id).catch(() => null);
-      const listing = await this.listings.threadFacts(t.listing_id).catch(() => null);
-      const myRead = Number(buyer ? t.buyer_read_seq : t.seller_read_seq);
-      return {
-        id: t.id,
-        listing: { id: t.listing_id, title: listing?.title ?? null },
-        role: buyer ? 'buyer' : 'seller',
-        // the public id (as on a listing's seller and /users/{id}) is needed to block; never a phone or e-mail (FR-ACC-10)
-        other: other ? { id: other.id, displayName: other.displayName, verified: other.verified } : null,
-        lastSeq: Number(t.last_seq),
-        unread: Math.max(0, Number(t.last_seq) - myRead),
-        lastMessageAt: t.last_message_at?.toISOString() ?? null,
-        closed: t.purged_at !== null,
-      };
-    }));
+    const items = await Promise.all(
+      page.map(async (t) => {
+        const buyer = t.buyer_id === userId;
+        const other = await this.identity.getPublicProfile(buyer ? t.seller_id : t.buyer_id).catch(() => null);
+        const listing = await this.listings.threadFacts(t.listing_id).catch(() => null);
+        const myRead = Number(buyer ? t.buyer_read_seq : t.seller_read_seq);
+        return {
+          id: t.id,
+          listing: { id: t.listing_id, title: listing?.title ?? null },
+          role: buyer ? 'buyer' : 'seller',
+          // the public id (as on a listing's seller and /users/{id}) is needed to block; never a phone or e-mail (FR-ACC-10)
+          other: other ? { id: other.id, displayName: other.displayName, verified: other.verified } : null,
+          lastSeq: Number(t.last_seq),
+          unread: Math.max(0, Number(t.last_seq) - myRead),
+          lastMessageAt: t.last_message_at?.toISOString() ?? null,
+          closed: t.purged_at !== null,
+        };
+      }),
+    );
     const last = page[page.length - 1];
     return { items, nextCursor: rows.length > THREAD_PAGE && last ? encodeCursor(last.cursor_at, last.id) : null };
   }
@@ -156,9 +184,11 @@ export class ChatService {
     const text = caption?.normalize('NFC').trim() || null;
     if (text && text.length > MAX_CAPTION) throw new Problem('validation-failed', { errors: [{ field: 'caption', reason: 'too-long' }] });
     await this.participant(this.db.manager, threadId, userId); // before storing anything
-    const [repeat] = (await this.db.query(
-      `SELECT seq::text FROM chat.messages WHERE thread_id = $1 AND sender_id = $2 AND client_msg_id = $3`, [threadId, userId, clientId],
-    )) as { seq: string }[];
+    const [repeat] = (await this.db.query(`SELECT seq::text FROM chat.messages WHERE thread_id = $1 AND sender_id = $2 AND client_msg_id = $3`, [
+      threadId,
+      userId,
+      clientId,
+    ])) as { seq: string }[];
     if (repeat) return this.post(userId, threadId, clientId, 'image', text, null); // chat.post returns the original; nothing is stored again
     const stored = await this.vault.store({ purpose: 'chat_image', ownerId: userId, bytes });
     return this.post(userId, threadId, clientId, 'image', text, stored.key);
@@ -166,10 +196,16 @@ export class ChatService {
 
   private async post(userId: string, threadId: string, clientId: string, kind: 'text' | 'image', body: string | null, imageKey: string | null) {
     await this.limiter.consume('chat', `user:${userId}`); // CP-35, SEC-ABU-01
-    const [r] = (await this.db.query(
-      `SELECT message_id::text, seq::text, flags, duplicate FROM chat.post($1, $2, $3, $4::chat.message_kind, $5, $6)`,
-      [threadId, userId, clientId, kind, body, imageKey],
-    ).catch(fromChatDb)) as { message_id: string; seq: string; flags: string[]; duplicate: boolean }[];
+    const [r] = (await this.db
+      .query(`SELECT message_id::text, seq::text, flags, duplicate FROM chat.post($1, $2, $3, $4::chat.message_kind, $5, $6)`, [
+        threadId,
+        userId,
+        clientId,
+        kind,
+        body,
+        imageKey,
+      ])
+      .catch(fromChatDb)) as { message_id: string; seq: string; flags: string[]; duplicate: boolean }[];
     if (!r.duplicate) await this.delivered(threadId, userId, r.message_id);
     return { seq: Number(r.seq), flags: r.flags, duplicate: r.duplicate };
   }
@@ -179,7 +215,8 @@ export class ChatService {
     const t = await this.participant(this.db.manager, threadId, userId);
     await this.db.query(`SELECT chat.mark($1, $2, $3, $4)`, [threadId, userId, delivered, read]).catch(fromChatDb);
     const [after] = (await this.db.query(
-      `SELECT buyer_delivered_seq::text, buyer_read_seq::text, seller_delivered_seq::text, seller_read_seq::text FROM chat.threads WHERE id = $1`, [threadId],
+      `SELECT buyer_delivered_seq::text, buyer_read_seq::text, seller_delivered_seq::text, seller_read_seq::text FROM chat.threads WHERE id = $1`,
+      [threadId],
     )) as { buyer_delivered_seq: string; buyer_read_seq: string; seller_delivered_seq: string; seller_read_seq: string }[];
     const buyer = t.buyer_id === userId;
     this.emit(buyer ? t.seller_id : t.buyer_id, 'chat.marks', {
@@ -195,15 +232,33 @@ export class ChatService {
   private async delivered(threadId: string, senderId: string, messageId: string): Promise<void> {
     const [m] = (await this.db.query(
       `SELECT m.seq::text, m.client_msg_id, m.kind, m.body, m.flags, m.created_at, t.buyer_id, t.seller_id, t.listing_id
-         FROM chat.messages m JOIN chat.threads t ON t.id = m.thread_id WHERE m.id = $1`, [messageId],
-    )) as { seq: string; client_msg_id: string; kind: 'text' | 'image'; body: string | null; flags: string[]; created_at: Date; buyer_id: string; seller_id: string; listing_id: string }[];
+         FROM chat.messages m JOIN chat.threads t ON t.id = m.thread_id WHERE m.id = $1`,
+      [messageId],
+    )) as {
+      seq: string;
+      client_msg_id: string;
+      kind: 'text' | 'image';
+      body: string | null;
+      flags: string[];
+      created_at: Date;
+      buyer_id: string;
+      seller_id: string;
+      listing_id: string;
+    }[];
     const recipient = m.buyer_id === senderId ? m.seller_id : m.buyer_id;
     const message = (fromMe: boolean) => ({
       // the sender's tabs confirm their pending copy by its client id (docs/design/08_frontend.pdf section 5; Decisions log)
-      threadId, clientId: fromMe ? m.client_msg_id : null, seq: Number(m.seq), fromMe, kind: m.kind,
-      text: m.kind === 'text' ? m.body : null, caption: m.kind === 'image' ? m.body : null,
+      threadId,
+      clientId: fromMe ? m.client_msg_id : null,
+      seq: Number(m.seq),
+      fromMe,
+      kind: m.kind,
+      text: m.kind === 'text' ? m.body : null,
+      caption: m.kind === 'image' ? m.body : null,
       // an image's link belongs to one session (CP-31): the client fetches it with the messages (Decisions log, U6-02)
-      image: m.kind === 'image', flags: m.flags, at: m.created_at.toISOString(),
+      image: m.kind === 'image',
+      flags: m.flags,
+      at: m.created_at.toISOString(),
     });
     this.emit(senderId, 'chat.message', message(true));
     this.emit(recipient, 'chat.message', message(false));
@@ -220,16 +275,27 @@ export class ChatService {
    */
   private async notify(recipient: string, senderId: string, threadId: string, listingId: string, messageId: string): Promise<void> {
     const [sender, listing, online] = await Promise.all([
-      this.identity.getPublicProfile(senderId), this.listings.threadFacts(listingId), this.live.isConnected(recipient),
+      this.identity.getPublicProfile(senderId),
+      this.listings.threadFacts(listingId),
+      this.live.isConnected(recipient),
     ]);
     const id = await this.db.transaction(async (tx) => {
-      const nid = await this.notices.create(recipient, 'chat.message_received', { listing_title: listing.title, sender_name: sender.displayName },
-        `chat.message:${messageId}`, { type: 'thread', id: threadId }, tx);
+      const nid = await this.notices.create(
+        recipient,
+        'chat.message_received',
+        { listing_title: listing.title, sender_name: sender.displayName },
+        `chat.message:${messageId}`,
+        { type: 'thread', id: threadId },
+        tx,
+      );
       if (!nid) return null;
       const [{ allowed }] = online
         ? [{ allowed: false }]
-        : ((await tx.query(`SELECT notify.chat_email_allowed($1, $2, $3::interval) AS allowed`, [recipient, threadId, CHAT_EMAIL_WINDOW])) as { allowed: boolean }[]);
-      if (!allowed) await tx.query(`UPDATE notify.deliveries SET status = 'suppressed' WHERE notification_id = $1 AND channel = 'email' AND status = 'pending'`, [nid]);
+        : ((await tx.query(`SELECT notify.chat_email_allowed($1, $2, $3::interval) AS allowed`, [recipient, threadId, CHAT_EMAIL_WINDOW])) as {
+            allowed: boolean;
+          }[]);
+      if (!allowed)
+        await tx.query(`UPDATE notify.deliveries SET status = 'suppressed' WHERE notification_id = $1 AND channel = 'email' AND status = 'pending'`, [nid]);
       return nid;
     });
     if (id) await this.notices.push(recipient, id);
@@ -256,10 +322,16 @@ export class ChatService {
     const removed = m.purged_at !== null;
     const fromMe = m.sender_id === viewer.userId;
     return {
-      clientId: fromMe ? m.client_msg_id : null, seq: Number(m.seq), fromMe, kind: m.kind,
-      text: m.kind === 'text' ? m.body : null, caption: m.kind === 'image' ? m.body : null,
+      clientId: fromMe ? m.client_msg_id : null,
+      seq: Number(m.seq),
+      fromMe,
+      kind: m.kind,
+      text: m.kind === 'text' ? m.body : null,
+      caption: m.kind === 'image' ? m.body : null,
       image: m.kind === 'image' && m.image_key ? await this.vault.signedLink(m.image_key, viewer) : null,
-      flags: m.flags, at: m.created_at.toISOString(), removed,
+      flags: m.flags,
+      at: m.created_at.toISOString(),
+      removed,
     };
   }
 }

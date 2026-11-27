@@ -29,9 +29,15 @@ function setup(rows: Record<string, unknown>[], answer: (sql: string) => unknown
 }
 
 describe('GameJobsService', () => {
-  it('FR-GAM-15 the window-end job completes due takeovers at the window\'s end, records Unit 2\'s delivery event and tells both parties', async () => {
+  it("FR-GAM-15 the window-end job completes due takeovers at the window's end, records Unit 2's delivery event and tells both parties", async () => {
     let n = 0;
-    const s = setup([{ order_id: 'O1', buyer_id: 'B1' }, { order_id: 'O2', buyer_id: 'B2' }], (q) => (q.includes('complete_if_due') ? [{ at: n++ === 0 ? T : null }] : [])); // O2: confirmed meanwhile
+    const s = setup(
+      [
+        { order_id: 'O1', buyer_id: 'B1' },
+        { order_id: 'O2', buyer_id: 'B2' },
+      ],
+      (q) => (q.includes('complete_if_due') ? [{ at: n++ === 0 ? T : null }] : []),
+    ); // O2: confirmed meanwhile
     expect(await s.svc.completeDueTakeovers()).toBe(1);
     expect(s.orders.lockForFulfilment.mock.calls.map((c) => (c as unknown[])[0])).toEqual(['O1', 'O2']);
     expect(s.escrow.recordDeliveryEvent).toHaveBeenCalledWith('O1', 'game_takeover', T, expect.anything());
@@ -42,13 +48,24 @@ describe('GameJobsService', () => {
     const s = setup([{ order_id: 'O1' }, { order_id: 'O2' }], () => [{ moved: true }]);
     expect(await s.svc.disputeOverdueRekeys()).toBe(2);
     expect(s.disputes.open.mock.calls.map((c) => (c as unknown[])[0])).toEqual([
-      expect.objectContaining({ orderId: 'O1', type: 'credentials_invalid', by: 'system' }), expect.objectContaining({ orderId: 'O2' }),
+      expect.objectContaining({ orderId: 'O1', type: 'credentials_invalid', by: 'system' }),
+      expect.objectContaining({ orderId: 'O2' }),
     ]);
-    const off = setup([{ order_id: 'O1' }], () => [{ moved: true }], { dispute: async () => { throw new Problem('feature-off'); } });
+    const off = setup([{ order_id: 'O1' }], () => [{ moved: true }], {
+      dispute: async () => {
+        throw new Problem('feature-off');
+      },
+    });
     expect(await off.svc.disputeOverdueRekeys()).toBe(0);
     expect(off.sqls).toContain('ROLLBACK TO SAVEPOINT');
     expect(await setup([{ order_id: 'O1' }], () => [{ moved: false }]).svc.disputeOverdueRekeys()).toBe(0); // answered meanwhile
-    await expect(setup([{ order_id: 'O1' }], () => [{ moved: true }], { dispute: async () => { throw new Error('down'); } }).svc.disputeOverdueRekeys()).rejects.toThrow('down');
+    await expect(
+      setup([{ order_id: 'O1' }], () => [{ moved: true }], {
+        dispute: async () => {
+          throw new Error('down');
+        },
+      }).svc.disputeOverdueRekeys(),
+    ).rejects.toThrow('down');
   });
 
   it('DV-33 I-63 DV-39 codes past their validity expire; retention purges and erases the screenshot files', async () => {
@@ -64,7 +81,10 @@ describe('GameJobsService', () => {
     const svc = { completeDueTakeovers: jest.fn(), disputeOverdueRekeys: jest.fn(), expireCodes: jest.fn(), purge: jest.fn() };
     new GameJobs({ register } as never, svc as never).onModuleInit();
     expect(register.mock.calls.map(([j]) => [(j as { name: string }).name, (j as { intervalMs: number }).intervalMs])).toEqual([
-      ['game_accounts.takeover_window_end', 60_000], ['game_accounts.rekey_overdue', 300_000], ['game_accounts.proof_expiry', 3_600_000], ['game_accounts.retention', 86_400_000],
+      ['game_accounts.takeover_window_end', 60_000],
+      ['game_accounts.rekey_overdue', 300_000],
+      ['game_accounts.proof_expiry', 3_600_000],
+      ['game_accounts.retention', 86_400_000],
     ]);
     for (const [j] of register.mock.calls) (j as { run: () => void }).run();
     expect([svc.completeDueTakeovers, svc.disputeOverdueRekeys, svc.expireCodes, svc.purge].every((f) => f.mock.calls.length === 1)).toBe(true);

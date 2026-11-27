@@ -3,7 +3,7 @@ import { cookiesFor, STAFF_COOKIES, USER_COOKIES } from './cookies';
 // I-51 and SEC-SES-04: staff sessions use their own cookies, also at the staff sign-in, which is a public route: a member who is signed in
 // in the same browser must not have the member's session or CSRF token read there (it made the staff sign-in answer "not allowed").
 describe('the cookies of a route', () => {
-  it('I-51 a staff route uses the staff cookies, a member route the member\'s', () => {
+  it("I-51 a staff route uses the staff cookies, a member route the member's", () => {
     expect(cookiesFor({ kind: 'staff' } as never, '/api/v1/staff/me')).toBe(STAFF_COOKIES);
     expect(cookiesFor({ kind: 'user' } as never, '/api/v1/me')).toBe(USER_COOKIES);
   });

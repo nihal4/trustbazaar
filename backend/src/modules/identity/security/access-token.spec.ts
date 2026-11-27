@@ -4,10 +4,17 @@ import { accessTokenStatus, signAccessToken, verifyAccessToken } from './access-
 import { cookieValue } from './live-auth';
 
 const base = {
-  DATABASE_URL: 'postgres://u:p@h/db', REDIS_URL: 'redis://h:6379/0',
-  JWT_KEY_V1: 'k'.repeat(32), FIELD_KEY_V1: 'f'.repeat(32), KYC_KEK_V1: 'q'.repeat(32), BIDX_KEY: 'b'.repeat(32),
-  CSRF_KEY: 'c'.repeat(32), LINK_KEY: 'l'.repeat(32), OTP_PEPPER: 'o'.repeat(32),
-  CALLBACK_STATE_KEY: 's'.repeat(32), HANDOVER_KEY: 'h'.repeat(32),
+  DATABASE_URL: 'postgres://u:p@h/db',
+  REDIS_URL: 'redis://h:6379/0',
+  JWT_KEY_V1: 'k'.repeat(32),
+  FIELD_KEY_V1: 'f'.repeat(32),
+  KYC_KEK_V1: 'q'.repeat(32),
+  BIDX_KEY: 'b'.repeat(32),
+  CSRF_KEY: 'c'.repeat(32),
+  LINK_KEY: 'l'.repeat(32),
+  OTP_PEPPER: 'o'.repeat(32),
+  CALLBACK_STATE_KEY: 's'.repeat(32),
+  HANDOVER_KEY: 'h'.repeat(32),
 };
 const keys = loadConfig(base).keys.jwt;
 const now = new Date('2026-11-01T00:00:00Z');
@@ -57,7 +64,9 @@ describe('access token', () => {
     expect(accessTokenStatus(keys, t, now)).toEqual({ ...claims, iat: sec, exp: sec + 900 });
     expect(accessTokenStatus(keys, t, new Date(now.getTime() + 901_000))).toBe('expired');
     expect(accessTokenStatus(keys, `${t.slice(0, -4)}AAAA`, new Date(now.getTime() + 901_000))).toBe('invalid');
-    expect(accessTokenStatus(keys, sign({ sid: claims.sid, pt: 'user' }, 'k'.repeat(32), { algorithm: 'HS512', keyid: 'v1', subject: claims.sub }), now)).toBe('invalid');
+    expect(accessTokenStatus(keys, sign({ sid: claims.sid, pt: 'user' }, 'k'.repeat(32), { algorithm: 'HS512', keyid: 'v1', subject: claims.sub }), now)).toBe(
+      'invalid',
+    );
     expect(accessTokenStatus(keys, 'nonsense', now)).toBe('invalid');
   });
 

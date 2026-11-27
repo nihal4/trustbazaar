@@ -16,7 +16,15 @@ export type Channel = (typeof CHANNEL)[number];
 export const DELIVERY_STATUS = ['pending', 'sent', 'failed', 'suppressed'] as const;
 export type DeliveryStatus = (typeof DELIVERY_STATUS)[number];
 
-export const REMINDER_KIND = ['payment_window', 'meetup_handover', 'courier_pickup', 'credential_delivery', 'takeover_window', 'dispute_window', 'protection_period'] as const;
+export const REMINDER_KIND = [
+  'payment_window',
+  'meetup_handover',
+  'courier_pickup',
+  'credential_delivery',
+  'takeover_window',
+  'dispute_window',
+  'protection_period',
+] as const;
 export type ReminderKind = (typeof REMINDER_KIND)[number];
 
 export const REMINDER_STATUS = ['scheduled', 'sent', 'cancelled'] as const;

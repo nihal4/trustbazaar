@@ -4,7 +4,9 @@
 import { checkProviderRedirect } from '../lib/redirect.js';
 
 export const PROVIDER_HOSTS: string[] = (import.meta.env.VITE_PAYMENT_HOSTS ?? '')
-  .split(',').map((h) => h.trim().toLowerCase()).filter(Boolean);
+  .split(',')
+  .map((h) => h.trim().toLowerCase())
+  .filter(Boolean);
 
 /** The provider page to open, or null when it must not be followed. */
 export function providerPage(target: string, hosts = PROVIDER_HOSTS, origin = window.location.origin): string | null {

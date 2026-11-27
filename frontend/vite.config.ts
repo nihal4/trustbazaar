@@ -11,7 +11,9 @@ const backend = process.env.VITE_BACKEND ?? 'http://localhost:3000';
 // (/account/kyc/* is kyc.html, /secure/* is secure.html, /staff/* and /admin/* are staff.html); a page load of those paths is answered with the document.
 const documentRoutes = {
   name: 'tb-document-routes',
-  configureServer(server: { middlewares: { use: (fn: (req: { url?: string; headers: Record<string, string | undefined> }, res: unknown, next: () => void) => void) => void } }) {
+  configureServer(server: {
+    middlewares: { use: (fn: (req: { url?: string; headers: Record<string, string | undefined> }, res: unknown, next: () => void) => void) => void };
+  }) {
     server.middlewares.use((req, _res, next) => {
       const path = (req.url ?? '').split('?')[0];
       const page = req.headers.accept?.includes('text/html');

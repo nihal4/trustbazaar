@@ -19,5 +19,5 @@ describe('SEC-SDL-08 dynamic scan', () => {
     expect(security).toMatch(/zap:\s*\{\s*description:/);
   });
 
-  it.todo('SEC-SDL-08 the findings of the release candidate\'s scan are triaged in the repository (U9-04)');
+  it.todo("SEC-SDL-08 the findings of the release candidate's scan are triaged in the repository (U9-04)");
 });

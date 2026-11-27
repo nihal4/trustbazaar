@@ -10,9 +10,26 @@ import { AUDIT_SERVICE, AuditServicePort } from '../../identity/ports';
 // locations to a 0.02 degree grid before taking the midpoint (DV-27), and the API returns only the points.
 
 export type PointKind = 'police_station' | 'shopping_mall' | 'bank_branch' | 'other_public';
-export interface PointInput { kind: PointKind; nameEn: string; nameBn: string; district: string; lat: number; lng: number; guidance?: string | null; active?: boolean }
+export interface PointInput {
+  kind: PointKind;
+  nameEn: string;
+  nameBn: string;
+  district: string;
+  lat: number;
+  lng: number;
+  guidance?: string | null;
+  active?: boolean;
+}
 export interface PointView {
-  id: string; kind: PointKind; nameEn: string; nameBn: string; district: string; lat: number; lng: number; guidance: string | null; active: boolean;
+  id: string;
+  kind: PointKind;
+  nameEn: string;
+  nameBn: string;
+  district: string;
+  lat: number;
+  lng: number;
+  guidance: string | null;
+  active: boolean;
   /** "open in maps", built from the public coordinates only */
   mapUrl: string;
 }
@@ -21,13 +38,34 @@ export interface PointView {
 export const SUGGESTIONS = 3;
 export const GRID_DEGREES = 0.02;
 
-interface Row { id: string; kind: PointKind; name_en: string; name_bn: string; district: string; lat: string; lng: string; guidance: string | null; active: boolean }
+interface Row {
+  id: string;
+  kind: PointKind;
+  name_en: string;
+  name_bn: string;
+  district: string;
+  lat: string;
+  lng: string;
+  guidance: string | null;
+  active: boolean;
+}
 const COLUMNS = `id, kind, name_en, name_bn, district, lat::text, lng::text, guidance, active`;
 export const mapUrl = (lat: number, lng: number) => `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=18/${lat}/${lng}`;
 export const pointView = (r: Row): PointView => {
   const lat = Number(r.lat);
   const lng = Number(r.lng);
-  return { id: r.id, kind: r.kind, nameEn: r.name_en, nameBn: r.name_bn, district: r.district, lat, lng, guidance: r.guidance, active: r.active, mapUrl: mapUrl(lat, lng) };
+  return {
+    id: r.id,
+    kind: r.kind,
+    nameEn: r.name_en,
+    nameBn: r.name_bn,
+    district: r.district,
+    lat,
+    lng,
+    guidance: r.guidance,
+    active: r.active,
+    mapUrl: mapUrl(lat, lng),
+  };
 };
 
 @Injectable()
@@ -46,7 +84,9 @@ export class MeetupPointsService {
   /** The DV-27 nearest active points to the snapped midpoint of two locations (FR-DLV-03). */
   async suggest(a: { lat: number; lng: number }, b: { lat: number; lng: number }): Promise<PointView[]> {
     const rows = (await this.db.query(
-      `SELECT ${COLUMNS.split(', ').map((c) => `p.${c}`).join(', ')} FROM delivery.suggest_points($1, $2, $3, $4, $5, $6) s
+      `SELECT ${COLUMNS.split(', ')
+        .map((c) => `p.${c}`)
+        .join(', ')} FROM delivery.suggest_points($1, $2, $3, $4, $5, $6) s
          JOIN delivery.meetup_points p ON p.id = s.point_id ORDER BY s.km_from_midpoint, p.id`,
       [a.lat, a.lng, b.lat, b.lng, SUGGESTIONS, GRID_DEGREES],
     )) as Row[];
@@ -66,7 +106,10 @@ export class MeetupPointsService {
          VALUES ($1, $2, $3, $4, round($5::numeric, 5), round($6::numeric, 5), $7, $8, $9) RETURNING ${COLUMNS}`,
         [p.kind, p.nameEn.trim(), p.nameBn.trim(), p.district.trim(), p.lat, p.lng, p.guidance?.trim() || null, p.active ?? true, staffId],
       )) as Row[];
-      await this.audit.record({ actorType: 'staff', actorId: staffId, action: 'delivery.meetup_point.added', objectType: 'meetup_point', objectId: r.id, after: { ...pointView(r) } }, m);
+      await this.audit.record(
+        { actorType: 'staff', actorId: staffId, action: 'delivery.meetup_point.added', objectType: 'meetup_point', objectId: r.id, after: { ...pointView(r) } },
+        m,
+      );
       return pointView(r);
     });
   }
@@ -81,14 +124,32 @@ export class MeetupPointsService {
                 district = coalesce($5, district), lat = coalesce(round($6::numeric, 5), lat), lng = coalesce(round($7::numeric, 5), lng),
                 guidance = CASE WHEN $8::boolean THEN $9 ELSE guidance END, active = coalesce($10, active)
           WHERE id = $1 RETURNING ${COLUMNS}`,
-        [id, p.kind ?? null, p.nameEn?.trim() ?? null, p.nameBn?.trim() ?? null, p.district?.trim() ?? null, p.lat ?? null, p.lng ?? null,
-         p.guidance !== undefined, p.guidance?.trim() || null, p.active ?? null],
+        [
+          id,
+          p.kind ?? null,
+          p.nameEn?.trim() ?? null,
+          p.nameBn?.trim() ?? null,
+          p.district?.trim() ?? null,
+          p.lat ?? null,
+          p.lng ?? null,
+          p.guidance !== undefined,
+          p.guidance?.trim() || null,
+          p.active ?? null,
+        ],
       )) as unknown[];
       const [r] = (Array.isArray(res[0]) ? res[0] : res) as Row[];
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: 'delivery.meetup_point.changed', objectType: 'meetup_point', objectId: id,
-        before: { ...pointView(before) }, after: { ...pointView(r) },
-      }, m);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: 'delivery.meetup_point.changed',
+          objectType: 'meetup_point',
+          objectId: id,
+          before: { ...pointView(before) },
+          after: { ...pointView(r) },
+        },
+        m,
+      );
       return pointView(r);
     });
   }

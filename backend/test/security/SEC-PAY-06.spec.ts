@@ -5,7 +5,7 @@ import { pendingOrder, problem, suite } from './setup';
 const s = suite();
 
 describe('SEC-PAY-06 server-side amounts', () => {
-  it('SEC-PAY-06 a payment started with an amount, a currency or another order\'s reference in the body is refused', async () => {
+  it("SEC-PAY-06 a payment started with an amount, a currency or another order's reference in the body is refused", async () => {
     const o = await pendingOrder(s);
     for (const extra of [{ amount: '100' }, { currency: 'USD' }, { orderId: '00000000-0000-4000-8000-000000000000' }, { total: '1' }]) {
       const p = await problem(await o.buyer.b.post(`/orders/${o.orderId}/payments`, { provider: 'bkash', ...extra }));
@@ -17,7 +17,11 @@ describe('SEC-PAY-06 server-side amounts', () => {
   it('SEC-PAY-06 the attempt, the provider page and the ledger use the order total the server worked out', async () => {
     const o = await pendingOrder(s, 1_234_500);
     expect(o.total).toBe('1234500');
-    const a = (await (await o.buyer.b.post(`/orders/${o.orderId}/payments`, { provider: 'nagad' })).json()) as { attemptId: string; amount: string; redirectUrl: string };
+    const a = (await (await o.buyer.b.post(`/orders/${o.orderId}/payments`, { provider: 'nagad' })).json()) as {
+      attemptId: string;
+      amount: string;
+      redirectUrl: string;
+    };
     expect(a.amount).toBe('1234500');
     const [row] = await s.fx.query(`SELECT amount, order_id FROM payments.attempts WHERE id = $1`, [a.attemptId]);
     expect(row).toEqual({ amount: '1234500', order_id: o.orderId });

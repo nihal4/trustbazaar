@@ -99,8 +99,15 @@ export class RegistrationService {
     const registrationId = randomUUID();
     const until = now.getTime() + cp05.otpValidityMinutes * 60_000;
     const pending: Pending = {
-      email, displayName, passwordHash, codeHash: existing ? null : hashOtp(this.pepper, code).toString('hex'),
-      attempts: 0, sends: 1, verified: false, until, ip: ctx.ip ?? null,
+      email,
+      displayName,
+      passwordHash,
+      codeHash: existing ? null : hashOtp(this.pepper, code).toString('hex'),
+      attempts: 0,
+      sends: 1,
+      verified: false,
+      until,
+      ip: ctx.ip ?? null,
     };
     await this.redis.set(PENDING_PREFIX + registrationId, JSON.stringify(pending), 'PX', until - now.getTime());
 
@@ -175,7 +182,10 @@ export class RegistrationService {
     let userId: string | null = null;
     try {
       userId = await this.db.transaction(async (m) => {
-        const [taken] = await m.query(`SELECT 1 FROM identity.users WHERE (phone_e164 = $1 OR email = $2) AND account_status <> 'closed' LIMIT 1`, [phone, p.email]);
+        const [taken] = await m.query(`SELECT 1 FROM identity.users WHERE (phone_e164 = $1 OR email = $2) AND account_status <> 'closed' LIMIT 1`, [
+          phone,
+          p.email,
+        ]);
         if (taken) return null;
         return this.createAccount(m, p, phone, input, ctx, now);
       });
@@ -203,18 +213,23 @@ export class RegistrationService {
     );
     await publish(m, 'identity.user.registered', userId, { userId });
     await this.audit.record(m, {
-      actorType: 'user', actorId: userId, action: 'identity.account.registered', objectType: 'user', objectId: userId,
-      sourceIp: ctx.ip, correlationId: ctx.correlationId,
+      actorType: 'user',
+      actorId: userId,
+      action: 'identity.account.registered',
+      objectType: 'user',
+      objectId: userId,
+      sourceIp: ctx.ip,
+      correlationId: ctx.correlationId,
     });
     return userId as string;
   }
 
   /** SEC-AUTH-06: the owner of the number or e-mail is told that someone tried to register with it. */
   private async tellOwners(phone: string, email: string): Promise<void> {
-    const owners = await this.db.query(
-      `SELECT phone_e164, email FROM identity.users WHERE (phone_e164 = $1 OR email = $2) AND account_status <> 'closed'`,
-      [phone, email],
-    );
+    const owners = await this.db.query(`SELECT phone_e164, email FROM identity.users WHERE (phone_e164 = $1 OR email = $2) AND account_status <> 'closed'`, [
+      phone,
+      email,
+    ]);
     for (const o of owners) {
       if (String(o.email).toLowerCase() === email.toLowerCase()) await this.notify.sendEmail(o.email, 'register_attempt_existing_email', {});
       else await this.notify.sendSms(o.phone_e164, 'register_attempt_existing_number', {});

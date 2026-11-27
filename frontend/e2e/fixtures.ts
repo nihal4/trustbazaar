@@ -45,7 +45,7 @@ export function totp(secret: string, at = Date.now()): string {
 export async function signInMember(page: Page, who: { local: string; password: string }) {
   await page.goto('/signin');
   await page.getByLabel('Mobile number or e-mail').fill(who.local);
-  await page.getByRole('button', { name: 'Continue' }).click();                 // the password is asked after the number or e-mail (U10-25)
+  await page.getByRole('button', { name: 'Continue' }).click(); // the password is asked after the number or e-mail (U10-25)
   await page.getByLabel('Password', { exact: true }).fill(who.password);
   await page.getByRole('button', { name: 'Sign in' }).click();
   await page.waitForURL((u) => !u.pathname.startsWith('/signin'));
@@ -62,7 +62,10 @@ export async function signInStaff(page: Page, who: { email: string; password: st
     await page.getByRole('button', { name: 'Sign in' }).click();
     const left = await Promise.race([
       page.waitForURL((u) => !u.pathname.startsWith('/staff/signin')).then(() => true),
-      page.getByRole('alert').waitFor().then(() => false),
+      page
+        .getByRole('alert')
+        .waitFor()
+        .then(() => false),
     ]);
     if (left) return;
     if (attempt === 1) throw new Error('the staff sign-in refused two authenticator codes');
@@ -99,22 +102,32 @@ function png(w: number, h: number, n: number): Buffer {
     raw[y * (w * 3 + 1)] = 0;
     for (let x = 0; x < w; x++) {
       const o = y * (w * 3 + 1) + 1 + x * 3;
-      raw[o] = (x * 255 / w + n * 60) & 255; raw[o + 1] = (y * 255 / h) & 255; raw[o + 2] = ((x + y) * 3 + n * 90) & 255;
+      raw[o] = ((x * 255) / w + n * 60) & 255;
+      raw[o + 1] = ((y * 255) / h) & 255;
+      raw[o + 2] = ((x + y) * 3 + n * 90) & 255;
     }
   }
   const chunk = (type: string, data: Buffer) => {
-    const len = Buffer.alloc(4); len.writeUInt32BE(data.length);
+    const len = Buffer.alloc(4);
+    len.writeUInt32BE(data.length);
     const body = Buffer.concat([Buffer.from(type), data]);
-    const crc = Buffer.alloc(4); crc.writeUInt32BE(crc32(body));
+    const crc = Buffer.alloc(4);
+    crc.writeUInt32BE(crc32(body));
     return Buffer.concat([len, body, crc]);
   };
   const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = 2;
+  ihdr.writeUInt32BE(w, 0);
+  ihdr.writeUInt32BE(h, 4);
+  ihdr[8] = 8;
+  ihdr[9] = 2;
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
 }
 
 function crc32(b: Buffer): number {
   let c = ~0;
-  for (const byte of b) { c ^= byte; for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (0xedb88320 & -(c & 1)); }
+  for (const byte of b) {
+    c ^= byte;
+    for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (0xedb88320 & -(c & 1));
+  }
   return ~c >>> 0;
 }

@@ -7,7 +7,10 @@ const s = suite();
 const withGps = () =>
   sharp({ create: { width: 1200, height: 900, channels: 3, background: '#7a7' } })
     .jpeg()
-    .withExif({ IFD0: { Copyright: 'home', Artist: 'Me' }, IFD3: { GPSLatitudeRef: 'N', GPSLatitude: '23/1 48/1 0/1', GPSLongitudeRef: 'E', GPSLongitude: '90/1 24/1 0/1' } })
+    .withExif({
+      IFD0: { Copyright: 'home', Artist: 'Me' },
+      IFD3: { GPSLatitudeRef: 'N', GPSLatitude: '23/1 48/1 0/1', GPSLongitudeRef: 'E', GPSLongitude: '90/1 24/1 0/1' },
+    })
     .toBuffer();
 const metaOf = async (r: Response) => sharp(Buffer.from(await r.arrayBuffer())).metadata();
 
@@ -36,7 +39,14 @@ describe('SEC-DAT-08 image metadata', () => {
     const owner = await s.signedIn({ kyc: 'unsubmitted' });
     const challenge = (await (await owner.b.get('/kyc/liveness-challenge')).json()) as { challengeId: string };
     const form = new FormData();
-    for (const [k, v] of Object.entries({ docType: 'nid', docNumber: String(Date.now()).slice(-10), fullName: 'Exif Person', dateOfBirth: '1995-04-12', challengeId: challenge.challengeId })) form.set(k, v);
+    for (const [k, v] of Object.entries({
+      docType: 'nid',
+      docNumber: String(Date.now()).slice(-10),
+      fullName: 'Exif Person',
+      dateOfBirth: '1995-04-12',
+      challengeId: challenge.challengeId,
+    }))
+      form.set(k, v);
     form.set('doc_front', new Blob([new Uint8Array(await withGps())], { type: 'image/jpeg' }), 'f.jpg');
     for (const k of ['doc_back', 'selfie_neutral', 'selfie_action']) form.set(k, new Blob([new Uint8Array(await image())], { type: 'image/jpeg' }), `${k}.jpg`);
     expect((await owner.b.upload('/kyc/submissions', form)).status).toBe(202);

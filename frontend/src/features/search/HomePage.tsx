@@ -38,7 +38,10 @@ export function Component() {
   const theme = 'dark' as const;
   const heroRef = useRef<HTMLElement>(null);
   const [tick, setTick] = useState(0);
-  useEffect(() => { const id = window.setInterval(() => setTick((n) => n + 1), 1000); return () => window.clearInterval(id); }, []);
+  useEffect(() => {
+    const id = window.setInterval(() => setTick((n) => n + 1), 1000);
+    return () => window.clearInterval(id);
+  }, []);
   const left = Math.max(0, 2 * 3600 + 14 * 60 + 9 - tick);
   const clock = [Math.floor(left / 3600), Math.floor(left / 60) % 60, left % 60].map((n) => String(n).padStart(2, '0')).join(':');
 
@@ -78,32 +81,66 @@ export function Component() {
           <h1 className={styles.title}>{t('home.title')}</h1>
           <p className={styles.lede}>{t('home.promise.text')}</p>
           <form role="search" aria-label={t('home.search_placeholder')} className={styles.search} onSubmit={search}>
-            <label htmlFor="home-q" className={styles.visuallyHidden}>{t('home.search_label')}</label>
+            <label htmlFor="home-q" className={styles.visuallyHidden}>
+              {t('home.search_label')}
+            </label>
             <svg className={styles.searchIcon} viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
               <path d="M11 4 a7 7 0 1 0 0.01 0 Z M16.5 16.5 L21 21" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
-            <input id="home-q" type="search" maxLength={100} value={words} placeholder={t('home.search_placeholder')} onChange={(e) => setWords(e.target.value)} />
+            <input
+              id="home-q"
+              type="search"
+              maxLength={100}
+              value={words}
+              placeholder={t('home.search_placeholder')}
+              onChange={(e) => setWords(e.target.value)}
+            />
             <button type="submit">{t('search.submit')}</button>
           </form>
-          <p className={styles.proof}>{t('home.promise.id')}. {t('home.promise.pay')}.</p>
+          <p className={styles.proof}>
+            {t('home.promise.id')}. {t('home.promise.pay')}.
+          </p>
         </div>
         <div className={styles.art} aria-hidden="true">
           <div className={styles.window}>
             <div className={styles.winPhoto}>
               <span className={styles.exampleTag}>{t('home.demo.example')}</span>
               <div className={styles.card}>
-                <span className={styles.cardTick}><Check /></span>
-                <span><strong>{t('home.demo.held')}</strong>{t('home.demo.held_text')}</span>
+                <span className={styles.cardTick}>
+                  <Check />
+                </span>
+                <span>
+                  <strong>{t('home.demo.held')}</strong>
+                  {t('home.demo.held_text')}
+                </span>
               </div>
-              <img src="/img/photo-f152917755-960.jpg" srcSet="/img/photo-f152917755-500.jpg 500w, /img/photo-f152917755-960.jpg 960w" sizes="(max-width: 47.99em) 90vw, 40vw" width="960" height="640" alt="" loading="eager" decoding="async" data-source="stand-in" data-subject="smartphone in its box" />
+              <img
+                src="/img/photo-f152917755-960.jpg"
+                srcSet="/img/photo-f152917755-500.jpg 500w, /img/photo-f152917755-960.jpg 960w"
+                sizes="(max-width: 47.99em) 90vw, 40vw"
+                width="960"
+                height="640"
+                alt=""
+                loading="eager"
+                decoding="async"
+                data-source="stand-in"
+                data-subject="smartphone in its box"
+              />
             </div>
             <div className={styles.winBody}>
               <p className={styles.winTitle}>{t('home.demo.title')}</p>
               <p className={styles.winWhere}>{t('home.demo.where')}</p>
-              <p className={styles.winClock}><i />{t('home.safe.ends')} <b>{toLocalDigits(clock, lang)}</b></p>
+              <p className={styles.winClock}>
+                <i />
+                {t('home.safe.ends')} <b>{toLocalDigits(clock, lang)}</b>
+              </p>
               <p className={styles.winPrice}>{formatMoney('8500000', lang)}</p>
               <span className={styles.winBtn}>{t('home.demo.buy')}</span>
-              <EscrowSteps current="held" labels={[t('home.counterfoil.in'), t('home.counterfoil.held'), t('home.counterfoil.out')]} classes={{ list: styles.winSteps, done: styles.winDone, current: styles.winNow }} />
+              <EscrowSteps
+                current="held"
+                labels={[t('home.counterfoil.in'), t('home.counterfoil.held'), t('home.counterfoil.out')]}
+                classes={{ list: styles.winSteps, done: styles.winDone, current: styles.winNow }}
+              />
             </div>
           </div>
         </div>
@@ -112,8 +149,18 @@ export function Component() {
       {top.length > 0 && (
         <nav aria-label={t('home.categories')}>
           <ul className={styles.cats}>
-            <li><Link className={`${styles.cat} ${styles.catAll}`} to="/search">{t('home.all')}</Link></li>
-            {top.map((c) => <li key={c.id}><Link className={styles.cat} to={`/search?category=${c.id}`}>{lang === 'bn' ? c.nameBn : c.nameEn}</Link></li>)}
+            <li>
+              <Link className={`${styles.cat} ${styles.catAll}`} to="/search">
+                {t('home.all')}
+              </Link>
+            </li>
+            {top.map((c) => (
+              <li key={c.id}>
+                <Link className={styles.cat} to={`/search?category=${c.id}`}>
+                  {lang === 'bn' ? c.nameBn : c.nameEn}
+                </Link>
+              </li>
+            ))}
           </ul>
         </nav>
       )}
@@ -124,36 +171,79 @@ export function Component() {
 
       {ending.length > 0 && (
         <section aria-labelledby="home-auctions" className={styles.section}>
-          <div className={styles.head}><h2 id="home-auctions">{t('home.auctions')}</h2><Link to="/search?saleFormat=auction&sort=ending_soon"><span>{t('home.auctions_all')}</span><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false"><path d="M4 10h11 M11 5l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></Link></div>
-          <ul className={styles.rail}>{ending.map((c) => <ListingCard key={c.id} c={c} t={t} lang={lang} />)}</ul>
+          <div className={styles.head}>
+            <h2 id="home-auctions">{t('home.auctions')}</h2>
+            <Link to="/search?saleFormat=auction&sort=ending_soon">
+              <span>{t('home.auctions_all')}</span>
+              <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">
+                <path d="M4 10h11 M11 5l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Link>
+          </div>
+          <ul className={styles.rail}>
+            {ending.map((c) => (
+              <ListingCard key={c.id} c={c} t={t} lang={lang} />
+            ))}
+          </ul>
         </section>
       )}
 
       {featured.length > 0 && (
         <section aria-labelledby="home-featured" className={styles.section}>
-          <div className={styles.head}><h2 id="home-featured">{t('search.featured')}</h2></div>
+          <div className={styles.head}>
+            <h2 id="home-featured">{t('search.featured')}</h2>
+          </div>
           <p className={styles.note}>{t('search.featured_note')}</p>
-          <ul className={styles.grid}>{featured.map((c) => <ListingCard key={c.id} c={c} t={t} lang={lang} />)}</ul>
+          <ul className={styles.grid}>
+            {featured.map((c) => (
+              <ListingCard key={c.id} c={c} t={t} lang={lang} />
+            ))}
+          </ul>
         </section>
       )}
 
       <section aria-labelledby="home-newest" className={styles.section}>
-        <div className={styles.head}><h2 id="home-newest">{t('home.newest')}</h2><Link to="/search?sort=newest"><span>{t('home.newest_all')}</span><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false"><path d="M4 10h11 M11 5l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></Link></div>
+        <div className={styles.head}>
+          <h2 id="home-newest">{t('home.newest')}</h2>
+          <Link to="/search?sort=newest">
+            <span>{t('home.newest_all')}</span>
+            <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">
+              <path d="M4 10h11 M11 5l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </Link>
+        </div>
         {newest.isPending && <p role="status">{t('shell.loading')}</p>}
         {newest.isError && <FormMessage kind="error">{errorText(newest.error, t, lang)}</FormMessage>}
-        {newest.data && (newest.data.items.length === 0
-          ? <p>{t('search.empty')}</p>
-          : <ul className={styles.grid}>{(newest.data.items.length >= 4 ? newest.data.items.slice(0, Math.floor(newest.data.items.length / 4) * 4) : newest.data.items).map((c) => <ListingCard key={c.id} c={c} t={t} lang={lang} />)}</ul>)}
+        {newest.data &&
+          (newest.data.items.length === 0 ? (
+            <p>{t('search.empty')}</p>
+          ) : (
+            <ul className={styles.grid}>
+              {(newest.data.items.length >= 4 ? newest.data.items.slice(0, Math.floor(newest.data.items.length / 4) * 4) : newest.data.items).map((c) => (
+                <ListingCard key={c.id} c={c} t={t} lang={lang} />
+              ))}
+            </ul>
+          ))}
       </section>
 
       <section aria-labelledby="home-sell" className={styles.sell}>
         <h2 id="home-sell">{t('home.sell.title')}</h2>
         <ol className={styles.steps}>
           {([1, 2, 3] as const).map((n) => (
-            <li key={n}><span className={styles.num} aria-hidden="true">{toLocalDigits(String(n), lang)}</span><span><strong>{t(`home.sell.step${n}`)}</strong>{t(`home.sell.step${n}_text`)}</span></li>
+            <li key={n}>
+              <span className={styles.num} aria-hidden="true">
+                {toLocalDigits(String(n), lang)}
+              </span>
+              <span>
+                <strong>{t(`home.sell.step${n}`)}</strong>
+                {t(`home.sell.step${n}_text`)}
+              </span>
+            </li>
           ))}
         </ol>
-        <Link to="/sell/new" className={styles.sellBtn}>{t('home.sell.start')}</Link>
+        <Link to="/sell/new" className={styles.sellBtn}>
+          {t('home.sell.start')}
+        </Link>
       </section>
     </div>
   );

@@ -27,7 +27,8 @@ describe('ratings and the profile summary', () => {
   const DAY = 86_400_000;
   const call = (headers: Record<string, string>) => (method: string, path: string, body?: unknown) =>
     fetch(t.url(path), {
-      method, headers: { ...headers, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
+      method,
+      headers: { ...headers, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   async function member() {
@@ -54,8 +55,13 @@ describe('ratings and the profile summary', () => {
   /** The order's escrow reached a terminal state `daysAgo` days ago (Unit 2's event). */
   async function closed(orderId: string, buyerId: string, sellerId: string, state: 'released' | 'refunded' | 'partially_refunded' = 'released', daysAgo = 0) {
     const e: OutboxEvent = {
-      outbox: 'orders', id: String(randomInt(1, 2 ** 31)), type: `orders.escrow.${state}`, aggregateId: orderId,
-      payload: { orderId, buyerId, sellerId, reason: null, refunded: '0', sellerPayout: '95000' }, createdAt: new Date(Date.now() - daysAgo * DAY), attempt: 1,
+      outbox: 'orders',
+      id: String(randomInt(1, 2 ** 31)),
+      type: `orders.escrow.${state}`,
+      aggregateId: orderId,
+      payload: { orderId, buyerId, sellerId, reason: null, refunded: '0', sellerPayout: '95000' },
+      createdAt: new Date(Date.now() - daysAgo * DAY),
+      attempt: 1,
     };
     const c = bus.consumersOf(e.type).find((x) => x.name === 'trust.ratings');
     await c!.handler(e);
@@ -75,7 +81,9 @@ describe('ratings and the profile summary', () => {
     expect((await buyer.call('POST', `/orders/${unfinished}/rating`, { stars: 5 })).status).toBe(404); // no terminal escrow state yet
     const id = await deal(buyer, seller);
     await closed(id, buyer.userId, seller.userId); // redelivered: one eligibility row
-    expect(await fx.query(`SELECT completed, rate_until - closed_at = interval '14 days' AS cp39 FROM trust.rating_eligibility WHERE order_id = $1`, [id])).toEqual([{ completed: true, cp39: true }]);
+    expect(
+      await fx.query(`SELECT completed, rate_until - closed_at = interval '14 days' AS cp39 FROM trust.rating_eligibility WHERE order_id = $1`, [id]),
+    ).toEqual([{ completed: true, cp39: true }]);
 
     const r = await buyer.call('POST', `/orders/${id}/rating`, { stars: 5, text: '  Exactly as described, quick handover.  ' });
     expect(r.status).toBe(201);
@@ -87,8 +95,10 @@ describe('ratings and the profile summary', () => {
     expect((await stranger.call('POST', `/orders/${id}/rating`, { stars: 1 })).status).toBe(404);
     for (const stars of [0, 6, 2.5]) expect((await stranger.call('POST', `/orders/${id}/rating`, { stars })).status).toBe(400);
     expect((await anonymous('POST', `/orders/${id}/rating`, { stars: 5 })).status).toBe(401);
-    expect(await fx.query(`SELECT rater_id, ratee_id FROM trust.ratings WHERE order_id = $1 ORDER BY created_at`, [id]))
-      .toEqual([{ rater_id: buyer.userId, ratee_id: seller.userId }, { rater_id: seller.userId, ratee_id: buyer.userId }]);
+    expect(await fx.query(`SELECT rater_id, ratee_id FROM trust.ratings WHERE order_id = $1 ORDER BY created_at`, [id])).toEqual([
+      { rater_id: buyer.userId, ratee_id: seller.userId },
+      { rater_id: seller.userId, ratee_id: buyer.userId },
+    ]);
   });
 
   it('FR-REV-01 CP-39 the rating window is 14 days from the close', async () => {
@@ -111,7 +121,8 @@ describe('ratings and the profile summary', () => {
     const other = await deal(buyer, seller);
     const [{ id: old }] = await fx.query<{ id: string }>(
       `INSERT INTO trust.ratings (order_id, rater_id, ratee_id, stars, edit_until, created_at) VALUES ($1, $2, $3, 3, now() - interval '1 hour', now() - interval '49 hours') RETURNING id`,
-      [other, buyer.userId, seller.userId]);
+      [other, buyer.userId, seller.userId],
+    );
     expect(await errors(await buyer.call('PATCH', `/ratings/${old}`, { stars: 5 }))).toEqual([{ field: 'rating', reason: 'edit-period-ended' }]);
   });
 
@@ -123,8 +134,12 @@ describe('ratings and the profile summary', () => {
     expect((await buyer.call('POST', `/ratings/${written}/reply`, { text: 'Replying to myself.' })).status).toBe(404); // not the rated user
     const r = await seller.call('POST', `/ratings/${written}/reply`, { text: 'Sorry, the courier dropped it; I offered a discount.' });
     expect([r.status, ((await r.json()) as { reply: { text: string } }).reply.text]).toEqual([200, 'Sorry, the courier dropped it; I offered a discount.']);
-    expect(await errors(await seller.call('POST', `/ratings/${written}/reply`, { text: 'A second reply.' }))).toEqual([{ field: 'rating', reason: 'already-replied' }]);
-    expect(await errors(await buyer.call('POST', `/ratings/${starsOnly}/reply`, { text: 'Thanks!' }))).toEqual([{ field: 'rating', reason: 'no-text-to-answer' }]);
+    expect(await errors(await seller.call('POST', `/ratings/${written}/reply`, { text: 'A second reply.' }))).toEqual([
+      { field: 'rating', reason: 'already-replied' },
+    ]);
+    expect(await errors(await buyer.call('POST', `/ratings/${starsOnly}/reply`, { text: 'Thanks!' }))).toEqual([
+      { field: 'rating', reason: 'no-text-to-answer' },
+    ]);
     expect(await errors(await buyer.call('PATCH', `/ratings/${written}`, { text: null }))).toEqual([{ field: 'text', reason: 'has-a-reply' }]);
   });
 
@@ -133,23 +148,36 @@ describe('ratings and the profile summary', () => {
     const [b1, b2, b3] = [await member(), await member(), await member()];
     const ids = [await deal(b1, seller), await deal(b2, seller), await deal(b3, seller, 'refunded')];
     await b1.call('POST', `/orders/${ids[0]}/rating`, { stars: 5, text: 'Great seller.' });
-    const { id: harsh } = (await (await b2.call('POST', `/orders/${ids[1]}/rating`, { stars: 2, text: 'Call him on 01711-000000, he is a cheat!' })).json()) as { id: string };
+    const { id: harsh } = (await (
+      await b2.call('POST', `/orders/${ids[1]}/rating`, { stars: 2, text: 'Call him on 01711-000000, he is a cheat!' })
+    ).json()) as { id: string };
     await b3.call('POST', `/orders/${ids[2]}/rating`, { stars: 3 }); // a refunded order can be rated, but is not a completed transaction
     const trust = await anonymous('GET', `/users/${seller.userId}/trust`);
-    expect([trust.status, await trust.json()]).toEqual([200, { userId: seller.userId, averageRating: 3.3, ratingCount: 3, completedTransactions: 2, badges: { verified: true, pro: false } }]);
+    expect([trust.status, await trust.json()]).toEqual([
+      200,
+      { userId: seller.userId, averageRating: 3.3, ratingCount: 3, completedTransactions: 2, badges: { verified: true, pro: false } },
+    ]);
     expect(await summary.profileSummary(b1.userId)).toEqual({ averageRating: null, ratingCount: 0, completedTransactions: 1 });
     expect(await summary.profileSummary(randomUUID())).toEqual({ averageRating: null, ratingCount: 0, completedTransactions: 0 });
 
     const op = await operator();
     expect((await op.call('POST', `/staff/ratings/${harsh}/removal`, { reason: 'Too short' })).status).toBe(400);
-    expect(await (await op.call('POST', `/staff/ratings/${harsh}/removal`, { reason: 'Contains a phone number and abuse.' })).json()).toEqual({ ratingId: harsh, removed: true });
+    expect(await (await op.call('POST', `/staff/ratings/${harsh}/removal`, { reason: 'Contains a phone number and abuse.' })).json()).toEqual({
+      ratingId: harsh,
+      removed: true,
+    });
     expect((await op.call('POST', `/staff/ratings/${harsh}/removal`, { reason: 'Contains a phone number and abuse.' })).status).toBe(404); // final
     expect((await b2.call('POST', `/staff/ratings/${harsh}/removal`, { reason: 'Contains a phone number and abuse.' })).status).toBe(401);
     expect(await (await anonymous('GET', `/users/${seller.userId}/trust`)).json()).toMatchObject({ averageRating: 4, ratingCount: 2 });
     expect((await b2.call('PATCH', `/ratings/${harsh}`, { stars: 3 })).status).toBe(404); // removed: fixed
-    expect(await fx.query(`SELECT action, reason FROM audit.events WHERE object_id = $1`, [harsh])).toEqual([{ action: 'trust.rating.removed', reason: 'Contains a phone number and abuse.' }]);
+    expect(await fx.query(`SELECT action, reason FROM audit.events WHERE object_id = $1`, [harsh])).toEqual([
+      { action: 'trust.rating.removed', reason: 'Contains a phone number and abuse.' },
+    ]);
     const page = (await (await anonymous('GET', `/users/${seller.userId}/ratings`)).json()) as { items: { id: string; by: string; stars: number }[] };
-    expect(page.items.map((i) => [i.stars, i.by])).toEqual([[3, 'buyer'], [5, 'buyer']]);
+    expect(page.items.map((i) => [i.stars, i.by])).toEqual([
+      [3, 'buyer'],
+      [5, 'buyer'],
+    ]);
     expect((await anonymous('GET', `/users/${randomUUID()}/trust`)).status).toBe(404);
   });
 
@@ -166,7 +194,16 @@ describe('ratings and the profile summary', () => {
     type Page = { items: { text: string; by: string; rater: { displayName: string } | null; reply: null; edited: boolean }[]; nextCursor: string | null };
     const first = (await (await anonymous('GET', `/users/${buyer.userId}/ratings`)).json()) as Page;
     expect(first.items).toHaveLength(20);
-    expect(first.items[0]).toEqual({ id: expect.any(String), stars: 1, text: 'Review 20', at: expect.any(String), edited: false, by: 'seller', rater: null, reply: null });
+    expect(first.items[0]).toEqual({
+      id: expect.any(String),
+      stars: 1,
+      text: 'Review 20',
+      at: expect.any(String),
+      edited: false,
+      by: 'seller',
+      rater: null,
+      reply: null,
+    });
     expect(first.items[1].rater).toEqual({ displayName: 'Test user' });
     const second = (await (await anonymous('GET', `/users/${buyer.userId}/ratings?cursor=${first.nextCursor}`)).json()) as Page;
     expect([second.items.map((i) => i.text), second.nextCursor]).toEqual([['Review 0'], null]);
@@ -181,10 +218,18 @@ describe('ratings and the profile summary', () => {
     const before = (await (await seller.call('GET', `/orders/${id}/ratings`)).json()) as { canRate: boolean; rateUntil: string };
     expect(before).toEqual({ canRate: true, rateUntil: expect.any(String), mine: null, received: null });
     const r = (await (await buyer.call('POST', `/orders/${id}/rating`, { stars: 4, text: 'Good item, as described.' })).json()) as { id: string };
-    expect(await (await buyer.call('GET', `/orders/${id}/ratings`)).json())
-      .toEqual({ canRate: false, rateUntil: before.rateUntil, mine: expect.objectContaining({ id: r.id, stars: 4, editableUntil: expect.any(String) }), received: null });
-    expect(await (await seller.call('GET', `/orders/${id}/ratings`)).json())
-      .toEqual({ canRate: true, rateUntil: before.rateUntil, mine: null, received: expect.objectContaining({ id: r.id, stars: 4, reply: null }) });
+    expect(await (await buyer.call('GET', `/orders/${id}/ratings`)).json()).toEqual({
+      canRate: false,
+      rateUntil: before.rateUntil,
+      mine: expect.objectContaining({ id: r.id, stars: 4, editableUntil: expect.any(String) }),
+      received: null,
+    });
+    expect(await (await seller.call('GET', `/orders/${id}/ratings`)).json()).toEqual({
+      canRate: true,
+      rateUntil: before.rateUntil,
+      mine: null,
+      received: expect.objectContaining({ id: r.id, stars: 4, reply: null }),
+    });
     expect((await stranger.call('GET', `/orders/${id}/ratings`)).status).toBe(404);
     expect((await stranger.call('GET', `/orders/${open}/ratings`)).status).toBe(404);
   });

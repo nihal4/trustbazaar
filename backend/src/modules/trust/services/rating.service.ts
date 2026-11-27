@@ -22,17 +22,37 @@ const PAGE = 20;
 const TERMINAL: Record<string, boolean> = { 'orders.escrow.released': true, 'orders.escrow.refunded': false, 'orders.escrow.partially_refunded': false };
 
 interface RatingRow {
-  id: string; order_id: string; rater_id: string; ratee_id: string; stars: number; text: string | null; created_at: Date; edit_until: Date;
-  edited_at: Date | null; reply_text: string | null; reply_at: Date | null; removed_at: Date | null;
+  id: string;
+  order_id: string;
+  rater_id: string;
+  ratee_id: string;
+  stars: number;
+  text: string | null;
+  created_at: Date;
+  edit_until: Date;
+  edited_at: Date | null;
+  reply_text: string | null;
+  reply_at: Date | null;
+  removed_at: Date | null;
 }
 
 export interface RatingView {
-  id: string; orderId: string; stars: number; text: string | null; createdAt: string; editableUntil: string; editedAt: string | null;
+  id: string;
+  orderId: string;
+  stars: number;
+  text: string | null;
+  createdAt: string;
+  editableUntil: string;
+  editedAt: string | null;
   reply: { text: string; at: string } | null;
 }
 
 export interface PublicReview {
-  id: string; stars: number; text: string | null; at: string; edited: boolean;
+  id: string;
+  stars: number;
+  text: string | null;
+  at: string;
+  edited: boolean;
   /** The rater's role in the order. */
   by: 'buyer' | 'seller';
   /** null: the rater closed their account ("Closed account"). */
@@ -72,7 +92,9 @@ export class RatingService implements TrustQuery {
   /** POST /orders/{id}/rating (FR-REV-01, FR-REV-02): the buyer or the seller rates the other, once. */
   async rate(userId: string, orderId: string, r: { stars: number; text?: string | null }): Promise<RatingView> {
     const [e] = (await this.db.query(`SELECT buyer_id, seller_id, rate_until FROM trust.rating_eligibility WHERE order_id = $1`, [orderId])) as {
-      buyer_id: string; seller_id: string; rate_until: Date;
+      buyer_id: string;
+      seller_id: string;
+      rate_until: Date;
     }[];
     // not paid, not finished, or not a party: there is nothing to rate (SEC-SDL-09: no hint which)
     if (!e || (e.buyer_id !== userId && e.seller_id !== userId)) throw new Problem('not-found');
@@ -101,7 +123,11 @@ export class RatingService implements TrustQuery {
     const text = r.text === undefined ? row.text : clean(r.text);
     if (row.reply_text && !text) throw new Problem('validation-failed', { errors: [{ field: 'text', reason: 'has-a-reply' }] }); // the reply answers it
     try {
-      const [updated] = (await this.db.query(`UPDATE trust.ratings SET stars = $2, text = $3 WHERE id = $1 RETURNING *`, [ratingId, r.stars ?? row.stars, text])) as [RatingRow[], number];
+      const [updated] = (await this.db.query(`UPDATE trust.ratings SET stars = $2, text = $3 WHERE id = $1 RETURNING *`, [
+        ratingId,
+        r.stars ?? row.stars,
+        text,
+      ])) as [RatingRow[], number];
       return this.view(updated[0]);
     } catch (err) {
       if (err instanceof QueryFailedError && (err.driverError as { code?: string }).code === '23514') {
@@ -119,9 +145,10 @@ export class RatingService implements TrustQuery {
     if (row.reply_text) throw new Problem('validation-failed', { errors: [{ field: 'rating', reason: 'already-replied' }] });
     const reply = clean(text);
     if (!reply) throw new Problem('validation-failed', { errors: [{ field: 'text', reason: 'empty' }] });
-    const [updated] = (await this.db.query(
-      `UPDATE trust.ratings SET reply_text = $2, reply_at = now() WHERE id = $1 AND reply_text IS NULL RETURNING *`, [ratingId, reply],
-    )) as [RatingRow[], number];
+    const [updated] = (await this.db.query(`UPDATE trust.ratings SET reply_text = $2, reply_at = now() WHERE id = $1 AND reply_text IS NULL RETURNING *`, [
+      ratingId,
+      reply,
+    ])) as [RatingRow[], number];
     if (!updated.length) throw new Problem('validation-failed', { errors: [{ field: 'rating', reason: 'already-replied' }] });
     return this.view(updated[0]);
   }
@@ -136,10 +163,20 @@ export class RatingService implements TrustQuery {
         [ratingId, staffId, why],
       )) as [{ ratee_id: string }[], number];
       if (!updated.length) throw new Problem('not-found');
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: 'trust.rating.removed', objectType: 'rating', objectId: ratingId,
-        after: { rateeId: updated[0].ratee_id }, reason: why, sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null,
-      }, m);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: 'trust.rating.removed',
+          objectType: 'rating',
+          objectId: ratingId,
+          after: { rateeId: updated[0].ratee_id },
+          reason: why,
+          sourceIp: ctx.ip ?? null,
+          correlationId: ctx.correlationId ?? null,
+        },
+        m,
+      );
     });
     return { ratingId, removed: true };
   }
@@ -147,7 +184,8 @@ export class RatingService implements TrustQuery {
   /** TrustQuery (Units 3 and 8), FR-REV-04: removed reviews do not count; refunded orders are not completed. */
   async profileSummary(userId: string): Promise<ProfileSummary> {
     const [s] = (await this.db.query(
-      `SELECT average_rating::float8 AS average, rating_count::int AS n, completed_transactions::int AS done FROM trust.profile_summary WHERE user_id = $1`, [userId],
+      `SELECT average_rating::float8 AS average, rating_count::int AS n, completed_transactions::int AS done FROM trust.profile_summary WHERE user_id = $1`,
+      [userId],
     )) as { average: number | null; n: number; done: number }[];
     return { averageRating: s?.average ?? null, ratingCount: s?.n ?? 0, completedTransactions: s?.done ?? 0 };
   }
@@ -168,15 +206,21 @@ export class RatingService implements TrustQuery {
       [userId, at, id],
     )) as (RatingRow & { buyer_id: string; at_text: string })[];
     const page = rows.slice(0, PAGE);
-    const items = await Promise.all(page.map(async (r): Promise<PublicReview> => {
-      const rater = await this.identity.getPrincipal(r.rater_id).catch(() => null);
-      return {
-        id: r.id, stars: r.stars, text: r.text, at: r.created_at.toISOString(), edited: r.edited_at !== null,
-        by: r.rater_id === r.buyer_id ? 'buyer' : 'seller',
-        rater: rater && rater.accountStatus !== 'closed' ? { displayName: rater.displayName } : null,
-        reply: r.reply_text && r.reply_at ? { text: r.reply_text, at: r.reply_at.toISOString() } : null,
-      };
-    }));
+    const items = await Promise.all(
+      page.map(async (r): Promise<PublicReview> => {
+        const rater = await this.identity.getPrincipal(r.rater_id).catch(() => null);
+        return {
+          id: r.id,
+          stars: r.stars,
+          text: r.text,
+          at: r.created_at.toISOString(),
+          edited: r.edited_at !== null,
+          by: r.rater_id === r.buyer_id ? 'buyer' : 'seller',
+          rater: rater && rater.accountStatus !== 'closed' ? { displayName: rater.displayName } : null,
+          reply: r.reply_text && r.reply_at ? { text: r.reply_text, at: r.reply_at.toISOString() } : null,
+        };
+      }),
+    );
     const last = page[page.length - 1];
     return { items, nextCursor: rows.length > PAGE && last ? encodeCursor(last.at_text, last.id) : null };
   }
@@ -186,9 +230,15 @@ export class RatingService implements TrustQuery {
    * when (CP-39), the caller's own rating (editable until its edit period ends) and the one received (to reply to).
    * Before the order's escrow is terminal nothing can be rated. Removed ratings are not shown.
    */
-  async forOrder(userId: string, orderId: string): Promise<{ canRate: boolean; rateUntil: string | null; mine: RatingView | null; received: RatingView | null }> {
-    const [e] = (await this.db.query(`SELECT buyer_id, seller_id, rate_until FROM trust.rating_eligibility WHERE order_id = $1`, [orderId])) as
-      { buyer_id: string; seller_id: string; rate_until: Date }[];
+  async forOrder(
+    userId: string,
+    orderId: string,
+  ): Promise<{ canRate: boolean; rateUntil: string | null; mine: RatingView | null; received: RatingView | null }> {
+    const [e] = (await this.db.query(`SELECT buyer_id, seller_id, rate_until FROM trust.rating_eligibility WHERE order_id = $1`, [orderId])) as {
+      buyer_id: string;
+      seller_id: string;
+      rate_until: Date;
+    }[];
     if (!e) {
       await this.orders.getOrderForParty(orderId, userId); // not-found for anyone else (SEC-SDL-09)
       return { canRate: false, rateUntil: null, mine: null, received: null };
@@ -213,8 +263,14 @@ export class RatingService implements TrustQuery {
 
   private view(r: RatingRow): RatingView {
     return {
-      id: r.id, orderId: r.order_id, stars: r.stars, text: r.text, createdAt: r.created_at.toISOString(), editableUntil: r.edit_until.toISOString(),
-      editedAt: iso(r.edited_at), reply: r.reply_text && r.reply_at ? { text: r.reply_text, at: r.reply_at.toISOString() } : null,
+      id: r.id,
+      orderId: r.order_id,
+      stars: r.stars,
+      text: r.text,
+      createdAt: r.created_at.toISOString(),
+      editableUntil: r.edit_until.toISOString(),
+      editedAt: iso(r.edited_at),
+      reply: r.reply_text && r.reply_at ? { text: r.reply_text, at: r.reply_at.toISOString() } : null,
     };
   }
 }

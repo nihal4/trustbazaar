@@ -31,7 +31,8 @@ export class ReportService {
     let target: ReportTarget = { type: 'thread', id: threadId, subjectUserId: other };
     if (r.messageSeq !== undefined) {
       const [m] = (await this.db.query(`SELECT id::text, sender_id FROM chat.messages WHERE thread_id = $1 AND seq = $2`, [threadId, r.messageSeq])) as {
-        id: string; sender_id: string;
+        id: string;
+        sender_id: string;
       }[];
       if (!m) throw new Problem('not-found');
       if (m.sender_id === userId) throw new Problem('validation-failed', { errors: [{ field: 'messageSeq', reason: 'own-message' }] });

@@ -9,27 +9,33 @@ export function useAnnouncer(gap = ANNOUNCE_GAP_MS) {
   const last = useRef(0);
   const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latest = useRef('');
-  useEffect(() => () => {
-    if (pending.current) clearTimeout(pending.current);
-  }, []);
-
-  const say = useCallback((message: string, now = false) => {
-    latest.current = message;
-    const wait = last.current + gap - Date.now();
-    if (now || wait <= 0) {
+  useEffect(
+    () => () => {
       if (pending.current) clearTimeout(pending.current);
-      pending.current = null;
-      last.current = Date.now();
-      setText(message);
-      return;
-    }
-    if (pending.current) return; // the newest message is sent when the gap ends
-    pending.current = setTimeout(() => {
-      pending.current = null;
-      last.current = Date.now();
-      setText(latest.current);
-    }, wait);
-  }, [gap]);
+    },
+    [],
+  );
+
+  const say = useCallback(
+    (message: string, now = false) => {
+      latest.current = message;
+      const wait = last.current + gap - Date.now();
+      if (now || wait <= 0) {
+        if (pending.current) clearTimeout(pending.current);
+        pending.current = null;
+        last.current = Date.now();
+        setText(message);
+        return;
+      }
+      if (pending.current) return; // the newest message is sent when the gap ends
+      pending.current = setTimeout(() => {
+        pending.current = null;
+        last.current = Date.now();
+        setText(latest.current);
+      }, wait);
+    },
+    [gap],
+  );
 
   return { text, say };
 }

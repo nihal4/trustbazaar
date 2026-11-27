@@ -66,9 +66,15 @@ export class ClosureService implements AccountClosureChecks {
       )) as [{ erase_after: Date }[], number]; // UPDATE ... RETURNING answers [rows, count]
       await this.sessions.endAllIn(m, userId, null, 'closed', ctx);
       await this.audit.record(m, {
-        actorType: 'user', actorId: userId, action: 'identity.account.closed', objectType: 'user', objectId: userId,
-        before: { accountStatus: u.account_status }, after: { accountStatus: 'closed', eraseAfter: erase_after },
-        sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null,
+        actorType: 'user',
+        actorId: userId,
+        action: 'identity.account.closed',
+        objectType: 'user',
+        objectId: userId,
+        before: { accountStatus: u.account_status },
+        after: { accountStatus: 'closed', eraseAfter: erase_after },
+        sourceIp: ctx.ip ?? null,
+        correlationId: ctx.correlationId ?? null,
       });
       await publish(m, 'identity.account.closed', userId, { userId, eraseAfter: new Date(erase_after).toISOString() });
     });
@@ -90,7 +96,13 @@ export class ClosureService implements AccountClosureChecks {
       }
       const keys = await this.db.transaction(async (m) => {
         const rows = (await m.query(`SELECT storage_key FROM identity.erase_user($1)`, [id])) as { storage_key: string }[];
-        await this.audit.record(m, { actorType: 'system', action: 'identity.account.erased', objectType: 'user', objectId: id, after: { kycFiles: rows.length } });
+        await this.audit.record(m, {
+          actorType: 'system',
+          action: 'identity.account.erased',
+          objectType: 'user',
+          objectId: id,
+          after: { kycFiles: rows.length },
+        });
         return rows.map((r) => r.storage_key);
       });
       await this.deleteBlobs(keys);

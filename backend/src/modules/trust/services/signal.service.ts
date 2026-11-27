@@ -29,19 +29,35 @@ export class SignalService {
   readonly map: Record<string, (e: OutboxEvent) => { kind: string; source: string; subject: string | null; detail: Record<string, unknown> } | null> = {
     'auctions.flag.raised': (e) => {
       const p = e.payload as { auctionId?: string; flagId?: string | number; kind?: string; score?: number };
-      return p.flagId === undefined ? null : { kind: 'shill_bidding', source: `auctions.flag:${p.flagId}`, subject: null, detail: { auctionId: p.auctionId ?? e.aggregateId, flag: p.kind ?? null, score: p.score ?? null } };
+      return p.flagId === undefined
+        ? null
+        : {
+            kind: 'shill_bidding',
+            source: `auctions.flag:${p.flagId}`,
+            subject: null,
+            detail: { auctionId: p.auctionId ?? e.aggregateId, flag: p.kind ?? null, score: p.score ?? null },
+          };
     },
     'listings.listing.relisting_flagged': (e) => {
       const p = e.payload as { listingId?: string; sellerId?: string; previousListingId?: string; similarity?: number; reason?: string };
       const listingId = p.listingId ?? e.aggregateId;
       return {
-        kind: 'relisting', source: `listing:${listingId}`, subject: p.sellerId ?? null,
+        kind: 'relisting',
+        source: `listing:${listingId}`,
+        subject: p.sellerId ?? null,
         detail: { listingId, previousListingId: p.previousListingId ?? null, similarity: p.similarity ?? null, reason: p.reason ?? 'cancelled' },
       };
     },
     'delivery.issue.opened': (e) => {
       const p = e.payload as { issueId?: string; orderId?: string; kind?: string };
-      return p.issueId ? { kind: 'delivery_issue', source: `delivery.issue:${p.issueId}`, subject: null, detail: { issueId: p.issueId, orderId: p.orderId ?? e.aggregateId, issue: p.kind ?? null } } : null;
+      return p.issueId
+        ? {
+            kind: 'delivery_issue',
+            source: `delivery.issue:${p.issueId}`,
+            subject: null,
+            detail: { issueId: p.issueId, orderId: p.orderId ?? e.aggregateId, issue: p.kind ?? null },
+          }
+        : null;
     },
   };
 
@@ -62,7 +78,9 @@ export class SignalService {
     if (!p.sender || p.messageId === undefined) throw new Error(`${e.type} ${e.id}: no sender or messageId`); // retried, then reported (K-04)
     const messageId = String(p.messageId);
     const flags = Array.isArray(p.flags) ? p.flags.filter((f) => typeof f === 'string') : [];
-    const [{ day }] = (await this.db.query(`SELECT to_char($1::timestamptz AT TIME ZONE '${CHAT_DAY_ZONE}', 'YYYY-MM-DD') AS day`, [e.createdAt])) as { day: string }[];
+    const [{ day }] = (await this.db.query(`SELECT to_char($1::timestamptz AT TIME ZONE '${CHAT_DAY_ZONE}', 'YYYY-MM-DD') AS day`, [e.createdAt])) as {
+      day: string;
+    }[];
     const rows = (await this.db.query(
       `INSERT INTO trust.signals (kind, source_ref, subject_user, detail)
        VALUES ('chat_flags', $1, $2, jsonb_build_object('day', $3::text, 'count', 1, 'messageIds', jsonb_build_array($4::text),
@@ -85,10 +103,18 @@ export class SignalService {
   }
 
   /** POST /staff/signals/{id}/review: dismissed or actioned, with a note; once. Audited. */
-  async review(staffId: string, signalId: string, r: { outcome: 'dismissed' | 'actioned'; note: string }, ctx: CallContext = {}): Promise<{ signalId: string; status: string }> {
+  async review(
+    staffId: string,
+    signalId: string,
+    r: { outcome: 'dismissed' | 'actioned'; note: string },
+    ctx: CallContext = {},
+  ): Promise<{ signalId: string; status: string }> {
     const note = r.note.normalize('NFC').trim();
     if (note.length < 10) throw new Problem('validation-failed', { errors: [{ field: 'note', reason: 'too-short' }] });
-    const [s] = (await this.db.query(`SELECT subject_user, status FROM trust.signals WHERE id = $1`, [signalId])) as { subject_user: string | null; status: string }[];
+    const [s] = (await this.db.query(`SELECT subject_user, status FROM trust.signals WHERE id = $1`, [signalId])) as {
+      subject_user: string | null;
+      status: string;
+    }[];
     if (!s) throw new Problem('not-found');
     if (s.status !== 'open') throw new Problem('validation-failed', { errors: [{ field: 'signal', reason: 'closed' }] });
     if (s.subject_user) await this.staff.assertNoConflict(staffId, [s.subject_user]); // FR-OPS-06
@@ -98,10 +124,19 @@ export class SignalService {
         [signalId, r.outcome, staffId, note],
       )) as [unknown[], number];
       if (!rows.length) throw new Problem('validation-failed', { errors: [{ field: 'signal', reason: 'closed' }] }); // reviewed meanwhile
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: `trust.signal.${r.outcome}`, objectType: 'signal', objectId: signalId,
-        reason: note, sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null,
-      }, m);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: `trust.signal.${r.outcome}`,
+          objectType: 'signal',
+          objectId: signalId,
+          reason: note,
+          sourceIp: ctx.ip ?? null,
+          correlationId: ctx.correlationId ?? null,
+        },
+        m,
+      );
     });
     return { signalId, status: r.outcome };
   }

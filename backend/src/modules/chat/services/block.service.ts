@@ -14,10 +14,10 @@ export class BlockService implements BlockPort {
   async block(blockerId: string, blockedId: string): Promise<void> {
     if (blockerId === blockedId) throw new Problem('validation-failed', { errors: [{ field: 'userId', reason: 'self' }] });
     try {
-      await this.db.query(
-        `INSERT INTO chat.blocks (blocker_id, blocked_id) VALUES ($1, $2) ON CONFLICT (blocker_id, blocked_id) DO NOTHING`,
-        [blockerId, blockedId],
-      );
+      await this.db.query(`INSERT INTO chat.blocks (blocker_id, blocked_id) VALUES ($1, $2) ON CONFLICT (blocker_id, blocked_id) DO NOTHING`, [
+        blockerId,
+        blockedId,
+      ]);
     } catch (err) {
       // an unknown user: the foreign key; answered like any other unknown id
       if (err instanceof QueryFailedError && (err.driverError as { code?: string }).code === '23503') throw new Problem('not-found');
@@ -32,14 +32,17 @@ export class BlockService implements BlockPort {
 
   /** The users the caller has blocked (for the client's list), newest first. */
   async blocked(blockerId: string): Promise<string[]> {
-    const rows = (await this.db.query(`SELECT blocked_id FROM chat.blocks WHERE blocker_id = $1 ORDER BY created_at DESC`, [blockerId])) as { blocked_id: string }[];
+    const rows = (await this.db.query(`SELECT blocked_id FROM chat.blocks WHERE blocker_id = $1 ORDER BY created_at DESC`, [blockerId])) as {
+      blocked_id: string;
+    }[];
     return rows.map((r) => r.blocked_id);
   }
 
   async assertNotBlocked(sellerId: string, buyerId: string, tx?: EntityManager): Promise<void> {
-    const [r] = (await (tx ?? this.db.manager).query(
-      `SELECT 1 FROM chat.blocks WHERE (blocker_id, blocked_id) IN (($1, $2), ($2, $1)) LIMIT 1`, [sellerId, buyerId],
-    )) as unknown[];
+    const [r] = (await (tx ?? this.db.manager).query(`SELECT 1 FROM chat.blocks WHERE (blocker_id, blocked_id) IN (($1, $2), ($2, $1)) LIMIT 1`, [
+      sellerId,
+      buyerId,
+    ])) as unknown[];
     if (r) throw new Problem('blocked');
   }
 }

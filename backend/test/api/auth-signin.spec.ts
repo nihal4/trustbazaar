@@ -117,8 +117,7 @@ describe('sign-in and sessions', () => {
       const a = await fx.account();
       await signIn(browser(), a.phone, 'wrong');
       await signIn(browser(), a.phone, a.password);
-      const rows = await fx.query<{ action: string }>(
-        `SELECT action FROM audit.events WHERE actor_id = $1 ORDER BY chain_pos`, [a.userId]);
+      const rows = await fx.query<{ action: string }>(`SELECT action FROM audit.events WHERE actor_id = $1 ORDER BY chain_pos`, [a.userId]);
       expect(rows.map((r) => r.action)).toEqual(['identity.signin.failed', 'identity.signin.succeeded']);
     });
   });
@@ -129,16 +128,18 @@ describe('sign-in and sessions', () => {
       const b = browser();
       const answer = async (login: string) => (await b.post('/auth/login-check', { login })).json();
       expect(await answer(a.local)).toEqual({ ok: true });
-      expect(await answer('01799999999')).toEqual({ ok: true });                               // no account has it, and the answer is the same
+      expect(await answer('01799999999')).toEqual({ ok: true }); // no account has it, and the answer is the same
       for (const bad of ['c', 'nihal@', 'a@b', '12345']) expect(await answer(bad)).toEqual({ ok: false, reason: 'format' });
       const audit = await fx.query(`SELECT 1 FROM audit.events WHERE action LIKE 'identity.signin.%' AND object_id = $1`, [a.userId]);
-      expect(audit).toHaveLength(0);                                                           // nothing was tried on the account
+      expect(audit).toHaveLength(0); // nothing was tried on the account
     });
   });
 
   describe('the second step by e-mail (U10-25)', () => {
     const codeFor = (email: string) => {
-      const sent = (t.app.get<ForwardedNotifications>(NOTIFICATIONS)).sent.filter((m) => m.to.toLowerCase() === email.toLowerCase() && m.template === 'otp_signin_email');
+      const sent = t.app
+        .get<ForwardedNotifications>(NOTIFICATIONS)
+        .sent.filter((m) => m.to.toLowerCase() === email.toLowerCase() && m.template === 'otp_signin_email');
       return sent[sent.length - 1]?.vars.code as string;
     };
 
@@ -155,7 +156,9 @@ describe('sign-in and sessions', () => {
       expect(await problem(await b.post('/auth/signin/mfa', { code: wrong }))).toMatchObject({ status: 401, type: '/problems/mfa-failed' });
       expect((await b.post('/auth/signin/mfa', { code })).status).toBe(204);
       expect((await b.get('/auth/sessions')).status).toBe(200);
-      const actions = (await fx.query<{ action: string }>(`SELECT action FROM audit.events WHERE actor_id = $1 ORDER BY chain_pos`, [a.userId])).map((x) => x.action);
+      const actions = (await fx.query<{ action: string }>(`SELECT action FROM audit.events WHERE actor_id = $1 ORDER BY chain_pos`, [a.userId])).map(
+        (x) => x.action,
+      );
       expect(actions).toEqual(['identity.signin.code_sent', 'identity.mfa.failed', 'identity.signin.succeeded']);
     });
 
@@ -207,7 +210,10 @@ describe('sign-in and sessions', () => {
       const b = browser();
       await signIn(b, a.phone, a.password);
       expect((await b.post('/auth/signin/mfa', { code: codeFor(a.email), remember: true })).status).toBe(204);
-      const [{ days }] = await fx.query<{ days: number }>(`SELECT round(extract(epoch FROM (trusted_until - now())) / 86400)::int AS days FROM identity.known_devices WHERE user_id = $1`, [a.userId]);
+      const [{ days }] = await fx.query<{ days: number }>(
+        `SELECT round(extract(epoch FROM (trusted_until - now())) / 86400)::int AS days FROM identity.known_devices WHERE user_id = $1`,
+        [a.userId],
+      );
       expect(days).toBe(30);
       // the same browser signs in again with the password alone; another browser is asked
       await b.post('/auth/signout', {});
@@ -276,7 +282,8 @@ describe('sign-in and sessions', () => {
       await signIn(b, a.phone, a.password);
       for (let i = 0; i < 5; i++) expect((await b.post('/auth/signin/mfa', { code: '000000' })).status).toBe(401);
       expect(await problem(await b.post('/auth/signin/mfa', { code: totp(a.totpSecret!) }))).toMatchObject({
-        status: 401, type: '/problems/session-ended',
+        status: 401,
+        type: '/problems/session-ended',
       });
     });
   });
@@ -328,7 +335,9 @@ describe('sign-in and sessions', () => {
       expect((await b.post('/auth/refresh')).status).toBe(204);
       await fx.query(
         `UPDATE identity.refresh_tokens SET used_at = used_at - interval '1 minute'
-         WHERE session_id IN (SELECT id FROM identity.sessions WHERE user_id = $1) AND used_at IS NOT NULL`, [a.userId]);
+         WHERE session_id IN (SELECT id FROM identity.sessions WHERE user_id = $1) AND used_at IS NOT NULL`,
+        [a.userId],
+      );
       const thief = browser();
       thief.cookies.set('__Secure-tb_rt', old);
       expect((await thief.post('/auth/refresh')).status).toBe(401);
@@ -375,7 +384,7 @@ describe('sign-in and sessions', () => {
       expect((await three.get('/auth/sessions')).status).toBe(401);
     });
 
-    it('SEC-SDL-09 a user cannot end another user\'s session', async () => {
+    it("SEC-SDL-09 a user cannot end another user's session", async () => {
       const [a, z] = [await fx.account(), await fx.account()];
       const [ba, bz] = [browser(), browser()];
       await signIn(ba, a.phone, a.password);
@@ -404,8 +413,7 @@ describe('sign-in and sessions', () => {
       const b = browser();
       await signIn(b, a.phone, a.password);
       await b.post('/auth/signout');
-      const rows = await fx.query<{ reason: string }>(
-        `SELECT reason FROM audit.events WHERE actor_id = $1 AND action = 'identity.session.ended'`, [a.userId]);
+      const rows = await fx.query<{ reason: string }>(`SELECT reason FROM audit.events WHERE actor_id = $1 AND action = 'identity.session.ended'`, [a.userId]);
       expect(rows.map((r) => r.reason)).toEqual(['logout']);
     });
   });

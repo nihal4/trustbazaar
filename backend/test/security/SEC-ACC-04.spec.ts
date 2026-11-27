@@ -38,7 +38,10 @@ describe('SEC-ACC-04 no mass assignment', () => {
 
   it('SEC-ACC-04 a payout account refuses an approval state or a payout amount from the seller', async () => {
     const { a, b } = await s.signedIn({ kyc: 'verified' });
-    const [{ id: sid }] = await s.fx.query<{ id: string }>(`SELECT id FROM identity.sessions WHERE user_id = $1 AND ended_at IS NULL ORDER BY created_at DESC LIMIT 1`, [a.userId]);
+    const [{ id: sid }] = await s.fx.query<{ id: string }>(
+      `SELECT id FROM identity.sessions WHERE user_id = $1 AND ended_at IS NULL ORDER BY created_at DESC LIMIT 1`,
+      [a.userId],
+    );
     const stepped = async (body: object) => b.post('/me/payout-account', body, { 'x-step-up': await s.fx.stepUpGrant(sid, 'payout.change') });
     await refusedFor(await stepped({ method: 'bkash', accountName: 'Nadia Islam', accountNumber: '01711000000', status: 'approved' }), 'status');
     await refusedFor(await stepped({ method: 'bkash', accountName: 'Nadia Islam', accountNumber: '01711000000', payoutAmount: '1' }), 'payoutAmount');

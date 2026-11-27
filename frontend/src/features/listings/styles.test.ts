@@ -9,7 +9,9 @@ describe('the listing stylesheet', () => {
     const css = readFileSync(new URL('./listings.module.css', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
     const defined = new Set([...css.matchAll(/\.([a-zA-Z][\w]*)/g)].map((m) => m[1]));
     const files = ['ListingPage.tsx', 'AuctionPanel.tsx', 'AuctionRoom.tsx', 'Countdown.tsx', 'TitleParts.tsx'];
-    const used = new Set(files.flatMap((f) => [...readFileSync(new URL(`./${f}`, import.meta.url), 'utf8').matchAll(/styles\.([a-zA-Z]\w*)/g)].map((m) => m[1])));
+    const used = new Set(
+      files.flatMap((f) => [...readFileSync(new URL(`./${f}`, import.meta.url), 'utf8').matchAll(/styles\.([a-zA-Z]\w*)/g)].map((m) => m[1])),
+    );
     expect([...used].filter((c) => !defined.has(c))).toEqual([]);
   });
 });

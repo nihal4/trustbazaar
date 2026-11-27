@@ -37,7 +37,7 @@ describe('escrow', () => {
     const fulfilment = o.fulfilment ?? 'self_pickup';
     const game = fulfilment === 'game_account';
     const item = o.item ?? 1_000_000;
-    const fee = fulfilment === 'courier' ? o.fee ?? 15_000 : 0;
+    const fee = fulfilment === 'courier' ? (o.fee ?? 15_000) : 0;
     const buyer = await fx.user();
     const seller = o.seller ?? (await fx.user());
     const step = { self_pickup: 'meetup_handover', courier: 'courier_pickup', game_account: 'credentials_delivered' }[fulfilment];
@@ -45,27 +45,59 @@ describe('escrow', () => {
       `INSERT INTO orders.orders (kind, listing_id, item_kind, buyer_id, seller_id, quantity, unit_price, item_price, fulfilment, delivery_quote_id, delivery_fee, total,
           listing_snapshot, commission_bps, delivery_margin_bps, params_version, payment_due_at, status, paid_at, fulfilment_step, fulfilment_due_at)
        VALUES ('fixed_price', $1, $2, $3, $4, 1, $5, $5, $6, $7, $8, $9, '{"title":"Item"}', 500, 1000, 1, now(), 'paid', now(), $10, now() + interval '7 days') RETURNING id`,
-      [randomUUID(), game ? 'game_account' : 'physical', buyer, seller, item, fulfilment, fulfilment === 'courier' ? randomUUID() : null, fee, item + fee, step],
+      [
+        randomUUID(),
+        game ? 'game_account' : 'physical',
+        buyer,
+        seller,
+        item,
+        fulfilment,
+        fulfilment === 'courier' ? randomUUID() : null,
+        fee,
+        item + fee,
+        step,
+      ],
     );
     await fx.query(
       `INSERT INTO payments.attempts (purpose, order_id, payer_id, provider, amount, status, expires_at, confirmed_at) VALUES ('order', $1, $2, 'bkash', $3, 'succeeded', now(), now())`,
       [id, buyer, item + fee],
     );
-    await fx.query(`INSERT INTO orders.escrows (order_id, release_policy, amount_collected) VALUES ($1, $2, $3)`, [id, game ? 'game_protection' : 'standard', item + fee]);
+    await fx.query(`INSERT INTO orders.escrows (order_id, release_policy, amount_collected) VALUES ($1, $2, $3)`, [
+      id,
+      game ? 'game_protection' : 'standard',
+      item + fee,
+    ]);
     return { id, buyer, seller, item, fee };
   }
   const one = async <T = Record<string, unknown>>(sql: string, p: unknown[]) => (await fx.query<T>(sql, p))[0];
   const escrow = (id: string) => one(`SELECT state, amount_released, amount_refunded, open_dispute_id FROM orders.escrows WHERE order_id = $1`, [id]);
-  const events = async (id: string) => (await fx.query<{ event_type: string }>(`SELECT event_type FROM orders.outbox WHERE aggregate_id = $1 ORDER BY id`, [id])).map((e) => e.event_type);
-  const lines = (id: string) => fx.query<{ account_code: string; amount: string }>(
-    `SELECT l.account_code, sum(l.amount)::text AS amount FROM payments.journal_lines l JOIN payments.journal_entries e ON e.id = l.entry_id
-     WHERE e.order_id = $1 GROUP BY l.account_code ORDER BY l.account_code`, [id]);
-  const problem = async (p: Promise<unknown>) => p.then(() => 'none', (e: { problem?: string; extra?: { errors?: { reason: string }[] } }) => e.extra?.errors?.[0]?.reason ?? e.problem ?? String(e));
+  const events = async (id: string) =>
+    (await fx.query<{ event_type: string }>(`SELECT event_type FROM orders.outbox WHERE aggregate_id = $1 ORDER BY id`, [id])).map((e) => e.event_type);
+  const lines = (id: string) =>
+    fx.query<{ account_code: string; amount: string }>(
+      `SELECT l.account_code, sum(l.amount)::text AS amount FROM payments.journal_lines l JOIN payments.journal_entries e ON e.id = l.entry_id
+     WHERE e.order_id = $1 GROUP BY l.account_code ORDER BY l.account_code`,
+      [id],
+    );
+  const problem = async (p: Promise<unknown>) =>
+    p.then(
+      () => 'none',
+      (e: { problem?: string; extra?: { errors?: { reason: string }[] } }) => e.extra?.errors?.[0]?.reason ?? e.problem ?? String(e),
+    );
 
   it('I-20 lockForFulfilment locks the order and reports what a fulfilment action needs', async () => {
     const o = await paid();
     const facts = await tx((m) => orders.lockForFulfilment(o.id, m));
-    expect(facts).toMatchObject({ orderId: o.id, status: 'paid', fulfilment: 'self_pickup', fulfilmentStep: 'meetup_handover', stepRecorded: false, deliveryEventRecorded: false, escrowState: 'held', buyerId: o.buyer });
+    expect(facts).toMatchObject({
+      orderId: o.id,
+      status: 'paid',
+      fulfilment: 'self_pickup',
+      fulfilmentStep: 'meetup_handover',
+      stepRecorded: false,
+      deliveryEventRecorded: false,
+      escrowState: 'held',
+      buyerId: o.buyer,
+    });
     await expect(tx((m) => orders.lockForFulfilment(randomUUID(), m))).rejects.toThrow();
   });
 
@@ -76,7 +108,9 @@ describe('escrow', () => {
     await tx((m) => cmd.recordDeliveryEvent(o.id, 'handover_code', new Date(), m)); // twice: ignored
     const r = await one<{ fulfilment_done_at: Date; delivery_event_at: Date; source: string; w: Date; a: Date }>(
       `SELECT o.fulfilment_done_at, o.delivery_event_at, o.delivery_event_source AS source, e.dispute_window_ends_at AS w, e.auto_release_at AS a
-       FROM orders.orders o JOIN orders.escrows e ON e.order_id = o.id WHERE o.id = $1`, [o.id]);
+       FROM orders.orders o JOIN orders.escrows e ON e.order_id = o.id WHERE o.id = $1`,
+      [o.id],
+    );
     expect([r.fulfilment_done_at.getTime(), r.delivery_event_at.getTime(), r.source]).toEqual([at.getTime(), at.getTime(), 'handover_code']);
     expect(r.w.getTime() - at.getTime()).toBe(3 * 86_400_000); // CP-18
     expect(r.a.getTime() - at.getTime()).toBe(5 * 86_400_000); // CP-19
@@ -139,11 +173,21 @@ describe('escrow', () => {
     const d = await frozen(o);
     await tx((m) => cmd.applyDisputeOutcome(o.id, d, { kind: 'release' }, m));
     expect(await escrow(o.id)).toEqual({ state: 'released', amount_released: '1000000', amount_refunded: '0', open_dispute_id: null });
-    expect(await one(`SELECT commission, seller_payout, refund_total FROM payments.settlements WHERE order_id = $1`, [o.id])).toEqual({ commission: '50000', seller_payout: '950000', refund_total: '0' });
+    expect(await one(`SELECT commission, seller_payout, refund_total FROM payments.settlements WHERE order_id = $1`, [o.id])).toEqual({
+      commission: '50000',
+      seller_payout: '950000',
+      refund_total: '0',
+    });
     expect(await lines(o.id)).toEqual([
-      { account_code: 'escrow_liability', amount: '1000000' }, { account_code: 'revenue_commission', amount: '-50000' }, { account_code: 'seller_payable', amount: '-950000' },
+      { account_code: 'escrow_liability', amount: '1000000' },
+      { account_code: 'revenue_commission', amount: '-50000' },
+      { account_code: 'seller_payable', amount: '-950000' },
     ]);
-    expect(await one(`SELECT amount, status, simulated FROM payments.payouts WHERE order_id = $1`, [o.id])).toEqual({ amount: '950000', status: 'waiting_account', simulated: true });
+    expect(await one(`SELECT amount, status, simulated FROM payments.payouts WHERE order_id = $1`, [o.id])).toEqual({
+      amount: '950000',
+      status: 'waiting_account',
+      simulated: true,
+    });
     expect(await one(`SELECT status FROM orders.orders WHERE id = $1`, [o.id])).toEqual({ status: 'closed' });
     expect(await events(o.id)).toEqual(['orders.escrow.frozen', 'orders.escrow.released']);
   });
@@ -153,9 +197,17 @@ describe('escrow', () => {
     const d = await frozen(o, true);
     await tx((m) => cmd.applyDisputeOutcome(o.id, d, { kind: 'partial', itemRefund: 200_000n }, m));
     expect(await escrow(o.id)).toMatchObject({ state: 'partially_refunded', amount_refunded: '200000', amount_released: '815000' });
-    expect(await one(`SELECT commission, courier_payout, delivery_margin, seller_payout FROM payments.settlements WHERE order_id = $1`, [o.id]))
-      .toEqual({ commission: '40000', courier_payout: '13500', delivery_margin: '1500', seller_payout: '760000' });
-    expect(await one(`SELECT amount, reason, status FROM payments.refunds WHERE order_id = $1`, [o.id])).toEqual({ amount: '200000', reason: 'dispute_partial', status: 'pending' });
+    expect(await one(`SELECT commission, courier_payout, delivery_margin, seller_payout FROM payments.settlements WHERE order_id = $1`, [o.id])).toEqual({
+      commission: '40000',
+      courier_payout: '13500',
+      delivery_margin: '1500',
+      seller_payout: '760000',
+    });
+    expect(await one(`SELECT amount, reason, status FROM payments.refunds WHERE order_id = $1`, [o.id])).toEqual({
+      amount: '200000',
+      reason: 'dispute_partial',
+      status: 'pending',
+    });
   });
 
   it('FR-DSP-06 a full refund returns the fee unless the courier picked up; an out-of-range partial is refused', async () => {
@@ -181,7 +233,7 @@ describe('escrow', () => {
     expect(await problem(tx((m) => cmd.applyDisputeOutcome(o.id, d, { kind: 'release' }, m)))).toBe('not-the-open-dispute');
   });
 
-  it('FR-DLV-12 a courier return refunds everything; the courier charge is the platform\'s expense', async () => {
+  it("FR-DLV-12 a courier return refunds everything; the courier charge is the platform's expense", async () => {
     const o = await paid({ fulfilment: 'courier' });
     await tx((m) => cmd.recordFulfilmentStep(o.id, 'courier_pickup', new Date(), m));
     await tx((m) => cmd.refundCourierReturned(o.id, 6_000n, m));
@@ -195,12 +247,18 @@ describe('escrow', () => {
   it('FR-PAY-17 and FR-TNS-05 the payout waits for the account, its cooling-off, or a lifted suspension', async () => {
     const withAccount = async (status: 'active' | 'cooling_off', effective: string) => {
       const seller = await fx.user();
-      await fx.query(`INSERT INTO payments.payout_accounts (user_id, kind, wallet_e164, status, effective_at) VALUES ($1, 'bkash_wallet', $2, $3, now() + $4::interval)`,
-        [seller, randomPhone(), status, effective]);
+      await fx.query(
+        `INSERT INTO payments.payout_accounts (user_id, kind, wallet_e164, status, effective_at) VALUES ($1, 'bkash_wallet', $2, $3, now() + $4::interval)`,
+        [seller, randomPhone(), status, effective],
+      );
       return seller;
     };
     const cases: [string, string][] = [];
-    for (const [seller, expected] of [[await withAccount('active', '-1 day'), 'pending'], [await withAccount('cooling_off', '1 day'), 'waiting_cooling_off'], [await fx.user({ status: 'suspended' }), 'held']] as const) {
+    for (const [seller, expected] of [
+      [await withAccount('active', '-1 day'), 'pending'],
+      [await withAccount('cooling_off', '1 day'), 'waiting_cooling_off'],
+      [await fx.user({ status: 'suspended' }), 'held'],
+    ] as const) {
       const o = await paid({ seller });
       await tx(async (m) => cmd.applyDisputeOutcome(o.id, await frozen(o), { kind: 'release' }, m));
       cases.push([(await one<{ status: string }>(`SELECT status FROM payments.payouts WHERE order_id = $1`, [o.id])).status, expected]);
@@ -219,19 +277,39 @@ describe('escrow', () => {
     expect(await one(`SELECT count(*)::int AS n FROM payments.settlements WHERE order_id = $1`, [o.id])).toEqual({ n: 1 });
   });
 
-  it('FR-PAY-14 the application\'s split equals payments.split on 300 random cases', async () => {
+  it("FR-PAY-14 the application's split equals payments.split on 300 random cases", async () => {
     const cases = Array.from({ length: 300 }, () => {
       const item = BigInt(randomInt(1, 50_000_000));
-      return { item, fee: BigInt(randomInt(0, 2) ? randomInt(0, 50_000) : 0), refund: BigInt(randomInt(0, 3)) === 0n ? 0n : BigInt(randomInt(0, Number(item) + 1)), done: randomInt(0, 2) === 1, bps: randomInt(0, 800), margin: randomInt(0, 5000) };
+      return {
+        item,
+        fee: BigInt(randomInt(0, 2) ? randomInt(0, 50_000) : 0),
+        refund: BigInt(randomInt(0, 3)) === 0n ? 0n : BigInt(randomInt(0, Number(item) + 1)),
+        done: randomInt(0, 2) === 1,
+        bps: randomInt(0, 800),
+        margin: randomInt(0, 5000),
+      };
     });
     const rows = await fx.query<{ commission: string; courier_payout: string; delivery_margin: string; seller_payout: string; refund_total: string }>(
       `SELECT s.* FROM unnest($1::bigint[], $2::bigint[], $3::bigint[], $4::boolean[], $5::int[], $6::int[]) WITH ORDINALITY AS c(i, f, r, d, b, m, n)
        CROSS JOIN LATERAL payments.split(c.i, c.f, c.r, c.d, c.b, c.m) s ORDER BY c.n`,
-      [cases.map((c) => c.item.toString()), cases.map((c) => c.fee.toString()), cases.map((c) => c.refund.toString()), cases.map((c) => c.done), cases.map((c) => c.bps), cases.map((c) => c.margin)],
+      [
+        cases.map((c) => c.item.toString()),
+        cases.map((c) => c.fee.toString()),
+        cases.map((c) => c.refund.toString()),
+        cases.map((c) => c.done),
+        cases.map((c) => c.bps),
+        cases.map((c) => c.margin),
+      ],
     );
     const mine = cases.map((c) => {
       const s = split(c.item, c.fee, c.refund, c.done, c.bps, c.margin);
-      return { commission: `${s.commission}`, courier_payout: `${s.courierPayout}`, delivery_margin: `${s.deliveryMargin}`, seller_payout: `${s.sellerPayout}`, refund_total: `${s.refundTotal}` };
+      return {
+        commission: `${s.commission}`,
+        courier_payout: `${s.courierPayout}`,
+        delivery_margin: `${s.deliveryMargin}`,
+        seller_payout: `${s.sellerPayout}`,
+        refund_total: `${s.refundTotal}`,
+      };
     });
     expect(mine).toEqual(rows);
   });

@@ -38,7 +38,16 @@ import { OrdersDataExport } from './services/data-export';
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
 @Module({
   imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule, ListingsModule, ChatModule, DeliveryModule],
-  controllers: [OrdersController, OrderActionsController, PaymentsController, StripeWebhookController, MockPayController, MyPayoutsController, StaffPayoutsController, MonetizationController],
+  controllers: [
+    OrdersController,
+    OrderActionsController,
+    PaymentsController,
+    StripeWebhookController,
+    MockPayController,
+    MyPayoutsController,
+    StaffPayoutsController,
+    MonetizationController,
+  ],
   providers: [
     OrdersDataExport,
     { provide: ORDERS_DATA_EXPORT, useExisting: OrdersDataExport },

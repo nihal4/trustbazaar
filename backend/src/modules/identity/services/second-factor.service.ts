@@ -16,10 +16,7 @@ export class SecondFactorService {
 
   /** True if the user has a confirmed TOTP factor. */
   async hasTotp(userId: string): Promise<boolean> {
-    const [f] = await this.db.query(
-      `SELECT 1 FROM identity.totp_factors WHERE user_id = $1 AND removed_at IS NULL AND confirmed_at IS NOT NULL`,
-      [userId],
-    );
+    const [f] = await this.db.query(`SELECT 1 FROM identity.totp_factors WHERE user_id = $1 AND removed_at IS NULL AND confirmed_at IS NOT NULL`, [userId]);
     return Boolean(f);
   }
 
@@ -35,10 +32,9 @@ export class SecondFactorService {
 
   /** Checks a code against a factor that is not confirmed yet (enrolment), and confirms it. */
   async confirmStaffEnrolment(staffId: string, code: string, now: Date): Promise<boolean> {
-    const [f] = await this.db.query(
-      `SELECT id, secret_enc FROM identity.totp_factors WHERE staff_id = $1 AND removed_at IS NULL AND confirmed_at IS NULL`,
-      [staffId],
-    );
+    const [f] = await this.db.query(`SELECT id, secret_enc FROM identity.totp_factors WHERE staff_id = $1 AND removed_at IS NULL AND confirmed_at IS NULL`, [
+      staffId,
+    ]);
     if (!f) return false;
     const step = checkTotp(this.secretOf(f), code, now);
     if (step === null) return false;

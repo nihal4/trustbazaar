@@ -21,10 +21,7 @@ export class FeaturedConsumers implements OnModuleInit {
 
   async started(e: OutboxEvent): Promise<void> {
     const { listingId, endsAt } = e.payload as { listingId: string; endsAt: string };
-    await this.db.query(
-      `UPDATE listings.listings SET featured_until = greatest(featured_until, $2::timestamptz) WHERE id = $1`,
-      [listingId, endsAt],
-    );
+    await this.db.query(`UPDATE listings.listings SET featured_until = greatest(featured_until, $2::timestamptz) WHERE id = $1`, [listingId, endsAt]);
   }
 
   async ended(e: OutboxEvent): Promise<void> {

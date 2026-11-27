@@ -53,14 +53,17 @@ describe('auction close and second chance', () => {
     const ip = `203.0.113.${randomInt(1, 255)}, 198.51.100.${randomInt(1, 255)}`;
     const call = (method: string, path: string, body?: unknown) =>
       fetch(t.url(path), {
-        method, redirect: 'manual',
+        method,
+        redirect: 'manual',
         headers: { ...fx.headers(sid, userId, 'user'), 'x-forwarded-for': ip, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
     const bid = async (auction: string, maximum: string) => expect((await call('POST', `/auctions/${auction}/bids`, { maximum })).status).toBe(201);
-    const status = async (auction: string) => (await (await call('GET', `/auctions/${auction}/my-status`)).json()) as {
-      orderId: string | null; secondChanceOffer: { id: string; price: string; expiresAt: string } | null;
-    };
+    const status = async (auction: string) =>
+      (await (await call('GET', `/auctions/${auction}/my-status`)).json()) as {
+        orderId: string | null;
+        secondChanceOffer: { id: string; price: string; expiresAt: string } | null;
+      };
     const decide = (auction: string, offerId: string, decision: string) => call('POST', `/auctions/${auction}/second-chance/${offerId}/decision`, { decision });
     return { userId, sid, call, bid, status, decide, cookie: fx.headers(sid, userId, 'user').cookie };
   }
@@ -71,13 +74,21 @@ describe('auction close and second chance', () => {
   const one = async <T = Record<string, unknown>>(sql: string, p: unknown[]) => (await fx.query<T>(sql, p))[0];
   const listing = (id: string) =>
     one<{ status: string; quantity_available: number; quantity_reserved: number; quantity_sold: number }>(
-      `SELECT status, quantity_available, quantity_reserved, quantity_sold FROM listings.listings WHERE id = $1`, [id]);
+      `SELECT status, quantity_available, quantity_reserved, quantity_sold FROM listings.listings WHERE id = $1`,
+      [id],
+    );
   const events = async (type: string, aggregateId: string) =>
-    (await fx.query<{ payload: Record<string, unknown> }>(
-      `SELECT payload FROM auctions.outbox WHERE event_type = $1 AND aggregate_id = $2 ORDER BY id`, [type, aggregateId])).map((e) => e.payload);
+    (
+      await fx.query<{ payload: Record<string, unknown> }>(`SELECT payload FROM auctions.outbox WHERE event_type = $1 AND aggregate_id = $2 ORDER BY id`, [
+        type,
+        aggregateId,
+      ])
+    ).map((e) => e.payload);
   const auctionOrders = (id: string) =>
     fx.query<{ id: string; kind: string; buyer_id: string; item_price: string; status: string }>(
-      `SELECT id, kind, buyer_id, item_price::text, status FROM orders.orders WHERE listing_id = $1 ORDER BY created_at`, [id]);
+      `SELECT id, kind, buyer_id, item_price::text, status FROM orders.orders WHERE listing_id = $1 ORDER BY created_at`,
+      [id],
+    );
   /** Delivers every pending event; other suites may have left a backlog larger than one pass takes. */
   async function deliver() {
     for (let i = 0; i < 50 && (await dispatcher.drain()).dispatched > 0; i++);
@@ -107,7 +118,13 @@ describe('auction close and second chance', () => {
     await babu.bid(a.id, '120000');
     await asha.bid(a.id, '150000');
     await endAuction(fx, a.id);
-    const s = io(new URL(t.url('/')).origin, { path: '/socket.io', transports: ['websocket'], extraHeaders: { cookie: watcher.cookie, origin }, reconnection: false, forceNew: true });
+    const s = io(new URL(t.url('/')).origin, {
+      path: '/socket.io',
+      transports: ['websocket'],
+      extraHeaders: { cookie: watcher.cookie, origin },
+      reconnection: false,
+      forceNew: true,
+    });
     sockets.push(s);
     await new Promise<void>((resolve) => s.once('connect', () => resolve()));
     expect(await s.emitWithAck('join', { room: `auction:${a.id}` })).toEqual({ ok: true });
@@ -117,8 +134,11 @@ describe('auction close and second chance', () => {
     expect(await closedMsg).toEqual({ auctionId: a.id, status: 'sold', finalPrice: '125000' });
     const [order] = await auctionOrders(a.id);
     expect(order).toMatchObject({ kind: 'auction', buyer_id: asha.userId, item_price: '125000', status: 'awaiting_payment' });
-    expect(await one(`SELECT status, winner_id, final_price::text AS price FROM auctions.auctions WHERE listing_id = $1`, [a.id]))
-      .toEqual({ status: 'awarded', winner_id: asha.userId, price: '125000' });
+    expect(await one(`SELECT status, winner_id, final_price::text AS price FROM auctions.auctions WHERE listing_id = $1`, [a.id])).toEqual({
+      status: 'awarded',
+      winner_id: asha.userId,
+      price: '125000',
+    });
     expect(await listing(a.id)).toMatchObject({ status: 'active', quantity_available: 0, quantity_reserved: 1 });
     expect(await events('auctions.auction.awarded', a.id)).toEqual([
       { auctionId: a.id, listingId: a.id, sellerId: a.seller.userId, winnerId: asha.userId, price: '125000', orderId: order.id },
@@ -143,7 +163,10 @@ describe('auction close and second chance', () => {
     await endAuction(fx, reserve.id);
     expect(await closer.closeOne(empty.id)).toEqual({ auctionId: empty.id, status: 'unsold', price: null });
     expect(await closer.closeOne(reserve.id)).toEqual({ auctionId: reserve.id, status: 'unsold', price: null });
-    for (const [a, reason] of [[empty, 'no_bids'], [reserve, 'reserve_not_met']] as const) {
+    for (const [a, reason] of [
+      [empty, 'no_bids'],
+      [reserve, 'reserve_not_met'],
+    ] as const) {
       expect(await listing(a.id)).toMatchObject({ status: 'ended_unsold', quantity_available: 1, quantity_reserved: 0 });
       expect(await events('auctions.auction.unsold', a.id)).toEqual([{ auctionId: a.id, listingId: a.id, sellerId: a.seller.userId, reason }]);
       expect(await events('listings.listing.ended_unsold', a.id)).toHaveLength(1);
@@ -274,7 +297,10 @@ describe('auction close and second chance', () => {
     expect(start.status).toBe(201);
     const page = new URL(((await start.json()) as { redirectUrl: string }).redirectUrl);
     const form = await fetch(t.url(page.pathname.replace('/api/v1', '') + page.search), {
-      method: 'POST', redirect: 'manual', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: 'outcome=succeeded',
+      method: 'POST',
+      redirect: 'manual',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: 'outcome=succeeded',
     });
     const cb = new URL(form.headers.get('location')!);
     expect((await fetch(t.url(cb.pathname.replace('/api/v1', '') + cb.search), { redirect: 'manual' })).status).toBe(303);

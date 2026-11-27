@@ -33,13 +33,17 @@ describe('auction staff actions, shill flags and relisting', () => {
   async function member(o: { verifiedNow?: boolean } = {}) {
     const userId = await fx.user();
     if (o.verifiedNow) {
-      await fx.query(`INSERT INTO identity.kyc_status_history (user_id, from_status, to_status, actor_type, at) VALUES ($1, 'pending_review', 'verified', 'system', now())`, [userId]);
+      await fx.query(
+        `INSERT INTO identity.kyc_status_history (user_id, from_status, to_status, actor_type, at) VALUES ($1, 'pending_review', 'verified', 'system', now())`,
+        [userId],
+      );
     }
     const sid = await fx.session({ userId });
     const ip = `203.0.113.${randomInt(1, 255)}, 198.51.100.${randomInt(1, 255)}`;
     const call = (method: string, path: string, body?: unknown) =>
       fetch(t.url(path), {
-        method, headers: { ...fx.headers(sid, userId, 'user'), 'x-forwarded-for': ip, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
+        method,
+        headers: { ...fx.headers(sid, userId, 'user'), 'x-forwarded-for': ip, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
     const bid = async (auction: string, maximum: string) => {
@@ -54,17 +58,22 @@ describe('auction staff actions, shill flags and relisting', () => {
     const sid = await fx.session({ staffId });
     const call = (method: string, path: string, body?: unknown) =>
       fetch(t.url(path), {
-        method, headers: { ...fx.headers(sid, staffId, 'staff'), ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
+        method,
+        headers: { ...fx.headers(sid, staffId, 'staff'), ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
     return { staffId, call };
   }
   const one = async <T = Record<string, unknown>>(sql: string, p: unknown[]) => (await fx.query<T>(sql, p))[0];
   const events = async (type: string, aggregateId: string) =>
-    (await fx.query<{ payload: Record<string, unknown> }>(`SELECT payload FROM auctions.outbox WHERE event_type = $1 AND aggregate_id = $2 ORDER BY id`, [type, aggregateId]))
-      .map((e) => e.payload);
+    (
+      await fx.query<{ payload: Record<string, unknown> }>(`SELECT payload FROM auctions.outbox WHERE event_type = $1 AND aggregate_id = $2 ORDER BY id`, [
+        type,
+        aggregateId,
+      ])
+    ).map((e) => e.payload);
   const audit = async (action: string, objectId: string) =>
-    (await fx.query<{ reason: string | null }>(`SELECT reason FROM audit.events WHERE action = $1 AND object_id = $2`, [action, objectId]));
+    await fx.query<{ reason: string | null }>(`SELECT reason FROM audit.events WHERE action = $1 AND object_id = $2`, [action, objectId]);
   const REASON = 'Bidder account compromised, confirmed by the owner.';
 
   it('FR-AUC-10 an operator voids a bid with a reason; the auction is recomputed as if it had not been placed', async () => {
@@ -74,7 +83,10 @@ describe('auction staff actions, shill flags and relisting', () => {
     await a.bid(id, '120000');
     await b.bid(id, '150000');
     const { bidId } = await c.bid(id, '300000'); // the leader, at 155000
-    expect(await one(`SELECT leader_id, current_price::text AS p FROM auctions.auctions WHERE listing_id = $1`, [id])).toEqual({ leader_id: c.userId, p: '155000' });
+    expect(await one(`SELECT leader_id, current_price::text AS p FROM auctions.auctions WHERE listing_id = $1`, [id])).toEqual({
+      leader_id: c.userId,
+      p: '155000',
+    });
 
     const op = await operator();
     expect((await op.call('POST', `/staff/bids/${bidId}/void`, { reason: 'short' })).status).toBe(400);
@@ -82,7 +94,10 @@ describe('auction staff actions, shill flags and relisting', () => {
     const r = await op.call('POST', `/staff/bids/${bidId}/void`, { reason: REASON });
     expect(r.status).toBe(200);
     expect((await r.json()).state).toMatchObject({ price: '125000', bidCount: 2 }); // b leads again, one increment over a
-    expect(await one(`SELECT leader_id, current_price::text AS p FROM auctions.auctions WHERE listing_id = $1`, [id])).toEqual({ leader_id: b.userId, p: '125000' });
+    expect(await one(`SELECT leader_id, current_price::text AS p FROM auctions.auctions WHERE listing_id = $1`, [id])).toEqual({
+      leader_id: b.userId,
+      p: '125000',
+    });
     expect(await one(`SELECT void_reason, voided_by FROM auctions.bids WHERE id = $1`, [bidId])).toEqual({ void_reason: REASON, voided_by: op.staffId });
     expect(await events('auctions.bid.voided', id)).toEqual([{ auctionId: id, bidId, bidderId: c.userId, previousLeader: c.userId, leader: b.userId }]);
     expect(await audit('auctions.bid.voided', id)).toEqual([{ reason: REASON }]);
@@ -90,7 +105,9 @@ describe('auction staff actions, shill flags and relisting', () => {
     expect((await op.call('POST', '/staff/bids/999999999999/void', { reason: REASON })).status).toBe(404);
 
     await endAuction(fx, id);
-    const { bidId: late } = (await fx.query<{ bidId: string }>(`SELECT id::text AS "bidId" FROM auctions.bids WHERE auction_id = $1 AND bidder_id = $2`, [id, a.userId]))[0];
+    const { bidId: late } = (
+      await fx.query<{ bidId: string }>(`SELECT id::text AS "bidId" FROM auctions.bids WHERE auction_id = $1 AND bidder_id = $2`, [id, a.userId])
+    )[0];
     await t.app.get(AuctionCloser).closeDue();
     expect((await op.call('POST', `/staff/bids/${late}/void`, { reason: REASON })).status).toBe(409); // closed: not recomputed
   });
@@ -106,14 +123,19 @@ describe('auction staff actions, shill flags and relisting', () => {
     const r = await op.call('POST', `/staff/auctions/${id}/cancel`, { reason: 'Item reported as stolen; police report seen.' });
     expect(r.status).toBe(200);
     expect(await r.json()).toMatchObject({ status: 'cancelled', minimumBid: null });
-    expect(await one(`SELECT l.status AS listing, a.status AS auction FROM listings.listings l JOIN auctions.auctions a ON a.listing_id = l.id WHERE l.id = $1`, [id]))
-      .toEqual({ listing: 'cancelled', auction: 'cancelled' });
+    expect(
+      await one(`SELECT l.status AS listing, a.status AS auction FROM listings.listings l JOIN auctions.auctions a ON a.listing_id = l.id WHERE l.id = $1`, [
+        id,
+      ]),
+    ).toEqual({ listing: 'cancelled', auction: 'cancelled' });
     const [cancelled] = await events('auctions.auction.cancelled', id);
     expect(cancelled).toMatchObject({ auctionId: id, sellerId: seller.userId, by: 'operator' });
     expect((cancelled.bidderIds as string[]).sort()).toEqual([a.userId, b.userId].sort());
     expect(await events('listings.listing.cancelled', id)).toEqual([{ listingId: id, sellerId: seller.userId, itemKind: 'physical' }]);
-    expect(await one(`SELECT actor_type, reason FROM listings.status_history WHERE listing_id = $1 AND to_status = 'cancelled'`, [id]))
-      .toEqual({ actor_type: 'staff', reason: 'cancelled by an operator: Item reported as stolen; police report seen.' });
+    expect(await one(`SELECT actor_type, reason FROM listings.status_history WHERE listing_id = $1 AND to_status = 'cancelled'`, [id])).toEqual({
+      actor_type: 'staff',
+      reason: 'cancelled by an operator: Item reported as stolen; police report seen.',
+    });
     expect((await a.call('POST', `/auctions/${id}/bids`, { maximum: '400000' })).status).toBeGreaterThanOrEqual(400);
     expect((await op.call('POST', `/staff/auctions/${id}/cancel`, { reason: 'Item reported as stolen; police report seen.' })).status).toBe(409);
   });
@@ -141,12 +163,19 @@ describe('auction staff actions, shill flags and relisting', () => {
     const max = await op.call('GET', `/staff/auctions/${id}/maximums`);
     expect(max.status).toBe(200);
     const body = (await max.json()) as { bidders: { bidderId: string; maximum: string; alias: number }[] };
-    expect(body.bidders.map((x) => [x.bidderId, x.maximum])).toEqual([[n2.userId, '115000'], [n1.userId, '110000']]);
+    expect(body.bidders.map((x) => [x.bidderId, x.maximum])).toEqual([
+      [n2.userId, '115000'],
+      [n1.userId, '110000'],
+    ]);
     expect(await audit('auctions.maximums.viewed', id)).toHaveLength(1);
 
     expect((await op.call('POST', `/staff/auctions/${id}/flags/${flags[0].id}/review`, { note: 'ok' })).status).toBe(400);
-    expect((await op.call('POST', `/staff/auctions/${id}/flags/${flags[0].id}/review`, { note: 'Checked: two friends, no link to the seller.' })).status).toBe(204);
-    expect((await op.call('POST', `/staff/auctions/${id}/flags/${flags[0].id}/review`, { note: 'Checked: two friends, no link to the seller.' })).status).toBe(409);
+    expect((await op.call('POST', `/staff/auctions/${id}/flags/${flags[0].id}/review`, { note: 'Checked: two friends, no link to the seller.' })).status).toBe(
+      204,
+    );
+    expect((await op.call('POST', `/staff/auctions/${id}/flags/${flags[0].id}/review`, { note: 'Checked: two friends, no link to the seller.' })).status).toBe(
+      409,
+    );
     expect((await op.call('GET', `/staff/auctions/${id}/maximums`)).status).toBe(403); // closed again
     expect(await audit('auctions.flag.reviewed', id)).toEqual([{ reason: 'Checked: two friends, no link to the seller.' }]);
   });
@@ -169,7 +198,7 @@ describe('auction staff actions, shill flags and relisting', () => {
     expect(flag).toMatchObject({ kind: 'last_second_pattern', detail: { auctions: { [sniper.userId]: 3 } } });
   });
 
-  it('FR-AUC-18 a bidder who raises the price on one seller\'s auctions and never wins is flagged', async () => {
+  it("FR-AUC-18 a bidder who raises the price on one seller's auctions and never wins is flagged", async () => {
     const seller = await member();
     const [pusher, winner] = [await member(), await member()];
     const ids: string[] = [];
@@ -198,10 +227,18 @@ describe('auction staff actions, shill flags and relisting', () => {
             'pickup_or_courier', 'up_to_1kg', 'small', 'Dhaka', 23.81, 90.41, 1500000, 1, 1) RETURNING id`,
         [seller.userId, category, title],
       );
-      for (const n of [1, 2]) await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [id, n, randomUUID().replace(/-/g, '')]);
+      for (const n of [1, 2])
+        await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [
+          id,
+          n,
+          randomUUID().replace(/-/g, ''),
+        ]);
       if (status === 'active') {
         await fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [id]);
-        await fx.query(`INSERT INTO listings.status_history (listing_id, from_status, to_status, actor_type, actor_id, reason) VALUES ($1, 'draft', 'active', 'user', $2, 'published')`, [id, seller.userId]);
+        await fx.query(
+          `INSERT INTO listings.status_history (listing_id, from_status, to_status, actor_type, actor_id, reason) VALUES ($1, 'draft', 'active', 'user', $2, 'published')`,
+          [id, seller.userId],
+        );
       }
       return id;
     };
@@ -210,7 +247,9 @@ describe('auction staff actions, shill flags and relisting', () => {
     const again = await draft('Canon AE-1 film camera with 50mm lens, boxed', 'draft');
     expect((await seller.call('POST', `/listings/${again}/publish`, {})).status).toBe(200);
     const [flagged] = await fx.query<{ payload: { previousListingId: string; similarity: number } }>(
-      `SELECT payload FROM auctions.outbox WHERE event_type = 'listings.listing.relisting_flagged' AND aggregate_id = $1`, [again]);
+      `SELECT payload FROM auctions.outbox WHERE event_type = 'listings.listing.relisting_flagged' AND aggregate_id = $1`,
+      [again],
+    );
     expect(flagged.payload.previousListingId).toBe(first);
     expect(flagged.payload.similarity).toBeGreaterThanOrEqual(0.6);
     expect(await one(`SELECT status FROM listings.listings WHERE id = $1`, [again])).toEqual({ status: 'active' });
@@ -224,7 +263,14 @@ describe('auction staff actions, shill flags and relisting', () => {
     const seller = await member();
     const id = await openAuction(fx, seller.userId, category);
     const q = t.app.get<ListingsQueries>(LISTINGS_QUERIES);
-    expect(await q.fulfilmentFacts(id)).toEqual({ options: ['self_pickup'], weightClass: null, sizeClass: null, district: 'Dhaka', approxLat: 23.81, approxLng: 90.41 });
+    expect(await q.fulfilmentFacts(id)).toEqual({
+      options: ['self_pickup'],
+      weightClass: null,
+      sizeClass: null,
+      district: 'Dhaka',
+      approxLat: 23.81,
+      approxLng: 90.41,
+    });
     await expect(q.fulfilmentFacts(randomUUID())).rejects.toMatchObject({ problem: 'not-found' });
   });
 });

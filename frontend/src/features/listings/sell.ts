@@ -12,16 +12,42 @@ export interface SellingTerms {
   photos: { max: number; maxBytes: number; min: number };
   activeListings: { count: number; limit: number };
 }
-export interface Category { id: number; parentId: number | null; slug: string; nameEn: string; nameBn: string; itemKind: 'physical' | 'game_account'; selectable: boolean }
-export interface Area { id: number; district: string; nameEn: string; nameBn: string; lat: number; lng: number }
+export interface Category {
+  id: number;
+  parentId: number | null;
+  slug: string;
+  nameEn: string;
+  nameBn: string;
+  itemKind: 'physical' | 'game_account';
+  selectable: boolean;
+}
+export interface Area {
+  id: number;
+  district: string;
+  nameEn: string;
+  nameBn: string;
+  lat: number;
+  lng: number;
+}
 
 /** GET /listings/{id} as its seller sees it (the own part is the seller's only). */
 export interface EditableListing {
-  id: string; itemKind: 'physical' | 'game_account'; saleFormat: 'fixed_price' | 'auction';
+  id: string;
+  itemKind: 'physical' | 'game_account';
+  saleFormat: 'fixed_price' | 'auction';
   status: 'draft' | 'pending_review' | 'active' | 'sold' | 'ended_unsold' | 'cancelled' | 'removed';
-  category: { id: number; nameEn: string; nameBn: string }; title: string; description: string;
-  condition: string | null; noVisibleDefects: boolean; fulfilmentOptions: string | null; weightClass: string | null; sizeClass: string | null;
-  price: string | null; quantity: { total: number; available: number }; locked: boolean; serialLast4?: string | null;
+  category: { id: number; nameEn: string; nameBn: string };
+  title: string;
+  description: string;
+  condition: string | null;
+  noVisibleDefects: boolean;
+  fulfilmentOptions: string | null;
+  weightClass: string | null;
+  sizeClass: string | null;
+  price: string | null;
+  quantity: { total: number; available: number };
+  locked: boolean;
+  serialLast4?: string | null;
   photos: { id: string; position: number; url: string; thumbUrl: string; showsDefects: boolean }[];
   clarifications: { id: string; body: string; at: string }[];
   own?: { area: { district: string; lat: number; lng: number } | null; updatedAt: string };
@@ -61,14 +87,63 @@ export function durationLabel(d: string, t: T, lang: Lang): string {
 
 /** The server's field reasons this screen words; any other is shown with the general message. */
 export const REASONS = new Set([
-  'required', 'item-kind', 'prohibited', 'unknown', 'one-of-cp-07', 'auction-has-bids', 'order-in-progress', 'defect-photo-needed',
-  'defect-photo-or-declaration', 'two-needed', 'auction-sets-start-price-at-publication', 'single-unit', 'below-start-price',
-  'no-courier-oversize', 'required-for-courier', 'no-courier-over-10kg',
+  'required',
+  'item-kind',
+  'prohibited',
+  'unknown',
+  'one-of-cp-07',
+  'auction-has-bids',
+  'order-in-progress',
+  'defect-photo-needed',
+  'defect-photo-or-declaration',
+  'two-needed',
+  'auction-sets-start-price-at-publication',
+  'single-unit',
+  'below-start-price',
+  'no-courier-oversize',
+  'required-for-courier',
+  'no-courier-over-10kg',
   // game accounts (Unit 5)
-  'not-offered', 'fixed-after-proof', 'game-details-missing', 'proof-under-review', 'not-submitted-for-review', 'type', 'no-code',
-  'code-expired', 'not-editable', 'not-for-game-accounts', 'use-the-ownership-review',
+  'not-offered',
+  'fixed-after-proof',
+  'game-details-missing',
+  'proof-under-review',
+  'not-submitted-for-review',
+  'type',
+  'no-code',
+  'code-expired',
+  'not-editable',
+  'not-for-game-accounts',
+  'use-the-ownership-review',
 ]);
 export function reasonTexts(errors: FieldError[], t: T): string[] {
-  return errors.map((f) => `${t(FIELDS.has(f.field) ? `sell.field.${f.field}` : 'sell.field.listing')}: ${t(REASONS.has(f.reason) ? `sell.error.${f.reason}` : 'sell.error.invalid')}`);
+  return errors.map(
+    (f) =>
+      `${t(FIELDS.has(f.field) ? `sell.field.${f.field}` : 'sell.field.listing')}: ${t(REASONS.has(f.reason) ? `sell.error.${f.reason}` : 'sell.error.invalid')}`,
+  );
 }
-const FIELDS = new Set(['area', 'categoryId', 'condition', 'duration', 'fulfilmentOptions', 'listing', 'noVisibleDefects', 'photo', 'photos', 'price', 'quantity', 'reservePrice', 'sizeClass', 'startPrice', 'weightClass', 'title', 'description', 'gameId', 'platform', 'playerId', 'contents', 'file', 'code']);
+const FIELDS = new Set([
+  'area',
+  'categoryId',
+  'condition',
+  'duration',
+  'fulfilmentOptions',
+  'listing',
+  'noVisibleDefects',
+  'photo',
+  'photos',
+  'price',
+  'quantity',
+  'reservePrice',
+  'sizeClass',
+  'startPrice',
+  'weightClass',
+  'title',
+  'description',
+  'gameId',
+  'platform',
+  'playerId',
+  'contents',
+  'file',
+  'code',
+]);

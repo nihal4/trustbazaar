@@ -7,13 +7,23 @@ import { expect, type Page } from '@playwright/test';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
-interface Fixture { recordedAt: string; path: string; answers: Record<string, { status: number; body: unknown }> }
+interface Fixture {
+  recordedAt: string;
+  path: string;
+  answers: Record<string, { status: number; body: unknown }>;
+}
 export const loadFixture = (name: string): Fixture => JSON.parse(readFileSync(join(here, 'fixtures', `${name}.json`), 'utf8'));
 
 // one grey picture for every photo and file the page asks for: what a photo shows is not what these tests are about, and a real photo would change with the demo data
-const PICTURE = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect width="400" height="300" fill="#8a949e"/><path d="M0 220 120 130 200 190 280 110 400 200V300H0Z" fill="#6f7a85"/></svg>';
+const PICTURE =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect width="400" height="300" fill="#8a949e"/><path d="M0 220 120 130 200 190 280 110 400 200V300H0Z" fill="#6f7a85"/></svg>';
 
-export interface Look { theme: 'dark' | 'light'; lang: 'en' | 'bn'; width: number; height?: number }
+export interface Look {
+  theme: 'dark' | 'light';
+  lang: 'en' | 'bn';
+  width: number;
+  height?: number;
+}
 
 /** Opens a screen as the fixture recorded it. `unmatched` lists the requests the fixture has no answer for (a test can assert it is empty). */
 export async function openScreen(page: Page, fixtureName: string, look: Look, path?: string): Promise<{ unmatched: string[] }> {
@@ -24,24 +34,43 @@ export async function openScreen(page: Page, fixtureName: string, look: Look, pa
   // installed, and stopped at once: the page loads with the clock standing still, so every timer of the page starts at the same moment however long the load takes
   await page.clock.install({ time: new Date(fixture.recordedAt) });
   await page.clock.pauseAt(new Date(Date.parse(fixture.recordedAt) + 1_000));
-  await page.addInitScript(([theme, lang]) => {
-    try { localStorage.setItem('tb-theme', theme); localStorage.setItem('tb-lang', lang); } catch { /* storage blocked */ }
-  }, [look.theme, look.lang]);
+  await page.addInitScript(
+    ([theme, lang]) => {
+      try {
+        localStorage.setItem('tb-theme', theme);
+        localStorage.setItem('tb-lang', lang);
+      } catch {
+        /* storage blocked */
+      }
+    },
+    [look.theme, look.lang],
+  );
 
   // Playwright runs the route registered last first: the general rule comes first here, the special ones after it
   await page.route('**/api/v1/**', (route) => {
     const url = new URL(route.request().url());
     const key = `${route.request().method()} ${url.pathname.slice('/api/v1'.length)}`;
     // the app tries to refresh a session when it starts; with no session the answer is "none" (the fixture is of a screen, not of a session)
-    if (key === 'POST /auth/refresh' || key === 'POST /staff/auth/refresh') return route.fulfill({ status: 401, contentType: 'application/problem+json', body: JSON.stringify({ type: '/problems/session-ended' }) });
+    if (key === 'POST /auth/refresh' || key === 'POST /staff/auth/refresh')
+      return route.fulfill({ status: 401, contentType: 'application/problem+json', body: JSON.stringify({ type: '/problems/session-ended' }) });
     // a signed-in page saves the language it was opened in; nothing on the screen depends on the answer
-    if (key === 'PUT /me/notification-preferences') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ language: look.lang, emailTransactional: true }) });
+    if (key === 'PUT /me/notification-preferences')
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ language: look.lang, emailTransactional: true }) });
     const answer = fixture.answers[key + url.search] ?? fixture.answers[key];
     if (!answer) {
       unmatched.push(key);
-      return route.fulfill({ status: 404, contentType: 'application/problem+json', body: JSON.stringify({ type: '/problems/not-found', title: 'not in the fixture' }) });
+      return route.fulfill({
+        status: 404,
+        contentType: 'application/problem+json',
+        body: JSON.stringify({ type: '/problems/not-found', title: 'not in the fixture' }),
+      });
     }
-    return route.fulfill({ status: answer.status, contentType: 'application/json', headers: { Date: new Date(fixture.recordedAt).toUTCString() }, body: JSON.stringify(answer.body) });
+    return route.fulfill({
+      status: answer.status,
+      contentType: 'application/json',
+      headers: { Date: new Date(fixture.recordedAt).toUTCString() },
+      body: JSON.stringify(answer.body),
+    });
   });
   await page.route(/\/api\/v1\/(listing-photos|files)\//, (route) => route.fulfill({ status: 200, contentType: 'image/svg+xml', body: PICTURE }));
   await page.route('**/socket.io/**', (route) => route.abort());

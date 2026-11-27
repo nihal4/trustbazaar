@@ -13,15 +13,22 @@ import { IdentityCrypto, normaliseDocNumber, normaliseName } from './identity-cr
 import { ImageRejected, reencodeImage, sniffImage } from './images';
 
 const env = (filesRoot: string) => ({
-  TB_ENV: 'test', FILES_ROOT: filesRoot,
-  JWT_KEY_V1: 'j'.repeat(32), FIELD_KEY_V1: 'f'.repeat(32), KYC_KEK_V1: 'k'.repeat(32),
-  BIDX_KEY: 'b'.repeat(32), CSRF_KEY: 'c'.repeat(32), LINK_KEY: 'l'.repeat(32), OTP_PEPPER: 'o'.repeat(32),
-  CALLBACK_STATE_KEY: 's'.repeat(32), HANDOVER_KEY: 'h'.repeat(32),
-  DATABASE_URL: 'postgres://u:p@localhost/db', REDIS_URL: 'redis://localhost:6379',
+  TB_ENV: 'test',
+  FILES_ROOT: filesRoot,
+  JWT_KEY_V1: 'j'.repeat(32),
+  FIELD_KEY_V1: 'f'.repeat(32),
+  KYC_KEK_V1: 'k'.repeat(32),
+  BIDX_KEY: 'b'.repeat(32),
+  CSRF_KEY: 'c'.repeat(32),
+  LINK_KEY: 'l'.repeat(32),
+  OTP_PEPPER: 'o'.repeat(32),
+  CALLBACK_STATE_KEY: 's'.repeat(32),
+  HANDOVER_KEY: 'h'.repeat(32),
+  DATABASE_URL: 'postgres://u:p@localhost/db',
+  REDIS_URL: 'redis://localhost:6379',
 });
 
-const photo = (width: number, height: number) =>
-  sharp({ create: { width, height, channels: 3, background: { r: 200, g: 120, b: 40 } } });
+const photo = (width: number, height: number) => sharp({ create: { width, height, channels: 3, background: { r: 200, g: 120, b: 40 } } });
 
 describe('KYC images (SEC-INP-04, SEC-DAT-08)', () => {
   it('SEC-INP-04 the type comes from the content: JPEG, PNG and WebP only, whatever the name says', async () => {

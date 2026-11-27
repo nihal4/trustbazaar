@@ -2,9 +2,7 @@ import { Controller, Get, HttpCode, Post } from '@nestjs/common';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
 import { METHOD_METADATA, PATH_METADATA } from '@nestjs/common/constants';
 import { randomInt } from 'crypto';
-import {
-  Credential, POLICY_KEY, Public, RateLimit, SignedIn, Staff, StepUp, Verified,
-} from '../../src/kernel/http/policies';
+import { Credential, POLICY_KEY, Public, RateLimit, SignedIn, Staff, StepUp, Verified } from '../../src/kernel/http/policies';
 import { CurrentPrincipal, Principal } from '../../src/kernel/http/principal';
 import { startApp, TestApp } from '../support/app';
 import { IdentityFixtures } from '../support/identity';
@@ -95,8 +93,7 @@ const ip = () => {
 describe('security pipeline', () => {
   let t: TestApp;
   let fx: IdentityFixtures;
-  const call = (path: string, init: RequestInit & { headers?: Record<string, string> } = {}) =>
-    fetch(t.url(`/test-pipeline/${path}`), init);
+  const call = (path: string, init: RequestInit & { headers?: Record<string, string> } = {}) => fetch(t.url(`/test-pipeline/${path}`), init);
   const json = async (r: Response) => ({ status: r.status, body: await r.json() });
 
   beforeAll(async () => {
@@ -184,7 +181,7 @@ describe('security pipeline', () => {
       expect((await call('staff-any', { headers })).status).toBe(401);
     });
 
-    it('SEC-SES-01 a token naming another user\'s session is refused', async () => {
+    it("SEC-SES-01 a token naming another user's session is refused", async () => {
       const a = await userHeaders();
       const b = await fx.user();
       const forged = fx.headers(a.sid, b, 'user');
@@ -220,13 +217,10 @@ describe('security pipeline', () => {
   });
 
   describe('the KYC gate (FR-KYC-07)', () => {
-    it.each(['unsubmitted', 'pending_review', 'rejected', 'revoked'])(
-      'FR-KYC-07 a user whose KYC is %s is refused by @Verified',
-      async (kyc) => {
-        const { headers } = await userHeaders({ kyc });
-        expect((await call('verified-bid', { headers })).status).toBe(403);
-      },
-    );
+    it.each(['unsubmitted', 'pending_review', 'rejected', 'revoked'])('FR-KYC-07 a user whose KYC is %s is refused by @Verified', async (kyc) => {
+      const { headers } = await userHeaders({ kyc });
+      expect((await call('verified-bid', { headers })).status).toBe(403);
+    });
 
     it('FR-KYC-07 a verified user without a verified e-mail is refused', async () => {
       const { headers } = await userHeaders({ emailVerified: false });
@@ -246,7 +240,7 @@ describe('security pipeline', () => {
   });
 
   describe('CSRF (SEC-SES-04)', () => {
-    it('SEC-SES-04 a state-changing request with the session\'s token from the site\'s origin passes', async () => {
+    it("SEC-SES-04 a state-changing request with the session's token from the site's origin passes", async () => {
       const { headers } = await userHeaders();
       expect((await call('signed-in', { method: 'POST', headers })).status).toBe(200);
     });

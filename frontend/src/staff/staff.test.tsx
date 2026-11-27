@@ -16,13 +16,20 @@ import bn from '../messages/bn/staff.json';
 // claims, and the four-eyes approvals.
 
 configure({ asyncUtilTimeout: 3000 });
-afterEach(() => { cleanup(); vi.useRealTimers(); });
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
 const HOUR = 3_600_000;
 const iso = (offset: number) => new Date(Date.now() + offset).toISOString();
 const operator = (o: Partial<StaffMe> = {}): StaffMe => ({
-  id: 's-1', email: 'op@tb.test', displayName: 'Nadia', role: 'operator',
-  session: { idleExpiresAt: iso(15 * 60_000), absoluteExpiresAt: iso(8 * HOUR) }, ...o,
+  id: 's-1',
+  email: 'op@tb.test',
+  displayName: 'Nadia',
+  role: 'operator',
+  session: { idleExpiresAt: iso(15 * 60_000), absoluteExpiresAt: iso(8 * HOUR) },
+  ...o,
 });
 type Answer = (c: Call) => Response | Promise<Response>;
 function backend(answers: Record<string, Answer | Answer[]> = {}) {
@@ -31,12 +38,23 @@ function backend(answers: Record<string, Answer | Answer[]> = {}) {
 function open(at: string, be: ReturnType<typeof fakeBackend>, lang: 'en' | 'bn' = 'en') {
   const doc = createDocument(
     { kind: 'staff', titleKey: 'shell.document.staff', home: { path: '/staff', sameDocument: true }, signIn: staffSignIn, routes: staffRoutes },
-    { createRouter: (r) => createMemoryRouter(r, { initialEntries: [at] }), apiOverrides: { fetch: be.fetch, cookies: () => '__Host-tb_scsrf=s-csrf', locks: undefined, store: undefined } },
+    {
+      createRouter: (r) => createMemoryRouter(r, { initialEntries: [at] }),
+      apiOverrides: { fetch: be.fetch, cookies: () => '__Host-tb_scsrf=s-csrf', locks: undefined, store: undefined },
+    },
   );
   render(<DocumentRoot doc={doc} lang={lang} />);
   return doc;
 }
-const item = (o: Partial<QueueItem> = {}): QueueItem => ({ id: 'd0000001-aaaa-4bbb-8ccc-000000000001', ageHours: 30.5, since: iso(-30.5 * HOUR), status: 'open', assignedTo: null, path: '/x', ...o });
+const item = (o: Partial<QueueItem> = {}): QueueItem => ({
+  id: 'd0000001-aaaa-4bbb-8ccc-000000000001',
+  ageHours: 30.5,
+  since: iso(-30.5 * HOUR),
+  status: 'open',
+  assignedTo: null,
+  path: '/x',
+  ...o,
+});
 
 describe('signing in', () => {
   it('SEC-AUTH-07 I-51 a first visit goes to the staff sign-in without the signed-out notice; password then authenticator code, then back', async () => {
@@ -44,7 +62,13 @@ describe('signing in', () => {
     const be = backend({
       'GET /staff/me': () => (signedIn ? json(200, operator()) : json(401, {}))(),
       'POST /staff/auth/signin': [json(401, { type: '/problems/signin-failed' }), json(200, { mfaRequired: true })],
-      'POST /staff/auth/mfa': [problem(401, 'otp-failed'), () => { signedIn = true; return noContent()(); }],
+      'POST /staff/auth/mfa': [
+        problem(401, 'otp-failed'),
+        () => {
+          signedIn = true;
+          return noContent()();
+        },
+      ],
       'GET /staff/queues/reports': json(200, { queue: 'reports', items: [] }),
     });
     const doc = open('/staff/queues/reports', be);
@@ -79,7 +103,10 @@ describe('signing in', () => {
         problem(422, 'password-rejected', { errors: [{ field: 'newPassword', reason: 'unchanged' }] }),
         json(200, { otpauthUri: 'otpauth://totp/TrustBazaar%20staff:ad%40tb.test?secret=ABCD', secret: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567' }),
       ],
-      'POST /staff/auth/mfa/enrol/confirm': () => { signedIn = true; return noContent()(); },
+      'POST /staff/auth/mfa/enrol/confirm': () => {
+        signedIn = true;
+        return noContent()();
+      },
       'GET /staff/approvals': json(200, []),
     });
     const doc = open('/staff/signin', be);
@@ -105,7 +132,10 @@ describe('the session', () => {
     let end = iso(50_000);
     const be = backend({
       'GET /staff/me': () => json(200, operator({ session: { idleExpiresAt: end, absoluteExpiresAt: iso(8 * HOUR) } }))(),
-      'POST /staff/auth/refresh': () => { end = iso(15 * 60_000); return noContent()(); },
+      'POST /staff/auth/refresh': () => {
+        end = iso(15 * 60_000);
+        return noContent()();
+      },
       'GET /staff/approvals': json(200, []),
     });
     open('/staff/approvals', be);
@@ -120,12 +150,17 @@ describe('the session', () => {
     let end = iso(100_000);
     const be = backend({
       'GET /staff/me': () => json(200, operator({ session: { idleExpiresAt: end, absoluteExpiresAt: iso(8 * HOUR) } }))(),
-      'POST /staff/auth/refresh': () => { end = iso(15 * 60_000); return noContent()(); },
+      'POST /staff/auth/refresh': () => {
+        end = iso(15 * 60_000);
+        return noContent()();
+      },
       'GET /staff/approvals': json(200, []),
     });
     open('/staff/approvals', be);
     expect(await screen.findByText('Nothing is waiting for your approval.')).toBeTruthy();
-    await act(async () => { fireEvent.keyDown(document.body, { key: 'Tab' }); });
+    await act(async () => {
+      fireEvent.keyDown(document.body, { key: 'Tab' });
+    });
     await waitFor(() => expect(be.called('POST /staff/auth/refresh')).toHaveLength(1));
     expect(screen.queryByText(/^You will be signed out/)).toBeNull();
   });
@@ -135,27 +170,54 @@ describe('the queues', () => {
   it('FR-OPS-01 the eight queues; each item with its age, the overdue on top, what it is, and who has it', async () => {
     const be = backend({
       'GET /staff/me': json(200, operator()),
-      'GET /staff/queues/disputes': json(200, { queue: 'disputes', items: [
-        item({ overdue: true, ageHours: 75.2, type: 'not_as_described', amountCollected: '2500000', decisionTargetAt: iso(-HOUR), fourEyes: true }),
-        item({ id: 'd0000002-aaaa-4bbb-8ccc-000000000002', ageHours: 3.4, type: 'not_received', amountCollected: '150000', assignedTo: 's-1' }),
-      ] }),
-      'GET /staff/queues/payment_discrepancies': problem(409, 'feature-off', { errors: [{ field: 'queue', reason: 'payment-discrepancies-not-yet-available' }] }),
+      'GET /staff/queues/disputes': json(200, {
+        queue: 'disputes',
+        items: [
+          item({ overdue: true, ageHours: 75.2, type: 'not_as_described', amountCollected: '2500000', decisionTargetAt: iso(-HOUR), fourEyes: true }),
+          item({ id: 'd0000002-aaaa-4bbb-8ccc-000000000002', ageHours: 3.4, type: 'not_received', amountCollected: '150000', assignedTo: 's-1' }),
+        ],
+      }),
+      'GET /staff/queues/payment_discrepancies': problem(409, 'feature-off', {
+        errors: [{ field: 'queue', reason: 'payment-discrepancies-not-yet-available' }],
+      }),
     });
     const doc = open('/staff', be);
     await waitFor(() => expect(doc.router.state.location.pathname).toBe('/staff/queues/disputes'));
     const nav = screen.getByRole('navigation', { name: 'Console' });
     await waitFor(() => expect(within(nav).getByRole('link', { name: /^Disputes/ }).textContent).toBe('Disputes2 waiting'));
-    expect(within(nav).getAllByRole('link').map((a) => a.textContent?.replace(/\d+ waiting$/, ''))).toEqual([
-      'Disputes', 'Reports', 'Flagged activity', 'KYC submissions', 'Listings in review', 'Ownership proofs', 'Bank payout-account checks', 'Payment discrepancies',
-      'Approvals', 'Terms',
+    expect(
+      within(nav)
+        .getAllByRole('link')
+        .map((a) => a.textContent?.replace(/\d+ waiting$/, '')),
+    ).toEqual([
+      'Disputes',
+      'Reports',
+      'Flagged activity',
+      'KYC submissions',
+      'Listings in review',
+      'Ownership proofs',
+      'Bank payout-account checks',
+      'Payment discrepancies',
+      'Approvals',
+      'Terms',
     ]);
     const table = await screen.findByRole('table');
     const rows = within(table).getAllByRole('row').slice(1);
-    expect(within(table).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Case', 'What it is', 'Amount', 'Waiting', 'Who has it', 'Action']);
+    expect(
+      within(table)
+        .getAllByRole('columnheader')
+        .map((h) => h.textContent),
+    ).toEqual(['Case', 'What it is', 'Amount', 'Waiting', 'Who has it', 'Action']);
     expect(rows).toHaveLength(2);
     const cells = (r: HTMLElement) => [within(r).getByRole('rowheader'), ...within(r).getAllByRole('cell')].map((c) => c.textContent);
-    expect(cells(rows[0]).slice(0, 5)).toEqual(['Ref. d0000001', expect.stringContaining("needs a second operator's approval"), '৳25,000', expect.stringMatching(/^Overdue · 3 d 3 h oldwaiting since /), 'not claimed']);
-    expect(within(rows[0]).getByText(/^Overdue · 3 d 3 h old/).className).toMatch(/late/);   // a day or more: red, in words too
+    expect(cells(rows[0]).slice(0, 5)).toEqual([
+      'Ref. d0000001',
+      expect.stringContaining("needs a second operator's approval"),
+      '৳25,000',
+      expect.stringMatching(/^Overdue · 3 d 3 h oldwaiting since /),
+      'not claimed',
+    ]);
+    expect(within(rows[0]).getByText(/^Overdue · 3 d 3 h old/).className).toMatch(/late/); // a day or more: red, in words too
     expect(cells(rows[1])[3]).toMatch(/^3 h old/);
     expect(within(rows[1]).getByText(/^3 h old/).className).not.toMatch(/late/);
     expect(cells(rows[1])[4]).toBe('claimed by you');
@@ -164,7 +226,7 @@ describe('the queues', () => {
     expect(await screen.findByText('This queue is not available yet.')).toBeTruthy();
   });
 
-  it('FR-OPS-06 a claim runs the conflict check; a refusal is said in words, a claim makes the case the operator\'s', async () => {
+  it("FR-OPS-06 a claim runs the conflict check; a refusal is said in words, a claim makes the case the operator's", async () => {
     const reports = [item({ id: 'r0000001-aaaa-4bbb-8ccc-000000000001', targetType: 'listing', category: 'fraud', ageHours: 2 })];
     let claimed = false;
     const be = backend({
@@ -172,7 +234,10 @@ describe('the queues', () => {
       'GET /staff/queues/reports': () => json(200, { queue: 'reports', items: reports.map((r) => ({ ...r, assignedTo: claimed ? 's-1' : null })) })(),
       'POST /staff/cases/report/r0000001-aaaa-4bbb-8ccc-000000000001/claim': [
         problem(403, 'conflict-of-interest'),
-        () => { claimed = true; return json(200, { id: 'r0000001-aaaa-4bbb-8ccc-000000000001' })(); },
+        () => {
+          claimed = true;
+          return json(200, { id: 'r0000001-aaaa-4bbb-8ccc-000000000001' })();
+        },
       ],
     });
     open('/staff/queues/reports', be);
@@ -188,14 +253,25 @@ describe('the queues', () => {
 describe('approvals', () => {
   it('FR-OPS-05 a proposal shows what it does, why and until when; approving is confirmed first and sends the note', async () => {
     const a: Approval = {
-      id: 'a-1', action: 'kyc.revoke', targetType: 'user', targetId: 'u0000001-aaaa-4bbb-8ccc-000000000001', payload: {}, reason: 'Document found to be forged.',
-      requiredRole: 'operator', proposedBy: 's-2', proposedAt: iso(-HOUR), expiresAt: iso(23 * HOUR),
+      id: 'a-1',
+      action: 'kyc.revoke',
+      targetType: 'user',
+      targetId: 'u0000001-aaaa-4bbb-8ccc-000000000001',
+      payload: {},
+      reason: 'Document found to be forged.',
+      requiredRole: 'operator',
+      proposedBy: 's-2',
+      proposedAt: iso(-HOUR),
+      expiresAt: iso(23 * HOUR),
     };
     let open1 = true;
     const be = backend({
       'GET /staff/me': json(200, operator()),
       'GET /staff/approvals': () => json(200, open1 ? [a] : [])(),
-      'POST /staff/approvals/a-1/decision': () => { open1 = false; return json(200, { ...a, decision: 'approved' })(); },
+      'POST /staff/approvals/a-1/decision': () => {
+        open1 = false;
+        return json(200, { ...a, decision: 'approved' })();
+      },
     });
     open('/staff/approvals', be);
     const card = (await screen.findByRole('heading', { name: 'Revoke a verification' })).closest('li')!;

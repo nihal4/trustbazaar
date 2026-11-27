@@ -25,13 +25,16 @@ export async function keyScreen(ctx: Ctx, notice: string | null = null): Promise
     const pair = await ctx.keys.load(orderId, g.keyVersion);
     if (!pair) return say(t('secure.key.other_browser'), 'error');
     const fp = await fingerprint(await publicRawOf(pair));
-    return show(root, title,
+    return show(
+      root,
+      title,
       notice ? h('p', { class: 'success', role: 'status' }, notice) : null,
       h('p', {}, t('secure.key.ready')),
       h('p', {}, t('secure.key.fingerprint'), ' ', h('strong', { class: 'fingerprint' }, fp)),
       h('p', { class: 'hint' }, t('secure.key.fingerprint_hint')),
       h('p', { class: 'hint' }, t('secure.same_browser')),
-      back);
+      back,
+    );
   }
 
   const message = h('p', { class: 'error', role: 'alert', hidden: true });
@@ -51,10 +54,5 @@ export async function keyScreen(ctx: Ctx, notice: string | null = null): Promise
       create.disabled = false;
     }
   });
-  show(root, title,
-    h('p', {}, t('secure.key.explain')),
-    h('p', { class: 'hint' }, t('secure.same_browser')),
-    message,
-    h('p', {}, create),
-    back);
+  show(root, title, h('p', {}, t('secure.key.explain')), h('p', { class: 'hint' }, t('secure.same_browser')), message, h('p', {}, create), back);
 }

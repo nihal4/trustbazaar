@@ -34,9 +34,15 @@ describe('orders jobs', () => {
   const drain = async (run: () => Promise<number>) => {
     for (let i = 0; i < 30 && (await run()) > 0; i++);
   };
-  const events = (id: string) => fx.query<{ event_type: string; payload: Record<string, unknown> }>(`SELECT event_type, payload FROM orders.outbox WHERE aggregate_id = $1 ORDER BY created_at`, [id]);
+  const events = (id: string) =>
+    fx.query<{ event_type: string; payload: Record<string, unknown> }>(
+      `SELECT event_type, payload FROM orders.outbox WHERE aggregate_id = $1 ORDER BY created_at`,
+      [id],
+    );
 
-  async function order(o: { kind?: string; status?: string; due?: string; fulfilment?: string; step?: string; stepDue?: string; doneAgo?: string; delivered?: boolean } = {}) {
+  async function order(
+    o: { kind?: string; status?: string; due?: string; fulfilment?: string; step?: string; stepDue?: string; doneAgo?: string; delivered?: boolean } = {},
+  ) {
     const [buyer, seller] = [await fx.user(), await fx.user()];
     const courier = o.fulfilment === 'courier';
     const paid = o.status === 'paid';
@@ -47,14 +53,30 @@ describe('orders jobs', () => {
                $11, $12, $13)
        RETURNING id`,
       [
-        o.kind ?? 'fixed_price', randomUUID(), buyer, seller, o.fulfilment ?? 'self_pickup', courier ? randomUUID() : null, courier ? 15_000 : 0, courier ? 1_015_000 : 1_000_000,
-        o.due ?? '-1 minute', o.status ?? 'awaiting_payment', paid ? new Date() : null, paid ? (o.step ?? 'meetup_handover') : null,
+        o.kind ?? 'fixed_price',
+        randomUUID(),
+        buyer,
+        seller,
+        o.fulfilment ?? 'self_pickup',
+        courier ? randomUUID() : null,
+        courier ? 15_000 : 0,
+        courier ? 1_015_000 : 1_000_000,
+        o.due ?? '-1 minute',
+        o.status ?? 'awaiting_payment',
+        paid ? new Date() : null,
+        paid ? (o.step ?? 'meetup_handover') : null,
         paid ? await one<{ t: Date }>(`SELECT now() + $1::interval AS t`, [o.stepDue ?? '7 days']).then((r) => r.t) : null,
       ],
     );
     if (paid) {
-      await fx.query(`INSERT INTO payments.attempts (purpose, order_id, payer_id, provider, amount, status, expires_at, confirmed_at, provider_txn_id) VALUES ('order', $1, $2, 'bkash', $3, 'succeeded', now(), now(), 'txn-1')`, [id, buyer, courier ? 1_015_000 : 1_000_000]);
-      await fx.query(`INSERT INTO orders.escrows (order_id, release_policy, amount_collected) VALUES ($1, 'standard', $2)`, [id, courier ? 1_015_000 : 1_000_000]);
+      await fx.query(
+        `INSERT INTO payments.attempts (purpose, order_id, payer_id, provider, amount, status, expires_at, confirmed_at, provider_txn_id) VALUES ('order', $1, $2, 'bkash', $3, 'succeeded', now(), now(), 'txn-1')`,
+        [id, buyer, courier ? 1_015_000 : 1_000_000],
+      );
+      await fx.query(`INSERT INTO orders.escrows (order_id, release_policy, amount_collected) VALUES ($1, 'standard', $2)`, [
+        id,
+        courier ? 1_015_000 : 1_000_000,
+      ]);
       if (o.doneAgo) {
         const at = await one<{ t: Date }>(`SELECT now() - $1::interval AS t`, [o.doneAgo]).then((r) => r.t);
         await db.transaction(async (m: EntityManager) => {
@@ -77,11 +99,22 @@ describe('orders jobs', () => {
   }
 
   it('NFR-REL-03 every Unit 2 job is registered with the runner', () => {
-    const names = t.app.get(JobRunner).stats().map((s) => s.name);
-    expect(names).toEqual(expect.arrayContaining([
-      'orders.payment.expire', 'orders.fulfilment.deadline', 'orders.escrow.auto_release', 'orders.delivery.stalled',
-      'orders.cancellation.lapse', 'orders.reconciliation', 'orders.refunds.send', 'orders.payouts.send',
-    ]));
+    const names = t.app
+      .get(JobRunner)
+      .stats()
+      .map((s) => s.name);
+    expect(names).toEqual(
+      expect.arrayContaining([
+        'orders.payment.expire',
+        'orders.fulfilment.deadline',
+        'orders.escrow.auto_release',
+        'orders.delivery.stalled',
+        'orders.cancellation.lapse',
+        'orders.reconciliation',
+        'orders.refunds.send',
+        'orders.payouts.send',
+      ]),
+    );
   });
 
   it('FR-FIX-03 an unpaid order past its hold is cancelled, its attempts expire and the stock is returned', async () => {
@@ -89,7 +122,10 @@ describe('orders jobs', () => {
     const a = await attempt(o.id, o.buyer, 'redirected', 'pending');
     const later = await order({ due: '10 minutes' });
     await drain(() => jobs.expirePayments());
-    expect(await one(`SELECT status, cancel_reason FROM orders.orders WHERE id = $1`, [o.id])).toEqual({ status: 'cancelled', cancel_reason: 'checkout_expired' });
+    expect(await one(`SELECT status, cancel_reason FROM orders.orders WHERE id = $1`, [o.id])).toEqual({
+      status: 'cancelled',
+      cancel_reason: 'checkout_expired',
+    });
     expect(await one(`SELECT status FROM payments.attempts WHERE id = $1`, [a])).toEqual({ status: 'expired' });
     expect((await events(o.id)).map((e) => e.event_type)).toEqual(['orders.order.cancelled']);
     expect((await events(o.id))[0].payload).toMatchObject({ listingId: expect.any(String), quantity: 1, reason: 'checkout_expired' });
@@ -108,7 +144,10 @@ describe('orders jobs', () => {
     const a = await attempt(o.id, o.buyer, 'redirected', 'succeeded');
     await drain(() => jobs.expirePayments());
     expect(await one(`SELECT status FROM orders.orders WHERE id = $1`, [o.id])).toEqual({ status: 'paid' });
-    expect(await one(`SELECT status, provider_txn_id FROM payments.attempts WHERE id = $1`, [a])).toEqual({ status: 'succeeded', provider_txn_id: expect.stringMatching(/^mocktxn_/) });
+    expect(await one(`SELECT status, provider_txn_id FROM payments.attempts WHERE id = $1`, [a])).toEqual({
+      status: 'succeeded',
+      provider_txn_id: expect.stringMatching(/^mocktxn_/),
+    });
   });
 
   it('FR-PAY-08 a missed fulfilment deadline refunds the buyer in full, with the reason for the strike', async () => {
@@ -118,8 +157,14 @@ describe('orders jobs', () => {
     await fx.query(`UPDATE orders.escrows SET state = 'frozen_disputed', open_dispute_id = gen_random_uuid() WHERE order_id = $1`, [disputed.id]);
     await fx.query(`INSERT INTO orders.cancellation_requests (order_id, requested_by, reason) VALUES ($1, $2, 'please')`, [late.id, late.buyer]);
     await drain(() => jobs.missedDeadlines());
-    expect(await one(`SELECT state, amount_refunded FROM orders.escrows WHERE order_id = $1`, [late.id])).toEqual({ state: 'refunded', amount_refunded: '1015000' });
-    expect(await one(`SELECT reason, amount FROM payments.refunds WHERE order_id = $1`, [late.id])).toEqual({ reason: 'fulfilment_deadline', amount: '1015000' });
+    expect(await one(`SELECT state, amount_refunded FROM orders.escrows WHERE order_id = $1`, [late.id])).toEqual({
+      state: 'refunded',
+      amount_refunded: '1015000',
+    });
+    expect(await one(`SELECT reason, amount FROM payments.refunds WHERE order_id = $1`, [late.id])).toEqual({
+      reason: 'fulfilment_deadline',
+      amount: '1015000',
+    });
     const refunded = (await events(late.id)).find((e) => e.event_type === 'orders.escrow.refunded');
     expect(refunded?.payload).toMatchObject({ reason: 'fulfilment_deadline', sellerId: late.seller }); // I-44
     expect(await one(`SELECT status FROM orders.cancellation_requests WHERE order_id = $1`, [late.id])).toEqual({ status: 'lapsed' });
@@ -150,7 +195,8 @@ describe('orders jobs', () => {
   it('FR-PAY-09 a pending cancellation request lapses at the delivery event', async () => {
     const o = await order({ status: 'paid', doneAgo: '1 hour', delivered: true });
     const open = await order({ status: 'paid' });
-    for (const x of [o, open]) await fx.query(`INSERT INTO orders.cancellation_requests (order_id, requested_by, reason) VALUES ($1, $2, 'please')`, [x.id, x.buyer]);
+    for (const x of [o, open])
+      await fx.query(`INSERT INTO orders.cancellation_requests (order_id, requested_by, reason) VALUES ($1, $2, 'please')`, [x.id, x.buyer]);
     await jobs.lapseCancellations();
     expect(await one(`SELECT status FROM orders.cancellation_requests WHERE order_id = $1`, [o.id])).toEqual({ status: 'lapsed' });
     expect(await one(`SELECT status FROM orders.cancellation_requests WHERE order_id = $1`, [open.id])).toEqual({ status: 'pending' });
