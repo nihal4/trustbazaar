@@ -1,0 +1,16 @@
+{
+  "recordedAt": "2026-11-27T13:25:58.538Z",
+  "path": "/account/kyc/",
+  "answers": {
+    "GET /kyc/status": {
+      "status": 200,
+      "body": {
+        "status": "verified",
+        "changedAt": "2026-11-02T10:15:30.147Z",
+        "rejection": null,
+        "submissionsLeft": 3,
+        "expectedReviewHours": 48
+      }
+    }
+  }
+}

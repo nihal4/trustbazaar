@@ -1,0 +1,76 @@
+{
+  "recordedAt": "2026-11-27T13:24:45.174Z",
+  "path": "/listings/62328fd3-0309-4a84-81b3-30946b0265c0",
+  "answers": {
+    "GET /listings/62328fd3-0309-4a84-81b3-30946b0265c0": {
+      "status": 200,
+      "body": {
+        "id": "62328fd3-0309-4a84-81b3-30946b0265c0",
+        "itemKind": "physical",
+        "saleFormat": "fixed_price",
+        "status": "active",
+        "category": {
+          "id": 1,
+          "slug": "mobile-phones",
+          "nameEn": "Mobile phones",
+          "nameBn": "মোবাইল ফোন"
+        },
+        "title": "OnePlus Nord CE 3, 128 GB, Grey",
+        "description": "Six months old, always in a case. Fast charger and box included. Battery health 94%.",
+        "condition": "used",
+        "noVisibleDefects": true,
+        "fulfilmentOptions": "pickup_or_courier",
+        "weightClass": "up_to_1kg",
+        "sizeClass": "small",
+        "district": "Dhaka",
+        "serialLast4": null,
+        "price": "2100000",
+        "quantity": {
+          "total": 1,
+          "available": 0
+        },
+        "currentlyReserved": true,
+        "locked": true,
+        "photos": [
+          {
+            "id": "0f348b4a-4e1d-40ce-857e-1b22d1d34a90",
+            "position": 1,
+            "url": "/api/v1/listing-photos/4430c7915f089ca9846fd8031023d438",
+            "thumbUrl": "/api/v1/listing-photos/4430c7915f089ca9846fd8031023d438?size=thumb",
+            "width": 1200,
+            "height": 900,
+            "showsDefects": false
+          },
+          {
+            "id": "9b997ab4-4a04-491c-88de-3b8c360fd511",
+            "position": 2,
+            "url": "/api/v1/listing-photos/4b8368a4a718c83fd2e7e10b5c022a06",
+            "thumbUrl": "/api/v1/listing-photos/4b8368a4a718c83fd2e7e10b5c022a06?size=thumb",
+            "width": 1200,
+            "height": 900,
+            "showsDefects": false
+          }
+        ],
+        "clarifications": [],
+        "auction": null,
+        "seller": {
+          "id": "6cf9c4de-8bce-4b86-8570-1f00ff7aac59",
+          "displayName": "Fatema Begum",
+          "verified": true,
+          "joinMonth": "2026-11"
+        },
+        "publishedAt": "2026-11-26T12:00:41.607Z",
+        "createdAt": "2026-11-26T12:00:41.369Z"
+      }
+    },
+    "GET /me": {
+      "status": 401,
+      "body": {
+        "type": "/problems/session-ended",
+        "title": "Your session has ended. Please sign in again.",
+        "status": 401,
+        "correlationId": "a0e22398-118f-463c-8029-18de68d3c288"
+      }
+    }
+  }
+}

@@ -1,0 +1,322 @@
+[
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "plain",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400"
+    },
+    "count": 1,
+    "screens": [
+      "seller-dashboard"
+    ],
+    "id": "seller-dashboard-0",
+    "classes": [
+      "brand"
+    ],
+    "text": "",
+    "picture": "seller-dashboard-0.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 48,
+      "padX": 0,
+      "border": "- / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 4,
+    "screens": [
+      "seller-dashboard"
+    ],
+    "id": "seller-dashboard-1",
+    "classes": [
+      "navCell"
+    ],
+    "text": "Orders",
+    "picture": "seller-dashboard-1.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "seller-dashboard"
+    ],
+    "id": "seller-dashboard-2",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "seller-dashboard-2.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 22,
+      "border": "1px none / 1px none",
+      "radius": "6px",
+      "bg": "rgb(255, 107, 53)",
+      "color": "rgb(10, 16, 24)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "seller-dashboard"
+    ],
+    "id": "seller-dashboard-3",
+    "classes": [
+      "mantine-focus-auto",
+      "mantine-active",
+      "77c9d27d",
+      "mantine-Button-root",
+      "87cf2631",
+      "mantine-UnstyledButton-root"
+    ],
+    "text": "Sell an item",
+    "picture": "seller-dashboard-3.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 24,
+      "border": "1px rgb(255, 107, 53) / 1px rgb(255, 107, 53)",
+      "radius": "2px",
+      "bg": "rgba(255, 107, 53, 0.13)",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 2,
+    "screens": [
+      "seller-dashboard"
+    ],
+    "id": "seller-dashboard-4",
+    "classes": [
+      "ruledButton"
+    ],
+    "text": "All your sales",
+    "picture": "seller-dashboard-4.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "seller-dashboard"
+    ],
+    "id": "seller-dashboard-5",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "seller-dashboard-5.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 8,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "seller-dashboard"
+    ],
+    "id": "seller-dashboard-6",
+    "classes": [
+      "langSwitch"
+    ],
+    "text": "বাংলা– change the language to Bangla",
+    "picture": "seller-dashboard-6.png"
+  },
+  {
+    "category": "field",
+    "signature": {
+      "height": 44,
+      "border": "- / - / -",
+      "radius": "square",
+      "bg": "none"
+    },
+    "count": 1,
+    "screens": [
+      "seller-dashboard"
+    ],
+    "id": "seller-dashboard-7",
+    "classes": [],
+    "text": "",
+    "picture": "seller-dashboard-7.png"
+  },
+  {
+    "category": "field",
+    "signature": {
+      "height": 48,
+      "border": "- / 1px rgb(102, 128, 122) / -",
+      "radius": "square",
+      "bg": "none"
+    },
+    "count": 1,
+    "screens": [
+      "seller-dashboard"
+    ],
+    "id": "seller-dashboard-8",
+    "classes": [
+      "select"
+    ],
+    "text": "ActiveWaiting for reviewDraftsSoldEnded ",
+    "picture": "seller-dashboard-8.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "-",
+      "bottom": "-",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 24,
+      "padX": 0
+    },
+    "count": 2,
+    "screens": [
+      "seller-dashboard"
+    ],
+    "id": "seller-dashboard-9",
+    "classes": [
+      "panel"
+    ],
+    "text": "Orders that need youGoogle Pixel 7, 128 ",
+    "picture": "seller-dashboard-9.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "1px rgb(42, 59, 54)",
+      "bottom": "-",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 24,
+      "padX": 0
+    },
+    "count": 2,
+    "screens": [
+      "seller-dashboard"
+    ],
+    "id": "seller-dashboard-10",
+    "classes": [
+      "panel"
+    ],
+    "text": "Your listingsShow listings that areActiv",
+    "picture": "seller-dashboard-10.png"
+  },
+  {
+    "category": "fact list",
+    "signature": {
+      "display": "grid",
+      "top": "1px rgb(42, 59, 54)",
+      "borderBetween": "none",
+      "cols": 4
+    },
+    "count": 1,
+    "screens": [
+      "seller-dashboard"
+    ],
+    "id": "seller-dashboard-11",
+    "classes": [
+      "figures"
+    ],
+    "text": "Orders that need you4Owed to you৳26,600P",
+    "picture": "seller-dashboard-11.png"
+  },
+  {
+    "category": "fact list",
+    "signature": {
+      "display": "grid",
+      "top": "-",
+      "borderBetween": "rules",
+      "cols": 2
+    },
+    "count": 1,
+    "screens": [
+      "seller-dashboard"
+    ],
+    "id": "seller-dashboard-12",
+    "classes": [
+      "breakdown"
+    ],
+    "text": "Collected from the buyer৳28,000.00Item p",
+    "picture": "seller-dashboard-12.png"
+  },
+  {
+    "category": "tag, count or mark",
+    "signature": {
+      "height": 16,
+      "border": "-",
+      "radius": "6px",
+      "bg": "rgb(255, 122, 69)",
+      "color": "rgb(10, 16, 24)",
+      "size": 12
+    },
+    "count": 1,
+    "screens": [
+      "seller-dashboard"
+    ],
+    "id": "seller-dashboard-13",
+    "classes": [
+      "badge"
+    ],
+    "text": "18",
+    "picture": "seller-dashboard-13.png"
+  },
+  {
+    "category": "notice",
+    "signature": {
+      "left": "-",
+      "border": "1px rgb(201, 138, 61)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)"
+    },
+    "count": 1,
+    "screens": [
+      "seller-dashboard"
+    ],
+    "id": "seller-dashboard-14",
+    "classes": [
+      "notice"
+    ],
+    "text": "Test mode: no real money is moved. Payme",
+    "picture": "seller-dashboard-14.png"
+  }
+]

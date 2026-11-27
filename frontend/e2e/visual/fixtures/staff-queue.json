@@ -1,0 +1,248 @@
+{
+  "recordedAt": "2026-11-27T13:26:02.841Z",
+  "path": "/staff/queues/disputes",
+  "answers": {
+    "GET /staff/me": {
+      "status": 200,
+      "body": {
+        "id": "0ff55bba-93f2-4776-9826-d0af62d5ee76",
+        "email": "operator@trustbazaar.test",
+        "displayName": "Demo Operator",
+        "role": "operator",
+        "session": {
+          "idleExpiresAt": "2026-11-27T13:38:58.077Z",
+          "absoluteExpiresAt": "2026-11-27T21:23:58.077Z"
+        }
+      }
+    },
+    "GET /staff/queues/reports": {
+      "status": 200,
+      "body": {
+        "queue": "reports",
+        "items": []
+      }
+    },
+    "GET /staff/queues/kyc": {
+      "status": 200,
+      "body": {
+        "queue": "kyc",
+        "items": [
+          {
+            "id": "9814bf25-d522-4910-b99a-0bef2f6c27db",
+            "ageHours": 57.9,
+            "since": "2026-11-25T03:31:07.178Z",
+            "status": "pending_review",
+            "overdue": true,
+            "assignedTo": null,
+            "userId": "62a6ba50-93a4-428e-b371-4e72edcbe235",
+            "docType": "nid",
+            "flags": [],
+            "path": "/staff/kyc/submissions/9814bf25-d522-4910-b99a-0bef2f6c27db"
+          },
+          {
+            "id": "d7ce9da6-e12a-4cd0-80e8-7e4c96f0a4cf",
+            "ageHours": 4,
+            "since": "2026-11-27T09:23:28.334Z",
+            "status": "pending_review",
+            "overdue": false,
+            "assignedTo": null,
+            "userId": "f8214977-c56e-496f-99f9-017312e82024",
+            "docType": "nid",
+            "flags": [],
+            "path": "/staff/kyc/submissions/d7ce9da6-e12a-4cd0-80e8-7e4c96f0a4cf"
+          }
+        ]
+      }
+    },
+    "GET /staff/queues/listings_review": {
+      "status": 200,
+      "body": {
+        "queue": "listings_review",
+        "items": []
+      }
+    },
+    "GET /staff/queues/payout_accounts": {
+      "status": 200,
+      "body": {
+        "queue": "payout_accounts",
+        "items": []
+      }
+    },
+    "GET /staff/queues/payment_discrepancies": {
+      "status": 409,
+      "body": {
+        "type": "/problems/feature-off",
+        "title": "This is not available right now.",
+        "status": 409,
+        "errors": [
+          {
+            "field": "queue",
+            "reason": "payment-discrepancies-not-yet-available"
+          }
+        ],
+        "correlationId": "f17192e2-5e37-4e5c-b6c8-f32b90e80f67"
+      }
+    },
+    "GET /staff/queues/flagged_activity": {
+      "status": 200,
+      "body": {
+        "queue": "flagged_activity",
+        "items": [
+          {
+            "id": "d77c5f08-18fd-48de-9dc7-5b3b33f37cfd",
+            "ageHours": 40.3,
+            "since": "2026-11-25T21:10:36.484Z",
+            "status": "open",
+            "assignedTo": null,
+            "kind": "linked_accounts",
+            "subjectUser": "bbbe691f-6538-4426-8e6f-6339687b6eac",
+            "detail": {
+              "via": "device",
+              "since": "2026-11-25T17:49:36.961Z",
+              "userId": "bbbe691f-6538-4426-8e6f-6339687b6eac",
+              "linkedTo": "7c60a601-1736-407f-8e7b-62c078e22a69"
+            },
+            "path": "/staff/signals/d77c5f08-18fd-48de-9dc7-5b3b33f37cfd/review"
+          },
+          {
+            "id": "c8cde460-d3b6-451e-a98a-55ea5b5cdfd9",
+            "ageHours": 26,
+            "since": "2026-11-26T11:28:51.147Z",
+            "status": "open",
+            "assignedTo": null,
+            "kind": "linked_accounts",
+            "subjectUser": "2cf534f7-063f-4675-ba0e-39b6df36c6d5",
+            "detail": {
+              "via": "device",
+              "since": "2026-11-26T11:05:10.895Z",
+              "userId": "2cf534f7-063f-4675-ba0e-39b6df36c6d5",
+              "linkedTo": "7c60a601-1736-407f-8e7b-62c078e22a69"
+            },
+            "path": "/staff/signals/c8cde460-d3b6-451e-a98a-55ea5b5cdfd9/review"
+          },
+          {
+            "id": "d640f07d-447c-4460-b8c7-10dbce9c5d8e",
+            "ageHours": 26,
+            "since": "2026-11-26T11:28:51.155Z",
+            "status": "open",
+            "assignedTo": null,
+            "kind": "linked_accounts",
+            "subjectUser": "2cf534f7-063f-4675-ba0e-39b6df36c6d5",
+            "detail": {
+              "via": "device",
+              "since": "2026-11-26T11:05:10.895Z",
+              "userId": "2cf534f7-063f-4675-ba0e-39b6df36c6d5",
+              "linkedTo": "bbbe691f-6538-4426-8e6f-6339687b6eac"
+            },
+            "path": "/staff/signals/d640f07d-447c-4460-b8c7-10dbce9c5d8e/review"
+          },
+          {
+            "id": "72be1e2c-c7f3-41d8-9640-c49c014e8b4a",
+            "ageHours": 3.4,
+            "since": "2026-11-27T10:03:56.012Z",
+            "status": "open",
+            "assignedTo": null,
+            "kind": "linked_accounts",
+            "subjectUser": "f8214977-c56e-496f-99f9-017312e82024",
+            "detail": {
+              "via": "device",
+              "since": "2026-11-27T09:16:12.760Z",
+              "userId": "f8214977-c56e-496f-99f9-017312e82024",
+              "linkedTo": "2cf534f7-063f-4675-ba0e-39b6df36c6d5"
+            },
+            "path": "/staff/signals/72be1e2c-c7f3-41d8-9640-c49c014e8b4a/review"
+          },
+          {
+            "id": "a17b454d-5755-46c9-a5c3-352f562e7c41",
+            "ageHours": 3.4,
+            "since": "2026-11-27T10:03:56.018Z",
+            "status": "open",
+            "assignedTo": null,
+            "kind": "linked_accounts",
+            "subjectUser": "f8214977-c56e-496f-99f9-017312e82024",
+            "detail": {
+              "via": "device",
+              "since": "2026-11-27T09:16:12.760Z",
+              "userId": "f8214977-c56e-496f-99f9-017312e82024",
+              "linkedTo": "7c60a601-1736-407f-8e7b-62c078e22a69"
+            },
+            "path": "/staff/signals/a17b454d-5755-46c9-a5c3-352f562e7c41/review"
+          },
+          {
+            "id": "32c1638b-88fa-429d-977c-ff247f9a9851",
+            "ageHours": 3.4,
+            "since": "2026-11-27T10:03:56.021Z",
+            "status": "open",
+            "assignedTo": null,
+            "kind": "linked_accounts",
+            "subjectUser": "f8214977-c56e-496f-99f9-017312e82024",
+            "detail": {
+              "via": "device",
+              "since": "2026-11-27T09:16:12.760Z",
+              "userId": "f8214977-c56e-496f-99f9-017312e82024",
+              "linkedTo": "bbbe691f-6538-4426-8e6f-6339687b6eac"
+            },
+            "path": "/staff/signals/32c1638b-88fa-429d-977c-ff247f9a9851/review"
+          }
+        ]
+      }
+    },
+    "GET /staff/queues/disputes": {
+      "status": 200,
+      "body": {
+        "queue": "disputes",
+        "items": [
+          {
+            "id": "683e5d8b-6663-4bc5-a714-856862fc5420",
+            "ageHours": 26.6,
+            "since": "2026-11-26T10:49:12.332Z",
+            "status": "open",
+            "assignedTo": null,
+            "overdue": false,
+            "orderId": "7d57ef33-0ac6-45eb-9aa9-f6f03cc5d03e",
+            "type": "damaged",
+            "decisionTargetAt": null,
+            "amountCollected": "3800000",
+            "fourEyes": true,
+            "path": "/staff/disputes/683e5d8b-6663-4bc5-a714-856862fc5420/case-file"
+          },
+          {
+            "id": "7e59daf7-ed02-4c32-bda3-53f072f87b0c",
+            "ageHours": 25.4,
+            "since": "2026-11-26T12:00:52.714Z",
+            "status": "open",
+            "assignedTo": null,
+            "overdue": false,
+            "orderId": "2afcf70c-09c7-48ca-bb2c-32eafe4e7691",
+            "type": "not_as_described",
+            "decisionTargetAt": null,
+            "amountCollected": "5200000",
+            "fourEyes": true,
+            "path": "/staff/disputes/7e59daf7-ed02-4c32-bda3-53f072f87b0c/case-file"
+          },
+          {
+            "id": "13adf161-29d0-4240-8ccd-f293d3aaa580",
+            "ageHours": 25.4,
+            "since": "2026-11-26T12:00:57.968Z",
+            "status": "under_review",
+            "assignedTo": null,
+            "overdue": false,
+            "orderId": "79b8c835-9b07-44de-b98e-b117de995d4d",
+            "type": "not_as_described",
+            "decisionTargetAt": "2026-12-01T12:00:58.059Z",
+            "amountCollected": "650000",
+            "fourEyes": false,
+            "path": "/staff/disputes/13adf161-29d0-4240-8ccd-f293d3aaa580/case-file"
+          }
+        ]
+      }
+    },
+    "GET /staff/queues/ownership_proofs": {
+      "status": 200,
+      "body": {
+        "queue": "ownership_proofs",
+        "items": []
+      }
+    }
+  }
+}

@@ -1,0 +1,475 @@
+[
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "plain",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400"
+    },
+    "count": 1,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-0",
+    "classes": [
+      "brand"
+    ],
+    "text": "",
+    "picture": "order-seller-0.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 48,
+      "padX": 0,
+      "border": "- / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 4,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-1",
+    "classes": [
+      "navCell"
+    ],
+    "text": "Orders",
+    "picture": "order-seller-1.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-2",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "order-seller-2.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 22,
+      "border": "1px none / 1px none",
+      "radius": "6px",
+      "bg": "rgb(255, 107, 53)",
+      "color": "rgb(10, 16, 24)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-3",
+    "classes": [
+      "mantine-focus-auto",
+      "mantine-active",
+      "77c9d27d",
+      "mantine-Button-root",
+      "87cf2631",
+      "mantine-UnstyledButton-root"
+    ],
+    "text": "Sell an item",
+    "picture": "order-seller-3.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 2,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-4",
+    "classes": [
+      "receiptLink"
+    ],
+    "text": "Download receipt",
+    "picture": "order-seller-4.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 24,
+      "border": "1px rgb(255, 107, 53) / 1px rgb(255, 107, 53)",
+      "radius": "square",
+      "bg": "color(srgb 1 0.419608 0.207843 / 0.1)",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-5",
+    "classes": [
+      "primary"
+    ],
+    "text": "Start the handover",
+    "picture": "order-seller-5.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 56,
+      "padX": 12,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 2,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-6",
+    "classes": [
+      "secondary"
+    ],
+    "text": "Propose a place and time",
+    "picture": "order-seller-6.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-7",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "order-seller-7.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 8,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-8",
+    "classes": [
+      "langSwitch"
+    ],
+    "text": "বাংলা– change the language to Bangla",
+    "picture": "order-seller-8.png"
+  },
+  {
+    "category": "field",
+    "signature": {
+      "height": 44,
+      "border": "- / - / -",
+      "radius": "square",
+      "bg": "none"
+    },
+    "count": 1,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-9",
+    "classes": [],
+    "text": "",
+    "picture": "order-seller-9.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "1px rgb(42, 59, 54)",
+      "bottom": "1px rgb(42, 59, 54)",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 28,
+      "padX": 0
+    },
+    "count": 1,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-10",
+    "classes": [
+      "moneyPanel"
+    ],
+    "text": "Money for this order৳42,000Held by Trust",
+    "picture": "order-seller-10.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "-",
+      "bottom": "-",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 0,
+      "padX": 0
+    },
+    "count": 2,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-11",
+    "classes": [
+      "previewBlock",
+      "deadlineWrap"
+    ],
+    "text": "Order summaryQuantity1Item৳42,000.00Deli",
+    "picture": "order-seller-11.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "2px rgb(255, 107, 53)",
+      "bottom": "-",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 0,
+      "padX": 0
+    },
+    "count": 1,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-12",
+    "classes": [
+      "rail"
+    ],
+    "text": "Meetup handoverStatusArrangingEnter the ",
+    "picture": "order-seller-12.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "-",
+      "bottom": "1px rgb(42, 59, 54)",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 20,
+      "padX": 0
+    },
+    "count": 3,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-13",
+    "classes": [
+      "panel"
+    ],
+    "text": "Meetup handoverStatusArrangingEnter the ",
+    "picture": "order-seller-13.png"
+  },
+  {
+    "category": "fact list",
+    "signature": {
+      "display": "grid",
+      "top": "1px rgb(42, 59, 54)",
+      "borderBetween": "none",
+      "cols": 3
+    },
+    "count": 1,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-14",
+    "classes": [
+      "facts"
+    ],
+    "text": "StatusPaidRoleYou are the sellerListingV",
+    "picture": "order-seller-14.png"
+  },
+  {
+    "category": "fact list",
+    "signature": {
+      "display": "grid",
+      "top": "1px rgb(42, 59, 54)",
+      "borderBetween": "none",
+      "cols": 4
+    },
+    "count": 1,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-15",
+    "classes": [
+      "breakdownGrid"
+    ],
+    "text": "Quantity1Item৳42,000.00Delivery৳0.00Tota",
+    "picture": "order-seller-15.png"
+  },
+  {
+    "category": "fact list",
+    "signature": {
+      "display": "grid",
+      "top": "1px rgb(42, 59, 54)",
+      "borderBetween": "none",
+      "cols": 1
+    },
+    "count": 2,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-16",
+    "classes": [
+      "statusGrid",
+      "deadlineGrid"
+    ],
+    "text": "StatusArranging",
+    "picture": "order-seller-16.png"
+  },
+  {
+    "category": "stepper",
+    "signature": {
+      "orientation": "horizontal",
+      "display": "grid",
+      "items": 3,
+      "markers": "before"
+    },
+    "count": 1,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-17",
+    "classes": [
+      "list"
+    ],
+    "text": "Payment complete (done)Money on hold (no",
+    "picture": "order-seller-17.png"
+  },
+  {
+    "category": "avatar or photo place",
+    "signature": {
+      "size": "64x64",
+      "border": "1px rgb(42, 59, 54)",
+      "radius": "4px",
+      "bg": "rgb(22, 34, 31)",
+      "color": "rgb(241, 245, 243)"
+    },
+    "count": 1,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-18",
+    "classes": [
+      "thumb"
+    ],
+    "text": "",
+    "picture": "order-seller-18.png"
+  },
+  {
+    "category": "tag, count or mark",
+    "signature": {
+      "height": 16,
+      "border": "-",
+      "radius": "6px",
+      "bg": "rgb(255, 122, 69)",
+      "color": "rgb(10, 16, 24)",
+      "size": 12
+    },
+    "count": 1,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-19",
+    "classes": [
+      "badge"
+    ],
+    "text": "17",
+    "picture": "order-seller-19.png"
+  },
+  {
+    "category": "tag, count or mark",
+    "signature": {
+      "height": 22,
+      "border": "-",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "size": 14
+    },
+    "count": 1,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-20",
+    "classes": [
+      "status"
+    ],
+    "text": "Paid",
+    "picture": "order-seller-20.png"
+  },
+  {
+    "category": "tag, count or mark",
+    "signature": {
+      "height": 20,
+      "border": "-",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(93, 211, 158)",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "order-seller"
+    ],
+    "id": "order-seller-21",
+    "classes": [
+      "tick"
+    ],
+    "text": "Identity verified",
+    "picture": "order-seller-21.png"
+  }
+]

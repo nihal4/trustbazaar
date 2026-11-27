@@ -1,0 +1,356 @@
+[
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "plain",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400"
+    },
+    "count": 1,
+    "screens": [
+      "orders-buyer"
+    ],
+    "id": "orders-buyer-0",
+    "classes": [
+      "brand"
+    ],
+    "text": "",
+    "picture": "orders-buyer-0.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 48,
+      "padX": 0,
+      "border": "- / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 4,
+    "screens": [
+      "orders-buyer"
+    ],
+    "id": "orders-buyer-1",
+    "classes": [
+      "navCell"
+    ],
+    "text": "Orders",
+    "picture": "orders-buyer-1.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "orders-buyer"
+    ],
+    "id": "orders-buyer-2",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "orders-buyer-2.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 22,
+      "border": "1px none / 1px none",
+      "radius": "6px",
+      "bg": "rgb(255, 107, 53)",
+      "color": "rgb(10, 16, 24)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "orders-buyer"
+    ],
+    "id": "orders-buyer-3",
+    "classes": [
+      "mantine-focus-auto",
+      "mantine-active",
+      "77c9d27d",
+      "mantine-Button-root",
+      "87cf2631",
+      "mantine-UnstyledButton-root"
+    ],
+    "text": "Sell an item",
+    "picture": "orders-buyer-3.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 20,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "orders-buyer"
+    ],
+    "id": "orders-buyer-4",
+    "classes": [
+      "tabOn"
+    ],
+    "text": "Bought",
+    "picture": "orders-buyer-4.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 20,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(162, 181, 176)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "orders-buyer"
+    ],
+    "id": "orders-buyer-5",
+    "classes": [
+      "tab"
+    ],
+    "text": "Sold",
+    "picture": "orders-buyer-5.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "orders-buyer"
+    ],
+    "id": "orders-buyer-6",
+    "classes": [
+      "stageOn"
+    ],
+    "text": "1Orders",
+    "picture": "orders-buyer-6.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(162, 181, 176)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 2,
+    "screens": [
+      "orders-buyer"
+    ],
+    "id": "orders-buyer-7",
+    "classes": [
+      "stageTab"
+    ],
+    "text": "2On the way",
+    "picture": "orders-buyer-7.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 4,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 15
+    },
+    "count": 8,
+    "screens": [
+      "orders-buyer"
+    ],
+    "id": "orders-buyer-8",
+    "classes": [
+      "receipt"
+    ],
+    "text": "Download receipt",
+    "picture": "orders-buyer-8.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "orders-buyer"
+    ],
+    "id": "orders-buyer-9",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "orders-buyer-9.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 8,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "orders-buyer"
+    ],
+    "id": "orders-buyer-10",
+    "classes": [
+      "langSwitch"
+    ],
+    "text": "বাংলা– change the language to Bangla",
+    "picture": "orders-buyer-10.png"
+  },
+  {
+    "category": "field",
+    "signature": {
+      "height": 44,
+      "border": "- / - / -",
+      "radius": "square",
+      "bg": "none"
+    },
+    "count": 1,
+    "screens": [
+      "orders-buyer"
+    ],
+    "id": "orders-buyer-11",
+    "classes": [],
+    "text": "",
+    "picture": "orders-buyer-11.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "-",
+      "bottom": "-",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 0,
+      "padX": 0
+    },
+    "count": 1,
+    "screens": [
+      "orders-buyer"
+    ],
+    "id": "orders-buyer-12",
+    "classes": [
+      "ordersSection"
+    ],
+    "text": "ItemStatusSellerMoneyJBL Flip 5 Bluetoot",
+    "picture": "orders-buyer-12.png"
+  },
+  {
+    "category": "avatar or photo place",
+    "signature": {
+      "size": "64x64",
+      "border": "1px rgb(42, 59, 54)",
+      "radius": "4px",
+      "bg": "rgb(22, 34, 31)",
+      "color": "rgb(241, 245, 243)"
+    },
+    "count": 8,
+    "screens": [
+      "orders-buyer"
+    ],
+    "id": "orders-buyer-13",
+    "classes": [
+      "thumb"
+    ],
+    "text": "",
+    "picture": "orders-buyer-13.png"
+  },
+  {
+    "category": "tag, count or mark",
+    "signature": {
+      "height": 16,
+      "border": "-",
+      "radius": "6px",
+      "bg": "rgb(255, 122, 69)",
+      "color": "rgb(10, 16, 24)",
+      "size": 12
+    },
+    "count": 2,
+    "screens": [
+      "orders-buyer"
+    ],
+    "id": "orders-buyer-14",
+    "classes": [
+      "badge"
+    ],
+    "text": "1",
+    "picture": "orders-buyer-14.png"
+  },
+  {
+    "category": "tag, count or mark",
+    "signature": {
+      "height": 44,
+      "border": "-",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "orders-buyer"
+    ],
+    "id": "orders-buyer-15",
+    "classes": [
+      "stageTabs"
+    ],
+    "text": "1Orders2On the way3Completed",
+    "picture": "orders-buyer-15.png"
+  }
+]

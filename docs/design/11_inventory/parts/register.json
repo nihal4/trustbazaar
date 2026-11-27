@@ -1,0 +1,128 @@
+[
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "plain",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400"
+    },
+    "count": 1,
+    "screens": [
+      "register"
+    ],
+    "id": "register-0",
+    "classes": [
+      "brand"
+    ],
+    "text": "",
+    "picture": "register-0.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "register"
+    ],
+    "id": "register-1",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "register-1.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 16,
+      "border": "1px rgb(102, 128, 122) / 1px rgb(102, 128, 122)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "register"
+    ],
+    "id": "register-2",
+    "classes": [
+      "langSwitch"
+    ],
+    "text": "বাংলা– change the language to Bangla",
+    "picture": "register-2.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 28,
+      "border": "1px rgb(255, 107, 53) / 1px rgb(255, 107, 53)",
+      "radius": "2px",
+      "bg": "rgba(255, 107, 53, 0.13)",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 17
+    },
+    "count": 1,
+    "screens": [
+      "register"
+    ],
+    "id": "register-3",
+    "classes": [
+      "primary"
+    ],
+    "text": "Continue",
+    "picture": "register-3.png"
+  },
+  {
+    "category": "field",
+    "signature": {
+      "height": 48,
+      "border": "- / 1px rgb(255, 107, 53) / -",
+      "radius": "square",
+      "bg": "none"
+    },
+    "count": 1,
+    "screens": [
+      "register"
+    ],
+    "id": "register-4",
+    "classes": [],
+    "text": "",
+    "picture": "register-4.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "1px rgb(102, 128, 122)",
+      "bottom": "1px rgb(102, 128, 122)",
+      "sides": "1px rgb(102, 128, 122) / 1px rgb(102, 128, 122)",
+      "radius": "square",
+      "bg": "rgb(10, 17, 16)",
+      "padY": 0,
+      "padX": 0
+    },
+    "count": 1,
+    "screens": [
+      "register"
+    ],
+    "id": "register-5",
+    "classes": [
+      "stageCard"
+    ],
+    "text": "Create your accountFull nameShown to oth",
+    "picture": "register-5.png"
+  }
+]

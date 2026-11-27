@@ -1,0 +1,397 @@
+[
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "plain",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400"
+    },
+    "count": 1,
+    "screens": [
+      "kyc-calendar"
+    ],
+    "id": "kyc-calendar-0",
+    "classes": [
+      "brand"
+    ],
+    "text": "",
+    "picture": "kyc-calendar-0.png"
+  },
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "underlined",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600"
+    },
+    "count": 1,
+    "screens": [
+      "kyc-calendar"
+    ],
+    "id": "kyc-calendar-1",
+    "classes": [
+      "exit"
+    ],
+    "text": "Finish later",
+    "picture": "kyc-calendar-1.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "kyc-calendar"
+    ],
+    "id": "kyc-calendar-2",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "kyc-calendar-2.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 16,
+      "border": "- / -",
+      "radius": "6px",
+      "bg": "rgb(22, 34, 31)",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "kyc-calendar"
+    ],
+    "id": "kyc-calendar-3",
+    "classes": [
+      "langSwitch"
+    ],
+    "text": "বাংলা– change the language to Bangla",
+    "picture": "kyc-calendar-3.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 6,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(162, 181, 176)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 2,
+    "screens": [
+      "kyc-calendar"
+    ],
+    "id": "kyc-calendar-4",
+    "classes": [
+      "eye",
+      "close"
+    ],
+    "text": "",
+    "picture": "kyc-calendar-4.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 48,
+      "padX": 6,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 2,
+    "screens": [
+      "kyc-calendar"
+    ],
+    "id": "kyc-calendar-5",
+    "classes": [
+      "nav"
+    ],
+    "text": "",
+    "picture": "kyc-calendar-5.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 6,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 30,
+    "screens": [
+      "kyc-calendar"
+    ],
+    "id": "kyc-calendar-6",
+    "classes": [
+      "day"
+    ],
+    "text": "1",
+    "picture": "kyc-calendar-6.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 52,
+      "padX": 28,
+      "border": "1px rgb(102, 128, 122) / 1px rgb(102, 128, 122)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "kyc-calendar"
+    ],
+    "id": "kyc-calendar-7",
+    "classes": [
+      "secondary"
+    ],
+    "text": "Back",
+    "picture": "kyc-calendar-7.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 52,
+      "padX": 28,
+      "border": "1px rgb(255, 107, 53) / 1px rgb(255, 107, 53)",
+      "radius": "square",
+      "bg": "color(srgb 1 0.419608 0.207843 / 0.1)",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "kyc-calendar"
+    ],
+    "id": "kyc-calendar-8",
+    "classes": [
+      "primary"
+    ],
+    "text": "Continue",
+    "picture": "kyc-calendar-8.png"
+  },
+  {
+    "category": "field",
+    "signature": {
+      "height": 48,
+      "border": "- / 2px rgb(255, 111, 142) / -",
+      "radius": "square",
+      "bg": "none"
+    },
+    "count": 3,
+    "screens": [
+      "kyc-calendar"
+    ],
+    "id": "kyc-calendar-9",
+    "classes": [],
+    "text": "",
+    "picture": "kyc-calendar-9.png"
+  },
+  {
+    "category": "field",
+    "signature": {
+      "height": 48,
+      "border": "- / - / -",
+      "radius": "square",
+      "bg": "none"
+    },
+    "count": 2,
+    "screens": [
+      "kyc-calendar"
+    ],
+    "id": "kyc-calendar-10",
+    "classes": [],
+    "text": "JanuaryFebruaryMarchAprilMayJuneJulyAugu",
+    "picture": "kyc-calendar-10.png"
+  },
+  {
+    "category": "choice mark",
+    "signature": {
+      "type": "radio",
+      "size": 20,
+      "appearance": "none",
+      "radius": "50%"
+    },
+    "count": 2,
+    "screens": [
+      "kyc-calendar"
+    ],
+    "id": "kyc-calendar-11",
+    "classes": [],
+    "text": "",
+    "picture": "kyc-calendar-11.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "1px rgb(42, 59, 54)",
+      "bottom": "1px rgb(42, 59, 54)",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 16,
+      "padX": 0
+    },
+    "count": 1,
+    "screens": [
+      "kyc-calendar"
+    ],
+    "id": "kyc-calendar-12",
+    "classes": [
+      "status"
+    ],
+    "text": "Your verificationNot verified yet.",
+    "picture": "kyc-calendar-12.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "-",
+      "bottom": "-",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 0,
+      "padX": 0
+    },
+    "count": 2,
+    "screens": [
+      "kyc-calendar"
+    ],
+    "id": "kyc-calendar-13",
+    "classes": [
+      "wizard",
+      "side"
+    ],
+    "text": "1Your details(now)2Your document(to come",
+    "picture": "kyc-calendar-13.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "1px rgb(42, 59, 54)",
+      "bottom": "-",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 16,
+      "padX": 0
+    },
+    "count": 2,
+    "screens": [
+      "kyc-calendar"
+    ],
+    "id": "kyc-calendar-14",
+    "classes": [
+      "rules",
+      "private"
+    ],
+    "text": "Before you take itYour national ID card ",
+    "picture": "kyc-calendar-14.png"
+  },
+  {
+    "category": "stepper",
+    "signature": {
+      "orientation": "horizontal",
+      "display": "grid",
+      "items": 4,
+      "markers": "before"
+    },
+    "count": 1,
+    "screens": [
+      "kyc-calendar"
+    ],
+    "id": "kyc-calendar-15",
+    "classes": [
+      "steps"
+    ],
+    "text": "1Your details(now)2Your document(to come",
+    "picture": "kyc-calendar-15.png"
+  },
+  {
+    "category": "notice",
+    "signature": {
+      "left": "2px rgb(255, 111, 142)",
+      "border": "2px rgb(255, 111, 142)",
+      "radius": "4px",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)"
+    },
+    "count": 1,
+    "screens": [
+      "kyc-calendar"
+    ],
+    "id": "kyc-calendar-16",
+    "classes": [
+      "summary"
+    ],
+    "text": "Please correct these and try againEnter ",
+    "picture": "kyc-calendar-16.png"
+  },
+  {
+    "category": "notice",
+    "signature": {
+      "left": "-",
+      "border": "-",
+      "radius": "6px",
+      "bg": "none",
+      "color": "rgb(255, 111, 142)"
+    },
+    "count": 3,
+    "screens": [
+      "kyc-calendar"
+    ],
+    "id": "kyc-calendar-17",
+    "classes": [
+      "error"
+    ],
+    "text": "Enter the NID number as printed: 10, 13 ",
+    "picture": "kyc-calendar-17.png"
+  },
+  {
+    "category": "popup",
+    "signature": {
+      "top": "2px rgb(255, 107, 53)",
+      "radius": "square",
+      "widthClass": "medium",
+      "bg": "rgb(16, 26, 25)"
+    },
+    "count": 1,
+    "screens": [
+      "kyc-calendar"
+    ],
+    "id": "kyc-calendar-18",
+    "classes": [
+      "popup"
+    ],
+    "text": "Date of birthMonthJanuaryFebruaryMarchAp",
+    "picture": "kyc-calendar-18.png"
+  }
+]

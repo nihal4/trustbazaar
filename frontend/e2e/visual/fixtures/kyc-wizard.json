@@ -1,0 +1,24 @@
+{
+  "recordedAt": "2026-11-27T13:25:58.538Z",
+  "path": "/account/kyc/",
+  "answers": {
+    "GET /kyc/status": {
+      "status": 200,
+      "body": {
+        "status": "unsubmitted",
+        "changedAt": "2026-11-27T13:25:58.538Z",
+        "rejection": null,
+        "submissionsLeft": 3,
+        "expectedReviewHours": 24
+      }
+    },
+    "GET /kyc/liveness-challenge": {
+      "status": 200,
+      "body": {
+        "challengeId": "c-1",
+        "action": "smile",
+        "expiresAt": "2026-11-27T13:35:58.538Z"
+      }
+    }
+  }
+}

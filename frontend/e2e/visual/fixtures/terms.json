@@ -1,0 +1,15 @@
+{
+  "recordedAt": "2026-11-27T13:24:40.988Z",
+  "path": "/help/terms",
+  "answers": {
+    "GET /me": {
+      "status": 401,
+      "body": {
+        "type": "/problems/session-ended",
+        "title": "Your session has ended. Please sign in again.",
+        "status": 401,
+        "correlationId": "557d3bd5-211e-426e-81b7-c8a79537f8b4"
+      }
+    }
+  }
+}

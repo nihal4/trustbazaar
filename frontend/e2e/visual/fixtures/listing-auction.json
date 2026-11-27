@@ -1,0 +1,96 @@
+{
+  "recordedAt": "2026-11-27T13:24:49.600Z",
+  "path": "/listings/56eb1022-2d29-4562-b6d8-e1d9eef92902",
+  "answers": {
+    "GET /listings/56eb1022-2d29-4562-b6d8-e1d9eef92902": {
+      "status": 200,
+      "body": {
+        "id": "56eb1022-2d29-4562-b6d8-e1d9eef92902",
+        "itemKind": "physical",
+        "saleFormat": "auction",
+        "status": "active",
+        "category": {
+          "id": 3,
+          "slug": "electronics",
+          "nameEn": "Electronics",
+          "nameBn": "ইলেকট্রনিক্স"
+        },
+        "title": "Sony WH-1000XM4 headphones, black, boxed",
+        "description": "Bought last year, used only a few times. Comes with the carrying case, cable and the original box.",
+        "condition": "like_new",
+        "noVisibleDefects": true,
+        "fulfilmentOptions": "pickup_or_courier",
+        "weightClass": "up_to_1kg",
+        "sizeClass": "small",
+        "district": "Dhaka",
+        "serialLast4": null,
+        "price": null,
+        "quantity": {
+          "total": 1,
+          "available": 1
+        },
+        "currentlyReserved": false,
+        "locked": false,
+        "photos": [
+          {
+            "id": "6b92fa2c-91da-487b-8424-7015295333e6",
+            "position": 1,
+            "url": "/api/v1/listing-photos/8a1c8b7cff7b375a2944202f9fb1939e",
+            "thumbUrl": "/api/v1/listing-photos/8a1c8b7cff7b375a2944202f9fb1939e?size=thumb",
+            "width": 1200,
+            "height": 900,
+            "showsDefects": false
+          },
+          {
+            "id": "70af0895-f38e-400b-a70d-4ade8a3bb953",
+            "position": 2,
+            "url": "/api/v1/listing-photos/fd97fbcc0e4375dd67990abcb62d1dc5",
+            "thumbUrl": "/api/v1/listing-photos/fd97fbcc0e4375dd67990abcb62d1dc5?size=thumb",
+            "width": 1200,
+            "height": 900,
+            "showsDefects": false
+          }
+        ],
+        "clarifications": [],
+        "auction": {
+          "auctionId": "56eb1022-2d29-4562-b6d8-e1d9eef92902",
+          "status": "open",
+          "startPrice": "1200000",
+          "price": null,
+          "bidCount": 0,
+          "leaderAlias": null,
+          "endAt": "2026-11-28T18:00:24.476Z",
+          "hasReserve": false,
+          "reserveMet": true,
+          "minimumBid": "1200000",
+          "serverTime": "2026-11-27T13:24:49.813Z",
+          "seq": 0,
+          "currentPrice": null
+        },
+        "seller": {
+          "id": "2cf534f7-063f-4675-ba0e-39b6df36c6d5",
+          "displayName": "Test Seller",
+          "verified": true,
+          "joinMonth": "2026-11"
+        },
+        "publishedAt": "2026-11-25T18:00:24.482Z",
+        "createdAt": "2026-11-25T18:00:24.254Z"
+      }
+    },
+    "GET /me": {
+      "status": 401,
+      "body": {
+        "type": "/problems/session-ended",
+        "title": "Your session has ended. Please sign in again.",
+        "status": 401,
+        "correlationId": "ccb8b83f-1488-488f-9671-4b1dce48f7fd"
+      }
+    },
+    "GET /auctions/56eb1022-2d29-4562-b6d8-e1d9eef92902/bids": {
+      "status": 200,
+      "body": {
+        "items": []
+      }
+    }
+  }
+}

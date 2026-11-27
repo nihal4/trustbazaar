@@ -1,0 +1,1133 @@
+{
+  "recordedAt": "2026-11-27T13:25:41.222Z",
+  "path": "/seller",
+  "answers": {
+    "GET /me": {
+      "status": 200,
+      "body": {
+        "id": "2cf534f7-063f-4675-ba0e-39b6df36c6d5",
+        "displayName": "Test Seller",
+        "phoneMasked": "***002",
+        "email": "seller@trustbazaar.test",
+        "emailVerified": true,
+        "kycStatus": "verified",
+        "accountStatus": "active",
+        "mfaEnabled": false,
+        "emailTwoStep": true,
+        "memberSince": "2026-11-02T10:15:30.147Z"
+      }
+    },
+    "GET /me/payout-account": {
+      "status": 200,
+      "body": {
+        "account": null
+      }
+    },
+    "GET /me/listings?status=active": {
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "56eb1022-2d29-4562-b6d8-e1d9eef92902",
+            "title": "Sony WH-1000XM4 headphones, black, boxed",
+            "status": "active",
+            "itemKind": "physical",
+            "saleFormat": "auction",
+            "price": null,
+            "quantity": {
+              "total": 1,
+              "available": 1
+            },
+            "thumbUrl": "/api/v1/listing-photos/8a1c8b7cff7b375a2944202f9fb1939e?size=thumb",
+            "createdAt": "2026-11-25T18:00:24.254Z",
+            "publishedAt": "2026-11-25T18:00:24.482Z"
+          },
+          {
+            "id": "3bc6be43-87e1-4455-ab76-11e3fd749ff1",
+            "title": "Samsung Galaxy S21 FE, 128 GB, Graphite",
+            "status": "active",
+            "itemKind": "physical",
+            "saleFormat": "auction",
+            "price": null,
+            "quantity": {
+              "total": 1,
+              "available": 1
+            },
+            "thumbUrl": "/api/v1/listing-photos/a04168ccc384a76e88cfd95fda7ba121?size=thumb",
+            "createdAt": "2026-11-25T18:00:23.987Z",
+            "publishedAt": "2026-11-25T18:00:24.226Z"
+          },
+          {
+            "id": "38e2d192-3536-4d39-8648-0def53bc82f1",
+            "title": "Sony WH-1000XM4 noise-cancelling headphones (live demo)",
+            "status": "active",
+            "itemKind": "physical",
+            "saleFormat": "auction",
+            "price": null,
+            "quantity": {
+              "total": 1,
+              "available": 1
+            },
+            "thumbUrl": "/api/v1/listing-photos/a189187abdc58b58edefb4263c91e220?size=thumb",
+            "createdAt": "2026-11-25T14:59:07.102Z",
+            "publishedAt": "2026-11-25T14:59:07.266Z"
+          },
+          {
+            "id": "acc2ec0f-f9e9-4b72-bb4f-ffb890c69318",
+            "title": "Samsung Galaxy S21, 256 GB, Phantom Grey (live demo)",
+            "status": "active",
+            "itemKind": "physical",
+            "saleFormat": "auction",
+            "price": null,
+            "quantity": {
+              "total": 1,
+              "available": 1
+            },
+            "thumbUrl": "/api/v1/listing-photos/08cd04c17a5df3c95b68980bfeb1ecc2?size=thumb",
+            "createdAt": "2026-11-25T14:59:06.731Z",
+            "publishedAt": "2026-11-25T14:59:07.069Z"
+          }
+        ],
+        "nextCursor": null
+      }
+    },
+    "GET /me/payouts": {
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "8f3f0972-1dfb-4e47-9652-c8c7238cf826",
+            "orderId": "c5a51b42-7553-4c64-9caf-c6c46ca12f77",
+            "amount": "2660000",
+            "status": "waiting_account",
+            "simulated": true,
+            "createdAt": "2026-11-26T14:45:09.951Z",
+            "sentAt": null
+          }
+        ],
+        "nextCursor": null
+      }
+    },
+    "GET /me/statements": {
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "orderId": "c5a51b42-7553-4c64-9caf-c6c46ca12f77",
+            "title": "Canon EOS 1500D camera with 18-55 mm lens",
+            "settledAt": "2026-11-26T14:45:09.951Z",
+            "amountCollected": "2800000",
+            "itemPrice": "2800000",
+            "deliveryFee": "0",
+            "commission": "140000",
+            "commissionBps": 500,
+            "courierPayout": "0",
+            "deliveryMargin": "0",
+            "deliveryMarginBps": 1000,
+            "sellerPayout": "2660000",
+            "refundTotal": "0",
+            "payout": {
+              "id": "8f3f0972-1dfb-4e47-9652-c8c7238cf826",
+              "amount": "2660000",
+              "status": "waiting_account",
+              "simulated": true,
+              "createdAt": "2026-11-26T14:45:09.951Z",
+              "sentAt": null
+            }
+          }
+        ],
+        "owed": "2660000",
+        "nextCursor": null
+      }
+    },
+    "GET /me/notification-preferences": {
+      "status": 200,
+      "body": {
+        "language": "en",
+        "emailTransactional": true
+      }
+    },
+    "GET /notifications": {
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "2a77a69e-1adf-4f89-83cf-93f9a92c3770",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T13:23:49.823Z",
+            "readAt": null
+          },
+          {
+            "id": "153931e5-f4c7-4fa8-bc1c-4b014ffedb28",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T11:40:16.983Z",
+            "readAt": null
+          },
+          {
+            "id": "5b0bcc93-7e6e-4085-95a1-e2760eb3b653",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T10:35:03.800Z",
+            "readAt": null
+          },
+          {
+            "id": "114ae3da-35e2-4c93-ae82-d55e17c65633",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T10:19:13.137Z",
+            "readAt": null
+          },
+          {
+            "id": "48241f1a-9577-4e79-9acd-f60366d17304",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T10:06:17.096Z",
+            "readAt": null
+          },
+          {
+            "id": "51ac5857-5070-4bd2-a7e5-3719cbda391b",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T10:06:06.473Z",
+            "readAt": null
+          },
+          {
+            "id": "2c7bfa79-360f-4ede-9603-ef634a4c0945",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T09:31:02.087Z",
+            "readAt": null
+          },
+          {
+            "id": "07d67287-a0f0-4e89-868c-fc643a0206c5",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T09:25:28.262Z",
+            "readAt": null
+          },
+          {
+            "id": "3d7aacf3-ae61-4ee6-a6e2-f9e53c6fe43f",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T09:20:02.892Z",
+            "readAt": null
+          },
+          {
+            "id": "2c9053da-bf3b-4196-ada8-67c80762a600",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T09:18:59.410Z",
+            "readAt": null
+          },
+          {
+            "id": "95fb7041-2c2e-45a1-b90c-2a4471408114",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T09:05:18.840Z",
+            "readAt": null
+          },
+          {
+            "id": "5512e1a9-bed6-496c-a309-becff6fc007a",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:59:41.440Z",
+            "readAt": null
+          },
+          {
+            "id": "840b6d20-44f8-402f-8fc2-b0e95d2b7b88",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:57:51.361Z",
+            "readAt": null
+          },
+          {
+            "id": "bd50e962-ab1a-42f5-96eb-493f86ccd9ae",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:42:43.993Z",
+            "readAt": null
+          },
+          {
+            "id": "974696d8-0f65-4afb-8fd8-d781e36af346",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:41:04.265Z",
+            "readAt": null
+          },
+          {
+            "id": "d13ecec6-7010-4301-8c2a-71f93e1e6894",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:38:53.772Z",
+            "readAt": null
+          },
+          {
+            "id": "bc1eec1c-cb94-46f8-920a-e25a0f075e67",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:32:08.354Z",
+            "readAt": null
+          },
+          {
+            "id": "0ea93358-8bbc-424b-a5ff-272bd41790d2",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:27:55.290Z",
+            "readAt": null
+          },
+          {
+            "id": "3226105e-4b3e-47c8-8b3a-283d30d07c70",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:24:35.291Z",
+            "readAt": "2026-11-27T08:26:49.137Z"
+          },
+          {
+            "id": "a3bd8f69-ef0a-4fb1-a4fd-c007aa1c7ad8",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:21:51.899Z",
+            "readAt": "2026-11-27T08:26:49.137Z"
+          },
+          {
+            "id": "8a9274c4-7b75-4ef2-b42d-c0a6100236d2",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:14:59.159Z",
+            "readAt": "2026-11-27T08:26:49.137Z"
+          },
+          {
+            "id": "1d8cc657-1a95-478d-857e-53a132a059b9",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:09:27.237Z",
+            "readAt": "2026-11-27T08:26:49.137Z"
+          },
+          {
+            "id": "011124f8-613b-4ef0-8167-34ca1e6767a2",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:05:39.290Z",
+            "readAt": "2026-11-27T08:26:49.137Z"
+          },
+          {
+            "id": "a8435991-200a-4448-9e54-80025960e38a",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:01:37.776Z",
+            "readAt": "2026-11-27T08:26:49.137Z"
+          },
+          {
+            "id": "d8386851-7f45-403b-92bb-40e6095d5299",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T07:55:08.151Z",
+            "readAt": "2026-11-27T08:00:47.728Z"
+          },
+          {
+            "id": "8f3d80a9-de1d-44ca-a0c6-5a9696388a92",
+            "code": "chat.message_received",
+            "title": "New message about Google Pixel 7, 128 GB, Snow",
+            "body": "You have a new message from Test Buyer about Google Pixel 7, 128 GB, Snow. Open TrustBazaar to read it and reply. Pay only through the app: payments outside it are not protected.",
+            "subject": {
+              "type": "thread",
+              "id": "726a0c3c-e00a-491a-b2fe-ffc92b6599a3"
+            },
+            "createdAt": "2026-11-27T07:54:36.885Z",
+            "readAt": "2026-11-27T08:00:47.728Z"
+          },
+          {
+            "id": "16ae1ed5-4a35-4406-a94f-1857d9029ad5",
+            "code": "chat.message_received",
+            "title": "New message about Google Pixel 7, 128 GB, Snow",
+            "body": "You have a new message from Test Buyer about Google Pixel 7, 128 GB, Snow. Open TrustBazaar to read it and reply. Pay only through the app: payments outside it are not protected.",
+            "subject": {
+              "type": "thread",
+              "id": "726a0c3c-e00a-491a-b2fe-ffc92b6599a3"
+            },
+            "createdAt": "2026-11-27T07:54:25.214Z",
+            "readAt": "2026-11-27T08:00:47.728Z"
+          },
+          {
+            "id": "e7ed0d8c-4f10-483a-a51d-5f1858b6ca26",
+            "code": "chat.message_received",
+            "title": "New message about Google Pixel 7, 128 GB, Snow",
+            "body": "You have a new message from Test Buyer about Google Pixel 7, 128 GB, Snow. Open TrustBazaar to read it and reply. Pay only through the app: payments outside it are not protected.",
+            "subject": {
+              "type": "thread",
+              "id": "726a0c3c-e00a-491a-b2fe-ffc92b6599a3"
+            },
+            "createdAt": "2026-11-27T07:53:56.045Z",
+            "readAt": "2026-11-27T08:00:47.728Z"
+          },
+          {
+            "id": "9cb8c0c6-6f11-4a73-9a04-9ecc7fa9eb71",
+            "code": "chat.message_received",
+            "title": "New message about Google Pixel 7, 128 GB, Snow",
+            "body": "You have a new message from Test Buyer about Google Pixel 7, 128 GB, Snow. Open TrustBazaar to read it and reply. Pay only through the app: payments outside it are not protected.",
+            "subject": {
+              "type": "thread",
+              "id": "726a0c3c-e00a-491a-b2fe-ffc92b6599a3"
+            },
+            "createdAt": "2026-11-27T07:53:55.120Z",
+            "readAt": "2026-11-27T08:00:47.728Z"
+          },
+          {
+            "id": "d341bd76-fe52-49d9-89b3-d74f0ad70a99",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T07:52:51.100Z",
+            "readAt": "2026-11-27T08:00:47.728Z"
+          },
+          {
+            "id": "23385235-d2de-4106-a586-3947ae3e8e26",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:45:26.887Z",
+            "readAt": "2026-11-27T08:00:47.728Z"
+          },
+          {
+            "id": "d23f37bd-d47e-4068-8f98-e7e5d251347a",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:40:59.886Z",
+            "readAt": "2026-11-27T06:41:20.806Z"
+          },
+          {
+            "id": "a432346a-dbb2-4d7a-b849-509f80dbfb97",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:37:45.344Z",
+            "readAt": "2026-11-27T06:39:38.493Z"
+          },
+          {
+            "id": "86237a98-db9d-4872-bf99-69c6a21e0d0d",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:37:19.576Z",
+            "readAt": "2026-11-27T06:39:38.493Z"
+          },
+          {
+            "id": "db132c67-791d-494e-b7a8-824f6f012844",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:33:48.378Z",
+            "readAt": "2026-11-27T06:37:09.365Z"
+          },
+          {
+            "id": "9e5c2c93-6ac1-4a32-9ab6-324e07191cb3",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:30:26.645Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "9dbed96a-1186-41c8-aa43-d7e171628fe3",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:30:00.645Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "b2a10fb5-20b1-48a4-a6c8-ae6bce325997",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:29:33.963Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "cce1fb13-9938-4ba6-9d70-008f8196dab6",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:25:21.235Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "ecc20f38-8418-447f-8631-9fbf386233f2",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:24:18.192Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "b6651c25-48e2-47a0-be44-91484506f08d",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:21:34.071Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "448d649d-7ca1-4c7e-8039-ddcb1697d7ab",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:13:29.573Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "9556391b-6762-473d-a077-cf0ab7d25beb",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:12:47.718Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "4d0542b3-860b-44c5-8976-760ee95facce",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:07:59.153Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "6a680bd8-b6b4-4481-aef4-d6621b2da162",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:01:23.111Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "7abcbd78-f915-45bb-9092-382a5d9c104b",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T05:59:16.774Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "d9a2a5f3-46cb-48cb-9daf-9295a90d836e",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T05:55:40.885Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "d56e572a-576c-45a4-aa82-981a6ec65250",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T05:52:19.115Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "d0246b29-7bc8-4eac-be74-953a521bd1f9",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T05:48:33.808Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "74378bc7-da22-4e9d-9d55-458aa341d3fe",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T05:35:12.131Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          }
+        ],
+        "unread": 18,
+        "nextCursor": "MjAyNi0xMS0yN1QwNTozNToxMi4xMzE4OTJafDc0Mzc4YmM3LWRhMjItNGU5ZC05ZDU1LTQ1OGFhMzQxZDNmZQ"
+      }
+    },
+    "GET /threads": {
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "726a0c3c-e00a-491a-b2fe-ffc92b6599a3",
+            "listing": {
+              "id": "b8948e8a-7e41-4c57-9a55-f37ef5c1d3c6",
+              "title": "Google Pixel 7, 128 GB, Snow"
+            },
+            "role": "seller",
+            "other": {
+              "id": "bbbe691f-6538-4426-8e6f-6339687b6eac",
+              "displayName": "Test Buyer",
+              "verified": true
+            },
+            "lastSeq": 9,
+            "unread": 0,
+            "lastMessageAt": "2026-11-27T07:55:08.072Z",
+            "closed": false
+          }
+        ],
+        "nextCursor": null
+      }
+    },
+    "GET /orders?role=seller": {
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "79b8c835-9b07-44de-b98e-b117de995d4d",
+            "kind": "fixed_price",
+            "role": "seller",
+            "status": "paid",
+            "listing": {
+              "id": "059f8673-1e4d-443a-b07a-1460b1d16222",
+              "title": "Logitech MX Master 3 wireless mouse",
+              "itemKind": "physical",
+              "photoKey": "0dbaf46b012bb889ca66e7189156fac8"
+            },
+            "buyerId": "bbbe691f-6538-4426-8e6f-6339687b6eac",
+            "sellerId": "2cf534f7-063f-4675-ba0e-39b6df36c6d5",
+            "counterparty": {
+              "id": "bbbe691f-6538-4426-8e6f-6339687b6eac",
+              "displayName": "Test Buyer",
+              "verified": true,
+              "joinMonth": "2026-11"
+            },
+            "quantity": 1,
+            "unitPrice": "650000",
+            "itemPrice": "650000",
+            "deliveryFee": "0",
+            "total": "650000",
+            "fulfilment": "self_pickup",
+            "fulfilmentOptions": [
+              "self_pickup",
+              "courier"
+            ],
+            "paymentDueAt": "2026-11-26T12:15:52.803Z",
+            "paidAt": "2026-11-26T12:00:52.813Z",
+            "fulfilmentStep": "meetup_handover",
+            "fulfilmentDueAt": "2026-12-03T12:00:52.813Z",
+            "deliveryEventAt": "2026-11-26T12:00:57.947Z",
+            "cancelledAt": null,
+            "cancelReason": null,
+            "closedAt": null,
+            "createdAt": "2026-11-26T12:00:52.792Z",
+            "cancellationRequest": null,
+            "escrow": {
+              "state": "frozen_disputed",
+              "releasePolicy": "standard",
+              "amountCollected": "650000",
+              "amountRefunded": "0",
+              "disputeWindowEndsAt": "2026-11-29T12:00:57.947Z",
+              "autoReleaseAt": "2026-12-01T12:00:57.947Z"
+            }
+          },
+          {
+            "id": "1ea523f1-8533-4211-be04-5cc3d5c366b8",
+            "kind": "fixed_price",
+            "role": "seller",
+            "status": "paid",
+            "listing": {
+              "id": "f7949d90-c496-4a51-85a3-03ecc94fe89f",
+              "title": "Sony Alpha a6000 camera with 16-50 mm lens",
+              "itemKind": "physical",
+              "photoKey": "73d6d2930aaf6960d7e1034defe52651"
+            },
+            "buyerId": "7c60a601-1736-407f-8e7b-62c078e22a69",
+            "sellerId": "2cf534f7-063f-4675-ba0e-39b6df36c6d5",
+            "counterparty": {
+              "id": "7c60a601-1736-407f-8e7b-62c078e22a69",
+              "displayName": "Nadia Islam",
+              "verified": true,
+              "joinMonth": "2026-11"
+            },
+            "quantity": 1,
+            "unitPrice": "4600000",
+            "itemPrice": "4600000",
+            "deliveryFee": "0",
+            "total": "4600000",
+            "fulfilment": "self_pickup",
+            "fulfilmentOptions": [
+              "self_pickup",
+              "courier"
+            ],
+            "paymentDueAt": "2026-11-26T12:15:42.423Z",
+            "paidAt": "2026-11-26T12:00:42.434Z",
+            "fulfilmentStep": "meetup_handover",
+            "fulfilmentDueAt": "2026-12-03T12:00:42.434Z",
+            "deliveryEventAt": "2026-11-26T12:00:47.545Z",
+            "cancelledAt": null,
+            "cancelReason": null,
+            "closedAt": null,
+            "createdAt": "2026-11-26T12:00:42.412Z",
+            "cancellationRequest": null,
+            "escrow": {
+              "state": "held",
+              "releasePolicy": "standard",
+              "amountCollected": "4600000",
+              "amountRefunded": "0",
+              "disputeWindowEndsAt": "2026-11-29T12:00:47.545Z",
+              "autoReleaseAt": "2026-12-01T12:00:47.545Z"
+            }
+          },
+          {
+            "id": "7d57ef33-0ac6-45eb-9aa9-f6f03cc5d03e",
+            "kind": "fixed_price",
+            "role": "seller",
+            "status": "paid",
+            "listing": {
+              "id": "a927ac8d-fa8a-4a6a-8860-96428bde290c",
+              "title": "Apple iPad 9th generation, 64 GB, Wi-Fi",
+              "itemKind": "physical",
+              "photoKey": "4bfa00392dc77a85051bc36168673a86"
+            },
+            "buyerId": "7c60a601-1736-407f-8e7b-62c078e22a69",
+            "sellerId": "2cf534f7-063f-4675-ba0e-39b6df36c6d5",
+            "counterparty": {
+              "id": "7c60a601-1736-407f-8e7b-62c078e22a69",
+              "displayName": "Nadia Islam",
+              "verified": true,
+              "joinMonth": "2026-11"
+            },
+            "quantity": 1,
+            "unitPrice": "3800000",
+            "itemPrice": "3800000",
+            "deliveryFee": "0",
+            "total": "3800000",
+            "fulfilment": "self_pickup",
+            "fulfilmentOptions": [
+              "self_pickup",
+              "courier"
+            ],
+            "paymentDueAt": "2026-11-26T11:04:11.228Z",
+            "paidAt": "2026-11-26T10:49:11.244Z",
+            "fulfilmentStep": "meetup_handover",
+            "fulfilmentDueAt": "2026-12-03T10:49:11.244Z",
+            "deliveryEventAt": "2026-11-26T10:49:12.309Z",
+            "cancelledAt": null,
+            "cancelReason": null,
+            "closedAt": null,
+            "createdAt": "2026-11-26T10:49:11.216Z",
+            "cancellationRequest": null,
+            "escrow": {
+              "state": "frozen_disputed",
+              "releasePolicy": "standard",
+              "amountCollected": "3800000",
+              "amountRefunded": "0",
+              "disputeWindowEndsAt": "2026-11-29T10:49:12.309Z",
+              "autoReleaseAt": "2026-12-01T10:49:12.309Z"
+            }
+          },
+          {
+            "id": "c5a51b42-7553-4c64-9caf-c6c46ca12f77",
+            "kind": "fixed_price",
+            "role": "seller",
+            "status": "closed",
+            "listing": {
+              "id": "47f9f961-9455-4dd6-b427-ef9407be822f",
+              "title": "Canon EOS 1500D camera with 18-55 mm lens",
+              "itemKind": "physical",
+              "photoKey": "2822b46feaaf4d34baa921fe0f986515"
+            },
+            "buyerId": "bbbe691f-6538-4426-8e6f-6339687b6eac",
+            "sellerId": "2cf534f7-063f-4675-ba0e-39b6df36c6d5",
+            "counterparty": {
+              "id": "bbbe691f-6538-4426-8e6f-6339687b6eac",
+              "displayName": "Test Buyer",
+              "verified": true,
+              "joinMonth": "2026-11"
+            },
+            "quantity": 1,
+            "unitPrice": "2800000",
+            "itemPrice": "2800000",
+            "deliveryFee": "0",
+            "total": "2800000",
+            "fulfilment": "self_pickup",
+            "fulfilmentOptions": [
+              "self_pickup",
+              "courier"
+            ],
+            "paymentDueAt": "2026-11-26T11:03:50.509Z",
+            "paidAt": "2026-11-26T10:48:50.533Z",
+            "fulfilmentStep": "meetup_handover",
+            "fulfilmentDueAt": "2026-12-03T10:48:50.533Z",
+            "deliveryEventAt": "2026-11-26T10:48:51.612Z",
+            "cancelledAt": null,
+            "cancelReason": null,
+            "closedAt": "2026-11-26T14:45:09.964Z",
+            "createdAt": "2026-11-26T10:48:50.483Z",
+            "cancellationRequest": null,
+            "escrow": {
+              "state": "released",
+              "releasePolicy": "standard",
+              "amountCollected": "2800000",
+              "amountRefunded": "0",
+              "disputeWindowEndsAt": "2026-11-29T10:48:51.612Z",
+              "autoReleaseAt": "2026-12-01T10:48:51.612Z"
+            }
+          },
+          {
+            "id": "d43f7a4e-9d0f-4120-b79b-d80d3324acd2",
+            "kind": "fixed_price",
+            "role": "seller",
+            "status": "paid",
+            "listing": {
+              "id": "c7f28bf9-5694-4675-9524-2278470859f5",
+              "title": "Lenovo ThinkPad T480, Core i5, 16 GB RAM, 512 GB SSD",
+              "itemKind": "physical",
+              "photoKey": "d815051e58b2c58074501f28d29fb120"
+            },
+            "buyerId": "bbbe691f-6538-4426-8e6f-6339687b6eac",
+            "sellerId": "2cf534f7-063f-4675-ba0e-39b6df36c6d5",
+            "counterparty": {
+              "id": "bbbe691f-6538-4426-8e6f-6339687b6eac",
+              "displayName": "Test Buyer",
+              "verified": true,
+              "joinMonth": "2026-11"
+            },
+            "quantity": 1,
+            "unitPrice": "4200000",
+            "itemPrice": "4200000",
+            "deliveryFee": "0",
+            "total": "4200000",
+            "fulfilment": "self_pickup",
+            "fulfilmentOptions": [
+              "self_pickup",
+              "courier"
+            ],
+            "paymentDueAt": "2026-11-26T01:32:57.914Z",
+            "paidAt": "2026-11-26T01:17:57.957Z",
+            "fulfilmentStep": "meetup_handover",
+            "fulfilmentDueAt": "2026-12-03T01:17:57.957Z",
+            "deliveryEventAt": null,
+            "cancelledAt": null,
+            "cancelReason": null,
+            "closedAt": null,
+            "createdAt": "2026-11-26T01:17:44.798Z",
+            "cancellationRequest": null,
+            "escrow": {
+              "state": "held",
+              "releasePolicy": "standard",
+              "amountCollected": "4200000",
+              "amountRefunded": "0",
+              "disputeWindowEndsAt": null,
+              "autoReleaseAt": null
+            }
+          },
+          {
+            "id": "48a3b385-d365-4241-92cd-676118cda005",
+            "kind": "fixed_price",
+            "role": "seller",
+            "status": "cancelled",
+            "listing": {
+              "id": "c7f28bf9-5694-4675-9524-2278470859f5",
+              "title": "Lenovo ThinkPad T480, Core i5, 16 GB RAM, 512 GB SSD",
+              "itemKind": "physical",
+              "photoKey": "d815051e58b2c58074501f28d29fb120"
+            },
+            "buyerId": "bbbe691f-6538-4426-8e6f-6339687b6eac",
+            "sellerId": "2cf534f7-063f-4675-ba0e-39b6df36c6d5",
+            "counterparty": {
+              "id": "bbbe691f-6538-4426-8e6f-6339687b6eac",
+              "displayName": "Test Buyer",
+              "verified": true,
+              "joinMonth": "2026-11"
+            },
+            "quantity": 1,
+            "unitPrice": "4200000",
+            "itemPrice": "4200000",
+            "deliveryFee": "0",
+            "total": "4200000",
+            "fulfilment": "self_pickup",
+            "fulfilmentOptions": [
+              "self_pickup",
+              "courier"
+            ],
+            "paymentDueAt": "2026-11-25T22:10:27.454Z",
+            "paidAt": null,
+            "fulfilmentStep": null,
+            "fulfilmentDueAt": null,
+            "deliveryEventAt": null,
+            "cancelledAt": "2026-11-25T22:10:47.308Z",
+            "cancelReason": "checkout_expired",
+            "closedAt": null,
+            "createdAt": "2026-11-25T21:55:27.441Z",
+            "cancellationRequest": null,
+            "escrow": null
+          },
+          {
+            "id": "57739332-b222-4ab8-88b3-723af2b176f0",
+            "kind": "fixed_price",
+            "role": "seller",
+            "status": "paid",
+            "listing": {
+              "id": "5e50e23f-a36d-4d29-934f-249fb075fb86",
+              "title": "Bangla literature collection, 12 novels",
+              "itemKind": "physical",
+              "photoKey": "adecf9647b1aebaab0164d5df393e7f8"
+            },
+            "buyerId": "bbbe691f-6538-4426-8e6f-6339687b6eac",
+            "sellerId": "2cf534f7-063f-4675-ba0e-39b6df36c6d5",
+            "counterparty": {
+              "id": "bbbe691f-6538-4426-8e6f-6339687b6eac",
+              "displayName": "Test Buyer",
+              "verified": true,
+              "joinMonth": "2026-11"
+            },
+            "quantity": 1,
+            "unitPrice": "240000",
+            "itemPrice": "240000",
+            "deliveryFee": "0",
+            "total": "240000",
+            "fulfilment": "self_pickup",
+            "fulfilmentOptions": [
+              "self_pickup",
+              "courier"
+            ],
+            "paymentDueAt": "2026-11-25T21:26:04.277Z",
+            "paidAt": "2026-11-25T21:11:04.315Z",
+            "fulfilmentStep": "meetup_handover",
+            "fulfilmentDueAt": "2026-12-02T21:11:04.315Z",
+            "deliveryEventAt": null,
+            "cancelledAt": null,
+            "cancelReason": null,
+            "closedAt": null,
+            "createdAt": "2026-11-25T21:10:59.600Z",
+            "cancellationRequest": null,
+            "escrow": {
+              "state": "held",
+              "releasePolicy": "standard",
+              "amountCollected": "240000",
+              "amountRefunded": "0",
+              "disputeWindowEndsAt": null,
+              "autoReleaseAt": null
+            }
+          },
+          {
+            "id": "1fd7ce11-591b-42f1-8cd8-11d3b26e6660",
+            "kind": "fixed_price",
+            "role": "seller",
+            "status": "paid",
+            "listing": {
+              "id": "5c5d175f-c21a-4d44-9ef8-0481150d0c91",
+              "title": "HSC Physics and Chemistry book set (6 books)",
+              "itemKind": "physical",
+              "photoKey": "b0814fd75365985111d55b0cc5cbb9fb"
+            },
+            "buyerId": "7c60a601-1736-407f-8e7b-62c078e22a69",
+            "sellerId": "2cf534f7-063f-4675-ba0e-39b6df36c6d5",
+            "counterparty": {
+              "id": "7c60a601-1736-407f-8e7b-62c078e22a69",
+              "displayName": "Nadia Islam",
+              "verified": true,
+              "joinMonth": "2026-11"
+            },
+            "quantity": 1,
+            "unitPrice": "120000",
+            "itemPrice": "120000",
+            "deliveryFee": "0",
+            "total": "120000",
+            "fulfilment": "self_pickup",
+            "fulfilmentOptions": [
+              "self_pickup",
+              "courier"
+            ],
+            "paymentDueAt": "2026-11-23T16:02:28.843Z",
+            "paidAt": "2026-11-23T15:47:28.856Z",
+            "fulfilmentStep": "meetup_handover",
+            "fulfilmentDueAt": "2026-11-30T15:47:28.856Z",
+            "deliveryEventAt": null,
+            "cancelledAt": null,
+            "cancelReason": null,
+            "closedAt": null,
+            "createdAt": "2026-11-23T15:47:28.830Z",
+            "cancellationRequest": null,
+            "escrow": {
+              "state": "held",
+              "releasePolicy": "standard",
+              "amountCollected": "120000",
+              "amountRefunded": "0",
+              "disputeWindowEndsAt": null,
+              "autoReleaseAt": null
+            }
+          },
+          {
+            "id": "6ce93d1f-884e-4747-ba24-2691c1f06838",
+            "kind": "fixed_price",
+            "role": "seller",
+            "status": "paid",
+            "listing": {
+              "id": "b8948e8a-7e41-4c57-9a55-f37ef5c1d3c6",
+              "title": "Google Pixel 7, 128 GB, Snow",
+              "itemKind": "physical",
+              "photoKey": "8cd7506701cdbdcb7b97950dbf16fab8"
+            },
+            "buyerId": "bbbe691f-6538-4426-8e6f-6339687b6eac",
+            "sellerId": "2cf534f7-063f-4675-ba0e-39b6df36c6d5",
+            "counterparty": {
+              "id": "bbbe691f-6538-4426-8e6f-6339687b6eac",
+              "displayName": "Test Buyer",
+              "verified": true,
+              "joinMonth": "2026-11"
+            },
+            "quantity": 1,
+            "unitPrice": "3500000",
+            "itemPrice": "3500000",
+            "deliveryFee": "0",
+            "total": "3500000",
+            "fulfilment": "self_pickup",
+            "fulfilmentOptions": [
+              "self_pickup",
+              "courier"
+            ],
+            "paymentDueAt": "2026-11-23T16:02:28.789Z",
+            "paidAt": "2026-11-23T15:47:28.812Z",
+            "fulfilmentStep": "meetup_handover",
+            "fulfilmentDueAt": "2026-11-30T15:47:28.812Z",
+            "deliveryEventAt": null,
+            "cancelledAt": null,
+            "cancelReason": null,
+            "closedAt": null,
+            "createdAt": "2026-11-23T15:47:28.766Z",
+            "cancellationRequest": null,
+            "escrow": {
+              "state": "held",
+              "releasePolicy": "standard",
+              "amountCollected": "3500000",
+              "amountRefunded": "0",
+              "disputeWindowEndsAt": null,
+              "autoReleaseAt": null
+            }
+          },
+          {
+            "id": "e4145509-2cbf-403e-932c-43803b4ccd7a",
+            "kind": "auction",
+            "role": "seller",
+            "status": "cancelled",
+            "listing": {
+              "id": "0f3e2817-c095-431a-aa87-d36d07a41923",
+              "title": "Samsung Galaxy S21, 256 GB, Phantom Grey",
+              "itemKind": "physical",
+              "photoKey": "74dc40b5f28666de5df79aaf76937165"
+            },
+            "buyerId": "bbbe691f-6538-4426-8e6f-6339687b6eac",
+            "sellerId": "2cf534f7-063f-4675-ba0e-39b6df36c6d5",
+            "counterparty": {
+              "id": "bbbe691f-6538-4426-8e6f-6339687b6eac",
+              "displayName": "Test Buyer",
+              "verified": true,
+              "joinMonth": "2026-11"
+            },
+            "quantity": 1,
+            "unitPrice": "2000000",
+            "itemPrice": "2000000",
+            "deliveryFee": "0",
+            "total": "2000000",
+            "fulfilment": null,
+            "fulfilmentOptions": [
+              "self_pickup"
+            ],
+            "paymentDueAt": "2026-11-19T02:21:10.601Z",
+            "paidAt": null,
+            "fulfilmentStep": null,
+            "fulfilmentDueAt": null,
+            "deliveryEventAt": null,
+            "cancelledAt": "2026-11-23T15:47:17.466Z",
+            "cancelReason": "payment_window_expired",
+            "closedAt": null,
+            "createdAt": "2026-11-18T02:21:10.578Z",
+            "cancellationRequest": null,
+            "escrow": null
+          }
+        ],
+        "nextCursor": null
+      }
+    },
+    "GET /users/2cf534f7-063f-4675-ba0e-39b6df36c6d5/trust": {
+      "status": 200,
+      "body": {
+        "userId": "2cf534f7-063f-4675-ba0e-39b6df36c6d5",
+        "averageRating": null,
+        "ratingCount": 0,
+        "completedTransactions": 1,
+        "badges": {
+          "verified": true,
+          "pro": false
+        }
+      }
+    }
+  }
+}

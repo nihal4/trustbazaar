@@ -1,0 +1,406 @@
+[
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "plain",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400"
+    },
+    "count": 1,
+    "screens": [
+      "listing-fixed"
+    ],
+    "id": "listing-fixed-0",
+    "classes": [
+      "brand"
+    ],
+    "text": "",
+    "picture": "listing-fixed-0.png"
+  },
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "plain",
+      "color": "rgb(241, 245, 243)",
+      "weight": "500"
+    },
+    "count": 1,
+    "screens": [
+      "listing-fixed"
+    ],
+    "id": "listing-fixed-1",
+    "classes": [
+      "account"
+    ],
+    "text": "Sign in",
+    "picture": "listing-fixed-1.png"
+  },
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "plain",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600"
+    },
+    "count": 1,
+    "screens": [
+      "listing-fixed"
+    ],
+    "id": "listing-fixed-2",
+    "classes": [
+      "sellerName"
+    ],
+    "text": "Fatema Begum",
+    "picture": "listing-fixed-2.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "listing-fixed"
+    ],
+    "id": "listing-fixed-3",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "listing-fixed-3.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 22,
+      "border": "1px none / 1px none",
+      "radius": "6px",
+      "bg": "rgb(255, 107, 53)",
+      "color": "rgb(10, 16, 24)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "listing-fixed"
+    ],
+    "id": "listing-fixed-4",
+    "classes": [
+      "mantine-focus-auto",
+      "mantine-active",
+      "77c9d27d",
+      "mantine-Button-root",
+      "87cf2631",
+      "mantine-UnstyledButton-root"
+    ],
+    "text": "Sell an item",
+    "picture": "listing-fixed-4.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 72,
+      "padX": 0,
+      "border": "1px rgb(255, 107, 53) / 1px rgb(255, 107, 53)",
+      "radius": "4px",
+      "bg": "rgb(22, 34, 31)",
+      "color": "rgb(255, 255, 255)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "listing-fixed"
+    ],
+    "id": "listing-fixed-5",
+    "classes": [
+      "thumb",
+      "thumbOn"
+    ],
+    "text": "",
+    "picture": null
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 72,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "4px",
+      "bg": "rgb(22, 34, 31)",
+      "color": "rgb(255, 255, 255)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "listing-fixed"
+    ],
+    "id": "listing-fixed-6",
+    "classes": [
+      "thumb"
+    ],
+    "text": "",
+    "picture": null
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 78,
+      "padX": 14,
+      "border": "- / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "listing-fixed"
+    ],
+    "id": "listing-fixed-7",
+    "classes": [
+      "chatCell"
+    ],
+    "text": "",
+    "picture": "listing-fixed-7.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "listing-fixed"
+    ],
+    "id": "listing-fixed-8",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "listing-fixed-8.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 8,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "listing-fixed"
+    ],
+    "id": "listing-fixed-9",
+    "classes": [
+      "langSwitch"
+    ],
+    "text": "বাংলা– change the language to Bangla",
+    "picture": "listing-fixed-9.png"
+  },
+  {
+    "category": "field",
+    "signature": {
+      "height": 44,
+      "border": "- / - / -",
+      "radius": "square",
+      "bg": "none"
+    },
+    "count": 1,
+    "screens": [
+      "listing-fixed"
+    ],
+    "id": "listing-fixed-10",
+    "classes": [],
+    "text": "",
+    "picture": "listing-fixed-10.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "-",
+      "bottom": "-",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 0,
+      "padX": 0
+    },
+    "count": 3,
+    "screens": [
+      "listing-fixed"
+    ],
+    "id": "listing-fixed-11",
+    "classes": [
+      "side",
+      "seller"
+    ],
+    "text": "Photos",
+    "picture": "listing-fixed-11.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "2px rgb(255, 107, 53)",
+      "bottom": "-",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 20,
+      "padX": 0
+    },
+    "count": 1,
+    "screens": [
+      "listing-fixed"
+    ],
+    "id": "listing-fixed-12",
+    "classes": [
+      "buy"
+    ],
+    "text": "Price৳21,000Another buyer is paying for ",
+    "picture": "listing-fixed-12.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "1px rgb(42, 59, 54)",
+      "bottom": "-",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 24,
+      "padX": 0
+    },
+    "count": 2,
+    "screens": [
+      "listing-fixed"
+    ],
+    "id": "listing-fixed-13",
+    "classes": [],
+    "text": "DescriptionSix months old, always in a c",
+    "picture": "listing-fixed-13.png"
+  },
+  {
+    "category": "fact list",
+    "signature": {
+      "display": "grid",
+      "top": "-",
+      "borderBetween": "none",
+      "cols": 2
+    },
+    "count": 1,
+    "screens": [
+      "listing-fixed"
+    ],
+    "id": "listing-fixed-14",
+    "classes": [
+      "details"
+    ],
+    "text": "CategoryMobile phonesConditionUsedHandov",
+    "picture": "listing-fixed-14.png"
+  },
+  {
+    "category": "avatar or photo place",
+    "signature": {
+      "size": "72x72",
+      "border": "1px rgb(255, 107, 53)",
+      "radius": "4px",
+      "bg": "rgb(22, 34, 31)",
+      "color": "rgb(255, 255, 255)"
+    },
+    "count": 1,
+    "screens": [
+      "listing-fixed"
+    ],
+    "id": "listing-fixed-15",
+    "classes": [
+      "thumb",
+      "thumbOn"
+    ],
+    "text": "",
+    "picture": "listing-fixed-15.png"
+  },
+  {
+    "category": "avatar or photo place",
+    "signature": {
+      "size": "72x72",
+      "border": "1px rgb(42, 59, 54)",
+      "radius": "4px",
+      "bg": "rgb(22, 34, 31)",
+      "color": "rgb(255, 255, 255)"
+    },
+    "count": 1,
+    "screens": [
+      "listing-fixed"
+    ],
+    "id": "listing-fixed-16",
+    "classes": [
+      "thumb"
+    ],
+    "text": "",
+    "picture": "listing-fixed-16.png"
+  },
+  {
+    "category": "tag, count or mark",
+    "signature": {
+      "height": 20,
+      "border": "-",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(93, 211, 158)",
+      "size": 14
+    },
+    "count": 1,
+    "screens": [
+      "listing-fixed"
+    ],
+    "id": "listing-fixed-17",
+    "classes": [
+      "tick"
+    ],
+    "text": "Identity verified",
+    "picture": "listing-fixed-17.png"
+  },
+  {
+    "category": "notice",
+    "signature": {
+      "left": "-",
+      "border": "1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)"
+    },
+    "count": 1,
+    "screens": [
+      "listing-fixed"
+    ],
+    "id": "listing-fixed-18",
+    "classes": [
+      "notice"
+    ],
+    "text": "Another buyer is paying for this item no",
+    "picture": "listing-fixed-18.png"
+  }
+]

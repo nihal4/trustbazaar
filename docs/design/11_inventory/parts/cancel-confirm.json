@@ -1,0 +1,580 @@
+[
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "plain",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400"
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-0",
+    "classes": [
+      "brand"
+    ],
+    "text": "",
+    "picture": "cancel-confirm-0.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 48,
+      "padX": 0,
+      "border": "- / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 4,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-1",
+    "classes": [
+      "navCell"
+    ],
+    "text": "Orders",
+    "picture": "cancel-confirm-1.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-2",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "cancel-confirm-2.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 22,
+      "border": "1px none / 1px none",
+      "radius": "6px",
+      "bg": "rgb(255, 107, 53)",
+      "color": "rgb(10, 16, 24)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-3",
+    "classes": [
+      "mantine-focus-auto",
+      "mantine-active",
+      "77c9d27d",
+      "mantine-Button-root",
+      "87cf2631",
+      "mantine-UnstyledButton-root"
+    ],
+    "text": "Sell an item",
+    "picture": "cancel-confirm-3.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 2,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-4",
+    "classes": [
+      "receiptLink"
+    ],
+    "text": "Download receipt",
+    "picture": "cancel-confirm-4.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 24,
+      "border": "1px rgb(255, 107, 53) / 1px rgb(255, 107, 53)",
+      "radius": "square",
+      "bg": "color(srgb 1 0.419608 0.207843 / 0.1)",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-5",
+    "classes": [
+      "primary"
+    ],
+    "text": "Start the handover",
+    "picture": "cancel-confirm-5.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 56,
+      "padX": 12,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-6",
+    "classes": [
+      "secondary"
+    ],
+    "text": "Propose a place and time",
+    "picture": "cancel-confirm-6.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 6,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(162, 181, 176)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-7",
+    "classes": [
+      "close"
+    ],
+    "text": "",
+    "picture": "cancel-confirm-7.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 56,
+      "padX": 16,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "color(srgb 1 0.419608 0.207843 / 0.1)",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-8",
+    "classes": [
+      "primary"
+    ],
+    "text": "Continue",
+    "picture": "cancel-confirm-8.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 56,
+      "padX": 16,
+      "border": "- / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-9",
+    "classes": [
+      "secondary"
+    ],
+    "text": "Back",
+    "picture": "cancel-confirm-9.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-10",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "cancel-confirm-10.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 8,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-11",
+    "classes": [
+      "langSwitch"
+    ],
+    "text": "বাংলা– change the language to Bangla",
+    "picture": "cancel-confirm-11.png"
+  },
+  {
+    "category": "field",
+    "signature": {
+      "height": 44,
+      "border": "- / - / -",
+      "radius": "square",
+      "bg": "none"
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-12",
+    "classes": [],
+    "text": "",
+    "picture": "cancel-confirm-12.png"
+  },
+  {
+    "category": "field",
+    "signature": {
+      "height": 92,
+      "border": "- / 1px rgb(102, 128, 122) / -",
+      "radius": "square",
+      "bg": "none"
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-13",
+    "classes": [],
+    "text": "",
+    "picture": "cancel-confirm-13.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "1px rgb(42, 59, 54)",
+      "bottom": "1px rgb(42, 59, 54)",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 28,
+      "padX": 0
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-14",
+    "classes": [
+      "moneyPanel"
+    ],
+    "text": "Money for this order৳42,000Held by Trust",
+    "picture": "cancel-confirm-14.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "-",
+      "bottom": "-",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 0,
+      "padX": 0
+    },
+    "count": 2,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-15",
+    "classes": [
+      "previewBlock",
+      "deadlineWrap"
+    ],
+    "text": "Order summaryQuantity1Item৳42,000.00Deli",
+    "picture": "cancel-confirm-15.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "2px rgb(255, 107, 53)",
+      "bottom": "-",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 0,
+      "padX": 0
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-16",
+    "classes": [
+      "rail"
+    ],
+    "text": "Meetup handoverStatusArrangingEnter the ",
+    "picture": "cancel-confirm-16.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "-",
+      "bottom": "1px rgb(42, 59, 54)",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 20,
+      "padX": 0
+    },
+    "count": 3,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-17",
+    "classes": [
+      "panel"
+    ],
+    "text": "Meetup handoverStatusArrangingEnter the ",
+    "picture": "cancel-confirm-17.png"
+  },
+  {
+    "category": "fact list",
+    "signature": {
+      "display": "grid",
+      "top": "1px rgb(42, 59, 54)",
+      "borderBetween": "none",
+      "cols": 3
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-18",
+    "classes": [
+      "facts"
+    ],
+    "text": "StatusPaidRoleYou are the sellerListingV",
+    "picture": "cancel-confirm-18.png"
+  },
+  {
+    "category": "fact list",
+    "signature": {
+      "display": "grid",
+      "top": "1px rgb(42, 59, 54)",
+      "borderBetween": "none",
+      "cols": 4
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-19",
+    "classes": [
+      "breakdownGrid"
+    ],
+    "text": "Quantity1Item৳42,000.00Delivery৳0.00Tota",
+    "picture": "cancel-confirm-19.png"
+  },
+  {
+    "category": "fact list",
+    "signature": {
+      "display": "grid",
+      "top": "1px rgb(42, 59, 54)",
+      "borderBetween": "none",
+      "cols": 1
+    },
+    "count": 2,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-20",
+    "classes": [
+      "statusGrid",
+      "deadlineGrid"
+    ],
+    "text": "StatusArranging",
+    "picture": "cancel-confirm-20.png"
+  },
+  {
+    "category": "stepper",
+    "signature": {
+      "orientation": "horizontal",
+      "display": "grid",
+      "items": 3,
+      "markers": "before"
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-21",
+    "classes": [
+      "list"
+    ],
+    "text": "Payment complete (done)Money on hold (no",
+    "picture": "cancel-confirm-21.png"
+  },
+  {
+    "category": "avatar or photo place",
+    "signature": {
+      "size": "64x64",
+      "border": "1px rgb(42, 59, 54)",
+      "radius": "4px",
+      "bg": "rgb(22, 34, 31)",
+      "color": "rgb(241, 245, 243)"
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-22",
+    "classes": [
+      "thumb"
+    ],
+    "text": "",
+    "picture": "cancel-confirm-22.png"
+  },
+  {
+    "category": "tag, count or mark",
+    "signature": {
+      "height": 16,
+      "border": "-",
+      "radius": "6px",
+      "bg": "rgb(255, 122, 69)",
+      "color": "rgb(10, 16, 24)",
+      "size": 12
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-23",
+    "classes": [
+      "badge"
+    ],
+    "text": "17",
+    "picture": "cancel-confirm-23.png"
+  },
+  {
+    "category": "tag, count or mark",
+    "signature": {
+      "height": 22,
+      "border": "-",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "size": 14
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-24",
+    "classes": [
+      "status"
+    ],
+    "text": "Paid",
+    "picture": "cancel-confirm-24.png"
+  },
+  {
+    "category": "tag, count or mark",
+    "signature": {
+      "height": 20,
+      "border": "-",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(93, 211, 158)",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-25",
+    "classes": [
+      "tick"
+    ],
+    "text": "Identity verified",
+    "picture": "cancel-confirm-25.png"
+  },
+  {
+    "category": "popup",
+    "signature": {
+      "top": "2px rgb(255, 107, 53)",
+      "radius": "square",
+      "widthClass": "medium",
+      "bg": "rgb(16, 26, 25)"
+    },
+    "count": 1,
+    "screens": [
+      "cancel-confirm"
+    ],
+    "id": "cancel-confirm-26",
+    "classes": [
+      "popup"
+    ],
+    "text": "Cancel this orderTell the buyer why you ",
+    "picture": "cancel-confirm-26.png"
+  }
+]
