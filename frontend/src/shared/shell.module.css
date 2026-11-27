@@ -96,12 +96,6 @@
   outline: none;
 }
 
-.account {
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-}
-
 .iconLink {
   min-width: 44px;
   min-height: 44px;
@@ -274,6 +268,9 @@
   height: 20px;
 }
 .account {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   padding: var(--tb-space-2) var(--tb-space-3);
   font-weight: 500;
   color: var(--tb-text);
@@ -632,7 +629,6 @@
   background: rgb(0 0 0 / 0.6);
 }
 .dialog h2 {
-  margin-top: 0;
   font-family: var(--tb-font-display);
   font-weight: var(--tb-display-weight);
   font-size: var(--tb-text-3xl);

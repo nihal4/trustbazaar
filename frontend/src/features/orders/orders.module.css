@@ -1178,7 +1178,6 @@
   gap: var(--tb-space-1) var(--tb-space-2);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-block: 1px solid var(--tb-line);
   border: 1px solid var(--tb-line);
 }
 .facts > div,
@@ -2550,7 +2549,6 @@ input[type='file'].fileHidden {
   padding: var(--tb-space-6) 0 var(--tb-space-8);
 }
 .moneyPanel .money {
-  margin-bottom: var(--tb-space-4);
   margin: var(--tb-space-3) 0 var(--tb-space-3);
   font-weight: 500;
   line-height: 1.6;

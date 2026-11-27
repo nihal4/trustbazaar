@@ -14,13 +14,11 @@
     "warning:jsx-a11y/click-events-have-key-events": 3
   },
   "stylelint": {
-    "warning:scale-unlimited/declaration-strict-value": 43,
-    "warning:color-hex-length": 6,
     "warning:import-notation": 11,
-    "warning:no-duplicate-selectors": 240,
     "warning:property-no-deprecated": 24,
     "warning:value-keyword-case": 11,
     "warning:color-function-alias-notation": 17,
+    "warning:no-duplicate-selectors": 49,
     "warning:length-zero-no-unit": 2,
     "warning:declaration-block-no-duplicate-properties": 1
   },
@@ -29,7 +27,7 @@
     "types": 20
   },
   "jscpd": {
-    "clones": 22,
-    "duplicatedLines": 319
+    "clones": 19,
+    "duplicatedLines": 269
   }
 }

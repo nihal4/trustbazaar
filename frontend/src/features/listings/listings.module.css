@@ -899,7 +899,6 @@
 }
 .crumb a:hover {
   color: var(--tb-text);
-  border-bottom-color: var(--tb-hot);
   border-bottom: 1px solid var(--tb-hot);
 }
 .title {
@@ -1326,8 +1325,6 @@ body:has(.bidBar) {
   border: 0;
 }
 .details dt {
-  padding-top: var(--tb-space-3);
-  border-top: 1px solid var(--tb-line);
   margin: 0;
   padding: 0;
   border: 0;

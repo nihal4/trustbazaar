@@ -42,7 +42,7 @@
   --tb-ground-dark: #0a1110;
   --tb-paper-text: #0f1720;
   --tb-paper-muted: #5a6472;
-  --tb-font-mono: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --tb-font-mono: ui-monospace, 'Cascadia Mono', 'Consolas', monospace;
   --tb-radius: 6px;
   --tb-radius-pill: 999px;
   --tb-radius-control: 6px;
