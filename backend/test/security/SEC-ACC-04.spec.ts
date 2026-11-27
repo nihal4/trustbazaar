@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { draftListing, newLocal, problem, suite } from './setup';
+import { draftListing, problem, suite } from './setup';
 
 // SEC-ACC-04: request bodies are accepted only with the fields the endpoint allows; role, KYC status, price after
 // bidding, escrow state or seller payout are never settable from client input.
@@ -13,7 +13,7 @@ describe('SEC-ACC-04 no mass assignment', () => {
   };
 
   it('SEC-ACC-04 registration refuses a role or a KYC status in the body', async () => {
-    const base = { phone: newLocal(), email: `m-${randomUUID()}@tb.test`, displayName: 'Nadia Islam', password: 'paper boats on a slow river', ...s.cfg.legal, adultConfirmed: true };
+    const base = { email: `m-${randomUUID()}@tb.test`, displayName: 'Nadia Islam', password: 'paper boats on a slow river' };
     await refusedFor(await s.browser().post('/auth/register', { ...base, role: 'administrator' }), 'role');
     await refusedFor(await s.browser().post('/auth/register', { ...base, kycStatus: 'verified' }), 'kycStatus');
   });

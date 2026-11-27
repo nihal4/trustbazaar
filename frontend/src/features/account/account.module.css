@@ -187,31 +187,12 @@
 }
 
 /* panels */
-.notice {
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-surface);
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.5rem;
-}
-
-.notice h2 {
-  font-size: 1.0625rem;
-  margin: 0 0 0.5rem;
-}
-
-.notice dt,
 .facts dt {
   color: var(--tb-muted);
   font-weight: 500;
   font-size: 0.9375rem;
 }
 
-.notice dt {
-  color: var(--tb-text);
-  font-weight: 600;
-}
-
-.notice dd,
 .facts dd {
   margin: 0 0 0.75rem;
 }
@@ -351,17 +332,12 @@
 .forgot a { display: inline-flex; align-items: center; min-height: 44px; }
 
 /* U10-25 (redesign v3): no filled or rounded panels: a notice, the facts, a session, the key and the recovery codes are ruled blocks on hairlines */
-.notice,
 .secret,
 .codes {
   border-radius: 0;
   background: none;
   border-top: 1px solid var(--tb-line);
   border-bottom: 1px solid var(--tb-line);
-}
-
-.notice {
-  padding-inline: 0;
 }
 
 .sessions li {
@@ -453,7 +429,7 @@
   min-width: 0;
 }
 
-.fieldGroup > div:first-child {
+.fieldGroup > div:not(.slot) {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -461,8 +437,12 @@
   min-width: 0;
 }
 
-.fieldGroup > div:first-child input {
+.fieldGroup > div:not(.slot) input {
   height: 3rem;
+}
+
+.fieldGroup > div:not(.slot) + div:not(.slot) {
+  margin-top: 0.75rem;                              /* two fields in one step (the password and its confirmation) */
 }
 
 .bandFoot {
@@ -546,11 +526,6 @@
 }
 
 /* registration: the privacy notice follows the line under the heading, so it does not draw a second rule of its own */
-.stageStep .notice {
-  border-top: 0;
-  padding-top: 0;
-}
-
 /* targets of 44 px (U10-25 review): the links and the small buttons of the card reach 44 px without changing the line they stand in */
 .link {
   min-height: 44px;
@@ -596,4 +571,135 @@
 
 .footLinks .link {
   white-space: nowrap;
+}
+
+
+/* The step of registration with the age and the terms: two ruled boxes and the line under them (U10-25). */
+.checks {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* The terms and conditions as text (U10-25): the numbered sections and clauses, on /help/terms and in the dialog. */
+.legal p {
+  margin: 0 0 1rem;
+  line-height: 1.6;
+}
+
+.legal section {
+  margin: 0 0 1.25rem;
+}
+
+.legal h2,
+.legal h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+
+.legal ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legal li {
+  margin: 0 0 0.6rem;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.clauseNo {
+  color: var(--tb-muted);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  margin-inline-end: 0.25rem;
+}
+
+/* The dialog the terms and the privacy notice open in: over the page, a ruled frame like the card, the text in a region that scrolls. */
+.dialogBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(4, 9, 9, 0.78);
+}
+
+.dialog {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: min(42rem, 100%);
+  max-height: min(46rem, 100%);
+  background: var(--tb-bg);
+  color: var(--tb-text);
+  border: 1px solid var(--tb-border);
+  box-shadow: inset 0 2px 0 var(--tb-hot);
+}
+
+.dialogHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--tb-line);
+}
+
+.dialogHead h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+
+.dialogHead .version {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+}
+
+.dialogClose {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin: -0.5rem -0.5rem 0 0;
+  border: 1px solid var(--tb-line);
+  background: transparent;
+  color: var(--tb-text);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dialogClose:hover {
+  border-color: var(--tb-hot);
+}
+
+.dialogBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.25rem;
+}
+
+.dialogBody:focus-visible,
+.dialogClose:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: -2px;
+}
+
+
+/* A link inside a sentence (the terms and the privacy notice in the label of the box): it is part of the line, not a target of its own, so it neither
+   stretches the line nor sits apart from the words; the label around it is the target of 44 px. */
+.textLink {
+  display: inline;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  line-height: inherit;
 }

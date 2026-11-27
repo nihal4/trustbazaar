@@ -4,7 +4,7 @@
 // with four-eyes; and signing out on one tab ending the others.
 import { join } from 'node:path';
 import { expect, test, type Browser, type BrowserContext, type Page } from '@playwright/test';
-import { codeSentTo, fixtures, linkSentTo, photo, signInMember, signInStaff, STATES } from './fixtures';
+import { codeSentTo, fixtures, photo, signInMember, signInStaff, STATES } from './fixtures';
 
 const f = fixtures();
 const state = (role: 'buyer' | 'operator' | 'administrator') => join(STATES, `${role}.json`);
@@ -50,22 +50,34 @@ test('IF-UI-01 IF-UI-02 IF-UI-03 IF-UI-04 IF-UI-05 a new member registers, passe
   const page = await seller.newPage();
   const operator = await staff(browser, 'operator');
 
-  // register, with the code from the simulated SMS
+  // register, one question at a time: the name, the e-mail address, the password twice, the code from the simulated e-mail, the number, the terms (U10-25)
+  const email = `nasrin-${n}@tb.test`;
+  const next = () => page.getByRole('button', { name: 'Continue' }).click();
   await page.goto('/register');
-  await page.getByLabel('Display name').fill('Nasrin Seller');
-  await page.getByLabel('Mobile number').fill(phone);
-  await page.getByLabel('E-mail address').fill(`nasrin-${n}@tb.test`);
+  await page.getByLabel('Full name').fill('Nasrin Seller');
+  await next();
+  await page.getByLabel('E-mail address').fill(email);
+  await next();
   await page.getByLabel('Password', { exact: true }).fill('copper lantern river breakfast');
-  await page.getByLabel('I am 18 years old or older.').check();
-  await page.getByLabel(/accept the terms of use/).check();
-  await page.getByRole('button', { name: 'Create account' }).click();
-  const code = await codeSentTo(operator.request, `+880${phone.slice(1)}`);
+  await page.getByLabel('Confirm password').fill('copper lantern river breakfast');
+  await next();
+  const code = await codeSentTo(operator.request, email);
   await page.getByLabel('Code').fill(code);
   await page.getByRole('button', { name: 'Confirm' }).click();
-  await page.waitForURL((u) => !u.pathname.startsWith('/register'));
-  // and the e-mail address, with the link from the simulated e-mail
-  await page.goto(await linkSentTo(operator.request, `nasrin-${n}@tb.test`));
-  await expect(page.getByText('Your e-mail address is verified.')).toBeVisible();
+  await page.getByLabel('Mobile number').fill(phone);
+  await next();
+  await page.getByLabel('I am 18 years old or older.').check();
+  await page.getByRole('checkbox', { name: /I accept the/ }).check();
+  await page.getByRole('button', { name: 'Create account' }).click();
+  // the account exists but nobody is signed in: the sign-in page follows with the e-mail address filled in, and the e-mail address is already verified by the code
+  await page.waitForURL((u) => u.pathname.startsWith('/signin'));
+  await next();
+  await page.getByLabel('Password', { exact: true }).fill('copper lantern river breakfast');
+  await page.getByRole('button', { name: 'Sign in' }).click();
+  await expect.poll(() => codeSentTo(operator.request, email), { timeout: 15_000 }).not.toBe(code);        // the sign-in code is the newest message
+  await page.getByLabel('Code').fill(await codeSentTo(operator.request, email));
+  await page.getByRole('button', { name: 'Sign in' }).click();
+  await page.waitForURL((u) => !u.pathname.startsWith('/signin'));
 
   // KYC with Chromium's fake camera (a moving test pattern): the details, both sides of the NID and the two selfies
   await page.goto('/account/kyc');

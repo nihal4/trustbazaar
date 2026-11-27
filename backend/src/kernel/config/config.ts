@@ -215,7 +215,7 @@ export function loadConfig(env: Env): TbConfig {
 
   // FR-ACC-04: the versions a person must accept at registration (Decisions log, U1-03).
   const legalVersion = (name: string): string => {
-    const v = get(name) ?? '2026-11-01';
+    const v = get(name) ?? '2026-11-27';
     if (!/^[A-Za-z0-9._-]{1,20}$/.test(v)) problems.push(`${name}: 1 to 20 letters, digits, dots, dashes or underscores`);
     return v;
   };

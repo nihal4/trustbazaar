@@ -12,6 +12,7 @@ import { digits, otherError, retryAfter, useAccountT, useAfterSignIn } from './c
 import { useViewport } from '../../shared/gridCell';
 import { loginProblem, normaliseLogin } from './input';
 import { AuthSplit } from './AuthSplit';
+import { fieldAria, Slot } from './AuthParts';
 import styles from './account.module.css';
 
 export function Component() {
@@ -36,11 +37,13 @@ export function Component() {
     reached.current.add(next);
     navigate({ pathname: location.pathname, search: location.search }, { state: { step: next } });
   };
-  const [login, setLogin] = useState('');
+  // a member who has just created an account arrives with the e-mail address filled in and a line saying the account is ready (U10-25)
+  const arrived = location.state as { login?: string; created?: boolean } | null;
+  const [login, setLogin] = useState(arrived?.login ?? '');
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(arrived?.created ? t('signin.account_ready') : null);
   const [waitUntil, setWaitUntil] = useState<number | null>(null);
   const waitFor = useSecondsLeft(waitUntil);
   // the second step: an authenticator code, or (the default) a code sent to the e-mail address; 'remember this device' skips it for 30 days
@@ -200,8 +203,8 @@ export function Component() {
         <form onSubmit={toPassword} noValidate className={styles.stepForm}>
           <div className={styles.fieldGroup}>
             <TextField id="signin-login" label={t('signin.login')} value={login} onChange={setLogin}
-              autoComplete="username" autoFocus {...fieldAria(message, false, 'signin-message')} />
-            <Slot id="signin-message" message={message} />
+              autoComplete="username" autoFocus {...fieldAria(message, message === t('signin.account_ready'), 'signin-message')} />
+            <Slot id="signin-message" message={message} ok={message === t('signin.account_ready')} />
           </div>
           <SubmitButton busy={busy}>{busy ? t('signin.working') : t('signin.continue')}</SubmitButton>
         </form>
@@ -238,21 +241,3 @@ export function Component() {
  *  screen wraps more lines and needs more. */
 const headFor = (vw: number, bangla: boolean) => (vw < 360 ? (bangla ? 8 : 7) : vw < 520 ? (bangla ? 7 : 6) : 5);
 const rowsFor = (vw: number, bangla: boolean) => headFor(vw, bangla) + 8 + 2;                 // the heading band, the form band's eight cells, the foot's two
-
-/** The line under the field where a refusal or a notice is said (U10-25). It takes its own height out of the room the form shares out (a few pixels: it
- *  does not keep an empty place, which made the gaps uneven). Its two regions are always in the page (a region that appears with its text is
- *  often not announced): a refusal is an alert, a notice is a status; the message has an id the field points to. */
-function Slot({ message, ok = false, id }: { message: string | null; ok?: boolean; id: string }) {
-  return (
-    <div className={styles.slot}>
-      <div role="alert">{message && !ok && <p id={id} className={styles.slotError}>{message}</p>}</div>
-      <div role="status">{message && ok && <p id={id} className={styles.slotOk}>{message}</p>}</div>
-    </div>
-  );
-}
-
-/** What a field with a message says to assistive technology: it is invalid when there is a refusal, and described by the heading and by the message. */
-const fieldAria = (message: string | null, ok: boolean, messageId: string) => ({
-  'aria-invalid': message && !ok ? true : undefined,
-  'aria-describedby': ['signin-head', message ? messageId : ''].filter(Boolean).join(' '),
-});

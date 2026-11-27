@@ -87,8 +87,6 @@ export async function sentTo(request: APIRequestContext, to: string, pattern: Re
 }
 
 export const codeSentTo = (request: APIRequestContext, to: string) => sentTo(request, to, /\b(\d{6})\b/);
-/** The path of the first link in the message, so it opens on the system under test whatever origin the message names. */
-export const linkSentTo = async (request: APIRequestContext, to: string) => new URL(await sentTo(request, to, /https?:\/\/\S+/)).href.replace(/^https?:\/\/[^/]+/, '');
 
 /** A photo-like PNG (a gradient, so it is not a blank image), `n` changing its colours. */
 export function photo(n: number, width = 800, height = 600): { name: string; mimeType: string; buffer: Buffer } {

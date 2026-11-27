@@ -93,7 +93,7 @@ CREATE TABLE identity.users (
   id                          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   display_name                varchar(40) NOT NULL CHECK (length(btrim(display_name)) >= 2),
   phone_e164                  varchar(16) CHECK (phone_e164 ~ '^\+8801[3-9][0-9]{8}$'),
-  phone_verified_at           timestamptz NOT NULL,          -- account exists only after OTP (FR-ACC-02)
+  phone_verified_at           timestamptz,                   -- set when an SMS code confirms the number (a phone change); empty at sign-up (U10-25)
   email                       citext CHECK (length(email) <= 254 AND email LIKE '%_@_%'),
   email_verified_at           timestamptz,
   password_hash               text CHECK (password_hash LIKE '$argon2id$%'),   -- SEC-AUTH-03

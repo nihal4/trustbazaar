@@ -254,10 +254,11 @@ All paths are under \texttt{/api/v1}. ``RL'' names the rate-limit rule of Sectio
 \toprule
 \textnormal{\textbf{Method}} & \textnormal{\textbf{Path}} & \textbf{Policy} & \textbf{RL} & \textbf{Purpose (requirement)} \\ \midrule \endhead
 \multicolumn{5}{@{}l}{\textbf{Registration and sign-in}} \\
-POST & /\allowbreak auth/\allowbreak register & Public & register & Start registration; send OTP (FR-ACC-01, 03, 04) \\
-POST & /\allowbreak auth/\allowbreak register/\allowbreak verify & Public & otp-verify & Verify OTP; create account (FR-ACC-02) \\
+POST & /\allowbreak auth/\allowbreak register & Public & register & Start registration: name, e-mail, password; send the e-mail code (FR-ACC-01, 03) \\
+POST & /\allowbreak auth/\allowbreak register/\allowbreak verify & Public & otp-verify & Verify the e-mail code (FR-ACC-02) \\
 POST & /\allowbreak auth/\allowbreak register/\allowbreak resend & Public & otp-send & Resend OTP (SEC-AUTH-09) \\
-POST & /\allowbreak auth/\allowbreak email/\allowbreak verify & Public & token & Verify e-mail link (FR-ACC-02) \\
+POST & /\allowbreak auth/\allowbreak register/\allowbreak complete & Public & otp-verify & Number, age and terms; create the account, not signed in (FR-ACC-01, 04, FR-PRV-01) \\
+POST & /\allowbreak auth/\allowbreak email/\allowbreak verify & Public & token & Verify e-mail link of an e-mail change (FR-ACC-09) \\
 POST & /\allowbreak auth/\allowbreak signin & Public & signin & Password step (FR-ACC-05) \\
 POST & /\allowbreak auth/\allowbreak signin/\allowbreak mfa & MFA ticket & otp-verify & Second factor (FR-ACC-06) \\
 POST & /\allowbreak auth/\allowbreak login-check & Public & login-check & Form of the number or e-mail and the e-mail's domain; never an account (FR-ACC-13) \\
@@ -554,25 +555,24 @@ Each flow below is one application-service method running in one database transa
 
 \subsection{Registration}
 \label{sec:flow-register}
+Registration is one question at a time (U10-25; Decisions log, 2026-11-27): the full name, the e-mail address, the password twice, the code sent to the e-mail address, the mobile number, and the terms and the age confirmation. Nothing exists in \texttt{users} until the last step. The sign-up is kept in Redis (key \texttt{reg:pending:}\textit{id}, valid for the life of the code, then 30 minutes after it is confirmed); the \texttt{pending\_registrations} table and the SMS challenge purpose are no longer used by registration.
 \begin{enumerate}[nosep]
-  \item \texttt{POST /auth/register} with mobile number, e-mail, display name, password, the accepted terms and privacy versions, and the age confirmation. The mobile number is parsed to E.164 and must be a Bangladeshi mobile number. The password must have at least 15 characters (no MFA exists yet) and must not be in the blocklist of common, breached and context-specific passwords (SEC-AUTH-01, SEC-AUTH-02). The blocklist is a file bundled with the backend, so no password or hash prefix is sent to any outside service.
-  \item The password is hashed with Argon2id and a \texttt{pending\_registrations} row is created.
+  \item \texttt{POST /auth/register} with display name, e-mail address and password. The password must have at least 15 characters (no MFA exists yet) and must not be in the blocklist of common, breached and context-specific passwords, whose context words are the name and the e-mail address (SEC-AUTH-01, SEC-AUTH-02). The blocklist is a file bundled with the backend, so no password or hash prefix is sent to any outside service. The password is hashed with Argon2id and kept with the name, the address and the HMAC of a six-digit code; the plain password is not kept.
   \begin{itemize}[nosep]
-    \item If the number and e-mail are both new, an OTP challenge is created and the code is sent by SMS.
-    \item If the number already belongs to an open account, no code is sent. Instead, that account's owner receives an SMS: ``someone tried to register with your number''.
+    \item If the e-mail address is new, the code is sent to it (valid 5 minutes, five tries, sends per address limited by CP-05; a new code replaces the old one).
+    \item If the address already belongs to an open account, no code is sent and no code can ever be right. That account's owner receives an e-mail: ``someone tried to register with your address''.
     \item Either way, the response is identical: \texttt{202} with a registration id and a resend time (SEC-AUTH-05, SEC-AUTH-06).
   \end{itemize}
-  \item \texttt{POST /auth/register/verify} with the code. The code is compared in constant time with its HMAC; a failure increments \texttt{attempts}, and the database caps attempts at the maximum. On success, one transaction:
+  \item \texttt{POST /auth/register/verify} with the code. The code is compared in constant time with its HMAC. Five wrong codes end the sign-up. A right code marks the e-mail address as confirmed. It creates no account and sets no cookie (FR-ACC-02). \texttt{POST /auth/register/resend} sends a new code, 60 seconds apart.
+  \item \texttt{POST /auth/register/complete} with the registration id, the mobile number, the password again, the age confirmation and the terms and privacy versions accepted. The sign-up must be confirmed and unexpired, and it is used up by the call. The number is parsed to E.164 and must be a Bangladeshi mobile number. The versions must be the current ones. The password is checked against the stored hash and against the blocklist again, now with the number as a context word. The mobile number is not confirmed by SMS at sign-up: \texttt{phone\_verified\_at} stays empty until a phone change is confirmed by SMS (FR-ACC-09). In one transaction:
   \begin{itemize}[nosep]
-    \item creates the \texttt{users} row and the \texttt{consents} rows;
-    \item marks the challenge consumed and the registration completed;
-    \item creates an e-mail verification token;
-    \item writes \texttt{identity.user.registered} to the outbox;
-    \item audits \texttt{account.registered}.
+    \item the \texttt{users} row is created, with \texttt{email\_verified\_at} set (the code proved the address), and the \texttt{consents} rows with the versions and the time (FR-ACC-04, FR-PRV-01);
+    \item \texttt{identity.user.registered} is written to the outbox;
+    \item \texttt{account.registered} is audited.
   \end{itemize}
-  The user is signed in (Section~\ref{sec:flow-signin}).
-  \item If the e-mail turns out to belong to another open account, the unique index rejects the insert. The response is then a generic ``could not create an account with these details; if you already have one, sign in or reset your password'', and that account's owner is notified. Residual risk: someone who controls a real Bangladeshi number can learn whether an e-mail address is registered. This is accepted, because each attempt costs a verified SIM and is rate-limited.
-  \item The e-mail link (\texttt{POST /auth/email/verify}) sets \texttt{email\_verified\_at}. It is required before the user's first listing, purchase or payout; this is checked by \texttt{@Verified}.
+  The person is not signed in. An e-mail tells them the account was created and links to the sign-in page. Because the e-mail code at sign-in is on by default (FR-ACC-12) and the device is not yet remembered, the first sign-in asks for another code.
+  \item If the number or the e-mail belongs to another open account, the check and the unique indexes refuse the insert. The response is then a generic ``could not create an account with these details; if you already have one, sign in or reset your password'', and that account's owner is notified (by e-mail for an address, by SMS for a number). Residual risk: someone who controls a real e-mail address can learn whether a mobile number is registered, only after proving the address. This is accepted, as the number is of the kind that is easy to learn already (SEC-AUTH-06).
+  \item A change of e-mail address is still confirmed by the single-use link (\texttt{POST /auth/email/verify}, FR-ACC-09).
 \end{enumerate}
 
 \subsection{Sign-in, MFA and refresh}
@@ -873,8 +873,8 @@ These points are recorded now so that they are settled when the units are connec
 \label{app:trace}
 {\small\begin{longtable}{@{}>{\ttfamily}p{2.4cm}>{\raggedright\arraybackslash}p{10.4cm}>{\raggedright\arraybackslash}p{2.4cm}@{}}
 \toprule \textnormal{\textbf{Requirement}} & \textbf{Design element} & \textbf{Section} \\ \midrule \endhead
-FR-ACC-01 & Registration endpoint; pending\_registrations; phone parsing & 6.1 \\
-FR-ACC-02 & Phone OTP before users row exists; e-mail link token; \texttt{@Verified} requires e-mail & 6.1 \\
+FR-ACC-01 & Registration endpoints; the sign-up kept in Redis; phone parsing & 6.1 \\
+FR-ACC-02 & E-mail OTP kept in Redis before the \texttt{users} row exists; \texttt{email\_verified\_at} set at creation; e-mail link token for a change & 6.1 \\
 FR-ACC-03 & Partial unique indexes on number and e-mail; enumeration-safe responses & 5.2, 6.1 \\
 FR-ACC-04 & Age confirmation; consents rows with versions & 6.1 \\
 FR-ACC-05 & Sign-in flow; session creation & 6.2 \\

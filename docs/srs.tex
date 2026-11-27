@@ -343,7 +343,7 @@ The areas follow the transaction lifecycle: account and identity, listing and di
 \section{Account Registration and Authentication (ACC)}
 \begin{reqs}
 \req{FR-ACC-01}{M}{T}{FR-1}{The system shall allow a person to register with a Bangladeshi mobile number, an e-mail address, a display name and a password that satisfies \rr{SEC-AUTH-01} and \rr{SEC-AUTH-02}.}
-\req{FR-ACC-02}{M}{T}{new}{The system shall activate an account only after the mobile number has been verified by OTP (\rr{SEC-AUTH-09}). It shall verify the e-mail address by a single-use link (\cp{CP-06}) before the user's first purchase, listing or payout.}
+\req{FR-ACC-02}{M}{T}{new}{The system shall create an account only after the e-mail address has been verified by a one-time code sent to it (\rr{SEC-AUTH-09}). The mobile number given at registration is recorded but not confirmed by SMS at that time; an SMS code confirms a mobile number when it is changed (\rr{FR-ACC-09}). A new e-mail address is verified by a single-use link (\cp{CP-06}).}
 \req{FR-ACC-03}{M}{T}{new}{The system shall not create a second account for a mobile number or e-mail address already linked to an account. The attempt shall be handled as in \rr{SEC-AUTH-06}, so that it does not reveal which accounts exist.}
 \req{FR-ACC-04}{M}{T}{new}{At registration the system shall require the person to confirm they are 18 or older and to accept the current terms of use and privacy notice. It shall record the version of each document accepted and the time.}
 \req{FR-ACC-05}{M}{T}{FR-3}{The system shall allow a registered user to sign in with mobile number or e-mail plus password, followed by a second factor where one is enabled (\rr{FR-ACC-06}), and shall then establish a session as specified in Section~\ref{sec:sec-ses}.}
