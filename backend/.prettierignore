@@ -1,0 +1,6 @@
+dist
+node_modules
+reports
+package-lock.json
+*.md
+src/migrations

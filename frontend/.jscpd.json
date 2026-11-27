@@ -1,0 +1,10 @@
+{
+  "path": ["src"],
+  "format": ["typescript", "tsx", "css"],
+  "ignore": ["**/*.test.ts", "**/*.test.tsx", "**/*.stories.tsx", "**/messages/**", "**/mantine*.css", "**/node_modules/**"],
+  "minLines": 8,
+  "minTokens": 80,
+  "reporters": ["console", "json"],
+  "output": "./reports/jscpd",
+  "gitignore": true
+}

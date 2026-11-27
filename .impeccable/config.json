@@ -1,0 +1,23 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font",
+        "value": "cascadia mono",
+        "createdAt": "2026-11-27T09:08:35.311Z",
+        "reason": "pre-existing monospace fallback for login details and key fingerprints, so 0/O and l/1 cannot be confused; recorded in secure.css header and Decisions log U10-08 (not user confirmed this session)"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "frontend/src/staff/staff.module.css"
+        ],
+        "createdAt": "2026-11-27T09:43:59.048Z",
+        "reason": "the line-grid theme marks a ruled row or place with a thin edge line (overdue row, present nav place), as the unread rows and the present tab elsewhere; the overdue state is also in words; not a rounded box (not user confirmed this session)"
+      }
+    ]
+  }
+}

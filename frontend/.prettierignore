@@ -1,0 +1,9 @@
+dist
+storybook-static
+node_modules
+reports
+package-lock.json
+*.md
+public
+src/shared/mantine*.css
+src/messages
