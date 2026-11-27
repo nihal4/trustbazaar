@@ -89,5 +89,6 @@
   "seller.fig_completed": "Completed deals",
   "seller.fig_none": "None",
   "payout.field_account": "Account",
-  "payout.field_status": "Status"
+  "payout.field_status": "Status",
+  "payout.close": "Close"
 }

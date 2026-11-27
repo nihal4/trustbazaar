@@ -89,5 +89,6 @@
   "seller.fig_completed": "সম্পন্ন লেনদেন",
   "seller.fig_none": "নেই",
   "payout.field_account": "অ্যাকাউন্ট",
-  "payout.field_status": "অবস্থা"
+  "payout.field_status": "অবস্থা",
+  "payout.close": "বন্ধ করুন"
 }

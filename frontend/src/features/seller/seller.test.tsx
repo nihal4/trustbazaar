@@ -133,6 +133,8 @@ describe('the payout account', () => {
     });
     renderApp('/account/payout', be);
     expect(await screen.findByText('You have no payout account yet. Payouts wait until you add one.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'bKash wallet' }));                   // each way to be paid opens its form in a popup
+    expect(await screen.findByRole('dialog', { name: 'bKash wallet' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Save the payout account' }));
     expect(await screen.findByText('Enter the wallet number.')).toBeTruthy();
     fireEvent.change(screen.getByLabelText('Wallet number'), { target: { value: '০১৭১১০০০০০২' } });
@@ -144,7 +146,9 @@ describe('the payout account', () => {
     expect(be.called('POST /me/payout-account')[0].body).toEqual({ kind: 'bkash_wallet', walletNumber: '01711000002' });
     expect(be.called('POST /me/payout-account')[0].headers.get('X-Step-Up')).toBe('grant-1');
 
-    fireEvent.click(screen.getByLabelText('Bank account'));
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Bank account' }));
+    await screen.findByRole('dialog', { name: 'Bank account' });
     fireEvent.change(screen.getByLabelText('Bank'), { target: { value: 'Dutch-Bangla Bank' } });
     fireEvent.change(screen.getByLabelText('Account name'), { target: { value: 'Rahim Uddin' } });
     fireEvent.change(screen.getByLabelText('Routing number (9 digits)'), { target: { value: '0902712' } });

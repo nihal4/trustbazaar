@@ -128,3 +128,18 @@
 .choice input:checked::after { transform: scale(1); }
 .choice input:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .choice input::after { transition: none; } }
+
+/* the ways to be paid: ruled rows with the brand's mark; touching one opens its form in a popup over the blurred page (shared/Popup) */
+.options { list-style: none; margin: 0.25rem 0 0; padding: 0; border-top: 1px solid var(--tb-line); }
+.options li { border-bottom: 1px solid var(--tb-line); }
+.option { display: flex; align-items: center; gap: 1rem; width: 100%; min-height: 72px; padding: 0.5rem 0; border: 0; background: none; color: var(--tb-text); font: inherit; font-weight: 600; text-align: start; cursor: pointer; }
+.option::after { content: '→'; margin-inline-start: auto; color: var(--tb-hot); }
+.option:hover { color: var(--tb-hot); }
+.option:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -2px; }
+.popForm { display: grid; gap: 0.5rem; }
+.popForm label { font-weight: 600; margin-top: 0.5rem; }
+.popForm input { min-height: 46px; font: inherit; width: 100%; box-sizing: border-box; padding: 0 0.25rem; border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; background: none; color: var(--tb-text); }
+.popForm input:focus-visible { outline: 0; border-bottom-color: var(--tb-hot); box-shadow: inset 0 -2px 0 var(--tb-hot); }
+.popHead { display: flex; align-items: center; gap: 1rem; }
+.popHead p { margin: 0; }
+.popForm .buttons { margin-top: 0.75rem; }
