@@ -383,6 +383,11 @@
   padding-top: var(--tb-space-6);
   border-top: 1px solid var(--tb-line);
 }
+:lang(bn) .head h2 {
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.3;
+}
 .head h2 {
   margin: 0;
   font-family: var(--tb-font-display);
@@ -391,13 +396,6 @@
   letter-spacing: -0.025em;
   line-height: 1.1;
   min-height: 1.3em;
-}
-:lang(bn) .head h2 {
-  font-weight: 600;
-  letter-spacing: 0;
-  line-height: 1.3;
-}
-.head h2 {
   min-width: 0;
 }
 .head a {
