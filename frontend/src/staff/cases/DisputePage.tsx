@@ -130,7 +130,7 @@ function GameEvidence({ g, t, lang }: { g: NonNullable<CaseFile['game']>; t: T; 
       <h2 id="dispute-game">{t('staff.dispute.game')}</h2>
       <p className={styles.hint}>{t('staff.dispute.game_no_credentials')}</p>
       {g.details && <Facts rows={Object.entries(g.details).filter(([, v]) => typeof v === 'string' || typeof v === 'number').map(([k, v]) => [k, String(v)])} />}
-      {g.proof?.screenshot && <p><a href={g.proof.screenshot.url} target="_blank" rel="noopener noreferrer">{t('staff.dispute.proof_screenshot')}</a></p>}
+      {g.proof?.screenshot && <p><a className={styles.openLink} href={g.proof.screenshot.url} target="_blank" rel="noopener noreferrer">{t('staff.dispute.proof_screenshot')}</a></p>}
       <h3>{t('staff.dispute.takeover')}</h3>
       <ul className={styles.items}>{g.confirmations.map((c) => <li key={c.step}>{c.step} · {at(c.at)}</li>)}</ul>
       <h3>{t('staff.dispute.access')}</h3>
@@ -264,7 +264,7 @@ function EvidencePack({ id, t, lang }: { id: string; t: T; lang: Lang }) {
       <p className={styles.hint}>{t('staff.dispute.pack_explain')}</p>
       {error && <FormMessage kind="error">{error}</FormMessage>}
       {pack
-        ? <p><a href={pack.url}>{t('staff.dispute.pack_download')}</a> · {t('staff.dispute.pack_hash', { hash: pack.sha256.slice(0, 16), files: String(pack.files), at: formatDateTime(Date.parse(pack.expiresAt), lang) })}</p>
+        ? <p><a className={styles.openLink} href={pack.url}>{t('staff.dispute.pack_download')}</a> · {t('staff.dispute.pack_hash', { hash: pack.sha256.slice(0, 16), files: String(pack.files), at: formatDateTime(Date.parse(pack.expiresAt), lang) })}</p>
         : <button type="button" className={styles.secondary} disabled={busy} onClick={() => void make()}>{t('staff.dispute.pack_button')}</button>}
     </section>
   );

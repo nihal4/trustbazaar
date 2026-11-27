@@ -106,7 +106,7 @@ export function Component() {
             <>
               <p>{t('staff.enrol.add_app')}</p>
               <p>{t('staff.enrol.key')} <strong className={styles.code}>{secret.secret.match(/.{1,4}/g)?.join(' ')}</strong></p>
-              <p><a href={secret.otpauthUri}>{t('staff.enrol.link')}</a></p>
+              <p><a className={styles.openLink} href={secret.otpauthUri}>{t('staff.enrol.link')}</a></p>
             </>
           )}
           <CodeField id="code" label={t('staff.signin.code')} value={code} onChange={setCode} allowRecovery

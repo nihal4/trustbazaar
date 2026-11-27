@@ -127,3 +127,28 @@
 @media (prefers-reduced-motion: reduce) {
   .claim:active:not(:disabled), .openLink:active, .signOut:active, .primary:active:not(:disabled), .secondary:active:not(:disabled) { transform: none; }
 }
+
+/* polish (U10-27): a link that leads somewhere is a ruled button, not orange underlined text; the back link has an arrow; the other links are in the text colour */
+.content a:not(.openLink):not(.back) { color: var(--tb-text); text-decoration-color: var(--tb-border); text-underline-offset: 3px; transition: color 140ms ease, text-decoration-color 140ms ease; }
+@media (hover: hover) and (pointer: fine) { .content a:not(.openLink):not(.back):hover { color: var(--tb-hot); text-decoration-color: var(--tb-hot); } }
+.back { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; padding: 0 1rem 0 0.75rem; border: 1px solid var(--tb-border); color: var(--tb-text); font-weight: 600; text-decoration: none; transition: transform 160ms var(--staff-ease), border-color 140ms ease; }
+.content a.back { padding-block: 0; }
+.back::before { content: ''; width: 0.5rem; height: 0.5rem; border: solid currentColor; border-width: 0 0 1.5px 1.5px; transform: rotate(45deg); margin-left: 0.25rem; }
+.back:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) { .back:hover { border-color: var(--tb-hot); } }
+.back:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+.content a.openLink { padding-block: 0.25rem; }
+
+/* the selectors: a radio is a ring that fills with a vermilion dot, a checkbox a square that fills with a vermilion tick; the whole row is the target */
+.content input[type='radio'], .content input[type='checkbox'] { appearance: none; flex: none; position: relative; width: 22px; height: 22px; min-height: 0; margin: 0 0 0 0.25rem; border: 1px solid var(--tb-border); background: transparent; cursor: pointer; transition: border-color 140ms ease, background-color 140ms ease; }
+.content input[type='radio'] { border-radius: 50%; }
+.content input[type='radio']:checked { border-color: var(--tb-hot); background: radial-gradient(circle, var(--tb-hot) 0 36%, transparent 40%); }
+.content input[type='checkbox']:checked { border-color: var(--tb-hot); background: color-mix(in srgb, var(--tb-hot) 14%, transparent); }
+.content input[type='checkbox']:checked::after { content: ''; position: absolute; left: 6px; top: 2px; width: 6px; height: 11px; border: solid var(--tb-hot); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.content input[type='radio']:focus-visible, .content input[type='checkbox']:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) { .content input[type='radio']:not(:checked):hover, .content input[type='checkbox']:not(:checked):hover { border-color: var(--tb-hot); } }
+.choice > div:not(.field):not(.fields) label { flex: 1; padding: 0.875rem 0; cursor: pointer; font-weight: 500; }
+.choice > div:not(.field):not(.fields):has(input:checked) { background: color-mix(in srgb, var(--tb-hot) 8%, transparent); }
+.choice > div:not(.field):not(.fields):focus-within { background: var(--tb-surface); }
+.check { cursor: pointer; }
+.check label { cursor: pointer; }

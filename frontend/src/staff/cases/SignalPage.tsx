@@ -41,7 +41,7 @@ export function Component() {
               [t('staff.signal.member'), subject ? short(subject) : null],
               ...Object.entries(detail).filter(([, v]) => v !== null && typeof v !== 'object').map(([k, v]) => [k, String(v)] as [string, string]),
             ]} />
-            {str('listingId') && <p><Link to={`/staff/listings/${encodeURIComponent(str('listingId'))}`}>{t('staff.report.open_listing', { ref: short(str('listingId')) })}</Link></p>}
+            {str('listingId') && <p><Link className={styles.openLink} to={`/staff/listings/${encodeURIComponent(str('listingId'))}`}>{t('staff.report.open_listing', { ref: short(str('listingId')) })}</Link></p>}
           </section>
           <Action title={t('staff.signal.review_title')} button={t('staff.signal.review_button')} consequence={t('staff.signal.review_consequence')} t={t} lang={lang}
             reasonLabel={t('staff.signal.note')} valid={outcome !== ''} invalidText={t('staff.report.choose')}
