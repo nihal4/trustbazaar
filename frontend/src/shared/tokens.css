@@ -211,10 +211,6 @@
   box-sizing: border-box;
 }
 
-html {
-  -webkit-text-size-adjust: 100%;
-}
-
 body {
   margin: 0;
   background: var(--tb-bg);
@@ -320,6 +316,7 @@ main button[type='submit'] {
 
 /* a focused control is never hidden under the sticky header (WCAG 2.4.11) */
 html {
+  -webkit-text-size-adjust: 100%;
   scroll-padding-top: 5.5rem;
 }
 html:has([class*='bidBar']) {
