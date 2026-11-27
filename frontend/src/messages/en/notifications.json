@@ -14,5 +14,8 @@
   "preferences.email": "Send me e-mails about my orders and payments",
   "preferences.email_hint": "Security notices, such as a sign-in from a new device, are always sent.",
   "preferences.save": "Save settings",
-  "preferences.saved": "Your settings are saved."
+  "preferences.saved": "Your settings are saved.",
+  "notifications.show_all": "Show all notifications",
+  "notifications.none_new": "No new notifications.",
+  "notifications.close": "Close"
 }

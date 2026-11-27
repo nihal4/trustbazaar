@@ -303,3 +303,16 @@
     gap: 0 0.75rem;
   }
 }
+
+.none {
+  margin: 1rem 0 1.25rem;
+  padding: 1rem 0;
+  border-block: 1px solid var(--tb-line);
+  color: var(--tb-muted);
+}
+
+/* all the notices in a popup: the same rows, the popup's own scroll */
+.listPopup {
+  margin-top: 0;
+  border-top: 0;
+}

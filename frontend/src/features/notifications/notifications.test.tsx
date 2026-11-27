@@ -38,18 +38,24 @@ function backend(o: { prefs?: { language: 'bn' | 'en'; emailTransactional: boole
 }
 
 describe('the notification centre', () => {
-  it('FR-NTF-04 notices are listed newest first with their time in Dhaka, the unread ones marked in words, the text as plain text', async () => {
+  it('FR-NTF-04 the page lists the new notices only, with their time in Dhaka and the word New; all of them, read ones too, are in a popup; the text is plain text', async () => {
     const { be } = backend();
     renderApp('/notifications', be);
     expect(await screen.findByText('1 unread')).toBeTruthy();
-    const items = within(screen.getByRole('main')).getAllByRole('listitem').filter((li) => !li.closest('nav'));   // the notices, not the footer's or the tabs'
-    expect(items.map((li) => within(li).getByText(/Payment received|New sign-in/).textContent)).toEqual(['Payment received', 'New sign-in']);
-    expect(within(items[0]).getByText('New')).toBeTruthy();
-    expect(within(items[1]).queryByText('New')).toBeNull();
-    expect(within(items[0]).getByText('1 Nov 2026')).toBeTruthy();           // the date, then the weekday and the time in Dhaka
-    expect(within(items[0]).getByText('Sun, 6:00 PM')).toBeTruthy();
-    expect(within(items[1]).getByText('<b>Chrome</b> on Android')).toBeTruthy();
-    expect(items[1].querySelector('b')).toBeNull();
+    const page = () => within(screen.getByRole('main')).getAllByRole('listitem').filter((li) => !li.closest('nav') && !li.closest('dialog'));   // the notices, not the footer's or the tabs'
+    expect(page().map((li) => within(li).getByText(/Payment received|New sign-in/).textContent)).toEqual(['Payment received']);   // the read one has moved to the popup
+    expect(within(page()[0]).getByText('New')).toBeTruthy();
+    expect(within(page()[0]).getByText('1 Nov 2026')).toBeTruthy();           // the date, then the weekday and the time in Dhaka
+    expect(within(page()[0]).getByText('Sun, 6:00 PM')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show all notifications' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Your notifications' });
+    const all = within(dialog).getAllByRole('listitem');
+    expect(all.map((li) => within(li).getByText(/Payment received|New sign-in/).textContent)).toEqual(['Payment received', 'New sign-in']);
+    expect(within(all[0]).getByText('New')).toBeTruthy();
+    expect(within(all[1]).queryByText('New')).toBeNull();
+    expect(within(all[1]).getByText('<b>Chrome</b> on Android')).toBeTruthy();
+    expect(all[1].querySelector('b')).toBeNull();
   });
 
   it('FR-NTF-04 opening a notice marks it read and goes to what it concerns', async () => {
@@ -63,18 +69,24 @@ describe('the notification centre', () => {
   it('FR-NTF-04 a read notice is not marked again when opened', async () => {
     const { be } = backend();
     const doc = renderApp('/notifications', be);
-    fireEvent.click(await screen.findByRole('button', { name: /New sign-in/ }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Show all notifications' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Your notifications' });
+    fireEvent.click(within(dialog).getByRole('button', { name: /New sign-in/ }));
     await waitFor(() => expect(doc.router.state.location.pathname).toBe('/account/security'));
     expect(be.called('POST /notifications/read')).toEqual([]);
   });
 
-  it('FR-NTF-04 everything can be marked read at once, and older notices load page by page', async () => {
+  it('FR-NTF-04 everything can be marked read at once, and older notices load page by page in the popup', async () => {
     const { be } = backend();
     renderApp('/notifications', be);
-    fireEvent.click(await screen.findByRole('button', { name: 'Show older notifications' }));
-    expect(await screen.findByText('Listing published')).toBeTruthy();
+    fireEvent.click(await screen.findByRole('button', { name: 'Show all notifications' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Your notifications' });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Show older notifications' }));
+    expect(await within(dialog).findByText('Listing published')).toBeTruthy();
     expect(be.called('GET /notifications').map((c) => c.query.get('cursor'))).toContain('c-2');
-    expect(screen.queryByRole('button', { name: 'Show older notifications' })).toBeNull();
+    expect(within(dialog).queryByRole('button', { name: 'Show older notifications' })).toBeNull();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
 
     fireEvent.click(screen.getByRole('button', { name: 'Mark all as read' }));
     expect(await screen.findByText('Everything is read.')).toBeTruthy();
