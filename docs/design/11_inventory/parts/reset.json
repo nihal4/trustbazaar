@@ -1,0 +1,146 @@
+[
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "plain",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400"
+    },
+    "count": 1,
+    "screens": [
+      "reset"
+    ],
+    "id": "reset-0",
+    "classes": [
+      "brand"
+    ],
+    "text": "",
+    "picture": "reset-0.png"
+  },
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "underlined",
+      "color": "rgb(255, 122, 69)",
+      "weight": "600"
+    },
+    "count": 1,
+    "screens": [
+      "reset"
+    ],
+    "id": "reset-1",
+    "classes": [
+      "link"
+    ],
+    "text": "Back",
+    "picture": "reset-1.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "reset"
+    ],
+    "id": "reset-2",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "reset-2.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 16,
+      "border": "1px rgb(102, 128, 122) / 1px rgb(102, 128, 122)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "reset"
+    ],
+    "id": "reset-3",
+    "classes": [
+      "langSwitch"
+    ],
+    "text": "বাংলা– change the language to Bangla",
+    "picture": "reset-3.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 28,
+      "border": "1px rgb(255, 107, 53) / 1px rgb(255, 107, 53)",
+      "radius": "2px",
+      "bg": "rgba(255, 107, 53, 0.13)",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 17
+    },
+    "count": 1,
+    "screens": [
+      "reset"
+    ],
+    "id": "reset-4",
+    "classes": [
+      "primary"
+    ],
+    "text": "Send",
+    "picture": "reset-4.png"
+  },
+  {
+    "category": "field",
+    "signature": {
+      "height": 48,
+      "border": "- / 1px rgb(255, 107, 53) / -",
+      "radius": "square",
+      "bg": "none"
+    },
+    "count": 1,
+    "screens": [
+      "reset"
+    ],
+    "id": "reset-5",
+    "classes": [],
+    "text": "",
+    "picture": "reset-5.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "1px rgb(102, 128, 122)",
+      "bottom": "1px rgb(102, 128, 122)",
+      "sides": "1px rgb(102, 128, 122) / 1px rgb(102, 128, 122)",
+      "radius": "square",
+      "bg": "rgb(10, 17, 16)",
+      "padY": 0,
+      "padX": 0
+    },
+    "count": 1,
+    "screens": [
+      "reset"
+    ],
+    "id": "reset-6",
+    "classes": [
+      "stageCard"
+    ],
+    "text": "Reset your passwordEnter your mobile num",
+    "picture": "reset-6.png"
+  }
+]

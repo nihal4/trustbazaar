@@ -1,0 +1,374 @@
+[
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "plain",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400"
+    },
+    "count": 1,
+    "screens": [
+      "privacy-seller"
+    ],
+    "id": "privacy-seller-0",
+    "classes": [
+      "brand"
+    ],
+    "text": "",
+    "picture": "privacy-seller-0.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 48,
+      "padX": 0,
+      "border": "- / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 4,
+    "screens": [
+      "privacy-seller"
+    ],
+    "id": "privacy-seller-1",
+    "classes": [
+      "navCell"
+    ],
+    "text": "Orders",
+    "picture": "privacy-seller-1.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "privacy-seller"
+    ],
+    "id": "privacy-seller-2",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "privacy-seller-2.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 22,
+      "border": "1px none / 1px none",
+      "radius": "6px",
+      "bg": "rgb(255, 107, 53)",
+      "color": "rgb(10, 16, 24)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "privacy-seller"
+    ],
+    "id": "privacy-seller-3",
+    "classes": [
+      "mantine-focus-auto",
+      "mantine-active",
+      "77c9d27d",
+      "mantine-Button-root",
+      "87cf2631",
+      "mantine-UnstyledButton-root"
+    ],
+    "text": "Sell an item",
+    "picture": "privacy-seller-3.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 2,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(162, 181, 176)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 4,
+    "screens": [
+      "privacy-seller"
+    ],
+    "id": "privacy-seller-4",
+    "classes": [
+      "tab"
+    ],
+    "text": "Profile",
+    "picture": null
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 2,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "privacy-seller"
+    ],
+    "id": "privacy-seller-5",
+    "classes": [
+      "tab",
+      "active"
+    ],
+    "text": "Your data",
+    "picture": null
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 52,
+      "padX": 24,
+      "border": "1px rgb(255, 107, 53) / 1px rgb(255, 107, 53)",
+      "radius": "square",
+      "bg": "color(srgb 1 0.419608 0.207843 / 0.1)",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "privacy-seller"
+    ],
+    "id": "privacy-seller-6",
+    "classes": [
+      "secondary"
+    ],
+    "text": "Ask for a copy",
+    "picture": "privacy-seller-6.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 52,
+      "padX": 24,
+      "border": "1px rgb(255, 111, 142) / 1px rgb(255, 111, 142)",
+      "radius": "square",
+      "bg": "color(srgb 1 0.435294 0.556863 / 0.1)",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "privacy-seller"
+    ],
+    "id": "privacy-seller-7",
+    "classes": [
+      "danger"
+    ],
+    "text": "Close my account",
+    "picture": "privacy-seller-7.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "privacy-seller"
+    ],
+    "id": "privacy-seller-8",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "privacy-seller-8.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 8,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "privacy-seller"
+    ],
+    "id": "privacy-seller-9",
+    "classes": [
+      "langSwitch"
+    ],
+    "text": "বাংলা– change the language to Bangla",
+    "picture": "privacy-seller-9.png"
+  },
+  {
+    "category": "field",
+    "signature": {
+      "height": 44,
+      "border": "- / - / -",
+      "radius": "square",
+      "bg": "none"
+    },
+    "count": 1,
+    "screens": [
+      "privacy-seller"
+    ],
+    "id": "privacy-seller-10",
+    "classes": [],
+    "text": "",
+    "picture": "privacy-seller-10.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "-",
+      "bottom": "-",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 24,
+      "padX": 0
+    },
+    "count": 1,
+    "screens": [
+      "privacy-seller"
+    ],
+    "id": "privacy-seller-11",
+    "classes": [
+      "panel"
+    ],
+    "text": "A copy of your dataWe prepare a file wit",
+    "picture": "privacy-seller-11.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "-",
+      "bottom": "-",
+      "sides": "1px rgb(42, 59, 54) / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 24,
+      "padX": 32
+    },
+    "count": 1,
+    "screens": [
+      "privacy-seller"
+    ],
+    "id": "privacy-seller-12",
+    "classes": [
+      "panel"
+    ],
+    "text": "Close your accountClosing your account c",
+    "picture": "privacy-seller-12.png"
+  },
+  {
+    "category": "tag, count or mark",
+    "signature": {
+      "height": 16,
+      "border": "-",
+      "radius": "6px",
+      "bg": "rgb(255, 122, 69)",
+      "color": "rgb(10, 16, 24)",
+      "size": 12
+    },
+    "count": 1,
+    "screens": [
+      "privacy-seller"
+    ],
+    "id": "privacy-seller-13",
+    "classes": [
+      "badge"
+    ],
+    "text": "18",
+    "picture": "privacy-seller-13.png"
+  },
+  {
+    "category": "notice",
+    "signature": {
+      "left": "4px rgb(255, 111, 142)",
+      "border": "-",
+      "radius": "4px",
+      "bg": "rgb(43, 18, 25)",
+      "color": "rgb(255, 179, 192)"
+    },
+    "count": 1,
+    "screens": [
+      "privacy-seller"
+    ],
+    "id": "privacy-seller-14",
+    "classes": [
+      "error"
+    ],
+    "text": "This page or item no longer exists.",
+    "picture": "privacy-seller-14.png"
+  },
+  {
+    "category": "tab or nav item",
+    "signature": {
+      "height": 44,
+      "bottom": "3px none",
+      "bg": "none",
+      "weight": "600"
+    },
+    "count": 4,
+    "screens": [
+      "privacy-seller"
+    ],
+    "id": "privacy-seller-15",
+    "classes": [
+      "tab"
+    ],
+    "text": "Profile",
+    "picture": "privacy-seller-15.png"
+  },
+  {
+    "category": "tab or nav item",
+    "signature": {
+      "height": 44,
+      "bottom": "3px rgb(255, 122, 69)",
+      "bg": "none",
+      "weight": "600"
+    },
+    "count": 1,
+    "screens": [
+      "privacy-seller"
+    ],
+    "id": "privacy-seller-16",
+    "classes": [
+      "tab",
+      "active"
+    ],
+    "text": "Your data",
+    "picture": "privacy-seller-16.png"
+  }
+]

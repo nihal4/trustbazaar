@@ -1,0 +1,101 @@
+{
+  "recordedAt": "2026-11-27T13:24:24.176Z",
+  "path": "/search?q=phone",
+  "answers": {
+    "GET /categories": {
+      "status": 200,
+      "body": [
+        {
+          "id": 29,
+          "parentId": null,
+          "slug": "game-accounts",
+          "nameEn": "Game accounts",
+          "nameBn": "গেম অ্যাকাউন্ট",
+          "itemKind": "game_account",
+          "selectable": true
+        },
+        {
+          "id": 1,
+          "parentId": null,
+          "slug": "mobile-phones",
+          "nameEn": "Mobile phones",
+          "nameBn": "মোবাইল ফোন",
+          "itemKind": "physical",
+          "selectable": true
+        },
+        {
+          "id": 2,
+          "parentId": null,
+          "slug": "laptops-computers",
+          "nameEn": "Laptops and computers",
+          "nameBn": "ল্যাপটপ ও কম্পিউটার",
+          "itemKind": "physical",
+          "selectable": true
+        },
+        {
+          "id": 3,
+          "parentId": null,
+          "slug": "electronics",
+          "nameEn": "Electronics",
+          "nameBn": "ইলেকট্রনিক্স",
+          "itemKind": "physical",
+          "selectable": true
+        },
+        {
+          "id": 4,
+          "parentId": null,
+          "slug": "fashion",
+          "nameEn": "Fashion",
+          "nameBn": "ফ্যাশন",
+          "itemKind": "physical",
+          "selectable": true
+        },
+        {
+          "id": 5,
+          "parentId": null,
+          "slug": "home-furniture",
+          "nameEn": "Home and furniture",
+          "nameBn": "ঘর ও আসবাব",
+          "itemKind": "physical",
+          "selectable": true
+        },
+        {
+          "id": 6,
+          "parentId": null,
+          "slug": "books",
+          "nameEn": "Books",
+          "nameBn": "বই",
+          "itemKind": "physical",
+          "selectable": true
+        },
+        {
+          "id": 7,
+          "parentId": null,
+          "slug": "sports",
+          "nameEn": "Sports and fitness",
+          "nameBn": "খেলাধুলা ও ফিটনেস",
+          "itemKind": "physical",
+          "selectable": true
+        }
+      ]
+    },
+    "GET /me": {
+      "status": 401,
+      "body": {
+        "type": "/problems/session-ended",
+        "title": "Your session has ended. Please sign in again.",
+        "status": 401,
+        "correlationId": "f428efd9-85cf-4646-85c2-39df5c00ac47"
+      }
+    },
+    "GET /search?q=phone": {
+      "status": 200,
+      "body": {
+        "items": [],
+        "nextCursor": null,
+        "featured": [],
+        "sort": "relevance"
+      }
+    }
+  }
+}

@@ -24,7 +24,8 @@
     "visual": "sh e2e/visual/run.sh",
     "visual:update": "sh e2e/visual/run.sh --update-snapshots",
     "health:ratchet": "node ../scripts/health-ratchet.mjs",
-    "health:baseline": "node ../scripts/health-ratchet.mjs --update"
+    "health:baseline": "node ../scripts/health-ratchet.mjs --update",
+    "inventory": "sh e2e/inventory/run.sh"
   },
   "dependencies": {
     "@fontsource-variable/figtree": "5.3.0",

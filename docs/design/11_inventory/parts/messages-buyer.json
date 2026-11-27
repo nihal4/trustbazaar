@@ -1,0 +1,307 @@
+[
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "plain",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400"
+    },
+    "count": 2,
+    "screens": [
+      "messages-buyer"
+    ],
+    "id": "messages-buyer-0",
+    "classes": [
+      "brand",
+      "threadLink"
+    ],
+    "text": "",
+    "picture": "messages-buyer-0.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 48,
+      "padX": 0,
+      "border": "- / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 4,
+    "screens": [
+      "messages-buyer"
+    ],
+    "id": "messages-buyer-1",
+    "classes": [
+      "navCell"
+    ],
+    "text": "Orders",
+    "picture": "messages-buyer-1.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "messages-buyer"
+    ],
+    "id": "messages-buyer-2",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "messages-buyer-2.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 22,
+      "border": "1px none / 1px none",
+      "radius": "6px",
+      "bg": "rgb(255, 107, 53)",
+      "color": "rgb(10, 16, 24)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "messages-buyer"
+    ],
+    "id": "messages-buyer-3",
+    "classes": [
+      "mantine-focus-auto",
+      "mantine-active",
+      "77c9d27d",
+      "mantine-Button-root",
+      "87cf2631",
+      "mantine-UnstyledButton-root"
+    ],
+    "text": "Sell an item",
+    "picture": "messages-buyer-3.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 2,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(162, 181, 176)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 4,
+    "screens": [
+      "messages-buyer"
+    ],
+    "id": "messages-buyer-4",
+    "classes": [
+      "tab"
+    ],
+    "text": "Profile",
+    "picture": null
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 2,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "messages-buyer"
+    ],
+    "id": "messages-buyer-5",
+    "classes": [
+      "tab",
+      "active"
+    ],
+    "text": "Messages",
+    "picture": null
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "messages-buyer"
+    ],
+    "id": "messages-buyer-6",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "messages-buyer-6.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 8,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "messages-buyer"
+    ],
+    "id": "messages-buyer-7",
+    "classes": [
+      "langSwitch"
+    ],
+    "text": "বাংলা– change the language to Bangla",
+    "picture": "messages-buyer-7.png"
+  },
+  {
+    "category": "field",
+    "signature": {
+      "height": 44,
+      "border": "- / - / -",
+      "radius": "square",
+      "bg": "none"
+    },
+    "count": 1,
+    "screens": [
+      "messages-buyer"
+    ],
+    "id": "messages-buyer-8",
+    "classes": [],
+    "text": "",
+    "picture": "messages-buyer-8.png"
+  },
+  {
+    "category": "tag, count or mark",
+    "signature": {
+      "height": 16,
+      "border": "-",
+      "radius": "6px",
+      "bg": "rgb(255, 122, 69)",
+      "color": "rgb(10, 16, 24)",
+      "size": 12
+    },
+    "count": 2,
+    "screens": [
+      "messages-buyer"
+    ],
+    "id": "messages-buyer-9",
+    "classes": [
+      "badge"
+    ],
+    "text": "1",
+    "picture": "messages-buyer-9.png"
+  },
+  {
+    "category": "tag, count or mark",
+    "signature": {
+      "height": 20,
+      "border": "-",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(93, 211, 158)",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "messages-buyer"
+    ],
+    "id": "messages-buyer-10",
+    "classes": [
+      "tick"
+    ],
+    "text": "Verified",
+    "picture": "messages-buyer-10.png"
+  },
+  {
+    "category": "tag, count or mark",
+    "signature": {
+      "height": 28,
+      "border": "1px rgb(102, 128, 122)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "size": 14
+    },
+    "count": 1,
+    "screens": [
+      "messages-buyer"
+    ],
+    "id": "messages-buyer-11",
+    "classes": [
+      "productTag"
+    ],
+    "text": "About: Google Pixel 7, 128 GB, Snow",
+    "picture": "messages-buyer-11.png"
+  },
+  {
+    "category": "tab or nav item",
+    "signature": {
+      "height": 44,
+      "bottom": "3px none",
+      "bg": "none",
+      "weight": "600"
+    },
+    "count": 4,
+    "screens": [
+      "messages-buyer"
+    ],
+    "id": "messages-buyer-12",
+    "classes": [
+      "tab"
+    ],
+    "text": "Profile",
+    "picture": "messages-buyer-12.png"
+  },
+  {
+    "category": "tab or nav item",
+    "signature": {
+      "height": 44,
+      "bottom": "3px rgb(255, 122, 69)",
+      "bg": "none",
+      "weight": "600"
+    },
+    "count": 1,
+    "screens": [
+      "messages-buyer"
+    ],
+    "id": "messages-buyer-13",
+    "classes": [
+      "tab",
+      "active"
+    ],
+    "text": "Messages",
+    "picture": "messages-buyer-13.png"
+  }
+]

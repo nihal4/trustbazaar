@@ -1,0 +1,451 @@
+[
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "plain",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400"
+    },
+    "count": 1,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-0",
+    "classes": [
+      "brand"
+    ],
+    "text": "",
+    "picture": "notifications-seller-0.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 48,
+      "padX": 0,
+      "border": "- / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 4,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-1",
+    "classes": [
+      "navCell"
+    ],
+    "text": "Orders",
+    "picture": "notifications-seller-1.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-2",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "notifications-seller-2.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 22,
+      "border": "1px none / 1px none",
+      "radius": "6px",
+      "bg": "rgb(255, 107, 53)",
+      "color": "rgb(10, 16, 24)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-3",
+    "classes": [
+      "mantine-focus-auto",
+      "mantine-active",
+      "77c9d27d",
+      "mantine-Button-root",
+      "87cf2631",
+      "mantine-UnstyledButton-root"
+    ],
+    "text": "Sell an item",
+    "picture": "notifications-seller-3.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 2,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(162, 181, 176)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 4,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-4",
+    "classes": [
+      "tab"
+    ],
+    "text": "Profile",
+    "picture": null
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 2,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-5",
+    "classes": [
+      "tab",
+      "active"
+    ],
+    "text": "Notifications",
+    "picture": null
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 24,
+      "border": "1px rgb(102, 128, 122) / 1px rgb(102, 128, 122)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 2,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-6",
+    "classes": [
+      "secondary"
+    ],
+    "text": "Mark all as read",
+    "picture": "notifications-seller-6.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 124,
+      "padX": 16,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 18,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-7",
+    "classes": [
+      "item"
+    ],
+    "text": "NewNew sign-in to your accountYour Trust",
+    "picture": "notifications-seller-7.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 28,
+      "border": "1px rgb(162, 181, 176) / 1px rgb(162, 181, 176)",
+      "radius": "2px",
+      "bg": "none",
+      "color": "rgb(162, 181, 176)",
+      "weight": "600",
+      "size": 17
+    },
+    "count": 1,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-8",
+    "classes": [
+      "primary"
+    ],
+    "text": "Save settings",
+    "picture": "notifications-seller-8.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-9",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "notifications-seller-9.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 8,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-10",
+    "classes": [
+      "langSwitch"
+    ],
+    "text": "বাংলা– change the language to Bangla",
+    "picture": "notifications-seller-10.png"
+  },
+  {
+    "category": "field",
+    "signature": {
+      "height": 44,
+      "border": "- / - / -",
+      "radius": "square",
+      "bg": "none"
+    },
+    "count": 1,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-11",
+    "classes": [],
+    "text": "",
+    "picture": "notifications-seller-11.png"
+  },
+  {
+    "category": "choice mark",
+    "signature": {
+      "type": "radio",
+      "size": 20,
+      "appearance": "none",
+      "radius": "50%"
+    },
+    "count": 2,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-12",
+    "classes": [],
+    "text": "",
+    "picture": "notifications-seller-12.png"
+  },
+  {
+    "category": "choice mark",
+    "signature": {
+      "type": "checkbox",
+      "size": 20,
+      "appearance": "none",
+      "radius": "0px"
+    },
+    "count": 1,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-13",
+    "classes": [],
+    "text": "",
+    "picture": "notifications-seller-13.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "-",
+      "bottom": "-",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 20,
+      "padX": 0
+    },
+    "count": 1,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-14",
+    "classes": [
+      "listSection"
+    ],
+    "text": "Your notifications18 unreadMark all as r",
+    "picture": "notifications-seller-14.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "-",
+      "bottom": "-",
+      "sides": "1px rgb(42, 59, 54) / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 20,
+      "padX": 32
+    },
+    "count": 1,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-15",
+    "classes": [
+      "preferences"
+    ],
+    "text": "Notification settingsLanguage of notific",
+    "picture": "notifications-seller-15.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "-",
+      "bottom": "-",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 0,
+      "padX": 0
+    },
+    "count": 1,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-16",
+    "classes": [
+      "checkbox"
+    ],
+    "text": "Send me e-mails about my orders and paym",
+    "picture": "notifications-seller-16.png"
+  },
+  {
+    "category": "tag, count or mark",
+    "signature": {
+      "height": 16,
+      "border": "-",
+      "radius": "6px",
+      "bg": "rgb(255, 122, 69)",
+      "color": "rgb(10, 16, 24)",
+      "size": 12
+    },
+    "count": 1,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-17",
+    "classes": [
+      "badge"
+    ],
+    "text": "18",
+    "picture": "notifications-seller-17.png"
+  },
+  {
+    "category": "notice",
+    "signature": {
+      "left": "-",
+      "border": "-",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(162, 181, 176)"
+    },
+    "count": 1,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-18",
+    "classes": [],
+    "text": "18 unread",
+    "picture": "notifications-seller-18.png"
+  },
+  {
+    "category": "tab or nav item",
+    "signature": {
+      "height": 44,
+      "bottom": "3px none",
+      "bg": "none",
+      "weight": "600"
+    },
+    "count": 4,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-19",
+    "classes": [
+      "tab"
+    ],
+    "text": "Profile",
+    "picture": "notifications-seller-19.png"
+  },
+  {
+    "category": "tab or nav item",
+    "signature": {
+      "height": 44,
+      "bottom": "3px rgb(255, 122, 69)",
+      "bg": "none",
+      "weight": "600"
+    },
+    "count": 1,
+    "screens": [
+      "notifications-seller"
+    ],
+    "id": "notifications-seller-20",
+    "classes": [
+      "tab",
+      "active"
+    ],
+    "text": "Notifications",
+    "picture": "notifications-seller-20.png"
+  }
+]

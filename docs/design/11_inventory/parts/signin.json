@@ -1,0 +1,128 @@
+[
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "plain",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400"
+    },
+    "count": 1,
+    "screens": [
+      "signin"
+    ],
+    "id": "signin-0",
+    "classes": [
+      "brand"
+    ],
+    "text": "",
+    "picture": "signin-0.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "signin"
+    ],
+    "id": "signin-1",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "signin-1.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 16,
+      "border": "1px rgb(102, 128, 122) / 1px rgb(102, 128, 122)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "signin"
+    ],
+    "id": "signin-2",
+    "classes": [
+      "langSwitch"
+    ],
+    "text": "বাংলা– change the language to Bangla",
+    "picture": "signin-2.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 28,
+      "border": "1px rgb(255, 107, 53) / 1px rgb(255, 107, 53)",
+      "radius": "2px",
+      "bg": "rgba(255, 107, 53, 0.13)",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 17
+    },
+    "count": 1,
+    "screens": [
+      "signin"
+    ],
+    "id": "signin-3",
+    "classes": [
+      "primary"
+    ],
+    "text": "Continue",
+    "picture": "signin-3.png"
+  },
+  {
+    "category": "field",
+    "signature": {
+      "height": 48,
+      "border": "- / 1px rgb(255, 107, 53) / -",
+      "radius": "square",
+      "bg": "none"
+    },
+    "count": 1,
+    "screens": [
+      "signin"
+    ],
+    "id": "signin-4",
+    "classes": [],
+    "text": "",
+    "picture": "signin-4.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "1px rgb(102, 128, 122)",
+      "bottom": "1px rgb(102, 128, 122)",
+      "sides": "1px rgb(102, 128, 122) / 1px rgb(102, 128, 122)",
+      "radius": "square",
+      "bg": "rgb(10, 17, 16)",
+      "padY": 0,
+      "padX": 0
+    },
+    "count": 1,
+    "screens": [
+      "signin"
+    ],
+    "id": "signin-5",
+    "classes": [
+      "stageCard"
+    ],
+    "text": "Sign inMobile number or e-mailContinueNe",
+    "picture": "signin-5.png"
+  }
+]

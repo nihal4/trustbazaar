@@ -1,0 +1,68 @@
+#!/usr/bin/env node
+// Builds the page the user reads for the inventory (U11-13): docs/design/11_inventory/index.html, from the parts the harvest wrote (e2e/inventory/harvest.spec.ts) and the CSS scan (scan-css.mjs).
+// For each kind of component: every variant that is drawn today, how many components and screens use it, the class names that make it, a picture, and a column for the proposed canonical variant.
+import { readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { mergeParts } from './merge.mjs';
+
+const dir = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'docs', 'design', '11_inventory');
+
+// the dark theme's colours by name; a colour that is not here is a raw value in a style sheet
+const NAMES = {
+  'rgb(42, 59, 54)': 'line', 'rgb(241, 245, 243)': 'text', 'rgb(162, 181, 176)': 'muted', 'rgb(102, 128, 122)': 'line-strong', 'rgb(255, 107, 53)': 'hot', 'rgb(22, 34, 31)': 'sheet',
+  'rgb(16, 26, 25)': 'popup', 'rgb(255, 111, 142)': 'error', 'rgb(93, 211, 158)': 'success', 'rgb(10, 16, 24)': 'ink', 'rgb(201, 138, 61)': 'warning', 'rgb(255, 255, 255)': 'white',
+};
+const name = (c) => (typeof c !== 'string' ? c : c.replace(/rgb\(\d+, \d+, \d+\)/g, (m) => NAMES[m] ?? `RAW ${m}`).replace(/color\(srgb[^)]*\)/g, 'hot wash').replace(/^none$/, 'none'));
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+const variants = mergeParts(dir);
+const css = JSON.parse(readFileSync(join(dir, 'css-classes.json'), 'utf8'));
+const byCategory = Map.groupBy(variants, (v) => v.category);
+const total = (list) => list.reduce((n, v) => n + v.count, 0);
+
+const rows = (list) =>
+  list
+    .map((v) => {
+      const sig = Object.entries(v.signature).map(([k, val]) => `<span><b>${esc(k)}</b> ${esc(name(val))}</span>`).join('');
+      const pic = v.picture ? `<img src="crops/${v.picture}" alt="">` : '<i>no picture</i>';
+      return `<tr><td class="pic">${pic}</td><td class="sig">${sig}</td><td class="n">${v.count}<small>${v.screens.length} screens</small></td><td class="cls">${esc(v.classes.join(', '))}<small>${esc(v.text)}</small></td></tr>`;
+    })
+    .join('\n');
+
+const sections = [...byCategory.entries()]
+  .sort((a, b) => b[1].length - a[1].length)
+  .map(([category, list]) => `<section id="${category.replace(/\W+/g, '-')}"><h2>${esc(category)} <small>${list.length} variants, ${total(list)} components</small></h2><table>${rows(list)}</table></section>`)
+  .join('\n');
+
+const repeated = css.filter((c) => c.modules > 1).slice(0, 40);
+const dup = `<section id="css"><h2>Same class name, many style sheets <small>${css.filter((c) => c.modules > 1).length} names</small></h2><table>${repeated
+  .map((c) => `<tr><td class="cls"><b>.${esc(c.name)}</b></td><td class="n">${c.modules} sheets, ${c.definitions} rules</td><td class="cls">${esc([...new Set(c.defs.map((d) => d.file.replace(/^src\//, '')))].slice(0, 6).join(', '))}</td></tr>`)
+  .join('')}</table></section>`;
+
+const nav = [...byCategory.entries()].sort((a, b) => b[1].length - a[1].length).map(([c, l]) => `<a href="#${c.replace(/\W+/g, '-')}">${esc(c)} <b>${l.length}</b></a>`).join('');
+writeFileSync(
+  join(dir, 'index.html'),
+  `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TrustBazaar: inventory of components</title>
+<style>
+:root{color-scheme:dark;--bg:#0a1018;--tx:#f1f5f3;--mu:#a2b5b0;--ln:#2a3b36;--hot:#ff6b35}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,sans-serif}
+header,section{max-width:1200px;margin:0 auto;padding:24px 20px;border-bottom:1px solid var(--ln)}
+h1{margin:0 0 8px;font-size:28px}h2{margin:0 0 16px;font-size:20px}h2 small{color:var(--mu);font-weight:400;font-size:14px;margin-left:12px}
+nav{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:16px}nav a{color:var(--tx);text-decoration:none;border:1px solid var(--ln);padding:4px 10px}nav a b{color:var(--hot)}
+table{border-collapse:collapse;width:100%}td{border-top:1px solid var(--ln);padding:10px 8px;vertical-align:top}
+.pic{width:260px}.pic img{max-width:240px;max-height:120px;background:#16221f;border:1px solid var(--ln)}.pic i{color:var(--mu)}
+.sig span{display:inline-block;margin:0 14px 2px 0}.sig b{color:var(--mu);font-weight:400;margin-right:4px}
+.n{white-space:nowrap;font-size:20px}.n small,.cls small{display:block;color:var(--mu);font-size:12px}.cls{font-family:ui-monospace,monospace;font-size:12px}
+p{color:var(--mu);max-width:70ch}
+</style>
+<header><h1>Inventory of components</h1><p>Every kind of component as it is drawn today, found by measuring the live screens at 1440 px in the dark theme: ${variants.length} variants in ${byCategory.size} kinds, from ${total(variants)} components on ${new Set(variants.flatMap((v) => v.screens)).size} screens and open states. The same measurements are one variant. A colour written RAW is not a token. Generated by e2e/inventory/harvest.spec.ts; do not edit.</p><nav>${nav}<a href="#css">same class name <b>${css.filter((c) => c.modules > 1).length}</b></a></nav></header>
+${sections}
+${dup}`,
+);
+console.log(`wrote index.html: ${variants.length} variants`);
+
+// pictures of variants that were merged into another one are not kept
+import { readdirSync, rmSync } from 'node:fs';
+const used = new Set(variants.map((v) => v.picture).filter(Boolean));
+for (const f of readdirSync(join(dir, 'crops'))) if (!used.has(f)) rmSync(join(dir, 'crops', f));

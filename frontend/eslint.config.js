@@ -63,7 +63,7 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   // The end-to-end runner and its helpers run in Node (U8-11).
-  { files: ['e2e/**/*.{mjs,ts}'], languageOptions: { globals: globals.node } },
+  { files: ['e2e/**/*.{mjs,ts}', 'scripts/**/*.mjs'], languageOptions: { globals: globals.node } },
   {
     files: ['src/**/*.{ts,tsx}'],
     languageOptions: { globals: globals.browser },

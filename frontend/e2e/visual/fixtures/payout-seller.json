@@ -1,0 +1,530 @@
+{
+  "recordedAt": "2026-11-27T13:25:45.596Z",
+  "path": "/account/payout",
+  "answers": {
+    "GET /me": {
+      "status": 200,
+      "body": {
+        "id": "2cf534f7-063f-4675-ba0e-39b6df36c6d5",
+        "displayName": "Test Seller",
+        "phoneMasked": "***002",
+        "email": "seller@trustbazaar.test",
+        "emailVerified": true,
+        "kycStatus": "verified",
+        "accountStatus": "active",
+        "mfaEnabled": false,
+        "emailTwoStep": true,
+        "memberSince": "2026-11-02T10:15:30.147Z"
+      }
+    },
+    "GET /me/payout-account": {
+      "status": 200,
+      "body": {
+        "account": null
+      }
+    },
+    "GET /me/notification-preferences": {
+      "status": 200,
+      "body": {
+        "language": "en",
+        "emailTransactional": true
+      }
+    },
+    "GET /notifications": {
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "2a77a69e-1adf-4f89-83cf-93f9a92c3770",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T13:23:49.823Z",
+            "readAt": null
+          },
+          {
+            "id": "153931e5-f4c7-4fa8-bc1c-4b014ffedb28",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T11:40:16.983Z",
+            "readAt": null
+          },
+          {
+            "id": "5b0bcc93-7e6e-4085-95a1-e2760eb3b653",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T10:35:03.800Z",
+            "readAt": null
+          },
+          {
+            "id": "114ae3da-35e2-4c93-ae82-d55e17c65633",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T10:19:13.137Z",
+            "readAt": null
+          },
+          {
+            "id": "48241f1a-9577-4e79-9acd-f60366d17304",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T10:06:17.096Z",
+            "readAt": null
+          },
+          {
+            "id": "51ac5857-5070-4bd2-a7e5-3719cbda391b",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T10:06:06.473Z",
+            "readAt": null
+          },
+          {
+            "id": "2c7bfa79-360f-4ede-9603-ef634a4c0945",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T09:31:02.087Z",
+            "readAt": null
+          },
+          {
+            "id": "07d67287-a0f0-4e89-868c-fc643a0206c5",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T09:25:28.262Z",
+            "readAt": null
+          },
+          {
+            "id": "3d7aacf3-ae61-4ee6-a6e2-f9e53c6fe43f",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T09:20:02.892Z",
+            "readAt": null
+          },
+          {
+            "id": "2c9053da-bf3b-4196-ada8-67c80762a600",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T09:18:59.410Z",
+            "readAt": null
+          },
+          {
+            "id": "95fb7041-2c2e-45a1-b90c-2a4471408114",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T09:05:18.840Z",
+            "readAt": null
+          },
+          {
+            "id": "5512e1a9-bed6-496c-a309-becff6fc007a",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:59:41.440Z",
+            "readAt": null
+          },
+          {
+            "id": "840b6d20-44f8-402f-8fc2-b0e95d2b7b88",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:57:51.361Z",
+            "readAt": null
+          },
+          {
+            "id": "bd50e962-ab1a-42f5-96eb-493f86ccd9ae",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:42:43.993Z",
+            "readAt": null
+          },
+          {
+            "id": "974696d8-0f65-4afb-8fd8-d781e36af346",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:41:04.265Z",
+            "readAt": null
+          },
+          {
+            "id": "d13ecec6-7010-4301-8c2a-71f93e1e6894",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:38:53.772Z",
+            "readAt": null
+          },
+          {
+            "id": "bc1eec1c-cb94-46f8-920a-e25a0f075e67",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:32:08.354Z",
+            "readAt": null
+          },
+          {
+            "id": "0ea93358-8bbc-424b-a5ff-272bd41790d2",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:27:55.290Z",
+            "readAt": null
+          },
+          {
+            "id": "3226105e-4b3e-47c8-8b3a-283d30d07c70",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:24:35.291Z",
+            "readAt": "2026-11-27T08:26:49.137Z"
+          },
+          {
+            "id": "a3bd8f69-ef0a-4fb1-a4fd-c007aa1c7ad8",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:21:51.899Z",
+            "readAt": "2026-11-27T08:26:49.137Z"
+          },
+          {
+            "id": "8a9274c4-7b75-4ef2-b42d-c0a6100236d2",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:14:59.159Z",
+            "readAt": "2026-11-27T08:26:49.137Z"
+          },
+          {
+            "id": "1d8cc657-1a95-478d-857e-53a132a059b9",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:09:27.237Z",
+            "readAt": "2026-11-27T08:26:49.137Z"
+          },
+          {
+            "id": "011124f8-613b-4ef0-8167-34ca1e6767a2",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:05:39.290Z",
+            "readAt": "2026-11-27T08:26:49.137Z"
+          },
+          {
+            "id": "a8435991-200a-4448-9e54-80025960e38a",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T08:01:37.776Z",
+            "readAt": "2026-11-27T08:26:49.137Z"
+          },
+          {
+            "id": "d8386851-7f45-403b-92bb-40e6095d5299",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T07:55:08.151Z",
+            "readAt": "2026-11-27T08:00:47.728Z"
+          },
+          {
+            "id": "8f3d80a9-de1d-44ca-a0c6-5a9696388a92",
+            "code": "chat.message_received",
+            "title": "New message about Google Pixel 7, 128 GB, Snow",
+            "body": "You have a new message from Test Buyer about Google Pixel 7, 128 GB, Snow. Open TrustBazaar to read it and reply. Pay only through the app: payments outside it are not protected.",
+            "subject": {
+              "type": "thread",
+              "id": "726a0c3c-e00a-491a-b2fe-ffc92b6599a3"
+            },
+            "createdAt": "2026-11-27T07:54:36.885Z",
+            "readAt": "2026-11-27T08:00:47.728Z"
+          },
+          {
+            "id": "16ae1ed5-4a35-4406-a94f-1857d9029ad5",
+            "code": "chat.message_received",
+            "title": "New message about Google Pixel 7, 128 GB, Snow",
+            "body": "You have a new message from Test Buyer about Google Pixel 7, 128 GB, Snow. Open TrustBazaar to read it and reply. Pay only through the app: payments outside it are not protected.",
+            "subject": {
+              "type": "thread",
+              "id": "726a0c3c-e00a-491a-b2fe-ffc92b6599a3"
+            },
+            "createdAt": "2026-11-27T07:54:25.214Z",
+            "readAt": "2026-11-27T08:00:47.728Z"
+          },
+          {
+            "id": "e7ed0d8c-4f10-483a-a51d-5f1858b6ca26",
+            "code": "chat.message_received",
+            "title": "New message about Google Pixel 7, 128 GB, Snow",
+            "body": "You have a new message from Test Buyer about Google Pixel 7, 128 GB, Snow. Open TrustBazaar to read it and reply. Pay only through the app: payments outside it are not protected.",
+            "subject": {
+              "type": "thread",
+              "id": "726a0c3c-e00a-491a-b2fe-ffc92b6599a3"
+            },
+            "createdAt": "2026-11-27T07:53:56.045Z",
+            "readAt": "2026-11-27T08:00:47.728Z"
+          },
+          {
+            "id": "9cb8c0c6-6f11-4a73-9a04-9ecc7fa9eb71",
+            "code": "chat.message_received",
+            "title": "New message about Google Pixel 7, 128 GB, Snow",
+            "body": "You have a new message from Test Buyer about Google Pixel 7, 128 GB, Snow. Open TrustBazaar to read it and reply. Pay only through the app: payments outside it are not protected.",
+            "subject": {
+              "type": "thread",
+              "id": "726a0c3c-e00a-491a-b2fe-ffc92b6599a3"
+            },
+            "createdAt": "2026-11-27T07:53:55.120Z",
+            "readAt": "2026-11-27T08:00:47.728Z"
+          },
+          {
+            "id": "d341bd76-fe52-49d9-89b3-d74f0ad70a99",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T07:52:51.100Z",
+            "readAt": "2026-11-27T08:00:47.728Z"
+          },
+          {
+            "id": "23385235-d2de-4106-a586-3947ae3e8e26",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:45:26.887Z",
+            "readAt": "2026-11-27T08:00:47.728Z"
+          },
+          {
+            "id": "d23f37bd-d47e-4068-8f98-e7e5d251347a",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:40:59.886Z",
+            "readAt": "2026-11-27T06:41:20.806Z"
+          },
+          {
+            "id": "a432346a-dbb2-4d7a-b849-509f80dbfb97",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:37:45.344Z",
+            "readAt": "2026-11-27T06:39:38.493Z"
+          },
+          {
+            "id": "86237a98-db9d-4872-bf99-69c6a21e0d0d",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:37:19.576Z",
+            "readAt": "2026-11-27T06:39:38.493Z"
+          },
+          {
+            "id": "db132c67-791d-494e-b7a8-824f6f012844",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:33:48.378Z",
+            "readAt": "2026-11-27T06:37:09.365Z"
+          },
+          {
+            "id": "9e5c2c93-6ac1-4a32-9ab6-324e07191cb3",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:30:26.645Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "9dbed96a-1186-41c8-aa43-d7e171628fe3",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:30:00.645Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "b2a10fb5-20b1-48a4-a6c8-ae6bce325997",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:29:33.963Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "cce1fb13-9938-4ba6-9d70-008f8196dab6",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:25:21.235Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "ecc20f38-8418-447f-8631-9fbf386233f2",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:24:18.192Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "b6651c25-48e2-47a0-be44-91484506f08d",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:21:34.071Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "448d649d-7ca1-4c7e-8039-ddcb1697d7ab",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:13:29.573Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "9556391b-6762-473d-a077-cf0ab7d25beb",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:12:47.718Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "4d0542b3-860b-44c5-8976-760ee95facce",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:07:59.153Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "6a680bd8-b6b4-4481-aef4-d6621b2da162",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T06:01:23.111Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "7abcbd78-f915-45bb-9092-382a5d9c104b",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T05:59:16.774Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "d9a2a5f3-46cb-48cb-9daf-9295a90d836e",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T05:55:40.885Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "d56e572a-576c-45a4-aa82-981a6ec65250",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T05:52:19.115Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "d0246b29-7bc8-4eac-be74-953a521bd1f9",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T05:48:33.808Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          },
+          {
+            "id": "74378bc7-da22-4e9d-9d55-458aa341d3fe",
+            "code": "security.signin_new_device",
+            "title": "New sign-in to your account",
+            "body": "Your TrustBazaar account was signed in on a new device (Chrome on macOS). If this was not you, change your password now.",
+            "subject": null,
+            "createdAt": "2026-11-27T05:35:12.131Z",
+            "readAt": "2026-11-27T06:31:18.897Z"
+          }
+        ],
+        "unread": 18,
+        "nextCursor": "MjAyNi0xMS0yN1QwNTozNToxMi4xMzE4OTJafDc0Mzc4YmM3LWRhMjItNGU5ZC05ZDU1LTQ1OGFhMzQxZDNmZQ"
+      }
+    },
+    "GET /threads": {
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "726a0c3c-e00a-491a-b2fe-ffc92b6599a3",
+            "listing": {
+              "id": "b8948e8a-7e41-4c57-9a55-f37ef5c1d3c6",
+              "title": "Google Pixel 7, 128 GB, Snow"
+            },
+            "role": "seller",
+            "other": {
+              "id": "bbbe691f-6538-4426-8e6f-6339687b6eac",
+              "displayName": "Test Buyer",
+              "verified": true
+            },
+            "lastSeq": 9,
+            "unread": 0,
+            "lastMessageAt": "2026-11-27T07:55:08.072Z",
+            "closed": false
+          }
+        ],
+        "nextCursor": null
+      }
+    }
+  }
+}

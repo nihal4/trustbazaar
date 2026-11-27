@@ -1,0 +1,260 @@
+[
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "plain",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400"
+    },
+    "count": 1,
+    "screens": [
+      "checkout"
+    ],
+    "id": "checkout-0",
+    "classes": [
+      "brand"
+    ],
+    "text": "",
+    "picture": "checkout-0.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 48,
+      "padX": 0,
+      "border": "- / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 4,
+    "screens": [
+      "checkout"
+    ],
+    "id": "checkout-1",
+    "classes": [
+      "navCell"
+    ],
+    "text": "Orders",
+    "picture": "checkout-1.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "checkout"
+    ],
+    "id": "checkout-2",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "checkout-2.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 22,
+      "border": "1px none / 1px none",
+      "radius": "6px",
+      "bg": "rgb(255, 107, 53)",
+      "color": "rgb(10, 16, 24)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "checkout"
+    ],
+    "id": "checkout-3",
+    "classes": [
+      "mantine-focus-auto",
+      "mantine-active",
+      "77c9d27d",
+      "mantine-Button-root",
+      "87cf2631",
+      "mantine-UnstyledButton-root"
+    ],
+    "text": "Sell an item",
+    "picture": "checkout-3.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "checkout"
+    ],
+    "id": "checkout-4",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "checkout-4.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 8,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "checkout"
+    ],
+    "id": "checkout-5",
+    "classes": [
+      "langSwitch"
+    ],
+    "text": "বাংলা– change the language to Bangla",
+    "picture": "checkout-5.png"
+  },
+  {
+    "category": "field",
+    "signature": {
+      "height": 44,
+      "border": "- / - / -",
+      "radius": "square",
+      "bg": "none"
+    },
+    "count": 1,
+    "screens": [
+      "checkout"
+    ],
+    "id": "checkout-6",
+    "classes": [],
+    "text": "",
+    "picture": "checkout-6.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "-",
+      "bottom": "-",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 0,
+      "padX": 0
+    },
+    "count": 1,
+    "screens": [
+      "checkout"
+    ],
+    "id": "checkout-7",
+    "classes": [
+      "item"
+    ],
+    "text": "ItemOnePlus Nord CE 3, 128 GB, GreyPrice",
+    "picture": "checkout-7.png"
+  },
+  {
+    "category": "avatar or photo place",
+    "signature": {
+      "size": "96x96",
+      "border": "1px rgb(42, 59, 54)",
+      "radius": "4px",
+      "bg": "rgb(22, 34, 31)",
+      "color": "rgb(241, 245, 243)"
+    },
+    "count": 1,
+    "screens": [
+      "checkout"
+    ],
+    "id": "checkout-8",
+    "classes": [
+      "thumb"
+    ],
+    "text": "",
+    "picture": "checkout-8.png"
+  },
+  {
+    "category": "tag, count or mark",
+    "signature": {
+      "height": 16,
+      "border": "-",
+      "radius": "6px",
+      "bg": "rgb(255, 122, 69)",
+      "color": "rgb(10, 16, 24)",
+      "size": 12
+    },
+    "count": 2,
+    "screens": [
+      "checkout"
+    ],
+    "id": "checkout-9",
+    "classes": [
+      "badge"
+    ],
+    "text": "1",
+    "picture": "checkout-9.png"
+  },
+  {
+    "category": "notice",
+    "signature": {
+      "left": "-",
+      "border": "1px rgb(201, 138, 61)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)"
+    },
+    "count": 1,
+    "screens": [
+      "checkout"
+    ],
+    "id": "checkout-10",
+    "classes": [
+      "notice"
+    ],
+    "text": "Test mode: no real money is moved. Payme",
+    "picture": "checkout-10.png"
+  },
+  {
+    "category": "notice",
+    "signature": {
+      "left": "-",
+      "border": "-",
+      "radius": "4px",
+      "bg": "rgb(22, 34, 31)",
+      "color": "rgb(241, 245, 243)"
+    },
+    "count": 1,
+    "screens": [
+      "checkout"
+    ],
+    "id": "checkout-11",
+    "classes": [
+      "info"
+    ],
+    "text": "This item is no longer available in that",
+    "picture": "checkout-11.png"
+  }
+]

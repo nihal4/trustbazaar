@@ -1,0 +1,151 @@
+[
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "plain",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400"
+    },
+    "count": 1,
+    "screens": [
+      "kyc-verified"
+    ],
+    "id": "kyc-verified-0",
+    "classes": [
+      "brand"
+    ],
+    "text": "",
+    "picture": "kyc-verified-0.png"
+  },
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "underlined",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600"
+    },
+    "count": 1,
+    "screens": [
+      "kyc-verified"
+    ],
+    "id": "kyc-verified-1",
+    "classes": [
+      "exit"
+    ],
+    "text": "Finish later",
+    "picture": "kyc-verified-1.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "kyc-verified"
+    ],
+    "id": "kyc-verified-2",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "kyc-verified-2.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 16,
+      "border": "- / -",
+      "radius": "6px",
+      "bg": "rgb(22, 34, 31)",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "kyc-verified"
+    ],
+    "id": "kyc-verified-3",
+    "classes": [
+      "langSwitch"
+    ],
+    "text": "বাংলা– change the language to Bangla",
+    "picture": "kyc-verified-3.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 52,
+      "padX": 28,
+      "border": "1px rgb(102, 128, 122) / 1px rgb(102, 128, 122)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "kyc-verified"
+    ],
+    "id": "kyc-verified-4",
+    "classes": [
+      "secondary"
+    ],
+    "text": "Show the images you sent",
+    "picture": "kyc-verified-4.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "1px rgb(42, 59, 54)",
+      "bottom": "1px rgb(42, 59, 54)",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 16,
+      "padX": 0
+    },
+    "count": 1,
+    "screens": [
+      "kyc-verified"
+    ],
+    "id": "kyc-verified-5",
+    "classes": [
+      "status"
+    ],
+    "text": "Your verificationYour identity is verifi",
+    "picture": "kyc-verified-5.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "-",
+      "bottom": "-",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 0,
+      "padX": 0
+    },
+    "count": 1,
+    "screens": [
+      "kyc-verified"
+    ],
+    "id": "kyc-verified-6",
+    "classes": [
+      "sent"
+    ],
+    "text": "What you sentShow the images you sent",
+    "picture": "kyc-verified-6.png"
+  }
+]

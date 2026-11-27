@@ -1,0 +1,574 @@
+[
+  {
+    "category": "text link",
+    "signature": {
+      "underline": "plain",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400"
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-0",
+    "classes": [
+      "brand"
+    ],
+    "text": "",
+    "picture": "propose-popup-0.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 48,
+      "padX": 0,
+      "border": "- / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 4,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-1",
+    "classes": [
+      "navCell"
+    ],
+    "text": "Orders",
+    "picture": "propose-popup-1.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-2",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "propose-popup-2.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 22,
+      "border": "1px none / 1px none",
+      "radius": "6px",
+      "bg": "rgb(255, 107, 53)",
+      "color": "rgb(10, 16, 24)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-3",
+    "classes": [
+      "mantine-focus-auto",
+      "mantine-active",
+      "77c9d27d",
+      "mantine-Button-root",
+      "87cf2631",
+      "mantine-UnstyledButton-root"
+    ],
+    "text": "Sell an item",
+    "picture": "propose-popup-3.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 2,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-4",
+    "classes": [
+      "receiptLink"
+    ],
+    "text": "Download receipt",
+    "picture": "propose-popup-4.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 24,
+      "border": "1px rgb(255, 107, 53) / 1px rgb(255, 107, 53)",
+      "radius": "square",
+      "bg": "color(srgb 1 0.419608 0.207843 / 0.1)",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-5",
+    "classes": [
+      "primary"
+    ],
+    "text": "Start the handover",
+    "picture": "propose-popup-5.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 56,
+      "padX": 12,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 3,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-6",
+    "classes": [
+      "secondary"
+    ],
+    "text": "Propose a place and time",
+    "picture": "propose-popup-6.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 6,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(162, 181, 176)",
+      "weight": "400",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-7",
+    "classes": [
+      "close"
+    ],
+    "text": "",
+    "picture": "propose-popup-7.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 56,
+      "padX": 16,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "color(srgb 1 0.419608 0.207843 / 0.1)",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-8",
+    "classes": [
+      "primary"
+    ],
+    "text": "Send the proposal",
+    "picture": "propose-popup-8.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 0,
+      "border": "1px rgb(42, 59, 54) / 1px rgb(42, 59, 54)",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "400",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-9",
+    "classes": [
+      "themeSwitch"
+    ],
+    "text": "Switch to light mode",
+    "picture": "propose-popup-9.png"
+  },
+  {
+    "category": "button",
+    "signature": {
+      "height": 44,
+      "padX": 8,
+      "border": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "weight": "600",
+      "size": 15
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-10",
+    "classes": [
+      "langSwitch"
+    ],
+    "text": "বাংলা– change the language to Bangla",
+    "picture": "propose-popup-10.png"
+  },
+  {
+    "category": "field",
+    "signature": {
+      "height": 44,
+      "border": "- / - / -",
+      "radius": "square",
+      "bg": "none"
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-11",
+    "classes": [],
+    "text": "",
+    "picture": "propose-popup-11.png"
+  },
+  {
+    "category": "field",
+    "signature": {
+      "height": 48,
+      "border": "- / 1px rgb(102, 128, 122) / -",
+      "radius": "square",
+      "bg": "none"
+    },
+    "count": 2,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-12",
+    "classes": [],
+    "text": "",
+    "picture": "propose-popup-12.png"
+  },
+  {
+    "category": "choice mark",
+    "signature": {
+      "type": "radio",
+      "size": 20,
+      "appearance": "auto",
+      "radius": "0px"
+    },
+    "count": 4,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-13",
+    "classes": [],
+    "text": "",
+    "picture": "propose-popup-13.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "1px rgb(42, 59, 54)",
+      "bottom": "1px rgb(42, 59, 54)",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 28,
+      "padX": 0
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-14",
+    "classes": [
+      "moneyPanel"
+    ],
+    "text": "Money for this order৳42,000Held by Trust",
+    "picture": "propose-popup-14.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "-",
+      "bottom": "-",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 0,
+      "padX": 0
+    },
+    "count": 2,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-15",
+    "classes": [
+      "previewBlock",
+      "deadlineWrap"
+    ],
+    "text": "Order summaryQuantity1Item৳42,000.00Deli",
+    "picture": "propose-popup-15.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "2px rgb(255, 107, 53)",
+      "bottom": "-",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 0,
+      "padX": 0
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-16",
+    "classes": [
+      "rail"
+    ],
+    "text": "Meetup handoverStatusArrangingEnter the ",
+    "picture": "propose-popup-16.png"
+  },
+  {
+    "category": "panel",
+    "signature": {
+      "top": "-",
+      "bottom": "1px rgb(42, 59, 54)",
+      "sides": "- / -",
+      "radius": "square",
+      "bg": "none",
+      "padY": 20,
+      "padX": 0
+    },
+    "count": 3,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-17",
+    "classes": [
+      "panel"
+    ],
+    "text": "Meetup handoverStatusArrangingEnter the ",
+    "picture": "propose-popup-17.png"
+  },
+  {
+    "category": "fact list",
+    "signature": {
+      "display": "grid",
+      "top": "1px rgb(42, 59, 54)",
+      "borderBetween": "none",
+      "cols": 3
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-18",
+    "classes": [
+      "facts"
+    ],
+    "text": "StatusPaidRoleYou are the sellerListingV",
+    "picture": "propose-popup-18.png"
+  },
+  {
+    "category": "fact list",
+    "signature": {
+      "display": "grid",
+      "top": "1px rgb(42, 59, 54)",
+      "borderBetween": "none",
+      "cols": 4
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-19",
+    "classes": [
+      "breakdownGrid"
+    ],
+    "text": "Quantity1Item৳42,000.00Delivery৳0.00Tota",
+    "picture": "propose-popup-19.png"
+  },
+  {
+    "category": "fact list",
+    "signature": {
+      "display": "grid",
+      "top": "1px rgb(42, 59, 54)",
+      "borderBetween": "none",
+      "cols": 1
+    },
+    "count": 2,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-20",
+    "classes": [
+      "statusGrid",
+      "deadlineGrid"
+    ],
+    "text": "StatusArranging",
+    "picture": "propose-popup-20.png"
+  },
+  {
+    "category": "stepper",
+    "signature": {
+      "orientation": "horizontal",
+      "display": "grid",
+      "items": 3,
+      "markers": "before"
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-21",
+    "classes": [
+      "list"
+    ],
+    "text": "Payment complete (done)Money on hold (no",
+    "picture": "propose-popup-21.png"
+  },
+  {
+    "category": "avatar or photo place",
+    "signature": {
+      "size": "64x64",
+      "border": "1px rgb(42, 59, 54)",
+      "radius": "4px",
+      "bg": "rgb(22, 34, 31)",
+      "color": "rgb(241, 245, 243)"
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-22",
+    "classes": [
+      "thumb"
+    ],
+    "text": "",
+    "picture": "propose-popup-22.png"
+  },
+  {
+    "category": "tag, count or mark",
+    "signature": {
+      "height": 16,
+      "border": "-",
+      "radius": "6px",
+      "bg": "rgb(255, 122, 69)",
+      "color": "rgb(10, 16, 24)",
+      "size": 12
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-23",
+    "classes": [
+      "badge"
+    ],
+    "text": "17",
+    "picture": "propose-popup-23.png"
+  },
+  {
+    "category": "tag, count or mark",
+    "signature": {
+      "height": 22,
+      "border": "-",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(241, 245, 243)",
+      "size": 14
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-24",
+    "classes": [
+      "status"
+    ],
+    "text": "Paid",
+    "picture": "propose-popup-24.png"
+  },
+  {
+    "category": "tag, count or mark",
+    "signature": {
+      "height": 20,
+      "border": "-",
+      "radius": "square",
+      "bg": "none",
+      "color": "rgb(93, 211, 158)",
+      "size": 16
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-25",
+    "classes": [
+      "tick"
+    ],
+    "text": "Identity verified",
+    "picture": "propose-popup-25.png"
+  },
+  {
+    "category": "popup",
+    "signature": {
+      "top": "1px rgb(42, 59, 54)",
+      "radius": "square",
+      "widthClass": "medium",
+      "bg": "rgb(16, 26, 25)"
+    },
+    "count": 1,
+    "screens": [
+      "propose-popup"
+    ],
+    "id": "propose-popup-26",
+    "classes": [
+      "popup"
+    ],
+    "text": "Propose a place and timeWhereDhanmondi P",
+    "picture": "propose-popup-26.png"
+  }
+]
