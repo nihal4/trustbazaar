@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { formatMoney, toLocalDigits } from '../../lib/money.js';
-import { formatDateTime, formatDeadline } from '../../lib/time.js';
+import { dateParts, formatCountdown } from '../../lib/time.js';
 import { useApi } from '../../shared/api';
 import { useServerNow } from '../../shared/clock';
 import { useMe } from '../../shared/me';
@@ -25,6 +25,25 @@ import bn from '../../messages/bn/seller.json';
 import styles from './seller.module.css';
 
 const CATALOGUES = { en, bn };
+
+/** A time as "30 Nov 2026, 9:47 PM" in Dhaka time (the weekday is left out: the date says the day). */
+function shortWhen(ms: number, lang: Lang): string {
+  const p = dateParts(ms, lang);
+  return `${p.day} ${p.month} ${p.year}, ${p.time} ${p.period}`;
+}
+
+/** A deadline in ruled lines: the date, the time, and what is left, right-aligned and in tabular figures (NFR-USE-08: the date, and the countdown). */
+function When({ ms, now, lang, left = false }: { ms: number; now: number; lang: Lang; left?: boolean }) {
+  const p = dateParts(ms, lang);
+  const c = formatCountdown(ms - now, lang);
+  return (
+    <div className={styles.when}>
+      <span className={styles.whenDate}>{p.day} {p.month} {p.year}</span>
+      <span className={styles.whenTime}>{p.weekday}, {p.time} {p.period}</span>
+      {left && <span className={c.urgent || c.ended ? `${styles.whenLeft} ${styles.whenUrgent}` : styles.whenLeft}>{c.ended ? c.text : lang === 'bn' ? `আর ${c.text}` : `in ${c.text}`}</span>}
+    </div>
+  );
+}
 const LISTING_STATES = ['active', 'pending_review', 'draft', 'sold', 'ended_unsold', 'cancelled', 'removed'] as const;
 type ListingState = (typeof LISTING_STATES)[number];
 
@@ -117,13 +136,16 @@ function ActionNeeded({ orders, error, t, lang }: { orders: SellerOrder[] | null
       {orders && list.length === 0 && <p className={styles.hint}>{t('seller.action_none')}</p>}
       <ul className={styles.list}>
         {list.map(({ order: o, why, due }) => (
-          <li key={o.id} className={styles.row}>
-            <Link to={`/orders/${encodeURIComponent(o.id)}`}><strong>{o.listing.title}</strong></Link>
-            <p>{t(`seller.why.${why}`)}{due !== null ? ` · ${formatDeadline(due, now, lang)}` : ''}</p>
+          <li key={o.id} className={styles.orderRow}>
+            <div className={styles.orderMain}>
+              <Link to={`/orders/${encodeURIComponent(o.id)}`}><strong>{o.listing.title}</strong></Link>
+              <p>{t(`seller.why.${why}`)}</p>
+            </div>
+            {due !== null && <When ms={due} now={now} lang={lang} left />}
           </li>
         ))}
       </ul>
-      <p><Link to="/orders?role=seller">{t('seller.all_sales')}</Link></p>
+      <p><Link to="/orders?role=seller" className={styles.ruledButton}>{t('seller.all_sales')}</Link></p>
     </section>
   );
 }
@@ -193,7 +215,7 @@ function Payouts({ t, lang }: { t: T; lang: Lang }) {
       {account.isError && <FormMessage kind="error">{listingsError(account.error, t, lang)}</FormMessage>}
       {account.isSuccess && !a && <p>{t('seller.account_none')}</p>}
       {a && <p>{accountLine(a, t)} · <strong>{accountStatus(a, t, lang)}</strong></p>}
-      {(account.isSuccess || isApiError(account.error, 404)) && <p><Link to="/account/payout">{t(a ? 'seller.account_change' : 'seller.account_add')}</Link></p>}
+      {(account.isSuccess || isApiError(account.error, 404)) && <p><Link to="/account/payout" className={styles.ruledButton}>{t(a ? 'seller.account_change' : 'seller.account_add')}</Link></p>}
       <h3>{t('seller.payouts_list')}</h3>
       {payouts.isSuccess && payouts.data.items.length === 0 && <p className={styles.hint}>{t('seller.payouts_none')}</p>}
       <ul className={styles.list}>
@@ -202,12 +224,10 @@ function Payouts({ t, lang }: { t: T; lang: Lang }) {
             <div>
               <strong className={styles.amount}>{formatMoney(BigInt(p.amount), lang)}</strong> · {t(`seller.payout.${p.status}`)}
               {p.simulated ? ` · ${t('seller.simulated')}` : ''}
-              <p className={styles.hint}>
-                <Link to={`/orders/${encodeURIComponent(p.orderId)}`}>{t('seller.payout_order')}</Link>
-                {' · '}{formatDateTime(Date.parse(p.sentAt ?? p.createdAt), lang)}
-              </p>
+              <p className={styles.hint}><Link to={`/orders/${encodeURIComponent(p.orderId)}`}>{t('seller.payout_order')}</Link></p>
             </div>
-                      </li>
+            <When ms={Date.parse(p.sentAt ?? p.createdAt)} now={0} lang={lang} />
+          </li>
         ))}
       </ul>
     </section>
@@ -247,7 +267,7 @@ function Statements({ t, lang }: { t: T; lang: Lang }) {
               plain text (U10-24) */}
           <div className={styles.stmtHead}>
             <h3 className={styles.stubHeading}><Link to={`/orders/${encodeURIComponent(s.orderId)}`}>{s.title ?? t('seller.untitled')}</Link></h3>
-            <p className={styles.stubNote}>{t('seller.settled', { at: formatDateTime(Date.parse(s.settledAt), lang) })}</p>
+            <p className={styles.stubNote}>{t('seller.settled', { at: shortWhen(Date.parse(s.settledAt), lang) })}</p>
           </div>
           <p className={styles.figure} aria-hidden="true">{formatMoney(BigInt(s.sellerPayout), lang)}</p>
           <dl className={styles.breakdown}>

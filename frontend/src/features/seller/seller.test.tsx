@@ -74,7 +74,8 @@ describe('the seller dashboard', () => {
     const action = (await screen.findByRole('heading', { name: 'Orders that need you' })).closest('section')!;
     expect(await within(action).findByRole('link', { name: 'Desk lamp' })).toBeTruthy();
     expect(within(action).queryByRole('link', { name: 'Radio' })).toBeNull(); // handed over: nothing to do
-    expect(within(action).getByText(/^Hand over the item by · .+ \(in (2 days 0 h|1 day 23 h)\)$/)).toBeTruthy();
+    expect(within(action).getByText('Hand over the item by')).toBeTruthy();
+    expect(within(action).getByText(/^in (2 days 0 h|1 day 23 h)$/)).toBeTruthy();   // the deadline: its date and time above, what is left in vermilion
 
     const listings = screen.getByRole('heading', { name: 'Your listings' }).closest('section')!;
     expect(await within(listings).findByText('Fixed price · ৳1,500 · 2 of 3 left')).toBeTruthy();

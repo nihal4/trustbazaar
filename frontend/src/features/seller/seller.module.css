@@ -64,7 +64,7 @@
 .buttons { display: flex; flex-wrap: wrap; gap: 0.625rem; margin-block: 0.5rem; }
 .primary { min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-btn-radius); background: var(--tb-btn-bg); color: var(--tb-btn-fg); border: 1px solid var(--tb-btn-line); font: inherit; font-weight: 600; cursor: pointer; }
 .primary:disabled { opacity: 0.6; }
-.secondary { align-self: flex-start; min-height: 44px; padding: 0 1.125rem; border: 1px solid var(--tb-border); border-radius: var(--tb-radius-control); background: none; color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
+.secondary { align-self: flex-start; min-height: 44px; padding: 0 1.5rem; border: 1px solid var(--tb-border); border-radius: 0; background: none; color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
 
 /* a statement: the order and its day, the payout as the one figure, the breakdown on hairlines */
 .panel article { border-bottom: 1px solid var(--tb-line); padding: 0 0 1.25rem; margin-bottom: 1.25rem; display: grid; gap: 0.5rem; min-width: 0; }
@@ -77,3 +77,30 @@
 .breakdown dt, .breakdown dd { margin: 0; padding: 0.375rem 0; border-bottom: 1px solid var(--tb-line); }
 .breakdown dd { text-align: right; font-variant-numeric: tabular-nums; padding-left: 1.5rem; }
 .total { font-weight: 600; border-bottom-color: var(--tb-border); }
+
+/* dates in ruled lines, right-aligned: the day, the time, and what is left (U10-25) */
+.orderRow { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 0.25rem 1.5rem; border-bottom: 1px solid var(--tb-line); padding: 0.875rem 0; }
+.list > .orderRow:first-child { padding-top: 0; }
+.orderMain { min-width: 0; }
+.orderMain a { color: var(--tb-text); text-decoration: none; }
+.orderMain a:hover { color: var(--tb-hot); }
+.orderMain p { margin: 0.25rem 0 0; color: var(--tb-muted); font-size: 0.9375rem; }
+.when { display: flex; flex-direction: column; align-items: flex-end; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.whenDate { font-weight: 600; }
+.whenTime { color: var(--tb-muted); font-size: 0.9375rem; }
+.whenLeft { margin-top: 0.125rem; color: var(--tb-hot); font-size: 0.9375rem; }
+.whenUrgent { font-weight: 600; }
+@media (max-width: 30rem) {
+  .orderRow { grid-template-columns: minmax(0, 1fr); }
+  .when { align-items: flex-start; text-align: left; flex-direction: row; flex-wrap: wrap; gap: 0 0.75rem; }
+}
+
+/* the links that are buttons: ruled, like every main button of the dark theme (a vermilion hairline and a low-opacity vermilion body) */
+.ruledButton { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 1.5rem; border: 1px solid var(--tb-btn-line); border-radius: var(--tb-btn-radius); background: var(--tb-btn-bg); color: var(--tb-btn-fg); font-weight: 600; text-decoration: none; }
+.ruledButton:hover { background: var(--tb-btn-bg-hover); }
+.ruledButton:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+.panel > p > .ruledButton { align-self: flex-start; }
+
+/* the titles that are links read alike everywhere on the page: no underline, vermilion when touched */
+.row a, .stubHeading a, .payoutRow a { text-decoration: none; }
+.row a:hover, .stubHeading a:hover, .payoutRow a:hover { color: var(--tb-hot); }
