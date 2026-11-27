@@ -1036,25 +1036,6 @@
   margin: 0;
   font-size: var(--tb-text-sm);
 }
-.popupButtons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  border: 1px solid var(--tb-line);
-  margin-top: var(--tb-space-3);
-}
-.popupButtons > button {
-  min-height: 56px;
-  border: 0;
-}
-.popupButtons > button:only-child {
-  grid-column: 1 / -1;
-}
-.popupButtons > .secondary:hover {
-  background: var(--tb-surface);
-}
-.form .popupButtons .secondary {
-  text-decoration: none;
-}
 .terms {
   list-style: none;
   counter-reset: t;
@@ -1104,10 +1085,6 @@
   margin: var(--tb-space-0-5) 0 0;
   accent-color: var(--tb-hot);
 }
-.popupButtons > button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
 /* the code popup: the note and the digits centred (the trailing letter-space is cancelled so the digits sit truly in the middle) */
 .codeNote {
   text-align: center;
@@ -1129,27 +1106,6 @@
 .terms li,
 .accept {
   line-height: var(--tb-line-height, 1.5);
-}
-/* popup button grid: no stray orange border, air inside the cells, stacked on phones */
-.popupButtons > button,
-.popupButtons > button.primary {
-  border: 0;
-  padding: var(--tb-space-3) var(--tb-space-4);
-}
-.popupButtons > button + button {
-  background: none;
-  text-decoration: none;
-  color: var(--tb-text);
-  border-left: 1px solid var(--tb-line);
-}
-@media (max-width: 30rem) {
-  .popupButtons {
-    grid-template-columns: 1fr;
-  }
-  .popupButtons > button + button {
-    border-left: 0;
-    border-top: 1px solid var(--tb-line);
-  }
 }
 /* the primary keeps its orange wash on hover inside the action grid */
 .actionGrid button.primary:hover:not(:disabled) {
@@ -1336,15 +1292,6 @@ input[type='file']:hover::file-selector-button {
   padding: var(--tb-space-2) 0;
   border-bottom: 0;
 }
-/* the popup form fits a popup */
-.popupButtons {
-  bottom: 0;
-  background: var(--tb-sheet);
-  position: static;
-}
-[class*='inner'] .popupButtons {
-  position: sticky;
-}
 .rail .deadlineGrid > div {
   padding: var(--tb-space-3-5) var(--tb-space-4);
   gap: var(--tb-space-1);
@@ -1412,8 +1359,7 @@ input[type='file']:hover::file-selector-button {
 .deadlineGrid,
 .shipFacts,
 .breakdownGrid,
-.cellRow,
-.popupButtons {
+.cellRow {
   border-inline: 0;
 }
 /* a button that opens a popup: a full-width ruled cell with a chevron, as the cells of the action grid */

@@ -13,6 +13,7 @@ import { useApi } from '../../shared/api';
 import { useServerNow } from '../../shared/clock';
 import { ConfirmDialog } from '../../shared/ConfirmDialog';
 import { Popup } from '../../shared/Popup';
+import { PopupActions } from '../../shared/ui';
 import { Moment } from '../../shared/Moment';
 import { Terms } from './Terms';
 import { errorText } from '../../shared/errors';
@@ -325,14 +326,14 @@ function OpenDispute({ o, t, lang, onOpened }: { o: OrderView; t: T; lang: Lang;
             </p>
             {files.length > 0 && <p className={styles.hint}>{t('dispute.files_chosen', { n: toLocalDigits(String(files.length), lang) })}</p>}
             {progress && <p role="status">{progress}</p>}
-            <div className={styles.popupButtons}>
-              <button type="submit" className={styles.primary} disabled={open.isPending}>
+            <PopupActions>
+              <button type="submit" disabled={open.isPending}>
                 {t('dispute.continue')}
               </button>
-              <button type="button" className={styles.secondary} onClick={closeForm}>
+              <button type="button" onClick={closeForm}>
                 {t('actions.back')}
               </button>
-            </div>
+            </PopupActions>
           </form>
         </Popup>
       )}

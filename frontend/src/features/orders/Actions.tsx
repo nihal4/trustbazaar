@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatMoney } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
 import { Popup } from '../../shared/Popup';
+import { PopupActions } from '../../shared/ui';
 import { ConfirmDialog } from '../../shared/ConfirmDialog';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
@@ -168,13 +169,13 @@ export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang:
               rows={3}
               onChange={(e) => setReason(e.target.value)}
             />
-            <div className={styles.popupButtons}>
-              <button type="submit" className={styles.primary} disabled={act.isPending}>
+            <PopupActions>
+              <button type="submit" disabled={act.isPending}>
                 {t(open === 'request' ? 'actions.send_request' : 'actions.continue')}
               </button>
               <button
                 type="button"
-                className={styles.secondary}
+
                 onClick={() => {
                   setOpen(null);
                   setReason('');
@@ -183,7 +184,7 @@ export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang:
               >
                 {t('actions.back')}
               </button>
-            </div>
+            </PopupActions>
           </form>
         </Popup>
       )}

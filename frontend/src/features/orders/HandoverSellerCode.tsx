@@ -1,5 +1,6 @@
 // The seller's side of the handover: the photos of the item, the code the buyer reads out, and the two-step popup that takes both.
 import { Popup } from '../../shared/Popup';
+import { PopupActions } from '../../shared/ui';
 import { useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toAsciiDigits, toLocalDigits } from '../../lib/money.js';
@@ -133,10 +134,10 @@ export function SellerCode({ o, h, t, lang }: { o: OrderView; h: HandoverView; t
                 </label>
                 <strong aria-label={t('handover.photos_label')}>{toLocalDigits(String(photos), lang)} / 3</strong>
               </div>
-              <div className={styles.popupButtons}>
+              <PopupActions>
                 <button
                   type="button"
-                  className={styles.primary}
+
                   disabled={photo.isPending}
                   onClick={() => {
                     setMessage(null);
@@ -145,10 +146,10 @@ export function SellerCode({ o, h, t, lang }: { o: OrderView; h: HandoverView; t
                 >
                   {t('dispute.continue')}
                 </button>
-                <button type="button" className={styles.secondary} disabled={photo.isPending} onClick={close}>
+                <button type="button" disabled={photo.isPending} onClick={close}>
                   {t('actions.back')}
                 </button>
-              </div>
+              </PopupActions>
             </div>
           ) : (
             <form onSubmit={submit} noValidate className={styles.hoStep}>
@@ -164,13 +165,13 @@ export function SellerCode({ o, h, t, lang }: { o: OrderView; h: HandoverView; t
               <p id="handover-attempts" className={styles.hint}>
                 {t('handover.attempts_left', { left: toLocalDigits(String(h.attemptsLeft ?? 0), lang) })}
               </p>
-              <div className={styles.popupButtons}>
-                <button type="submit" className={styles.primary} disabled={enter.isPending}>
+              <PopupActions>
+                <button type="submit" disabled={enter.isPending}>
                   {t('handover.enter_button')}
                 </button>
                 <button
                   type="button"
-                  className={styles.secondary}
+
                   disabled={enter.isPending}
                   onClick={() => {
                     setMessage(null);
@@ -179,7 +180,7 @@ export function SellerCode({ o, h, t, lang }: { o: OrderView; h: HandoverView; t
                 >
                   {t('actions.back')}
                 </button>
-              </div>
+              </PopupActions>
             </form>
           )}
         </Popup>

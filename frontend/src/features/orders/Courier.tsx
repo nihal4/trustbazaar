@@ -16,6 +16,7 @@ import { problemName } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { addressesKey, areasKey, orderKey, type Area, type OrderView, type Quote, type SavedAddress } from './model';
 import { Popup } from '../../shared/Popup';
+import { PopupActions } from '../../shared/ui';
 import { TimeLeft } from '../../shared/Moment';
 import { Terms } from './Terms';
 import styles from './orders.module.css';
@@ -105,14 +106,14 @@ export function AddressForm({
       <input id={`${p}-landmark`} value={landmark} maxLength={120} onChange={(e) => setLandmark(e.target.value)} />
       <label htmlFor={`${p}-contact`}>{t('address.contact')}</label>
       <input id={`${p}-contact`} value={contactName} maxLength={80} autoComplete="name" onChange={(e) => setContactName(e.target.value)} />
-      <div className={styles.popupButtons}>
-        <button type="submit" className={styles.primary} disabled={save.isPending}>
+      <PopupActions>
+        <button type="submit" disabled={save.isPending}>
           {t('address.save')}
         </button>
-        <button type="button" className={styles.secondary} onClick={onCancel}>
+        <button type="button" onClick={onCancel}>
           {t('actions.back')}
         </button>
-      </div>
+      </PopupActions>
     </form>
   );
 }

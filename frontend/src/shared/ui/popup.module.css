@@ -117,7 +117,15 @@
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
   border: 1px solid var(--tb-line);
-  margin-top: var(--tb-space-2);
+  border-inline: 0;
+  margin-top: var(--tb-space-3);
+  bottom: 0;
+  background: var(--tb-sheet);
+  position: static;
+}
+/* inside the scrolling body of a popup the actions stay in view */
+[class*='inner'] .actions {
+  position: sticky;
 }
 .actions > button {
   min-height: 56px;
@@ -138,7 +146,6 @@
 }
 .actions > button:first-child {
   background: color-mix(in srgb, var(--tb-hot) 10%, transparent);
-  box-shadow: inset 0 0 0 1px var(--tb-hot);
 }
 .actions > button:first-child:hover:not(:disabled) {
   background: color-mix(in srgb, var(--tb-hot) 18%, transparent);

@@ -1,5 +1,6 @@
 // Proposing a meetup place and time: a point from the list or a place of the member's own, and a time on the Dhaka clock.
 import { Popup } from '../../shared/Popup';
+import { PopupActions } from '../../shared/ui';
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDateTime } from '../../lib/time.js';
@@ -124,14 +125,14 @@ export function ProposeForm({ o, h, t, lang }: { o: OrderView; h: HandoverView; 
           </p>
           <label htmlFor="meet-note">{t('handover.note')}</label>
           <input id="meet-note" value={note} maxLength={200} onChange={(e) => setNote(e.target.value)} />
-          <div className={styles.popupButtons}>
-            <button type="submit" className={styles.primary} disabled={propose.isPending}>
+          <PopupActions>
+            <button type="submit" disabled={propose.isPending}>
               {t('handover.send_proposal')}
             </button>
-            <button type="button" className={styles.secondary} onClick={() => setShown(false)}>
+            <button type="button" onClick={() => setShown(false)}>
               {t('actions.back')}
             </button>
-          </div>
+          </PopupActions>
         </form>
       </Popup>
     </>
