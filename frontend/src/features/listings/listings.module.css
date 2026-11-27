@@ -43,11 +43,6 @@
   gap: var(--tb-space-4);
   min-width: 0;
 }
-.body h2 {
-  margin: 0 0 var(--tb-space-3);
-  font-size: 1.3125rem;
-  letter-spacing: -0.02em;
-}
 :lang(bn) .title {
   letter-spacing: 0;
   line-height: 1.35;
@@ -61,11 +56,6 @@
   overflow-wrap: anywhere;
   margin: 0;
   line-height: 1.65;
-}
-.clarifications li {
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-surface);
-  padding: var(--tb-space-3-5) var(--tb-space-4);
 }
 .clarifications .muted {
   margin: var(--tb-space-1-5) 0 0;
@@ -92,13 +82,6 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-
-.details {
-  display: grid;
-  grid-template-columns: minmax(8rem, max-content) minmax(0, 1fr);
-  gap: var(--tb-space-2-5) var(--tb-space-6);
-  margin: 0;
-}
 .wide {
   grid-column: 1 / -1;
   font-weight: 500 !important;
@@ -119,14 +102,10 @@
   gap: var(--tb-space-1) var(--tb-space-4);
   justify-content: space-between;
   align-items: baseline;
-  background: var(--tb-surface);
-  border-bottom: 2px dotted var(--tb-border);
   border-radius: var(--tb-radius-panel) var(--tb-radius-panel) 0 0;
-  padding: var(--tb-space-3-5) var(--tb-space-5);
 }
 .auctionTop::before,
 .auctionTop::after {
-  content: '';
   position: absolute;
   bottom: -7px;
   width: 12px;
@@ -145,7 +124,6 @@
 }
 .auctionTop h2 {
   margin: 0;
-  font-size: var(--tb-text-md);
   font-weight: 600;
 }
 .timeLeft {
@@ -155,14 +133,6 @@
 }
 .timeLeft .urgent {
   color: var(--tb-error);
-}
-.auction > :not(.auctionTop) {
-  margin-left: var(--tb-space-5);
-  margin-right: var(--tb-space-5);
-}
-.facts {
-  padding-top: var(--tb-space-4-5);
-  font-variant-numeric: tabular-nums;
 }
 .facts p {
   margin: var(--tb-space-1) 0;
@@ -182,7 +152,6 @@
   color: var(--tb-error);
 }
 .warning {
-  border-radius: var(--tb-radius-panel);
   background: var(--tb-error-bg);
   color: var(--tb-error-text);
   padding: var(--tb-space-2) var(--tb-space-3);
@@ -200,13 +169,6 @@
 .bid input:focus {
   outline: 2px solid var(--tb-focus);
   outline-offset: 1px;
-}
-.mine {
-  font-weight: 600;
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-accent-soft);
-  color: var(--tb-accent-strong);
-  padding: var(--tb-space-2-5) var(--tb-space-3-5);
 }
 .rules summary {
   min-height: 44px;
@@ -234,18 +196,9 @@
   flex-wrap: wrap;
   gap: var(--tb-space-1) var(--tb-space-4);
   justify-content: space-between;
-  border-top: 1px solid var(--tb-line);
   padding: var(--tb-space-2) 0;
   font-size: var(--tb-text-md);
   font-variant-numeric: tabular-nums;
-}
-.offer {
-  border: 1px solid var(--tb-accent);
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-accent-wash);
-  padding: var(--tb-space-3) var(--tb-space-4);
-  font-weight: 400;
-  margin-bottom: var(--tb-space-4);
 }
 
 .primary,
@@ -425,9 +378,6 @@
 }
 :lang(bn) .body h2 {
   letter-spacing: 0;
-}
-.details {
-  display: block;
 }
 .details dt:first-of-type {
   border-top: 0;
@@ -658,7 +608,6 @@
   border: 1px solid var(--tb-gold);
   border-radius: var(--tb-radius-panel);
   color: var(--tb-gold);
-  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -716,12 +665,14 @@
   font-size: var(--tb-text-headline);
 }
 .facts {
+  font-variant-numeric: tabular-nums;
   padding-top: var(--tb-space-4);
 }
 .warning {
   border-radius: var(--tb-radius-panel);
 }
 .mine {
+  font-weight: 600;
   border-radius: 0;
   background: none;
   border: 0;
@@ -752,6 +703,8 @@
   border-block: 1px solid var(--tb-line);
 }
 .offer {
+  font-weight: 400;
+  margin-bottom: var(--tb-space-4);
   border-radius: 0;
   background: none;
   border: 0;
@@ -1134,7 +1087,6 @@ body:has(.bidBar) {
   right: 0;
   bottom: 0;
   z-index: 30;
-  display: grid;
   grid-template-columns: auto auto auto minmax(0, 1fr);
   align-items: end;
   gap: 0 var(--tb-space-7);
@@ -1432,7 +1384,6 @@ body:has(.bidBar) {
 }
 .barBody > .barCell {
   padding: var(--tb-space-2-5) var(--tb-space-6);
-  justify-content: space-between;
   gap: var(--tb-space-1);
 }
 .barBody > .barCell:first-child {
@@ -1561,19 +1512,6 @@ body:has(.bidBar) {
   padding: 0;
   align-items: stretch;
 }
-.barBody .seeBids {
-  position: relative;
-  flex: 1;
-  width: 100%;
-  min-height: 44px;
-  gap: var(--tb-space-2-5);
-  justify-content: center;
-  padding: 0 var(--tb-space-6);
-  border: 0;
-  border-radius: 0;
-  background: none;
-  font-size: var(--tb-text-base);
-}
 .barBody .seeBids:hover {
   background: var(--tb-surface);
 }
@@ -1624,6 +1562,14 @@ body:has(.bidBar) {
 
 /* the See-the-bids cell is a small grid of its own: label | count | arrow, the count and the arrow each in a square cell between hairlines and centred in it */
 .barBody .seeBids {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  font-size: var(--tb-text-base);
   display: grid;
   grid-template-columns: 1fr auto auto;
   align-items: stretch;
@@ -1797,8 +1743,6 @@ body:has(.bidBar) {
   grid-template-columns: auto minmax(0, 1fr) auto auto;
   gap: 0 var(--tb-space-6);
   align-items: center;
-  padding-bottom: var(--tb-space-4);
-  border-bottom: 1px solid var(--tb-line);
 }
 .roomThumb {
   width: 64px;
@@ -1996,7 +1940,6 @@ body:has(.bidBar) {
 }
 .roomStage svg {
   max-height: 13rem;
-  margin-inline: auto;
 }
 @media (prefers-reduced-motion: no-preference) {
   .liveDot {
@@ -2051,7 +1994,6 @@ body:has(.bidBar) {
 }
 .countCell small {
   color: var(--tb-muted);
-  font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   line-height: 1.2;
@@ -2085,9 +2027,6 @@ body:has(.bidBar) {
   background: none;
   color: var(--tb-text);
   cursor: pointer;
-}
-.quickBid + .quickBid {
-  border-left: 1px solid var(--tb-border);
 }
 .quickBid:hover {
   background: var(--tb-surface);
