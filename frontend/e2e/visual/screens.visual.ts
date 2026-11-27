@@ -63,6 +63,23 @@ const STATES = [
       await page.getByRole('dialog').waitFor();
     },
   },
+  // the action rows of the rail open these: a reason form, and the proposal of a place and a time (U11-16: the dialogs and cells the first states did not show)
+  {
+    name: 'order-seller-cancel-popup',
+    fixture: 'order-seller',
+    open: async (page: import('@playwright/test').Page) => {
+      await page.getByRole('button', { name: 'Cancel this order' }).click();
+      await page.getByRole('dialog').waitFor();
+    },
+  },
+  {
+    name: 'order-seller-propose-popup',
+    fixture: 'order-seller',
+    open: async (page: import('@playwright/test').Page) => {
+      await page.getByRole('button', { name: 'Propose a place and time' }).click();
+      await page.getByRole('dialog').waitFor();
+    },
+  },
 ];
 for (const state of STATES) {
   for (const theme of ['dark', 'light'] as const) {
