@@ -24,8 +24,9 @@ interface Started { registrationId: string; resendAt: string }
 /** One height for the card in every step (cells), set from the tallest step (the password and its confirmation, or the terms and the age), so the card never
  *  grows or shrinks between steps; a narrow screen wraps more lines and needs more. The heading band is as in sign-in. */
 const headFor = (vw: number, bangla: boolean) => (vw < 360 ? (bangla ? 8 : 7) : vw < 520 ? (bangla ? 7 : 6) : 5);
-const BODY = 11;
-const rowsFor = (vw: number, bangla: boolean) => headFor(vw, bangla) + BODY + 2;
+/** The form band: the password step with a message under it is the tallest; a narrow screen wraps the message and the labels and needs more room. */
+const bodyFor = (vw: number) => (vw < 360 ? 14 : vw < 520 ? 13 : 11);
+const rowsFor = (vw: number, bangla: boolean) => headFor(vw, bangla) + bodyFor(vw) + 2;
 
 export function Component() {
   const { t, lang } = useAccountT();
@@ -270,9 +271,9 @@ export function Component() {
           <input type="text" name="username" autoComplete="username" value={email} readOnly tabIndex={-1} aria-hidden="true" className={styles.srOnly} />
           <div className={styles.fieldGroup}>
             <TextField id="register-password" label={t('field.password')} hint={t('register.password_hint', { min: digits(PASSWORD.minSingleFactor, lang) })}
-              value={password} onChange={setPassword} type="password" autoComplete="new-password" autoFocus {...aria()} />
+              value={password} onChange={setPassword} type="password" autoComplete="new-password" autoFocus {...aria(message === t('register.password_mismatch'))} />
             <TextField id="register-confirm" label={t('register.confirm')} value={confirm} onChange={setConfirm}
-              type="password" autoComplete="new-password" {...aria()} />
+              type="password" autoComplete="new-password" {...aria(message !== t('register.password_mismatch'))} />
             <Slot id="register-message" message={message} ok={notice} />
           </div>
           <SubmitButton busy={busy} disabled={waitFor > 0}>{button ?? t('signin.continue')}</SubmitButton>
@@ -320,7 +321,7 @@ export function Component() {
         foot={<div className={styles.footLinks}><button type="button" className={styles.link} onClick={backTo('phone')}>{t('signin.back')}</button></div>}>
         <form onSubmit={(e) => void finish(e)} noValidate className={styles.stepForm}>
           <div className={styles.checks}>
-            <div className={styles.extra}><CheckboxField id="register-adult" label={t('register.adult')} checked={adult} onChange={setAdult} /></div>
+            <div className={styles.extra}><CheckboxField id="register-adult" label={t('register.adult')} checked={adult} onChange={setAdult} autoFocus /></div>
             <div className={styles.extra}><CheckboxField id="register-accept" label={acceptLabel} checked={accept} onChange={setAccept} /></div>
             <Slot id="register-message" message={message} ok={notice} />
           </div>

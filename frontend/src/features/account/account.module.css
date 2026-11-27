@@ -356,9 +356,22 @@
 
 /* sign-in, second step: the login that was typed, with a way back; a hidden copy of it stays in the form for password managers */
 .who {
+  min-width: 0;
   font-weight: 600;
   color: var(--tb-text);
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-overflow: ellipsis;                           /* a long address stays on one line inside the head band */
+  white-space: nowrap;
+}
+
+.leadRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.leadRow .link {
+  flex: none;
 }
 
 .srOnly {

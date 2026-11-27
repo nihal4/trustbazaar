@@ -217,7 +217,7 @@ export function Component() {
       head={(
         <>
           <h1 id="signin-head">{t('signin.title')}</h1>
-          <p className={styles.lead}>
+          <p className={`${styles.lead} ${styles.leadRow}`}>
             <span className={styles.who}>{login.trim()}</span>{' '}
             <button type="button" className={styles.link} onClick={() => { setStep('login'); setPassword(''); setMessage(null); }}>{t('signin.change_login')}</button>
           </p>

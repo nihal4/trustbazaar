@@ -92,10 +92,11 @@ export function GridCanvas({ cell, hole }: { cell: number; hole: Hole | null }) 
       const card = hole ? { x: hole.x * 2 - 2, y: hole.y * 2 - 2, w: hole.w * 2 + 4, h: hole.h * 2 + 4 } : null;   // a margin of a cell round the card
       // away from the screen's edges (a cell in) and from the language switch at the top right (about 4 by 3 cells)
       const chip = { x: hcols - 8, y: 0, w: 8, h: 6 };
+      const logo = { x: 0, y: 0, w: 16, h: 6 };                       // the logo that goes home, top left
       for (let tries = 0; tries < 60; tries++) {
         const x = 2 + 2 * Math.floor(Math.random() * ((hcols - name.w - 2) / 2)), y = 2 + 2 * Math.floor(Math.random() * ((hrows - name.h - 2) / 2));
         const box = { x, y, w: name.w, h: name.h };
-        if (overlap(box, chip) > 0 || (card && overlap(box, card) > 0) || shown.some((s2) => overlap(box, { x: s2.x - 2, y: s2.y - 2, w: name.w + 4, h: name.h + 4 }) > 0)) continue;
+        if (overlap(box, chip) > 0 || overlap(box, logo) > 0 || (card && overlap(box, card) > 0) || shown.some((s2) => overlap(box, { x: s2.x - 2, y: s2.y - 2, w: name.w + 4, h: name.h + 4 }) > 0)) continue;
         if (reduce) still = { x, y, t0: now, hold: 0 };
         else shown.push({ x, y, t0: now, hold: 3200 + Math.random() * 1600 });
         return;

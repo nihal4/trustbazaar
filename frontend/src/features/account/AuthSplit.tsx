@@ -43,7 +43,7 @@ function useFrame(content: RefObject<HTMLDivElement>, rows: number, stepKey: str
   const height = bands > 0 ? cell * rows : Math.max(cell * rows, Math.ceil((inner + 2) / cell) * cell);
   const leftCell = Math.max(1, Math.round((total - cols) / 2));
   // under the language switch (it is 44 px high at 20 px): on a phone the card starts below it with a clear gap
-  const top = Math.max(cell * (vw < 520 ? 3 : 2), Math.round((vh - height) / 2 / cell) * cell);
+  const top = Math.max(cell * (vw < 520 || leftCell * cell < 256 ? 3 : 2), Math.round((vh - height) / 2 / cell) * cell);
   const hole = useMemo<Hole>(() => ({ x: leftCell, y: top / cell, w: cols, h: height / cell }), [leftCell, top, cols, height, cell]);
   return { cell, width, height, left: leftCell * cell, top, hole };
 }

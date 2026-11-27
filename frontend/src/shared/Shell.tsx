@@ -55,6 +55,9 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
       <div className={styles.bare}>
         <a className={styles.skip} href="#main">{t('shell.skip_to_content')}</a>
         <header className={styles.bareTop}>
+          {home.sameDocument
+            ? <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo onDark /></Link>
+            : <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}><Logo onDark /></a>}
           <LanguageSwitch />
         </header>
         <main id="main" ref={main} tabIndex={-1} className={styles.bareMain}>
