@@ -1,7 +1,7 @@
 {
   "name": "trustbazaar-backend",
   "version": "0.1.0",
-  "description": "TrustBazaar core API — auth, listings, auctions, orders, payments/escrow, delivery, chat, disputes",
+  "description": "TrustBazaar core API \u2014 auth, listings, auctions, orders, payments/escrow, delivery, chat, disputes",
   "private": true,
   "scripts": {
     "build": "nest build",
@@ -16,7 +16,12 @@
     "migrate": "node dist/migrate.js",
     "staff:bootstrap": "node dist/staff-bootstrap.js",
     "areas:seed": "node dist/areas-seed.js",
-    "dev:mailbox": "node dist/dev-mailbox.js"
+    "dev:mailbox": "node dist/dev-mailbox.js",
+    "format": "prettier --write \"{src,test}/**/*.ts\"",
+    "format:check": "prettier --check \"{src,test}/**/*.ts\"",
+    "dup": "jscpd",
+    "unused": "knip --no-exit-code",
+    "health": "npm run lint --silent; npm run dup --silent; npm run unused --silent"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.0",
@@ -66,6 +71,9 @@
     "@typescript-eslint/parser": "^7.16.0",
     "eslint": "^8.57.0",
     "jest": "^29.7.0",
+    "jscpd": "5.4.3",
+    "knip": "6.48.0",
+    "prettier": "3.10.1",
     "socket.io-client": "^4.8.1",
     "ts-jest": "^29.4.15",
     "ts-node": "^10.9.2",

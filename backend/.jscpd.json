@@ -1,0 +1,10 @@
+{
+  "path": ["src"],
+  "format": ["typescript"],
+  "ignore": ["**/*.spec.ts", "**/migrations/**", "**/node_modules/**"],
+  "minLines": 10,
+  "minTokens": 100,
+  "reporters": ["console", "json"],
+  "output": "./reports/jscpd",
+  "gitignore": true
+}

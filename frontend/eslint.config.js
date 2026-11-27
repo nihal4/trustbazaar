@@ -9,6 +9,9 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import react from 'eslint-plugin-react';
 import globals from 'globals';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
+import sonarjs from 'eslint-plugin-sonarjs';
+import prettier from 'eslint-config-prettier';
 
 const FEATURES = [
   'account', 'kyc', 'listings', 'search', 'auctions', 'checkout', 'orders', 'delivery', 'game',
@@ -37,7 +40,7 @@ const restrict = (...patterns) => ['error', { patterns }];
 
 export default tseslint.config(
   // src/lib holds the Unit 8 reference modules, copied unchanged and tested by the reference-browser job.
-  { ignores: ['dist/', 'coverage/', 'node_modules/', 'src/lib/'] },
+  { ignores: ['dist/', 'coverage/', 'node_modules/', 'storybook-static/', 'reports/', 'src/lib/'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   // The end-to-end runner and its helpers run in Node (U8-11).
@@ -98,7 +101,32 @@ export default tseslint.config(
     rules: { 'no-restricted-imports': restrict(staffOnly, secureMinimal) },
   },
   {
-    files: ['*.config.{js,ts}', 'src/**/*.test.ts'],
+    files: ['*.config.{js,ts,mjs}', '*.cjs', 'src/**/*.test.ts'],
     languageOptions: { globals: globals.node },
   },
+  // Code health (U11-01). Accessibility of the markup (jsx-a11y) and the shape of the code (sonarjs: too complex, repeated, identical) are WARNINGS for now: they are a
+  // report of what the clean-up has to fix, and become errors, rule by rule, as the clean-up reaches each part (U11 in PROGRESS.md). Prettier's config only switches off the
+  // ESLint rules that would fight a formatter; the code is formatted by `npm run format`, a folder at a time as it is cleaned.
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/**/*.test.{ts,tsx}', 'src/**/*.stories.tsx'],
+    plugins: { 'jsx-a11y': jsxA11y },
+    rules: {
+      ...Object.fromEntries(Object.entries(jsxA11y.flatConfigs.recommended.rules).map(([name, value]) => [name, Array.isArray(value) ? ['warn', ...value.slice(1)] : value === 'off' || value === 0 ? 'off' : 'warn'])),
+    },
+  },
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/**/*.test.{ts,tsx}', 'src/**/*.stories.tsx'],
+    plugins: { sonarjs },
+    rules: {
+      'sonarjs/cognitive-complexity': ['warn', 20],
+      'sonarjs/no-identical-functions': 'warn',
+      'sonarjs/no-duplicate-string': ['warn', { threshold: 5 }],
+      'sonarjs/no-collapsible-if': 'warn',
+      'sonarjs/no-nested-conditional': 'warn',
+      'sonarjs/no-nested-template-literals': 'warn',
+    },
+  },
+  prettier,
 );

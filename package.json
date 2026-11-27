@@ -1,0 +1,19 @@
+{
+  "name": "trustbazaar",
+  "private": true,
+  "description": "Repository-level tooling only (checks that run when a commit is made). The applications are in backend/ and frontend/, each with its own package.json.",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "frontend/**/*.{ts,tsx,js,mjs}": "node scripts/staged.mjs frontend eslint",
+    "frontend/**/*.css": "node scripts/staged.mjs frontend stylelint",
+    "backend/**/*.ts": "node scripts/staged.mjs backend eslint"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "21.2.4",
+    "@commitlint/config-conventional": "21.2.4",
+    "husky": "9.1.7",
+    "lint-staged": "17.6.2"
+  }
+}
