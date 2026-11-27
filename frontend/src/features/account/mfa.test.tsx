@@ -48,6 +48,9 @@ describe('turning the authenticator app on', () => {
     renderApp('/account/security', be);
     await openMfa();
     fireEvent.click(await screen.findByRole('button', { name: 'Turn on the authenticator app' }));
+    expect(await screen.findByText(/Step 1 of 4/)).toBeTruthy();                       // step by step: the app, the code, the first code, the recovery codes
+    click('Next');
+    expect(await screen.findByText(/Step 2 of 4/)).toBeTruthy();
 
     const qr = await screen.findByRole('img', { name: 'QR code to add TrustBazaar to your authenticator app' });
     expect(qr.tagName.toLowerCase()).toBe('svg');
@@ -66,7 +69,10 @@ describe('turning the authenticator app on', () => {
     const doc = renderApp('/account/security', be);
     await openMfa();
     fireEvent.click(await screen.findByRole('button', { name: 'Turn on the authenticator app' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Next' }));
     await screen.findByRole('img', { name: /QR code/ });
+    click('Next');
+    expect(await screen.findByText(/Step 3 of 4/)).toBeTruthy();
 
     type('Code from the app', '000000');
     click('Turn on');
@@ -79,6 +85,9 @@ describe('turning the authenticator app on', () => {
     const list = await screen.findByRole('list', { name: 'Recovery codes' });
     expect(within(list).getAllByRole('listitem').map((li) => li.textContent)).toEqual(CODES);
     expect(be.called('POST /me/mfa/totp/confirm')[1].body).toEqual({ code: '123456' });
+    expect(screen.getByText(/Step 4 of 4/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Copy the codes' })).toBeTruthy();       // the codes can be copied
+    expect(screen.getByRole('button', { name: 'Save as a text file' })).toBeTruthy();  // or saved as a file
 
     const done = screen.getByRole('button', { name: 'Done' });
     expect(done.hasAttribute('disabled')).toBe(true);
@@ -94,7 +103,10 @@ describe('turning the authenticator app on', () => {
     const doc = renderApp('/account/security', be);
     await openMfa();
     fireEvent.click(await screen.findByRole('button', { name: 'Turn on the authenticator app' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Next' }));
     await screen.findByRole('img', { name: /QR code/ });
+    click('Next');
+    expect(await screen.findByText(/Step 3 of 4/)).toBeTruthy();
     type('Code from the app', '000000');
     click('Turn on');
     await screen.findByText(/The code is not correct/);

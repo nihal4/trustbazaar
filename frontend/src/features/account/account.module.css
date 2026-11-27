@@ -295,12 +295,7 @@
   padding: 0.75rem 1rem;
 }
 
-.codes {
-  columns: 2 10rem;
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-surface);
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
-}
+
 
 .subsection {
   margin-top: 1.5rem;
@@ -1220,4 +1215,79 @@
 .settingRow:focus-visible {
   outline: 2px solid var(--tb-hot);
   outline-offset: -2px;
+}
+
+/* the steps of turning the authenticator app on: the present step named, four segments under it (done and present in vermilion, the rest hairline) */
+.stepper {
+  margin-bottom: 1rem;
+}
+
+.stepperText {
+  margin: 0 0 0.5rem;
+  color: var(--tb-muted);
+  font-size: 0.9375rem;
+}
+
+.stepperText strong {
+  color: var(--tb-text);
+  font-weight: 600;
+}
+
+.stepper ol {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stepper li {
+  height: 3px;
+  background: var(--tb-line);
+}
+
+.stepper li[data-state='done'],
+.stepper li[data-state='now'] {
+  background: var(--tb-hot);
+}
+
+.stepper li[data-state='done'] {
+  opacity: 0.5;
+}
+
+/* the recovery codes in two columns of hairline cells, easy to read and to copy by eye */
+.codes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--tb-line);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.codes li {
+  padding: 0.625rem 0.5rem;
+  border-bottom: 1px solid var(--tb-line);
+}
+
+.codes li:nth-child(odd) {
+  border-inline-end: 1px solid var(--tb-line);
+}
+
+/* the main step button of the flow: ruled vermilion, as every main button */
+.actions button.next {
+  border-color: var(--tb-btn-line);
+  background: var(--tb-btn-bg);
+  color: var(--tb-btn-fg);
+}
+
+.actions button.next:hover:not(:disabled) {
+  background: var(--tb-btn-bg-hover);
+}
+
+.actions + .actions {
+  margin-top: 0.75rem;
 }

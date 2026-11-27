@@ -215,5 +215,12 @@
   "account.no_ratings": "No ratings yet",
   "account.completed": "Completed deals",
   "sessions.show_all": "Show all {count}",
-  "sessions.show_fewer": "Show fewer"
+  "sessions.show_fewer": "Show fewer",
+  "mfa.step_of": "Step {n} of {total}",
+  "mfa.stepper.install": "Get the app",
+  "mfa.stepper.scan": "Scan the code",
+  "mfa.stepper.confirm": "Enter the code",
+  "mfa.stepper.codes": "Save your recovery codes",
+  "mfa.next": "Next",
+  "mfa.back": "Back"
 }

@@ -171,31 +171,63 @@ function Enrol({ otpauthUri, secret, onDone, onCancel, onStateChanged }: {
     }
   };
 
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   return (
     <div>
-      <ol className={styles.steps}>
-        <li>{t('mfa.step_app')}</li>
-        <li>{t('mfa.step_scan')}</li>
+      <Stepper current={step} />
+      {step === 1 && (
+        <>
+          <p>{t('mfa.step_app')}</p>
+          <div className={styles.actions}>
+            <button type="button" className={styles.next} onClick={() => setStep(2)}>{t('mfa.next')}</button>
+            <button type="button" onClick={onCancel}>{t('mfa.cancel')}</button>
+          </div>
+        </>
+      )}
+      {step === 2 && (
+        <>
+          <p>{t('mfa.step_scan')}</p>
+          <Suspense fallback={<p role="status">{t('shell.loading')}</p>}>
+            <QrCode text={otpauthUri} label={t('mfa.qr_label')} />
+          </Suspense>
+          <p>{t('mfa.manual')}</p>
+          <p className={styles.secret} aria-label={t('mfa.secret_label')}>{groupSecret(secret)}</p>
+          <div className={styles.actions}>
+            <CopyButton text={secret.replace(/\s+/g, '')} label={t('mfa.copy_secret')} />
+            <a href={otpauthUri}>{t('mfa.open_app')}</a>
+          </div>
+          <div className={styles.actions}>
+            <button type="button" className={styles.next} onClick={() => setStep(3)}>{t('mfa.next')}</button>
+            <button type="button" onClick={() => setStep(1)}>{t('mfa.back')}</button>
+          </div>
+        </>
+      )}
+      {step === 3 && (
+        <form onSubmit={confirm} noValidate>
+          <TextField id="mfa-confirm-code" label={t('mfa.first_code')} hint={t('mfa.first_code_hint')} value={code} onChange={setCode}
+            error={error ?? undefined} inputMode="numeric" autoComplete="one-time-code" maxLength={6} data-autofocus />
+          <div className={styles.actions}>
+            <SubmitButton busy={busy} disabled={waitFor > 0}>
+              {waitFor > 0 ? t('wait.seconds', { time: formatWait(waitFor, lang) }) : t('mfa.confirm')}
+            </SubmitButton>
+            <button type="button" onClick={() => setStep(2)} disabled={busy}>{t('mfa.back')}</button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
+
+/** Where the person is in turning the app on: four segments (the app, the code, the first code, the recovery codes), the present one named. */
+function Stepper({ current }: { current: 1 | 2 | 3 | 4 }) {
+  const { t, lang } = useAccountT();
+  const names = ['install', 'scan', 'confirm', 'codes'] as const;
+  return (
+    <div className={styles.stepper}>
+      <p className={styles.stepperText}><strong>{t('mfa.step_of', { n: digits(current, lang), total: digits(4, lang) })}</strong> · {t(`mfa.stepper.${names[current - 1]}`)}</p>
+      <ol aria-hidden="true">
+        {names.map((n, i) => <li key={n} data-state={i + 1 < current ? 'done' : i + 1 === current ? 'now' : 'next'} />)}
       </ol>
-      <Suspense fallback={<p role="status">{t('shell.loading')}</p>}>
-        <QrCode text={otpauthUri} label={t('mfa.qr_label')} />
-      </Suspense>
-      <p>{t('mfa.manual')}</p>
-      <p className={styles.secret} aria-label={t('mfa.secret_label')}>{groupSecret(secret)}</p>
-      <div className={styles.actions}>
-        <CopyButton text={secret.replace(/\s+/g, '')} label={t('mfa.copy_secret')} />
-        <a href={otpauthUri}>{t('mfa.open_app')}</a>
-      </div>
-      <form onSubmit={confirm} noValidate>
-        <TextField id="mfa-confirm-code" label={t('mfa.first_code')} hint={t('mfa.first_code_hint')} value={code} onChange={setCode}
-          error={error ?? undefined} inputMode="numeric" autoComplete="one-time-code" maxLength={6} />
-        <div className={styles.actions}>
-          <SubmitButton busy={busy} disabled={waitFor > 0}>
-            {waitFor > 0 ? t('wait.seconds', { time: formatWait(waitFor, lang) }) : t('mfa.confirm')}
-          </SubmitButton>
-          <button type="button" onClick={onCancel} disabled={busy}>{t('mfa.cancel')}</button>
-        </div>
-      </form>
     </div>
   );
 }
@@ -218,16 +250,20 @@ function RecoveryCodes({ codes, fresh, onDone }: { codes: string[]; fresh: 'enab
 
   return (
     <div>
+      {fresh === 'enabled' && <Stepper current={4} />}
       <FormMessage kind="info">{t(fresh === 'enabled' ? 'mfa.codes_intro' : 'mfa.codes_new_intro')}</FormMessage>
       <ol className={styles.codes} aria-label={t('mfa.codes_title')}>
         {codes.map((c) => <li key={c}>{c}</li>)}
       </ol>
+      {/* the codes are kept in two ways: copied, or saved as a text file */}
       <div className={styles.actions}>
         <CopyButton text={text} label={t('mfa.copy_codes')} />
         <button type="button" onClick={download}>{t('mfa.download_codes')}</button>
       </div>
-      <CheckboxField id="mfa-codes-saved" label={t('mfa.codes_saved')} checked={saved} onChange={setSaved} />
-      <button type="button" className={styles.secondary} onClick={onDone} disabled={!saved}>{t('mfa.done')}</button>
+      <form onSubmit={(e) => { e.preventDefault(); if (saved) onDone(); }} noValidate>
+        <CheckboxField id="mfa-codes-saved" label={t('mfa.codes_saved')} checked={saved} onChange={setSaved} />
+        <SubmitButton busy={false} disabled={!saved}>{t('mfa.done')}</SubmitButton>
+      </form>
     </div>
   );
 }
