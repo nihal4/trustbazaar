@@ -1,10 +1,3 @@
-/* Times as ruled cells: figure over unit, hairlines between the cells, no box (the look of the auction countdown). */
-.moment {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--tb-space-3) 0;
-  align-items: flex-start;
-}
 .moment > .group + .group {
   margin-left: var(--tb-space-5);
   padding-left: var(--tb-space-5);
@@ -55,10 +48,6 @@
   letter-spacing: 0.06em;
   line-height: 1.2;
   text-transform: uppercase;
-}
-:lang(bn) .cell small {
-  letter-spacing: 0;
-  text-transform: none;
 }
 .urgent .cell strong {
   color: var(--tb-hot);
@@ -111,8 +100,11 @@
   font-size: var(--tb-text-2xs);
 }
 
-/* review: the date group keeps its rule only beside the countdown, never when it wraps below it; Bangla needs air */
+/* review: the date group keeps its rule only beside the countdown, never when it wraps below it; Bangla needs air */ /* Times as ruled cells: figure over unit, hairlines between the cells, no box (the look of the auction countdown). */
 .moment {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
   gap: var(--tb-space-3) var(--tb-space-6);
 }
 .moment > .group + .group {
@@ -121,6 +113,8 @@
   border: 0;
 }
 :lang(bn) .cell small {
+  letter-spacing: 0;
+  text-transform: none;
   font-size: var(--tb-text-xs);
   line-height: 1.5;
 }
