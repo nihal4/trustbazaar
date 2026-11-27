@@ -8,6 +8,6 @@
   try {
     var saved = localStorage.getItem('tb-theme');
     if (saved === 'light' || saved === 'dark') theme = saved;
-  } catch (e) { /* storage may be blocked: the default stays */ }
+  } catch { /* storage may be blocked: the default stays */ }
   document.documentElement.setAttribute('data-theme', theme);
 })();
