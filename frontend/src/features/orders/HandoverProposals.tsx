@@ -1,3 +1,4 @@
+// The meetup proposals of an order: the place and time each side suggested, with accept, decline and withdraw.
 import { DateCells } from '../../shared/Moment';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';

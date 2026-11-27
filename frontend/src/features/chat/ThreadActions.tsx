@@ -1,3 +1,4 @@
+// What a member can do about a conversation: block or unblock the other party (FR-CHT-08, with its consequence stated first) and report.
 import { useState } from 'react';
 import { useApi } from '../../shared/api';
 import { ConfirmDialog } from '../../shared/ConfirmDialog';

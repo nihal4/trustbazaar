@@ -1,3 +1,4 @@
+// The operator's decision on a dispute: the outcome, the split, the reason, and the second operator's approval when the decision needs one.
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { formatMoney, parseTaka } from '../../lib/money.js';

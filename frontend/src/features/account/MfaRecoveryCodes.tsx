@@ -1,3 +1,4 @@
+// The ten recovery codes, shown once after the authenticator is turned on or the codes are renewed. A step of MfaSettings.
 import { useState } from 'react';
 import { CheckboxField, FormMessage, SubmitButton } from '../../shared/form';
 import { useAccountT } from './common';

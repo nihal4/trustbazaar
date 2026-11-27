@@ -1,3 +1,4 @@
+// What the conversation's parts share: the send and attach icons, the longest caption, the stroke style of the icons and the words for a refused message.
 import { errorText } from '../../shared/errors';
 import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';

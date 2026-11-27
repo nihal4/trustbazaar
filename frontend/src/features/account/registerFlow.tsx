@@ -1,3 +1,5 @@
+// The state and the handlers of registration (FR-ACC-01, FR-ACC-04): the steps as history entries, the checks before each call, the resend timer and the
+// refusals of Unit 1. RegisterPage draws the steps from what this returns.
 import { formatWait } from '../../shared/wait';
 import { useEffect, useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';

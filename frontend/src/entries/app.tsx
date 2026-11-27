@@ -1,3 +1,5 @@
+// The user app's document (index.html): the member-facing routes (search, listings, checkout, orders, chat, account and the rest) in the shell, with the live
+// connection; built into its own bundle.
 import { createRoot } from 'react-dom/client';
 import { accountRoutes } from '../features/account/routes';
 import { chatRoutes } from '../features/chat/routes';

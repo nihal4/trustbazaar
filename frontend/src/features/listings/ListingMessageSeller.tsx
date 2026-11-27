@@ -1,3 +1,4 @@
+// The 'Message the seller' action of a listing (FR-CHT-01): opens or finds the conversation and goes to it.
 import { Link } from 'react-router-dom';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';

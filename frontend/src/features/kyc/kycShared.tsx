@@ -1,3 +1,4 @@
+// What the wizard's parts share: the steps and their marks, which side of the document is being taken, and the check that a file is an image.
 import { toLocalDigits } from '../../lib/money.js';
 import { useKycT } from './common';
 import { kycStepsOf, type ImageKind, type WizardStep } from './model';

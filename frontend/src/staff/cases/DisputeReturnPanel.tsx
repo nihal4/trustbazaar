@@ -1,3 +1,5 @@
+// The return of an item after an upheld meetup claim: the seller's check, the mismatch signal and how the operator closes the return or records a finding about
+// the buyer.
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { formatDateTime } from '../../lib/time.js';

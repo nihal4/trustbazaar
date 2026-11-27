@@ -1,3 +1,4 @@
+// The chips of the filters that are on, each of which removes its filter, and the button that clears them all.
 import { formatMoney } from '../../lib/money.js';
 import type { Lang } from '../../shared/language/lang';
 import styles from './search.module.css';

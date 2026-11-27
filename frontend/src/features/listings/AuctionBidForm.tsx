@@ -1,3 +1,5 @@
+// The bid form of an auction: the amount against the minimum raise, an optional highest-bid limit (proxy bidding), and the answer in words: leading, outbid or
+// refused and why.
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { parseTaka } from '../../lib/money.js';

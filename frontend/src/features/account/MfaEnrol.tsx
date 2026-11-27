@@ -1,3 +1,4 @@
+// Turning the authenticator app on (FR-ACC-06): the QR code and the secret as text, then the first code that proves it works. A step of MfaSettings.
 import { formatWait } from '../../shared/wait';
 import { Suspense, useState, type FormEvent } from 'react';
 import { toAsciiDigits } from '../../lib/money.js';

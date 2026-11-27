@@ -1,3 +1,4 @@
+// The choices of the sell form (conditions, ways to hand over, weight and size classes) and the hook that reads the delivery areas.
 import { useQuery } from '@tanstack/react-query';
 import { useApi } from '../../shared/api';
 import { FRESHNESS } from '../../shared/query';

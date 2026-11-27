@@ -1,3 +1,4 @@
+// Publishing a courier fare table (administrator): the fare of each pair of zones.
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { formatMoney, parseTaka } from '../../lib/money.js';
