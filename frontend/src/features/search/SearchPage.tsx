@@ -7,7 +7,6 @@
 // area saved in their account (Unit 3). The area list arrives with Unit 4's /delivery/areas (U4-02).
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Button } from '@mantine/core';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { formatMoney, parseTaka } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
@@ -23,6 +22,7 @@ import en from '../../messages/en/search.json';
 import bn from '../../messages/bn/search.json';
 import { ListingCard } from './ListingCard';
 import styles from './search.module.css';
+import { Button } from '../../shared/ui';
 
 const CATALOGUES = { en, bn };
 
@@ -200,7 +200,7 @@ export function Component() {
             )}
             {pages.hasNextPage && (
               <div className={styles.moreRow}>
-                <Button variant="default" loading={pages.isFetchingNextPage} onClick={() => void pages.fetchNextPage()}>
+                <Button variant="secondary" loading={pages.isFetchingNextPage} onClick={() => void pages.fetchNextPage()}>
                   {t('search.more')}
                 </Button>
               </div>
@@ -423,23 +423,23 @@ function Filters({
           {point ? (
             <>
               <p>{t('search.location_set')}</p>
-              <button
+              <Button
+                variant="link"
                 type="button"
-                className={styles.secondary}
                 onClick={() => {
                   setPoint(null);
                   submit(undefined, null);
                 }}
               >
                 {t('search.clear_location')}
-              </button>
+              </Button>
             </>
           ) : (
             <>
               {signedIn && <p className={styles.hint}>{t('search.location_saved')}</p>}
-              <button type="button" className={styles.secondary} onClick={locate} disabled={locating}>
+              <Button variant="link" type="button" onClick={locate} disabled={locating}>
                 {locating ? t('search.locating') : t('search.use_location')}
-              </button>
+              </Button>
             </>
           )}
         </div>

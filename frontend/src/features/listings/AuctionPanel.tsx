@@ -24,6 +24,7 @@ import { Countdown } from './Countdown';
 import { useAuctionLive } from './useAuctionLive';
 import { myStatusKey, type AuctionState, type BidResult, type MyStatus } from './model';
 import styles from './listings.module.css';
+import { Button } from '../../shared/ui';
 
 export { GUEST_POLL_MS, SIGNED_IN_POLL_MS, CLOSING_POLL_MS } from './useAuctionLive';
 
@@ -418,9 +419,9 @@ export function BidForm({
           {error}
         </p>
       )}
-      <button type="submit" className={styles.primary} disabled={place.isPending}>
+      <Button variant="primary" type="submit" disabled={place.isPending}>
         {leading ? t('auction.raise') : t('auction.place_bid')}
-      </button>
+      </Button>
       {confirming !== null && (
         <ConfirmDialog
           id="bid-confirm"
@@ -524,9 +525,9 @@ function Offer({ auctionId, offer, t, lang }: { auctionId: string; offer: NonNul
       <p>{t('auction.offer.deadline', { at: formatDeadline(Date.parse(offer.expiresAt), now, lang) })}</p>
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
       <div className={styles.actions}>
-        <button type="button" className={styles.primary} disabled={decide.isPending} onClick={() => setConfirming(true)}>
+        <Button variant="primary" type="button" disabled={decide.isPending} onClick={() => setConfirming(true)}>
           {t('auction.offer.accept', { price })}
-        </button>
+        </Button>
         <button type="button" disabled={decide.isPending} onClick={() => send('decline')}>
           {t('auction.offer.decline')}
         </button>

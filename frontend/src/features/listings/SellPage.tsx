@@ -26,6 +26,7 @@ import { commissionOf, durationLabel, nearestArea, reasonTexts, type Area, type 
 import en from '../../messages/en/sell.json';
 import bn from '../../messages/bn/sell.json';
 import styles from './sell.module.css';
+import { Button } from '../../shared/ui';
 
 const CATALOGUES = { en, bn };
 const CONDITIONS = ['new', 'like_new', 'used', 'for_parts'] as const;
@@ -456,17 +457,17 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
             {t('sell.area_hint')}
           </p>
           <p>
-            <button type="button" className={styles.secondary} onClick={locate} disabled={locating || !areas.data} aria-busy={locating}>
+            <Button variant="secondary" type="button" onClick={locate} disabled={locating || !areas.data} aria-busy={locating}>
               {t('sell.use_location')}
-            </button>
+            </Button>
           </p>
           {located && area && <p className={styles.hint}>{t('sell.located', { area: `${lang === 'bn' ? area.nameBn : area.nameEn}, ${area.district}` })}</p>}
         </>
       )}
       <div className={styles.buttons}>
-        <button type="submit" className={styles.primary} disabled={save.isPending}>
+        <Button variant="primary" type="submit" disabled={save.isPending}>
           {t(l ? 'sell.save' : 'sell.create')}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -530,9 +531,9 @@ function Photos({ l, terms, t, lang }: { l: EditableListing; terms: SellingTerms
               {i === 0 && <span className={styles.cover}>{t('sell.cover')}</span>}
               {p.showsDefects && <span className={styles.tag}>{t('sell.shows_defects')}</span>}
             </span>
-            <button type="button" className={styles.secondary} disabled={remove.isPending} onClick={() => remove.mutate(p.id)}>
+            <Button variant="secondary" type="button" disabled={remove.isPending} onClick={() => remove.mutate(p.id)}>
               {t('sell.remove_photo', { n: toLocalDigits(String(i + 1), lang) })}
-            </button>
+            </Button>
           </li>
         ))}
       </ul>
@@ -637,9 +638,9 @@ function Publish({ l, terms, t, lang }: { l: EditableListing; terms: SellingTerm
       <p>{t('sell.commission_payout', { percent: percentOf(terms.commissionBps, lang) })}</p>
       <p>{t(auction ? 'sell.fixed_after_publish_auction' : 'sell.fixed_after_publish')}</p>
       <div className={styles.buttons}>
-        <button type="submit" className={styles.primary} disabled={publish.isPending || blocked}>
+        <Button variant="primary" type="submit" disabled={publish.isPending || blocked}>
           {t('sell.publish')}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -685,9 +686,9 @@ function Clarifications({ l, t, lang }: { l: EditableListing; t: T; lang: Lang }
         <label htmlFor="clarification">{t('sell.add_clarification')}</label>
         <textarea id="clarification" value={body} rows={3} maxLength={1000} onChange={(e) => setBody(e.target.value)} />
         <div className={styles.buttons}>
-          <button type="submit" className={styles.primary} disabled={add.isPending}>
+          <Button variant="primary" type="submit" disabled={add.isPending}>
             {t('sell.send_clarification')}
-          </button>
+          </Button>
         </div>
       </form>
     </section>

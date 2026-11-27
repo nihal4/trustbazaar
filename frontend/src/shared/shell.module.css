@@ -45,10 +45,6 @@
   gap: var(--tb-space-2);
 }
 
-.mark {
-  flex: none;
-}
-
 .docTitle {
   color: var(--tb-muted);
   font-weight: 500;
@@ -140,13 +136,6 @@
     flex-wrap: nowrap;
     gap: var(--tb-space-2);
   }
-  .wordmark {
-    font-size: 1.2rem;
-  }
-  .mark {
-    width: 26px;
-    height: 26px;
-  }
   .langSwitch {
     padding: var(--tb-space-1) var(--tb-space-3);
   }
@@ -154,8 +143,7 @@
     padding: 0 var(--tb-space-1-5);
   }
   .langSwitch,
-  .account,
-  .wordmark {
+  .account {
     white-space: nowrap;
   }
   /* the unread count sits on the bell's corner, so the header keeps one line */
@@ -176,9 +164,6 @@
   .header {
     gap: var(--tb-space-1-5);
   }
-  .wordmark {
-    font-size: 1.05rem;
-  }
   .iconLink {
     min-width: 44px;
   }
@@ -187,9 +172,6 @@
 @media (max-width: 21rem) {
   .langSwitch {
     padding-inline: var(--tb-space-2);
-  }
-  .wordmark {
-    font-size: var(--tb-text-base);
   }
 }
 
@@ -210,9 +192,6 @@
   }
 }
 @media (max-width: 26rem) {
-  .withExit .wordmark {
-    display: none;
-  }
   .withExit .exit {
     margin-left: auto;
   }
@@ -228,14 +207,6 @@
   padding-block: var(--tb-space-3);
   background: var(--tb-bg);
   border-bottom: 1px solid var(--tb-line);
-}
-.wordmark {
-  line-height: 1;
-  font-family: var(--tb-font-display);
-  font-weight: 500;
-  font-size: 1.4rem;
-  letter-spacing: -0.03em;
-  color: var(--tb-text);
 }
 .headSearch {
   flex: 1 1 18rem;
@@ -293,13 +264,6 @@
   .header {
     flex-wrap: wrap;
   }
-}
-
-.wmA {
-  font-weight: 400;
-}
-.wmB {
-  font-weight: 650;
 }
 .logotype {
   display: block;
@@ -625,51 +589,6 @@
 .header [class*='Button-label'] {
   overflow: visible;
 }
-.dialog::backdrop {
-  background: rgb(0 0 0 / 0.6);
-}
-.dialog h2 {
-  font-family: var(--tb-font-display);
-  font-weight: var(--tb-display-weight);
-  font-size: var(--tb-text-3xl);
-  letter-spacing: -0.02em;
-  margin: 0 0 var(--tb-space-3);
-}
-.dialogActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--tb-space-2-5);
-  margin-top: var(--tb-space-5);
-  padding-top: var(--tb-space-5);
-  border-top: 1px solid var(--tb-line);
-}
-.dialogActions button {
-  min-height: 48px;
-  padding: 0 var(--tb-space-5);
-  border-radius: var(--tb-radius-control);
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-  border: 1px solid var(--tb-border);
-  background: none;
-  color: var(--tb-text);
-}
-.dialogActions button:first-child {
-  border-color: var(--tb-action);
-  background: var(--tb-action);
-  color: var(--tb-action-text);
-}
-.dialogActions button:first-child:hover:not(:disabled) {
-  background: var(--tb-hot-hover);
-}
-.dialogActions button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-.dialogActions button:focus-visible {
-  outline: 2px solid var(--tb-text);
-  outline-offset: 3px;
-}
 .navCell {
   position: relative;
   display: grid;
@@ -800,35 +719,6 @@
   border-radius: 0;
 }
 .footerLang .langSwitch:hover {
-  border-color: var(--tb-hot);
-  border-bottom-color: var(--tb-hot);
-}
-
-/* the confirmation dialog, ruled: a vermilion rule on top and a hairline under, no outline; Cancel is a ruled cell; the paragraphs wrap with no lone last word */
-
-/* the confirmation dialog in the ruled look: a hairline panel, the action in vermilion, Cancel as an outline */
-.dialog {
-  width: min(28rem, calc(100vw - 2rem));
-  background: var(--tb-sheet);
-  color: var(--tb-text);
-  padding: var(--tb-space-6);
-  border: 0;
-  border-top: 2px solid var(--tb-hot);
-  border-bottom: 1px solid var(--tb-border);
-  border-radius: 0;
-}
-.dialog p {
-  line-height: 1.5;
-  text-wrap: pretty;
-  margin: 0 0 var(--tb-space-3);
-}
-.dialogActions button:last-child {
-  border: 0;
-  border-bottom: 1px solid var(--tb-border);
-  border-radius: 0;
-  background: none;
-}
-.dialogActions button:last-child:hover:not(:disabled) {
   border-color: var(--tb-hot);
   border-bottom-color: var(--tb-hot);
 }
