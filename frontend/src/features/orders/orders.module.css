@@ -20,21 +20,8 @@
   background: var(--tb-surface);
   overflow: hidden;
 }
-.thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
 .headText {
   min-width: 0;
-}
-.headText h1 {
-  margin: 0 0 var(--tb-space-2);
-  font-size: clamp(1.375rem, 1.1rem + 1vw, 1.875rem);
-  line-height: 1.15;
-  letter-spacing: -0.03em;
-  overflow-wrap: anywhere;
 }
 :lang(bn) .headText h1 {
   letter-spacing: 0;
@@ -179,11 +166,6 @@
   gap: var(--tb-space-2);
   margin: 0;
 }
-.deadlines > div {
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-surface);
-  padding: var(--tb-space-2-5) var(--tb-space-3-5);
-}
 .deadlines div {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -274,10 +256,6 @@
   display: grid;
   grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
   gap: var(--tb-space-1) var(--tb-space-2);
-}
-.facts dd {
-  margin: 0;
-  overflow-wrap: anywhere;
 }
 .wrap {
   overflow-wrap: anywhere;
@@ -477,13 +455,6 @@
   background: none;
   border-bottom: 1px solid var(--tb-border);
 }
-.reply {
-  border: 0;
-  border-left: 2px solid var(--tb-hot);
-  border-radius: 0;
-  background: none;
-  padding: var(--tb-space-1) 0 var(--tb-space-1) var(--tb-space-3);
-}
 .disclosure {
   padding: var(--tb-space-3-5) 0;
   border: 0;
@@ -497,22 +468,6 @@
   border-block: 1px solid var(--tb-border);
   border-radius: 0;
   background: none;
-}
-.form input,
-.form select,
-.form textarea {
-  border: 0;
-  border-bottom: 1px solid var(--tb-border);
-  border-radius: 0;
-  background: none;
-  padding-left: var(--tb-space-1);
-}
-.form input:focus-visible,
-.form select:focus-visible,
-.form textarea:focus-visible {
-  outline: 0;
-  border-bottom-color: var(--tb-hot);
-  box-shadow: inset 0 -2px 0 var(--tb-hot);
 }
 @media (prefers-reduced-motion: reduce) {
   .row a {
@@ -530,6 +485,9 @@
 
 /* ---- review fixes (U10-23) ---- */
 .reply {
+  border-left: 2px solid var(--tb-hot);
+  border-radius: 0;
+  background: none;
   border: 0;
   border-top: 1px solid var(--tb-line);
   padding: var(--tb-space-2) 0 0;
@@ -548,18 +506,12 @@
 .form input:focus-visible,
 .form select:focus-visible,
 .form textarea:focus-visible {
+  border-bottom-color: var(--tb-hot);
+  box-shadow: inset 0 -2px 0 var(--tb-hot);
   outline: 2px solid transparent;
 }
 .head {
   margin-top: var(--tb-space-4);
-}
-.rowAmount {
-  margin: 0;
-  font-family: var(--tb-font);
-  font-weight: 600;
-  font-size: var(--tb-text-xl);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
 }
 .row.row {
   display: grid;
@@ -568,6 +520,12 @@
   align-items: start;
 }
 .rowAmount {
+  margin: 0;
+  font-family: var(--tb-font);
+  font-weight: 600;
+  font-size: var(--tb-text-xl);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   padding-top: var(--tb-space-2);
 }
 @media (max-width: 30rem) {
@@ -957,10 +915,6 @@
 .code button {
   width: 100%;
 }
-.headText h1 {
-  overflow-wrap: break-word;
-  text-wrap: balance;
-}
 
 /* the page in two columns from 60rem, as the listing page: the story on the left, a rail that stays in view on the right (meetup handover with its two actions, then the code, then the other party) */
 .page {
@@ -1017,10 +971,6 @@
 }
 .actionGrid > * + * {
   border-left: 1px solid var(--tb-line);
-}
-.actionGrid > form {
-  grid-column: 1 / -1;
-  border-left: 0;
 }
 .actionCell {
   display: flex;
@@ -1155,9 +1105,6 @@
   margin-top: 0;
   margin-bottom: var(--tb-space-2);
 }
-.headText h1 {
-  font-size: clamp(1.25rem, 1.05rem + 0.7vw, 1.625rem);
-}
 .cols {
   margin-top: var(--tb-space-4);
 }
@@ -1169,12 +1116,6 @@
 }
 
 /* ---- review round (impeccable): one ruled structure for the whole page ---- */
-/* the facts under the title: three ruled cells, label over value */
-.head {
-  grid-template-columns: 88px minmax(0, 1fr);
-  align-items: start;
-  row-gap: 0;
-}
 .head .facts {
   grid-column: 1 / -1;
   margin: var(--tb-space-4) 0 0;
@@ -1216,6 +1157,11 @@
   color: var(--tb-protect);
 }
 .headText h1 {
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+  font-size: clamp(1.25rem, 1.05rem + 0.7vw, 1.625rem);
   margin: 0;
   align-self: center;
 }
@@ -1223,7 +1169,9 @@
   width: 64px;
   height: 64px;
 }
+/* the facts under the title: three ruled cells, label over value */
 .head {
+  row-gap: 0;
   grid-template-columns: 64px minmax(0, 1fr);
   align-items: center;
 }
@@ -1276,25 +1224,6 @@
 .chatLabel {
   font-size: var(--tb-text-2xs);
   font-weight: 600;
-}
-.actionCell > button {
-  justify-content: space-between;
-}
-.actionCell > button::after {
-  content: '';
-  width: 0.5rem;
-  height: 0.5rem;
-  margin-left: var(--tb-space-2);
-  border: solid currentColor;
-  border-width: 1.5px 1.5px 0 0;
-  transform: rotate(45deg);
-  flex: none;
-}
-.actionCell > button {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  text-align: left;
 }
 .actionGrid button.quiet {
   color: var(--tb-muted);
@@ -1449,6 +1378,10 @@
 .form input,
 .form select,
 .form textarea {
+  border: 0;
+  border-bottom: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: none;
   padding-left: 0;
   width: 100%;
   box-sizing: border-box;
@@ -1471,12 +1404,6 @@
 .popupButtons > button {
   min-height: 56px;
   border: 0;
-}
-.popupButtons > button + button {
-  border-left: 1px solid var(--tb-line);
-  background: none;
-  text-decoration: none;
-  color: var(--tb-text);
 }
 .popupButtons > button:only-child {
   grid-column: 1 / -1;
@@ -1546,6 +1473,7 @@
   text-wrap: balance;
   margin: 0;
 }
+/* the code digits fit a 360 px phone */
 .codeCentre {
   display: block;
   width: 100%;
@@ -1553,10 +1481,6 @@
   margin: 0;
   padding: var(--tb-space-4) 0 var(--tb-space-4) 0.2em;
   text-align: center;
-  font-size: 3rem;
-}
-/* the code digits fit a 360 px phone */
-.codeCentre {
   font-size: clamp(1.5rem, 8.5vw, 3rem);
   white-space: nowrap;
 }
@@ -1572,12 +1496,10 @@
   padding: var(--tb-space-3) var(--tb-space-4);
 }
 .popupButtons > button + button {
+  background: none;
+  text-decoration: none;
+  color: var(--tb-text);
   border-left: 1px solid var(--tb-line);
-}
-.popupButtons {
-  position: sticky;
-  bottom: 0;
-  background: var(--tb-sheet);
 }
 @media (max-width: 30rem) {
   .popupButtons {
@@ -1615,6 +1537,8 @@
   border-left: 0;
 }
 .actionGrid > form {
+  grid-column: 1 / -1;
+  border-left: 0;
   background: var(--tb-bg);
 }
 .form p > .secondary {
@@ -1791,10 +1715,6 @@
   margin: 0;
   border-bottom: 1px solid var(--tb-line);
 }
-.statements > li {
-  display: grid;
-  gap: var(--tb-space-1);
-}
 .ruledList a {
   display: inline;
   min-height: 0;
@@ -1817,17 +1737,6 @@ input[type='file'] {
   font: inherit;
   font-size: var(--tb-text-md);
 }
-input[type='file']::file-selector-button {
-  margin-right: var(--tb-space-3-5);
-  padding: var(--tb-space-2-5) var(--tb-space-4);
-  border: 1px solid var(--tb-line);
-  border-radius: 0;
-  background: none;
-  color: var(--tb-text);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
 input[type='file']:hover::file-selector-button {
   background: var(--tb-surface);
   color: var(--tb-hot);
@@ -1838,16 +1747,13 @@ input[type='file']:hover::file-selector-button {
 }
 /* the popup form fits a popup */
 .popupButtons {
+  bottom: 0;
+  background: var(--tb-sheet);
   position: static;
 }
 .inner .popupButtons,
 [class*='inner'] .popupButtons {
   position: sticky;
-}
-
-/* ---- dispute round: compact panel, the conversation as its own section, the deadlines in the rail as ruled rows ---- */
-.rail .deadlineGrid {
-  grid-template-columns: 1fr;
 }
 .rail .deadlineGrid > div {
   padding: var(--tb-space-3-5) var(--tb-space-4);
@@ -1863,6 +1769,8 @@ input[type='file']:hover::file-selector-button {
   padding-inline: var(--tb-space-3-5);
 }
 .statements > li {
+  display: grid;
+  gap: var(--tb-space-1);
   padding-inline: var(--tb-space-3-5);
 }
 
@@ -1967,10 +1875,21 @@ input[type='file']:hover::file-selector-button {
   border-left: 0;
   border-top: 1px solid var(--tb-line);
 }
+
+/* ---- dispute round: compact panel, the conversation as its own section, the deadlines in the rail as ruled rows ---- */
 .rail .deadlineGrid {
+  grid-template-columns: 1fr;
   gap: 0;
 }
 input[type='file']::file-selector-button {
+  padding: var(--tb-space-2-5) var(--tb-space-4);
+  border: 1px solid var(--tb-line);
+  border-radius: 0;
+  background: none;
+  color: var(--tb-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
   border-inline: 0;
   padding-inline: 0;
   margin-right: var(--tb-space-4);
@@ -2262,10 +2181,6 @@ input[type='file'].fileHidden {
   font-size: var(--tb-text-3xl);
   letter-spacing: -0.02em;
 }
-.dcBack {
-  color: var(--tb-text);
-  text-underline-offset: 3px;
-}
 .dcFacts {
   display: grid;
   margin: 0;
@@ -2462,8 +2377,6 @@ input[type='file'].fileHidden {
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);
     height: auto;
-  }
-  .dcPage {
     gap: var(--tb-space-4);
   }
   .dcSide {
@@ -2473,22 +2386,6 @@ input[type='file'].fileHidden {
     height: 70svh;
     min-height: 24rem;
   }
-}
-
-/* ---- review round (impeccable, before the PR) ---- */
-/* grids whose cells wrap: a rule above and below, a hairline above and left of each cell inside (an inset shadow), nothing at the open sides */
-.actionGrid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0;
-  background: none;
-  border-block: 1px solid var(--tb-line);
-  overflow: hidden;
-}
-.actionGrid > .actionCell,
-.actionGrid > form {
-  background: none;
-  box-shadow: -1px -1px 0 var(--tb-line);
-  border-left: 0;
 }
 .actionGrid > .actionCell:last-child:nth-child(odd) {
   grid-column: 1 / -1;
@@ -2541,6 +2438,8 @@ input[type='file'].fileHidden {
   }
 }
 .dcBack {
+  color: var(--tb-text);
+  text-underline-offset: 3px;
   display: inline-flex;
   align-items: center;
   min-height: 44px;
@@ -2829,11 +2728,19 @@ input[type='file'].fileHidden {
 
 /* the rail's actions as a list and the other party as a card (U10-25): one action to a line, the text on the left and an arrow on the right, hairlines
    between; the party is a square photo place with the grid and the initials, the name with the tick, since when, and the message cell */
+/* grids whose cells wrap: a rule above and below, a hairline above and left of each cell inside (an inset shadow), nothing at the open sides */
 .actionGrid {
+  gap: 0;
+  background: none;
+  border-block: 1px solid var(--tb-line);
+  overflow: hidden;
   grid-template-columns: 1fr;
 }
+
+/* ---- review round (impeccable, before the PR) ---- */
 .actionGrid > .actionCell,
 .actionGrid > form {
+  background: none;
   box-shadow: none;
   border-left: 0;
 }
@@ -2842,12 +2749,24 @@ input[type='file'].fileHidden {
   border-top: 1px solid var(--tb-line);
 }
 .actionCell > button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
   min-height: 60px;
   padding: var(--tb-space-2) var(--tb-space-1);
   font-size: var(--tb-text-base);
   line-height: 1.35;
 }
 .actionCell > button::after {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-left: var(--tb-space-2);
+  border: solid currentColor;
+  border-width: 1.5px 1.5px 0 0;
+  transform: rotate(45deg);
+  flex: none;
   margin-right: var(--tb-space-1);
   transition: transform var(--tb-dur-base);
 }
