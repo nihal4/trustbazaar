@@ -143,7 +143,7 @@ describe('Popup and ConfirmDialog (U11-05)', () => {
     expect((dialog.querySelector('input') as HTMLInputElement).value).toBe('typed');
   });
 
-  it('FR-ORD a confirmation names its action, starts on the safe choice and cancels with the other button', () => {
+  it('IF-UI-10 a confirmation names its action, starts on the safe choice and cancels with the other button', () => {
     const confirm = vi.fn();
     const cancel = vi.fn();
     render(
