@@ -239,7 +239,7 @@
   z-index: 2;
   align-self: end;
   margin: 0 var(--tb-space-4) var(--tb-space-4);
-  color: #fff;
+  color: var(--tb-white);
   font-weight: 600;
   font-size: var(--tb-text-md);
   text-align: center;

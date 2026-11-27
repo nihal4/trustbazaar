@@ -1,5 +1,5 @@
 // Stylelint for the web client (U11-01). The point is the design system: a colour or a font is never written in a stylesheet, it comes from a token (--tb-*, shared/tokens.css), so
-// that changing it once changes it everywhere. Everything is a WARNING for now (a report of what the clean-up has to fix); the rules become errors as each part is cleaned.
+// that changing it once changes it everywhere. The colour and font rule is an ERROR (clean since U11-03); the other rules are warnings that become errors as each part is cleaned.
 export default {
   extends: ['stylelint-config-standard'],
   plugins: ['stylelint-declaration-strict-value'],
@@ -10,8 +10,27 @@ export default {
     'scale-unlimited/declaration-strict-value': [
       ['/color$/', 'fill', 'stroke', 'font-family'],
       {
-        ignoreValues: ['transparent', 'currentColor', 'currentcolor', 'inherit', 'initial', 'unset', 'none', 'auto', 'revert', '0', '/^color-mix\\(/'],
+        ignoreValues: [
+          // the system colours of forced-colors (high contrast) mode: the one place a colour is not ours to choose
+          'CanvasText',
+          'Canvas',
+          'Highlight',
+          'HighlightText',
+          'ButtonText',
+          'transparent',
+          'currentColor',
+          'currentcolor',
+          'inherit',
+          'initial',
+          'unset',
+          'none',
+          'auto',
+          'revert',
+          '0',
+          '/^color-mix\\(/',
+        ],
         disableFix: true,
+        severity: 'error', // clean since U11-03: a raw colour or font in a stylesheet fails the build
         message: 'Use a design token (var(--tb-…)) for "${property}", not "${value}".',
       },
     ],

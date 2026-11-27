@@ -17,9 +17,10 @@ function tokens(css: string): Record<string, string> {
   return Object.fromEntries([...root.matchAll(/--([\w-]+):\s*([^;]+);/g)].map((m) => [m[1].replace(/^tb-/, ''), m[2].trim().toLowerCase()]));
 }
 
-/** WCAG 2.2 contrast ratio of two #rrggbb colours. */
+/** WCAG 2.2 contrast ratio of two #rrggbb or #rgb colours. */
 function contrast(a: string, b: string): number {
-  const lum = (hex: string) => {
+  const lum = (short: string) => {
+    const hex = short.length === 4 ? `#${[...short.slice(1)].map((c) => c + c).join('')}` : short;
     const [r, g, bl] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
     return 0.2126 * r + 0.7152 * g + 0.0722 * bl;
   };

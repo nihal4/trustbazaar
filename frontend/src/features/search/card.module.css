@@ -68,7 +68,7 @@
 .clock {
   left: 8px;
   background: var(--tb-ink);
-  color: #fff;
+  color: var(--tb-white);
   font-variant-numeric: tabular-nums;
 }
 .clock i {

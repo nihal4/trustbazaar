@@ -752,8 +752,8 @@
 }
 /* the orange Sell button reads in dark text (white on #ff6b35 is 2.8:1, below the 4.5:1 of WCAG AA) */
 :root[data-theme='dark'] .header [class*='Button-root'] {
-  --button-color: #0a1018;
-  color: #0a1018;
+  --button-color: var(--tb-on-hot);
+  color: var(--tb-on-hot);
 }
 .header [class*='Button-label'] {
   overflow: visible;

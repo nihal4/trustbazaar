@@ -107,7 +107,7 @@
   border-color: var(--tb-text);
 }
 .timeline .now {
-  color: #fff;
+  color: var(--tb-white);
   font-weight: 650;
 }
 .timeline .now::before {

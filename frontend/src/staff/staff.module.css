@@ -439,7 +439,7 @@
   white-space: pre-wrap;
 }
 .code {
-  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-family: var(--tb-font-mono);
   letter-spacing: 0.05em;
   overflow-wrap: anywhere;
 }
