@@ -15,7 +15,7 @@ import { useApi } from '../../shared/api';
 import { useOpenThread } from '../../shared/chat';
 import { useServerNow } from '../../shared/clock';
 import { postmarkDate } from '../../shared/postmark';
-import { Stepper } from '../../shared/ui';
+import { Avatar, Stepper } from '../../shared/ui';
 import { moneySteps } from '../../shared/moneySteps';
 import { orderProgress } from './progress';
 import { signInPath } from '../../shared/document';
@@ -236,22 +236,13 @@ function PartyCard({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
   const c = o.counterparty;
   if (!c?.displayName) return null;
   const which = o.role === 'buyer' ? 'seller' : 'buyer';
-  const initials = c.displayName
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => [...w][0] ?? '')
-    .join('')
-    .toUpperCase();
   return (
     <section aria-labelledby="party-title" className={styles.party}>
       <h2 id="party-title" className={styles.partyHead}>
         {t(`order.party.${which}`)}
       </h2>
       <div className={styles.partyRow}>
-        <span className={styles.avatar} aria-hidden="true">
-          {initials}
-        </span>
+        <Avatar size="md" name={c.displayName} className={styles.partyAvatar} />
         <div className={styles.partyInfo}>
           <p className={styles.partyLine}>
             <strong>{c.displayName}</strong>

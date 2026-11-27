@@ -67,20 +67,6 @@
   outline-offset: -2px;
 }
 
-/* the photo place: a square with the grid drawn in it and the other party's initial (there is no photo upload) */
-.avatar {
-  display: grid;
-  place-items: center;
-  width: 3rem;
-  height: 3rem;
-  border: 1px solid var(--tb-border);
-  background-image: linear-gradient(to right, var(--tb-line) 1px, transparent 1px), linear-gradient(to bottom, var(--tb-line) 1px, transparent 1px);
-  background-size: 16px 16px;
-  color: var(--tb-hot);
-  font-size: var(--tb-text-2xl);
-  font-weight: 700;
-}
-
 .threadMain {
   display: flex;
   flex-direction: column;

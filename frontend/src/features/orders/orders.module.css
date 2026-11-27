@@ -666,21 +666,6 @@
 .partyRow > * + *:not(.chatError) {
   border-left: 1px solid var(--tb-line);
 }
-.avatar {
-  display: grid;
-  place-items: center;
-  width: var(--av);
-  align-self: stretch;
-  margin: 7px;
-  padding: 0;
-  box-sizing: border-box;
-  border: 0;
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-surface);
-  color: var(--tb-text);
-  font-weight: 600;
-  font-size: var(--tb-text-xl);
-}
 .partyInfo {
   flex-direction: column;
   align-items: flex-start;
@@ -804,13 +789,6 @@
   font-size: var(--tb-text-xl) !important;
   font-weight: 600;
   color: var(--tb-text);
-}
-.avatar,
-.partyRow .avatar {
-  background: none;
-  border: 0;
-  border-radius: 0;
-  color: var(--tb-muted);
 }
 .chatCell {
   justify-content: center;
@@ -2165,19 +2143,12 @@ input[type='file'].fileHidden {
 .partyRow > * {
   padding: var(--tb-space-4) 0;
 }
-.partyRow > .avatar {
+.partyRow > .partyAvatar {
+  display: grid;
+  padding: 0;
   align-self: center;
   justify-self: start;
-  width: var(--av);
-  height: var(--av);
   margin: 0 var(--tb-space-4) 0 var(--tb-space-1);
-  padding: 0;
-  border: 1px solid var(--tb-border);
-  background-image: linear-gradient(to right, var(--tb-line) 1px, transparent 1px), linear-gradient(to bottom, var(--tb-line) 1px, transparent 1px);
-  background-size: 13px 13px;
-  color: var(--tb-hot);
-  font-size: var(--tb-text-xl);
-  font-weight: 700;
 }
 .partyRow > .partyInfo {
   border-left: 0;
