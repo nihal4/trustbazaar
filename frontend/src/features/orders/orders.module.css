@@ -39,17 +39,6 @@
   color: var(--tb-text);
   text-underline-offset: 3px;
 }
-.status {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  padding: 0 var(--tb-space-3);
-  border-radius: var(--tb-radius-control);
-  background: var(--tb-accent-soft);
-  color: var(--tb-accent-strong);
-  font-weight: 600;
-  font-size: var(--tb-text-sm);
-}
 .stubHeading {
   margin: 0;
   font-size: var(--tb-text-sm);
@@ -73,11 +62,6 @@
   line-height: 1.45;
   font-weight: 600;
   max-width: 40rem;
-}
-.panel {
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-surface);
-  padding: var(--tb-space-5) 1.375rem;
 }
 .panel h2 {
   margin-top: 0;
@@ -161,11 +145,6 @@
 .page section {
   margin-block: var(--tb-space-4);
 }
-.deadlines {
-  display: grid;
-  gap: var(--tb-space-2);
-  margin: 0;
-}
 .deadlines div {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -227,30 +206,10 @@
   color: var(--tb-error);
   font-weight: 600;
 }
-.codeDigits {
-  display: inline-block;
-  font-size: var(--tb-text-4xl);
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  font-variant-numeric: tabular-nums;
-  margin: var(--tb-space-3) 0;
-  padding: var(--tb-space-2) var(--tb-space-4) var(--tb-space-2) var(--tb-space-5);
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-sheet);
-  border: 1px solid var(--tb-border);
-}
 .shipment {
   border-top: 1px solid var(--tb-line);
   padding-top: var(--tb-space-4);
   margin-top: var(--tb-space-4);
-}
-.tag {
-  display: inline-block;
-  border-radius: var(--tb-radius-control);
-  background: var(--tb-surface);
-  padding: 2px 10px;
-  font-size: var(--tb-text-sm);
-  font-weight: 600;
 }
 .facts {
   display: grid;
@@ -263,11 +222,6 @@
 }
 .history {
   padding-left: var(--tb-space-4);
-}
-.tabs {
-  display: flex;
-  gap: var(--tb-space-2);
-  margin-block: var(--tb-space-2);
 }
 .tab,
 .tabOn {
@@ -317,24 +271,11 @@
   gap: var(--tb-space-1);
   min-height: 44px;
 }
-.reply {
-  border: 1px solid var(--tb-line);
-  border-radius: var(--tb-radius-control);
-  background: var(--tb-surface);
-  padding: var(--tb-space-2) var(--tb-space-3);
-}
 /* Game accounts (U8-07) */
 .game {
   border-top: 1px solid var(--tb-line);
   padding-top: var(--tb-space-4);
   margin-top: var(--tb-space-4);
-}
-.disclosure {
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-error-bg);
-  border: 1px solid var(--tb-error-line);
-  color: var(--tb-text);
-  padding: var(--tb-space-3-5) var(--tb-space-4);
 }
 .check {
   display: flex;
@@ -378,13 +319,13 @@
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
-.moneyPanel .money {
-  margin-bottom: var(--tb-space-4);
-}
 .moneyPanel .hint {
   margin: -0.5rem 0 var(--tb-space-4);
 }
 .status {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--tb-text-sm);
   min-height: 0;
   padding: 0;
   border-radius: 0;
@@ -399,6 +340,8 @@
   background: none;
 }
 .deadlines {
+  display: grid;
+  margin: 0;
   gap: 0;
 }
 .deadlines > div {
@@ -411,6 +354,7 @@
   border-top: 0;
 }
 .tabs {
+  display: flex;
   gap: 0;
   margin-block: var(--tb-space-4) 0;
   border-bottom: 1px solid var(--tb-line);
@@ -450,12 +394,16 @@
   background-size: 100% 2px;
 }
 .tag {
+  display: inline-block;
+  font-size: var(--tb-text-sm);
+  font-weight: 600;
   padding: 0;
   border-radius: 0;
   background: none;
   border-bottom: 1px solid var(--tb-border);
 }
 .disclosure {
+  color: var(--tb-text);
   padding: var(--tb-space-3-5) 0;
   border: 0;
   border-block: 1px solid var(--tb-error-line);
@@ -463,6 +411,12 @@
   background: none;
 }
 .codeDigits {
+  display: inline-block;
+  font-size: var(--tb-text-4xl);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  font-variant-numeric: tabular-nums;
+  margin: var(--tb-space-3) 0;
   padding: var(--tb-space-2) 0;
   border: 0;
   border-block: 1px solid var(--tb-border);
@@ -509,9 +463,6 @@
   border-bottom-color: var(--tb-hot);
   box-shadow: inset 0 -2px 0 var(--tb-hot);
   outline: 2px solid transparent;
-}
-.head {
-  margin-top: var(--tb-space-4);
 }
 .row.row {
   display: grid;
@@ -764,22 +715,6 @@
   border-radius: var(--tb-radius-circle);
   background: var(--tb-muted);
 }
-
-.receiptLink {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--tb-space-2);
-  min-height: 44px;
-  padding: 0 var(--tb-space-0-5);
-  border: 0;
-  border-bottom: 1px solid var(--tb-border);
-  border-radius: 0;
-  background: none;
-  color: var(--tb-text);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
 .receiptLink:hover {
   border-bottom-color: var(--tb-hot);
 }
@@ -816,14 +751,6 @@
   color: var(--tb-muted);
   font-size: var(--tb-text-xs);
   font-variant-numeric: tabular-nums;
-}
-.flowNow .flowNo {
-  border-color: var(--tb-hot);
-  color: var(--tb-hot);
-}
-.flowDone .flowNo {
-  border-color: var(--tb-protect);
-  color: var(--tb-protect);
 }
 .flowNext h3 {
   color: var(--tb-muted);
@@ -893,6 +820,19 @@
 
 /* the receipt link keeps clear of the progress line; the handover code is a grid */
 .receiptLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tb-space-2);
+  min-height: 44px;
+  padding: 0 var(--tb-space-0-5);
+  border: 0;
+  border-bottom: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: none;
+  color: var(--tb-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
   margin-block: var(--tb-space-1) var(--tb-space-7);
 }
 .code {
@@ -1006,15 +946,6 @@
   flex: 1;
   min-height: 56px;
 }
-
-/* the other party: the seller row of the listing page */
-.partyHead {
-  color: var(--tb-muted);
-  font-size: var(--tb-text-xs) !important;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
 .partyRow {
   --av: 64px;
   display: grid;
@@ -1070,18 +1001,6 @@
   width: 20px;
   height: 20px;
 }
-.chatCell {
-  justify-content: center;
-  min-width: 56px;
-  border: 0;
-  background: none;
-  color: var(--tb-text);
-  cursor: pointer;
-  text-decoration: none;
-  transition:
-    color var(--tb-dur-base),
-    background var(--tb-dur-base);
-}
 .chatCell:hover:not(:disabled) {
   color: var(--tb-hot);
   background: var(--tb-surface);
@@ -1099,12 +1018,6 @@
   border-left: 0 !important;
   padding: 0 0 var(--tb-space-3);
 }
-
-/* alignment (review): the title sits in the left column so the rail starts at the top beside it; the title is smaller */
-.head {
-  margin-top: 0;
-  margin-bottom: var(--tb-space-2);
-}
 .cols {
   margin-top: var(--tb-space-4);
 }
@@ -1119,11 +1032,6 @@
 .head .facts {
   grid-column: 1 / -1;
   margin: var(--tb-space-4) 0 0;
-}
-.facts {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-block: 1px solid var(--tb-line);
 }
 .facts > div {
   display: grid;
@@ -1153,9 +1061,6 @@
   color: var(--tb-text);
   text-underline-offset: 3px;
 }
-.facts .status {
-  color: var(--tb-protect);
-}
 .headText h1 {
   line-height: 1.15;
   letter-spacing: -0.03em;
@@ -1170,7 +1075,11 @@
   height: 64px;
 }
 /* the facts under the title: three ruled cells, label over value */
+
+/* alignment (review): the title sits in the left column so the rail starts at the top beside it; the title is smaller */
 .head {
+  margin-top: 0;
+  margin-bottom: var(--tb-space-2);
   row-gap: 0;
   grid-template-columns: 64px minmax(0, 1fr);
   align-items: center;
@@ -1192,9 +1101,11 @@
   font-weight: 600;
 }
 .flowNow .flowNo {
+  border-color: var(--tb-hot);
   color: var(--tb-hot);
 }
 .flowDone .flowNo {
+  border-color: var(--tb-protect);
   color: var(--tb-protect);
 }
 .flowNo svg {
@@ -1203,6 +1114,8 @@
 }
 
 /* the rail: normal-case headings, ruled cells that show they act, the other party without a filled badge */
+
+/* the other party: the seller row of the listing page */
 .partyHead {
   text-transform: none;
   letter-spacing: 0;
@@ -1218,6 +1131,16 @@
   color: var(--tb-muted);
 }
 .chatCell {
+  justify-content: center;
+  min-width: 56px;
+  border: 0;
+  background: none;
+  color: var(--tb-text);
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    color var(--tb-dur-base),
+    background var(--tb-dur-base);
   flex-direction: column;
   gap: var(--tb-space-0-5);
 }
@@ -1316,6 +1239,9 @@
 
 /* the facts under the title as a full grid */
 .facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-block: 1px solid var(--tb-line);
   border: 1px solid var(--tb-line);
 }
 .facts > div,
@@ -1552,26 +1478,6 @@
 }
 
 /* ---- review round 3: the pay panel in the rail, buttons that open popups are ruled cells, the shipment as a grid, ruled lists, file inputs ---- */
-/* a button that opens a popup: a full-width ruled cell with a chevron, as the cells of the action grid */
-.cellButton {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  min-height: 52px;
-  padding: var(--tb-space-2) var(--tb-space-3);
-  border: 1px solid var(--tb-line);
-  border-radius: 0;
-  background: none;
-  color: var(--tb-text);
-  font: inherit;
-  font-weight: 600;
-  text-align: left;
-  cursor: pointer;
-  transition:
-    color var(--tb-dur-base),
-    background var(--tb-dur-base);
-}
 .cellButton::after {
   content: '';
   width: 0.5rem;
@@ -1652,14 +1558,6 @@
 }
 .rail .breakdown {
   max-width: none;
-}
-/* the shipment as ruled cells, label over value */
-.shipment {
-  display: grid;
-  gap: var(--tb-space-3);
-  margin-top: 0;
-  padding-top: var(--tb-space-4);
-  border-top: 1px solid var(--tb-line);
 }
 .shipment h3 {
   margin: 0;
@@ -1840,7 +1738,25 @@ input[type='file']:hover::file-selector-button {
 .actions {
   border-inline: 0;
 }
+/* a button that opens a popup: a full-width ruled cell with a chevron, as the cells of the action grid */
 .cellButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 52px;
+  padding: var(--tb-space-2) var(--tb-space-3);
+  border: 1px solid var(--tb-line);
+  border-radius: 0;
+  background: none;
+  color: var(--tb-text);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    color var(--tb-dur-base),
+    background var(--tb-dur-base);
   border-inline: 0;
   padding-inline: 0;
 }
@@ -2071,7 +1987,11 @@ input[type='file']::file-selector-button {
 .journeyBare .journeyList {
   border-top: 0;
 }
+/* the shipment as ruled cells, label over value */
 .shipment {
+  display: grid;
+  gap: var(--tb-space-3);
+  margin-top: 0;
   padding-top: 0;
   border-top: 0;
 }
@@ -2692,6 +2612,7 @@ input[type='file'].fileHidden {
   padding: var(--tb-space-6) 0 var(--tb-space-8);
 }
 .moneyPanel .money {
+  margin-bottom: var(--tb-space-4);
   margin: var(--tb-space-3) 0 var(--tb-space-3);
   font-weight: 500;
   line-height: 1.6;
