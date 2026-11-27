@@ -10,8 +10,8 @@
     "warning:jsx-a11y/label-has-associated-control": 1,
     "warning:jsx-a11y/no-redundant-roles": 3,
     "warning:jsx-a11y/no-noninteractive-element-interactions": 3,
-    "warning:jsx-a11y/interactive-supports-focus": 1,
-    "warning:jsx-a11y/click-events-have-key-events": 3
+    "warning:jsx-a11y/click-events-have-key-events": 3,
+    "warning:jsx-a11y/interactive-supports-focus": 1
   },
   "stylelint": {
     "warning:import-notation": 11,

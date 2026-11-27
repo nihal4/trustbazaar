@@ -1,0 +1,39 @@
+/* A list of facts (FactList.tsx): ruled cells; fewer columns when the room is small. */
+.facts {
+  display: grid;
+  margin: 0;
+  border-top: 1px solid var(--tb-line);
+}
+.cols1 {
+  grid-template-columns: minmax(0, 1fr);
+}
+.cols2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.cols3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.cols4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@media (max-width: 560px) {
+  .cols3,
+  .cols4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.fact {
+  padding: var(--tb-space-3-5) var(--tb-space-4) var(--tb-space-3-5) 0;
+  border-bottom: 1px solid var(--tb-line);
+  min-width: 0;
+}
+.fact dt {
+  color: var(--tb-muted);
+  font-size: var(--tb-text-sm);
+}
+.fact dd {
+  margin: var(--tb-space-0-5) 0 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}

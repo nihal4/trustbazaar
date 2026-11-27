@@ -1,0 +1,62 @@
+/* Panel, Section, Card (Panel.tsx). */
+.panel {
+  display: block;
+  padding: var(--tb-space-6);
+  background: var(--tb-sheet);
+  color: var(--tb-text);
+}
+.section {
+  border-top: 1px solid var(--tb-line);
+}
+.boxed {
+  border: 1px solid var(--tb-line);
+}
+.emphasis {
+  border-top: 2px solid var(--tb-hot);
+  border-bottom: 1px solid var(--tb-line);
+}
+.title {
+  margin: 0 0 var(--tb-space-1-5);
+  font-family: var(--tb-font-display);
+  font-size: var(--tb-text-base);
+  font-weight: var(--tb-display-weight);
+}
+
+.sectionBlock {
+  display: grid;
+  gap: var(--tb-space-4);
+}
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--tb-space-1) var(--tb-space-4);
+}
+.sectionHead .title {
+  margin: 0;
+  font-size: var(--tb-text-xl);
+}
+
+.card {
+  display: grid;
+  min-width: 0;
+  border: 1px solid var(--tb-line);
+  background: var(--tb-sheet);
+  color: var(--tb-text);
+  text-decoration: none;
+}
+.cardLink {
+  transition: border-color var(--tb-dur-base) var(--tb-ease-out);
+}
+.cardLink:hover {
+  border-color: var(--tb-border);
+}
+.media {
+  border-bottom: 1px solid var(--tb-line);
+}
+.cardBody {
+  display: grid;
+  gap: var(--tb-space-1-5);
+  padding: var(--tb-space-4);
+}
