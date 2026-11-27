@@ -143,3 +143,6 @@
 .popHead { display: flex; align-items: center; gap: 1rem; }
 .popHead p { margin: 0; }
 .popForm .buttons { margin-top: 0.75rem; }
+
+/* links that stand alone in a row keep a target of at least 24 px (WCAG 2.5.8) */
+.row a, .stubHeading a, .payoutRow a, .orderMain a { display: inline-flex; align-items: center; min-height: 28px; }

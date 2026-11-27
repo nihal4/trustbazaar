@@ -18,12 +18,12 @@
 /* a small date for rows of a chat or a list */
 .compact .cell { padding: 0 0.5rem; }
 .compact .cell strong { font-size: 0.9375rem; }
-.compact .cell small { font-size: 0.625rem; }
+.compact .cell small { font-size: 0.75rem; }
 
 /* a time on one line ("6:00 PM"), for the corner of a chat bubble */
 .inline .cell { flex-direction: row; align-items: baseline; gap: 0.25rem; padding: 0; }
 .inline .cell strong { font-size: 0.8125rem; font-weight: 500; color: var(--tb-muted); }
-.inline .cell small { font-size: 0.6875rem; }
+.inline .cell small { font-size: 0.75rem; }
 
 /* review: the date group keeps its rule only beside the countdown, never when it wraps below it; Bangla needs air */
 .moment { gap: 0.75rem 1.5rem; }

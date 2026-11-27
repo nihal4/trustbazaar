@@ -344,7 +344,7 @@
 .tabSell { display: grid; place-items: center; width: 22px; height: 22px; border: 1.5px solid var(--tb-hot); border-radius: 4px; background: none; color: var(--tb-hot); }
 .tabSell svg { width: 14px; height: 14px; }
 /* the unread messages on the tab (U10-25): the number sits on the corner of the icon */
-.tab .badge { position: absolute; top: 4px; left: calc(50% + 4px); min-width: 1.25rem; margin: 0; padding: 0 0.25rem; font-size: 0.6875rem; line-height: 1.35; }
+.tab .badge { position: absolute; top: 4px; left: calc(50% + 4px); min-width: 1.25rem; margin: 0; padding: 0 0.25rem; font-size: 0.75rem; line-height: 1.35; }
 .tabLabel { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 :lang(bn) .tab { font-size: 0.8125rem; }
 .tab:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -4px; }
@@ -361,6 +361,8 @@
 .header > * { flex-shrink: 0; }
 .header > .headSearch { flex: 1 1 9rem; min-width: 9rem; }
 .header [class*='Button-root'] { white-space: nowrap; }
+/* the orange Sell button reads in dark text (white on #ff6b35 is 2.8:1, below the 4.5:1 of WCAG AA) */
+.header [class*='Button-root'] { --button-color: #0a1018; color: #0a1018; }
 .header [class*='Button-label'] { overflow: visible; }
 
 /* the confirmation dialog in the ruled look: a hairline panel, the action in vermilion, Cancel as an outline */
@@ -383,7 +385,7 @@
 .navCell:hover { background: var(--tb-surface); }
 .navCell svg { width: 22px; height: 22px; }
 .navCell:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -3px; }
-.navCell .badge { position: absolute; top: 5px; right: 5px; min-width: 1.25rem; margin: 0; padding: 0 0.25rem; font-size: 0.6875rem; line-height: 1.35; }
+.navCell .badge { position: absolute; top: 5px; right: 5px; min-width: 1.25rem; margin: 0; padding: 0 0.25rem; font-size: 0.75rem; line-height: 1.35; }
 @media (prefers-reduced-motion: reduce) { .navCell { transition: none; } }
 
 /* the language switch lives in the footer of the user app: a ruled row (label left, the switch as an outlined cell right) */

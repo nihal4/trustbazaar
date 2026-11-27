@@ -199,7 +199,7 @@ function Conversation({ id, t, lang }: { id: string; t: T; lang: Lang }) {
   }, [api, bump, id, lang, sync, t]);
 
   // the newest message is in view: the log is scrolled to its end when a message comes or is sent
-  const log = useRef<HTMLOListElement>(null);
+  const log = useRef<HTMLDivElement>(null);
   const shown = thread.current.messages.length + thread.current.pending.size;
   useEffect(() => {
     const el = log.current;
@@ -250,13 +250,14 @@ function Conversation({ id, t, lang }: { id: string; t: T; lang: Lang }) {
 
         <h2 className={styles.visuallyHidden}>{t('thread.messages')}</h2>
         {!loaded ? <p role="status" className={styles.notice}>{t('shell.loading')}</p> : (
-          <ol ref={log} className={styles.messages} role="log" tabIndex={0} aria-label={t('thread.messages')}>
+          <div ref={log} className={styles.messages} role="log" tabIndex={0} aria-label={t('thread.messages')}>
+            <ol className={styles.messageList}>
             {messages.length === 0 && pending.length === 0 && <li className={styles.empty}>{t('thread.empty')}</li>}
             {messages.map((m, i) => {
               const p = dateParts(Date.parse(m.at), lang);
               return (
                 <Fragment key={m.seq}>
-                  {(i === 0 || !sameDay(messages[i - 1].at, m.at)) && <li role="presentation" className={styles.day}><span>{`${p.weekday}, ${p.day} ${p.month} ${p.year}`}</span></li>}
+                  {(i === 0 || !sameDay(messages[i - 1].at, m.at)) && <li aria-hidden="true" className={styles.day}><span>{`${p.weekday}, ${p.day} ${p.month} ${p.year}`}</span></li>}
                   <MessageItem m={m} role={s?.role ?? null} threadId={id} t={t} lang={lang}
                     mark={m === lastMine ? (marks.read >= m.seq ? 'read' : marks.delivered >= m.seq ? 'delivered' : null) : null} />
                 </Fragment>
@@ -273,7 +274,8 @@ function Conversation({ id, t, lang }: { id: string; t: T; lang: Lang }) {
                   : <p className={styles.status} role="status">{t('thread.sending')}</p>}
               </li>
             ))}
-          </ol>
+            </ol>
+          </div>
         )}
         {sendError && <div className={styles.actionNote}><FormMessage kind="error">{sendError}</FormMessage></div>}
         {closed ? <p className={styles.notice}>{t('thread.closed')}</p> : loaded && (
@@ -309,7 +311,7 @@ function MessageItem({ m, role, threadId, mark, t, lang }: {
       ))}
       <div className={styles.foot}>
         {!m.fromMe && !m.removed && <ReportForm threadId={threadId} seq={m.seq} t={t} lang={lang} />}
-        <span className={styles.time}>{(() => { const p = dateParts(Date.parse(m.at), lang); return `${p.time} ${p.period}`; })()}{mark && <> · {t(`thread.${mark}`)}</>}</span>
+        <span className={styles.time}>{(() => { const p = dateParts(Date.parse(m.at), lang); return <><span className={styles.visuallyHidden}>{`${p.weekday}, ${p.day} ${p.month} ${p.year}, `}</span>{`${p.time} ${p.period}`}</>; })()}{mark && <> · {t(`thread.${mark}`)}</>}</span>
       </div>
     </li>
   );
