@@ -1,0 +1,148 @@
+<title>TrustBazaar Component Set</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+/* Layout: one long sheet of ruled sections; each kind of component shown in its variants and sizes, on the line grid. Dark first, like the site. */
+:root{--bg:#0a1018;--sheet:#101a19;--line:#2a3b36;--line-strong:#66807a;--tx:#f1f5f3;--mu:#a2b5b0;--hot:#ff6b35;--hot-wash:rgba(255,107,53,.1);--err:#ff6f8e;--err-wash:rgba(255,111,142,.1);--ok:#5dd39e;--warn:#c98a3d;--warn-wash:rgba(201,138,61,.1);--ink:#0a1018;color-scheme:dark;
+--sans:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f6f7f5;--sheet:#ffffff;--line:#d3dbd7;--line-strong:#7d8d87;--tx:#111a17;--mu:#506059;--hot:#c2410c;--hot-wash:rgba(194,65,12,.08);--err:#b4234a;--err-wash:rgba(180,35,74,.08);--ok:#1c7a52;--warn:#8a5a12;--warn-wash:rgba(138,90,18,.08);--ink:#ffffff;color-scheme:light}}
+:root[data-theme="light"]{--bg:#f6f7f5;--sheet:#ffffff;--line:#d3dbd7;--line-strong:#7d8d87;--tx:#111a17;--mu:#506059;--hot:#c2410c;--hot-wash:rgba(194,65,12,.08);--err:#b4234a;--err-wash:rgba(180,35,74,.08);--ok:#1c7a52;--warn:#8a5a12;--warn-wash:rgba(138,90,18,.08);--ink:#ffffff;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 var(--sans);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1080px;margin:0 auto;padding-block:32px 80px}
+header{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:24px}
+h1{margin:0 0 8px;font-size:28px;line-height:1.2;text-wrap:balance}
+h2{margin:0;font-size:20px;text-wrap:balance}
+header p,.note{color:var(--mu);margin:0;max-width:62ch;font-size:15px}
+section{border-bottom:1px solid var(--line);padding:32px 0;display:grid;gap:20px}
+.title{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline;justify-content:space-between}
+.today{font:12px var(--mono);color:var(--mu)}
+.row{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.cap{font:12px var(--mono);color:var(--mu);display:block;margin-top:6px}
+.cell{min-width:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px}
+/* Button */
+.btn{font:600 16px var(--sans);color:var(--tx);background:transparent;border:1px solid var(--line-strong);border-radius:0;height:44px;padding:0 24px;cursor:pointer;transition:transform 140ms cubic-bezier(.23,1,.32,1),background 140ms}
+.btn:active{transform:scale(.97)}.btn:focus-visible,.field:focus-visible,.tab:focus-visible{outline:2px solid var(--hot);outline-offset:2px}
+.btn.lg{height:56px;padding:0 32px}
+.btn.primary{border-color:var(--hot);background:var(--hot-wash)}.btn.primary:hover{background:var(--hot);color:var(--ink)}
+.btn.quiet{border-color:transparent;color:var(--mu);padding:0 8px}.btn.quiet:hover{color:var(--tx)}
+.btn.danger{border-color:var(--err);color:var(--err)}.btn.danger:hover{background:var(--err-wash)}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.icon{width:44px;height:44px;padding:0;display:inline-grid;place-items:center}
+.tabs{display:flex;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tab{font:600 16px var(--sans);color:var(--mu);background:none;border:0;border-bottom:2px solid transparent;height:44px;padding:0 16px;cursor:pointer}
+.tab[aria-selected=true]{color:var(--tx);border-bottom-color:var(--hot)}
+.nav{display:flex;border:1px solid var(--line)}.nav a{height:48px;padding:0 20px;display:grid;place-items:center;color:var(--tx);text-decoration:none;border-right:1px solid var(--line)}.nav a:last-child{border:0}.nav a[aria-current]{background:var(--hot-wash);box-shadow:inset 0 -2px var(--hot)}
+/* Field */
+.fieldbox{display:grid;gap:6px;min-width:0}.fieldbox label{font-weight:600;font-size:14px}
+.field{font:16px var(--sans);color:var(--tx);background:var(--sheet);border:1px solid var(--line-strong);border-radius:0;height:48px;padding:0 14px;width:100%}
+.field:focus-visible{border-color:var(--hot);outline:0;box-shadow:0 0 0 1px var(--hot)}
+.field.bad{border-color:var(--err)}.help{font-size:13px;color:var(--mu)}.help.bad{color:var(--err)}
+.choice{display:flex;gap:10px;align-items:center;cursor:pointer}
+.choice input{appearance:none;width:20px;height:20px;margin:0;border:1px solid var(--line-strong);background:var(--sheet);display:grid;place-items:center;border-radius:0}
+.choice input:checked{border-color:var(--hot);background:var(--hot-wash)}
+.choice input:checked::after{content:'';width:10px;height:10px;background:var(--hot)}
+.choice input[type=radio]:checked::after{width:8px;height:8px}
+/* Panel */
+.panel{padding:24px;background:var(--sheet)}
+.panel.section{border-top:1px solid var(--line)}.panel.boxed{border:1px solid var(--line)}.panel.emphasis{border-top:2px solid var(--hot);border-bottom:1px solid var(--line)}
+.panel h3{margin:0 0 6px;font-size:16px}.panel p{margin:0;color:var(--mu);font-size:14px}
+.big{font-size:32px;font-weight:600;font-variant-numeric:tabular-nums}
+/* Notice */
+.notice{border:1px solid var(--line);border-left:3px solid var(--line-strong);padding:14px 16px;font-size:15px}
+.notice.warning{border-left-color:var(--warn);background:var(--warn-wash)}.notice.error{border-left-color:var(--err);background:var(--err-wash)}.notice b{display:block}
+/* FactList */
+.facts{display:grid;border-top:1px solid var(--line);margin:0;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.facts div{padding:14px 16px 14px 0;border-bottom:1px solid var(--line)}.facts dt{font-size:13px;color:var(--mu)}.facts dd{margin:2px 0 0;font-weight:600;font-variant-numeric:tabular-nums}
+/* Stepper */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.steps li{padding:14px 12px 0 0;font-size:14px;color:var(--mu);position:relative;border-top:2px solid var(--line);margin-top:-1px}
+.steps li b{display:block;color:var(--tx);font-size:15px}.steps li.done{border-top-color:var(--ok)}.steps li.now{border-top-color:var(--hot);color:var(--tx)}
+.steps.v{grid-template-columns:1fr;border:0}.steps.v li{border-top:0;border-left:2px solid var(--line);padding:0 0 18px 16px;margin:0}.steps.v li.done{border-left-color:var(--ok)}.steps.v li.now{border-left-color:var(--hot)}
+@media (max-width:560px){.steps:not(.v){grid-template-columns:1fr;border:0}.steps:not(.v) li{border-top:0;border-left:2px solid var(--line);padding:0 0 18px 16px;margin:0}.steps:not(.v) li.done{border-left-color:var(--ok)}.steps:not(.v) li.now{border-left-color:var(--hot)}}
+/* Tag, avatar, popup */
+.tag{display:inline-flex;align-items:center;height:22px;padding:0 8px;font-size:13px;border:1px solid var(--line-strong)}
+.tag.hot{border-color:var(--hot);background:var(--hot-wash)}.tag.ok{border-color:var(--ok);color:var(--ok)}.tag.err{border-color:var(--err);color:var(--err)}
+.count{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;background:var(--hot);color:var(--ink);font:600 12px var(--sans)}
+.thumb{display:grid;place-items:center;background:var(--sheet);border:1px solid var(--line);color:var(--mu);background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:16px 16px;font-size:12px}
+.t-sm{width:40px;height:40px}.t-md{width:64px;height:64px}.t-lg{width:96px;height:96px}
+.popup{border:1px solid var(--line);border-top:2px solid var(--hot);background:var(--sheet);max-width:440px;padding:24px;display:grid;gap:14px;box-shadow:0 0 0 100vmax rgba(0,0,0,.0)}
+.popup h3{margin:0}.popup p{margin:0;color:var(--mu);font-size:15px}.popup .row{justify-content:flex-end}
+.pill{border:1px solid var(--line-strong);background:var(--sheet);color:var(--tx);height:36px;padding:0 14px;cursor:pointer;font:600 14px var(--sans)}
+</style>
+<div class="wrap">
+<header>
+ <div><h1>TrustBazaar component set</h1>
+ <p>The proposed canonical set, drawn with the line-grid theme: square corners, hairline rules, one vermilion accent. Every component below exists once and takes its variants and sizes from props. Tell me what to change.</p></div>
+ <button class="pill" id="theme" type="button">Switch theme</button>
+</header>
+
+<section><div class="title"><h2>Button</h2><span class="today">today: 55 variants, 513 uses</span></div>
+ <div class="row">
+  <div class="cell"><button class="btn primary" type="button">Start the handover</button><span class="cap">primary</span></div>
+  <div class="cell"><button class="btn" type="button">Back</button><span class="cap">secondary</span></div>
+  <div class="cell"><button class="btn quiet" type="button">Report message</button><span class="cap">quiet</span></div>
+  <div class="cell"><button class="btn danger" type="button">Cancel this order</button><span class="cap">danger</span></div>
+  <div class="cell"><button class="btn primary" type="button" disabled>Continue</button><span class="cap">disabled</span></div>
+ </div>
+ <div class="row">
+  <div class="cell"><button class="btn primary" type="button">Medium, 44 px</button><span class="cap">size md</span></div>
+  <div class="cell"><button class="btn primary lg" type="button">Large, 56 px</button><span class="cap">size lg (phone, main step)</span></div>
+  <div class="cell"><button class="btn icon" type="button" aria-label="Switch theme">☼</button><span class="cap">IconButton 44 px</span></div>
+ </div>
+ <div class="cell"><div class="tabs" role="tablist"><button class="tab" role="tab" aria-selected="true">Profile</button><button class="tab" role="tab" aria-selected="false">Security</button><button class="tab" role="tab" aria-selected="false">Payout</button></div><span class="cap">Tab (rule under the active one)</span></div>
+ <div class="cell"><nav class="nav"><a href="#" aria-current="page">Orders</a><a href="#">Messages</a><a href="#">Sell</a></nav><span class="cap">NavCell</span></div>
+</section>
+
+<section><div class="title"><h2>Field, choice marks</h2><span class="today">today: 14 field variants, 5 choice-mark variants</span></div>
+ <div class="grid">
+  <div class="fieldbox"><label for="f1">Phone number</label><input class="field" id="f1" value="01712 345 678"><span class="help">Default, 48 px</span></div>
+  <div class="fieldbox"><label for="f2">Code</label><input class="field bad" id="f2" value="12 34"><span class="help bad">Enter the six digits.</span></div>
+  <div class="fieldbox"><label for="f3">District</label><select class="field" id="f3"><option>Dhaka</option></select><span class="help">Select</span></div>
+ </div>
+ <div class="row">
+  <label class="choice"><input type="radio" name="r" checked>bKash wallet</label>
+  <label class="choice"><input type="radio" name="r">Nagad</label>
+  <label class="choice"><input type="checkbox" checked>Remember me</label>
+  <label class="choice"><input type="checkbox">Send me the receipt</label>
+ </div>
+</section>
+
+<section><div class="title"><h2>Panel</h2><span class="today">today: 22 variants</span></div>
+ <div class="grid">
+  <div class="panel section"><h3>Section</h3><p>Rule on top. The default block on a page.</p></div>
+  <div class="panel boxed"><h3>Boxed</h3><p>Rules on all sides, for a card in a list.</p></div>
+  <div class="panel emphasis"><h3>Emphasis</h3><div class="big">৳ 15,000</div><p>2 px vermilion top rule: money and the order rail.</p></div>
+ </div>
+</section>
+
+<section><div class="title"><h2>Notice</h2><span class="today">today: 10 variants</span></div>
+ <div class="notice"><b>Info</b>Your payout goes out two days after the buyer confirms.</div>
+ <div class="notice warning"><b>Warning</b>The handover code expires in 10 minutes.</div>
+ <div class="notice error"><b>Error</b>The photo is too large. Choose one under 8 MB.</div>
+</section>
+
+<section><div class="title"><h2>FactList</h2><span class="today">today: 7 layouts</span></div>
+ <dl class="facts"><div><dt>Order</dt><dd>#TB-20418</dd></div><div><dt>Total</dt><dd>৳ 15,000</dd></div><div><dt>Held until</dt><dd>29 Nov, 18:00</dd></div><div><dt>Seller</dt><dd>Test Seller</dd></div></dl>
+ <span class="note">One component. The columns are chosen from the room it has: four here, two on a phone.</span>
+</section>
+
+<section><div class="title"><h2>Stepper</h2><span class="today">today: 5 versions</span></div>
+ <ol class="steps"><li class="done"><b>Paid</b>27 Nov</li><li class="done"><b>Handover set</b>28 Nov</li><li class="now"><b>Handover</b>Today</li><li><b>Confirmed</b>After handover</li></ol>
+ <div><ol class="steps v" style="max-width:320px"><li class="done"><b>Paid</b></li><li class="now"><b>Handover</b></li><li><b>Confirmed</b></li></ol><span class="cap">vertical: used at narrow widths and in the rail. Buyer and seller get different steps and words from data; the look is the same.</span></div>
+</section>
+
+<section><div class="title"><h2>Tag, count, thumb</h2><span class="today">today: 10 tag variants, 5 thumb variants</span></div>
+ <div class="row"><span class="tag">Draft</span><span class="tag hot">In escrow</span><span class="tag ok">Verified</span><span class="tag err">Disputed</span><span class="count">3</span></div>
+ <div class="row"><div class="cell"><div class="thumb t-sm">sm</div><span class="cap">40</span></div><div class="cell"><div class="thumb t-md">md</div><span class="cap">64</span></div><div class="cell"><div class="thumb t-lg">lg</div><span class="cap">96</span></div></div>
+</section>
+
+<section><div class="title"><h2>Popup</h2><span class="today">today: 3 variants</span></div>
+ <div class="popup" role="dialog" aria-label="Example"><h3>Start the handover</h3><p>Take a photo of the item, then enter the code the buyer shows you.</p><div class="row"><button class="btn quiet" type="button">Not now</button><button class="btn primary" type="button">Take photo</button></div></div>
+ <span class="note">Square, 2 px vermilion top rule, centred on desktop and a full-width sheet on a phone. Sizes: narrow, medium, wide.</span>
+</section>
+</div>
+<script>
+document.getElementById('theme').addEventListener('click',function(){var r=document.documentElement;var dark=getComputedStyle(r).colorScheme==='dark';r.setAttribute('data-theme',dark?'light':'dark')});
+</script>
