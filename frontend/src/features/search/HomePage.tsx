@@ -14,7 +14,8 @@ import { useT } from '../../shared/language/Language';
 import { FRESHNESS } from '../../shared/query';
 import en from '../../messages/en/search.json';
 import bn from '../../messages/bn/search.json';
-import { EscrowSteps } from '../../shared/EscrowSteps';
+import { Stepper } from '../../shared/ui';
+import { moneySteps } from '../../shared/moneySteps';
 import { GlowGround } from './GlowGround';
 import { Journey, SafeBento } from './HomeSections';
 import { ListingCard } from './ListingCard';
@@ -137,10 +138,10 @@ export function Component() {
               </p>
               <p className={styles.winPrice}>{formatMoney('8500000', lang)}</p>
               <span className={styles.winBtn}>{t('home.demo.buy')}</span>
-              <EscrowSteps
-                current="held"
-                labels={[t('home.counterfoil.in'), t('home.counterfoil.held'), t('home.counterfoil.out')]}
-                classes={{ list: styles.winSteps, done: styles.winDone, current: styles.winNow }}
+              <Stepper
+                look="onDark"
+                steps={moneySteps([t('home.counterfoil.in'), t('home.counterfoil.held'), t('home.counterfoil.out')], 'held')}
+                className={styles.winSteps}
               />
             </div>
           </div>

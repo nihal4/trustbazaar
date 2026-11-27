@@ -15,7 +15,8 @@ import { useApi } from '../../shared/api';
 import { useOpenThread } from '../../shared/chat';
 import { useServerNow } from '../../shared/clock';
 import { postmarkDate } from '../../shared/postmark';
-import { EscrowSteps } from '../../shared/EscrowSteps';
+import { Stepper } from '../../shared/ui';
+import { moneySteps } from '../../shared/moneySteps';
 import { orderProgress } from './progress';
 import { signInPath } from '../../shared/document';
 import { errorText } from '../../shared/errors';
@@ -219,10 +220,10 @@ function Money({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
         </button>
       )}
       {progress.current !== null && (
-        <EscrowSteps
-          current={progress.current}
+        <Stepper
+          look="line"
+          steps={moneySteps(progress.labels.map((key) => t(key)) as [string, string, string], progress.current)}
           label={t('order.steps.label')}
-          labels={progress.labels.map((key) => t(key)) as [string, string, string]}
           stateWords={{ done: t('order.steps.state.done'), current: t('order.steps.state.current'), next: t('order.steps.state.next') }}
         />
       )}

@@ -21,21 +21,31 @@ interface StepperProps {
   label?: string;
   stateWords?: Record<StepState, string>;
   orientation?: 'auto' | 'vertical';
+  /**
+   * how the steps are drawn: `rule` (a rule across the top of each step, the default), `line` (balls on a line, for the money steps of an order),
+   * `rows` (a ruled list with a ball at the start of each row) and `onDark` (a compact list of balls for a dark ground)
+   */
+  look?: 'rule' | 'line' | 'rows' | 'onDark';
   className?: string;
 }
 
-export function Stepper({ steps, label, stateWords, orientation = 'auto', className }: StepperProps) {
+export function Stepper({ steps, label, stateWords, orientation = 'auto', look = 'rule', className }: StepperProps) {
+  const plain = look === 'rule';
   return (
     // role="list" is not redundant here: Safari and VoiceOver drop the list semantics of an <ol> whose bullets are removed (list-style: none)
     // eslint-disable-next-line jsx-a11y/no-redundant-roles
     <ol
       aria-label={label}
       role="list"
-      className={cx(styles.steps, orientation === 'vertical' && styles.vertical, className)}
+      className={cx(plain ? styles.steps : styles[look], plain && orientation === 'vertical' && styles.vertical, className)}
       style={{ '--steps': steps.length } as React.CSSProperties}
     >
       {steps.map((s) => (
-        <li key={s.key} className={cx(styles.step, styles[s.state])} aria-current={s.state === 'current' ? 'step' : undefined}>
+        <li
+          key={s.key}
+          className={plain ? cx(styles.step, styles[s.state]) : cx(styles.item, s.state === 'done' && styles.isDone, s.state === 'current' && styles.isCurrent)}
+          aria-current={s.state === 'current' ? 'step' : undefined}
+        >
           <b>{s.label}</b>
           {s.note && <span className={styles.note}>{s.note}</span>}
           {stateWords && <span className={styles.sr}> {stateWords[s.state]}</span>}

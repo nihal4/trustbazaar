@@ -72,6 +72,16 @@ describe('Stepper (U11-05)', () => {
     expect(items[2].textContent).toContain('still to come');
   });
 
+  it.each(['rule', 'line', 'rows', 'onDark'] as const)(
+    'NFR-USE-07 the %s look is the same ordered list, with the current step marked and each state in words',
+    (look) => {
+      render(<Stepper look={look} steps={steps} label={`Progress ${look}`} stateWords={{ done: 'done', current: 'current step', next: 'still to come' }} />);
+      const items = within(screen.getByRole('list', { name: `Progress ${look}` })).getAllByRole('listitem');
+      expect(items.map((li) => li.getAttribute('aria-current'))).toEqual([null, 'step', null]);
+      expect(items[0].textContent).toContain('done');
+    },
+  );
+
   it('NFR-USE-05 the steps stack in one column on a phone', () => {
     expect(css('stepper.module.css')).toMatch(/@media \(max-width: 560px\)\s*\{\s*\.steps\s*\{\s*grid-template-columns: minmax\(0, 1fr\)/);
   });
