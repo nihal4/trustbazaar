@@ -173,15 +173,14 @@
   }
 }
 
-/* the conversation (U10-25), after the messaging apps people already know: one rounded card holding a header (back, the other party's initial, name and
-   listing), the messages as bubbles (mine right in the accent colour, theirs left on the surface, the time inside), and a bar at the foot to write
-   in: attach, a rounded field that grows, a round send button. Colours and the vermilion are the theme's. */
+/* the conversation (U10-25), laid out as the messaging apps people already know but drawn on the line grid (square, hairline, vermilion): one card holding a header (back, the other party's initial, name and
+   listing), the messages as ruled bubbles (mine right with a vermilion line over a faint wash, theirs left with a hairline, the time inside), and a bar at the
+   foot to write in: attach, a field that grows, a square send button. The same drawing is the dispute chat's (orders.module.css, .dc*). */
 .chat {
   display: flex;
   flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--tb-line);
-  border-radius: 16px;
   background: var(--tb-bg);
 }
 
@@ -202,7 +201,7 @@
   width: 40px;
   height: 40px;
   border: 0;
-  border-radius: 50%;
+  border-radius: 0;
   background: none;
   color: var(--tb-text);
   cursor: pointer;
@@ -233,8 +232,9 @@
   place-items: center;
   width: 44px;
   height: 44px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--tb-hot) 18%, transparent);
+  border: 1px solid var(--tb-border);
+  background-image: linear-gradient(to right, var(--tb-line) 1px, transparent 1px), linear-gradient(to bottom, var(--tb-line) 1px, transparent 1px);
+  background-size: 11px 11px;
   color: var(--tb-hot);
   font-size: 1.125rem;
   font-weight: 700;
@@ -282,7 +282,6 @@
   overflow: hidden;
   padding: 0.125rem 0.625rem;
   border: 1px solid var(--tb-border);
-  border-radius: 999px;
   color: var(--tb-text);
   font-weight: 600;
   text-decoration: none;
@@ -296,7 +295,6 @@
   overflow: hidden;
   padding: 0.125rem 0.625rem;
   border: 1px solid var(--tb-border);
-  border-radius: 999px;
   color: var(--tb-text);
   font-weight: 600;
   text-overflow: ellipsis;
@@ -361,15 +359,15 @@
 
 .mine {
   margin-left: auto;
-  border-radius: 18px 18px 4px 18px;
-  background: var(--tb-accent);
-  color: var(--tb-accent-text);
+  border: 1px solid var(--tb-hot);
+  background: color-mix(in srgb, var(--tb-hot) 10%, transparent);
+  color: var(--tb-text);
 }
 
 .theirs {
   margin-right: auto;
-  border-radius: 18px 18px 18px 4px;
-  background: var(--tb-surface);
+  border: 1px solid var(--tb-border);
+  background: none;
   color: var(--tb-text);
 }
 
@@ -378,11 +376,21 @@
   margin: 0.75rem 0 0.5rem;
 }
 
+.day {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  gap: 0.75rem;
+}
+
+.day::before,
+.day::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--tb-line);
+}
+
 .day span {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  background: var(--tb-surface);
   color: var(--tb-muted);
   font-size: 0.8125rem;
 }
@@ -414,7 +422,6 @@
   max-width: 100%;
   max-height: 20rem;
   object-fit: contain;
-  border-radius: 12px;
 }
 
 .flag,
@@ -423,7 +430,6 @@
   margin: 0;
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--tb-warning-border);
-  border-radius: 12px;
   background: var(--tb-warning-bg);
   color: var(--tb-text);
   font-size: 0.9375rem;
@@ -519,7 +525,6 @@
   margin-bottom: 0.75rem;
   padding: 0.75rem;
   border: 1px solid var(--tb-line);
-  border-radius: 12px;
 }
 
 .photoPanel label {
@@ -532,7 +537,6 @@
   box-sizing: border-box;
   padding: 0 1rem;
   border: 1px solid var(--tb-border);
-  border-radius: 999px;
   background: var(--tb-bg);
   color: var(--tb-text);
   font: inherit;
@@ -572,7 +576,6 @@
   box-sizing: border-box;
   padding: 0.625rem 1rem;
   border: 1px solid var(--tb-border);
-  border-radius: 22px;
   background: var(--tb-bg);
   color: var(--tb-text);
   font: inherit;
@@ -584,14 +587,14 @@
   display: inline-grid;
   flex: none;
   place-items: center;
-  width: 44px;
-  height: 44px;
-  border: 0;
-  border-radius: 50%;
-  background: var(--tb-hot);
-  color: #0a1018;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--tb-hot);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--tb-hot) 10%, transparent);
+  color: var(--tb-hot);
   cursor: pointer;
-  transition: opacity 140ms, transform 140ms;
+  transition: background 140ms, opacity 140ms;
 }
 
 .sendBtn svg {
@@ -600,7 +603,7 @@
 }
 
 .sendBtn:hover:not(:disabled) {
-  transform: scale(1.06);
+  background: color-mix(in srgb, var(--tb-hot) 18%, transparent);
 }
 
 .sendBtn:disabled {
@@ -609,7 +612,7 @@
 }
 
 .sendBtn:focus-visible {
-  outline: 2px solid var(--tb-text);
+  outline: 2px solid var(--tb-hot);
   outline-offset: 2px;
 }
 
@@ -638,7 +641,7 @@
   min-height: 44px;
   padding: 0 1.25rem;
   border: 1px solid var(--tb-border);
-  border-radius: 999px;
+  border-radius: 0;
   background: none;
   color: var(--tb-text);
   font: inherit;
@@ -682,7 +685,6 @@
   .chat {
     border-left: 0;
     border-right: 0;
-    border-radius: 0;
     margin: 0 calc(-1 * var(--tb-gutter, 1rem));
   }
 
