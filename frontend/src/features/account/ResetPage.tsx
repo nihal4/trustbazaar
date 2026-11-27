@@ -1,22 +1,28 @@
-// Password reset, step one (IF-UI-01; FR-ACC-07): the same answer whether or not the account exists.
-// An e-mail address gets a link (to /reset-password); a mobile number gets an SMS code, entered here.
+// Password reset, step one (IF-UI-01; FR-ACC-07), on the ruled card (U10-25): the same answer whether or not the account exists. An e-mail address gets a
+// link (to /reset-password); a mobile number gets an SMS code, entered here with the new password.
 import { useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { useApi } from '../../shared/api';
 import { untilAfter, useSecondsLeft } from '../../shared/countdown';
-import { FormMessage, SubmitButton, TextField } from '../../shared/form';
-import { toAsciiDigits } from '../../lib/money.js';
+import { SubmitButton, TextField } from '../../shared/form';
+import { useViewport } from '../../shared/gridCell';
 import { digits, otherError, retryAfter, useAccountT } from './common';
-import { bangladeshiMobile, isSixDigits, loginKind, normaliseLogin } from './input';
-import { NewPasswordForm } from './NewPassword';
+import { bodyFor, fieldAria, headFor, rowsFor, Slot, StepNote } from './AuthParts';
+import { AuthSplit } from './AuthSplit';
+import { bangladeshiMobile, loginKind, normaliseLogin } from './input';
+import { NewPasswordForm, ResetDone } from './NewPassword';
 import styles from './account.module.css';
 
 export function Component() {
   const { t, lang } = useAccountT();
+  const { vw } = useViewport();
+  const head = headFor(vw, lang === 'bn');
+  // the tallest step: the SMS code, the new password with its hint and the authenticator code, and a message under them (two cells more than registration's)
+  const rows = rowsFor(vw, lang === 'bn', bodyFor(vw) + 2);
   const api = useApi();
   const [login, setLogin] = useState('');
   const [sentTo, setSentTo] = useState<{ kind: 'phone' | 'email'; phone: string | null } | null>(null);
-  const [code, setCode] = useState('');
-  const [codeError, setCodeError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [waitUntil, setWaitUntil] = useState<number | null>(null);
@@ -24,7 +30,8 @@ export function Component() {
 
   const ask = async (ev: FormEvent) => {
     ev.preventDefault();
-    if (busy || !login.trim()) return;
+    if (busy) return;
+    if (!login.trim()) { setMessage(t('signin.login_invalid')); return; }
     setBusy(true);
     setMessage(null);
     try {
@@ -33,50 +40,45 @@ export function Component() {
       setSentTo({ kind, phone: kind === 'phone' ? bangladeshiMobile(login) : null });
     } catch (err) {
       const wait = retryAfter(err);
-      if (wait !== null) setWaitUntil(untilAfter(wait));
+      if (wait !== null) { setWaitUntil(untilAfter(wait)); setMessage(t('signin.too_many')); }
       else setMessage(otherError(err, t, lang));
-    } finally {
-      setBusy(false);
     }
+    setBusy(false);
   };
 
+  const heading = <h1 id="reset-head">{t('reset.title')}</h1>;
+  if (done) return <ResetDone rows={rows} head={head} />;
+
   if (sentTo) {
-    const phone = sentTo.phone;
-    return (
-      <div className={styles.narrow}>
-        <h1>{t('reset.title')}</h1>
-        <FormMessage kind="info">{t(sentTo.kind === 'email' ? 'reset.sent_email' : 'reset.sent_phone')}</FormMessage>
-        {sentTo.kind === 'phone' && phone && (
-          <NewPasswordForm
-            proof={() => {
-              if (!isSixDigits(code)) { setCodeError(t('code.six_digits')); return null; }
-              setCodeError(null);
-              return { phone, code: toAsciiDigits(code).trim() };
-            }}
-            onProofRefused={(kind) => setCodeError(t(kind === 'wrong' ? 'code.wrong' : 'reset.code_expired'))}
-            codeField={
-              <TextField id="reset-code" label={t('code.label')} value={code} onChange={setCode} error={codeError ?? undefined}
-                inputMode="numeric" autoComplete="one-time-code" maxLength={6} />
-            }
-          />
-        )}
-        <p><button type="button" className={styles.link} onClick={() => { setSentTo(null); setCode(''); }}>{t('reset.again')}</button></p>
-      </div>
-    );
+    const again = <div className={styles.footLinks}><button type="button" className={styles.link} onClick={() => { setSentTo(null); setMessage(null); }}>{t('reset.again')}</button></div>;
+    return sentTo.kind === 'phone' && sentTo.phone
+      ? (
+        <AuthSplit stepKey="code" rows={rows} headCells={head} foot={again}
+          head={<>{heading}<p className={styles.lead}>{t('reset.sent_phone')}</p></>}>
+          <NewPasswordForm proof={{ phone: sentTo.phone }} onDone={() => setDone(true)} />
+        </AuthSplit>
+      )
+      : (
+        <AuthSplit stepKey="sent" rows={rows} headCells={head} head={heading} foot={again}>
+          <StepNote><p role="status">{t('reset.sent_email')}</p></StepNote>
+        </AuthSplit>
+      );
   }
 
   return (
-    <div className={styles.narrow}>
-      <h1>{t('reset.title')}</h1>
-      <p>{t('reset.intro')}</p>
-      {message && <FormMessage kind="error">{message}</FormMessage>}
-      <form onSubmit={ask} noValidate>
-        <TextField id="reset-login" label={t('signin.login')} hint={t('signin.login_hint')} value={login} onChange={setLogin}
-          autoComplete="username" />
+    <AuthSplit stepKey="ask" rows={rows} headCells={head}
+      head={<>{heading}<p className={styles.lead}>{t('reset.intro')}</p></>}
+      foot={<div className={styles.footLinks}><Link to="/signin" className={styles.link}>{t('signin.back')}</Link></div>}>
+      <form onSubmit={(e) => void ask(e)} noValidate className={styles.stepForm}>
+        <div className={styles.fieldGroup}>
+          <TextField id="reset-login" label={t('signin.login')} value={login} onChange={setLogin} autoComplete="username" autoFocus
+            {...fieldAria(message, false, 'reset-message', 'reset-head')} />
+          <Slot id="reset-message" message={message} />
+        </div>
         <SubmitButton busy={busy} disabled={waitFor > 0}>
           {waitFor > 0 ? t('wait.seconds', { seconds: digits(waitFor, lang) }) : t('reset.send')}
         </SubmitButton>
       </form>
-    </div>
+    </AuthSplit>
   );
 }

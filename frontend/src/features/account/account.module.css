@@ -716,3 +716,24 @@
   padding: 0;
   line-height: inherit;
 }
+
+/* A step with no field (a sent notice, a result): its message, and the one button, share out the form band like the parts of a form do. */
+.stepNote {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  min-width: 0;
+}
+
+.stepNote p {
+  margin: 0;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.stepText {
+  margin: 0;
+  line-height: 1.5;
+  text-wrap: pretty;
+}

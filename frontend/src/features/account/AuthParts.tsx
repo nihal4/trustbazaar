@@ -1,5 +1,6 @@
 // The parts the bare account pages (sign-in, registration) share (U10-25, U10-25): the line under a field where a refusal or a notice is said, and what a
 // field with a message says to assistive technology.
+import type { ReactNode } from 'react';
 import styles from './account.module.css';
 
 /** The line under the field where a refusal or a notice is said. It takes its own height out of the room the form shares out (a few pixels: it
@@ -19,3 +20,14 @@ export const fieldAria = (message: string | null, ok: boolean, messageId: string
   'aria-invalid': message && !ok ? true : undefined,
   'aria-describedby': [headId, message ? messageId : ''].filter(Boolean).join(' '),
 });
+
+/** The card's bands in cells, shared by the pages that are several steps long (U10-25). The heading band wraps more lines on a narrow screen; the form band is
+ *  sized for the tallest step with a message under it (two fields and a message need more room on a phone). One height for every step of a page. */
+export const headFor = (vw: number, bangla: boolean) => (vw < 360 ? (bangla ? 8 : 7) : vw < 520 ? (bangla ? 7 : 6) : 5);
+export const bodyFor = (vw: number) => (vw < 360 ? 14 : vw < 520 ? 13 : 11);
+export const rowsFor = (vw: number, bangla: boolean, body = bodyFor(vw), foot = 2) => headFor(vw, bangla) + body + foot;
+
+/** The form band of a step that has no field: a message, then (maybe) the one button. */
+export function StepNote({ children }: { children: ReactNode }) {
+  return <div className={styles.stepNote}>{children}</div>;
+}

@@ -308,7 +308,7 @@ describe('password reset', () => {
     await screen.findByRole('heading', { name: 'Reset your password' });
     type('Mobile number or e-mail', 'someone@example.com');
     click('Send');
-    expect((await screen.findByRole('status')).textContent).toMatch(/^If an account has this verified e-mail address/);
+    expect((await screen.findByText(/^If an account has this verified e-mail address/)).getAttribute('role')).toBe('status');
     expect(screen.queryByLabelText('Code')).toBeNull();
   });
 

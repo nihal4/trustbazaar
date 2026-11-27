@@ -13,7 +13,7 @@ import { toAsciiDigits } from '../../lib/money.js';
 import { digits, otherError, passwordReasonText, rejectedPasswordReason, retryAfter, useAccountT } from './common';
 import { bangladeshiMobile, isSixDigits, looksLikeEmail, passwordLengthProblem, PASSWORD } from './input';
 import { LEGAL_VERSIONS } from './legal';
-import { fieldAria, Slot } from './AuthParts';
+import { fieldAria, headFor, rowsFor, Slot } from './AuthParts';
 import { AuthSplit } from './AuthSplit';
 import { LegalDialog } from './LegalDocs';
 import styles from './account.module.css';
@@ -21,12 +21,6 @@ import styles from './account.module.css';
 type Step = 'name' | 'email' | 'password' | 'code' | 'phone' | 'terms';
 interface Started { registrationId: string; resendAt: string }
 
-/** One height for the card in every step (cells), set from the tallest step (the password and its confirmation, or the terms and the age), so the card never
- *  grows or shrinks between steps; a narrow screen wraps more lines and needs more. The heading band is as in sign-in. */
-const headFor = (vw: number, bangla: boolean) => (vw < 360 ? (bangla ? 8 : 7) : vw < 520 ? (bangla ? 7 : 6) : 5);
-/** The form band: the password step with a message under it is the tallest; a narrow screen wraps the message and the labels and needs more room. */
-const bodyFor = (vw: number) => (vw < 360 ? 14 : vw < 520 ? 13 : 11);
-const rowsFor = (vw: number, bangla: boolean) => headFor(vw, bangla) + bodyFor(vw) + 2;
 
 export function Component() {
   const { t, lang } = useAccountT();

@@ -59,7 +59,7 @@ interface Props {
   footCells?: number;
 }
 
-export function AuthSplit({ children, stepKey = 'step', rows = 8, head, headCells = 3, foot, footCells = 2 }: Props) {
+export function AuthSplit({ children, stepKey = 'step', rows = 8, head, headCells = 3, foot, footCells = foot === undefined ? 0 : 2 }: Props) {
   const face = useRef<HTMLDivElement>(null);
   const slab = useRef<HTMLDivElement>(null);
   const banded = head !== undefined;
@@ -85,7 +85,7 @@ export function AuthSplit({ children, stepKey = 'step', rows = 8, head, headCell
           <div key={stepKey} className={`${styles.stageStep} ${styles.banded}`} style={{ '--head': headCells, '--foot': footCells } as CSSProperties}>
             <div className={styles.bandHead}>{head}</div>
             <div ref={face} className={styles.bandBody}>{children}</div>
-            <div className={styles.bandFoot}>{foot}</div>
+            {foot !== undefined && <div className={styles.bandFoot}>{foot}</div>}
           </div>
         ) : (
           <div key={stepKey} className={styles.stageStep}>
