@@ -554,6 +554,8 @@
   "handover.device_check": "Check",
   "handover.device_wrong": "This number does not match the listing. Do not accept this device. Tries left: {n}.",
   "handover.device_locked": "Too many wrong numbers. Do not accept this device: ask the seller to cancel.",
+  "handover.start": "Start the handover",
+  "handover.step_of": "Step {n} of {total}",
   "handover.photos_label": "Photos of the item",
   "handover.photo_add": "Add a photo of the item (before you enter the code)",
   "handover.photo_hint": "Show the item working, in the buyer's hands. It is kept as evidence if a dispute follows.",

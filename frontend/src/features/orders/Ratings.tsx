@@ -73,7 +73,7 @@ function StarsField({ id, value, onChange, t, lang }: { id: string; value: numbe
       <div className={styles.starGrid}>
         {[1, 2, 3, 4, 5].map((n) => (
           <span key={n} className={styles.starCell}>
-            <input id={`${id}-${n}`} type="radio" name={id} checked={value === n} onChange={() => onChange(n)} />
+            <input id={`${id}-${n}`} type="radio" name={id} checked={value === n} onChange={() => onChange(n)} onClick={() => { if (value === n) onChange(0); }} />
             <label htmlFor={`${id}-${n}`} data-n={toLocalDigits(String(n), lang)} className={n <= value ? styles.starOn : undefined}>
               <Star on={n <= value} />
               <span className={styles.srOnly}>{starsText(n, t, lang)}</span>
