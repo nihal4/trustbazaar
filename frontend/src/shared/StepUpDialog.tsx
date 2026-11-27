@@ -73,7 +73,7 @@ export function StepUpDialog({ request }: { request: StepUpRequest }) {
   // while the start has not been answered "Loading…" is said; when it was refused (a wait, for instance) the refusal alone is said, not both
   const instruction = started?.method === 'totp' ? t('stepup.totp') : started?.method === 'sms' ? t('stepup.sms') : error ? null : t('shell.loading');
   return (
-    <Popup id="stepup" title={t("stepup.title")} closeLabel={t("stepup.cancel")} decorativeClose busy={busy} onClose={cancel}>
+    <Popup id="stepup" title={t("stepup.title")} closeLabel={t("stepup.cancel")} decorativeClose isStepUp busy={busy} onClose={cancel}>
       <form onSubmit={submit}>
         {instruction && <p>{instruction}</p>}
         {error && <FormMessage kind="error">{error}</FormMessage>}

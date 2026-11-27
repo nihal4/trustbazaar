@@ -11,6 +11,7 @@ import { untilAfter, useSecondsLeft } from '../../shared/countdown';
 import { CheckboxField, FormMessage, SubmitButton, TextField } from '../../shared/form';
 import { ME_KEY, useMe } from '../../shared/me';
 import { fieldErrors, problemName } from '../../shared/problems';
+import { Popup } from '../../shared/Popup';
 import { StepUpCancelled } from '../../shared/stepUp';
 import { digits, otherError, passwordReasonText, rejectedPasswordReason, retryAfter, useAccountT } from './common';
 import { isSixDigits, PASSWORD } from './input';
@@ -40,6 +41,7 @@ export function MfaSettings({ sessionsKey }: { sessionsKey: readonly unknown[] }
   const [view, setView] = useState<View>({ kind: 'idle' });
   const [message, setMessage] = useState<{ kind: 'error' | 'success' | 'info'; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const refreshMe = () => queryClient.invalidateQueries({ queryKey: ME_KEY });
   /** `mfa-state`: already on, already off, or not started; the page shows the current state again. */
@@ -84,9 +86,10 @@ export function MfaSettings({ sessionsKey }: { sessionsKey: readonly unknown[] }
   if (me.isError) return null;   // the page above already asks to sign in when there is no session
   const on = me.data.mfaEnabled;
 
-  return (
-    <section aria-labelledby="mfa-title" className={styles.section}>
-      <h2 id="mfa-title">{t('mfa.title')}</h2>
+  // the recovery codes are shown once: while they are on screen the popup cannot be closed by Escape, the cross or a click outside, only by its own Done
+  const locked = view.kind === 'codes' || view.kind === 'enrolling';
+  const content = (
+    <>
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
 
       {view.kind === 'enrolling' && (
@@ -120,7 +123,20 @@ export function MfaSettings({ sessionsKey }: { sessionsKey: readonly unknown[] }
           }} onStateChanged={() => void stateChanged()} />
         </>
       )}
-    </section>
+    </>
+  );
+  return (
+    <li>
+      <button type="button" className={styles.settingRow} aria-haspopup="dialog" onClick={() => setOpen(true)}>
+        <span>{t('mfa.title')}</span>
+        <span className={styles.settingValue}>{t(on ? 'account.mfa_on' : 'account.mfa_off')}</span>
+      </button>
+      {open && (
+        <Popup id="mfa-popup" title={t('mfa.title')} closeLabel={t('legal.close')} busy={locked || busy} onClose={() => { setOpen(false); setView({ kind: 'idle' }); setMessage(null); }}>
+          {content}
+        </Popup>
+      )}
+    </li>
   );
 }
 

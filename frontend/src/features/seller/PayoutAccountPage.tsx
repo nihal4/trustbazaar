@@ -125,8 +125,8 @@ export function Component() {
           ))}
         </ul>
       </section>
-      {/* while the step-up code is asked (the request is pending) this popup is not shown: the step-up has the screen, and this one returns, as it was, if the code is refused or cancelled */}
-      {open && !save.isPending && (
+      {/* the shared Popup stays out of sight while the step-up code is asked and returns, as it was, if the code is refused or cancelled */}
+      {open && (
         <Popup id="payout-popup" title={t(`payout.kind.${open}`)} closeLabel={t('payout.close')} busy={save.isPending} onClose={() => setOpen(null)}>
           <form onSubmit={submit} noValidate className={styles.popForm}>
             <div className={styles.popHead}>

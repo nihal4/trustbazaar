@@ -443,7 +443,7 @@ describe('account and security', () => {
       'POST /auth/password/change': noContent(),
     });
     renderApp('/account/security', be);
-    await screen.findByRole('heading', { name: 'Change your password' });
+    fireEvent.click(await screen.findByRole('button', { name: 'Change your password' }));          // the form is in a popup
     type('Current password', 'old one');
     type('New password', 'a new long passphrase');
     click('Change password');
@@ -461,7 +461,7 @@ describe('account and security', () => {
     expect(change).toHaveLength(1);
     expect(change[0].headers.get('X-Step-Up')).toBe('grant-1');
     expect(be.called('POST /auth/step-up/verify')[1].body).toEqual({ action: 'password.change', code: '123456' });
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('dialog', { name: 'Confirm it is you' })).toBeNull();
   });
 
   it('SEC-AUTH-08 cancelling the step-up sends nothing and shows no error', async () => {
@@ -470,13 +470,13 @@ describe('account and security', () => {
       'POST /auth/step-up/start': json(200, { method: 'totp' }),
     });
     renderApp('/account/security', be);
-    await screen.findByRole('heading', { name: 'Change your e-mail address' });
+    fireEvent.click(await screen.findByRole('button', { name: /^Change your e-mail address/ }));
     type('New e-mail address', 'new@example.com');
     click('Send a link');
-    const dialog = await screen.findByRole('dialog');
+    const dialog = await screen.findByRole('dialog', { name: 'Confirm it is you' });
     await within(dialog).findByText(/authenticator app/);
     fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Confirm it is you' })).toBeNull());
     expect(be.called('POST /me/email/change')).toEqual([]);
     expect(screen.queryByRole('alert')).toBeNull();
   });

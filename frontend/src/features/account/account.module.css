@@ -1164,3 +1164,60 @@
     border-top: 1px solid var(--tb-line);
   }
 }
+
+/* the settings that open in a popup: ruled rows, the name on the left and the present state on the right, an arrow in vermilion (as the payout options) */
+.settingRows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--tb-line);
+}
+
+.settingRows > li {
+  border-bottom: 1px solid var(--tb-line);
+}
+
+.settingRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  min-height: 64px;
+  padding: 0.5rem 0;
+  border: 0;
+  background: none;
+  color: var(--tb-text);
+  font: inherit;
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+}
+
+.settingRow::after {
+  content: '→';
+  flex: none;
+  color: var(--tb-hot);
+}
+
+.settingRow > span:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.settingValue {
+  min-width: 0;
+  color: var(--tb-muted);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  overflow-wrap: anywhere;
+  text-align: end;
+}
+
+.settingRow:hover {
+  color: var(--tb-hot);
+}
+
+.settingRow:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: -2px;
+}

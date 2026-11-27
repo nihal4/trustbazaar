@@ -16,6 +16,7 @@ import { formatDateTime } from '../../lib/time.js';
 import { toAsciiDigits } from '../../lib/money.js';
 import { SignInPrompt } from './AccountPage';
 import { MfaSettings } from './MfaSettings';
+import { SettingRow } from './SettingRow';
 import { digits, otherError, passwordReasonText, rejectedPasswordReason, retryAfter, useAccountT } from './common';
 import { bangladeshiMobile, isSixDigits, looksLikeEmail, PASSWORD } from './input';
 import styles from './account.module.css';
@@ -55,11 +56,14 @@ export function Component() {
           <Sessions list={sessions.data ?? []} error={sessions.isError ? sessions.error : null} />
         </div>
         <div className={styles.secCol}>
-          <PasswordChange />
           <EmailCodeSetting />
-          <MfaSettings sessionsKey={SESSIONS_KEY} />
-          <PhoneChange />
-          <EmailChange />
+          {/* the rest are rows that open their form in a popup, so the page stays short */}
+          <ul className={styles.settingRows}>
+            <PasswordChange />
+            <MfaSettings sessionsKey={SESSIONS_KEY} />
+            <PhoneChange />
+            <EmailChange />
+          </ul>
         </div>
       </div>
     </div>
@@ -143,6 +147,11 @@ async function withStepUp<R>(call: () => Promise<R>): Promise<R | 'cancelled'> {
 }
 
 function PasswordChange() {
+  const { t } = useAccountT();
+  return <SettingRow id="password-popup" title={t('password.change_title')}><PasswordForm /></SettingRow>;
+}
+
+function PasswordForm() {
   const { t, lang } = useAccountT();
   const api = useApi();
   const queryClient = useQueryClient();
@@ -183,8 +192,7 @@ function PasswordChange() {
   };
 
   return (
-    <section aria-labelledby="password-title" className={styles.section}>
-      <h2 id="password-title">{t('password.change_title')}</h2>
+    <>
       <p>{t('password.change_intro')}</p>
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
       <form onSubmit={submit} noValidate>
@@ -195,11 +203,17 @@ function PasswordChange() {
           value={next} onChange={setNext} error={errors.next} type="password" autoComplete="new-password" />
         <SubmitButton busy={busy}>{t('password.change_submit')}</SubmitButton>
       </form>
-    </section>
+    </>
   );
 }
 
 function PhoneChange() {
+  const { t } = useAccountT();
+  const me = useMe();
+  return <SettingRow id="phone-popup" title={t('contact.phone_title')} summary={me.data?.phoneMasked}><PhoneForm /></SettingRow>;
+}
+
+function PhoneForm() {
   const { t, lang } = useAccountT();
   const api = useApi();
   const queryClient = useQueryClient();
@@ -259,8 +273,7 @@ function PhoneChange() {
   };
 
   return (
-    <section aria-labelledby="phone-title" className={styles.section}>
-      <h2 id="phone-title">{t('contact.phone_title')}</h2>
+    <>
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
       {sentTo === null
         ? (
@@ -285,11 +298,17 @@ function PhoneChange() {
             </div>
           </form>
         )}
-    </section>
+    </>
   );
 }
 
 function EmailChange() {
+  const { t } = useAccountT();
+  const me = useMe();
+  return <SettingRow id="email-popup" title={t('contact.email_title')} summary={me.data?.email}><EmailForm /></SettingRow>;
+}
+
+function EmailForm() {
   const { t, lang } = useAccountT();
   const api = useApi();
   const [email, setEmail] = useState('');
@@ -317,15 +336,14 @@ function EmailChange() {
   };
 
   return (
-    <section aria-labelledby="email-title" className={styles.section}>
-      <h2 id="email-title">{t('contact.email_title')}</h2>
+    <>
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
       <form onSubmit={submit} noValidate>
         <TextField id="email-new" label={t('contact.new_email')} value={email} onChange={setEmail} error={error ?? undefined}
           type="email" autoComplete="email" />
         <SubmitButton busy={busy}>{t('contact.email_submit')}</SubmitButton>
       </form>
-    </section>
+    </>
   );
 }
 

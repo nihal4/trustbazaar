@@ -31,18 +31,22 @@ function mfaBackend(extra: Record<string, ((c: Call) => Response | Promise<Respo
   return { be, state };
 }
 
+/** the authenticator app is a row of the page; touching it opens its popup */
+const openMfa = async () => { fireEvent.click(await screen.findByRole('button', { name: /^Authenticator app/ })); };
+
 async function stepUp(code = '123456') {
   const dialog = await screen.findByRole('dialog', { name: 'Confirm it is you' });
   await within(dialog).findByText(/authenticator app/);
   fireEvent.change(within(dialog).getByLabelText('Code'), { target: { value: code } });
   fireEvent.click(within(dialog).getByRole('button', { name: 'Confirm' }));
-  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Confirm it is you' })).toBeNull());
 }
 
 describe('turning the authenticator app on', () => {
   it('FR-ACC-06 the QR code is drawn in the page as SVG shapes, named without the secret; the key and the link are shown too', async () => {
     const { be } = mfaBackend();
     renderApp('/account/security', be);
+    await openMfa();
     fireEvent.click(await screen.findByRole('button', { name: 'Turn on the authenticator app' }));
 
     const qr = await screen.findByRole('img', { name: 'QR code to add TrustBazaar to your authenticator app' });
@@ -60,6 +64,7 @@ describe('turning the authenticator app on', () => {
   it('FR-ACC-06 a wrong first code is explained on the field, without signing out; the right one turns MFA on and shows the ten codes once', async () => {
     const { be } = mfaBackend();
     const doc = renderApp('/account/security', be);
+    await openMfa();
     fireEvent.click(await screen.findByRole('button', { name: 'Turn on the authenticator app' }));
     await screen.findByRole('img', { name: /QR code/ });
 
@@ -87,6 +92,7 @@ describe('turning the authenticator app on', () => {
   it('FR-ACC-06 the secret and the codes are kept only in the page: not in browser storage, not in the query cache', async () => {
     const { be } = mfaBackend();
     const doc = renderApp('/account/security', be);
+    await openMfa();
     fireEvent.click(await screen.findByRole('button', { name: 'Turn on the authenticator app' }));
     await screen.findByRole('img', { name: /QR code/ });
     type('Code from the app', '000000');
@@ -108,6 +114,7 @@ describe('with the authenticator app on', () => {
   it('SEC-AUTH-08 new recovery codes need step-up, and replace the old ones', async () => {
     const { be } = mfaBackend({ 'POST /me/mfa/recovery-codes': json(200, { recoveryCodes: CODES }) }, true);
     renderApp('/account/security', be);
+    await openMfa();
     expect(await screen.findByText(/The old ones stop working at once/)).toBeTruthy();
     click('Make new recovery codes');
     await stepUp();
@@ -125,6 +132,7 @@ describe('with the authenticator app on', () => {
       ],
     }, true);
     renderApp('/account/security', be);
+    await openMfa();
     await screen.findByRole('heading', { name: 'Turn off the authenticator app' });
     type('Code from the app', '123456');
     click('Turn off');
@@ -147,6 +155,7 @@ describe('with the authenticator app on', () => {
   it('SEC-AUTH-01 turning it off takes a current app code only: a wrong one is explained on the field', async () => {
     const { be } = mfaBackend({ 'DELETE /me/mfa/totp': problem(400, 'otp-failed') }, true);
     renderApp('/account/security', be);
+    await openMfa();
     await screen.findByRole('heading', { name: 'Turn off the authenticator app' });
     type('Code from the app', '999999');
     click('Turn off');
@@ -160,6 +169,7 @@ describe('with the authenticator app on', () => {
       'POST /me/mfa/recovery-codes': () => { state.on = false; return problem(409, 'mfa-state', { errors: [{ field: 'mfa', reason: 'already-off' }] })(); },
     }, true);
     renderApp('/account/security', be);
+    await openMfa();
     fireEvent.click(await screen.findByRole('button', { name: 'Make new recovery codes' }));
     await stepUp();
     expect(await screen.findByText('This setting changed elsewhere. The page now shows the current state.')).toBeTruthy();
