@@ -1432,3 +1432,20 @@
   padding: 0 1rem;
   font-size: 0.9375rem;
 }
+
+/* the copy button: its answer takes the place of its words (the room of the longer), so the buttons next to it never move */
+.copyWords {
+  display: grid;
+}
+
+.copyWords > span {
+  grid-area: 1 / 1;
+}
+
+.copyButton[data-answer='ok'] {
+  border-color: var(--tb-hot);
+}
+
+.copyButton[data-answer='failed'] {
+  border-color: var(--tb-error);
+}

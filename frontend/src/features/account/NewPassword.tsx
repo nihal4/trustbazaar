@@ -77,7 +77,7 @@ export function NewPasswordForm({ proof, onDone, onLinkRefused }: {
         <TextField id="reset-password" label={t('reset.new_password')}
           hint={t('reset.password_hint', { min: digits(PASSWORD.minSingleFactor, lang), minMfa: digits(PASSWORD.minWithMfa, lang) })}
           value={password} onChange={setPassword} type="password" autoComplete="new-password" autoFocus={!phone} {...aria('password')} />
-        {askMfa && <TextField id="reset-mfa" label={t('reset.mfa_code')} value={mfaCode} onChange={setMfaCode} autoComplete="one-time-code" maxLength={40} autoFocus {...aria('mfa')} />}
+        {askMfa && <CodeField id="reset-mfa" label={t('reset.mfa_code')} value={mfaCode} onChange={setMfaCode} allowRecovery autoFocus {...aria('mfa')} />}
         <Slot id="reset-message" message={message?.text ?? null} ok={Boolean(message?.ok)} />
       </div>
       <SubmitButton busy={busy} disabled={waitFor > 0}>

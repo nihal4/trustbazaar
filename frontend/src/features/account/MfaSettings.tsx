@@ -3,7 +3,7 @@
 // the ten recovery codes shown once, new recovery codes, and turning it off. The secret and the codes
 // live only in this component's state: never in the query cache or browser storage.
 import { formatWait } from '../../shared/wait';
-import { lazy, Suspense, useState, type FormEvent } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toAsciiDigits } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
@@ -338,21 +338,32 @@ function TurnOff({ sessionsKey, onOff, onStateChanged }: {
   );
 }
 
+/** Copy to the clipboard. The answer is the button's own words for two seconds (Copied, or Could not copy), in the room of the longer of the two, so nothing moves. */
 function CopyButton({ text, label }: { text: string; label: string }) {
   const { t } = useAccountT();
   const [done, setDone] = useState<boolean | null>(null);
+  const timer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
   const copy = async () => {
+    let ok = true;
     try {
       await navigator.clipboard.writeText(text);
-      setDone(true);
     } catch {
-      setDone(false);
+      ok = false;
     }
+    setDone(ok);
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setDone(null), 2000);
   };
+  const answer = done === null ? null : t(done ? 'mfa.copied' : 'mfa.copy_failed');
   return (
-    <>
-      <button type="button" onClick={() => void copy()}>{label}</button>
-      {done !== null && <span role="status">{t(done ? 'mfa.copied' : 'mfa.copy_failed')}</span>}
-    </>
+    <button type="button" className={styles.copyButton} data-answer={done === null ? undefined : done ? 'ok' : 'failed'} onClick={() => void copy()}>
+      <span className={styles.copyWords} aria-hidden="true">
+        <span style={{ visibility: done === null ? 'visible' : 'hidden' }}>{label}</span>
+        <span style={{ visibility: done === null ? 'hidden' : 'visible' }}>{answer ?? t('mfa.copied')}</span>
+      </span>
+      <span className={styles.srOnly}>{label}</span>
+      <span role="status" className={styles.srOnly}>{answer}</span>
+    </button>
   );
 }

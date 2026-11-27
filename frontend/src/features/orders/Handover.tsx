@@ -13,7 +13,7 @@ import { toAsciiDigits, toLocalDigits } from '../../lib/money.js';
 import { formatDateTime } from '../../lib/time.js';
 import { useApi } from '../../shared/api';
 import { errorText } from '../../shared/errors';
-import { FormMessage } from '../../shared/form';
+import { CodeField, FormMessage } from '../../shared/form';
 import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
 import { isApiError, problemName } from '../../shared/problems';
@@ -217,9 +217,7 @@ function SellerCode({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: T; la
       <label htmlFor="handover-photo">{t('handover.photo_add')}</label>
       <input id="handover-photo" type="file" accept="image/jpeg,image/png,image/webp" disabled={photo.isPending || (h.photoCount ?? 0) >= 3} onChange={(e) => picked(e.target.files, e.target)} />
       <p className={styles.hint}>{t('handover.photo_hint')}</p>
-      <label htmlFor="handover-code">{t('handover.code_field')}</label>
-      <input id="handover-code" inputMode="numeric" autoComplete="off" value={code} maxLength={16} onChange={(e) => setCode(e.target.value)}
-        aria-describedby="handover-attempts" />
+      <CodeField id="handover-code" label={t('handover.code_field')} value={code} onChange={setCode} aria-describedby="handover-attempts" />
       <p id="handover-attempts" className={styles.hint}>{t('handover.attempts_left', { left: toLocalDigits(String(h.attemptsLeft ?? 0), lang) })}</p>
       <button type="submit" className={styles.primary} disabled={enter.isPending}>{t('handover.enter_button')}</button>
     </form>

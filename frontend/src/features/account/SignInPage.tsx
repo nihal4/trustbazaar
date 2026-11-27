@@ -149,13 +149,9 @@ export function Component() {
         )}>
         <form onSubmit={submitCode} noValidate className={styles.stepForm}>
           <div className={styles.fieldGroup}>
-            {/* the code sent by e-mail is six digits, shown in cells; an authenticator or recovery code may be longer and have letters, so it is an ordinary field */}
-            {email
-              ? <CodeField id="signin-code" label={t('code.label')} value={code} onChange={setCode} autoFocus
-                {...fieldAria(message, message === t('signin.resent'), 'signin-message')} />
-              : <TextField id="signin-code" label={t('code.label')} value={code} onChange={setCode}
-                autoComplete="one-time-code" maxLength={40} autoFocus
-                {...fieldAria(message, message === t('signin.resent'), 'signin-message')} />}
+            {/* the code sent by e-mail is six digits; an authenticator code too, or a recovery code, whose letters turn the cells into a line of text */}
+            <CodeField id="signin-code" label={t('code.label')} value={code} onChange={setCode} autoFocus allowRecovery={!email}
+              {...fieldAria(message, message === t('signin.resent'), 'signin-message')} />
             <Slot id="signin-message" message={message} ok={message === t('signin.resent')} />
           </div>
           <div className={styles.extra}><CheckboxField id="signin-remember" label={t('signin.remember')} checked={remember} onChange={setRemember} /></div>

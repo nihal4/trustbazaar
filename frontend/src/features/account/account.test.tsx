@@ -300,7 +300,9 @@ describe('sign in', () => {
     await screen.findByRole('heading', { name: 'Enter your second code' });
     expect(be.called('POST /auth/signin')[0].body).toEqual({ login: '+8801712345678', password: 'correct horse battery staple' });
 
+    expect(document.querySelectorAll('[class*=codeCells] > span')).toHaveLength(6);      // an authenticator code: six cells
     type('Code', 'abcd-efgh-ijkl');
+    expect(document.querySelector('[class*=codeCells][data-text]')?.textContent).toBe('abcd-efgh-ijkl');   // letters: a recovery code, one line of text
     click('Sign in');
     expect((await screen.findByRole('alert')).textContent).toBe('The code is not correct.');
     click('Sign in');

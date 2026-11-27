@@ -287,10 +287,14 @@ div.error > :first-child {
   justify-items: end;
 }
 
-/* A one-time code in cells divided by lines (U10-25): | 4 | 8 | 2 | 0 | 1 | 7 |. The real input lies over the cells, invisible, and takes the typing, the pasting and the autofill. */
+/* A one-time code in cells divided by lines (U10-25): | 4 | 8 | 2 | 0 | 1 | 7 |, in the middle of its column, with the lines between the cells and nothing under them. The real input
+   lies over the cells, invisible, and takes the typing, the pasting and the autofill. */
 .codeGroup {
   position: relative;
+  align-self: center;
+  width: 100%;
   max-width: 22rem;
+  margin-block: 0.25rem;
 }
 
 .field .codeGroup > input.codeInput {
@@ -315,8 +319,11 @@ div.error > :first-child {
 
 .codeCells {
   display: grid;
-  border-bottom: 1px solid var(--tb-border);
-  transition: border-color 120ms ease, box-shadow 120ms ease;
+  --pipe: var(--tb-border);
+}
+
+.codeCells[data-text] {
+  display: flex;
 }
 
 .codeCells > span {
@@ -324,22 +331,35 @@ div.error > :first-child {
   display: grid;
   place-items: center;
   height: 3.5rem;
-  border-inline-start: 1px solid var(--tb-border);
+  border-inline-start: 1px solid var(--pipe);
   color: var(--tb-text);
   font-size: 1.5rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   line-height: 1;
+  transition: border-color 120ms ease, background 120ms ease;
 }
 
 .codeCells > span:last-child {
-  border-inline-end: 1px solid var(--tb-border);
+  border-inline-end: 1px solid var(--pipe);
 }
 
-/* focus: the line under the code turns vermilion, and the cell that comes next is marked with a blinking bar */
+.codeCells[data-text] > span {
+  flex: 1;
+  min-width: 0;
+  padding: 0 1rem;
+  font-size: 1.25rem;
+  letter-spacing: 0.06em;
+  overflow-wrap: anywhere;
+}
+
+/* focus: the lines between the cells turn vermilion and the cell that comes next is marked with a blinking bar */
 .codeGroup[data-focused] .codeCells {
-  border-bottom-color: var(--tb-hot);
-  box-shadow: 0 1px 0 var(--tb-hot);
+  --pipe: var(--tb-hot);
+}
+
+.codeGroup[data-focused] .codeCells > span[data-here] {
+  background: rgba(255, 107, 53, 0.08);
 }
 
 .codeGroup[data-focused] .codeCells > span[data-here]::after {
@@ -355,7 +375,7 @@ div.error > :first-child {
 }
 
 .codeGroup[data-invalid] .codeCells {
-  border-bottom-color: var(--tb-error);
+  --pipe: var(--tb-error);
 }
 
 @keyframes codeBlink {
