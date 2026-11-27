@@ -30,6 +30,7 @@ interface SessionSummary {
 }
 
 const SESSIONS_KEY = ['auth', 'sessions'] as const;
+const SESSIONS_SHOWN = 5;
 
 export function Component() {
   const { t } = useAccountT();
@@ -45,15 +46,22 @@ export function Component() {
   if (sessions.isError && isApiError(sessions.error, 401)) return <SignInPrompt next="/account/security" />;
 
   return (
-    <div className={styles.narrow}>
+    <div className={styles.secPage}>
       <AccountTabs t={t} />
       <h1>{t('security.title')}</h1>
-      <Sessions list={sessions.data ?? []} error={sessions.isError ? sessions.error : null} />
-      <PasswordChange />
-      <EmailCodeSetting />
-      <MfaSettings sessionsKey={SESSIONS_KEY} />
-      <PhoneChange />
-      <EmailChange />
+      {/* two columns divided by one line, as the profile and the dashboard: where you are signed in on the left, the settings on the right */}
+      <div className={styles.secCols}>
+        <div className={styles.secCol}>
+          <Sessions list={sessions.data ?? []} error={sessions.isError ? sessions.error : null} />
+        </div>
+        <div className={styles.secCol}>
+          <PasswordChange />
+          <EmailCodeSetting />
+          <MfaSettings sessionsKey={SESSIONS_KEY} />
+          <PhoneChange />
+          <EmailChange />
+        </div>
+      </div>
     </div>
   );
 }
@@ -81,13 +89,17 @@ function Sessions({ list, error }: { list: SessionSummary[]; error: unknown }) {
   };
 
   const others = list.filter((s) => !s.current);
+  // this device first, then the others newest first; five are shown, the rest behind one button (a long history is not a long page)
+  const [all, setAll] = useState(false);
+  const ordered = [...list].sort((a, b) => Number(b.current) - Number(a.current));
+  const shown = all ? ordered : ordered.slice(0, SESSIONS_SHOWN);
   return (
     <section aria-labelledby="sessions-title" className={styles.section}>
       <h2 id="sessions-title">{t('sessions.title')}</h2>
       {error !== null && <FormMessage kind="error">{otherError(error, t, lang)}</FormMessage>}
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
       <ul className={styles.sessions}>
-        {list.map((s) => (
+        {shown.map((s) => (
           <li key={s.id}>
             <p className={styles.device}>
               {s.device ?? t('sessions.unknown_device')}
@@ -105,6 +117,11 @@ function Sessions({ list, error }: { list: SessionSummary[]; error: unknown }) {
           </li>
         ))}
       </ul>
+      {ordered.length > SESSIONS_SHOWN && (
+        <button type="button" className={styles.secondary} onClick={() => setAll((v) => !v)} aria-expanded={all}>
+          {all ? t('sessions.show_fewer') : t('sessions.show_all', { count: digits(ordered.length, lang) })}
+        </button>
+      )}
       {others.length > 0 && (
         <button type="button" className={styles.secondary} disabled={busy !== null}
           onClick={() => void run('others', () => api.request('POST', '/auth/sessions/end-others'))}>

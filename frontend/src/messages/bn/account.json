@@ -213,5 +213,7 @@
   "account.rating": "রেটিং",
   "account.rating_value": "৫-এর মধ্যে {average} ({count})",
   "account.no_ratings": "এখনও কোনো রেটিং নেই",
-  "account.completed": "সম্পন্ন লেনদেন"
+  "account.completed": "সম্পন্ন লেনদেন",
+  "sessions.show_all": "সব {count}টি দেখুন",
+  "sessions.show_fewer": "কম দেখুন"
 }

@@ -157,9 +157,9 @@
 .secondary {
   min-height: 44px;
   padding: 0 1.25rem;
-  border: 1.5px solid var(--tb-border);
-  border-radius: var(--tb-radius-pill);
-  background: var(--tb-bg);
+  border: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: none;
   color: var(--tb-text);
   font: inherit;
   font-weight: 600;
@@ -1044,4 +1044,123 @@
 .tick svg {
   width: 28px;
   height: 28px;
+}
+
+/* The security page (U10-25): the same line grid as the profile and the dashboard. A vermilion rule over the title, two columns divided by one line, hairline
+   rows for the devices, square hairline buttons (no pills), the settings as sections under hairlines. */
+.secPage {
+  max-width: 64rem;
+}
+
+.secPage > h1 {
+  margin: 0;
+  padding: 1.5rem 0 1.25rem;
+  border-top: 2px solid var(--tb-hot);
+  font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.125rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+}
+
+:lang(bn) .secPage > h1 {
+  letter-spacing: 0;
+  line-height: 1.35;
+}
+
+.secCols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--tb-line);
+}
+
+.secCol {
+  min-width: 0;
+}
+
+.secCol:first-child {
+  padding-inline-end: 2rem;
+}
+
+.secCol + .secCol {
+  padding-inline-start: 2rem;
+  border-inline-start: 1px solid var(--tb-line);
+}
+
+.secCol .section {
+  margin: 0;
+  padding: 1.5rem 0 2rem;
+  border-top: 1px solid var(--tb-line);
+}
+
+.secCol .section:first-child {
+  border-top: 0;
+}
+
+.secCol .section h2 {
+  font-size: 1.125rem;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+}
+
+/* the devices: hairline rows, this device first with a vermilion mark, the sign-out of a device as a small square button under its lines */
+.secCol .sessions {
+  gap: 0;
+  margin-bottom: 1rem;
+  border-top: 1px solid var(--tb-line);
+}
+
+.secCol .sessions li {
+  padding: 0.875rem 0;
+  border-bottom: 1px solid var(--tb-line);
+}
+
+.secCol .sessions p {
+  margin: 0 0 0.125rem;
+  color: var(--tb-muted);
+  font-size: 0.9375rem;
+}
+
+.secCol .sessions .device {
+  color: var(--tb-text);
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.secCol .sessions strong {
+  color: var(--tb-hot);
+  font-weight: 600;
+}
+
+.secCol .sessions button {
+  margin-top: 0.5rem;
+  min-height: 40px;
+  padding: 0 1rem;
+  font-size: 0.9375rem;
+}
+
+.secCol .sessions button:hover:not(:disabled),
+.secondary:hover:not(:disabled),
+.actions button:not([type='submit']):hover:not(:disabled) {
+  border-color: var(--tb-hot);
+}
+
+.secondary {
+  margin-inline-end: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 63.99rem) {
+  .secCols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .secCol:first-child {
+    padding-inline-end: 0;
+  }
+
+  .secCol + .secCol {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+    border-top: 1px solid var(--tb-line);
+  }
 }

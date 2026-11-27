@@ -213,5 +213,7 @@
   "account.rating": "Rating",
   "account.rating_value": "{average} out of 5 ({count})",
   "account.no_ratings": "No ratings yet",
-  "account.completed": "Completed deals"
+  "account.completed": "Completed deals",
+  "sessions.show_all": "Show all {count}",
+  "sessions.show_fewer": "Show fewer"
 }
