@@ -203,10 +203,6 @@
   font-size: var(--tb-text-md);
 }
 
-.facts dd {
-  margin: 0 0 var(--tb-space-3);
-}
-
 .facts {
   margin: 0 0 var(--tb-space-6);
   border: 1px solid var(--tb-line);
@@ -260,12 +256,6 @@
   gap: var(--tb-space-2-5);
 }
 
-.sessions li {
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-surface);
-  padding: var(--tb-space-3-5) var(--tb-space-4-5);
-}
-
 .sessions p {
   margin: 0 0 var(--tb-space-1);
 }
@@ -287,15 +277,6 @@
   margin: var(--tb-space-3) 0;
   border: 1px solid var(--tb-line);
   border-radius: var(--tb-radius-panel);
-}
-
-/* The key and the recovery codes: tabular figures, wide spacing, no monospace (section 3). */
-.secret,
-.codes {
-  font-size: var(--tb-text-xl);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums slashed-zero;
-  letter-spacing: 0.06em;
 }
 
 .secret {
@@ -339,8 +320,14 @@
 }
 
 /* U10-25 (redesign v3): no filled or rounded panels: a notice, the facts, a session, the key and the recovery codes are ruled blocks on hairlines */
+
+/* The key and the recovery codes: tabular figures, wide spacing, no monospace (section 3). */
 .secret,
 .codes {
+  font-size: var(--tb-text-xl);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums slashed-zero;
+  letter-spacing: 0.06em;
   border-radius: 0;
   background: none;
   border-top: 1px solid var(--tb-line);
@@ -348,6 +335,7 @@
 }
 
 .sessions li {
+  padding: var(--tb-space-3-5) var(--tb-space-4-5);
   border-radius: 0;
   background: none;
   border-bottom: 1px solid var(--tb-line);
@@ -417,13 +405,6 @@
   margin: 0;
 }
 
-.bandHead .lead {
-  margin: var(--tb-space-3) 0 0;
-  padding: 0;
-  border: 0;
-  min-height: 0;
-}
-
 .bandBody {
   box-sizing: border-box;
   padding: 0 var(--tb-space-8);
@@ -481,13 +462,6 @@
   font-size: var(--tb-text-md);
   line-height: 1.45;
   text-wrap: balance;
-}
-
-.footNote a {
-  color: var(--tb-accent);
-  font-weight: 600;
-  text-underline-offset: 3px;
-  white-space: nowrap;
 }
 
 .footLinks {
@@ -562,11 +536,19 @@
 }
 
 .footNote a {
+  color: var(--tb-accent);
+  font-weight: 600;
+  text-underline-offset: 3px;
+  white-space: nowrap;
   padding: 0.8125rem var(--tb-space-2);
   margin: -0.8125rem -0.5rem;
 }
 
 .bandHead .lead {
+  margin: var(--tb-space-3) 0 0;
+  padding: 0;
+  border: 0;
+  min-height: 0;
   overflow-wrap: anywhere;
 }
 
