@@ -47,9 +47,11 @@ export function Component() {
     <div className={styles.page}>
       <AccountTabs t={t} />
       <h1>{t('privacy.title')}</h1>
-      <p>{t('privacy.intro')} <Link to="/help/privacy">{t('privacy.notice_link')}</Link></p>
-      <DataExport status={exp.data ?? null} loading={exp.isPending} error={exp.isError ? exp.error : null} t={t} lang={lang} />
-      <CloseAccount t={t} lang={lang} />
+      <p className={styles.lead}>{t('privacy.intro')} <Link to="/help/privacy">{t('privacy.notice_link')}</Link></p>
+      <div className={styles.cols}>
+        <DataExport status={exp.data ?? null} loading={exp.isPending} error={exp.isError ? exp.error : null} t={t} lang={lang} />
+        <CloseAccount t={t} lang={lang} />
+      </div>
     </div>
   );
 }
@@ -81,7 +83,7 @@ function DataExport({ status, loading, error, t, lang }: { status: ExportStatus 
       {error !== null && !isApiError(error, 401) && <FormMessage kind="error">{errorText(error, t, lang)}</FormMessage>}
       {status?.status === 'preparing' && <p role="status">{t('export.preparing', { at: formatDateTime(Date.parse(status.requestedAt), lang) })}</p>}
       {status?.status === 'ready' && status.download && (
-        <div>
+        <div className={styles.ready}>
           <p>{t('export.ready', { until: formatDateTime(Date.parse(status.download.expiresAt), lang) })}</p>
           <p><a className={styles.primaryLink} href={fileHref(status.download.url)} download="trustbazaar-data.zip">{t('export.download')}</a></p>
           {status.expiresAt && <p className={styles.hint}>{t('export.deleted_on', { at: formatDateTime(Date.parse(status.expiresAt), lang) })}</p>}
@@ -136,7 +138,7 @@ function CloseAccount({ t, lang }: { t: T; lang: Lang }) {
     <section aria-labelledby="close-title" className={styles.panel}>
       <h2 id="close-title">{t('close.title')}</h2>
       <p>{t('close.intro')}</p>
-      <ul>
+      <ul className={styles.effects}>
         <li>{t('close.effect.sessions')}</li>
         <li>{t('close.effect.listings')}</li>
         <li>{t('close.effect.erasure')}</li>

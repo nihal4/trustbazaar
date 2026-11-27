@@ -258,6 +258,8 @@ export class SessionService {
     );
     let n = 0;
     for (const s of live) if (await this.endIn(m, s.id, reason, actor?.id ?? userId, ctx, actor?.type ?? 'user')) n++;
+    // U10-25: signing out everywhere (and every other end of all sessions: a password change, a suspension) also ends 'remember this device'
+    await m.query(`UPDATE identity.known_devices SET trusted_until = NULL WHERE user_id = $1 AND trusted_until IS NOT NULL`, [userId]);
     return n;
   }
 

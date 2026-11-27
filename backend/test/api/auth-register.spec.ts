@@ -2,15 +2,14 @@ import { randomUUID } from 'crypto';
 import Redis from 'ioredis';
 import { loadConfig } from '../../src/kernel/config/config';
 import { NOTIFICATIONS, ForwardedNotifications } from '../../src/modules/identity/adapters/notifications';
-import { hashOtp } from '../../src/modules/identity/crypto/otp';
 import { startApp, TestApp } from '../support/app';
 import { Browser } from '../support/browser';
 import { requireEnv } from '../support/env';
 import { IdentityFixtures } from '../support/identity';
 import { randomLocal } from '../support/phones';
 
-// U1-03: registration with phone OTP, and the e-mail link (Unit 1 sections 4.2 and 6.1), over HTTP against
-// PostgreSQL and Redis, through the real security pipeline.
+// U1-03, U10-25: registration over HTTP against PostgreSQL and Redis, through the real security pipeline: the name, the e-mail address
+// and the password, a code by e-mail, then the mobile number and the terms. The person is not signed in by it (Unit 1 section 6.1).
 const problem = async (r: Response) => {
   const b = await r.json();
   return { status: r.status, type: b.type, errors: b.errors };
@@ -21,18 +20,15 @@ describe('registration', () => {
   let t: TestApp;
   let fx: IdentityFixtures;
   let redis: Redis;
-  let origin: string;
   let legal: { termsVersion: string; privacyVersion: string };
   let notes: ForwardedNotifications;
-  const browser = () => new Browser(t, origin);
+  const browser = () => new Browser(t, loadConfig(process.env).publicOrigin);
 
   beforeAll(async () => {
     t = await startApp();
     fx = await IdentityFixtures.open();
     redis = new Redis(requireEnv('REDIS_URL'));
-    const cfg = loadConfig(process.env);
-    origin = cfg.publicOrigin;
-    legal = cfg.legal;
+    legal = loadConfig(process.env).legal;
     notes = t.app.get<ForwardedNotifications>(NOTIFICATIONS);
   });
   afterAll(async () => {
@@ -42,79 +38,99 @@ describe('registration', () => {
   });
 
   const details = (o: Partial<Record<string, unknown>> = {}) => ({
-    phone: newLocal(),
     email: `r-${randomUUID()}@tb.test`,
     displayName: 'Karim Hossain',
     password: 'green tea at dawn by the river',
-    ...legal,
-    adultConfirmed: true,
     ...o,
   });
+  const finish = (registrationId: string, d: { password: string }, o: Partial<Record<string, unknown>> = {}) => ({
+    registrationId, phone: newLocal(), password: d.password, ...legal, adultConfirmed: true, ...o,
+  });
   const e164 = (local: string) => `+88${local}`;
-  const sms = (phone: string, template: string) => notes.sent.filter((m) => m.channel === 'sms' && m.to === phone && m.template === template);
-  const codeFor = (phone: string) => sms(phone, 'otp_register').at(-1)!.vars.code;
+  const mails = (to: string, template: string) => notes.sent.filter((m) => m.channel === 'email' && m.to.toLowerCase() === to.toLowerCase() && m.template === template);
+  const codeFor = (email: string) => mails(email, 'otp_register_email').at(-1)!.vars.code;
   const wrong = (code: string) => String((Number(code) + 1) % 1_000_000).padStart(6, '0');
-  const userCount = async (phone: string) => (await fx.query(`SELECT count(*)::int AS n FROM identity.users WHERE phone_e164 = $1`, [phone]))[0].n;
+  const userByEmail = async (email: string) => (await fx.query(`SELECT * FROM identity.users WHERE email = $1`, [email]))[0];
 
   async function start(b: Browser, d = details()) {
     const r = await b.post('/auth/register', d);
     return { r, d, body: r.status === 202 ? await r.json() : undefined };
   }
+  async function confirmed(b = browser(), d = details()) {
+    const s = await start(b, d);
+    expect((await b.post('/auth/register/verify', { registrationId: s.body.registrationId, code: codeFor(d.email) })).status).toBe(204);
+    return s;
+  }
 
-  it('FR-ACC-02 a new number gets an OTP; the account exists only after the code, and the person is signed in', async () => {
+  it('FR-ACC-02 a new address gets a code by e-mail; the code alone creates no account and signs nobody in', async () => {
     const b = browser();
     const { r, d, body } = await start(b);
     expect(r.status).toBe(202);
     expect(body.registrationId).toMatch(/^[0-9a-f-]{36}$/);
     expect(new Date(body.resendAt).getTime()).toBeGreaterThan(Date.now());
-    expect(await userCount(e164(d.phone as string))).toBe(0);
+    expect(mails(d.email, 'otp_register_email')).toHaveLength(1);
+    expect(await userByEmail(d.email)).toBeUndefined();
 
-    expect((await b.post('/auth/register/verify', { registrationId: body.registrationId, code: codeFor(e164(d.phone as string)) })).status).toBe(204);
-    const [u] = await fx.query<{ id: string; phone_verified_at: Date; email_verified_at: Date | null; password_hash: string; display_name: string }>(
-      `SELECT id, phone_verified_at, email_verified_at, password_hash, display_name FROM identity.users WHERE phone_e164 = $1`,
-      [e164(d.phone as string)],
-    );
-    expect(u.phone_verified_at).toBeInstanceOf(Date);
-    expect(u.email_verified_at).toBeNull();
+    expect((await b.post('/auth/register/verify', { registrationId: body.registrationId, code: codeFor(d.email) })).status).toBe(204);
+    expect(await userByEmail(d.email)).toBeUndefined(); // the number and the terms are still to come
+    expect(b.cookies.has('__Host-tb_at')).toBe(false);
+    expect((await b.get('/auth/sessions')).status).toBe(401);
+  });
+
+  it('FR-ACC-01 the number, the age confirmation and the current terms create the account; the e-mail counts as verified; nobody is signed in; the person is told', async () => {
+    const b = browser();
+    const { d, body } = await confirmed();
+    const phone = newLocal();
+    const r = await b.post('/auth/register/complete', finish(body.registrationId, d, { phone }));
+    expect(r.status).toBe(204);
+    const u = await userByEmail(d.email);
+    expect(u).toMatchObject({ phone_e164: e164(phone), display_name: 'Karim Hossain', phone_verified_at: null });
+    expect(u.email_verified_at).toBeInstanceOf(Date);
     expect(u.password_hash).toMatch(/^\$argon2id\$/);
-    expect(u.display_name).toBe('Karim Hossain');
-    expect((await b.get('/auth/sessions')).status).toBe(200);
+    expect(b.cookies.has('__Host-tb_at')).toBe(false);
+    expect((await b.get('/auth/sessions')).status).toBe(401);
     const events = await fx.query(`SELECT event_type FROM identity.outbox WHERE aggregate_id = $1`, [u.id]);
     expect(events.map((e) => e.event_type)).toContain('identity.user.registered');
     const audit = await fx.query(`SELECT action FROM audit.events WHERE object_id = $1`, [u.id]);
     expect(audit.map((a) => a.action)).toContain('identity.account.registered');
+    const welcome = mails(d.email, 'account_created');
+    expect(welcome).toHaveLength(1);
+    expect(welcome[0].vars.link).toMatch(/\/signin$/);
+    // a second answer cannot make a second account: the sign-up is used up
+    expect((await problem(await b.post('/auth/register/complete', finish(body.registrationId, d)))).type).toBe('/problems/otp-expired');
   });
 
-  it('FR-ACC-04 the accepted terms and privacy versions are recorded with the time; age confirmation is required', async () => {
-    const b = browser();
-    const { d, body } = await start(b);
-    await b.post('/auth/register/verify', { registrationId: body.registrationId, code: codeFor(e164(d.phone as string)) });
+  it('FR-ACC-04 the accepted terms and privacy versions are recorded with the time; the age confirmation is required; an old version is refused and keeps the sign-up', async () => {
+    const { d, body } = await confirmed();
+    const old = await problem(await browser().post('/auth/register/complete', finish(body.registrationId, d, { termsVersion: 'old-1' })));
+    expect(old).toMatchObject({ status: 400, type: '/problems/validation-failed', errors: [{ field: 'termsVersion', reason: 'not-current' }] });
+    const minor = await problem(await browser().post('/auth/register/complete', finish(body.registrationId, d, { adultConfirmed: false })));
+    expect(minor).toMatchObject({ status: 400, errors: [{ field: 'adultConfirmed', reason: 'required' }] });
+    expect(await userByEmail(d.email)).toBeUndefined();
+
+    expect((await browser().post('/auth/register/complete', finish(body.registrationId, d))).status).toBe(204);
     const consents = await fx.query(
       `SELECT c.document, c.version, c.granted, c.recorded_at FROM identity.consents c JOIN identity.users u ON u.id = c.user_id
-       WHERE u.phone_e164 = $1 ORDER BY c.document`,
-      [e164(d.phone as string)],
+       WHERE u.email = $1 ORDER BY c.document`,
+      [d.email],
     );
     expect(consents).toEqual([
       { document: 'privacy', version: legal.privacyVersion, granted: true, recorded_at: expect.any(Date) },
       { document: 'terms', version: legal.termsVersion, granted: true, recorded_at: expect.any(Date) },
     ]);
-
-    const old = await problem((await start(browser(), details({ termsVersion: 'old-1' }))).r);
-    expect(old).toMatchObject({ status: 400, type: '/problems/validation-failed', errors: [{ field: 'termsVersion', reason: 'not-current' }] });
-    const minor = await problem((await start(browser(), details({ adultConfirmed: false }))).r);
-    expect(minor).toMatchObject({ status: 400, errors: [{ field: 'adultConfirmed', reason: 'required' }] });
   });
 
   it('FR-ACC-01 only a Bangladeshi mobile number is accepted, in local or international form', async () => {
+    const { d, body } = await confirmed();
     for (const phone of ['+14155550100', '029123456', '01212345678']) {
-      expect(await problem((await start(browser(), details({ phone }))).r)).toMatchObject({
+      expect(await problem(await browser().post('/auth/register/complete', finish(body.registrationId, d, { phone })))).toMatchObject({
         status: 400, errors: [{ field: 'phone', reason: 'not-bangladeshi-mobile' }],
       });
     }
-    expect((await start(browser(), details({ phone: e164(newLocal()) }))).r.status).toBe(202);
+    expect((await browser().post('/auth/register/complete', finish(body.registrationId, d, { phone: e164(newLocal()) }))).status).toBe(204);
   });
 
-  it('SEC-AUTH-02 a short, common or personal password is refused before any code is sent', async () => {
+  it('SEC-AUTH-02 a short, common or personal password is refused before any code is sent; one with the number in it is refused at the last step', async () => {
     for (const [password, reason] of [
       ['short phrase', 'too-short'],
       ['123456789012345', 'common'],
@@ -125,133 +141,115 @@ describe('registration', () => {
       expect(await problem((await start(browser(), d)).r)).toMatchObject({
         status: 422, type: '/problems/password-rejected', errors: [{ field: 'password', reason }],
       });
-      expect(sms(e164(d.phone as string), 'otp_register')).toHaveLength(0);
+      expect(mails(d.email, 'otp_register_email')).toHaveLength(0);
     }
+    const phone = newLocal();
+    const d = details({ password: `call me on ${phone} now` });
+    const s = await confirmed(browser(), d);
+    expect(await problem(await browser().post('/auth/register/complete', finish(s.body.registrationId, d, { phone })))).toMatchObject({
+      status: 422, errors: [{ field: 'password', reason: 'context' }],
+    });
+    // a password other than the first step's is refused
+    expect(await problem(await browser().post('/auth/register/complete', finish(s.body.registrationId, d, { password: 'another long phrase here' })))).toMatchObject({
+      status: 400, errors: [{ field: 'password', reason: 'mismatch' }],
+    });
   });
 
-  it('SEC-AUTH-06 a new number, an existing number and an existing e-mail get identical first answers', async () => {
+  it('SEC-AUTH-06 a new and an existing e-mail address get identical first answers; the owner is told and no code is sent', async () => {
     const owner = await fx.account();
     const fresh = await start(browser());
-    const sameNumber = await start(browser(), details({ phone: owner.local }));
-    const sameEmail = await start(browser(), details({ email: owner.email.toLowerCase() }));
-    for (const s of [fresh, sameNumber, sameEmail]) {
+    const same = await start(browser(), details({ email: owner.email.toUpperCase() }));
+    for (const s of [fresh, same]) {
       expect(s.r.status).toBe(202);
       expect(Object.keys(s.body).sort()).toEqual(['registrationId', 'resendAt']);
     }
-    // FR-ACC-03: the existing number gets no code; its owner is told instead.
-    expect(sms(owner.phone, 'otp_register')).toHaveLength(0);
-    expect(sms(owner.phone, 'register_attempt_existing_number')).toHaveLength(1);
+    expect(mails(owner.email, 'otp_register_email')).toHaveLength(0);
+    expect(mails(owner.email, 'register_attempt_existing_email')).toHaveLength(1);
+    // no code can ever be right for it, and nothing leaks about why
+    const r = await problem(await browser().post('/auth/register/verify', { registrationId: same.body.registrationId, code: '123456' }));
+    expect(r).toMatchObject({ status: 400, type: '/problems/otp-failed' });
   });
 
-  it('FR-ACC-02 the person picks where the sign-up code goes: the phone, the e-mail address, or both, and the same code works', async () => {
-    const mails = (to: string) => notes.sent.filter((m) => m.channel === 'email' && m.to === to && m.template === 'otp_register_email');
-    const byEmail = details({ channel: 'email' });
-    expect((await start(browser(), byEmail)).r.status).toBe(202);
-    expect(sms(e164(byEmail.phone as string), 'otp_register')).toHaveLength(0);
-    expect(mails((byEmail.email as string).toLowerCase())).toHaveLength(1);
-
-    const both = details({ channel: 'both' });
-    expect((await start(browser(), both)).r.status).toBe(202);
-    expect(sms(e164(both.phone as string), 'otp_register')[0].vars.code).toBe(mails((both.email as string).toLowerCase())[0].vars.code);
-
-    expect((await start(browser(), details({ channel: 'post' }))).r.status).toBe(400);
-  });
-
-  it('FR-ACC-03 a registration with an e-mail of an open account is refused generically, and that owner is told', async () => {
+  it('FR-ACC-03 a number of an open account is refused at the last step, generically, and its owner is told', async () => {
     const owner = await fx.account();
-    const b = browser();
-    const { d, body } = await start(b, details({ email: owner.email.toUpperCase() }));
-    const r = await problem(await b.post('/auth/register/verify', { registrationId: body.registrationId, code: codeFor(e164(d.phone as string)) }));
+    const { d, body } = await confirmed();
+    const r = await problem(await browser().post('/auth/register/complete', finish(body.registrationId, d, { phone: owner.local })));
     expect(r).toMatchObject({ status: 409, type: '/problems/registration-refused' });
-    expect(await userCount(e164(d.phone as string))).toBe(0);
-    expect(notes.sent.filter((m) => m.channel === 'email' && m.to.toLowerCase() === owner.email.toLowerCase() && m.template === 'register_attempt_existing_email')).toHaveLength(1);
-    expect(b.cookies.has('__Host-tb_at')).toBe(false);
+    expect(await userByEmail(d.email)).toBeUndefined();
+    expect(notes.sent.filter((m) => m.channel === 'sms' && m.to === owner.phone && m.template === 'register_attempt_existing_number')).toHaveLength(1);
+    expect(mails(d.email, 'account_created')).toHaveLength(0);
   });
 
-  it('SEC-AUTH-09 the OTP is stored only as an HMAC under the pepper, and works once', async () => {
+  it('SEC-AUTH-09 the code is stored only as an HMAC (never in the clear), and works once', async () => {
     const b = browser();
     const { d, body } = await start(b);
-    const code = codeFor(e164(d.phone as string));
-    const [ch] = await fx.query<{ code_hash: Buffer }>(`SELECT code_hash FROM identity.otp_challenges WHERE pending_registration_id = $1`, [body.registrationId]);
-    expect(ch.code_hash.equals(hashOtp(loadConfig(process.env).secrets.otpPepper.reveal(), code))).toBe(true);
+    const code = codeFor(d.email);
+    const stored = (await redis.get(`reg:pending:${body.registrationId}`))!;
+    expect(stored).not.toContain(code);
+    expect(stored).not.toContain(d.password);
     expect((await b.post('/auth/register/verify', { registrationId: body.registrationId, code })).status).toBe(204);
     const again = await problem(await browser().post('/auth/register/verify', { registrationId: body.registrationId, code }));
     expect(again).toMatchObject({ status: 410, type: '/problems/otp-expired' });
   });
 
-  it('FR-ACC-03 ten simultaneous entries of the right code create exactly one account', async () => {
-    const { d, body } = await start(browser());
-    const code = codeFor(e164(d.phone as string));
-    const answers = await Promise.all(
-      Array.from({ length: 10 }, () => browser().post('/auth/register/verify', { registrationId: body.registrationId, code })),
-    );
+  it('FR-ACC-03 ten simultaneous completions create exactly one account', async () => {
+    const { d, body } = await confirmed();
+    const phone = newLocal();
+    const answers = await Promise.all(Array.from({ length: 10 }, () => browser().post('/auth/register/complete', finish(body.registrationId, d, { phone }))));
     expect(answers.map((a) => a.status).sort()).toEqual([204, ...Array(9).fill(410)]);
-    expect(await userCount(e164(d.phone as string))).toBe(1);
+    expect((await fx.query(`SELECT count(*)::int AS n FROM identity.users WHERE email = $1`, [d.email]))[0].n).toBe(1);
   });
 
-  it('SEC-AUTH-09 five wrong codes end the challenge, also for the right code afterwards', async () => {
+  it('FR-ACC-02 the number and the terms cannot be completed before the code is right', async () => {
+    const { d, body } = await start(browser());
+    expect((await problem(await browser().post('/auth/register/complete', finish(body.registrationId, d)))).type).toBe('/problems/otp-expired');
+    expect(await userByEmail(d.email)).toBeUndefined();
+  });
+
+  it('SEC-AUTH-09 five wrong codes end the sign-up, also for the right code afterwards', async () => {
     const b = browser();
     const { d, body } = await start(b);
-    const code = codeFor(e164(d.phone as string));
-    for (let i = 0; i < 5; i++) {
+    const code = codeFor(d.email);
+    for (let i = 0; i < 4; i++) {
       expect(await problem(await b.post('/auth/register/verify', { registrationId: body.registrationId, code: wrong(code) }))).toMatchObject({
         status: 400, type: '/problems/otp-failed',
       });
     }
+    expect((await problem(await b.post('/auth/register/verify', { registrationId: body.registrationId, code: wrong(code) }))).type).toBe('/problems/otp-expired');
     expect((await problem(await b.post('/auth/register/verify', { registrationId: body.registrationId, code }))).type).toBe('/problems/otp-expired');
-    const [ch] = await fx.query(`SELECT attempts FROM identity.otp_challenges WHERE pending_registration_id = $1`, [body.registrationId]);
-    expect(ch.attempts).toBe(5);
   });
 
   it('SEC-AUTH-09 an expired code is refused', async () => {
     const b = browser();
     const { d, body } = await start(b);
-    await fx.query(
-      `UPDATE identity.otp_challenges SET created_at = now() - interval '10 minutes', expires_at = now() - interval '5 minutes'
-       WHERE pending_registration_id = $1`,
-      [body.registrationId],
-    );
-    const r = await problem(await b.post('/auth/register/verify', { registrationId: body.registrationId, code: codeFor(e164(d.phone as string)) }));
-    expect(r.type).toBe('/problems/otp-expired');
+    const key = `reg:pending:${body.registrationId}`;
+    const p = JSON.parse((await redis.get(key))!);
+    await redis.set(key, JSON.stringify({ ...p, until: Date.now() - 1000 }), 'EX', 60);
+    expect((await problem(await b.post('/auth/register/verify', { registrationId: body.registrationId, code: codeFor(d.email) }))).type).toBe('/problems/otp-expired');
   });
 
-  it('SEC-AUTH-09 a resend waits for the resend time, replaces the code, and sends per number are limited (CP-05)', async () => {
+  it('SEC-AUTH-09 a resend waits for the resend time, replaces the code, and sends per address are limited (CP-05)', async () => {
     const b = browser();
     const { d, body } = await start(b);
-    const phone = e164(d.phone as string);
-    const first = codeFor(phone);
+    const first = codeFor(d.email);
     const early = await b.post('/auth/register/resend', { registrationId: body.registrationId });
     expect(early.status).toBe(429);
     expect(Number(early.headers.get('retry-after'))).toBeGreaterThan(0);
 
-    await redis.del(`otp:gap:${phone}`);
+    const gap = `otp:gap:email:${d.email}`;
+    await redis.del(gap);
     expect((await browser().post('/auth/register/resend', { registrationId: body.registrationId })).status).toBe(202);
-    const second = codeFor(phone);
-    expect(sms(phone, 'otp_register')).toHaveLength(2);
+    const second = codeFor(d.email);
+    expect(mails(d.email, 'otp_register_email')).toHaveLength(2);
     if (first !== second) {
       expect((await problem(await b.post('/auth/register/verify', { registrationId: body.registrationId, code: first }))).type).toBe('/problems/otp-failed');
     }
-    await redis.del(`otp:gap:${phone}`);
+    await redis.del(gap);
     expect((await browser().post('/auth/register/resend', { registrationId: body.registrationId })).status).toBe(202);
-    await redis.del(`otp:gap:${phone}`);
+    await redis.del(gap);
     const fourth = await browser().post('/auth/register/resend', { registrationId: body.registrationId });
-    expect(fourth.status).toBe(429); // CP-05: 3 sends per number per hour
-    expect(sms(phone, 'otp_register')).toHaveLength(3);
-    expect((await b.post('/auth/register/verify', { registrationId: body.registrationId, code: codeFor(phone) })).status).toBe(204);
-  });
-
-  it('FR-ACC-02 the e-mail link verifies the address once', async () => {
-    const b = browser();
-    const { d, body } = await start(b);
-    await b.post('/auth/register/verify', { registrationId: body.registrationId, code: codeFor(e164(d.phone as string)) });
-    const mail = notes.sent.filter((m) => m.channel === 'email' && m.to === d.email && m.template === 'email_verify').at(-1)!;
-    expect(mail.vars.link.startsWith(`${origin}/verify-email#token=`)).toBe(true);
-    const token = mail.vars.link.split('#token=')[1];
-
-    expect((await browser().post('/auth/email/verify', { token })).status).toBe(204);
-    const [u] = await fx.query(`SELECT email_verified_at FROM identity.users WHERE phone_e164 = $1`, [e164(d.phone as string)]);
-    expect(u.email_verified_at).toBeInstanceOf(Date);
-    expect(await problem(await browser().post('/auth/email/verify', { token }))).toMatchObject({ status: 410, type: '/problems/link-invalid' });
-    expect((await browser().post('/auth/email/verify', { token: 'A'.repeat(43) })).status).toBe(410);
+    expect(fourth.status).toBe(429); // CP-05: 3 sends per address per hour
+    expect(mails(d.email, 'otp_register_email')).toHaveLength(3);
+    expect((await b.post('/auth/register/verify', { registrationId: body.registrationId, code: codeFor(d.email) })).status).toBe(204);
   });
 });

@@ -6,6 +6,7 @@ import { TbConfig } from '../../../kernel/config/config';
 import { TB_CONFIG } from '../../../kernel/config/config.provider';
 import { EMAIL_ADAPTER, EmailAdapter, SMS_ADAPTER, SmsAdapter } from '../adapters/channels';
 import type { NotificationPort, SentMessage } from '../ports';
+import { renderEmailHtml } from './email-layout';
 
 // NotificationPort for Unit 1 (docs/design/06_chat_notifications.pdf sections 3.3 and 7.2; I-3, I-36; U6-05): the
 // one-time codes, links and account notices Unit 1 sends at once, outside the notification history. Their texts
@@ -18,6 +19,10 @@ const BOTH = (bn: string, en: string): [string, string] => [bn, en];
 
 export const MESSAGES: Record<string, Texts> = {
   otp_register: { body: BOTH('TrustBazaar: আপনার নিবন্ধনের কোড {code}। {minutes} মিনিট বৈধ। কাউকে জানাবেন না।', 'TrustBazaar: your registration code is {code}. Valid for {minutes} minutes. Never share it.') },
+  otp_signin_email: {
+    subject: BOTH('আপনার TrustBazaar সাইন-ইন কোড', 'Your TrustBazaar sign-in code'),
+    body: BOTH('সাইন ইন করতে এই কোডটি দিন: {code}। {minutes} মিনিট বৈধ। আপনি সাইন ইন না করলে কাউকে কোডটি জানাবেন না এবং পাসওয়ার্ড বদলে নিন।', 'Enter this code to sign in: {code}. Valid for {minutes} minutes. If this was not you, never share the code and change your password.'),
+  },
   otp_register_email: {
     subject: BOTH('আপনার TrustBazaar নিবন্ধনের কোড', 'Your TrustBazaar registration code'),
     body: BOTH('আপনার নিবন্ধনের কোড {code}। {minutes} মিনিট বৈধ। কাউকে জানাবেন না।', 'Your registration code is {code}. Valid for {minutes} minutes. Never share it.'),
@@ -52,6 +57,10 @@ export const MESSAGES: Record<string, Texts> = {
     subject: BOTH('সময় পেরিয়ে যাওয়া অভিযোগ', 'Disputes past their decision target'),
     body: BOTH('TrustBazaar: {count}টি অভিযোগের সিদ্ধান্তের লক্ষ্য সময় পেরিয়ে গেছে। সবচেয়ে পুরনোটি {oldest_days} দিন আগে খোলা হয়েছিল। স্টাফ কনসোলের অভিযোগের তালিকা দেখুন।', 'TrustBazaar: {count} disputes are past their decision target. The oldest was opened {oldest_days} days ago. See the disputes queue in the staff console.'),
   },
+  account_created: {
+    subject: BOTH('আপনার TrustBazaar অ্যাকাউন্ট তৈরি হয়েছে', 'Your TrustBazaar account is ready'),
+    body: BOTH('{name}, আপনার TrustBazaar অ্যাকাউন্ট তৈরি হয়েছে। সাইন ইন করতে নিচের বোতাম বা লিংকটি খুলুন: {link}\nআপনি এটি না খুলে থাকলে সাপোর্টে জানান।', '{name}, your TrustBazaar account has been created. Open the button or link below to sign in: {link}\nIf you did not create it, tell support.'),
+  },
   register_attempt_existing_email: {
     subject: BOTH('নিবন্ধনের চেষ্টা', 'A registration attempt'),
     body: BOTH('কেউ এই ই-মেইল দিয়ে নতুন TrustBazaar অ্যাকাউন্ট খোলার চেষ্টা করেছে। এটি আপনি হলে সাইন ইন করুন।', 'Someone tried to open a new TrustBazaar account with this e-mail address. If it was you, sign in instead.'),
@@ -60,11 +69,14 @@ export const MESSAGES: Record<string, Texts> = {
 
 const fill = (t: string, vars: Record<string, string>) => t.replace(/\{([a-z_]+)\}/g, (_, k: string) => vars[k] ?? '');
 /** Both languages, Bangla first. */
-export function compose(template: string, vars: Record<string, string>): { subject: string; text: string } {
+export function compose(template: string, vars: Record<string, string>): { subject: string; text: string; html: string } {
   const m = MESSAGES[template];
   if (!m) throw new Error(`no message text for ${template}`);
   const subject = m.subject ? `${m.subject[0]} / ${m.subject[1]}` : 'TrustBazaar';
-  return { subject, text: `${fill(m.body[0], vars)}\n\n${fill(m.body[1], vars)}` };
+  const [bn, en] = [fill(m.body[0], vars), fill(m.body[1], vars)];
+  // the HTML is the same message in the one layout (email-layout.ts); a link message names its button in both languages
+  const button = vars.link ? 'Open / খুলুন' : undefined;
+  return { subject, text: `${bn}\n\n${en}`, html: renderEmailHtml({ subject, bn, en, vars: button ? { ...vars, button } : vars }) };
 }
 
 @Injectable()
@@ -99,9 +111,9 @@ export class DirectMessages implements NotificationPort {
   }
 
   async sendEmail(address: string, template: string, vars: Record<string, string>): Promise<void> {
-    const { subject, text } = compose(template, vars);
+    const { subject, text, html } = compose(template, vars);
     this.keep({ channel: 'email', to: address, template, vars });
-    await this.email.send(address, subject, text);
+    await this.email.send(address, subject, text, html);
   }
 
   /** The number's HMAC for the SMS log, so rate checks and audits never need the number itself. */

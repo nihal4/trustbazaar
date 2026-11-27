@@ -16,6 +16,7 @@ test('SEC-ABU-02 I-64 a login asked for the human check: the page solves it, wit
 
   await page.goto('/signin');
   await page.getByLabel('Mobile number or e-mail').fill(f.seller.local);
+  await page.getByRole('button', { name: 'Continue' }).click();
   for (let i = 0; i < 4; i++) {
     await page.getByLabel('Password', { exact: true }).fill(`not the password ${i}`);
     await page.getByRole('button', { name: 'Sign in' }).click();

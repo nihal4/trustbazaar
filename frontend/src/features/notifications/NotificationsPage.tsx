@@ -1,10 +1,10 @@
 // The notification centre and its preferences (FR-NTF-04, FR-NTF-05; section 3.3, /notifications). Notices
 // arrive from Unit 6 already written in the user's language; their text is shown as plain text, and
 // each links to the object it concerns. Opening one marks it read; "Mark all as read" does all of them.
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { formatDateTime } from '../../lib/time.js';
+import { dateParts } from '../../lib/time.js';
 import { toLocalDigits } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
 import { AccountTabs } from '../../shared/AccountTabs';
@@ -16,6 +16,7 @@ import { useMe } from '../../shared/me';
 import {
   fetchNotifications, NOTIFICATIONS_KEY, PREFERENCES_KEY, type NotificationPage, type NotificationView, type Preferences, type Subject,
 } from '../../shared/notifications';
+import { Popup } from '../../shared/Popup';
 import { isApiError } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import en from '../../messages/en/notifications.json';
@@ -57,8 +58,11 @@ export function Component() {
     <div className={styles.page}>
       <AccountTabs t={t} />
       <h1>{t('notifications.title')}</h1>
-      <List t={t} lang={lang} />
-      <PreferencesForm />
+      {/* the notices on the left, the settings on the right, divided by one line (as the profile, the dashboard and the security page) */}
+      <div className={styles.cols}>
+        <List t={t} lang={lang} />
+        <PreferencesForm />
+      </div>
     </div>
   );
 }
@@ -68,6 +72,7 @@ function List({ t, lang }: { t: ReturnType<typeof useT>['t']; lang: Lang }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [message, setMessage] = useState<string | null>(null);
+  const [all, setAll] = useState(false);
 
   const pages = useInfiniteQuery({
     queryKey: [...NOTIFICATIONS_KEY, 'list'],
@@ -90,13 +95,33 @@ function List({ t, lang }: { t: ReturnType<typeof useT>['t']; lang: Lang }) {
     if (to) navigate(to);
   };
 
+  // the page shows every unread notice: older pages are read until the unread count is reached
+  const loaded = pages.data?.pages.flatMap((p) => p.items).filter((n) => !n.readAt).length ?? 0;
+  const unreadTotal = pages.data?.pages[0]?.unread ?? 0;
+  useEffect(() => {
+    if (pages.hasNextPage && !pages.isFetchingNextPage && loaded < unreadTotal) void pages.fetchNextPage();
+  }, [pages, loaded, unreadTotal]);
+
   if (pages.isPending) return <p role="status">{t('shell.loading')}</p>;
   if (pages.isError) return <FormMessage kind="error">{errorText(pages.error, t, lang)}</FormMessage>;
 
   const items = pages.data.pages.flatMap((p) => p.items);
   const unread = pages.data.pages[0]?.unread ?? 0;
+  const fresh = items.filter((n) => !n.readAt);
+  const row = (n: NotificationView) => (
+    <li key={n.id} className={n.readAt ? styles.read : styles.unread}>
+      <button type="button" className={styles.item} onClick={() => open(n)}>
+        <span className={styles.main}>
+          {!n.readAt && <span className={styles.new}>{t('notifications.new')}</span>}
+          <span className={styles.title}>{n.title}</span>
+          <span className={styles.body}>{n.body}</span>
+        </span>
+        <When iso={n.createdAt} lang={lang} />
+      </button>
+    </li>
+  );
   return (
-    <section aria-labelledby="notifications-list-title">
+    <section aria-labelledby="notifications-list-title" className={styles.listSection}>
       <h2 id="notifications-list-title" className={styles.visuallyHidden}>{t('notifications.list')}</h2>
       <div className={styles.toolbar}>
         <p role="status">
@@ -108,28 +133,39 @@ function List({ t, lang }: { t: ReturnType<typeof useT>['t']; lang: Lang }) {
         )}
       </div>
       {message && <FormMessage kind="error">{message}</FormMessage>}
+      {/* the page holds what is new; a notice that has been read is moved to the popup with the rest */}
       {items.length === 0
         ? <p>{t('notifications.empty')}</p>
         : (
-          <ul className={styles.list}>
-            {items.map((n) => (
-              <li key={n.id} className={n.readAt ? styles.read : styles.unread}>
-                <button type="button" className={styles.item} onClick={() => open(n)}>
-                  {!n.readAt && <span className={styles.new}>{t('notifications.new')}</span>}
-                  <span className={styles.title}>{n.title}</span>
-                  <span className={styles.body}>{n.body}</span>
-                  <span className={styles.time}>{formatDateTime(Date.parse(n.createdAt), lang)}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
+          <>
+            {fresh.length > 0
+              ? <ul className={styles.list}>{fresh.map(row)}</ul>
+              : <p className={styles.none}>{t('notifications.none_new')}</p>}
+            <button type="button" className={styles.secondary} aria-haspopup="dialog" onClick={() => setAll(true)}>{t('notifications.show_all')}</button>
+          </>
         )}
-      {pages.hasNextPage && (
-        <button type="button" className={styles.secondary} onClick={() => void pages.fetchNextPage()} disabled={pages.isFetchingNextPage}>
-          {t('notifications.more')}
-        </button>
+      {all && (
+        <Popup id="notifications-popup" title={t('notifications.list')} closeLabel={t('notifications.close')} wide onClose={() => setAll(false)}>
+          <ul className={`${styles.list} ${styles.listPopup}`}>{items.map(row)}</ul>
+          {pages.hasNextPage && (
+            <button type="button" className={styles.secondary} onClick={() => void pages.fetchNextPage()} disabled={pages.isFetchingNextPage}>
+              {t('notifications.more')}
+            </button>
+          )}
+        </Popup>
       )}
     </section>
+  );
+}
+
+/** The day and the time of a notice in Dhaka time, right-aligned: the date, then the weekday and the time (NFR-USE-08). */
+function When({ iso, lang }: { iso: string; lang: Lang }) {
+  const p = dateParts(Date.parse(iso), lang);
+  return (
+    <time dateTime={iso} className={styles.when}>
+      <span className={styles.whenDate}>{p.day} {p.month} {p.year}</span>
+      <span className={styles.whenTime}>{p.weekday}, {p.time} {p.period}</span>
+    </time>
   );
 }
 

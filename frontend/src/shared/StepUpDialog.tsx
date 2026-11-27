@@ -1,25 +1,25 @@
 // The step-up dialog (SEC-AUTH-08; Unit 1 section 6.3). It starts the step-up for the action, asks for
 // the code (an authenticator code or recovery code with MFA on, otherwise an SMS code), and hands the
-// grant back to the waiting request. Native <dialog>: focus moves in, Escape cancels, and focus returns
-// to where it was (section 7).
+// grant back to the waiting request. It is the shared Popup (a sheet over a blurred page, ruled buttons): focus moves in,
+// Escape cancels, and focus returns to where it was (section 7). It never stands on another popup: a page that asks for a
+// step-up hides its own popup until the answer (U10-25).
+import { formatWait } from './wait';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useApi } from './api';
 import { untilAfter, untilServerTime, useSecondsLeft } from './countdown';
 import { errorText } from './errors';
-import { FormMessage, SubmitButton, TextField } from './form';
+import { CodeField, FormMessage } from './form';
 import { useLanguage } from './language/Language';
-import { toAsciiDigits, toLocalDigits } from '../lib/money.js';
+import { toAsciiDigits } from '../lib/money.js';
 import { isApiError, problemName } from './problems';
+import { Popup, PopupActions } from './Popup';
 import { StepUpCancelled, type StepUpRequest } from './stepUp';
-import styles from './shell.module.css';
 
 type Started = { method: 'totp' } | { method: 'sms'; resendAt?: string };
 
 export function StepUpDialog({ request }: { request: StepUpRequest }) {
   const api = useApi();
   const { t, lang } = useLanguage();
-  const dialog = useRef<HTMLDialogElement>(null);
-  const opener = useRef<Element | null>(null);
   const startedFor = useRef<StepUpRequest | null>(null);
   const [started, setStarted] = useState<Started | null>(null);
   const [code, setCode] = useState('');
@@ -43,19 +43,12 @@ export function StepUpDialog({ request }: { request: StepUpRequest }) {
   };
 
   useEffect(() => {
-    if (startedFor.current !== request) opener.current = document.activeElement;
-    const d = dialog.current;
-    if (d && typeof d.showModal === 'function' && !d.open) d.showModal();
-    else d?.setAttribute('open', '');
     // Started once per request, also when development mode runs this effect twice: a second start
     // would send a second SMS code.
     if (startedFor.current !== request) {
       startedFor.current = request;
       void start();
     }
-    return () => {
-      if (opener.current instanceof HTMLElement) opener.current.focus();
-    };
   }, [request]); // once per request
 
   const cancel = () => request.reject(new StepUpCancelled());
@@ -77,29 +70,26 @@ export function StepUpDialog({ request }: { request: StepUpRequest }) {
     }
   };
 
-  const instruction = started?.method === 'totp' ? t('stepup.totp') : started?.method === 'sms' ? t('stepup.sms') : t('shell.loading');
+  // while the start has not been answered "Loading…" is said; when it was refused (a wait, for instance) the refusal alone is said, not both
+  const instruction = started?.method === 'totp' ? t('stepup.totp') : started?.method === 'sms' ? t('stepup.sms') : error ? null : t('shell.loading');
   return (
-    <dialog ref={dialog} className={styles.dialog} aria-labelledby="stepup-title"
-      onCancel={(e) => { e.preventDefault(); cancel(); }}>
+    <Popup id="stepup" title={t("stepup.title")} closeLabel={t("stepup.cancel")} decorativeClose isStepUp busy={busy} onClose={cancel}>
       <form onSubmit={submit}>
-        <h2 id="stepup-title">{t('stepup.title')}</h2>
-        <p>{instruction}</p>
+        {instruction && <p>{instruction}</p>}
         {error && <FormMessage kind="error">{error}</FormMessage>}
-        <TextField id="stepup-code" label={t('stepup.code_label')} value={code} onChange={setCode}
-          autoComplete="one-time-code" inputMode={started?.method === 'sms' ? 'numeric' : 'text'} autoFocus
-          maxLength={40} required />
-        <div className={styles.dialogActions}>
-          <SubmitButton busy={busy} disabled={!started || waitFor > 0}>
-            {waitFor > 0 ? t('stepup.wait', { seconds: toLocalDigits(String(waitFor), lang) }) : t('stepup.confirm')}
-          </SubmitButton>
+        <CodeField id="stepup-code" label={t('stepup.code_label')} value={code} onChange={setCode} data-autofocus required allowRecovery={started?.method !== 'sms'} />
+        <PopupActions>
+          <button type="submit" disabled={busy || !started || waitFor > 0} aria-busy={busy || undefined}>
+            {waitFor > 0 ? t('stepup.wait', { time: formatWait(waitFor, lang) }) : t('stepup.confirm')}
+          </button>
           {started?.method === 'sms' && (
             <button type="button" onClick={() => void start()} disabled={resendIn > 0}>
-              {resendIn > 0 ? t('stepup.resend_in', { seconds: toLocalDigits(String(resendIn), lang) }) : t('stepup.resend')}
+              {resendIn > 0 ? t('stepup.resend_in', { time: formatWait(resendIn, lang) }) : t('stepup.resend')}
             </button>
           )}
           <button type="button" onClick={cancel}>{t('stepup.cancel')}</button>
-        </div>
+        </PopupActions>
       </form>
-    </dialog>
+    </Popup>
   );
 }

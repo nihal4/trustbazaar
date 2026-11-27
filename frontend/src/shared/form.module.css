@@ -85,12 +85,13 @@
 }
 
 .primary {
+  transition: background-color 120ms ease, border-color 120ms ease;
   min-height: 48px;
   padding: 0 1.75rem;
-  border: 0;
-  border-radius: var(--tb-radius-pill);
-  background: var(--tb-accent);
-  color: var(--tb-accent-text);
+  border: 1px solid var(--tb-btn-line);
+  border-radius: var(--tb-btn-radius);
+  background: var(--tb-btn-bg);
+  color: var(--tb-btn-fg);
   font: inherit;
   font-weight: 600;
   font-size: 1.0625rem;
@@ -102,8 +103,19 @@
   outline-offset: 3px;
 }
 
+.primary:hover:not(:disabled) {
+  background: var(--tb-btn-bg-hover);
+}
+
+.primary:active:not(:disabled) {
+  background: var(--tb-btn-bg-hover);
+  border-color: var(--tb-btn-fg);
+}
+
 .primary:disabled {
-  background: var(--tb-muted);
+  background: transparent;
+  border-color: var(--tb-muted);
+  color: var(--tb-muted);
   cursor: not-allowed;
 }
 
@@ -141,4 +153,235 @@ div.info > :first-child,
 div.success > :first-child,
 div.error > :first-child {
   margin-top: 0;
+}
+
+/* U10-25 (redesign v3): in the dark user app a field is a ruled line, not a box: a hairline underline, the hot-colour line on focus; its text starts on the
+   label's own edge; the caret and the selection are the hot colour; a browser's autofill does not paint its own box over the line */
+:root[data-theme='dark'] .field input {
+  border: 0;
+  border-bottom: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: none;
+  padding-inline: 0;
+  caret-color: var(--tb-hot);
+  transition: border-color 120ms ease;
+}
+
+:root[data-theme='dark'] .field input::selection,
+:root[data-theme='dark'] .field label::selection {
+  background: rgba(255, 107, 53, 0.35);
+  color: var(--tb-text);
+}
+
+:root[data-theme='dark'] .field input:focus-visible {
+  outline: 0;
+  border-bottom-color: var(--tb-hot);
+  box-shadow: inset 0 -2px 0 var(--tb-hot);
+}
+
+:root[data-theme='dark'] .field input[aria-invalid='true'] {
+  border: 0;
+  border-bottom: 2px solid var(--tb-error);
+}
+
+:root[data-theme='dark'] .field input:-webkit-autofill,
+:root[data-theme='dark'] .field input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--tb-text);
+  caret-color: var(--tb-hot);
+  box-shadow: 0 0 0 1000px var(--tb-bg) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/* a box to tick: square, a hairline, a vermilion square inside when ticked; the row is 44 px high to tap */
+:root[data-theme='dark'] .checkbox {
+  align-items: center;
+  min-height: 44px;
+}
+
+:root[data-theme='dark'] .checkbox input {
+  appearance: none;
+  display: grid;
+  place-content: center;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  border: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: none;
+  cursor: pointer;
+  transition: border-color 120ms ease;
+}
+
+:root[data-theme='dark'] .checkbox input::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background: var(--tb-hot);
+  transform: scale(0);
+  transition: transform 120ms ease;
+}
+
+:root[data-theme='dark'] .checkbox input:checked {
+  border-color: var(--tb-hot);
+}
+
+:root[data-theme='dark'] .checkbox input:checked::after {
+  transform: scale(1);
+}
+
+:root[data-theme='dark'] .checkbox input:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: 2px;
+}
+
+:root[data-theme='dark'] .checkbox label {
+  cursor: pointer;
+}
+
+/* the eye of a password field (U10-25): inside the field's right edge, 44 px to tap */
+.passwordWrap {
+  position: relative;
+  display: flex;
+  max-width: 32rem;
+}
+
+.passwordWrap input {
+  padding-right: 3rem;
+}
+
+.eye {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  color: var(--tb-muted);
+  cursor: pointer;
+}
+
+.eye:hover,
+.eye[aria-pressed='true'] {
+  color: var(--tb-text);
+}
+
+.eye:focus-visible {
+  outline: 2px solid var(--tb-focus, var(--tb-accent));
+  outline-offset: -2px;
+}
+
+/* busy is not off: while an answer is awaited the main button keeps its look, with the progress cursor; only a lockout (disabled without busy) goes grey */
+.primary[aria-busy='true']:disabled {
+  background: var(--tb-btn-bg);
+  border-color: var(--tb-btn-line);
+  color: var(--tb-btn-fg);
+  cursor: progress;
+}
+
+/* the eye's glyph stands on the field's right edge, the box keeps its 44 px */
+.eye {
+  justify-items: end;
+}
+
+/* A one-time code in cells divided by lines (U10-25): | 4 | 8 | 2 | 0 | 1 | 7 |, in the middle of its column, with the lines between the cells and nothing under them. The real input
+   lies over the cells, invisible, and takes the typing, the pasting and the autofill. */
+.codeGroup {
+  position: relative;
+  align-self: center;
+  width: 100%;
+  max-width: 22rem;
+  margin-block: 0.25rem;
+}
+
+.field .codeGroup > input.codeInput {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-width: none;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: transparent;
+  caret-color: transparent;
+  font-size: 16px;
+  opacity: 0;
+  cursor: text;
+}
+
+.codeCells {
+  display: grid;
+  --pipe: var(--tb-border);
+}
+
+.codeCells[data-text] {
+  display: flex;
+}
+
+.codeCells > span {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 3.5rem;
+  border-inline-start: 1px solid var(--pipe);
+  color: var(--tb-text);
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.codeCells > span:last-child {
+  border-inline-end: 1px solid var(--pipe);
+}
+
+.codeCells[data-text] > span {
+  flex: 1;
+  min-width: 0;
+  padding: 0 1rem;
+  font-size: 1.25rem;
+  letter-spacing: 0.06em;
+  overflow-wrap: anywhere;
+}
+
+/* focus: the lines between the cells turn vermilion and the cell that comes next is marked with a blinking bar */
+.codeGroup[data-focused] .codeCells {
+  --pipe: var(--tb-hot);
+}
+
+.codeGroup[data-focused] .codeCells > span[data-here] {
+  background: rgba(255, 107, 53, 0.08);
+}
+
+.codeGroup[data-focused] .codeCells > span[data-here]::after {
+  content: '';
+  width: 2px;
+  height: 1.5rem;
+  background: var(--tb-hot);
+  animation: codeBlink 1s steps(1) infinite;
+}
+
+.codeGroup[data-focused] .codeCells > span[data-here]:not(:empty)::after {
+  display: none;
+}
+
+.codeGroup[data-invalid] .codeCells {
+  --pipe: var(--tb-error);
+}
+
+@keyframes codeBlink {
+  50% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .codeGroup[data-focused] .codeCells > span[data-here]::after { animation: none; }
 }

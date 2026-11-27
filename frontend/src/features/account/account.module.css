@@ -5,8 +5,7 @@
   max-width: 36rem;
 }
 
-.narrow h1,
-.splitForm h1 {
+.narrow h1 {
   margin: 0 0 0.5rem;
   font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem);
   line-height: 1.1;
@@ -14,8 +13,7 @@
   font-weight: 600;
 }
 
-:lang(bn) .narrow h1,
-:lang(bn) .splitForm h1 {
+:lang(bn) .narrow h1 {
   letter-spacing: 0;
   line-height: 1.35;
   font-weight: 600;
@@ -32,110 +30,101 @@
   text-underline-offset: 3px;
 }
 
-/* sign-in and registration */
-.split {
-  display: grid;
-  gap: 2rem;
+/* sign-in and registration: the whole screen is the field of raised tiles (GridCanvas); the form is one raised slab on it (AuthSplit snaps its place
+   and size to whole tiles and draws its sides); each step slides in as a new face */
+.stage {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
-.splitForm {
+.stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.stageCard {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
   min-width: 0;
-  max-width: 26rem;
+  max-width: calc(100vw - 8px);
+  /* not a filled box: the ground's own colour, so the grid does not run behind the text, framed by hairlines that lie on the grid's lines, one hot rule on top */
+  background: var(--tb-bg);
+  border: 1px solid var(--tb-border);
+  box-shadow: inset 0 2px 0 var(--tb-hot);            /* the one hot rule, drawn inside the first hairline so the frame's lines stay on the grid */
+  display: flex;
+  flex-direction: column;
+  overflow: clip;                                    /* a step slides in inside the frame; the bands' rules never leave it */
+  animation: frameDraw 620ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-.splitForm form > button[type='submit'] {
+/* the frame is drawn from the top down, as a ruled line is */
+@keyframes frameDraw {
+  from { clip-path: inset(0 0 100% 0); }
+  to { clip-path: inset(0 0 -1px 0); }
+}
+
+.stageStep {
+  padding: 1.75rem 2rem 1.5rem;
+  animation: stepIn 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes stepIn {
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: none; }
+}
+
+.stageStep h1 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem);
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+:lang(bn) .stageStep h1 {
+  letter-spacing: 0;
+  line-height: 1.35;
+  font-weight: 500;                                  /* the Bangla face rule: headings drop to 500 */
+}
+
+.stageStep .lead {
+  margin: 0 0 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--tb-line);
+  text-wrap: pretty;
+}
+
+.stageStep .lead a {
+  white-space: nowrap;
+}
+
+.stageStep form > button[type='submit'] {
   width: 100%;
 }
 
-.splitSide {
-  display: none;
+.stageStep p {
+  text-wrap: pretty;
 }
 
-@media (min-width: 60rem) {
-  .split {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 3rem;
-    align-items: start;
-  }
-
-  .splitForm {
-    align-self: center;
-    justify-self: center;
-    width: 100%;
-    padding-block: 1rem;
-  }
-
-  .splitSide {
-    display: grid;
-    place-items: center;
-    border-radius: var(--tb-radius-panel);
-    background: var(--tb-cream);
-    padding: 2.5rem;
-    /* the long registration form scrolls past a side that stays in view */
-    position: sticky;
-    top: 1.5rem;
-    align-self: start;
-    min-height: 34rem;
+@media (max-width: 32.5rem) {
+  .stageStep {
+    padding: 1.25rem 1.125rem 7.5rem;                /* the foot's note takes two lines here */
   }
 }
 
-.sideStage {
-  position: relative;
-  width: min(100%, 27rem);
-}
-
-.sideStage img {
-  display: block;
-  width: 82%;
-  height: auto;
-}
-
-.sideTag {
-  position: absolute;
-  right: 0;
-  top: 34%;
-  width: 15rem;
-  max-width: 62%;
-  padding: 1.125rem 1.25rem 1.25rem 2.375rem;
-  background: var(--tb-accent);
-  color: var(--tb-accent-text);
-  clip-path: polygon(1.25rem 0, 100% 0, 100% 100%, 1.25rem 100%, 0 50%);
-  border-radius: 0 16px 16px 0;
-  transform: rotate(-6deg);
-}
-
-.sideTag::before {
-  content: '';
-  position: absolute;
-  left: 0.625rem;
-  top: 50%;
-  width: 10px;
-  height: 10px;
-  margin-top: -5px;
-  border-radius: 50%;
-  background: var(--tb-cream);
-}
-
-.sideTag p {
-  margin: 0;
-  font-size: 0.9375rem;
-  line-height: 1.4;
-  color: var(--tb-accent-soft);
-}
-
-.sideTag .sideTitle {
-  margin-bottom: 0.5rem;
-  font-size: 1.5rem;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  font-weight: 600;
-  color: var(--tb-accent-text);
-}
-
-:lang(bn) .sideTag .sideTitle {
-  letter-spacing: 0;
-  line-height: 1.3;
-  font-weight: 600;
+@media (prefers-reduced-motion: reduce) {
+  .stageCard,
+  .stageStep {
+    animation: none;
+  }
 }
 
 .humanCheck {
@@ -168,9 +157,9 @@
 .secondary {
   min-height: 44px;
   padding: 0 1.25rem;
-  border: 1.5px solid var(--tb-border);
-  border-radius: var(--tb-radius-pill);
-  background: var(--tb-bg);
+  border: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: none;
   color: var(--tb-text);
   font: inherit;
   font-weight: 600;
@@ -198,31 +187,12 @@
 }
 
 /* panels */
-.notice {
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-surface);
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.5rem;
-}
-
-.notice h2 {
-  font-size: 1.0625rem;
-  margin: 0 0 0.5rem;
-}
-
-.notice dt,
 .facts dt {
   color: var(--tb-muted);
   font-weight: 500;
   font-size: 0.9375rem;
 }
 
-.notice dt {
-  color: var(--tb-text);
-  font-weight: 600;
-}
-
-.notice dd,
 .facts dd {
   margin: 0 0 0.75rem;
 }
@@ -325,12 +295,7 @@
   padding: 0.75rem 1rem;
 }
 
-.codes {
-  columns: 2 10rem;
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-surface);
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
-}
+
 
 .subsection {
   margin-top: 1.5rem;
@@ -360,3 +325,1127 @@
 
 /* the "Forgot your password?" link is a stand-alone target: 44 px */
 .forgot a { display: inline-flex; align-items: center; min-height: 44px; }
+
+/* U10-25 (redesign v3): no filled or rounded panels: a notice, the facts, a session, the key and the recovery codes are ruled blocks on hairlines */
+.secret,
+.codes {
+  border-radius: 0;
+  background: none;
+  border-top: 1px solid var(--tb-line);
+  border-bottom: 1px solid var(--tb-line);
+}
+
+.sessions li {
+  border-radius: 0;
+  background: none;
+  border-bottom: 1px solid var(--tb-line);
+  padding-inline: 0;
+}
+
+.facts {
+  border: 0;
+  border-top: 1px solid var(--tb-line);
+  border-radius: 0;
+  padding-inline: 0;
+}
+
+/* sign-in, second step: the login that was typed, with a way back; a hidden copy of it stays in the form for password managers */
+.who {
+  min-width: 0;
+  font-weight: 600;
+  color: var(--tb-text);
+  overflow: hidden;
+  text-overflow: ellipsis;                           /* a long address stays on one line inside the head band */
+  white-space: nowrap;
+}
+
+.leadRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.leadRow .link {
+  flex: none;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  border: 0;
+  white-space: nowrap;
+}
+
+/* the card of sign-in is three ruled bands (U10-25): the heading, the form and the foot. The bands' edges lie on the grid's lines (their heights are whole
+   cells, set in `--head` and `--foot`), so the page's grid seems to run on through the card; the free room in the form band is shared out evenly between the
+   parts of the form. Each band keeps its own place whether it is full or not, so the card has one height for every step. */
+.banded {
+  flex: 1 0 auto;                                    /* the step fills the card, so the bands share the card's whole height */
+  padding: 0;
+  display: grid;
+  grid-template-rows: calc(var(--head) * var(--cell)) minmax(0, 1fr) calc(var(--foot) * var(--cell));
+  grid-template-columns: minmax(0, 1fr);             /* a long word never widens the bands past the card */
+}
+
+.bandHead {
+  box-sizing: border-box;
+  padding: 0 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+
+.bandHead h1 {
+  margin: 0;
+}
+
+.bandHead .lead {
+  margin: 0.75rem 0 0;
+  padding: 0;
+  border: 0;
+  min-height: 0;
+}
+
+.bandBody {
+  box-sizing: border-box;
+  padding: 0 2rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-top: 1px solid var(--tb-line);
+}
+
+.bandBody > form {
+  /* the free room of the form band is shared out equally: above the first part, between the parts and below the last (the field with its label, the row of
+     what belongs to the step, the button), so every gap is the same size; a message under the field takes its own height out of the shared room */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  position: relative;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.fieldGroup > div:not(.slot) {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0;
+  min-width: 0;
+}
+
+.fieldGroup > div:not(.slot) input {
+  height: 3rem;
+}
+
+.fieldGroup > div:not(.slot) + div:not(.slot) {
+  margin-top: 0.75rem;                              /* two fields in one step (the password and its confirmation) */
+}
+
+.bandFoot {
+  box-sizing: border-box;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid var(--tb-line);
+  text-align: center;
+}
+
+.footNote {
+  margin: 0;
+  color: var(--tb-muted);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  text-wrap: balance;
+}
+
+.footNote a {
+  color: var(--tb-accent);
+  font-weight: 600;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.footLinks {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+}
+
+.slot {
+  margin: 0;
+  padding: 0;
+}
+
+.slot p {
+  margin: 0.5rem 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+
+.slotError {
+  color: var(--tb-error);
+  font-weight: 600;
+}
+
+.slotOk {
+  color: var(--tb-muted);
+}
+
+.extra {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+}
+
+.extra > div {
+  margin-bottom: 0;
+}
+
+.forgotLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--tb-muted);
+  font-size: 0.9375rem;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 32.5rem) {
+  .bandHead,
+  .bandBody,
+  .bandFoot {
+    padding-inline: 1.125rem;
+  }
+}
+
+/* registration: the privacy notice follows the line under the heading, so it does not draw a second rule of its own */
+/* targets of 44 px (U10-25 review): the links and the small buttons of the card reach 44 px without changing the line they stand in */
+.link {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 0.5rem;
+  margin-inline: -0.5rem;
+}
+
+.lead .link {
+  min-height: 0;
+  padding: 0.75rem 0.5rem;
+  margin: -0.75rem -0.5rem;
+}
+
+.footNote a {
+  padding: 0.8125rem 0.5rem;
+  margin: -0.8125rem -0.5rem;
+}
+
+.bandHead .lead {
+  overflow-wrap: anywhere;
+}
+
+.link[aria-disabled='true'] {
+  color: var(--tb-muted);
+  cursor: not-allowed;
+  text-decoration-style: dotted;
+}
+
+/* the Bangla heading does not break inside a word (ই-মেইল), and the figures of a countdown keep one width so a link does not tremble as it counts */
+:lang(bn) .bandHead h1 {
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  hyphens: none;
+}
+
+.link,
+.footLinks,
+.bandBody > form > button {
+  font-variant-numeric: tabular-nums;
+}
+
+.footLinks .link {
+  white-space: nowrap;
+}
+
+
+/* The step of registration with the age and the terms: two ruled boxes and the line under them (U10-25). */
+.checks {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* The terms and conditions as text (U10-25): the numbered sections and clauses, on /help/terms and in the dialog. */
+.legal p {
+  margin: 0 0 1rem;
+  line-height: 1.6;
+}
+
+.legal section {
+  margin: 0 0 1.25rem;
+}
+
+.legal h2,
+.legal h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+
+.legal ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legal li {
+  margin: 0 0 0.6rem;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.clauseNo {
+  color: var(--tb-muted);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  margin-inline-end: 0.25rem;
+}
+
+/* The dialog the terms and the privacy notice open in: over the page, a ruled frame like the card, the text in a region that scrolls. */
+.dialogBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(4, 9, 9, 0.78);
+}
+
+.dialog {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: min(42rem, 100%);
+  max-height: min(46rem, 100%);
+  background: var(--tb-bg);
+  color: var(--tb-text);
+  border: 1px solid var(--tb-border);
+  box-shadow: inset 0 2px 0 var(--tb-hot);
+}
+
+.dialogHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--tb-line);
+}
+
+.dialogHead h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+
+.dialogHead .version {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+}
+
+.dialogClose {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin: -0.5rem -0.5rem 0 0;
+  border: 1px solid var(--tb-line);
+  background: transparent;
+  color: var(--tb-text);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dialogClose:hover {
+  border-color: var(--tb-hot);
+}
+
+.dialogBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.25rem;
+}
+
+.dialogBody:focus-visible,
+.dialogClose:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: -2px;
+}
+
+
+/* A link inside a sentence (the terms and the privacy notice in the label of the box): it is part of the line, not a target of its own, so it neither
+   stretches the line nor sits apart from the words; the label around it is the target of 44 px. */
+.textLink {
+  display: inline;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  line-height: inherit;
+}
+
+/* A step with no field (a sent notice, a result): its message, and the one button, share out the form band like the parts of a form do. */
+.stepNote {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  min-width: 0;
+}
+
+.stepNote p {
+  margin: 0;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.stepText {
+  margin: 0;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+/* The profile (U10-25, redesign v3): boxless, on the line grid. Everything is set off by hairlines only: a vermilion rule over the identity band, lines between the
+   cells of the figures and between the rows, and one vertical line between the two columns. Rows are two cells (64 px) high. */
+.profile {
+  max-width: 64rem;
+}
+
+.profile h1 {
+  margin: 0 0 1.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--tb-muted);
+}
+
+.idBand {
+  display: grid;
+  grid-template-columns: 8rem minmax(0, 1fr);
+  gap: 2rem;
+  align-items: center;
+  padding: 2rem 0;
+  border-top: 2px solid var(--tb-hot);
+  border-bottom: 1px solid var(--tb-line);
+}
+
+/* the photo place: a square on the 32 px grid with the grid drawn inside it and the member's initial */
+.avatar {
+  position: relative;
+  width: 8rem;
+  height: 8rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--tb-border);
+  background-image:
+    linear-gradient(to right, var(--tb-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--tb-line) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.avatar span {
+  font-size: 3.5rem;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--tb-hot);
+}
+
+.idText h2 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+:lang(bn) .idText h2 {
+  letter-spacing: 0;
+  line-height: 1.35;
+}
+
+.marks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+}
+
+.marks li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 1.75rem;
+  color: var(--tb-muted);
+  font-size: 0.9375rem;
+}
+
+.marks li[data-on] {
+  color: var(--tb-text);
+}
+
+.dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--tb-muted);
+}
+
+.marks li[data-on] .dot {
+  border-color: var(--tb-hot);
+  background: var(--tb-hot);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  border-bottom: 1px solid var(--tb-line);
+}
+
+.stats > div {
+  padding: 1.25rem 1.5rem;
+  border-left: 1px solid var(--tb-line);
+  min-width: 0;
+}
+
+.stats > div:first-child {
+  border-left: 0;
+  padding-inline-start: 0;
+}
+
+.stats dt,
+.rows dt {
+  color: var(--tb-muted);
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.stats dd {
+  margin: 0.25rem 0 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 2rem;
+}
+
+.columns > section {
+  padding: 1.5rem 0 0;
+  min-width: 0;
+}
+
+.columns > section + section {
+  padding-inline-start: 2rem;
+  border-inline-start: 1px solid var(--tb-line);
+}
+
+.columns > section:first-child {
+  padding-inline-end: 2rem;
+}
+
+.columns h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.0625rem;
+  font-weight: 600;
+}
+
+.rows {
+  margin: 0;
+}
+
+.rows > div {
+  display: grid;
+  grid-template-columns: minmax(7rem, 10rem) minmax(0, 1fr);
+  align-items: center;
+  column-gap: 1rem;
+  min-height: 4rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--tb-line);
+}
+
+.rows dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.rows dd a {
+  color: var(--tb-accent);
+  text-underline-offset: 3px;
+  margin-inline-start: 0.5rem;
+}
+
+.ruledLinks {
+  margin: 0 0 2rem;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--tb-line);
+}
+
+.ruledLinks li {
+  border-bottom: 1px solid var(--tb-line);
+}
+
+.ruledLinks a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 4rem;
+  color: var(--tb-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ruledLinks a::after {
+  content: '→';
+  color: var(--tb-hot);
+  flex: none;
+}
+
+.ruledLinks a:hover {
+  color: var(--tb-hot);
+}
+
+.ruledLinks a:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: 2px;
+}
+
+.signOut {
+  min-height: 44px;
+  padding: 0 1.5rem;
+  border: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: none;
+  color: var(--tb-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.signOut:hover:not(:disabled) {
+  border-color: var(--tb-hot);
+}
+
+.signOut:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: 2px;
+}
+
+.signOut:disabled {
+  color: var(--tb-muted);
+  cursor: not-allowed;
+}
+
+@media (max-width: 47.99rem) {
+  .idBand {
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    gap: 1rem;
+    padding: 1.25rem 0;
+  }
+
+  .avatar {
+    width: 5.5rem;
+    height: 5.5rem;
+  }
+
+  .avatar span {
+    font-size: 2.5rem;
+  }
+
+  .stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .stats > div,
+  .stats > div:first-child {
+    border-left: 0;
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--tb-line);
+  }
+
+  .stats > div:first-child {
+    border-top: 0;
+  }
+
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .columns > section + section,
+  .columns > section:first-child {
+    padding-inline: 0;
+    border-inline-start: 0;
+  }
+}
+
+@media (max-width: 32.5rem) {
+  .rows > div {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0.125rem;
+    padding: 0.75rem 0;
+  }
+}
+
+/* the verified mark after the name, as on the seller rows of the listing and order pages: the small green tick (green is for held and verified only) */
+.nameLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tick {
+  display: inline-flex;
+  color: var(--tb-protect);
+}
+
+.tick svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* The security page (U10-25): the same line grid as the profile and the dashboard. A vermilion rule over the title, two columns divided by one line, hairline
+   rows for the devices, square hairline buttons (no pills), the settings as sections under hairlines. */
+.secPage {
+  max-width: 64rem;
+}
+
+.secPage > h1 {
+  margin: 0;
+  padding: 1.5rem 0 1.25rem;
+  border-top: 2px solid var(--tb-hot);
+  font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.125rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+}
+
+:lang(bn) .secPage > h1 {
+  letter-spacing: 0;
+  line-height: 1.35;
+}
+
+.secCols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--tb-line);
+}
+
+.secCol {
+  min-width: 0;
+}
+
+.secCol:first-child {
+  padding-inline-end: 2rem;
+}
+
+.secCol + .secCol {
+  padding-inline-start: 2rem;
+  border-inline-start: 1px solid var(--tb-line);
+}
+
+.secCol .section {
+  margin: 0;
+  padding: 1.5rem 0 2rem;
+  border-top: 1px solid var(--tb-line);
+}
+
+.secCol .section:first-child {
+  border-top: 0;
+}
+
+.secCol .section h2 {
+  font-size: 1.125rem;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+}
+
+/* the devices: hairline rows, this device first with a vermilion mark, the sign-out of a device as a small square button under its lines */
+.secCol .sessions {
+  gap: 0;
+  margin-bottom: 1rem;
+  border-top: 1px solid var(--tb-line);
+}
+
+.secCol .sessions li {
+  padding: 0.875rem 0;
+  border-bottom: 1px solid var(--tb-line);
+}
+
+.secCol .sessions p {
+  margin: 0 0 0.125rem;
+  color: var(--tb-muted);
+  font-size: 0.9375rem;
+}
+
+.secCol .sessions .device {
+  color: var(--tb-text);
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.secCol .sessions strong {
+  color: var(--tb-hot);
+  font-weight: 600;
+}
+
+.secCol .sessions button {
+  margin-top: 0.5rem;
+  min-height: 40px;
+  padding: 0 1rem;
+  font-size: 0.9375rem;
+}
+
+.secCol .sessions button:hover:not(:disabled),
+.secondary:hover:not(:disabled),
+.actions button:not([type='submit']):hover:not(:disabled) {
+  border-color: var(--tb-hot);
+}
+
+.secondary {
+  margin-inline-end: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 63.99rem) {
+  .secCols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .secCol:first-child {
+    padding-inline-end: 0;
+  }
+
+  .secCol + .secCol {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+    border-top: 1px solid var(--tb-line);
+  }
+}
+
+/* the settings that open in a popup: ruled rows, the name on the left and the present state on the right, an arrow in vermilion (as the payout options) */
+.settingRows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--tb-line);
+}
+
+.settingRows > li {
+  border-bottom: 1px solid var(--tb-line);
+}
+
+.settingRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  min-height: 64px;
+  padding: 0.5rem 0;
+  border: 0;
+  background: none;
+  color: var(--tb-text);
+  font: inherit;
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+}
+
+.settingRow::after {
+  content: '→';
+  flex: none;
+  color: var(--tb-hot);
+}
+
+.settingRow > span:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.settingValue {
+  min-width: 0;
+  color: var(--tb-muted);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  overflow-wrap: anywhere;
+  text-align: end;
+}
+
+.settingRow:hover {
+  color: var(--tb-hot);
+}
+
+.settingRow:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: -2px;
+}
+
+/* the steps of turning the authenticator app on: the present step named, four segments under it (done and present in vermilion, the rest hairline) */
+.stepper {
+  margin-bottom: 1rem;
+}
+
+.stepperText {
+  margin: 0 0 0.5rem;
+  color: var(--tb-muted);
+  font-size: 0.9375rem;
+}
+
+.stepperText strong {
+  color: var(--tb-text);
+  font-weight: 600;
+}
+
+.stepper ol {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stepper li {
+  height: 3px;
+  background: var(--tb-line);
+}
+
+.stepper li[data-state='done'],
+.stepper li[data-state='now'] {
+  background: var(--tb-hot);
+}
+
+.stepper li[data-state='done'] {
+  opacity: 0.5;
+}
+
+/* the recovery codes in two columns of hairline cells, easy to read and to copy by eye */
+.codes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--tb-line);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.codes li {
+  padding: 0.625rem 0.5rem;
+  border-bottom: 1px solid var(--tb-line);
+}
+
+.codes li:nth-child(odd) {
+  border-inline-end: 1px solid var(--tb-line);
+}
+
+/* the main step button of the flow: ruled vermilion, as every main button */
+.actions button.next {
+  border-color: var(--tb-btn-line);
+  background: var(--tb-btn-bg);
+  color: var(--tb-btn-fg);
+}
+
+.actions button.next:hover:not(:disabled) {
+  background: var(--tb-btn-bg-hover);
+}
+
+.actions + .actions {
+  margin-top: 0.75rem;
+}
+
+/* the authenticator steps (U10-25 polish): the QR code beside its key; the key and the link as buttons; the way on and back under a hairline, Back on the left and the step's main button on the right */
+.scan {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+  margin: 0.5rem 0 0;
+}
+
+.scanKey p {
+  margin: 0 0 0.75rem;
+}
+
+.scanKey .secret {
+  padding: 0.75rem 0;
+  font-size: 1.0625rem;
+}
+
+.scanKey .actions {
+  align-items: stretch;
+}
+
+.linkButton {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 1.25rem;
+  border: 1px solid var(--tb-border);
+  background: none;
+  color: var(--tb-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.linkButton:hover {
+  border-color: var(--tb-hot);
+}
+
+.linkButton:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: 2px;
+}
+
+.stepNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--tb-line);
+}
+
+.stepNav > button {
+  min-height: 44px;
+  padding: 0 1.5rem;
+  border: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: none;
+  color: var(--tb-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.stepNav > button:hover:not(:disabled) {
+  border-color: var(--tb-hot);
+}
+
+.stepNav > button.next {
+  border-color: var(--tb-btn-line);
+  background: var(--tb-btn-bg);
+  color: var(--tb-btn-fg);
+}
+
+.stepNav > button.next:hover:not(:disabled) {
+  background: var(--tb-btn-bg-hover);
+}
+
+@media (max-width: 36rem) {
+  .scan {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.stepNav > button[type='submit'] {
+  border-color: var(--tb-btn-line);
+  background: var(--tb-btn-bg);
+  color: var(--tb-btn-fg);
+}
+
+.stepNav > button[type='submit']:hover:not(:disabled) {
+  background: var(--tb-btn-bg-hover);
+}
+
+.stepNav > button[type='submit']:disabled {
+  opacity: 0.6;
+}
+
+.scanKey .linkButton {
+  border-color: var(--tb-border);
+}
+
+.scanKey .linkButton:hover {
+  border-color: var(--tb-hot);
+}
+
+/* all the logins in a popup: the same hairline rows, in the popup's own scroll */
+.sessionsPopup {
+  margin: 0;
+}
+
+.sessionsPopup li {
+  padding: 0.875rem 0;
+  border-bottom: 1px solid var(--tb-line);
+}
+
+.sessionsPopup p {
+  margin: 0 0 0.125rem;
+  color: var(--tb-muted);
+  font-size: 0.9375rem;
+}
+
+.sessionsPopup .device {
+  color: var(--tb-text);
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.sessionsPopup strong {
+  color: var(--tb-hot);
+  font-weight: 600;
+}
+
+.sessionsPopup button {
+  margin-top: 0.5rem;
+  min-height: 40px;
+  padding: 0 1rem;
+  font-size: 0.9375rem;
+}
+
+/* the copy button: its answer takes the place of its words (the room of the longer), so the buttons next to it never move */
+.copyWords {
+  display: grid;
+}
+
+.copyWords > span {
+  grid-area: 1 / 1;
+}
+
+.copyButton[data-answer='ok'] {
+  border-color: var(--tb-hot);
+}
+
+.copyButton[data-answer='failed'] {
+  border-color: var(--tb-error);
+}

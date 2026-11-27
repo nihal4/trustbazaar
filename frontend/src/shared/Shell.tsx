@@ -14,7 +14,7 @@ import { useLanguage } from './language/Language';
 import { LanguageSwitch } from './language/LanguageSwitch';
 import { ME_KEY, useMe } from './me';
 import { useLive } from './live';
-import { useLanguageSync, useUnreadCount } from './notifications';
+import { useLanguageSync, useUnreadCount, useUnreadMessages } from './notifications';
 import { useSignedOut } from './session';
 import { usePendingStepUp } from './stepUp';
 import { StepUpDialog } from './StepUpDialog';
@@ -32,6 +32,9 @@ export interface ShellProps {
   exit?: { href: string; labelKey: string };
 }
 
+/** U10-25: sign-in, registration and the pages of a forgotten password or a link are one fresh page: no header, search, notices, footer or tab bar. */
+const BARE_PATHS = new Set(['/signin', '/register', '/reset', '/reset-password', '/verify-email']);
+
 export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps) {
   const { t } = useLanguage();
   const main = useRef<HTMLElement>(null);
@@ -47,6 +50,24 @@ export function Shell({ titleKey, home, accountLinks = false, exit }: ShellProps
   // Phones get the tab bar instead of the header's links; decided once on the first render, so nothing jumps.
   const phone = useMediaQuery('(max-width: 47.99em)', false, { getInitialValueInEffect: false });
   const tabs = accountLinks && phone;
+  if (accountLinks && BARE_PATHS.has(pathname)) {
+    return (
+      <div className={styles.bare}>
+        <a className={styles.skip} href="#main">{t('shell.skip_to_content')}</a>
+        <header className={styles.bareTop}>
+          {home.sameDocument
+            ? <Link className={styles.brand} to={home.path} aria-label={t('shell.home_link')}><Logo onDark /></Link>
+            : <a className={styles.brand} href={home.path} aria-label={t('shell.home_link')}><Logo onDark /></a>}
+          <LanguageSwitch />
+        </header>
+        <main id="main" ref={main} tabIndex={-1} className={styles.bareMain}>
+          <Suspense fallback={<p role="status">{t('shell.loading')}</p>}>
+            <Outlet />
+          </Suspense>
+        </main>
+      </div>
+    );
+  }
   return (
     <div className={styles.page}>
       <a className={styles.skip} href="#main">{t('shell.skip_to_content')}</a>
@@ -139,8 +160,9 @@ function Footer() {
 function TabBar() {
   const { t } = useLanguage();
   const me = useMe();
-  const tab = (to: string, icon: JSX.Element, label: string, end = false) => (
-    <li><NavLink to={to} end={end} className={({ isActive }) => (isActive ? `${styles.tab} ${styles.tabOn}` : styles.tab)}>{icon}<span className={styles.tabLabel}>{label}</span></NavLink></li>
+  const unreadMessages = useUnreadMessages();
+  const tab = (to: string, icon: JSX.Element, label: string, end = false, count: number | null = null) => (
+    <li><NavLink to={to} end={end} className={({ isActive }) => (isActive ? `${styles.tab} ${styles.tabOn}` : styles.tab)}>{icon}<span className={styles.tabLabel}>{label}</span>{count ? <UnreadCount n={count} /> : null}</NavLink></li>
   );
   return (
     <nav className={styles.tabBar} aria-label={t('shell.tabs.label')}>
@@ -148,7 +170,7 @@ function TabBar() {
         {tab('/', <HomeIcon />, t('shell.tab.home'), true)}
         {tab('/search', <SearchIcon />, t('shell.tab.search'))}
         <li><NavLink to="/sell/new" className={({ isActive }) => (isActive ? `${styles.tab} ${styles.tabHot} ${styles.tabOn}` : `${styles.tab} ${styles.tabHot}`)}><span className={styles.tabSell}><PlusIcon /></span><span className={styles.tabLabel}>{t('shell.tab.sell')}</span></NavLink></li>
-        {me.isSuccess && tab('/messages', <ChatIcon />, t('shell.messages'))}
+        {me.isSuccess && tab('/messages', <ChatIcon />, t('shell.messages'), false, unreadMessages)}
         {me.isSuccess && tab('/orders', <OrdersIcon />, t('shell.orders'))}
       </ul>
     </nav>
@@ -175,6 +197,7 @@ function AccountLink({ phone }: { phone: boolean }) {
   const { t } = useLanguage();
   const me = useMe();
   const unread = useUnreadCount();
+  const unreadMessages = useUnreadMessages();
   useLanguageSync();
   const { pathname, search } = useLocation();
   if (me.isSuccess && phone) {
@@ -189,7 +212,7 @@ function AccountLink({ phone }: { phone: boolean }) {
     return (
       <div className={styles.navGrid}>
         <Link className={styles.navCell} to="/orders" title={t('shell.orders')}><OrdersIcon /><span className={styles.visuallyHidden}>{t('shell.orders')}</span></Link>
-        <Link className={styles.navCell} to="/messages" title={t('shell.messages')}><ChatIcon /><span className={styles.visuallyHidden}>{t('shell.messages')}</span></Link>
+        <Link className={styles.navCell} to="/messages" title={t('shell.messages')}><ChatIcon /><span className={styles.visuallyHidden}>{t('shell.messages')}</span>{unreadMessages ? <UnreadCount n={unreadMessages} /> : null}</Link>
         <NotificationsLink unread={unread} icon cell />
         <Link className={styles.navCell} to="/account" title={t('shell.account')}><UserIcon /><span className={styles.visuallyHidden}>{t('shell.account')}</span></Link>
       </div>
@@ -202,6 +225,13 @@ function AccountLink({ phone }: { phone: boolean }) {
 function PendingStepUp() {
   const pending = usePendingStepUp();
   return pending ? <StepUpDialog key={pending.action} request={pending} /> : null;
+}
+
+/** The number of unread messages on the messages link, in words as well as a number (not colour alone). */
+function UnreadCount({ n }: { n: number }) {
+  const { t, lang } = useLanguage();
+  const count = toLocalDigits(String(n > 99 ? 99 : n), lang) + (n > 99 ? '+' : '');
+  return <><span className={styles.badge}>{count}</span><span className={styles.visuallyHidden}>{t('shell.notifications_unread')}</span></>;
 }
 
 /** The notification centre, with the unread count in words as well as a number (not colour alone). */

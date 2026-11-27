@@ -1,13 +1,12 @@
-import { Body, Controller, HttpCode, Post, Req, Res } from '@nestjs/common';
-import type { Request, Response } from 'express';
+import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import { Public, RateLimit } from '../../../kernel/http/policies';
 import { ContactService } from '../services/contact.service';
 import { RegistrationService, RegistrationStarted } from '../services/registration.service';
-import { EmailVerifyDto, RegisterDto, RegisterResendDto, RegisterVerifyDto } from './auth.dto';
-import { cookie, ctxOf } from './request';
-import { DEVICE_COOKIE, setSessionCookies } from './session-cookies';
+import { EmailVerifyDto, RegisterCompleteDto, RegisterDto, RegisterResendDto, RegisterVerifyDto } from './auth.dto';
+import { ctxOf } from './request';
 
-// Registration and e-mail verification (Unit 1 sections 4.2 and 6.1, U1-03). Paths under /api/v1/auth.
+// Registration (Unit 1 sections 4.2 and 6.1, U1-03; U10-25: name, e-mail, password, e-mail code, then number and terms) and the e-mail link. Paths under /api/v1/auth.
 @Controller('auth')
 export class RegistrationController {
   constructor(
@@ -15,7 +14,7 @@ export class RegistrationController {
     private readonly contacts: ContactService,
   ) {}
 
-  /** FR-ACC-01: 202 with the registration id and when a new code may be asked for; the same for every number. */
+  /** FR-ACC-01: 202 with the registration id and when a new code may be asked for; the same for every address. */
   @Public()
   @RateLimit('register')
   @Post('register')
@@ -30,16 +29,25 @@ export class RegistrationController {
   @Post('register/resend')
   @HttpCode(202)
   resend(@Body() dto: RegisterResendDto): Promise<RegistrationStarted> {
-    return this.registration.resend(dto.registrationId, dto.channel);
+    return this.registration.resend(dto.registrationId);
   }
 
-  /** FR-ACC-02: the code creates the account; 204 with the new session's cookies. */
+  /** FR-ACC-02: the code confirms the e-mail address; 204, no account yet and no session. */
   @Public()
   @RateLimit('otp-verify')
   @Post('register/verify')
   @HttpCode(204)
-  async verify(@Body() dto: RegisterVerifyDto, @Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<void> {
-    setSessionCookies(res, await this.registration.verify(dto.registrationId, dto.code, cookie(req, DEVICE_COOKIE), ctxOf(req)));
+  async verify(@Body() dto: RegisterVerifyDto): Promise<void> {
+    await this.registration.verify(dto.registrationId, dto.code);
+  }
+
+  /** FR-ACC-01, FR-ACC-04: the number, the age confirmation and the accepted terms create the account; 204, the person signs in next. */
+  @Public()
+  @RateLimit('otp-verify')
+  @Post('register/complete')
+  @HttpCode(204)
+  async complete(@Body() dto: RegisterCompleteDto, @Req() req: Request): Promise<void> {
+    await this.registration.complete(dto, ctxOf(req));
   }
 
   /** FR-ACC-02, FR-ACC-09: the single-use link from a verification or e-mail change message. */

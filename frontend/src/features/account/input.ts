@@ -23,6 +23,25 @@ export function normaliseLogin(login: string): string {
   return loginKind(s) === 'phone' ? bangladeshiMobile(s) ?? toAsciiDigits(s) : s;
 }
 
+/**
+ * U10-25 (FR-ACC-13): the first entry of sign-in is a Bangladeshi mobile number or an e-mail address of a valid form: a local part of the characters mail
+ * allows (no dot at the ends, no two dots), a domain of labels of letters, digits and hyphens (none starting or ending with a hyphen), a last label of
+ * letters only. Anything else is turned back at once and is never sent anywhere.
+ */
+export function loginProblem(login: string): 'invalid' | null {
+  const s = login.trim();
+  if (!s) return 'invalid';
+  if (!s.includes('@')) return bangladeshiMobile(s) ? null : 'invalid';
+  if (s.length > 254) return 'invalid';
+  const at = s.lastIndexOf('@');
+  const local = s.slice(0, at), domain = s.slice(at + 1);
+  if (!local || local.length > 64 || !/^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+$/.test(local) || local.startsWith('.') || local.endsWith('.') || local.includes('..')) return 'invalid';
+  const labels = domain.split('.');
+  if (labels.length < 2 || !/^[A-Za-z]{2,}$/.test(labels[labels.length - 1])) return 'invalid';
+  if (labels.some((l) => !l || l.length > 63 || !/^[A-Za-z0-9-]+$/.test(l) || l.startsWith('-') || l.endsWith('-'))) return 'invalid';
+  return null;
+}
+
 export const looksLikeEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim()) && s.trim().length <= 254;
 
 /** SEC-AUTH-01 as Unit 1 applies it: 15 characters without MFA, 8 with it; at most 256 (DV-8). */

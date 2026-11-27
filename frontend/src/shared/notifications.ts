@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApi, type Api } from './api';
 import { useLanguage } from './language/Language';
 import type { Lang } from './language/lang';
+import { useLiveEvent } from './live';
 import { useMe } from './me';
 import { FRESHNESS } from './query';
 
@@ -48,6 +49,29 @@ export function useUnreadCount(): number | null {
     retry: false,
   });
   return me.isSuccess && q.isSuccess ? q.data.unread : null;
+}
+
+/** The unread messages across the conversations, for the header and the tab bar (U10-25): the first page of the thread list, summed. */
+export const THREADS_UNREAD_KEY = ['threads', 'unread'] as const;
+export function useUnreadMessages(): number | null {
+  const api = useApi();
+  const me = useMe();
+  const queryClient = useQueryClient();
+  const q = useQuery({
+    queryKey: THREADS_UNREAD_KEY,
+    queryFn: async ({ signal }) => {
+      const page = (await api.get('/threads', { signal })) as { items: { unread: number }[] };
+      return page.items.reduce((sum, th) => sum + (th.unread > 0 ? th.unread : 0), 0);
+    },
+    enabled: me.isSuccess,
+    staleTime: FRESHNESS.money,
+    refetchInterval: UNREAD_POLL_MS,
+    refetchIntervalInBackground: false,
+    retry: false,
+  });
+  // a new message anywhere moves the count at once
+  useLiveEvent('chat.message', () => void queryClient.invalidateQueries({ queryKey: THREADS_UNREAD_KEY }), me.isSuccess);
+  return me.isSuccess && q.isSuccess ? q.data : null;
 }
 
 /**

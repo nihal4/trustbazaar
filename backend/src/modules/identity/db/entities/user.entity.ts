@@ -13,8 +13,8 @@ export class User {
   @Column({ type: 'varchar', name: 'phone_e164', length: 16, nullable: true })
   phoneE164!: string | null;
 
-  @Column({ type: 'timestamptz', name: 'phone_verified_at' })
-  phoneVerifiedAt!: Date;
+  @Column({ type: 'timestamptz', name: 'phone_verified_at', nullable: true })
+  phoneVerifiedAt!: Date | null;
 
   @Column({ type: 'citext', nullable: true })
   email!: string | null;
@@ -33,6 +33,10 @@ export class User {
 
   @Column({ type: 'boolean', name: 'mfa_enabled' })
   mfaEnabled!: boolean;
+
+  /** U10-25: a code by e-mail at each sign-in from a device that is not remembered */
+  @Column({ type: 'boolean', name: 'email_two_step' })
+  emailTwoStep!: boolean;
 
   @Column({ type: 'enum', name: 'kyc_status', enum: KYC_STATUS, enumName: 'kyc_status' })
   kycStatus!: KycStatus;

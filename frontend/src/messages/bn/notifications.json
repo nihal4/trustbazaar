@@ -14,5 +14,8 @@
   "preferences.email": "আমার অর্ডার ও পেমেন্ট সম্পর্কে আমাকে ই-মেইল পাঠান",
   "preferences.email_hint": "নিরাপত্তার নোটিশ, যেমন নতুন ডিভাইস থেকে সাইন ইন, সবসময় পাঠানো হয়।",
   "preferences.save": "সেটিংস সংরক্ষণ করুন",
-  "preferences.saved": "আপনার সেটিংস সংরক্ষণ হয়েছে।"
+  "preferences.saved": "আপনার সেটিংস সংরক্ষণ হয়েছে।",
+  "notifications.show_all": "সব নোটিফিকেশন দেখুন",
+  "notifications.none_new": "কোনো নতুন নোটিফিকেশন নেই।",
+  "notifications.close": "বন্ধ করুন"
 }

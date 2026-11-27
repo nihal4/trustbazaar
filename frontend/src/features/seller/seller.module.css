@@ -7,14 +7,36 @@
 :lang(bn) .head h1, :lang(bn) .page > h1 { letter-spacing: 0; font-weight: 600; }
 
 .panel { border-top: 1px solid var(--tb-line); padding: 1.5rem 0 2rem; display: grid; grid-template-columns: minmax(0, 1fr); row-gap: 0.75rem; min-width: 0; }
+.panel:first-child { border-top: 0; }
 .panel h2 { margin: 0; font-size: 1.125rem; letter-spacing: -0.01em; font-weight: 600; }
 .panel h3 { margin: 0.75rem 0 0; font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--tb-muted); }
 :lang(bn) .panel h3 { text-transform: none; letter-spacing: 0; font-size: 0.9375rem; }
 .panel > p { margin: 0; }
-@media (min-width: 56rem) {
-  .panel { grid-template-columns: 13rem minmax(0, 1fr); column-gap: 2.5rem; }
-  .panel > * { grid-column: 2; }
-  .panel > h2 { grid-column: 1; }
+
+/* the dashboard (U10-25, the same line grid as the profile): a vermilion rule over the head, four figures divided by lines, then two columns divided by one line */
+.head { border-top: 2px solid var(--tb-hot); padding-top: 1.5rem; }
+.figures { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; border-top: 1px solid var(--tb-line); border-bottom: 1px solid var(--tb-line); }
+.figures > div { padding: 1.25rem 1.5rem; border-left: 1px solid var(--tb-line); min-width: 0; }
+.figures > div:first-child { border-left: 0; padding-inline-start: 0; }
+.figures dt { color: var(--tb-muted); font-size: 0.9375rem; font-weight: 500; }
+.figures dd { margin: 0.25rem 0 0; font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.figures dd.figText { font-size: 1rem; line-height: 1.4; letter-spacing: 0; padding-top: 0.5rem; }
+.cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.col { min-width: 0; padding-top: 0.5rem; }
+.col:first-child { padding-inline-end: 2rem; }
+.col + .col { padding-inline-start: 2rem; border-inline-start: 1px solid var(--tb-line); }
+@media (max-width: 63.99rem) {
+  .figures { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .figures > div:nth-child(3) { border-left: 0; padding-inline-start: 0; }
+  .figures > div:nth-child(n + 3) { border-top: 1px solid var(--tb-line); }
+  .cols { grid-template-columns: minmax(0, 1fr); }
+  .col:first-child { padding-inline-end: 0; }
+  .col + .col { padding-inline-start: 0; border-inline-start: 0; }
+}
+@media (max-width: 30rem) {
+  .figures { grid-template-columns: minmax(0, 1fr); }
+  .figures > div, .figures > div:first-child, .figures > div:nth-child(3) { border-left: 0; padding: 0.875rem 0; border-top: 1px solid var(--tb-line); }
+  .figures > div:first-child { border-top: 0; }
 }
 .hint { color: var(--tb-muted); }
 .list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
@@ -40,9 +62,9 @@
 .choice div:has(input:checked) { border-bottom-color: var(--tb-hot); background: none; }
 .choice input { width: 20px; height: 20px; accent-color: var(--tb-hot); flex: none; margin: 0; }
 .buttons { display: flex; flex-wrap: wrap; gap: 0.625rem; margin-block: 0.5rem; }
-.primary { min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-radius-control); background: var(--tb-accent); color: var(--tb-accent-text); border: 0; font: inherit; font-weight: 600; cursor: pointer; }
+.primary { min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-btn-radius); background: var(--tb-btn-bg); color: var(--tb-btn-fg); border: 1px solid var(--tb-btn-line); font: inherit; font-weight: 600; cursor: pointer; }
 .primary:disabled { opacity: 0.6; }
-.secondary { align-self: flex-start; min-height: 44px; padding: 0 1.125rem; border: 1px solid var(--tb-border); border-radius: var(--tb-radius-control); background: none; color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
+.secondary { align-self: flex-start; min-height: 44px; padding: 0 1.5rem; border: 1px solid var(--tb-border); border-radius: 0; background: none; color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
 
 /* a statement: the order and its day, the payout as the one figure, the breakdown on hairlines */
 .panel article { border-bottom: 1px solid var(--tb-line); padding: 0 0 1.25rem; margin-bottom: 1.25rem; display: grid; gap: 0.5rem; min-width: 0; }
@@ -55,3 +77,72 @@
 .breakdown dt, .breakdown dd { margin: 0; padding: 0.375rem 0; border-bottom: 1px solid var(--tb-line); }
 .breakdown dd { text-align: right; font-variant-numeric: tabular-nums; padding-left: 1.5rem; }
 .total { font-weight: 600; border-bottom-color: var(--tb-border); }
+
+/* dates in ruled lines, right-aligned: the day, the time, and what is left (U10-25) */
+.orderRow { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 0.25rem 1.5rem; border-bottom: 1px solid var(--tb-line); padding: 0.875rem 0; }
+.list > .orderRow:first-child { padding-top: 0; }
+.orderMain { min-width: 0; }
+.orderMain a { color: var(--tb-text); text-decoration: none; }
+.orderMain a:hover { color: var(--tb-hot); }
+.orderMain p { margin: 0.25rem 0 0; color: var(--tb-muted); font-size: 0.9375rem; }
+.when { display: flex; flex-direction: column; align-items: flex-end; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.whenDate { font-weight: 600; }
+.whenTime { color: var(--tb-muted); font-size: 0.9375rem; }
+.whenLeft { margin-top: 0.125rem; color: var(--tb-hot); font-size: 0.9375rem; }
+.whenUrgent { font-weight: 600; }
+@media (max-width: 30rem) {
+  .orderRow { grid-template-columns: minmax(0, 1fr); }
+  .when { align-items: flex-start; text-align: left; flex-direction: row; flex-wrap: wrap; gap: 0 0.75rem; }
+}
+
+/* the links that are buttons: ruled, like every main button of the dark theme (a vermilion hairline and a low-opacity vermilion body) */
+.ruledButton { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 1.5rem; border: 1px solid var(--tb-btn-line); border-radius: var(--tb-btn-radius); background: var(--tb-btn-bg); color: var(--tb-btn-fg); font-weight: 600; text-decoration: none; }
+.ruledButton:hover { background: var(--tb-btn-bg-hover); }
+.ruledButton:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+.panel > p > .ruledButton { align-self: flex-start; }
+
+/* the titles that are links read alike everywhere on the page: no underline, vermilion when touched */
+.row a, .stubHeading a, .payoutRow a { text-decoration: none; }
+.row a:hover, .stubHeading a:hover, .payoutRow a:hover { color: var(--tb-hot); }
+
+/* the payout account page (U10-25): the account's facts as hairline rows with a status mark, a ruled option list, ruled buttons */
+.facts { margin: 0; }
+.facts > div { display: grid; grid-template-columns: minmax(6rem, 9rem) minmax(0, 1fr); align-items: center; column-gap: 1rem; min-height: 4rem; padding: 0.5rem 0; border-top: 1px solid var(--tb-line); }
+.facts > div:last-child { border-bottom: 1px solid var(--tb-line); }
+.facts dt { color: var(--tb-muted); font-size: 0.9375rem; font-weight: 500; }
+.facts dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.dot { display: inline-block; width: 8px; height: 8px; margin-inline-end: 0.5rem; border: 1px solid var(--tb-muted); vertical-align: middle; }
+.dotOn { border-color: var(--tb-hot); background: var(--tb-hot); }
+.back { margin: 0.5rem 0 0; }
+.ghostButton { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.5rem; border: 1px solid var(--tb-border); background: none; color: var(--tb-text); font-weight: 600; text-decoration: none; }
+.ghostButton:hover { border-color: var(--tb-hot); }
+.ghostButton:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+.primary { border-radius: var(--tb-btn-radius); }
+.choice div { min-height: 56px; }
+@media (max-width: 30rem) { .facts > div { grid-template-columns: minmax(0, 1fr); row-gap: 0.125rem; padding: 0.75rem 0; } }
+
+/* the options of the payout kind: a hairline ring, a vermilion dot when chosen (no default browser look) */
+.choice input { appearance: none; display: grid; place-content: center; border: 1px solid var(--tb-border); border-radius: 50%; background: none; cursor: pointer; }
+.choice input::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--tb-hot); transform: scale(0); transition: transform 120ms ease; }
+.choice input:checked { border-color: var(--tb-hot); }
+.choice input:checked::after { transform: scale(1); }
+.choice input:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .choice input::after { transition: none; } }
+
+/* the ways to be paid: ruled rows with the brand's mark; touching one opens its form in a popup over the blurred page (shared/Popup) */
+.options { list-style: none; margin: 0.25rem 0 0; padding: 0; border-top: 1px solid var(--tb-line); }
+.options li { border-bottom: 1px solid var(--tb-line); }
+.option { display: flex; align-items: center; gap: 1rem; width: 100%; min-height: 72px; padding: 0.5rem 0; border: 0; background: none; color: var(--tb-text); font: inherit; font-weight: 600; text-align: start; cursor: pointer; }
+.option::after { content: '→'; margin-inline-start: auto; color: var(--tb-hot); }
+.option:hover { color: var(--tb-hot); }
+.option:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: -2px; }
+.popForm { display: grid; gap: 0.5rem; }
+.popForm label { font-weight: 600; margin-top: 0.5rem; }
+.popForm input { min-height: 46px; font: inherit; width: 100%; box-sizing: border-box; padding: 0 0.25rem; border: 0; border-bottom: 1px solid var(--tb-border); border-radius: 0; background: none; color: var(--tb-text); }
+.popForm input:focus-visible { outline: 0; border-bottom-color: var(--tb-hot); box-shadow: inset 0 -2px 0 var(--tb-hot); }
+.popHead { display: flex; align-items: center; gap: 1rem; }
+.popHead p { margin: 0; }
+.popForm .buttons { margin-top: 0.75rem; }
+
+/* links that stand alone in a row keep a target of at least 24 px (WCAG 2.5.8) */
+.row a, .stubHeading a, .payoutRow a, .orderMain a { display: inline-flex; align-items: center; min-height: 28px; }

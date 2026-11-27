@@ -14,24 +14,28 @@ export class SignInDto {
   password!: string;
 }
 
+/** U10-25: what the sign-in page typed in its first step. */
+export class LoginCheckDto {
+  @IsString()
+  @MaxLength(254)
+  login!: string;
+}
+
 export class MfaDto {
   /** A 6-digit TOTP code, or a recovery code. */
   @IsString()
   @Length(6, 40)
   @Matches(/^[0-9A-Za-z -]+$/)
   code!: string;
+
+  /** U10-25: 'remember this device' for 30 days, after this second factor. */
+  @IsOptional()
+  @IsBoolean()
+  remember?: boolean;
 }
 
-export const OTP_CHANNELS = ['sms', 'email', 'both'] as const;
-export type OtpChannel = (typeof OTP_CHANNELS)[number];
-
-/** FR-ACC-01, FR-ACC-04: registration details. The password policy itself is checked by the service. */
+/** FR-ACC-01: the first step of registration (U10-25): the name, the e-mail address and the password. The password policy is checked by the service. */
 export class RegisterDto {
-  /** A Bangladeshi mobile number, 01XXXXXXXXX or +8801XXXXXXXXX. */
-  @IsString()
-  @MaxLength(20)
-  phone!: string;
-
   @IsEmail({}, { message: 'email must be an e-mail address' })
   @MaxLength(254)
   email!: string;
@@ -42,6 +46,32 @@ export class RegisterDto {
   displayName!: string;
 
   /** SEC-AUTH-01: every printable character is accepted; the service checks the length and the blocklist. */
+  @IsString()
+  @MaxLength(1024)
+  password!: string;
+}
+
+export class RegistrationIdDto {
+  @IsUUID()
+  registrationId!: string;
+}
+
+export class RegisterResendDto extends RegistrationIdDto {}
+
+export class RegisterVerifyDto extends RegistrationIdDto {
+  @IsString()
+  @Matches(/^\d{6}$/)
+  code!: string;
+}
+
+/** FR-ACC-01, FR-ACC-04: the last step: the mobile number, the age confirmation and the versions of the terms and the privacy notice accepted. */
+export class RegisterCompleteDto extends RegistrationIdDto {
+  /** A Bangladeshi mobile number, 01XXXXXXXXX or +8801XXXXXXXXX. */
+  @IsString()
+  @MaxLength(20)
+  phone!: string;
+
+  /** Sent again so the rules that involve the number can be checked; it must match the first step's password. */
   @IsString()
   @MaxLength(1024)
   password!: string;
@@ -56,29 +86,6 @@ export class RegisterDto {
 
   @IsBoolean()
   adultConfirmed!: boolean;
-
-  /** U6-07: where the sign-up code goes; sms when absent. */
-  @IsOptional()
-  @IsIn(OTP_CHANNELS)
-  channel?: OtpChannel;
-}
-
-export class RegistrationIdDto {
-  @IsUUID()
-  registrationId!: string;
-}
-
-/** A new sign-up code, optionally by another channel than the first (U6-07). */
-export class RegisterResendDto extends RegistrationIdDto {
-  @IsOptional()
-  @IsIn(OTP_CHANNELS)
-  channel?: OtpChannel;
-}
-
-export class RegisterVerifyDto extends RegistrationIdDto {
-  @IsString()
-  @Matches(/^\d{6}$/)
-  code!: string;
 }
 
 export class EmailVerifyDto {

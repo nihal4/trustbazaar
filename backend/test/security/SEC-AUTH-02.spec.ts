@@ -7,7 +7,7 @@ const s = suite();
 
 describe('SEC-AUTH-02 password checks', () => {
   const register = (password: string, o: Record<string, unknown> = {}) =>
-    s.browser().post('/auth/register', { phone: newLocal(), email: `p-${randomUUID()}@tb.test`, displayName: 'Rafiq Uddin', password, ...s.cfg.legal, adultConfirmed: true, ...o });
+    s.browser().post('/auth/register', { email: `p-${randomUUID()}@tb.test`, displayName: 'Rafiq Uddin', password, ...o });
 
   it.each([
     ['a breached and common password', 'password1234567', 'common'],
@@ -18,9 +18,17 @@ describe('SEC-AUTH-02 password checks', () => {
     expect(await problem(await register(password))).toMatchObject({ status: 422, type: '/problems/password-rejected', errors: [{ field: 'password', reason }] });
   });
 
-  it("SEC-AUTH-02 registration refuses the person's own mobile number inside the password", async () => {
+  it("SEC-AUTH-02 registration refuses the person's own mobile number inside the password, at the step that asks for it", async () => {
     const phone = newLocal();
-    expect(await problem(await register(`call me on ${phone}`, { phone }))).toMatchObject({ status: 422, errors: [{ field: 'password', reason: 'context' }] });
+    const password = `call me on ${phone} now`;
+    const email = `p-${randomUUID()}@tb.test`;
+    const b = s.browser();
+    const started = await (await b.post('/auth/register', { email, displayName: 'Rafiq Uddin', password })).json();
+    const code = s.sent(email, 'otp_register_email').at(-1)!.vars.code;
+    expect((await b.post('/auth/register/verify', { registrationId: started.registrationId, code })).status).toBe(204);
+    expect(await problem(await b.post('/auth/register/complete', { registrationId: started.registrationId, phone, password, ...s.cfg.legal, adultConfirmed: true }))).toMatchObject({
+      status: 422, errors: [{ field: 'password', reason: 'context' }],
+    });
   });
 
   it('SEC-AUTH-02 a password reset refuses a common password too', async () => {

@@ -145,8 +145,8 @@ export function Component() {
       </aside>
       <section className={styles.dcMain} aria-label={t('dispute.chat_title')}>
         <header className={styles.dcHead}>
-          <strong>{t('dispute.party.trustbazaar')}</strong>
-          <span>{stateWord}</span>
+          <span className={styles.dcAvatar} aria-hidden="true">{Array.from(t('dispute.party.trustbazaar'))[0]}</span>
+          <div><strong>{t('dispute.party.trustbazaar')}</strong><span>{stateWord}</span></div>
         </header>
         <div className={styles.dcThread} ref={thread} tabIndex={0} role="log" aria-live="polite" aria-label={t('dispute.chat_title')}>
           {rows.length === 0 && <p className={styles.dcEmpty}>{t('dispute.chat_empty')}</p>}
@@ -176,7 +176,10 @@ export function Component() {
                 <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" focusable="false"><path d="M14.5 9.5 9 15a3 3 0 0 1-4.2-4.2l6-6a2 2 0 0 1 2.8 2.8l-6 6a1 1 0 0 1-1.4-1.4L11 7.6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </label>
               <textarea ref={box} className={styles.dcInput} aria-label={t('dispute.type_message')} placeholder={t('dispute.type_message')} value={text} rows={1} maxLength={4000} onKeyDown={onKey} onChange={(e) => setText(e.target.value)} />
-              <button type="submit" className={styles.dcSend} disabled={send.isPending || !text.trim()}>{t('dispute.send')}</button>
+              <button type="submit" className={styles.dcSend} disabled={send.isPending || !text.trim()}>
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12 L20 4 L14 20 L11 13 Z M11 13 L20 4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <span className={styles.srOnly}>{t('dispute.send')}</span>
+              </button>
             </div>
             {attach.isPending && <p role="status" className={styles.hint}>{t('dispute.uploading_one')}</p>}
           </form>

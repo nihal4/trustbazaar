@@ -3,14 +3,21 @@
    pixels; warnings in words, not colour alone. The list sits under the account tabs; conversations are rows on mist,
    unread ones white with a plum edge; my messages are plum-tinted bubbles on the right, theirs on mist on the left. */
 .page {
-  max-width: 44rem;
+  max-width: 64rem;
 }
 
+/* U10-25 (redesign v3): the same line grid as the profile and the notices: a vermilion rule over the title, hairline rows, no boxes */
 .page h1 {
-  margin: 0 0 1rem;
-  font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 1.5rem 0 1.25rem;
+  border-top: 2px solid var(--tb-hot);
+  font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.125rem);
   line-height: 1.1;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.03em;
   font-weight: 600;
   overflow-wrap: anywhere;
 }
@@ -18,70 +25,113 @@
 :lang(bn) .page h1 {
   letter-spacing: 0;
   line-height: 1.35;
-  font-weight: 600;
 }
 
 .threads,
 .messages {
   list-style: none;
   padding: 0;
-  margin: 1rem 0 1.25rem;
+  margin: 0 0 1.25rem;
 }
 
 .threads {
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
+  border-top: 1px solid var(--tb-line);
 }
 
 .threads li {
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-surface);
+  border-bottom: 1px solid var(--tb-line);
 }
 
 .unreadThread {
-  background: var(--tb-bg) !important;
-  border: 1.5px solid var(--tb-line);
-  border-left: 4px solid var(--tb-accent);
+  box-shadow: inset 2px 0 0 var(--tb-hot);
 }
 
 .threadLink {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  min-height: 44px;
-  padding: 0.875rem 1.125rem;
-  border-radius: var(--tb-radius-panel);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  min-height: 80px;
+  padding: 1rem 0 1rem 1rem;
   color: var(--tb-text);
   text-decoration: none;
   overflow-wrap: anywhere;
 }
 
 .threadLink:hover .name {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  color: var(--tb-hot);
 }
 
 .threadLink:focus-visible {
-  outline: 3px solid var(--tb-focus);
-  outline-offset: -3px;
+  outline: 2px solid var(--tb-hot);
+  outline-offset: -2px;
+}
+
+/* the photo place: a square with the grid drawn in it and the other party's initial (there is no photo upload) */
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid var(--tb-border);
+  background-image:
+    linear-gradient(to right, var(--tb-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--tb-line) 1px, transparent 1px);
+  background-size: 16px 16px;
+  color: var(--tb-hot);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.threadMain {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
 }
 
 .name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   font-weight: 600;
 }
 
-.badge {
-  display: inline-block;
-  margin-left: 0.5rem;
-  padding: 1px 10px;
-  border-radius: var(--tb-radius-control);
-  background: var(--tb-accent-soft);
-  color: var(--tb-accent-strong);
-  font-size: 0.8125rem;
+/* the project's verified mark, as on the listing and order pages */
+.tick {
+  display: inline-flex;
+  color: var(--tb-protect);
+}
+
+.tick svg {
+  width: 20px;
+  height: 20px;
+}
+
+.threadSide {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  text-align: end;
+}
+
+.when {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.whenDate {
+  font-size: 0.9375rem;
   font-weight: 600;
-  letter-spacing: 0;
-  vertical-align: middle;
+}
+
+.whenTime {
+  color: var(--tb-muted);
+  font-size: 0.875rem;
 }
 
 .about,
@@ -99,44 +149,271 @@
 
 .unread {
   font-weight: 600;
-  color: var(--tb-accent);
+  color: var(--tb-hot);
+  font-size: 0.9375rem;
+}
+
+@media (max-width: 30rem) {
+  .threadLink {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .threadSide {
+    grid-column: 2;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 0.75rem;
+    text-align: start;
+  }
+
+  .when {
+    flex-direction: row;
+    gap: 0 0.5rem;
+  }
+}
+
+/* the conversation (U10-25), laid out as the messaging apps people already know but drawn on the line grid (square, hairline, vermilion): one card holding a header (back, the other party's initial, name and
+   listing), the messages as ruled bubbles (mine right with a vermilion line over a faint wash, theirs left with a hairline, the time inside), and a bar at the
+   foot to write in: attach, a field that grows, a square send button. The same drawing is the dispute chat's (orders.module.css, .dc*). */
+.chat {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--tb-line);
+  background: var(--tb-bg);
+}
+
+.chatHead {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--tb-line);
+  background: var(--tb-sheet, var(--tb-surface));
+}
+
+.backBtn,
+.iconBtn {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--tb-text);
+  cursor: pointer;
+  transition: background 140ms;
+}
+
+.backBtn:hover,
+.iconBtn:hover {
+  background: var(--tb-surface);
+}
+
+.backBtn:focus-visible,
+.iconBtn:focus-visible,
+.attach:focus-within .iconBtn {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: 2px;
+}
+
+.backBtn svg,
+.iconBtn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.headAvatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--tb-border);
+  background-image: linear-gradient(to right, var(--tb-line) 1px, transparent 1px), linear-gradient(to bottom, var(--tb-line) 1px, transparent 1px);
+  background-size: 11px 11px;
+  color: var(--tb-hot);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.headText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.page .chatHead h1 {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 1.0625rem;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+.about {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  margin: 0;
+  font-size: 0.875rem;
+  min-width: 0;
+}
+
+.headName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* the product the talk is about: a ruled chip, in the text colour, never the default underlined link */
+.product {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0.125rem 0.625rem;
+  border: 1px solid var(--tb-border);
+  color: var(--tb-text);
+  font-weight: 600;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.productTag {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0.125rem 0.625rem;
+  border: 1px solid var(--tb-border);
+  color: var(--tb-text);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.threadLink:hover .productTag {
+  border-color: var(--tb-hot);
+}
+
+.threads ~ .secondary {
+  border-radius: 0;
+}
+
+.product:hover {
+  border-color: var(--tb-hot);
+  color: var(--tb-hot);
+}
+
+.role {
+  color: var(--tb-muted);
+}
+
+.retry {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.messages {
+  height: clamp(18rem, 58vh, 40rem);
+  overflow-y: auto;
+  padding: 1rem;
+  background: var(--tb-bg);
+}
+
+.messageList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.messages:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: -2px;
 }
 
 .message {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  max-width: 85%;
-  margin-bottom: 0.625rem;
-  padding: 0.75rem 1rem;
-  border-radius: var(--tb-radius-panel);
+  width: fit-content;
+  max-width: min(78%, 34rem);
+  margin: 0;
+  padding: 0.5rem 0.75rem 0.375rem;
   overflow-wrap: anywhere;
 }
 
 .mine {
   margin-left: auto;
-  background: var(--tb-accent-soft);
-  border-bottom-right-radius: 2px;
+  border: 1px solid var(--tb-hot);
+  background: color-mix(in srgb, var(--tb-hot) 10%, transparent);
+  color: var(--tb-text);
 }
 
 .theirs {
   margin-right: auto;
-  background: var(--tb-surface);
-  border-bottom-left-radius: 2px;
+  border: 1px solid var(--tb-border);
+  background: none;
+  color: var(--tb-text);
+}
+
+.day {
+  align-self: center;
+  margin: 0.75rem 0 0.5rem;
+}
+
+.day {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  gap: 0.75rem;
+}
+
+.day::before,
+.day::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--tb-line);
+}
+
+.day span {
+  color: var(--tb-muted);
+  font-size: 0.8125rem;
 }
 
 .empty {
+  margin: auto;
+  max-width: 24rem;
   color: var(--tb-muted);
+  text-align: center;
 }
 
 .sender {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--tb-accent-strong);
-}
-
-.sender:empty {
-  display: none;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 /* Plain text: line breaks as typed, nothing interpreted (SEC-INP-03, FR-CHT-09). */
@@ -150,126 +427,370 @@
   max-width: 100%;
   max-height: 20rem;
   object-fit: contain;
-  border-radius: var(--tb-radius-panel);
 }
 
 .flag,
 .linkWarning,
 .notice {
   margin: 0;
-  padding: 0.625rem 0.875rem;
+  padding: 0.5rem 0.75rem;
   border: 1px solid var(--tb-warning-border);
-  border-radius: var(--tb-radius-panel);
   background: var(--tb-warning-bg);
   color: var(--tb-text);
+  font-size: 0.9375rem;
 }
 
 .notice {
-  margin: 1rem 0;
+  margin: 1rem;
 }
 
 .status {
   margin: 0;
   font-size: 0.875rem;
-  color: var(--tb-muted);
+  opacity: 0.8;
+}
+
+/* the foot of a bubble: the report on the left (theirs only), the time on the right */
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.foot .linkButton {
+  min-height: 28px;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+/* the time (and, on mine, whether it was delivered or read) at the foot of the bubble */
+.time {
+  margin-left: auto;
+  font-size: 0.75rem;
+  opacity: 0.72;
+  color: inherit;
 }
 
 .error {
   color: var(--tb-error);
   font-weight: 600;
-  margin: 0 0 0.5rem;
-}
-
-.composer,
-.photo,
-.report {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-  margin: 1.25rem 0;
-}
-
-.composer label,
-.photo label {
-  font-weight: 600;
-}
-
-.composer textarea,
-.report textarea,
-.photo input[type='text'] {
-  width: 100%;
-  box-sizing: border-box;
-  font: inherit;
-  padding: 0.75rem 0.875rem;
-  border: 1.5px solid var(--tb-border);
-  border-radius: var(--tb-radius);
-  background: var(--tb-bg);
-  color: var(--tb-text);
-}
-
-.photo input[type='text'] {
-  min-height: 48px;
-}
-
-.composer textarea:focus-visible,
-.report textarea:focus-visible,
-.photo input[type='text']:focus-visible {
-  outline: 3px solid var(--tb-accent-soft);
-  outline-offset: 0;
-  border-color: var(--tb-accent);
-}
-
-.composer button,
-.photo button[type='submit'],
-.report button[type='submit'] {
-  align-self: flex-start;
-  min-height: 48px;
-  padding: 0 1.75rem;
-  border: 0;
-  border-radius: var(--tb-radius-pill);
-  background: var(--tb-accent);
-  color: var(--tb-accent-text);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.composer button:disabled,
-.photo button[type='submit']:disabled,
-.report button[type='submit']:disabled {
-  background: var(--tb-muted);
-  cursor: not-allowed;
-}
-
-.report fieldset {
-  border: 0;
-  padding: 0;
   margin: 0;
 }
 
-.report legend {
-  font-weight: 600;
+/* block and report: small text buttons on a line under the header */
+.actionsWrap {
+  display: contents;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0 1rem;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--tb-line);
+}
+
+.actions .secondary,
+.actions .linkButton {
+  min-height: 36px;
   padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tb-muted);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 400;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.actions .secondary:hover:not(:disabled),
+.actions .linkButton:hover {
+  color: var(--tb-hot);
+}
+
+.actionNote {
+  padding: 0.5rem 1rem 0;
+}
+
+/* the foot: a photo waiting to be sent, the bar to write in, and the one line of advice */
+.dock {
+  padding: 0.75rem 1rem 0.5rem;
+  border-top: 1px solid var(--tb-line);
+  background: var(--tb-sheet, var(--tb-surface));
+}
+
+.photoPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--tb-line);
+}
+
+.photoPanel label {
+  font-weight: 600;
+}
+
+.photoPanel input[type='text'] {
+  width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 0 1rem;
+  border: 1px solid var(--tb-border);
+  background: var(--tb-bg);
+  color: var(--tb-text);
+  font: inherit;
+}
+
+.photoPanel input[type='text']:focus-visible,
+.field:focus-visible {
+  outline: none;
+  border-color: var(--tb-hot);
+  box-shadow: 0 0 0 1px var(--tb-hot);
+}
+
+.fileName {
+  margin: 0;
+  color: var(--tb-muted);
+  overflow-wrap: anywhere;
+}
+
+.bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.composer {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.field {
+  flex: 1;
+  min-width: 0;
+  max-height: 9rem;
+  box-sizing: border-box;
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--tb-border);
+  background: var(--tb-bg);
+  color: var(--tb-text);
+  font: inherit;
+  line-height: 1.4;
+  resize: none;
+}
+
+.sendBtn {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--tb-hot);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--tb-hot) 10%, transparent);
+  color: var(--tb-hot);
+  cursor: pointer;
+  transition: background 140ms, opacity 140ms;
+}
+
+.sendBtn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.sendBtn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--tb-hot) 18%, transparent);
+}
+
+.sendBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sendBtn:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: 2px;
+}
+
+.attach {
+  display: inline-flex;
+  flex: none;
+}
+
+.attach input[type='file'] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.dockNote {
+  margin: 0.375rem 0 0;
+  font-size: 0.8125rem;
+  text-align: center;
+}
+
+.primary,
+.secondary {
+  min-height: 44px;
+  padding: 0 1.25rem;
+  border: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: none;
+  color: var(--tb-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 140ms, border-color 140ms;
+}
+
+.primary {
+  border-color: var(--tb-hot);
+  background: color-mix(in srgb, var(--tb-hot) 12%, transparent);
+}
+
+.primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--tb-hot) 22%, transparent);
+}
+
+.secondary:hover:not(:disabled) {
+  border-color: var(--tb-hot);
+}
+
+.primary:disabled,
+.secondary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.primary:focus-visible,
+.secondary:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: 2px;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+@media (max-width: 40rem) {
+  .chat {
+    border-left: 0;
+    border-right: 0;
+    margin: 0 calc(-1 * var(--tb-gutter, 1rem));
+  }
+
+  .messages {
+    height: clamp(16rem, calc(100dvh - 23rem), 40rem);
+    padding: 0.75rem;
+  }
+
+  .message {
+    max-width: 86%;
+  }
+}
+
+/* the report, in a popup: a question over ruled choices (a ring that fills with a vermilion dot), then a hairline box and the popup's own buttons */
+.report {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  min-width: 0;
+}
+
+.report fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.report fieldset > .hint {
+  margin: 0 0 0.5rem;
+  color: var(--tb-muted);
 }
 
 .report fieldset div {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  min-height: 44px;
+  gap: 0.875rem;
+  min-height: 52px;
+  border-top: 1px solid var(--tb-line);
+}
+
+.report fieldset div:last-child {
+  border-bottom: 1px solid var(--tb-line);
+}
+
+.report fieldset div:focus-within {
+  background: var(--tb-surface);
+}
+
+.report fieldset label {
+  flex: 1;
+  padding: 0.75rem 0;
+  cursor: pointer;
 }
 
 .report input[type='radio'] {
-  width: 22px;
-  height: 22px;
-  margin: 0;
-  accent-color: var(--tb-accent);
+  flex: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  min-height: 0;
+  margin: 0 0 0 0.25rem;
+  border: 1px solid var(--tb-border);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
 }
 
-.actions {
-  margin: 0.75rem 0 1.25rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--tb-line);
+.report input[type='radio']:checked {
+  border-color: var(--tb-hot);
+  background: radial-gradient(circle, var(--tb-hot) 0 38%, transparent 42%);
+}
+
+.report input[type='radio']:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: 2px;
+}
+
+.report label.fieldLabel {
+  font-weight: 600;
+}
+
+.report textarea {
+  display: block;
+  width: 100%;
+  min-height: 96px;
+  box-sizing: border-box;
+  padding: 0.75rem;
+  border: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--tb-text);
+  font: inherit;
+  resize: vertical;
+}
+
+.report textarea:focus-visible {
+  outline: none;
+  border-color: var(--tb-hot);
+  box-shadow: inset 0 0 0 1px var(--tb-hot);
 }
 
 .row {
@@ -279,35 +800,23 @@
   gap: 0.75rem;
 }
 
-.secondary {
-  min-height: 44px;
-  padding: 0 1.25rem;
-  border: 1.5px solid var(--tb-border);
-  border-radius: var(--tb-radius-pill);
-  background: var(--tb-bg);
-  color: var(--tb-text);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.secondary:disabled {
-  color: var(--tb-muted);
-  cursor: not-allowed;
-}
-
+/* a small text button under a message of theirs */
 .linkButton {
   align-self: flex-start;
-  min-height: 44px;
+  min-height: 32px;
   padding: 0;
   border: 0;
   background: none;
-  color: var(--tb-accent);
+  color: var(--tb-muted);
   font: inherit;
-  font-weight: 600;
+  font-size: 0.875rem;
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
+}
+
+.linkButton:hover {
+  color: var(--tb-hot);
 }
 
 .visuallyHidden {

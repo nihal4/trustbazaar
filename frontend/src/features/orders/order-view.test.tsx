@@ -213,6 +213,7 @@ describe('the meetup handover (Unit 4)', () => {
   it('FR-DLV-06 U10-23 the seller adds a photo of the item before entering the code; other files are refused before upload', async () => {
     const be = backend({ 'POST /orders/o-1/handover-photos': json(201, { count: 1 }) }, { order: order({ role: 'seller' }), handover: handover({ role: 'seller', code: null, photoCount: 0, attemptsLeft: 5 } as never) });
     renderApp('/orders/o-1', be);
+    fireEvent.click(await screen.findByRole('button', { name: 'Start the handover' }));
     const input = await screen.findByLabelText('Add a photo of the item (before you enter the code)');
     fireEvent.change(input, { target: { files: [new File([new Uint8Array(10)], 'x.pdf', { type: 'application/pdf' })] } });
     expect(await screen.findByText(/x\.pdf cannot be used/)).toBeTruthy();
@@ -229,8 +230,12 @@ describe('the meetup handover (Unit 4)', () => {
     }, { order: order({ role: 'seller' }), handover: handover({ role: 'seller', code: null, attemptsLeft: 5 }) });
     renderApp('/orders/o-1', be);
     expect(await screen.findByText('Hand over the item only after the buyer gives you the code.')).toBeTruthy();
-    expect(screen.getByText('Wrong codes allowed before the lock: 5')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Show code' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Start the handover' }));          // step 1 is the photo; the code is step 2
+    expect(await screen.findByText('Step 1 of 2')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    expect(await screen.findByText('Step 2 of 2')).toBeTruthy();
+    expect(screen.getByText('Wrong codes allowed before the lock: 5')).toBeTruthy();
     fireEvent.change(screen.getByLabelText("Buyer's code"), { target: { value: '12 34 56' } });
     fireEvent.click(screen.getByRole('button', { name: 'Confirm the handover' }));
     expect(await screen.findByText('That code is not right. Wrong codes allowed before the lock: 4')).toBeTruthy();

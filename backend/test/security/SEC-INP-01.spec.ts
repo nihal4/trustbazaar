@@ -4,7 +4,7 @@ import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum';
 import { DiscoveryService } from '@nestjs/core';
 import { getMetadataStorage } from 'class-validator';
 import { randomUUID } from 'crypto';
-import { newLocal, problem, suite } from './setup';
+import { problem, suite } from './setup';
 
 // SEC-INP-01: every input is validated on the server against an explicit schema (type, length, range, format);
 // requests with unknown or invalid fields are rejected.
@@ -34,7 +34,7 @@ describe('SEC-INP-01 schema validation', () => {
 
   it('SEC-INP-01 an unknown field is rejected, and nothing is created', async () => {
     const email = `u-${randomUUID()}@tb.test`;
-    const r = await s.browser().post('/auth/register', { phone: newLocal(), email, displayName: 'Tania Akter', password: 'kites over the green river', ...s.cfg.legal, adultConfirmed: true, isAdmin: true });
+    const r = await s.browser().post('/auth/register', { email, displayName: 'Tania Akter', password: 'kites over the green river', isAdmin: true });
     const p = await problem(r);
     expect(p).toMatchObject({ status: 400, type: '/problems/validation-failed' });
     expect(p.errors).toEqual(['property isAdmin should not exist']); // names the field, never the value

@@ -83,6 +83,19 @@ describe('the thread list', () => {
   });
 });
 
+describe('the header', () => {
+  it('FR-CHT-05 the Messages place in the header shows how many messages wait, in words as well as a number', async () => {
+    const be = fakeBackend({
+      'GET /me': json(200, standInMe),
+      'GET /threads': json(200, { items: [summary({ unread: 2 }), summary({ id: 'th-2', unread: 3 })], nextCursor: null }),
+      'GET /notifications': json(200, { items: [], unread: 0, nextCursor: null }),
+    });
+    renderApp('/messages', be);
+    const links = await screen.findAllByRole('link', { name: /Messages/ });
+    await waitFor(() => expect(links.some((l) => /5\s*unread/.test(l.textContent ?? ''))).toBe(true));
+  });
+});
+
 describe('a conversation', () => {
   it('SEC-INP-03 FR-CHT-09 messages are plain text; a web address stays text, with a warning', async () => {
     await openThread(server({ messages: [msg(1, { text: '<b>hello</b> <img src=x onerror=alert(1)>' }), msg(2, { text: 'See www.example.com/deal' })] }));
@@ -278,7 +291,8 @@ describe('ways in', () => {
       [`GET /threads/${THREAD}/messages`]: json(200, { items: [msg(1)], more: false, lastSeq: 1, otherMarks: { delivered: 0, read: 0 }, closed: false }),
     });
     renderApp('/notifications', be);
-    fireEvent.click(await screen.findByRole('button', { name: /New message/ }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Show all notifications' }));       // a read notice is in the popup
+    fireEvent.click(within(await screen.findByRole('dialog', { name: 'Your notifications' })).getByRole('button', { name: /New message/ }));
     expect(await screen.findByRole('heading', { name: /Conversation with Karim/ })).toBeTruthy();
   });
 

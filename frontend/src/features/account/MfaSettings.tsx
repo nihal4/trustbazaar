@@ -2,14 +2,16 @@
 // turning the authenticator app on (QR code, the secret as text, the otpauth:// link, the first code),
 // the ten recovery codes shown once, new recovery codes, and turning it off. The secret and the codes
 // live only in this component's state: never in the query cache or browser storage.
-import { lazy, Suspense, useState, type FormEvent } from 'react';
+import { formatWait } from '../../shared/wait';
+import { lazy, Suspense, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toAsciiDigits } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
 import { untilAfter, useSecondsLeft } from '../../shared/countdown';
-import { CheckboxField, FormMessage, SubmitButton, TextField } from '../../shared/form';
+import { CheckboxField, CodeField, FormMessage, SubmitButton, TextField } from '../../shared/form';
 import { ME_KEY, useMe } from '../../shared/me';
 import { fieldErrors, problemName } from '../../shared/problems';
+import { Popup } from '../../shared/Popup';
 import { StepUpCancelled } from '../../shared/stepUp';
 import { digits, otherError, passwordReasonText, rejectedPasswordReason, retryAfter, useAccountT } from './common';
 import { isSixDigits, PASSWORD } from './input';
@@ -39,6 +41,7 @@ export function MfaSettings({ sessionsKey }: { sessionsKey: readonly unknown[] }
   const [view, setView] = useState<View>({ kind: 'idle' });
   const [message, setMessage] = useState<{ kind: 'error' | 'success' | 'info'; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const refreshMe = () => queryClient.invalidateQueries({ queryKey: ME_KEY });
   /** `mfa-state`: already on, already off, or not started; the page shows the current state again. */
@@ -83,9 +86,10 @@ export function MfaSettings({ sessionsKey }: { sessionsKey: readonly unknown[] }
   if (me.isError) return null;   // the page above already asks to sign in when there is no session
   const on = me.data.mfaEnabled;
 
-  return (
-    <section aria-labelledby="mfa-title" className={styles.section}>
-      <h2 id="mfa-title">{t('mfa.title')}</h2>
+  // the recovery codes are shown once: while they are on screen the popup cannot be closed by Escape, the cross or a click outside, only by its own Done (the steps before it close like any popup, and nothing is turned on until the first code is right)
+  const locked = view.kind === 'codes';
+  const content = (
+    <>
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
 
       {view.kind === 'enrolling' && (
@@ -119,7 +123,20 @@ export function MfaSettings({ sessionsKey }: { sessionsKey: readonly unknown[] }
           }} onStateChanged={() => void stateChanged()} />
         </>
       )}
-    </section>
+    </>
+  );
+  return (
+    <li>
+      <button type="button" className={styles.settingRow} aria-haspopup="dialog" onClick={() => setOpen(true)}>
+        <span>{t('mfa.title')}</span>
+        <span className={styles.settingValue}>{t(on ? 'account.mfa_on' : 'account.mfa_off')}</span>
+      </button>
+      {open && (
+        <Popup id="mfa-popup" title={t('mfa.title')} closeLabel={t('legal.close')} wide busy={locked || busy} onClose={() => { setOpen(false); setView({ kind: 'idle' }); setMessage(null); }}>
+          {content}
+        </Popup>
+      )}
+    </li>
   );
 }
 
@@ -154,31 +171,68 @@ function Enrol({ otpauthUri, secret, onDone, onCancel, onStateChanged }: {
     }
   };
 
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   return (
     <div>
-      <ol className={styles.steps}>
-        <li>{t('mfa.step_app')}</li>
-        <li>{t('mfa.step_scan')}</li>
+      <Stepper current={step} />
+      {step === 1 && (
+        <>
+          <p>{t('mfa.step_app')}</p>
+          <div className={styles.stepNav}>
+            <button type="button" onClick={onCancel}>{t('mfa.cancel')}</button>
+            <button type="button" className={styles.next} onClick={() => setStep(2)}>{t('mfa.next')}</button>
+          </div>
+        </>
+      )}
+      {step === 2 && (
+        <>
+          <p>{t('mfa.step_scan')}</p>
+          {/* the code beside its key: scan it, or copy the key, or open the link on this phone */}
+          <div className={styles.scan}>
+            <Suspense fallback={<p role="status">{t('shell.loading')}</p>}>
+              <QrCode text={otpauthUri} label={t('mfa.qr_label')} />
+            </Suspense>
+            <div className={styles.scanKey}>
+              <p>{t('mfa.manual')}</p>
+              <p className={styles.secret} aria-label={t('mfa.secret_label')}>{groupSecret(secret)}</p>
+              <div className={styles.actions}>
+                <CopyButton text={secret.replace(/\s+/g, '')} label={t('mfa.copy_secret')} />
+                <a href={otpauthUri} className={styles.linkButton}>{t('mfa.open_app')}</a>
+              </div>
+            </div>
+          </div>
+          <div className={styles.stepNav}>
+            <button type="button" onClick={() => setStep(1)}>{t('mfa.back')}</button>
+            <button type="button" className={styles.next} onClick={() => setStep(3)}>{t('mfa.next')}</button>
+          </div>
+        </>
+      )}
+      {step === 3 && (
+        <form onSubmit={confirm} noValidate>
+          <CodeField id="mfa-confirm-code" label={t('mfa.first_code')} hint={t('mfa.first_code_hint')} value={code} onChange={setCode}
+            error={error ?? undefined} autoFocus data-autofocus />
+          <div className={styles.stepNav}>
+            <button type="button" onClick={() => setStep(2)} disabled={busy}>{t('mfa.back')}</button>
+            <SubmitButton busy={busy} disabled={waitFor > 0}>
+              {waitFor > 0 ? t('wait.seconds', { time: formatWait(waitFor, lang) }) : t('mfa.confirm')}
+            </SubmitButton>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
+
+/** Where the person is in turning the app on: four segments (the app, the code, the first code, the recovery codes), the present one named. */
+function Stepper({ current }: { current: 1 | 2 | 3 | 4 }) {
+  const { t, lang } = useAccountT();
+  const names = ['install', 'scan', 'confirm', 'codes'] as const;
+  return (
+    <div className={styles.stepper}>
+      <p className={styles.stepperText}><strong>{t('mfa.step_of', { n: digits(current, lang), total: digits(4, lang) })}</strong> · {t(`mfa.stepper.${names[current - 1]}`)}</p>
+      <ol aria-hidden="true">
+        {names.map((n, i) => <li key={n} data-state={i + 1 < current ? 'done' : i + 1 === current ? 'now' : 'next'} />)}
       </ol>
-      <Suspense fallback={<p role="status">{t('shell.loading')}</p>}>
-        <QrCode text={otpauthUri} label={t('mfa.qr_label')} />
-      </Suspense>
-      <p>{t('mfa.manual')}</p>
-      <p className={styles.secret} aria-label={t('mfa.secret_label')}>{groupSecret(secret)}</p>
-      <div className={styles.actions}>
-        <CopyButton text={secret.replace(/\s+/g, '')} label={t('mfa.copy_secret')} />
-        <a href={otpauthUri}>{t('mfa.open_app')}</a>
-      </div>
-      <form onSubmit={confirm} noValidate>
-        <TextField id="mfa-confirm-code" label={t('mfa.first_code')} hint={t('mfa.first_code_hint')} value={code} onChange={setCode}
-          error={error ?? undefined} inputMode="numeric" autoComplete="one-time-code" maxLength={6} />
-        <div className={styles.actions}>
-          <SubmitButton busy={busy} disabled={waitFor > 0}>
-            {waitFor > 0 ? t('wait.seconds', { seconds: digits(waitFor, lang) }) : t('mfa.confirm')}
-          </SubmitButton>
-          <button type="button" onClick={onCancel} disabled={busy}>{t('mfa.cancel')}</button>
-        </div>
-      </form>
     </div>
   );
 }
@@ -201,16 +255,20 @@ function RecoveryCodes({ codes, fresh, onDone }: { codes: string[]; fresh: 'enab
 
   return (
     <div>
+      {fresh === 'enabled' && <Stepper current={4} />}
       <FormMessage kind="info">{t(fresh === 'enabled' ? 'mfa.codes_intro' : 'mfa.codes_new_intro')}</FormMessage>
       <ol className={styles.codes} aria-label={t('mfa.codes_title')}>
         {codes.map((c) => <li key={c}>{c}</li>)}
       </ol>
+      {/* the codes are kept in two ways: copied, or saved as a text file */}
       <div className={styles.actions}>
         <CopyButton text={text} label={t('mfa.copy_codes')} />
         <button type="button" onClick={download}>{t('mfa.download_codes')}</button>
       </div>
-      <CheckboxField id="mfa-codes-saved" label={t('mfa.codes_saved')} checked={saved} onChange={setSaved} />
-      <button type="button" className={styles.secondary} onClick={onDone} disabled={!saved}>{t('mfa.done')}</button>
+      <form onSubmit={(e) => { e.preventDefault(); if (saved) onDone(); }} noValidate>
+        <CheckboxField id="mfa-codes-saved" label={t('mfa.codes_saved')} checked={saved} onChange={setSaved} />
+        <SubmitButton busy={false} disabled={!saved}>{t('mfa.done')}</SubmitButton>
+      </form>
     </div>
   );
 }
@@ -268,33 +326,44 @@ function TurnOff({ sessionsKey, onOff, onStateChanged }: {
       <h3>{t('mfa.off_title')}</h3>
       <p>{t('mfa.off_explain')}</p>
       {message && <FormMessage kind="error">{message}</FormMessage>}
-      <TextField id="mfa-off-code" label={t('mfa.app_code')} hint={t('mfa.app_code_hint')} value={code} onChange={setCode}
-        error={errors.code} inputMode="numeric" autoComplete="one-time-code" maxLength={6} />
+      <CodeField id="mfa-off-code" label={t('mfa.app_code')} hint={t('mfa.app_code_hint')} value={code} onChange={setCode}
+        error={errors.code} />
       <TextField id="mfa-off-password" label={t('mfa.new_password')}
         hint={t('mfa.new_password_hint', { min: digits(PASSWORD.minSingleFactor, lang) })} value={password} onChange={setPassword}
         error={errors.password} type="password" autoComplete="new-password" />
       <SubmitButton busy={busy} disabled={waitFor > 0}>
-        {waitFor > 0 ? t('wait.seconds', { seconds: digits(waitFor, lang) }) : t('mfa.turn_off')}
+        {waitFor > 0 ? t('wait.seconds', { time: formatWait(waitFor, lang) }) : t('mfa.turn_off')}
       </SubmitButton>
     </form>
   );
 }
 
+/** Copy to the clipboard. The answer is the button's own words for two seconds (Copied, or Could not copy), in the room of the longer of the two, so nothing moves. */
 function CopyButton({ text, label }: { text: string; label: string }) {
   const { t } = useAccountT();
   const [done, setDone] = useState<boolean | null>(null);
+  const timer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
   const copy = async () => {
+    let ok = true;
     try {
       await navigator.clipboard.writeText(text);
-      setDone(true);
     } catch {
-      setDone(false);
+      ok = false;
     }
+    setDone(ok);
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setDone(null), 2000);
   };
+  const answer = done === null ? null : t(done ? 'mfa.copied' : 'mfa.copy_failed');
   return (
-    <>
-      <button type="button" onClick={() => void copy()}>{label}</button>
-      {done !== null && <span role="status">{t(done ? 'mfa.copied' : 'mfa.copy_failed')}</span>}
-    </>
+    <button type="button" className={styles.copyButton} data-answer={done === null ? undefined : done ? 'ok' : 'failed'} onClick={() => void copy()}>
+      <span className={styles.copyWords} aria-hidden="true">
+        <span style={{ visibility: done === null ? 'visible' : 'hidden' }}>{label}</span>
+        <span style={{ visibility: done === null ? 'hidden' : 'visible' }}>{answer ?? t('mfa.copied')}</span>
+      </span>
+      <span className={styles.srOnly}>{label}</span>
+      <span role="status" className={styles.srOnly}>{answer}</span>
+    </button>
   );
 }

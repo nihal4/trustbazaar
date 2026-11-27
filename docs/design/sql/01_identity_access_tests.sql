@@ -39,6 +39,21 @@ SELECT pg_temp.expect_fail('staff password must be Argon2id',
  $q$INSERT INTO identity.staff_accounts (email, display_name, role, password_hash, created_by) VALUES ('y@tb.test','Y','operator','$2b$12$bcrypt','a0000000-0000-4000-8000-000000000001')$q$);
 
 -- ---------------------------------------------------------------- users
+SELECT pg_temp.ok('U10-25 the second step by e-mail is on for a new member', (SELECT email_two_step FROM identity.users WHERE id = 'c0000000-0000-4000-8000-000000000001'));
+INSERT INTO identity.known_devices (user_id, device_key_hash, label, trusted_until) VALUES
+ ('c0000000-0000-4000-8000-000000000001', decode(repeat('ab', 32), 'hex'), 'Chrome on Mac', now() + interval '30 days'),
+ ('c0000000-0000-4000-8000-000000000002', decode(repeat('cd', 32), 'hex'), 'Chrome on Mac', now() + interval '30 days');
+UPDATE identity.users SET display_name = 'Rahim A.' WHERE id = 'c0000000-0000-4000-8000-000000000001';
+SELECT pg_temp.ok('U10-25 a change that is not the password or the e-mail keeps a remembered device',
+  (SELECT trusted_until IS NOT NULL FROM identity.known_devices WHERE user_id = 'c0000000-0000-4000-8000-000000000001'));
+UPDATE identity.users SET password_hash = '$argon2id$v=19$y', password_changed_at = now() WHERE id = 'c0000000-0000-4000-8000-000000000001';
+SELECT pg_temp.ok('U10-25 a changed password ends the remembered devices of that member only',
+  (SELECT trusted_until IS NULL FROM identity.known_devices WHERE user_id = 'c0000000-0000-4000-8000-000000000001')
+  AND (SELECT trusted_until IS NOT NULL FROM identity.known_devices WHERE user_id = 'c0000000-0000-4000-8000-000000000002'));
+UPDATE identity.known_devices SET trusted_until = now() + interval '30 days' WHERE user_id = 'c0000000-0000-4000-8000-000000000002';
+UPDATE identity.users SET email = 'karim.new@tb.test', email_verified_at = now() WHERE id = 'c0000000-0000-4000-8000-000000000002';
+SELECT pg_temp.ok('U10-25 a new e-mail address ends the remembered devices too',
+  (SELECT trusted_until IS NULL FROM identity.known_devices WHERE user_id = 'c0000000-0000-4000-8000-000000000002'));
 SELECT pg_temp.expect_fail('FR-ACC-03 duplicate live mobile number',
  $q$INSERT INTO identity.users (display_name, phone_e164, phone_verified_at, email, password_hash, password_single_factor_ok, adult_confirmed_at) VALUES ('Dup','+8801711000001',now(),'other@tb.test','$argon2id$v=19$x',true,now())$q$);
 SELECT pg_temp.expect_fail('FR-ACC-03 duplicate live e-mail, case-insensitive',

@@ -35,6 +35,14 @@ export function useOrderRatings(o: OrderView) {
   });
 }
 
+/** One star, drawn once; filled when it is part of the rating. */
+const Star = ({ on }: { on: boolean }) => (
+  <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false">
+    <path d="M12 2.8 L14.9 8.9 L21.5 9.7 L16.6 14.2 L17.9 20.8 L12 17.5 L6.1 20.8 L7.4 14.2 L2.5 9.7 L9.1 8.9 Z"
+      fill={on ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+  </svg>
+);
+
 const starsText = (n: number, t: T, lang: Lang) => t('rating.stars', { n: toLocalDigits(String(n), lang) });
 
 export function Ratings({ o, r, t, lang }: { o: OrderView; r: OrderRatings; t: T; lang: Lang }) {
@@ -56,15 +64,20 @@ export function Ratings({ o, r, t, lang }: { o: OrderView; r: OrderRatings; t: T
   );
 }
 
+/** The stars as five ruled cells on one line: the real radio buttons stay (hidden by clipping, so the keyboard and the screen reader work as before),
+ *  each label is a cell with its star and number; the cells up to the chosen one are filled. */
 function StarsField({ id, value, onChange, t, lang }: { id: string; value: number; onChange: (n: number) => void; t: T; lang: Lang }) {
   return (
-    <fieldset className={styles.choice}>
+    <fieldset className={styles.starsField}>
       <legend>{t('rating.stars_label')}</legend>
-      <div className={styles.stars}>
+      <div className={styles.starGrid}>
         {[1, 2, 3, 4, 5].map((n) => (
-          <span key={n}>
-            <input id={`${id}-${n}`} type="radio" name={id} checked={value === n} onChange={() => onChange(n)} />
-            <label htmlFor={`${id}-${n}`}>{starsText(n, t, lang)}</label>
+          <span key={n} className={styles.starCell}>
+            <input id={`${id}-${n}`} type="radio" name={id} checked={value === n} onChange={() => onChange(n)} onClick={() => { if (value === n) onChange(0); }} />
+            <label htmlFor={`${id}-${n}`} data-n={toLocalDigits(String(n), lang)} className={n <= value ? styles.starOn : undefined}>
+              <Star on={n <= value} />
+              <span className={styles.srOnly}>{starsText(n, t, lang)}</span>
+            </label>
           </span>
         ))}
       </div>
@@ -103,7 +116,7 @@ function RatingForm({ o, t, lang, label, initial, onDone }: {
       {message && <FormMessage kind="error">{message}</FormMessage>}
       <StarsField id={`${id}-stars`} value={stars} onChange={setStars} t={t} lang={lang} />
       <label htmlFor={`${id}-text`}>{t('rating.text')}</label>
-      <textarea id={`${id}-text`} value={text} rows={3} maxLength={1000} onChange={(e) => setText(e.target.value)} aria-describedby={`${id}-hint`} />
+      <textarea id={`${id}-text`} className={styles.ratingText} value={text} rows={3} maxLength={1000} onChange={(e) => setText(e.target.value)} aria-describedby={`${id}-hint`} />
       <p id={`${id}-hint`} className={styles.hint}>{t('rating.public_note')}</p>
       <div className={styles.buttons}>
         <button type="submit" className={styles.primary} disabled={save.isPending}>{t(initial ? 'rating.save_edit' : 'rating.send')}</button>
@@ -116,7 +129,10 @@ function RatingForm({ o, t, lang, label, initial, onDone }: {
 function Shown({ rating, t, lang }: { rating: RatingView; t: T; lang: Lang }) {
   return (
     <>
-      <p><strong>{starsText(rating.stars, t, lang)}</strong>{rating.editedAt ? ` · ${t('rating.edited')}` : ''}</p>
+      <p className={styles.shownStars}>
+        <span className={styles.starRow} aria-hidden="true">{[1, 2, 3, 4, 5].map((n) => <Star key={n} on={n <= rating.stars} />)}</span>
+        <strong>{starsText(rating.stars, t, lang)}</strong>{rating.editedAt ? ` · ${t('rating.edited')}` : ''}
+      </p>
       {rating.text && <p className={styles.wrap}>{rating.text}</p>}
       {rating.reply && <p className={styles.reply}>{t('rating.reply_shown', { text: rating.reply.text })}</p>}
     </>
@@ -161,7 +177,7 @@ function Received({ o, rating, from, t, lang }: { o: OrderView; rating: RatingVi
           <label htmlFor={`reply-${rating.id}`}>{t('rating.reply')}</label>
           <p className={styles.hint}>{t('rating.reply_note')}</p>
           {message && <FormMessage kind="error">{message}</FormMessage>}
-          <textarea id={`reply-${rating.id}`} value={text} rows={3} maxLength={1000} onChange={(e) => setText(e.target.value)} />
+          <textarea id={`reply-${rating.id}`} className={styles.ratingText} value={text} rows={3} maxLength={1000} onChange={(e) => setText(e.target.value)} />
           <div className={styles.buttons}>
             <button type="submit" className={styles.primary} disabled={reply.isPending}>{t('rating.send_reply')}</button>
           </div>

@@ -40,6 +40,8 @@ import { DeviceIdentifier1793491200039 } from './1793491200039-device-identifier
 import { HandoverPhotos1793491200040 } from './1793491200040-handover-photos';
 import { BuyerFindings1793491200041 } from './1793491200041-buyer-findings';
 import { HandoverPhotoPurge1793491200042 } from './1793491200042-handover-photo-purge';
+import { SigninEmailCode1793491200043 } from './1793491200043-signin-email-code';
+import { SignupEmailCode1793491200044 } from './1793491200044-signup-email-code';
 
 // The migrations in the order they run: the seven units in unit order, then 09_integration (I-60).
 // Add a new migration at the end; never reorder or edit an applied one.
@@ -86,4 +88,6 @@ export const MIGRATIONS = [
   HandoverPhotos1793491200040, // U10-23: the seller's photos of the item at the handover (Decisions log)
   BuyerFindings1793491200041, // U10-23: the return check, an operator's finding of a buyer's bad faith and the buyer's strikes (FR-TNS-10; Decisions log)
   HandoverPhotoPurge1793491200042, // U10-23: handover photos are purged with the last dispute of their order (I-63; Decisions log)
+  SigninEmailCode1793491200043, // U10-25: the e-mail code at sign-in, on by default, and trusted devices (Decisions log)
+  SignupEmailCode1793491200044, // U10-25: registration by e-mail code, the number and the terms last; phone_verified_at may be empty (Decisions log)
 ];

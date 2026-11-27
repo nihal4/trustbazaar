@@ -43,6 +43,7 @@ import { SessionAuthenticator } from './security/session-auth';
 import { LiveAuth, SessionSocketCloser } from './security/live-auth';
 import { LIVE_AUTHENTICATOR } from '../../kernel/live/live';
 import { SessionService } from './services/session.service';
+import { DnsDomainResolver, DOMAIN_RESOLVER, LoginCheckService } from './services/login-check.service';
 import { SignInService } from './services/signin.service';
 import { SignInThrottle } from './services/signin-throttle.service';
 import { StepUpService } from './services/step-up.service';
@@ -73,6 +74,8 @@ import { IdentityDataExport } from './services/data-export';
     SessionSocketCloser,
     { provide: LIVE_AUTHENTICATOR, useClass: LiveAuth },
     SignInService,
+    LoginCheckService,
+    { provide: DOMAIN_RESOLVER, useClass: DnsDomainResolver },
     SignInThrottle,
     OtpService,
     SecondFactorService,

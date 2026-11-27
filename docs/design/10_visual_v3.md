@@ -130,3 +130,13 @@ Data and rules: everything comes from the existing auction state, bid history, `
 Accessibility: the arc is decoration (aria-hidden); the live list and the controls carry the meaning; announcements keep the existing throttle (5 s, outbid at once); no motion beyond one short flash per new bid, and none with reduced motion; the room works with the keyboard and at 320 px; English and Bangla equal.
 
 Open for the owner: (1) the meaning of "Sit this one out"; (2) whether version one may ship without presence (seats = bidders only); (3) whether quick-bid buttons stay (they only shortcut the amount; the dialog still confirms).
+
+## 11. Update 2026-11-27: the sign-in card
+
+Sign-in and registration are one fresh page: the whole screen is the ruled grid of hairline cells, animated with light, and the card stands in the middle on
+the grid's lines. The card is three ruled bands whose edges lie on the grid's lines (the heading, the form and a foot, in whole cells); the free room in the
+form is shared out evenly. The foot of the first two steps holds the way to an account ("Welcome back. New to TrustBazaar? Create an account"); the foot of
+the code step holds Back and Send again. Every main button in the dark app is ruled: a vermilion hairline and a low-opacity vermilion body. The background
+shows, now and then and in random places, only the name TRUST over BAZAAR spelled in cells. The human-check line ("Protected by a short check in your
+browser. No puzzles.", AC-ACC-2 of the first design) is no longer shown on sign-in or registration; the check itself is unchanged and silent.
+

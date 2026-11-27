@@ -1,20 +1,23 @@
 // Account security (IF-UI-01; FR-ACC-06, FR-ACC-08, FR-ACC-09, SEC-AUTH-11): the live sessions with
 // device and last use, "this device" marked; ending sessions; password, mobile number and e-mail
 // changes, each behind step-up (SEC-AUTH-08); the authenticator app and recovery codes (MfaSettings).
+import { formatWait } from '../../shared/wait';
 import { useState, type FormEvent } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApi } from '../../shared/api';
 import { AccountTabs } from '../../shared/AccountTabs';
 import { untilAfter, untilServerTime, useSecondsLeft } from '../../shared/countdown';
-import { FormMessage, SubmitButton, TextField } from '../../shared/form';
-import { ME_KEY } from '../../shared/me';
+import { CodeField, FormMessage, SubmitButton, TextField } from '../../shared/form';
+import { ME_KEY, useMe } from '../../shared/me';
 import { isApiError, problemName } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
+import { Popup } from '../../shared/Popup';
 import { StepUpCancelled } from '../../shared/stepUp';
 import { formatDateTime } from '../../lib/time.js';
 import { toAsciiDigits } from '../../lib/money.js';
 import { SignInPrompt } from './AccountPage';
 import { MfaSettings } from './MfaSettings';
+import { SettingRow } from './SettingRow';
 import { digits, otherError, passwordReasonText, rejectedPasswordReason, retryAfter, useAccountT } from './common';
 import { bangladeshiMobile, isSixDigits, looksLikeEmail, PASSWORD } from './input';
 import styles from './account.module.css';
@@ -29,6 +32,7 @@ interface SessionSummary {
 }
 
 const SESSIONS_KEY = ['auth', 'sessions'] as const;
+const SESSIONS_SHOWN = 2;
 
 export function Component() {
   const { t } = useAccountT();
@@ -44,14 +48,25 @@ export function Component() {
   if (sessions.isError && isApiError(sessions.error, 401)) return <SignInPrompt next="/account/security" />;
 
   return (
-    <div className={styles.narrow}>
+    <div className={styles.secPage}>
       <AccountTabs t={t} />
       <h1>{t('security.title')}</h1>
-      <Sessions list={sessions.data ?? []} error={sessions.isError ? sessions.error : null} />
-      <PasswordChange />
-      <MfaSettings sessionsKey={SESSIONS_KEY} />
-      <PhoneChange />
-      <EmailChange />
+      {/* two columns divided by one line, as the profile and the dashboard: where you are signed in on the left, the settings on the right */}
+      <div className={styles.secCols}>
+        <div className={styles.secCol}>
+          <Sessions list={sessions.data ?? []} error={sessions.isError ? sessions.error : null} />
+        </div>
+        <div className={styles.secCol}>
+          <EmailCodeSetting />
+          {/* the rest are rows that open their form in a popup, so the page stays short */}
+          <ul className={styles.settingRows}>
+            <PasswordChange />
+            <MfaSettings sessionsKey={SESSIONS_KEY} />
+            <PhoneChange />
+            <EmailChange />
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }
@@ -79,35 +94,48 @@ function Sessions({ list, error }: { list: SessionSummary[]; error: unknown }) {
   };
 
   const others = list.filter((s) => !s.current);
+  // this device first, then the others newest first; the two latest are shown, and all of them in a popup (a long history is not a long page)
+  const [all, setAll] = useState(false);
+  const ordered = [...list].sort((a, b) => Number(b.current) - Number(a.current));
+  const item = (s: SessionSummary) => (
+    <li key={s.id}>
+      <p className={styles.device}>
+        {s.device ?? t('sessions.unknown_device')}
+        {s.current && <strong> · {t('sessions.this_device')}</strong>}
+      </p>
+      {s.approxLocation && <p>{s.approxLocation}</p>}
+      <p>{t('sessions.last_used', { at: formatDateTime(Date.parse(s.lastSeenAt), lang) })}</p>
+      <p>{t('sessions.started', { at: formatDateTime(Date.parse(s.createdAt), lang) })}</p>
+      {!s.current && (
+        <button type="button" disabled={busy !== null}
+          onClick={() => void run(s.id, () => api.del(`/auth/sessions/${encodeURIComponent(s.id)}`))}>
+          {t('sessions.end')}
+        </button>
+      )}
+    </li>
+  );
   return (
     <section aria-labelledby="sessions-title" className={styles.section}>
       <h2 id="sessions-title">{t('sessions.title')}</h2>
       {error !== null && <FormMessage kind="error">{otherError(error, t, lang)}</FormMessage>}
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
-      <ul className={styles.sessions}>
-        {list.map((s) => (
-          <li key={s.id}>
-            <p className={styles.device}>
-              {s.device ?? t('sessions.unknown_device')}
-              {s.current && <strong> · {t('sessions.this_device')}</strong>}
-            </p>
-            {s.approxLocation && <p>{s.approxLocation}</p>}
-            <p>{t('sessions.last_used', { at: formatDateTime(Date.parse(s.lastSeenAt), lang) })}</p>
-            <p>{t('sessions.started', { at: formatDateTime(Date.parse(s.createdAt), lang) })}</p>
-            {!s.current && (
-              <button type="button" disabled={busy !== null}
-                onClick={() => void run(s.id, () => api.del(`/auth/sessions/${encodeURIComponent(s.id)}`))}>
-                {t('sessions.end')}
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
+      <ul className={styles.sessions}>{ordered.slice(0, SESSIONS_SHOWN).map(item)}</ul>
+      {ordered.length > SESSIONS_SHOWN && (
+        <button type="button" className={styles.secondary} aria-haspopup="dialog" onClick={() => setAll(true)}>
+          {t('sessions.show_all', { count: digits(ordered.length, lang) })}
+        </button>
+      )}
       {others.length > 0 && (
         <button type="button" className={styles.secondary} disabled={busy !== null}
           onClick={() => void run('others', () => api.request('POST', '/auth/sessions/end-others'))}>
           {t('sessions.end_others')}
         </button>
+      )}
+      {all && (
+        <Popup id="sessions-popup" title={t('sessions.title')} closeLabel={t('legal.close')} onClose={() => setAll(false)}>
+          {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
+          <ul className={`${styles.sessions} ${styles.sessionsPopup}`}>{ordered.map(item)}</ul>
+        </Popup>
       )}
     </section>
   );
@@ -124,6 +152,11 @@ async function withStepUp<R>(call: () => Promise<R>): Promise<R | 'cancelled'> {
 }
 
 function PasswordChange() {
+  const { t } = useAccountT();
+  return <SettingRow id="password-popup" title={t('password.change_title')}><PasswordForm /></SettingRow>;
+}
+
+function PasswordForm() {
   const { t, lang } = useAccountT();
   const api = useApi();
   const queryClient = useQueryClient();
@@ -164,8 +197,7 @@ function PasswordChange() {
   };
 
   return (
-    <section aria-labelledby="password-title" className={styles.section}>
-      <h2 id="password-title">{t('password.change_title')}</h2>
+    <>
       <p>{t('password.change_intro')}</p>
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
       <form onSubmit={submit} noValidate>
@@ -176,11 +208,17 @@ function PasswordChange() {
           value={next} onChange={setNext} error={errors.next} type="password" autoComplete="new-password" />
         <SubmitButton busy={busy}>{t('password.change_submit')}</SubmitButton>
       </form>
-    </section>
+    </>
   );
 }
 
 function PhoneChange() {
+  const { t } = useAccountT();
+  const me = useMe();
+  return <SettingRow id="phone-popup" title={t('contact.phone_title')} summary={me.data?.phoneMasked}><PhoneForm /></SettingRow>;
+}
+
+function PhoneForm() {
   const { t, lang } = useAccountT();
   const api = useApi();
   const queryClient = useQueryClient();
@@ -240,8 +278,7 @@ function PhoneChange() {
   };
 
   return (
-    <section aria-labelledby="phone-title" className={styles.section}>
-      <h2 id="phone-title">{t('contact.phone_title')}</h2>
+    <>
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
       {sentTo === null
         ? (
@@ -249,28 +286,33 @@ function PhoneChange() {
             <TextField id="phone-new" label={t('contact.new_phone')} hint={t('field.phone_hint')} value={phone} onChange={setPhone}
               error={error ?? undefined} type="tel" inputMode="tel" autoComplete="tel" />
             <SubmitButton busy={busy} disabled={resendIn > 0}>
-              {resendIn > 0 ? t('wait.seconds', { seconds: digits(resendIn, lang) }) : t('contact.phone_submit')}
+              {resendIn > 0 ? t('wait.seconds', { time: formatWait(resendIn, lang) }) : t('contact.phone_submit')}
             </SubmitButton>
           </form>
         )
         : (
           <form onSubmit={verify} noValidate>
             <p>{t('register.code_sent', { phone: sentTo })}</p>
-            <TextField id="phone-code" label={t('code.label')} value={code} onChange={setCode} error={error ?? undefined}
-              inputMode="numeric" autoComplete="one-time-code" maxLength={6} />
+            <CodeField id="phone-code" label={t('code.label')} value={code} onChange={setCode} error={error ?? undefined} />
             <div className={styles.actions}>
               <SubmitButton busy={busy}>{t('contact.phone_verify')}</SubmitButton>
               <button type="button" disabled={resendIn > 0 || busy} onClick={() => void start()}>
-                {resendIn > 0 ? t('code.resend_in', { seconds: digits(resendIn, lang) }) : t('code.resend')}
+                {resendIn > 0 ? t('code.resend_in', { time: formatWait(resendIn, lang) }) : t('code.resend')}
               </button>
             </div>
           </form>
         )}
-    </section>
+    </>
   );
 }
 
 function EmailChange() {
+  const { t } = useAccountT();
+  const me = useMe();
+  return <SettingRow id="email-popup" title={t('contact.email_title')} summary={me.data?.email}><EmailForm /></SettingRow>;
+}
+
+function EmailForm() {
   const { t, lang } = useAccountT();
   const api = useApi();
   const [email, setEmail] = useState('');
@@ -298,14 +340,53 @@ function EmailChange() {
   };
 
   return (
-    <section aria-labelledby="email-title" className={styles.section}>
-      <h2 id="email-title">{t('contact.email_title')}</h2>
+    <>
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
       <form onSubmit={submit} noValidate>
         <TextField id="email-new" label={t('contact.new_email')} value={email} onChange={setEmail} error={error ?? undefined}
           type="email" autoComplete="email" />
         <SubmitButton busy={busy}>{t('contact.email_submit')}</SubmitButton>
       </form>
+    </>
+  );
+}
+
+/** FR-ACC-12: the code by e-mail at each sign-in, on by default; turning it off is behind step-up, turning it on is not. */
+function EmailCodeSetting() {
+  const { t, lang } = useAccountT();
+  const api = useApi();
+  const queryClient = useQueryClient();
+  const me = useMe();
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
+  if (!me.data) return null;
+  const on = me.data.emailTwoStep !== false;
+  const change = async () => {
+    if (busy) return;
+    setBusy(true);
+    setMessage(null);
+    try {
+      const r = on
+        ? await withStepUp(() => api.post('/me/security/email-code/disable', {}, { stepUpAction: 'mfa.disable' }))
+        : await api.post('/me/security/email-code/enable', {});
+      if (r !== 'cancelled') {
+        await queryClient.invalidateQueries({ queryKey: ME_KEY });
+        setMessage({ kind: 'success', text: t(on ? 'email_code.turned_off' : 'email_code.turned_on') });
+      }
+    } catch (err) {
+      setMessage({ kind: 'error', text: otherError(err, t, lang) });
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <section aria-labelledby="email-code-title" className={styles.section}>
+      <h2 id="email-code-title">{t('email_code.title')}</h2>
+      <p>{t(on ? 'email_code.on' : 'email_code.off')}</p>
+      {on && me.data.mfaEnabled && <p className={styles.hint}>{t('email_code.app_instead')}</p>}
+      {on && !me.data.mfaEnabled && !me.data.emailVerified && <p className={styles.hint}>{t('email_code.verify_first')}</p>}
+      {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
+      <p><button type="button" className={styles.secondary} disabled={busy} onClick={() => void change()}>{t(on ? 'email_code.turn_off' : 'email_code.turn_on')}</button></p>
     </section>
   );
 }

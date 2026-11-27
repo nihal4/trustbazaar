@@ -40,12 +40,11 @@ describe('SEC-AUTH-05 no account enumeration', () => {
     for (const x of answers) expect(x).toEqual(answers[0]);
   });
 
-  it('SEC-AUTH-05 registration: a taken and a free number get the same first answer', async () => {
+  it('SEC-AUTH-05 registration: a taken and a free e-mail address get the same first answer', async () => {
     const owner = await s.fx.account();
-    const start = (phone: string) =>
-      s.browser().post('/auth/register', { phone, email: `e-${randomUUID()}@tb.test`, displayName: 'Mitu Das', password: 'bright kites above the river', ...s.cfg.legal, adultConfirmed: true });
-    const taken = await start(owner.local);
-    const free = await start(newLocal());
+    const start = (email: string) => s.browser().post('/auth/register', { email, displayName: 'Mitu Das', password: 'bright kites above the river' });
+    const taken = await start(owner.email);
+    const free = await start(`e-${randomUUID()}@tb.test`);
     expect(taken.status).toBe(free.status);
     expect(Object.keys(await taken.json()).sort()).toEqual(Object.keys(await free.json()).sort());
   });

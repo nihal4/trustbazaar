@@ -3,7 +3,7 @@ import { Logger } from '@nestjs/common';
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
 import { JsonLogger } from '../../src/kernel/logging/json-logger';
-import { newLocal, submitKyc, suite } from './setup';
+import { submitKyc, suite } from './setup';
 
 // SEC-DAT-07: passwords, OTPs, tokens, NID numbers, payout account numbers and game-account ciphertext never appear in
 // logs, error messages, analytics or URLs; phone numbers and e-mail addresses in logs are masked.
@@ -20,9 +20,9 @@ describe('SEC-DAT-07 no secrets in logs, errors or URLs', () => {
     const a = await s.fx.account({ password });
     await s.browser().post('/auth/signin', { login: a.phone, password: `${password}-wrong` });
     await s.browser().post('/auth/signin', { login: a.phone, password });
-    const phone = newLocal();
-    await s.browser().post('/auth/register', { phone, email: `log-${randomUUID()}@tb.test`, displayName: 'Log Person', password, ...s.cfg.legal, adultConfirmed: true });
-    const otp = s.sent(`+88${phone}`, 'otp_register').at(-1)?.vars.code;
+    const regEmail = `log-${randomUUID()}@tb.test`;
+    await s.browser().post('/auth/register', { email: regEmail, displayName: 'Log Person', password });
+    const otp = s.sent(regEmail, 'otp_register_email').at(-1)?.vars.code;
     await s.browser().post('/auth/password/forgot', { login: a.email });
     const token = s.sent(a.email, 'password_reset').at(-1)!.vars.link.split('#token=')[1];
     const member = await s.signedIn({ kyc: 'unsubmitted' });
@@ -40,7 +40,7 @@ describe('SEC-DAT-07 no secrets in logs, errors or URLs', () => {
 
   it('SEC-DAT-07 an error never repeats the secret it was sent', async () => {
     const weak = 'password1234567';
-    const r = await s.browser().post('/auth/register', { phone: newLocal(), email: `e-${randomUUID()}@tb.test`, displayName: 'Err Person', password: weak, ...s.cfg.legal, adultConfirmed: true });
+    const r = await s.browser().post('/auth/register', { email: `e-${randomUUID()}@tb.test`, displayName: 'Err Person', password: weak });
     expect(r.status).toBe(422);
     expect(await r.text()).not.toContain(weak);
     const bad = await s.browser().post('/auth/password/reset', { token: 'Z'.repeat(43), newPassword: `x ${randomUUID()}` });

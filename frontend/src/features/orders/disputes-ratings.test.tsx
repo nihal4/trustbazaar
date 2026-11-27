@@ -254,6 +254,19 @@ describe('ratings', () => {
     expect(screen.queryByRole('form', { name: 'Rate the seller' })).toBeNull();
   });
 
+  it('FR-REV-01 a star chosen by mistake is cleared by choosing it again, also the first one', async () => {
+    const r: OrderRatings = { canRate: true, rateUntil: iso(14 * 24 * HOUR), mine: null, received: null };
+    renderApp('/orders/o-1', backend({}, { order: closed(), ratings: () => r }));
+    const form = await screen.findByRole('form', { name: 'Rate the seller' });
+    const one = within(form).getByLabelText('1 of 5 stars') as HTMLInputElement;
+    fireEvent.click(one);
+    expect(one.checked).toBe(true);
+    fireEvent.click(one);
+    expect(one.checked).toBe(false);
+    fireEvent.click(within(form).getByRole('button', { name: 'Send the rating' }));
+    expect(await screen.findByText('Choose 1 to 5 stars.')).toBeTruthy();
+  });
+
   it('FR-REV-03 one\'s own rating can be edited until its edit period ends, and not after', async () => {
     let r: OrderRatings = { canRate: false, rateUntil: iso(10 * 24 * HOUR), mine: rating(), received: null };
     const be = backend({

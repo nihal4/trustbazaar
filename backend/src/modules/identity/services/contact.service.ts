@@ -34,6 +34,10 @@ export interface Me {
   kycStatus: string;
   accountStatus: string;
   mfaEnabled: boolean;
+  /** U10-25: a code by e-mail at each sign-in from a device that is not remembered */
+  emailTwoStep: boolean;
+  /** U10-25: when the account was made (the profile page's "member since"); an ISO time */
+  memberSince: string;
 }
 
 export const isUniqueViolation = (e: unknown) => e instanceof QueryFailedError && (e as unknown as { code?: string }).code === '23505';
@@ -53,14 +57,24 @@ export class ContactService {
   /** I-51 (c): one primary-key read, so it stays cheap as the web client's refresh probe. */
   async me(userId: string): Promise<Me> {
     const [u] = await this.db.query(
-      `SELECT id, display_name, phone_e164, email, email_verified_at, kyc_status, account_status, mfa_enabled FROM identity.users WHERE id = $1`,
+      `SELECT id, display_name, phone_e164, email, email_verified_at, kyc_status, account_status, mfa_enabled, email_two_step, created_at FROM identity.users WHERE id = $1`,
       [userId],
     );
     if (!u) throw new Problem('session-ended');
     return {
       id: u.id, displayName: u.display_name, phoneMasked: u.phone_e164 ? `***${String(u.phone_e164).slice(-3)}` : null, email: u.email,
-      emailVerified: u.email_verified_at !== null, kycStatus: u.kyc_status, accountStatus: u.account_status, mfaEnabled: u.mfa_enabled,
+      emailVerified: u.email_verified_at !== null, kycStatus: u.kyc_status, accountStatus: u.account_status, mfaEnabled: u.mfa_enabled, emailTwoStep: u.email_two_step,
+      memberSince: new Date(u.created_at).toISOString(),
     };
+  }
+
+  /** U10-25: the member's choice of the e-mail code at sign-in. Turning it off is behind step-up; turning it on is not. Audited. */
+  async setEmailTwoStep(userId: string, enabled: boolean, ctx: { ip?: string | null; correlationId?: string | null } = {}): Promise<{ emailTwoStep: boolean }> {
+    await this.db.transaction(async (m) => {
+      const r = await m.query(`UPDATE identity.users SET email_two_step = $2, updated_at = now() WHERE id = $1 AND email_two_step <> $2 RETURNING id`, [userId, enabled]);
+      if (r.length > 0) await this.audit.record(m, { actorType: 'user', actorId: userId, action: enabled ? 'identity.email_two_step.enabled' : 'identity.email_two_step.disabled', objectType: 'user', objectId: userId, sourceIp: ctx.ip, correlationId: ctx.correlationId });
+    });
+    return { emailTwoStep: enabled };
   }
 
   async startPhoneChange(userId: string, sessionId: string, input: string): Promise<{ resendAt: string }> {

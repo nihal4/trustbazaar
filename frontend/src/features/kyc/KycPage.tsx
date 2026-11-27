@@ -3,6 +3,7 @@
 // stay in memory and are sent once, at the end, to POST /kyc/submissions (multipart, through
 // lib/api.js). Files already sent are shown only through Unit 1's signed links. Daylight layout (docs/design/10_visual.md,
 // section 7.9): the four steps above the camera, and from 60rem a side panel with the photo rules and who sees the ID.
+import { formatWait } from '../../shared/wait';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toLocalDigits } from '../../lib/money.js';
@@ -331,7 +332,7 @@ function Wizard() {
             ? (
               <button type="button" className={styles.primary} onClick={() => void submit()} disabled={busy || waitFor > 0 || !challenge}
                 aria-busy={busy || undefined}>
-                {waitFor > 0 ? t('wizard.wait', { seconds: toLocalDigits(String(waitFor), lang) }) : t('review.submit')}
+                {waitFor > 0 ? t('wizard.wait', { time: formatWait(waitFor, lang) }) : t('review.submit')}
               </button>
             )
             : step === 'details'

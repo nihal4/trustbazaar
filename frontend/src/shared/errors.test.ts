@@ -27,8 +27,14 @@ describe('error messages', () => {
 
   it('NFR-USE-04 the wait after 429 is given in the page digits', () => {
     const e = new ApiError(429, { retryAfter: 45 });
-    expect(errorText(e, en, 'en')).toContain('45 seconds');
-    expect(errorText(e, bn, 'bn')).toContain('৪৫');
+    expect(errorText(e, en, 'en')).toBe('Too many attempts. Try again in 45 s.');
+    expect(errorText(e, bn, 'bn')).toContain('৪৫ সেকেন্ড');
+  });
+
+  it('NFR-USE-08 a long wait after 429 is minutes and hours, never thousands of seconds', () => {
+    expect(errorText(new ApiError(429, { retryAfter: 2030 }), en, 'en')).toBe('Too many attempts. Try again in 34 min.');
+    expect(errorText(new ApiError(429, { retryAfter: 3900 }), en, 'en')).toBe('Too many attempts. Try again in 1 h 5 min.');
+    expect(errorText(new ApiError(429, { retryAfter: 2030 }), bn, 'bn')).toContain('৩৪ মিনিট');
   });
 
   it('SEC-ABU-02 a human check still asked after two answers reads as a request to wait, in both languages', () => {

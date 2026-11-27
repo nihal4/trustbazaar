@@ -1,22 +1,34 @@
-/* The notification centre (NFR-USE-05, section 7; Daylight design, docs/design/10_visual.md, section 7.8, AC-ACC-3):
-   one column under the account tabs, each notice a full-width target on mist; unread ones white with a plum edge
-   and "New" in words; the preferences with the shared inputs and pill buttons. */
+/* The notification centre (NFR-USE-05, section 7; U10-25, redesign v3): the same line grid as the profile, the dashboard and the security page. A vermilion rule over the
+   title, two columns divided by one line: the notices as hairline rows on the left (an unread one has a vermilion line at its edge and the word New), the settings
+   on the right (a ruled list for the language, the box for e-mail, the ruled Save button). No boxes. */
 .page {
-  max-width: 44rem;
+  max-width: 64rem;
 }
 
-.page h1 {
-  margin: 0 0 1rem;
-  font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem);
+.page > h1 {
+  margin: 0;
+  padding: 1.5rem 0 1.25rem;
+  border-top: 2px solid var(--tb-hot);
+  font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.125rem);
   line-height: 1.1;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.03em;
   font-weight: 600;
 }
 
-:lang(bn) .page h1 {
+:lang(bn) .page > h1 {
   letter-spacing: 0;
   line-height: 1.35;
-  font-weight: 600;
+}
+
+.cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  border-top: 1px solid var(--tb-line);
+}
+
+.listSection {
+  min-width: 0;
+  padding: 1.25rem 2rem 2rem 0;
 }
 
 .toolbar {
@@ -36,89 +48,120 @@
   list-style: none;
   padding: 0;
   margin: 1rem 0 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
+  border-top: 1px solid var(--tb-line);
 }
 
 .list li {
-  border-radius: var(--tb-radius-panel);
-  overflow: hidden;
-}
-
-.read {
-  background: var(--tb-surface);
+  border-bottom: 1px solid var(--tb-line);
 }
 
 .unread {
-  background: var(--tb-bg);
-  border: 1.5px solid var(--tb-line);
-  border-left: 4px solid var(--tb-accent);
+  box-shadow: inset 2px 0 0 var(--tb-hot);
 }
 
 .item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem 1.5rem;
+  align-items: start;
   width: 100%;
-  min-height: 44px;
-  padding: 0.875rem 1.125rem;
+  min-height: 64px;
+  padding: 0.875rem 0 0.875rem 1rem;
   border: 0;
   background: none;
   color: var(--tb-text);
   font: inherit;
-  text-align: left;
+  text-align: start;
   cursor: pointer;
 }
 
 .item:hover .title {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  color: var(--tb-hot);
 }
 
 .item:focus-visible {
-  outline: 3px solid var(--tb-focus);
-  outline-offset: -3px;
-  border-radius: var(--tb-radius-panel);
+  outline: 2px solid var(--tb-hot);
+  outline-offset: -2px;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
 }
 
 .new {
   align-self: flex-start;
-  padding: 1px 10px;
-  border-radius: var(--tb-radius-control);
-  background: var(--tb-accent-soft);
-  color: var(--tb-accent-strong);
+  color: var(--tb-hot);
   font-size: 0.8125rem;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:lang(bn) .new {
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 0.875rem;
 }
 
 .title {
   font-weight: 600;
 }
 
-.body {
-  overflow-wrap: anywhere;
+.read .title {
+  font-weight: 500;
 }
 
-.time {
+.body {
+  overflow-wrap: anywhere;
+  color: var(--tb-muted);
+  font-size: 0.9375rem;
+}
+
+.unread .body {
+  color: var(--tb-text);
+}
+
+.when {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: end;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.whenDate {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.whenTime {
   color: var(--tb-muted);
   font-size: 0.875rem;
 }
 
-.read .title {
-  font-weight: 600;
-}
-
 .secondary {
   min-height: 44px;
-  padding: 0 1.25rem;
-  border: 1.5px solid var(--tb-border);
-  border-radius: var(--tb-radius-pill);
-  background: var(--tb-bg);
+  padding: 0 1.5rem;
+  border: 1px solid var(--tb-border);
+  border-radius: 0;
+  background: none;
   color: var(--tb-text);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+}
+
+.secondary:hover:not(:disabled) {
+  border-color: var(--tb-hot);
+}
+
+.secondary:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: 2px;
 }
 
 .secondary:disabled {
@@ -127,15 +170,16 @@
 }
 
 .preferences {
-  border-top: 1px solid var(--tb-line);
-  margin-top: 2rem;
-  padding-top: 1.5rem;
+  min-width: 0;
+  padding: 1.25rem 0 2rem 2rem;
+  border-inline-start: 1px solid var(--tb-line);
 }
 
 .preferences h2 {
   margin: 0 0 1rem;
-  font-size: 1.3125rem;
-  letter-spacing: -0.02em;
+  font-size: 1.125rem;
+  letter-spacing: -0.01em;
+  font-weight: 600;
 }
 
 :lang(bn) .preferences h2 {
@@ -154,18 +198,65 @@
   margin-bottom: 0.25rem;
 }
 
-.choice div {
+.choice > div {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  min-height: 44px;
+  min-height: 56px;
+  border-bottom: 1px solid var(--tb-line);
 }
 
+.choice > p + div {
+  border-top: 1px solid var(--tb-line);
+}
+
+.choice label {
+  flex: 1;
+  cursor: pointer;
+}
+
+/* a hairline ring, a vermilion dot when chosen (no default browser look) */
 .choice input {
-  width: 22px;
-  height: 22px;
+  appearance: none;
+  display: grid;
+  place-content: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
   margin: 0;
-  accent-color: var(--tb-accent);
+  border: 1px solid var(--tb-border);
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+
+.choice input::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--tb-hot);
+  transform: scale(0);
+  transition: transform 120ms ease;
+}
+
+.choice input:checked {
+  border-color: var(--tb-hot);
+}
+
+.choice input:checked::after {
+  transform: scale(1);
+}
+
+.choice input:focus-visible {
+  outline: 2px solid var(--tb-hot);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .choice input::after {
+    transition: none;
+  }
 }
 
 .hint {
@@ -181,4 +272,47 @@
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+@media (max-width: 63.99rem) {
+  .cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .listSection {
+    padding-inline-end: 0;
+  }
+
+  .preferences {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+    border-top: 1px solid var(--tb-line);
+  }
+}
+
+@media (max-width: 30rem) {
+  .item {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .when {
+    align-items: flex-start;
+    text-align: start;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0 0.75rem;
+  }
+}
+
+.none {
+  margin: 1rem 0 1.25rem;
+  padding: 1rem 0;
+  border-block: 1px solid var(--tb-line);
+  color: var(--tb-muted);
+}
+
+/* all the notices in a popup: the same rows, the popup's own scroll */
+.listPopup {
+  margin-top: 0;
+  border-top: 0;
 }

@@ -1,18 +1,57 @@
-/* The privacy screens (U8-09; Daylight design, docs/design/10_visual.md, section 7.8, AC-ACC-3): one column under the
-   account tabs, each part a panel on mist; pill buttons of 44 px; closing the account in danger red, in words too. */
-.page { max-width: 44rem; }
-.page h1 { margin: 0 0 0.75rem; font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem); line-height: 1.1; letter-spacing: -0.035em; font-weight: 600; }
-:lang(bn) .page h1 { letter-spacing: 0; line-height: 1.35; font-weight: 600; }
-.page > p a { color: var(--tb-accent); font-weight: 600; text-underline-offset: 3px; }
-.page section { margin-block: 1.25rem; }
-.panel { border-radius: var(--tb-radius-panel); background: var(--tb-surface); padding: 1.125rem 1.375rem; }
-.panel h2 { margin: 0 0 0.5rem; font-size: 1.3125rem; letter-spacing: -0.02em; }
+/* The privacy screens (U8-09; U10-25 on the line grid): a vermilion rule and the title, a lead line, then two columns on one hairline: a copy of one's data
+   and closing the account; each a heading, its words, and one ruled button. Closing the account is in the error colour, and in words too. */
+.page { max-width: 64rem; }
+
+.page h1 {
+  margin: 0;
+  padding: 1.5rem 0 0.75rem;
+  border-top: 2px solid var(--tb-hot);
+  font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.125rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+}
+
+:lang(bn) .page h1 { letter-spacing: 0; line-height: 1.35; }
+
+.lead { margin: 0; padding-bottom: 1.5rem; max-width: 40rem; line-height: 1.6; }
+.lead a { color: var(--tb-text); font-weight: 600; text-underline-offset: 3px; }
+.lead a:hover { color: var(--tb-hot); }
+
+.cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--tb-line); }
+.cols > section { min-width: 0; margin: 0; padding: 1.5rem 0 2rem; }
+.cols > section:first-child { padding-inline-end: 2rem; }
+.cols > section + section { padding-inline-start: 2rem; border-inline-start: 1px solid var(--tb-line); }
+
+.panel h2 { margin: 0 0 0.75rem; font-size: 1.125rem; letter-spacing: -0.01em; font-weight: 600; }
 :lang(bn) .panel h2 { letter-spacing: 0; }
+.panel p { margin: 0 0 1rem; line-height: 1.6; }
 .panel > :last-child { margin-bottom: 0; }
 .hint { color: var(--tb-muted); }
-.secondary { min-height: 44px; padding: 0 1.25rem; border: 1.5px solid var(--tb-border); border-radius: var(--tb-radius-pill); background: var(--tb-bg); color: var(--tb-text); font: inherit; font-weight: 600; cursor: pointer; }
-.secondary:disabled { color: var(--tb-muted); cursor: not-allowed; }
-.danger { min-height: 44px; padding: 0 1.25rem; border: 2px solid var(--tb-error); border-radius: var(--tb-radius-pill); background: var(--tb-bg); color: var(--tb-error); font: inherit; font-weight: 600; cursor: pointer; }
-.danger:disabled { opacity: 0.6; cursor: not-allowed; }
-.primaryLink { display: inline-flex; align-items: center; min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-radius-pill); background: var(--tb-accent); color: var(--tb-accent-text); font-weight: 600; text-decoration: none; }
-.primaryLink:focus-visible { outline: 3px solid var(--tb-focus); outline-offset: 3px; }
+
+/* the copy that is ready: a ruled block with what it is and until when */
+.ready { margin-bottom: 1rem; border-block: 1px solid var(--tb-line); padding: 1rem 0 0.25rem; }
+
+/* what closing does: one effect to a line */
+.effects { margin: 0 0 1.25rem; padding: 0; list-style: none; border-top: 1px solid var(--tb-line); }
+.effects li { padding: 0.75rem 0; border-bottom: 1px solid var(--tb-line); line-height: 1.5; }
+
+/* the buttons: square, ruled; the main one with a vermilion line over a faint wash, closing in the error colour */
+.secondary, .primaryLink, .danger {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 52px; padding: 0 1.5rem; border: 1px solid var(--tb-hot); border-radius: 0;
+  background: color-mix(in srgb, var(--tb-hot) 10%, transparent); color: var(--tb-text);
+  font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; transition: background 140ms;
+}
+.secondary:hover:not(:disabled), .primaryLink:hover { background: color-mix(in srgb, var(--tb-hot) 18%, transparent); }
+.danger { border-color: var(--tb-error); background: color-mix(in srgb, var(--tb-error) 10%, transparent); color: var(--tb-text); }
+.danger:hover:not(:disabled) { background: color-mix(in srgb, var(--tb-error) 18%, transparent); }
+.secondary:disabled, .danger:disabled { opacity: 0.45; cursor: not-allowed; }
+.secondary:focus-visible, .primaryLink:focus-visible, .danger:focus-visible { outline: 2px solid var(--tb-hot); outline-offset: 2px; }
+
+@media (max-width: 47.99rem) {
+  .cols { grid-template-columns: 1fr; }
+  .cols > section:first-child { padding-inline-end: 0; }
+  .cols > section + section { padding-inline-start: 0; border-inline-start: 0; border-top: 1px solid var(--tb-line); }
+  .secondary, .primaryLink, .danger { width: 100%; }
+}

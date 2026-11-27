@@ -2,12 +2,13 @@
 // (FR-ACC-10), the listing, and the unread count in words as well as a number. A new message anywhere refreshes it.
 import { Link } from 'react-router-dom';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { formatDateTime } from '../../lib/time.js';
+import { dateParts } from '../../lib/time.js';
 import { toLocalDigits } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
 import { AccountTabs } from '../../shared/AccountTabs';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
+import { Tick } from '../../shared/icons';
 import { useT } from '../../shared/language/Language';
 import { useLiveEvent } from '../../shared/live';
 import { useMe } from '../../shared/me';
@@ -18,6 +19,9 @@ import { fetchThreads, THREADS_KEY, type ThreadPage } from './model';
 import styles from './chat.module.css';
 
 const CATALOGUES = { en, bn };
+
+/** The first letter of the other party's name, for the photo place of a row (there is no photo upload). */
+const initialOf = (name: string) => (Array.from(name.trim())[0] ?? '?').toUpperCase();
 
 export function Component() {
   const { t, lang } = useT(CATALOGUES);
@@ -60,17 +64,27 @@ export function Component() {
             {items.map((th) => (
               <li key={th.id} className={th.unread > 0 ? styles.unreadThread : undefined}>
                 <Link to={`/messages/${encodeURIComponent(th.id)}`} className={styles.threadLink}>
-                  <span className={styles.name}>
-                    {th.other?.displayName ?? t('chat.closed_account')}
-                    {th.other?.verified && <span className={styles.badge}>{t('chat.verified')}</span>}
+                  <span className={styles.avatar} aria-hidden="true">{initialOf(th.other?.displayName ?? '?')}</span>
+                  <span className={styles.threadMain}>
+                    <span className={styles.name}>
+                      {th.other?.displayName ?? t('chat.closed_account')}
+                      {th.other?.verified && <span className={styles.tick} title={t('chat.verified')}><Tick /><span className={styles.visuallyHidden}>{t('chat.verified')}</span></span>}
+                    </span>
+                    <span className={styles.about}>
+                      <span className={styles.productTag}>{t('chat.about', { title: th.listing.title ?? t('chat.listing_gone') })}</span>
+                      <span className={styles.role}>
+                        {t(th.role === 'buyer' ? 'chat.buying' : 'chat.selling')}
+                        {th.closed && <> · {t('chat.closed')}</>}
+                      </span>
+                    </span>
                   </span>
-                  <span className={styles.about}>{t('chat.about', { title: th.listing.title ?? t('chat.listing_gone') })}</span>
-                  <span className={styles.meta}>
-                    {t(th.role === 'buyer' ? 'chat.buying' : 'chat.selling')}
-                    {th.lastMessageAt && <> · {formatDateTime(Date.parse(th.lastMessageAt), lang)}</>}
-                    {th.closed && <> · {t('chat.closed')}</>}
+                  <span className={styles.threadSide}>
+                    {th.lastMessageAt && (() => {
+                      const p = dateParts(Date.parse(th.lastMessageAt), lang);
+                      return <time dateTime={th.lastMessageAt} className={styles.when}><span className={styles.whenDate}>{p.day} {p.month} {p.year}</span><span className={styles.whenTime}>{p.weekday}, {p.time} {p.period}</span></time>;
+                    })()}
+                    {th.unread > 0 && <span className={styles.unread}>{t('chat.unread', { count: toLocalDigits(String(th.unread), lang) })}</span>}
                   </span>
-                  {th.unread > 0 && <span className={styles.unread}>{t('chat.unread', { count: toLocalDigits(String(th.unread), lang) })}</span>}
                 </Link>
               </li>
             ))}

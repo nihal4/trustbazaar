@@ -29,7 +29,7 @@ describe('GET /me', () => {
     const [u] = await fx.query<{ phone_e164: string; email: string }>(`SELECT phone_e164, email FROM identity.users WHERE id = $1`, [userId]);
     expect(body).toEqual({
       id: userId, displayName: 'Test user', phoneMasked: `***${u.phone_e164.slice(-3)}`, email: u.email,
-      emailVerified: true, kycStatus: 'verified', accountStatus: 'active', mfaEnabled: false,
+      emailVerified: true, kycStatus: 'verified', accountStatus: 'active', mfaEnabled: false, emailTwoStep: true, memberSince: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
     });
     expect(JSON.stringify(body)).not.toContain(u.phone_e164); // SEC-DAT-07
   });

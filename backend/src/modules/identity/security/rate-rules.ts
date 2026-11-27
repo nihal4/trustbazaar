@@ -19,6 +19,8 @@ export interface Limit {
 export const RATE_RULES: Record<string, Limit[]> = {
   // SEC-ABU-02: an unusual rate from one address meets the challenge before the limit (U1-09)
   signin: [{ per: 'ip', limit: 50, windowSeconds: 15 * 60, challengeAfter: 10 }],
+  // U10-25: the check before the password (a format check and a DNS lookup, never an account)
+  'login-check': [{ per: 'ip', limit: 60, windowSeconds: 60 }],
   register: [{ per: 'ip', limit: 5, windowSeconds: 60 * 60, challengeAfter: 2 }],
   'otp-send': [{ per: 'ip', limit: 10, windowSeconds: 60 * 60, challengeAfter: 4 }],
   'otp-verify': [],

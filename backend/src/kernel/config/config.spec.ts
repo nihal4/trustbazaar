@@ -140,7 +140,7 @@ describe('configuration', () => {
   });
 
   it('FR-ACC-04 the current terms and privacy versions come from the environment and fit the consent record', () => {
-    expect(loadConfig(dev()).legal).toEqual({ termsVersion: '2026-11-01', privacyVersion: '2026-11-01' });
+    expect(loadConfig(dev()).legal).toEqual({ termsVersion: '2026-11-27', privacyVersion: '2026-11-01' });
     expect(loadConfig({ ...dev(), TERMS_VERSION: 'v2', PRIVACY_VERSION: '2027.1' }).legal).toEqual({ termsVersion: 'v2', privacyVersion: '2027.1' });
     expect(problems({ ...dev(), TERMS_VERSION: 'x'.repeat(21) })).toEqual([
       'TERMS_VERSION: 1 to 20 letters, digits, dots, dashes or underscores',

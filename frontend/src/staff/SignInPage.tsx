@@ -9,7 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toAsciiDigits, toLocalDigits } from '../lib/money.js';
 import { useApi } from '../shared/api';
 import { errorText } from '../shared/errors';
-import { FormMessage, SubmitButton, TextField } from '../shared/form';
+import { CodeField, FormMessage, SubmitButton, TextField } from '../shared/form';
 import { STAFF_ME_KEY } from '../shared/me';
 import { fieldErrors, isApiError, problemName } from '../shared/problems';
 import { useSignedOut } from '../shared/session';
@@ -109,7 +109,7 @@ export function Component() {
               <p><a href={secret.otpauthUri}>{t('staff.enrol.link')}</a></p>
             </>
           )}
-          <TextField id="code" label={t('staff.signin.code')} inputMode="numeric" autoComplete="one-time-code" value={code} onChange={setCode}
+          <CodeField id="code" label={t('staff.signin.code')} value={code} onChange={setCode} allowRecovery
             hint={t(step === 'confirm' ? 'staff.enrol.code_hint' : 'staff.signin.code_hint')} />
           <SubmitButton busy={busy}>{t('staff.signin.sign_in')}</SubmitButton>
         </form>

@@ -13,7 +13,7 @@ import { toAsciiDigits, toLocalDigits } from '../../lib/money.js';
 import { formatDateTime } from '../../lib/time.js';
 import { useApi } from '../../shared/api';
 import { errorText } from '../../shared/errors';
-import { FormMessage } from '../../shared/form';
+import { CodeField, FormMessage } from '../../shared/form';
 import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
 import { isApiError, problemName } from '../../shared/problems';
@@ -161,16 +161,21 @@ function DeviceCheck({ order, device, t, lang, onMatched, onClose }: { order: st
   );
 }
 
+/** The seller's part of the handover, in two steps in a popup: first a photo of the item (taken there, before anything else), then the buyer's code.
+ *  The page itself holds only the start of it and the photos already added. */
 function SellerCode({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: T; lang: Lang }) {
   const api = useApi();
   const queryClient = useQueryClient();
+  const [step, setStep] = useState<0 | 1 | 2>(0);
   const [code, setCode] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const sending = useRef(false);
+  const photos = h.photoCount ?? 0;
   const enter = useMutation({
     mutationFn: (c: string) => api.post(`/orders/${encodeURIComponent(o.id)}/handover-code`, { code: c }),
     onSuccess: () => {
       setCode('');
+      setStep(0);
       void queryClient.invalidateQueries({ queryKey: orderKey(o.id) });
     },
     onError: (e) => {
@@ -206,23 +211,56 @@ function SellerCode({ o, h, t, lang }: { o: OrderView; h: HandoverView; t: T; la
     setMessage(null);
     enter.mutate(c, { onSettled: () => { sending.current = false; } });
   };
+  const close = () => { setStep(0); setMessage(null); };
+  const names = [t('handover.photos_label'), t('handover.code_field')];
   return (
-    <form onSubmit={submit} noValidate className={styles.code}>
-      <h3>{t('handover.enter_title')}</h3>
-      <p>{t('handover.enter_note')}</p>
-      {message && <FormMessage kind="error">{message}</FormMessage>}
-      <dl className={styles.statusGrid}>
-        <div><dt>{t('handover.photos_label')}</dt><dd>{toLocalDigits(String(h.photoCount ?? 0), lang)} / 3</dd></div>
-      </dl>
-      <label htmlFor="handover-photo">{t('handover.photo_add')}</label>
-      <input id="handover-photo" type="file" accept="image/jpeg,image/png,image/webp" disabled={photo.isPending || (h.photoCount ?? 0) >= 3} onChange={(e) => picked(e.target.files, e.target)} />
-      <p className={styles.hint}>{t('handover.photo_hint')}</p>
-      <label htmlFor="handover-code">{t('handover.code_field')}</label>
-      <input id="handover-code" inputMode="numeric" autoComplete="off" value={code} maxLength={16} onChange={(e) => setCode(e.target.value)}
-        aria-describedby="handover-attempts" />
-      <p id="handover-attempts" className={styles.hint}>{t('handover.attempts_left', { left: toLocalDigits(String(h.attemptsLeft ?? 0), lang) })}</p>
-      <button type="submit" className={styles.primary} disabled={enter.isPending}>{t('handover.enter_button')}</button>
-    </form>
+    <>
+      <div className={styles.code}>
+        <h3>{t('handover.enter_title')}</h3>
+        <p>{t('handover.enter_note')}</p>
+        <button type="button" className={styles.primary} onClick={() => { setMessage(null); setStep(1); }}>{t('handover.start')}</button>
+      </div>
+      {step > 0 && (
+        <Popup id="seller-code" title={t('handover.enter_title')} closeLabel={t('actions.back')} busy={enter.isPending || photo.isPending} onClose={close}>
+          <div className={styles.hoStepper}>
+            <p><strong>{t('handover.step_of', { n: toLocalDigits(String(step), lang), total: toLocalDigits('2', lang) })}</strong> · {names[step - 1]}</p>
+            <ol aria-hidden="true">{names.map((n, i) => <li key={n} data-state={i + 1 < step ? 'done' : i + 1 === step ? 'now' : 'next'} />)}</ol>
+          </div>
+          {message && <FormMessage kind="error">{message}</FormMessage>}
+          {step === 1 ? (
+            <div className={styles.hoStep}>
+              <p className={styles.hint}>{t('handover.photo_hint')}</p>
+              <div className={styles.photoCell}>
+                <input id="handover-photo" className={styles.fileHidden} type="file" accept="image/jpeg,image/png,image/webp" capture="environment"
+                  disabled={photo.isPending || photos >= 3} onChange={(e) => picked(e.target.files, e.target)} />
+                <label htmlFor="handover-photo">
+                  <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false">
+                    <path d="M3 8.5a2 2 0 0 1 2-2h2.2l1.3-2h7l1.3 2H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                    <circle cx="12" cy="13" r="3.6" fill="none" stroke="currentColor" strokeWidth="1.6" />
+                  </svg>
+                  <span>{t('handover.photo_add')}</span>
+                </label>
+                <strong aria-label={t('handover.photos_label')}>{toLocalDigits(String(photos), lang)} / 3</strong>
+              </div>
+              <div className={styles.popupButtons}>
+                <button type="button" className={styles.primary} disabled={photo.isPending} onClick={() => { setMessage(null); setStep(2); }}>{t('dispute.continue')}</button>
+                <button type="button" className={styles.secondary} disabled={photo.isPending} onClick={close}>{t('actions.back')}</button>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={submit} noValidate className={styles.hoStep}>
+              <p>{t('handover.enter_note')}</p>
+              <CodeField id="handover-code" label={t('handover.code_field')} value={code} onChange={setCode} data-autofocus aria-describedby="handover-attempts" />
+              <p id="handover-attempts" className={styles.hint}>{t('handover.attempts_left', { left: toLocalDigits(String(h.attemptsLeft ?? 0), lang) })}</p>
+              <div className={styles.popupButtons}>
+                <button type="submit" className={styles.primary} disabled={enter.isPending}>{t('handover.enter_button')}</button>
+                <button type="button" className={styles.secondary} disabled={enter.isPending} onClick={() => { setMessage(null); setStep(1); }}>{t('actions.back')}</button>
+              </div>
+            </form>
+          )}
+        </Popup>
+      )}
+    </>
   );
 }
 

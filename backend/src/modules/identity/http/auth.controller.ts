@@ -3,9 +3,10 @@ import type { Request, Response } from 'express';
 import { Credential, Public, RateLimit, SignedIn } from '../../../kernel/http/policies';
 import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
-import { MFA_TICKET_SECONDS, SignInService } from '../services/signin.service';
+import { EMAIL_CODE_SECONDS, MFA_TICKET_SECONDS, SignInService } from '../services/signin.service';
 import { SessionService, SessionSummary } from '../services/session.service';
-import { MfaDto, SignInDto } from './auth.dto';
+import { LoginCheckService } from '../services/login-check.service';
+import { LoginCheckDto, MfaDto, SignInDto } from './auth.dto';
 import { cookie, ctxOf } from './request';
 import { clearSessionCookies, DEVICE_COOKIE, MFA_COOKIE, REFRESH_COOKIE, setMfaCookie, setSessionCookies } from './session-cookies';
 
@@ -20,7 +21,17 @@ export class AuthController {
   constructor(
     private readonly signin: SignInService,
     private readonly sessions: SessionService,
+    private readonly loginCheck: LoginCheckService,
   ) {}
+
+  /** FR-ACC-13 (U10-25): is it a mobile number or an e-mail address, and can that e-mail's domain receive mail? Never reads an account. */
+  @Public()
+  @RateLimit('login-check')
+  @Post('login-check')
+  @HttpCode(200)
+  check(@Body() dto: LoginCheckDto) {
+    return this.loginCheck.check(dto.login);
+  }
 
   /** FR-ACC-05: 204 with the session's cookies, or 200 {mfaRequired} with an MFA ticket cookie. */
   @Public()
@@ -29,9 +40,9 @@ export class AuthController {
   async signIn(@Body() dto: SignInDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const r = await this.signin.signIn(dto.login, dto.password, cookie(req, DEVICE_COOKIE), ctxOf(req));
     if (r.kind === 'mfa') {
-      setMfaCookie(res, r.ticket, MFA_TICKET_SECONDS * 1000);
+      setMfaCookie(res, r.ticket, (r.method === 'email' ? EMAIL_CODE_SECONDS : MFA_TICKET_SECONDS) * 1000);
       res.status(200);
-      return { mfaRequired: true };
+      return r.method === 'email' ? { mfaRequired: true, method: 'email', emailHint: r.emailHint, resendAfter: r.resendAfter } : { mfaRequired: true };
     }
     setSessionCookies(res, r.cookies);
     res.status(204);
@@ -43,7 +54,16 @@ export class AuthController {
   @Post('signin/mfa')
   @HttpCode(204)
   async mfa(@Body() dto: MfaDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    setSessionCookies(res, await this.signin.verifyMfa(cookie(req, MFA_COOKIE), dto.code, cookie(req, DEVICE_COOKIE), ctxOf(req)));
+    setSessionCookies(res, await this.signin.verifyMfa(cookie(req, MFA_COOKIE), dto.code, cookie(req, DEVICE_COOKIE), ctxOf(req), dto.remember === true));
+  }
+
+  /** U10-25: a new e-mail code for the sign-in in progress (60 seconds apart, three sends in all). */
+  @Credential('mfa-ticket')
+  @RateLimit('otp-verify')
+  @Post('signin/mfa/resend')
+  @HttpCode(200)
+  resend(@Req() req: Request) {
+    return this.signin.resendEmailCode(cookie(req, MFA_COOKIE), ctxOf(req));
   }
 
   /** SEC-SES-02: rotate the refresh token. 409 when another tab rotated it a moment ago; 401 ends it. */

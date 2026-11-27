@@ -45,6 +45,7 @@ export function totp(secret: string, at = Date.now()): string {
 export async function signInMember(page: Page, who: { local: string; password: string }) {
   await page.goto('/signin');
   await page.getByLabel('Mobile number or e-mail').fill(who.local);
+  await page.getByRole('button', { name: 'Continue' }).click();                 // the password is asked after the number or e-mail (U10-25)
   await page.getByLabel('Password', { exact: true }).fill(who.password);
   await page.getByRole('button', { name: 'Sign in' }).click();
   await page.waitForURL((u) => !u.pathname.startsWith('/signin'));
@@ -86,8 +87,6 @@ export async function sentTo(request: APIRequestContext, to: string, pattern: Re
 }
 
 export const codeSentTo = (request: APIRequestContext, to: string) => sentTo(request, to, /\b(\d{6})\b/);
-/** The path of the first link in the message, so it opens on the system under test whatever origin the message names. */
-export const linkSentTo = async (request: APIRequestContext, to: string) => new URL(await sentTo(request, to, /https?:\/\/\S+/)).href.replace(/^https?:\/\/[^/]+/, '');
 
 /** A photo-like PNG (a gradient, so it is not a blank image), `n` changing its colours. */
 export function photo(n: number, width = 800, height = 600): { name: string; mimeType: string; buffer: Buffer } {
