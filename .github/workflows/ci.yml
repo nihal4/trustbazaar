@@ -18,6 +18,7 @@ jobs:
         with: { node-version: 20, cache: npm, cache-dependency-path: "${{ matrix.app }}/package-lock.json" }
       - run: npm ci
       - run: npm run lint                                   # NFR-MNT-07: no ESLint errors
+      - run: npm run format:check                           # U11-14: one format (Prettier); `npm run format` fixes it
       - run: node --test ../scripts/audit-check.test.mjs && node ../scripts/audit-check.mjs  # SEC-SDL-04: high and critical, with the documented exceptions of audit-exceptions.json (P0-10)
       - run: npm test -- --coverage                         # NFR-MNT-03: thresholds in the test configuration
       - run: node ../scripts/health-ratchet.mjs             # U11-02: ESLint, Stylelint, knip and jscpd numbers may go down, never up (health-baseline.json)

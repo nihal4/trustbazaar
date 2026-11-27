@@ -9,7 +9,11 @@ export default {
     // the design system: colours and fonts come from tokens (var(--tb-…)); transparent, currentColor and the like are allowed
     'scale-unlimited/declaration-strict-value': [
       ['/color$/', 'fill', 'stroke', 'font-family'],
-      { ignoreValues: ['transparent', 'currentColor', 'currentcolor', 'inherit', 'initial', 'unset', 'none', 'auto', 'revert', '0', '/^color-mix\\(/'], disableFix: true, message: 'Use a design token (var(--tb-…)) for "${property}", not "${value}".' },
+      {
+        ignoreValues: ['transparent', 'currentColor', 'currentcolor', 'inherit', 'initial', 'unset', 'none', 'auto', 'revert', '0', '/^color-mix\\(/'],
+        disableFix: true,
+        message: 'Use a design token (var(--tb-…)) for "${property}", not "${value}".',
+      },
     ],
     // CSS modules: class names are camelCase; keyframes too
     'selector-class-pattern': null,

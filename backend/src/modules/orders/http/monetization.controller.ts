@@ -38,7 +38,12 @@ export class MonetizationController {
   @Verified()
   @RateLimit('payment-start')
   @Post('me/subscription')
-  async subscribe(@Body() dto: StartPaymentDto, @Headers('idempotency-key') key: string | undefined, @CurrentPrincipal() p: Principal, @Res({ passthrough: true }) res: Response) {
+  async subscribe(
+    @Body() dto: StartPaymentDto,
+    @Headers('idempotency-key') key: string | undefined,
+    @CurrentPrincipal() p: Principal,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const r = await this.monetization.subscribe(userOf(p), dto.provider, key);
     res.status(r.resumed ? 200 : 201);
     return r;

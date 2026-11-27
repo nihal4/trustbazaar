@@ -11,12 +11,23 @@ import libEn from '../../lib/messages/en.json';
 // Idempotency-Key and the order page takes the payment; refusals in words; a guest is sent to sign in.
 
 configure({ asyncUtilTimeout: 3000 });
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 const ID = '7e1c2a3e-1111-4a5b-8c9d-000000000001';
 const listing = (o: Record<string, unknown> = {}) => ({
-  id: ID, itemKind: 'physical', saleFormat: 'fixed_price', status: 'active', title: 'Desk lamp', price: '150000',
-  fulfilmentOptions: 'pickup_or_courier', quantity: { total: 3, available: 2 }, seller: { id: 'seller-1' }, ...o,
+  id: ID,
+  itemKind: 'physical',
+  saleFormat: 'fixed_price',
+  status: 'active',
+  title: 'Desk lamp',
+  price: '150000',
+  fulfilmentOptions: 'pickup_or_courier',
+  quantity: { total: 3, available: 2 },
+  seller: { id: 'seller-1' },
+  ...o,
 });
 
 function backend(o: { l?: Record<string, unknown>; signedIn?: boolean; create?: (c: Call) => Response } = {}) {
@@ -35,7 +46,7 @@ describe('checkout', () => {
   it('FR-FIX-01 the summary beside the choices holds the total, the button and the payment promise (Daylight design)', async () => {
     renderApp(`/checkout/${ID}`, backend());
     const summary = await screen.findByRole('complementary', { name: 'Summary' });
-    expect(within(summary).getByText('৳1,500')).toBeTruthy();            // the total, named once
+    expect(within(summary).getByText('৳1,500')).toBeTruthy(); // the total, named once
     expect(within(summary).getByRole('button', { name: 'Continue to payment' }).getAttribute('form')).toBe('checkout-form');
     expect(within(summary).getByText('Your money waits with us')).toBeTruthy();
   });
@@ -46,7 +57,7 @@ describe('checkout', () => {
     expect(within(summary).getAllByText('৳১,৫০০').length).toBeGreaterThan(0);
     const steps = within(summary).getAllByRole('listitem');
     expect(steps).toHaveLength(3);
-    expect(steps.some((li) => li.getAttribute('aria-current') === 'step')).toBe(false);   // nothing is paid or held at checkout: no step is marked
+    expect(steps.some((li) => li.getAttribute('aria-current') === 'step')).toBe(false); // nothing is paid or held at checkout: no step is marked
     expect(screen.queryByText('The seller is paid only after you confirm you have the item.')).toBeNull();
   });
 
@@ -57,7 +68,7 @@ describe('checkout', () => {
     expect(screen.getByText('Price for one: ৳1,500')).toBeTruthy();
     expect((screen.getByLabelText('Pick it up from the seller (no delivery fee)') as HTMLInputElement).checked).toBe(true);
     fireEvent.change(screen.getByLabelText('Quantity'), { target: { value: '২' } });
-    expect(screen.getByText('৳3,000')).toBeTruthy();                      // two units: the total changes
+    expect(screen.getByText('৳3,000')).toBeTruthy(); // two units: the total changes
     const button = screen.getByRole('button', { name: 'Continue to payment' });
     fireEvent.click(button);
     fireEvent.click(button);
@@ -65,7 +76,7 @@ describe('checkout', () => {
     const sheet = await screen.findByRole('dialog');
     expect(within(sheet).getByRole('heading', { name: 'Pay ৳3,000' })).toBeTruthy();
     expect(doc.router.state.location.pathname).toBe(`/checkout/${ID}`);
-    fireEvent.click(within(sheet).getByRole('button', { name: 'Cancel' }));          // leaving the sheet goes on to the order's page, still unpaid
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Cancel' })); // leaving the sheet goes on to the order's page, still unpaid
     await waitFor(() => expect(doc.router.state.location.pathname).toBe('/orders/o-1'));
     const sent = be.called('POST /orders');
     expect(sent).toHaveLength(1);
@@ -85,7 +96,7 @@ describe('checkout', () => {
     expect(await screen.findByText('This item is no longer available in that quantity.')).toBeTruthy();
   });
 
-  it('FR-TNS-07 an order over the account\'s limit, and an unverified buyer, are told why', async () => {
+  it("FR-TNS-07 an order over the account's limit, and an unverified buyer, are told why", async () => {
     renderApp(`/checkout/${ID}`, backend({ l: { quantity: { total: 1, available: 1 } }, create: problem(409, 'order-limit') }));
     fireEvent.click(await screen.findByRole('button', { name: 'Continue to payment' }));
     expect(await screen.findByText('This order is above the amount your account can buy right now.')).toBeTruthy();
@@ -98,7 +109,7 @@ describe('checkout', () => {
   it('FR-DLV-02 courier delivery is chosen here; the order is created without a method and the order page takes the address and the fee', async () => {
     const be = backend({ l: { fulfilmentOptions: 'courier_only', quantity: { total: 1, available: 1 } } });
     const doc = renderApp(`/checkout/${ID}`, be);
-    expect((await screen.findByLabelText('Courier delivery') as HTMLInputElement).checked).toBe(true);
+    expect(((await screen.findByLabelText('Courier delivery')) as HTMLInputElement).checked).toBe(true);
     expect(screen.queryByLabelText('Pick it up from the seller (no delivery fee)')).toBeNull();
     expect(screen.getByText('You give the delivery address and see the delivery fee on the next page, before you pay.')).toBeTruthy();
     expect(screen.getByText('Item total: ৳1,500, plus the delivery fee')).toBeTruthy();
@@ -107,7 +118,7 @@ describe('checkout', () => {
     expect(be.called('POST /orders')[0].body).toEqual({ listingId: ID, quantity: 1 });
   });
 
-  it('FR-DLV-02 an auction and one\'s own listing cannot be checked out, and say why', async () => {
+  it("FR-DLV-02 an auction and one's own listing cannot be checked out, and say why", async () => {
     const cases: [Record<string, unknown>, string][] = [
       [{ saleFormat: 'auction', price: null }, 'This item cannot be bought now.'],
       [{ seller: { id: standInMe.id } }, 'This is your own listing.'],

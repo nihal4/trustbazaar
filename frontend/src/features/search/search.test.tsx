@@ -17,8 +17,18 @@ afterEach(() => {
 });
 
 const card = (c: Partial<SearchCard> & { id: string }): SearchCard => ({
-  title: 'Used phone', itemKind: 'physical', saleFormat: 'fixed_price', condition: 'used', district: 'Dhaka', price: '1500000',
-  thumbUrl: '/api/v1/listing-photos/aaaa?size=thumb', distanceKm: null, featured: false, currentlyReserved: false, auction: null, ...c,
+  title: 'Used phone',
+  itemKind: 'physical',
+  saleFormat: 'fixed_price',
+  condition: 'used',
+  district: 'Dhaka',
+  price: '1500000',
+  thumbUrl: '/api/v1/listing-photos/aaaa?size=thumb',
+  distanceKm: null,
+  featured: false,
+  currentlyReserved: false,
+  auction: null,
+  ...c,
 });
 const categories: Category[] = [
   { id: 1, parentId: null, slug: 'phones', nameEn: 'Phones', nameBn: 'ফোন', itemKind: 'physical', selectable: true },
@@ -31,11 +41,19 @@ function backend(o: { signedIn?: boolean; search?: (c: Call) => Response } = {})
     first: {
       items: [
         card({ id: 'l-1', title: '<b>Samsung</b> মোবাইল', distanceKm: 3 }),
-        card({ id: 'l-2', title: 'Film camera', saleFormat: 'auction', price: '125000', featured: true,
-          auction: { endAt: new Date(Date.now() + 2 * 86_400_000).toISOString(), bidCount: 4, reserveMet: false } }),
+        card({
+          id: 'l-2',
+          title: 'Film camera',
+          saleFormat: 'auction',
+          price: '125000',
+          featured: true,
+          auction: { endAt: new Date(Date.now() + 2 * 86_400_000).toISOString(), bidCount: 4, reserveMet: false },
+        }),
         card({ id: 'l-3', title: 'Table', currentlyReserved: true }),
       ],
-      nextCursor: 'c-2', featured: [card({ id: 'l-2', title: 'Film camera', featured: true })], sort: 'newest',
+      nextCursor: 'c-2',
+      featured: [card({ id: 'l-2', title: 'Film camera', featured: true })],
+      sort: 'newest',
     },
     second: { items: [card({ id: 'l-4', title: 'Bicycle' })], nextCursor: null, featured: [], sort: 'newest' },
   };
@@ -58,7 +76,9 @@ describe('search', () => {
     expect(screen.getByRole('combobox', { name: /Category/ }).textContent).toBe('Android phones');
     // categories in tree order; prohibited ones are not offered as a filter
     fireEvent.click(screen.getByRole('combobox', { name: /Category/ }));
-    const options = within(screen.getByRole('listbox', { name: 'Category' })).getAllByRole('option').map((x) => x.textContent?.trim());
+    const options = within(screen.getByRole('listbox', { name: 'Category' }))
+      .getAllByRole('option')
+      .map((x) => x.textContent?.trim());
     expect(options).toEqual(['Any', 'Phones', 'Android phones']);
   });
 
@@ -100,7 +120,7 @@ describe('search', () => {
     expect(within(cards[0]).getByText(/3 km away/)).toBeTruthy();
     expect(within(cards[0]).getByRole('link').getAttribute('href')).toBe('/listings/l-1');
     expect(within(cards[1]).getByText('Featured')).toBeTruthy();
-    expect(within(cards[1]).getByText('Ends in 2 days 0 h')).toBeTruthy();   // on the photo, on the server's clock
+    expect(within(cards[1]).getByText('Ends in 2 days 0 h')).toBeTruthy(); // on the photo, on the server's clock
     expect(within(cards[1]).getByText('Auction, 4 bids, reserve not met yet')).toBeTruthy();
     expect(within(cards[1]).getByText('৳1,250')).toBeTruthy();
     expect(within(cards[2]).getByText('Currently reserved')).toBeTruthy();
@@ -134,10 +154,16 @@ describe('search', () => {
   });
 
   it('FR-SRC-05 a refused location, and a distance search without a point, are explained', async () => {
-    vi.stubGlobal('navigator', { ...navigator, geolocation: { getCurrentPosition: (_: PositionCallback, no: PositionErrorCallback) => no({} as GeolocationPositionError) } });
-    const be = backend({ search: (c) => (c.query.get('sort') === 'distance'
-      ? problem(400, 'validation-failed', { errors: [{ field: 'sort', reason: 'needs-a-search-point' }] })()
-      : json(200, { items: [], nextCursor: null, featured: [], sort: 'newest' })()) });
+    vi.stubGlobal('navigator', {
+      ...navigator,
+      geolocation: { getCurrentPosition: (_: PositionCallback, no: PositionErrorCallback) => no({} as GeolocationPositionError) },
+    });
+    const be = backend({
+      search: (c) =>
+        c.query.get('sort') === 'distance'
+          ? problem(400, 'validation-failed', { errors: [{ field: 'sort', reason: 'needs-a-search-point' }] })()
+          : json(200, { items: [], nextCursor: null, featured: [], sort: 'newest' })(),
+    });
     renderApp('/search?sort=distance', be);
     expect(await screen.findByText('To search by distance, press “Use my location” first.')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Use my location' }));
@@ -156,7 +182,13 @@ describe('search', () => {
   it('NFR-USE-04 the page in Bangla, with Bangla digits and category names', async () => {
     renderApp('/search?category=1', backend(), 'bn');
     expect(await screen.findByRole('heading', { name: 'যাচাই করা বিক্রেতাদের কাছ থেকে পুরোনো জিনিস খুঁজুন' })).toBeTruthy();
-    await waitFor(() => expect(within(screen.getByRole('main')).getAllByRole('listitem').some((li) => li.textContent?.includes('৩ কিমি দূরে'))).toBe(true));
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole('main'))
+          .getAllByRole('listitem')
+          .some((li) => li.textContent?.includes('৩ কিমি দূরে')),
+      ).toBe(true),
+    );
     expect(screen.getAllByText('৳১৫,০০০').length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole('combobox', { name: /বিভাগ/ }));
     expect(within(screen.getByRole('listbox', { name: 'বিভাগ' })).getByRole('option', { name: 'ফোন' })).toBeTruthy();

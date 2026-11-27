@@ -11,13 +11,20 @@ const configWith = (env: Record<string, string | undefined>) => () => loadConfig
 describe('SEC-PAY-05 separate credentials', () => {
   it('SEC-PAY-05 a live Stripe key is refused, in sandbox and in mock mode', () => {
     for (const mode of ['sandbox', 'mock']) {
-      expect(configWith({ PAYMENT_MODE: mode, STRIPE_SECRET_KEY: 'sk_live_0123456789abcdefghij', STRIPE_WEBHOOK_SECRET: 'whsec_test_only_0123456789' })).toThrow(/STRIPE_SECRET_KEY: must be a test key/);
+      expect(
+        configWith({ PAYMENT_MODE: mode, STRIPE_SECRET_KEY: 'sk_live_0123456789abcdefghij', STRIPE_WEBHOOK_SECRET: 'whsec_test_only_0123456789' }),
+      ).toThrow(/STRIPE_SECRET_KEY: must be a test key/);
     }
   });
 
   it('SEC-PAY-05 sandbox mode needs its own test credentials, and accepts them', () => {
-    expect(configWith({ PAYMENT_MODE: 'sandbox', STRIPE_SECRET_KEY: undefined, STRIPE_WEBHOOK_SECRET: undefined })).toThrow(/required when PAYMENT_MODE is sandbox/);
-    expect(configWith({ PAYMENT_MODE: 'sandbox', STRIPE_SECRET_KEY: 'sk_test_only_0123456789abcdef', STRIPE_WEBHOOK_SECRET: 'whsec_test_only_0123456789' })().paymentMode).toBe('sandbox');
+    expect(configWith({ PAYMENT_MODE: 'sandbox', STRIPE_SECRET_KEY: undefined, STRIPE_WEBHOOK_SECRET: undefined })).toThrow(
+      /required when PAYMENT_MODE is sandbox/,
+    );
+    expect(
+      configWith({ PAYMENT_MODE: 'sandbox', STRIPE_SECRET_KEY: 'sk_test_only_0123456789abcdef', STRIPE_WEBHOOK_SECRET: 'whsec_test_only_0123456789' })()
+        .paymentMode,
+    ).toBe('sandbox');
   });
 
   it('SEC-PAY-05 there is no production payment mode to configure', () => {
@@ -26,6 +33,8 @@ describe('SEC-PAY-05 separate credentials', () => {
   });
 
   it('SEC-PAY-05 a webhook secret that is not a signing secret is refused', () => {
-    expect(configWith({ PAYMENT_MODE: 'sandbox', STRIPE_SECRET_KEY: 'sk_test_only_0123456789abcdef', STRIPE_WEBHOOK_SECRET: 'sk_test_only_0123456789abcdef' })).toThrow(/STRIPE_WEBHOOK_SECRET/);
+    expect(
+      configWith({ PAYMENT_MODE: 'sandbox', STRIPE_SECRET_KEY: 'sk_test_only_0123456789abcdef', STRIPE_WEBHOOK_SECRET: 'sk_test_only_0123456789abcdef' }),
+    ).toThrow(/STRIPE_WEBHOOK_SECRET/);
   });
 });

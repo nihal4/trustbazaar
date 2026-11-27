@@ -65,7 +65,9 @@ describe('parameters (ConfigPort)', () => {
     expect(version).toBe(before.version + 1);
     expect((await port.current()).get('CP-13')).toBe(value); // this instance refreshes at once
     expect((await port.atVersion(before.version)).get('CP-13')).toBe(before.values['CP-13']);
-    const [audit] = await fx.query(`SELECT actor_id, before_state, after_state FROM audit.events WHERE action = 'staff.config.published' ORDER BY chain_pos DESC LIMIT 1`);
+    const [audit] = await fx.query(
+      `SELECT actor_id, before_state, after_state FROM audit.events WHERE action = 'staff.config.published' ORDER BY chain_pos DESC LIMIT 1`,
+    );
     expect(audit).toEqual({ actor_id: a.staffId, before_state: { 'CP-13': before.values['CP-13'] }, after_state: { version, 'CP-13': value } });
     const versions = await (await a.b.get('/admin/config/versions')).json();
     expect(versions[0]).toMatchObject({ version, createdBy: a.staffId, reason: 'Longer checkout reservation for testing' });
@@ -114,8 +116,7 @@ describe('parameters (ConfigPort)', () => {
     );
     const versions = (await Promise.all(answers.map((r) => r.json()))).map((b: { version: number }) => b.version).sort((x, y) => x - y);
     expect(versions).toEqual(Array.from({ length: 10 }, (_, i) => start + 1 + i));
-    const counts = await fx.query<{ n: number }>(
-      `SELECT count(*)::int AS n FROM staff.config_values WHERE version > $1 GROUP BY version`, [start]);
+    const counts = await fx.query<{ n: number }>(`SELECT count(*)::int AS n FROM staff.config_values WHERE version > $1 GROUP BY version`, [start]);
     const [{ n: full }] = await fx.query<{ n: number }>(`SELECT count(*)::int AS n FROM staff.config_values WHERE version = 1`);
     expect(counts.map((c) => c.n)).toEqual(Array(10).fill(full));
   });

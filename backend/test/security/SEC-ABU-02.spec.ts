@@ -34,7 +34,8 @@ describe('SEC-ABU-02 human verification', () => {
 
   it('SEC-ABU-02 registration and OTP requests meet it too; a wrong nonce is refused', async () => {
     const b = asIs();
-    const start = () => b.post('/auth/register', { email: `r-${Date.now()}-${Math.random()}@tb.test`, displayName: 'Rina Akter', password: 'river lamps over the old bridge' });
+    const start = () =>
+      b.post('/auth/register', { email: `r-${Date.now()}-${Math.random()}@tb.test`, displayName: 'Rina Akter', password: 'river lamps over the old bridge' });
     expect((await start()).status).toBe(202);
     expect((await start()).status).toBe(202);
     const r = await start();

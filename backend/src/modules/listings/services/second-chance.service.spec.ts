@@ -33,7 +33,9 @@ function setup(s: Script = {}) {
     if (q.includes('next_second_chance')) return [s.next ?? { bidder: 'babu', price: '120000' }];
     if (q.includes('INSERT INTO auctions.second_chance_offers')) return [{ id: OFFER, expires_at: new Date('2026-11-03T00:00:00Z') }];
     if (q.includes('FROM auctions.second_chance_offers') && q.includes('FOR UPDATE')) {
-      return s.offer === null ? [] : [{ id: OFFER, auction_id: AUCTION, price: '120000', ...(s.offer ?? { bidder_id: 'babu', status: 'offered', expired: false }) }];
+      return s.offer === null
+        ? []
+        : [{ id: OFFER, auction_id: AUCTION, price: '120000', ...(s.offer ?? { bidder_id: 'babu', status: 'offered', expired: false }) }];
     }
     if (q.includes("status = 'offered' AND expires_at <= now()")) return s.due ?? [];
     if (q.includes('FROM listings.listings WHERE id = $1 FOR UPDATE')) return [{ seller_id: 'seller', item_kind: 'physical', status: 'active' }];
@@ -48,7 +50,12 @@ function setup(s: Script = {}) {
   const values = parameterValues({ 'CP-11': '24 hours', 'CP-12': { strikes: 2, window: '90 days', suspension: '30 days' } });
   const params = { current: async () => ({ ...values, version: 1 }) } as unknown as ConfigPort;
   const svc = new SecondChanceService(
-    db as never, bus, orders as unknown as AuctionOrders, identity as unknown as IdentityQuery, audit as unknown as AuditServicePort, params,
+    db as never,
+    bus,
+    orders as unknown as AuctionOrders,
+    identity as unknown as IdentityQuery,
+    audit as unknown as AuditServicePort,
+    params,
     { assertNotBlocked: jest.fn(async () => undefined) } as never,
   );
   svc.onModuleInit();
@@ -94,7 +101,10 @@ describe('SecondChanceService', () => {
     const t = setup();
     expect(await t.svc.decide('babu', AUCTION, OFFER, 'accept')).toEqual({ offerId: OFFER, status: 'accepted', orderId: 'order-2' });
     expect(t.identity.assertCanTransact).toHaveBeenCalledWith('babu', 'buy');
-    expect(t.orders.createAuctionOrder).toHaveBeenCalledWith({ listingId: AUCTION, winnerId: 'babu', price: 120000n, kind: 'second_chance' }, expect.anything());
+    expect(t.orders.createAuctionOrder).toHaveBeenCalledWith(
+      { listingId: AUCTION, winnerId: 'babu', price: 120000n, kind: 'second_chance' },
+      expect.anything(),
+    );
     expect(t.sql.find((x) => x.q.includes(`status = 'accepted'`))?.p).toEqual([OFFER, 'order-2']);
   });
 
@@ -106,11 +116,19 @@ describe('SecondChanceService', () => {
   });
 
   it('FR-AUC-15 another user, an unknown offer, a decided or expired one are refused', async () => {
-    const problem = (p: Promise<unknown>) => p.then(() => 'none', (e: Problem) => e.problem);
+    const problem = (p: Promise<unknown>) =>
+      p.then(
+        () => 'none',
+        (e: Problem) => e.problem,
+      );
     expect(await problem(setup().svc.decide('chaya', AUCTION, OFFER, 'accept'))).toBe('not-found');
     expect(await problem(setup({ offer: null }).svc.decide('babu', AUCTION, OFFER, 'decline'))).toBe('not-found');
-    expect(await problem(setup({ offer: { bidder_id: 'babu', status: 'declined', expired: false } }).svc.decide('babu', AUCTION, OFFER, 'decline'))).toBe('offer-closed');
-    expect(await problem(setup({ offer: { bidder_id: 'babu', status: 'offered', expired: true } }).svc.decide('babu', AUCTION, OFFER, 'accept'))).toBe('offer-closed');
+    expect(await problem(setup({ offer: { bidder_id: 'babu', status: 'declined', expired: false } }).svc.decide('babu', AUCTION, OFFER, 'decline'))).toBe(
+      'offer-closed',
+    );
+    expect(await problem(setup({ offer: { bidder_id: 'babu', status: 'offered', expired: true } }).svc.decide('babu', AUCTION, OFFER, 'accept'))).toBe(
+      'offer-closed',
+    );
   });
 
   it('FR-AUC-15 the job expires due offers and offers the next bidder; one decided meanwhile is left alone', async () => {

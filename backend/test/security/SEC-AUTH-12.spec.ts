@@ -4,7 +4,11 @@ import { suite } from './setup';
 // FR-NTF-06 (identity.signin.new_device), and one from a known device does not.
 const s = suite();
 const newDeviceEvents = async (userId: string) =>
-  (await s.fx.query<{ n: number }>(`SELECT count(*)::int AS n FROM identity.outbox WHERE aggregate_id = $1 AND event_type = 'identity.signin.new_device'`, [userId]))[0].n;
+  (
+    await s.fx.query<{ n: number }>(`SELECT count(*)::int AS n FROM identity.outbox WHERE aggregate_id = $1 AND event_type = 'identity.signin.new_device'`, [
+      userId,
+    ])
+  )[0].n;
 
 describe('SEC-AUTH-12 device recognition', () => {
   it('SEC-AUTH-12 a first sign-in on a browser is a new device; signing in again on it is not', async () => {

@@ -52,34 +52,52 @@ export function Component() {
       await work();
     } catch (e) {
       setMessage(isApiError(e, 429) ? t('staff.signin.too_many') : problemName(e) === 'session-ended' ? t('staff.signin.ticket_ended') : refused(e));
-      if (problemName(e) === 'session-ended') { setStep('password'); setCode(''); }
+      if (problemName(e) === 'session-ended') {
+        setStep('password');
+        setCode('');
+      }
     }
     setBusy(false);
   };
   const failed = (e: unknown) => (isApiError(e, 401) || isApiError(e, 400) || isApiError(e, 422) ? t('staff.signin.failed') : errorText(e, t, lang));
   const wrongCode = (e: unknown) => (isApiError(e, 401) || isApiError(e, 400) || isApiError(e, 422) ? t('staff.signin.code_failed') : errorText(e, t, lang));
 
-  const submitPassword = (ev: FormEvent) => run(ev, async () => {
-    if (!email.trim() || !password) throw Object.assign(new Error('empty'), { status: 401 });
-    const r = (await api.post('/staff/auth/signin', { email: email.trim(), password })) as { mfaRequired?: boolean; enrolmentRequired?: boolean };
-    setPassword('');
-    setStep(r.enrolmentRequired ? 'enrol' : 'mfa');
-  }, (e) => (e instanceof Error && e.message === 'empty' ? t('staff.signin.failed') : failed(e)));
+  const submitPassword = (ev: FormEvent) =>
+    run(
+      ev,
+      async () => {
+        if (!email.trim() || !password) throw Object.assign(new Error('empty'), { status: 401 });
+        const r = (await api.post('/staff/auth/signin', { email: email.trim(), password })) as { mfaRequired?: boolean; enrolmentRequired?: boolean };
+        setPassword('');
+        setStep(r.enrolmentRequired ? 'enrol' : 'mfa');
+      },
+      (e) => (e instanceof Error && e.message === 'empty' ? t('staff.signin.failed') : failed(e)),
+    );
 
-  const submitCode = (ev: FormEvent) => run(ev, async () => {
-    await api.post(step === 'confirm' ? '/staff/auth/mfa/enrol/confirm' : '/staff/auth/mfa', { code: toAsciiDigits(code).replace(/\s/g, '') });
-    await done();
-  }, wrongCode);
+  const submitCode = (ev: FormEvent) =>
+    run(
+      ev,
+      async () => {
+        await api.post(step === 'confirm' ? '/staff/auth/mfa/enrol/confirm' : '/staff/auth/mfa', { code: toAsciiDigits(code).replace(/\s/g, '') });
+        await done();
+      },
+      wrongCode,
+    );
 
-  const submitNewPassword = (ev: FormEvent) => run(ev, async () => {
-    const r = (await api.post('/staff/auth/mfa/enrol', { newPassword })) as { otpauthUri: string; secret: string };
-    setNewPassword('');
-    setSecret(r);
-    setStep('confirm');
-  }, (e) => {
-    const reason = fieldErrors(e).find((f) => PASSWORD_REASONS.has(f.reason))?.reason;
-    return reason ? t(`staff.password.${reason}`, { min: toLocal(8, lang), max: toLocal(256, lang) }) : errorText(e, t, lang);
-  });
+  const submitNewPassword = (ev: FormEvent) =>
+    run(
+      ev,
+      async () => {
+        const r = (await api.post('/staff/auth/mfa/enrol', { newPassword })) as { otpauthUri: string; secret: string };
+        setNewPassword('');
+        setSecret(r);
+        setStep('confirm');
+      },
+      (e) => {
+        const reason = fieldErrors(e).find((f) => PASSWORD_REASONS.has(f.reason))?.reason;
+        return reason ? t(`staff.password.${reason}`, { min: toLocal(8, lang), max: toLocal(256, lang) }) : errorText(e, t, lang);
+      },
+    );
 
   return (
     <div className={styles.narrow}>
@@ -95,8 +113,15 @@ export function Component() {
       {step === 'enrol' && (
         <form onSubmit={submitNewPassword} noValidate>
           <p>{t('staff.enrol.explain')}</p>
-          <TextField id="new-password" label={t('staff.enrol.new_password')} type="password" autoComplete="new-password" value={newPassword} onChange={setNewPassword}
-            hint={t('staff.enrol.password_hint', { min: toLocal(8, lang) })} />
+          <TextField
+            id="new-password"
+            label={t('staff.enrol.new_password')}
+            type="password"
+            autoComplete="new-password"
+            value={newPassword}
+            onChange={setNewPassword}
+            hint={t('staff.enrol.password_hint', { min: toLocal(8, lang) })}
+          />
           <SubmitButton busy={busy}>{t('staff.enrol.continue')}</SubmitButton>
         </form>
       )}
@@ -105,12 +130,24 @@ export function Component() {
           {step === 'confirm' && secret && (
             <>
               <p>{t('staff.enrol.add_app')}</p>
-              <p>{t('staff.enrol.key')} <strong className={styles.code}>{secret.secret.match(/.{1,4}/g)?.join(' ')}</strong></p>
-              <p><a className={styles.openLink} href={secret.otpauthUri}>{t('staff.enrol.link')}</a></p>
+              <p>
+                {t('staff.enrol.key')} <strong className={styles.code}>{secret.secret.match(/.{1,4}/g)?.join(' ')}</strong>
+              </p>
+              <p>
+                <a className={styles.openLink} href={secret.otpauthUri}>
+                  {t('staff.enrol.link')}
+                </a>
+              </p>
             </>
           )}
-          <CodeField id="code" label={t('staff.signin.code')} value={code} onChange={setCode} allowRecovery
-            hint={t(step === 'confirm' ? 'staff.enrol.code_hint' : 'staff.signin.code_hint')} />
+          <CodeField
+            id="code"
+            label={t('staff.signin.code')}
+            value={code}
+            onChange={setCode}
+            allowRecovery
+            hint={t(step === 'confirm' ? 'staff.enrol.code_hint' : 'staff.signin.code_hint')}
+          />
           <SubmitButton busy={busy}>{t('staff.signin.sign_in')}</SubmitButton>
         </form>
       )}

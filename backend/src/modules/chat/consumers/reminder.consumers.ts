@@ -12,7 +12,11 @@ const CONSUMER = 'chat.reminders';
 const FULFILMENT: readonly DeadlineKind[] = ['meetup_handover', 'courier_pickup', 'credential_delivery'];
 const ALL: readonly DeadlineKind[] = ['payment_window', ...FULFILMENT, 'dispute_window'];
 /** The order's fulfilment step and the reminder kind of its deadline (FR-NTF-07). */
-const KIND_OF_STEP: Record<string, DeadlineKind> = { meetup_handover: 'meetup_handover', courier_pickup: 'courier_pickup', credentials_delivered: 'credential_delivery' };
+const KIND_OF_STEP: Record<string, DeadlineKind> = {
+  meetup_handover: 'meetup_handover',
+  courier_pickup: 'courier_pickup',
+  credentials_delivered: 'credential_delivery',
+};
 /** Shipment statuses that mean the courier has the parcel: the pickup deadline is met. */
 const PICKED_UP = new Set(['picked_up', 'in_transit', 'delivery_failed', 'delivered']);
 

@@ -45,14 +45,19 @@ const PHONE = '+8801712345678';
 
 function setup(o: { provider?: PayoutProvider; due?: () => Row[] } = {}) {
   const repos = new Map<unknown, Repo>([
-    [PayoutAccount, new Repo(() => ({ createdAt: NOW, walletE164: null, bankName: null, branchName: null, accountName: null, accountLast4: null, effectiveAt: null }))],
+    [
+      PayoutAccount,
+      new Repo(() => ({ createdAt: NOW, walletE164: null, bankName: null, branchName: null, accountName: null, accountLast4: null, effectiveAt: null })),
+    ],
     [Payout, new Repo()],
     [JournalEntry, new Repo()],
     [JournalLine, new Repo()],
     [OrdersOutboxEvent, new Repo()],
     [ReconciliationIssue, new Repo()],
   ]);
-  const query = jest.fn(async (sql: string, _params?: unknown[]): Promise<unknown> => (sql.includes('SELECT id FROM payments.payouts') ? (o.due?.() ?? []) : sql.includes('RETURNING id') ? [[{ id: 'P1' }], 1] : []));
+  const query = jest.fn(async (sql: string, _params?: unknown[]): Promise<unknown> =>
+    sql.includes('SELECT id FROM payments.payouts') ? (o.due?.() ?? []) : sql.includes('RETURNING id') ? [[{ id: 'P1' }], 1] : [],
+  );
   const manager = { getRepository: (e: unknown) => repos.get(e)!, query };
   const db = { ...manager, manager, transaction: (cb: (m: typeof manager) => unknown) => cb(manager) };
   const bus = { on: jest.fn() };
@@ -66,13 +71,22 @@ function setup(o: { provider?: PayoutProvider; due?: () => Row[] } = {}) {
   const params = { current: async () => values } as unknown as ConfigPort;
   const clock: Clock = { now: () => NOW };
   const svc = new PayoutService(
-    db as unknown as DataSource, bus as unknown as EventBus, o.provider ?? new SimulatedPayoutProvider(), identity as unknown as IdentityQuery,
-    crypto as unknown as IdentityCryptoPort, audit as unknown as AuditServicePort, params, clock,
+    db as unknown as DataSource,
+    bus as unknown as EventBus,
+    o.provider ?? new SimulatedPayoutProvider(),
+    identity as unknown as IdentityQuery,
+    crypto as unknown as IdentityCryptoPort,
+    audit as unknown as AuditServicePort,
+    params,
+    clock,
   );
   return { svc, repo: (e: unknown) => repos.get(e)!, query, bus, audit, identity };
 }
 const reason = async (p: Promise<unknown>) =>
-  p.then(() => 'none', (e: unknown) => (e instanceof Problem ? ((e.extra.errors as { reason: string }[] | undefined)?.[0]?.reason ?? e.problem) : String(e)));
+  p.then(
+    () => 'none',
+    (e: unknown) => (e instanceof Problem ? ((e.extra.errors as { reason: string }[] | undefined)?.[0]?.reason ?? e.problem) : String(e)),
+  );
 
 describe('PayoutService', () => {
   it('FR-PAY-17 wallet numbers: local or E.164 forms, Bangladeshi mobiles only', () => {
@@ -96,7 +110,13 @@ describe('PayoutService', () => {
 
   it('FR-PAY-17 a bank account is sealed, waits for review, and payouts wait for an account meanwhile', async () => {
     const s = setup();
-    const a = await s.svc.setAccount('S', { kind: 'bank', bankName: ' DBBL ', routingNumber: '090271234', accountName: 'Rahim Uddin', accountNumber: '1234567890123' });
+    const a = await s.svc.setAccount('S', {
+      kind: 'bank',
+      bankName: ' DBBL ',
+      routingNumber: '090271234',
+      accountName: 'Rahim Uddin',
+      accountNumber: '1234567890123',
+    });
     expect(a).toMatchObject({ status: 'pending_review', bankName: 'DBBL', branchName: null, accountLast4: '0123', effectiveAt: null });
     const row = s.repo(PayoutAccount).rows[0];
     expect(Buffer.from(row.accountNumberEnc as Buffer).toString()).toBe('sealed:1234567890123');
@@ -108,9 +128,19 @@ describe('PayoutService', () => {
     const approved = await s.svc.decideBankAccount('OP', a.id, 'approve', 'Name matches');
     expect(approved).toMatchObject({ status: 'cooling_off', effectiveAt: new Date(NOW.getTime() + DAY).toISOString() });
     expect(await reason(s.svc.decideBankAccount('OP', a.id, 'reject', 'again'))).toBe('payout-state');
-    const b = await s.svc.setAccount('T', { kind: 'bank', bankName: 'BRAC', branchName: 'Gulshan', routingNumber: '060261234', accountName: 'Other', accountNumber: '999999' });
+    const b = await s.svc.setAccount('T', {
+      kind: 'bank',
+      bankName: 'BRAC',
+      branchName: 'Gulshan',
+      routingNumber: '060261234',
+      accountName: 'Other',
+      accountNumber: '999999',
+    });
     expect(await s.svc.decideBankAccount('OP', b.id, 'reject', 'Name differs')).toMatchObject({ status: 'rejected' });
-    expect(s.audit.record).toHaveBeenCalledWith(expect.objectContaining({ action: 'payments.payout_account.rejected', reason: 'Name differs' }), expect.anything());
+    expect(s.audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'payments.payout_account.rejected', reason: 'Name differs' }),
+      expect.anything(),
+    );
   });
 
   it('FR-PAY-19 the worker sends with the payout\'s idempotency key and posts "payout sent"', async () => {
@@ -118,26 +148,66 @@ describe('PayoutService', () => {
     let due = true;
     const s = setup({ provider: { send }, due: () => (due ? [{ id: 'P1' }] : []) });
     s.repo(PayoutAccount).rows.push({ id: 'A1', kind: 'bkash_wallet', walletE164: PHONE, status: 'active' });
-    s.repo(Payout).rows.push({ id: 'P1', orderId: 'O1', sellerId: 'S', payoutAccountId: 'A1', amount: '950000', status: 'pending', simulated: true, idempotencyKey: 'k1', attemptsMade: 0 });
-    send.mockImplementationOnce(async () => { due = false; return { status: 'sent', ref: 'r1' }; });
+    s.repo(Payout).rows.push({
+      id: 'P1',
+      orderId: 'O1',
+      sellerId: 'S',
+      payoutAccountId: 'A1',
+      amount: '950000',
+      status: 'pending',
+      simulated: true,
+      idempotencyKey: 'k1',
+      attemptsMade: 0,
+    });
+    send.mockImplementationOnce(async () => {
+      due = false;
+      return { status: 'sent', ref: 'r1' };
+    });
     expect(await s.svc.processDue()).toEqual(['sent']);
-    expect(send).toHaveBeenCalledWith(expect.objectContaining({ payoutId: 'P1', amount: 950000n, idempotencyKey: 'k1', destination: expect.objectContaining({ walletE164: PHONE }) }));
+    expect(send).toHaveBeenCalledWith(
+      expect.objectContaining({ payoutId: 'P1', amount: 950000n, idempotencyKey: 'k1', destination: expect.objectContaining({ walletE164: PHONE }) }),
+    );
     expect(s.repo(Payout).rows[0]).toMatchObject({ status: 'sent', sentAt: NOW, providerRef: 'r1', attemptsMade: 1 });
-    expect(s.repo(JournalLine).rows.map((l) => [l.accountCode, l.partyId, l.amount])).toEqual([['seller_payable', 'S', '950000'], ['payout_clearing', null, '-950000']]);
+    expect(s.repo(JournalLine).rows.map((l) => [l.accountCode, l.partyId, l.amount])).toEqual([
+      ['seller_payable', 'S', '950000'],
+      ['payout_clearing', null, '-950000'],
+    ]);
     expect(s.repo(OrdersOutboxEvent).rows.map((r) => r.eventType)).toEqual(['payments.payout.sent']);
   });
 
   it('FR-PAY-19 DV-14 failures retry on the schedule, then raise payout_failed', async () => {
     let calls = 0;
-    const s = setup({ provider: { send: async () => { calls++; if (calls === 2) throw new Error('timeout'); return { status: 'failed' }; } }, due: () => (calls < 2 ? [{ id: 'P1' }] : []) });
+    const s = setup({
+      provider: {
+        send: async () => {
+          calls++;
+          if (calls === 2) throw new Error('timeout');
+          return { status: 'failed' };
+        },
+      },
+      due: () => (calls < 2 ? [{ id: 'P1' }] : []),
+    });
     s.repo(PayoutAccount).rows.push({ id: 'A1', kind: 'bank', status: 'active' });
-    const p = { id: 'P1', orderId: 'O1', sellerId: 'S', payoutAccountId: 'A1', amount: '100', status: 'pending', simulated: true, idempotencyKey: 'k', attemptsMade: 0 };
+    const p = {
+      id: 'P1',
+      orderId: 'O1',
+      sellerId: 'S',
+      payoutAccountId: 'A1',
+      amount: '100',
+      status: 'pending',
+      simulated: true,
+      idempotencyKey: 'k',
+      attemptsMade: 0,
+    };
     s.repo(Payout).rows.push(p);
     expect(await s.svc.processDue()).toEqual(['retry', 'retry']); // a thrown error counts as a failure
     expect(p).toMatchObject({ status: 'failed', attemptsMade: 2, nextAttemptAt: new Date(NOW.getTime() + PAYOUT_RETRY_DELAYS_MS[1]) });
     Object.assign(p, { attemptsMade: MAX_PAYOUT_ATTEMPTS - 1 });
     calls = 0;
-    const once = setup({ provider: { send: async () => ({ status: 'failed' }) }, due: () => (p.status === 'failed' && p.attemptsMade < MAX_PAYOUT_ATTEMPTS ? [{ id: 'P1' }] : []) });
+    const once = setup({
+      provider: { send: async () => ({ status: 'failed' }) },
+      due: () => (p.status === 'failed' && p.attemptsMade < MAX_PAYOUT_ATTEMPTS ? [{ id: 'P1' }] : []),
+    });
     once.repo(PayoutAccount).rows.push({ id: 'A1', kind: 'bank', status: 'active' });
     once.repo(Payout).rows.push(p);
     expect(await once.svc.processDue()).toEqual(['failed']);
@@ -156,7 +226,17 @@ describe('PayoutService', () => {
     await s.svc.onSuspended(ev({ userId: 'S', fraud: true }));
     expect(String(s.query.mock.calls[0][0])).toContain("SET status = 'held', hold_reason = 'fraud suspension'");
     expect(s.audit.record).toHaveBeenCalledWith(expect.objectContaining({ action: 'payments.payout.held', after: { payouts: ['P1'] } }), expect.anything());
-    const held = { id: 'H1', orderId: 'O1', sellerId: 'S', amount: '5', status: 'held', holdReason: 'fraud suspension', simulated: true, createdAt: NOW, sentAt: null };
+    const held = {
+      id: 'H1',
+      orderId: 'O1',
+      sellerId: 'S',
+      amount: '5',
+      status: 'held',
+      holdReason: 'fraud suspension',
+      simulated: true,
+      createdAt: NOW,
+      sentAt: null,
+    };
     s.repo(Payout).rows.push(held);
     expect(await s.svc.releaseHold('OP', 'H1', 'Cleared')).toMatchObject({ status: 'waiting_account' });
     expect(await reason(s.svc.releaseHold('OP', 'H1', 'again'))).toBe('payout-state');
@@ -170,12 +250,29 @@ describe('PayoutService', () => {
   });
 
   it('IF-UI-08 payout history in pages of 50 with a cursor', async () => {
-    const rows = Array.from({ length: 51 }, (_, i) => ({ id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`, order_id: 'O', amount: '1', status: 'sent', simulated: true, created_at: NOW, sent_at: NOW, cursor_at: '2026-11-01T10:00:00.123456Z' }));
+    const rows = Array.from({ length: 51 }, (_, i) => ({
+      id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`,
+      order_id: 'O',
+      amount: '1',
+      status: 'sent',
+      simulated: true,
+      created_at: NOW,
+      sent_at: NOW,
+      cursor_at: '2026-11-01T10:00:00.123456Z',
+    }));
     const s = setup();
     s.query.mockImplementation(async () => rows as never);
     const page = await s.svc.listPayouts('S');
     expect(page.items).toHaveLength(50);
-    expect(page.items[0]).toEqual({ id: rows[0].id, orderId: 'O', amount: '1', status: 'sent', simulated: true, createdAt: NOW.toISOString(), sentAt: NOW.toISOString() });
+    expect(page.items[0]).toEqual({
+      id: rows[0].id,
+      orderId: 'O',
+      amount: '1',
+      status: 'sent',
+      simulated: true,
+      createdAt: NOW.toISOString(),
+      sentAt: NOW.toISOString(),
+    });
     await s.svc.listPayouts('S', page.nextCursor!);
     expect(s.query.mock.calls[1][1]).toEqual(['S', '2026-11-01T10:00:00.123456Z', rows[49].id]);
     expect(await reason(s.svc.listPayouts('S', 'eA'))).toBe('format');

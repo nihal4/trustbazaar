@@ -29,10 +29,20 @@ describe('the test phone numbers', () => {
 
   it('NFR-MNT-02 any other error is not hidden, and the retries stop after the given number of attempts', async () => {
     let calls = 0;
-    await expect(withFreshPhone(async () => { calls++; throw new Error('connection terminated'); })).rejects.toThrow('connection terminated');
+    await expect(
+      withFreshPhone(async () => {
+        calls++;
+        throw new Error('connection terminated');
+      }),
+    ).rejects.toThrow('connection terminated');
     expect(calls).toBe(1);
     calls = 0;
-    await expect(withFreshPhone(async () => { calls++; throw new Error('violates unique constraint "users_phone_live"'); }, 4)).rejects.toThrow('users_phone_live');
+    await expect(
+      withFreshPhone(async () => {
+        calls++;
+        throw new Error('violates unique constraint "users_phone_live"');
+      }, 4),
+    ).rejects.toThrow('users_phone_live');
     expect(calls).toBe(4);
   });
 });

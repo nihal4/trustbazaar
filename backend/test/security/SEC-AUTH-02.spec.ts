@@ -15,7 +15,11 @@ describe('SEC-AUTH-02 password checks', () => {
     ['the site name', 'my trustbazaar account', 'context'],
     ["the person's own name", 'rafiq uddin forever', 'context'],
   ])('SEC-AUTH-02 registration refuses %s', async (_case, password, reason) => {
-    expect(await problem(await register(password))).toMatchObject({ status: 422, type: '/problems/password-rejected', errors: [{ field: 'password', reason }] });
+    expect(await problem(await register(password))).toMatchObject({
+      status: 422,
+      type: '/problems/password-rejected',
+      errors: [{ field: 'password', reason }],
+    });
   });
 
   it("SEC-AUTH-02 registration refuses the person's own mobile number inside the password, at the step that asks for it", async () => {
@@ -26,8 +30,11 @@ describe('SEC-AUTH-02 password checks', () => {
     const started = await (await b.post('/auth/register', { email, displayName: 'Rafiq Uddin', password })).json();
     const code = s.sent(email, 'otp_register_email').at(-1)!.vars.code;
     expect((await b.post('/auth/register/verify', { registrationId: started.registrationId, code })).status).toBe(204);
-    expect(await problem(await b.post('/auth/register/complete', { registrationId: started.registrationId, phone, password, ...s.cfg.legal, adultConfirmed: true }))).toMatchObject({
-      status: 422, errors: [{ field: 'password', reason: 'context' }],
+    expect(
+      await problem(await b.post('/auth/register/complete', { registrationId: started.registrationId, phone, password, ...s.cfg.legal, adultConfirmed: true })),
+    ).toMatchObject({
+      status: 422,
+      errors: [{ field: 'password', reason: 'context' }],
     });
   });
 
@@ -35,7 +42,10 @@ describe('SEC-AUTH-02 password checks', () => {
     const a = await s.fx.account();
     await s.browser().post('/auth/password/forgot', { login: a.email });
     const token = s.sent(a.email, 'password_reset').at(-1)!.vars.link.split('#token=')[1];
-    expect(await problem(await s.browser().post('/auth/password/reset', { token, newPassword: 'qwertyuiop12345' }))).toMatchObject({ status: 422, errors: [{ field: 'newPassword', reason: 'common' }] });
+    expect(await problem(await s.browser().post('/auth/password/reset', { token, newPassword: 'qwertyuiop12345' }))).toMatchObject({
+      status: 422,
+      errors: [{ field: 'newPassword', reason: 'common' }],
+    });
     // the token was not spent by the refusal
     expect((await s.browser().post('/auth/password/reset', { token, newPassword: `fresh ${randomUUID()}` })).status).toBe(204);
   });

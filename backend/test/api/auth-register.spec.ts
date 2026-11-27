@@ -44,10 +44,16 @@ describe('registration', () => {
     ...o,
   });
   const finish = (registrationId: string, d: { password: string }, o: Partial<Record<string, unknown>> = {}) => ({
-    registrationId, phone: newLocal(), password: d.password, ...legal, adultConfirmed: true, ...o,
+    registrationId,
+    phone: newLocal(),
+    password: d.password,
+    ...legal,
+    adultConfirmed: true,
+    ...o,
   });
   const e164 = (local: string) => `+88${local}`;
-  const mails = (to: string, template: string) => notes.sent.filter((m) => m.channel === 'email' && m.to.toLowerCase() === to.toLowerCase() && m.template === template);
+  const mails = (to: string, template: string) =>
+    notes.sent.filter((m) => m.channel === 'email' && m.to.toLowerCase() === to.toLowerCase() && m.template === template);
   const codeFor = (email: string) => mails(email, 'otp_register_email').at(-1)!.vars.code;
   const wrong = (code: string) => String((Number(code) + 1) % 1_000_000).padStart(6, '0');
   const userByEmail = async (email: string) => (await fx.query(`SELECT * FROM identity.users WHERE email = $1`, [email]))[0];
@@ -124,7 +130,8 @@ describe('registration', () => {
     const { d, body } = await confirmed();
     for (const phone of ['+14155550100', '029123456', '01212345678']) {
       expect(await problem(await browser().post('/auth/register/complete', finish(body.registrationId, d, { phone })))).toMatchObject({
-        status: 400, errors: [{ field: 'phone', reason: 'not-bangladeshi-mobile' }],
+        status: 400,
+        errors: [{ field: 'phone', reason: 'not-bangladeshi-mobile' }],
       });
     }
     expect((await browser().post('/auth/register/complete', finish(body.registrationId, d, { phone: e164(newLocal()) }))).status).toBe(204);
@@ -139,7 +146,9 @@ describe('registration', () => {
     ]) {
       const d = details({ password });
       expect(await problem((await start(browser(), d)).r)).toMatchObject({
-        status: 422, type: '/problems/password-rejected', errors: [{ field: 'password', reason }],
+        status: 422,
+        type: '/problems/password-rejected',
+        errors: [{ field: 'password', reason }],
       });
       expect(mails(d.email, 'otp_register_email')).toHaveLength(0);
     }
@@ -147,11 +156,15 @@ describe('registration', () => {
     const d = details({ password: `call me on ${phone} now` });
     const s = await confirmed(browser(), d);
     expect(await problem(await browser().post('/auth/register/complete', finish(s.body.registrationId, d, { phone })))).toMatchObject({
-      status: 422, errors: [{ field: 'password', reason: 'context' }],
+      status: 422,
+      errors: [{ field: 'password', reason: 'context' }],
     });
     // a password other than the first step's is refused
-    expect(await problem(await browser().post('/auth/register/complete', finish(s.body.registrationId, d, { password: 'another long phrase here' })))).toMatchObject({
-      status: 400, errors: [{ field: 'password', reason: 'mismatch' }],
+    expect(
+      await problem(await browser().post('/auth/register/complete', finish(s.body.registrationId, d, { password: 'another long phrase here' }))),
+    ).toMatchObject({
+      status: 400,
+      errors: [{ field: 'password', reason: 'mismatch' }],
     });
   });
 
@@ -212,10 +225,13 @@ describe('registration', () => {
     const code = codeFor(d.email);
     for (let i = 0; i < 4; i++) {
       expect(await problem(await b.post('/auth/register/verify', { registrationId: body.registrationId, code: wrong(code) }))).toMatchObject({
-        status: 400, type: '/problems/otp-failed',
+        status: 400,
+        type: '/problems/otp-failed',
       });
     }
-    expect((await problem(await b.post('/auth/register/verify', { registrationId: body.registrationId, code: wrong(code) }))).type).toBe('/problems/otp-expired');
+    expect((await problem(await b.post('/auth/register/verify', { registrationId: body.registrationId, code: wrong(code) }))).type).toBe(
+      '/problems/otp-expired',
+    );
     expect((await problem(await b.post('/auth/register/verify', { registrationId: body.registrationId, code }))).type).toBe('/problems/otp-expired');
   });
 
@@ -225,7 +241,9 @@ describe('registration', () => {
     const key = `reg:pending:${body.registrationId}`;
     const p = JSON.parse((await redis.get(key))!);
     await redis.set(key, JSON.stringify({ ...p, until: Date.now() - 1000 }), 'EX', 60);
-    expect((await problem(await b.post('/auth/register/verify', { registrationId: body.registrationId, code: codeFor(d.email) }))).type).toBe('/problems/otp-expired');
+    expect((await problem(await b.post('/auth/register/verify', { registrationId: body.registrationId, code: codeFor(d.email) }))).type).toBe(
+      '/problems/otp-expired',
+    );
   });
 
   it('SEC-AUTH-09 a resend waits for the resend time, replaces the code, and sends per address are limited (CP-05)', async () => {

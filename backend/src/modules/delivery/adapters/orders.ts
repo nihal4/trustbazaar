@@ -1,7 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import type { EntityManager } from 'typeorm';
-import { ESCROW_COMMANDS, ESCROW_QUERY, EscrowCommands, EscrowQuery, FulfilmentFacts, ORDERS_PORT, OrdersPort, type EscrowView, type OrderView } from '../../orders/ports';
+import {
+  ESCROW_COMMANDS,
+  ESCROW_QUERY,
+  EscrowCommands,
+  EscrowQuery,
+  FulfilmentFacts,
+  ORDERS_PORT,
+  OrdersPort,
+  type EscrowView,
+  type OrderView,
+} from '../../orders/ports';
 
 // Unit 2's OrdersPort.lockForFulfilment and EscrowCommands for the handover (DC-14; I-20; U4-03). Unit 2 imports this
 // unit (DeliveryPort.claimQuote in its checkout), so this unit cannot import Unit 2's module: the provider below finds

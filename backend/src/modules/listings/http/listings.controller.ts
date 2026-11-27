@@ -1,6 +1,4 @@
-import {
-  Body, Controller, Delete, Get, Headers, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query, Res, UploadedFile, UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 import { promises as fs } from 'fs';
@@ -9,9 +7,7 @@ import { CurrentPrincipal, Principal } from '../../../kernel/http/principal';
 import { Problem } from '../../../kernel/http/problems';
 import { ListingService } from '../services/listing.service';
 import { MAX_PHOTO_BYTES, STORAGE_KEY } from '../services/media';
-import {
-  ClarificationDto, CreateListingDto, MyListingsQuery, PhotoQuery, PhotoUploadDto, PublishListingDto, UpdateListingDto,
-} from './listings.dto';
+import { ClarificationDto, CreateListingDto, MyListingsQuery, PhotoQuery, PhotoUploadDto, PublishListingDto, UpdateListingDto } from './listings.dto';
 
 // The listings API of Unit 3 (docs/design/03_listings_auctions.pdf section 3.1), U3-02. The design's
 // "Seller" policy is SignedIn here plus the ownership check in ListingService, which answers not-found for
@@ -66,12 +62,7 @@ export class ListingsController {
   @RateLimit('listing-photo')
   @Post(':id/photos')
   @UseInterceptors(FileInterceptor('photo', { limits: { fileSize: MAX_PHOTO_BYTES, files: 1, fields: 2, fieldSize: 16, parts: 3 } }))
-  addPhoto(
-    @Id('id') id: string,
-    @Body() dto: PhotoUploadDto,
-    @UploadedFile() file: { buffer: Buffer } | undefined,
-    @CurrentPrincipal() p: Principal,
-  ) {
+  addPhoto(@Id('id') id: string, @Body() dto: PhotoUploadDto, @UploadedFile() file: { buffer: Buffer } | undefined, @CurrentPrincipal() p: Principal) {
     return this.listings.addPhoto(userOf(p), id, file?.buffer, dto.showsDefects === 'true');
   }
 

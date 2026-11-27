@@ -13,26 +13,66 @@ import { fixtures, STATES } from './fixtures';
 const f = fixtures();
 type Role = 'guest' | 'buyer' | 'operator' | 'administrator';
 const ROUTES: Record<Role, string[]> = {
-  guest: ['/', '/search', '/search?q=Samsung', `/listings/${f.listingId}`, '/signin', '/register', '/reset', '/help/terms', '/help/privacy', '/no-such-page', '/staff/signin'],
+  guest: [
+    '/',
+    '/search',
+    '/search?q=Samsung',
+    `/listings/${f.listingId}`,
+    '/signin',
+    '/register',
+    '/reset',
+    '/help/terms',
+    '/help/privacy',
+    '/no-such-page',
+    '/staff/signin',
+  ],
   buyer: [
-    '/account', '/account/security', '/account/privacy', '/account/payout', '/account/kyc', '/orders', `/orders/${f.orderId}`, `/checkout/${f.listingId}`,
-    '/messages', '/notifications', '/seller', '/sell/new', `/secure/orders/${f.orderId}/key`,
+    '/account',
+    '/account/security',
+    '/account/privacy',
+    '/account/payout',
+    '/account/kyc',
+    '/orders',
+    `/orders/${f.orderId}`,
+    `/checkout/${f.listingId}`,
+    '/messages',
+    '/notifications',
+    '/seller',
+    '/sell/new',
+    `/secure/orders/${f.orderId}/key`,
   ],
   operator: [
-    '/staff/queues/disputes', '/staff/queues/reports', '/staff/queues/flagged_activity', '/staff/queues/kyc', '/staff/queues/listings_review',
-    '/staff/queues/ownership_proofs', '/staff/queues/payout_accounts', '/staff/queues/payment_discrepancies', '/staff/approvals', '/staff/terms',
+    '/staff/queues/disputes',
+    '/staff/queues/reports',
+    '/staff/queues/flagged_activity',
+    '/staff/queues/kyc',
+    '/staff/queues/listings_review',
+    '/staff/queues/ownership_proofs',
+    '/staff/queues/payout_accounts',
+    '/staff/queues/payment_discrepancies',
+    '/staff/approvals',
+    '/staff/terms',
   ],
   administrator: ['/staff', '/admin', '/staff/approvals', '/admin/config', '/admin/staff', '/admin/reference', '/admin/audit'],
 };
-const WIDTHS = [{ width: 360, height: 740, lang: 'en' }, { width: 320, height: 640, lang: 'en' }, { width: 320, height: 640, lang: 'bn' }] as const;
+const WIDTHS = [
+  { width: 360, height: 740, lang: 'en' },
+  { width: 320, height: 640, lang: 'en' },
+  { width: 320, height: 640, lang: 'bn' },
+] as const;
 
 /** Collects the page's policy violations: the browser's events and its console reports; and any request that leaves
  *  the site (AC-ALL-3). */
 async function watchPolicies(page: Page): Promise<string[]> {
   const seen: string[] = [];
   const site = new URL(f.web ?? 'http://localhost:8080').origin;
-  page.on('request', (r) => { const u = new URL(r.url()); if (/^https?:$/.test(u.protocol) && u.origin !== site) seen.push(`request to ${u.origin}`); });
-  page.on('console', (m) => { if (m.type() === 'error' && /Content Security Policy|Trusted Type/i.test(m.text())) seen.push(m.text()); });
+  page.on('request', (r) => {
+    const u = new URL(r.url());
+    if (/^https?:$/.test(u.protocol) && u.origin !== site) seen.push(`request to ${u.origin}`);
+  });
+  page.on('console', (m) => {
+    if (m.type() === 'error' && /Content Security Policy|Trusted Type/i.test(m.text())) seen.push(m.text());
+  });
   await page.addInitScript(() => {
     document.addEventListener('securitypolicyviolation', (e) => {
       (window as unknown as { __tbViolations: string[] }).__tbViolations ??= [];
@@ -61,11 +101,21 @@ for (const role of Object.keys(ROUTES) as Role[]) {
   test.describe(`as ${role}`, () => {
     if (role !== 'guest') test.use({ storageState: join(STATES, `${role}.json`) });
     for (const path of ROUTES[role]) {
-      test(`NFR-USE-05 NFR-USE-06 SEC-WEB-01 ${path}: no sideways scroll at 360 and 320 (also in Bangla), no serious accessibility issue, no policy violation`, async ({ page }) => {
+      test(`NFR-USE-05 NFR-USE-06 SEC-WEB-01 ${path}: no sideways scroll at 360 and 320 (also in Bangla), no serious accessibility issue, no policy violation`, async ({
+        page,
+      }) => {
         const console = await watchPolicies(page);
         for (const size of WIDTHS) {
           await page.setViewportSize({ width: size.width, height: size.height });
-          await page.evaluate((l) => { try { localStorage.setItem('tb-lang', l); } catch { /* a page without storage stays in English */ } }, size.lang).catch(() => {});
+          await page
+            .evaluate((l) => {
+              try {
+                localStorage.setItem('tb-lang', l);
+              } catch {
+                /* a page without storage stays in English */
+              }
+            }, size.lang)
+            .catch(() => {});
           await page.goto(path);
           await settle(page);
           // the credential page takes its language from the account's preference, not from this device
@@ -73,8 +123,15 @@ for (const role of Object.keys(ROUTES) as Role[]) {
           expect(await sideways(page), `sideways scroll at ${size.width} (${size.lang})`).toEqual([]);
           if (size.width === 360 && size.lang === 'en') {
             const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
-            const serious = axe.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
-              .map((v) => `${v.id}: ${v.nodes.slice(0, 3).map((n) => n.target.join(' ')).join(' | ')}`);
+            const serious = axe.violations
+              .filter((v) => v.impact === 'serious' || v.impact === 'critical')
+              .map(
+                (v) =>
+                  `${v.id}: ${v.nodes
+                    .slice(0, 3)
+                    .map((n) => n.target.join(' '))
+                    .join(' | ')}`,
+              );
             expect(serious, 'axe-core serious or critical issues').toEqual([]);
           }
           const events = await page.evaluate(() => (window as unknown as { __tbViolations?: string[] }).__tbViolations ?? []);
@@ -92,7 +149,11 @@ test.describe('first load', () => {
       const scripts = new Map<string, number>();
       page.on('response', async (r) => {
         if (r.request().resourceType() !== 'script' || !r.ok()) return;
-        try { scripts.set(r.url(), gzipSync(await r.body()).length); } catch { /* a navigation may cancel it */ }
+        try {
+          scripts.set(r.url(), gzipSync(await r.body()).length);
+        } catch {
+          /* a navigation may cancel it */
+        }
       });
       await page.setViewportSize({ width: 360, height: 740 });
       await page.goto(path);

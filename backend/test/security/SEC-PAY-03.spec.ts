@@ -27,7 +27,10 @@ describe('SEC-PAY-03 provider callbacks are verified', () => {
     const o = await pendingOrder(s);
     const a = (await (await o.buyer.b.post(`/orders/${o.orderId}/payments`, { provider: 'nagad' })).json()) as { attemptId: string; redirectUrl: string };
     const other = await pendingOrder(s);
-    const b = (await (await other.buyer.b.post(`/orders/${other.orderId}/payments`, { provider: 'nagad' })).json()) as { attemptId: string; redirectUrl: string };
+    const b = (await (await other.buyer.b.post(`/orders/${other.orderId}/payments`, { provider: 'nagad' })).json()) as {
+      attemptId: string;
+      redirectUrl: string;
+    };
     expect((await callback(`/callbacks/nagad/${a.attemptId}?state=forged`)).status).toBe(410);
     expect((await callback(`/callbacks/nagad/${a.attemptId}?state=${new URL(b.redirectUrl).searchParams.get('state')}`)).status).toBe(410);
   });

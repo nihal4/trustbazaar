@@ -18,8 +18,10 @@ const problem = async (r: Response) => {
 };
 const nid = () => String(randomInt(1e9, 1e10)); // 10 digits
 let shade = 0;
-const image = async (fmt: 'jpeg' | 'png' = 'jpeg') =>
-  sharp({ create: { width: 640, height: 400, channels: 3, background: { r: (shade += 7) % 255, g: 90, b: 160 } } })[fmt]().toBuffer();
+const image = async (fmt: 'jpeg' | 'png' = 'jpeg') => {
+  const picture = sharp({ create: { width: 640, height: 400, channels: 3, background: { r: (shade += 7) % 255, g: 90, b: 160 } } });
+  return picture[fmt]().toBuffer();
+};
 
 describe('KYC', () => {
   let t: TestApp;
@@ -98,7 +100,9 @@ describe('KYC', () => {
       }
       expect(s.routed_flags).toEqual([]);
       const files = await fx.query<{ kind: string; storage_key: string; mime: string }>(
-        `SELECT kind, storage_key, mime FROM identity.kyc_files WHERE submission_id = $1 ORDER BY kind`, [id]);
+        `SELECT kind, storage_key, mime FROM identity.kyc_files WHERE submission_id = $1 ORDER BY kind`,
+        [id],
+      );
       expect(files.map((f) => f.kind)).toEqual(['doc_front', 'doc_back', 'selfie_neutral', 'selfie_action']); // enum order
       expect(files.every((f) => f.mime === 'image/jpeg')).toBe(true); // the PNG was re-encoded
       const onDisk = await fs.readFile(join(filesRoot, 'kyc', files[0].storage_key));
@@ -125,9 +129,19 @@ describe('KYC', () => {
       const ch = await (await other.b.get('/kyc/liveness-challenge')).json();
       const third = await user();
       const form = new FormData();
-      for (const [k, v] of Object.entries({ docType: 'nid', docNumber: nid(), fullName: 'Someone Else', dateOfBirth: '1990-01-01', challengeId: ch.challengeId })) form.set(k, v);
+      for (const [k, v] of Object.entries({
+        docType: 'nid',
+        docNumber: nid(),
+        fullName: 'Someone Else',
+        dateOfBirth: '1990-01-01',
+        challengeId: ch.challengeId,
+      }))
+        form.set(k, v);
       for (const kind of ['doc_front', 'doc_back', 'selfie_neutral', 'selfie_action']) form.set(kind, new Blob([new Uint8Array(await image())]), 'x.jpg');
-      expect(await problem(await third.b.upload('/kyc/submissions', form))).toMatchObject({ status: 400, errors: [{ field: 'challengeId', reason: 'expired-or-used' }] });
+      expect(await problem(await third.b.upload('/kyc/submissions', form))).toMatchObject({
+        status: 400,
+        errors: [{ field: 'challengeId', reason: 'expired-or-used' }],
+      });
     });
 
     it('SEC-INP-04 a file that is not an image is refused and nothing is kept', async () => {
@@ -170,7 +184,10 @@ describe('KYC', () => {
       await claim(op, id);
       expect(await problem(await decide(op, id, { decision: 'approve' }))).toMatchObject({ status: 409, errors: [{ reason: 'underage' }] });
       expect((await decide(op, id, { decision: 'reject', reason: 'underage', note: 'You must be 18 or older.' })).status).toBe(200);
-      expect(await (await u.b.get('/kyc/status')).json()).toMatchObject({ status: 'rejected', rejection: { reason: 'underage', note: 'You must be 18 or older.' } });
+      expect(await (await u.b.get('/kyc/status')).json()).toMatchObject({
+        status: 'rejected',
+        rejection: { reason: 'underage', note: 'You must be 18 or older.' },
+      });
     });
 
     it('FR-KYC-04 one document number cannot verify two accounts; the second is flagged and cannot be approved', async () => {
@@ -204,7 +221,7 @@ describe('KYC', () => {
         await claim(op, id);
         await decide(op, id, { decision: 'reject', reason: 'image_unreadable' });
       }
-      expect(await problem((await u.b.get('/kyc/liveness-challenge')))).toMatchObject({ status: 409, type: '/problems/kyc-limit' });
+      expect(await problem(await u.b.get('/kyc/liveness-challenge'))).toMatchObject({ status: 409, type: '/problems/kyc-limit' });
       expect(await (await u.b.get('/kyc/status')).json()).toMatchObject({ status: 'rejected', submissionsLeft: 0 });
     });
   });

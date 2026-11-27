@@ -4,8 +4,15 @@ import { ReminderConsumers } from './reminder.consumers';
 // U6-06: which events set a deadline (and for whom) and which complete it, with ReminderService faked.
 
 const DUE = '2026-12-04T10:00:00.000Z';
-const ev = (type: string, payload: Record<string, unknown>, aggregateId = 'O1'): OutboxEvent =>
-  ({ outbox: type.split('.')[0], id: '1', type, aggregateId, payload, createdAt: new Date(), attempt: 1 });
+const ev = (type: string, payload: Record<string, unknown>, aggregateId = 'O1'): OutboxEvent => ({
+  outbox: type.split('.')[0],
+  id: '1',
+  type,
+  aggregateId,
+  payload,
+  createdAt: new Date(),
+  attempt: 1,
+});
 
 function setup() {
   const reminders = { schedule: jest.fn(async () => 1), cancel: jest.fn(async () => 1) };
@@ -15,7 +22,7 @@ function setup() {
 }
 
 describe('ReminderConsumers', () => {
-  it('FR-NTF-07 an auction win sets the buyer\'s payment window; a fixed-price checkout or a cancelled order does not need one', async () => {
+  it("FR-NTF-07 an auction win sets the buyer's payment window; a fixed-price checkout or a cancelled order does not need one", async () => {
     const s = setup();
     await s.c.handle(ev('orders.order.created', { orderId: 'O1', kind: 'auction', buyerId: 'B', sellerId: 'S', paymentDueAt: DUE }));
     await s.c.handle(ev('orders.order.created', { orderId: 'O2', kind: 'fixed_price', buyerId: 'B', sellerId: 'S', paymentDueAt: DUE }));
@@ -33,12 +40,14 @@ describe('ReminderConsumers', () => {
     await s.c.handle(paid('credentials_delivered'));
     await s.c.handle(paid('unknown'));
     expect(s.reminders.schedule.mock.calls).toEqual([
-      [['B', 'S'], 'meetup_handover', 'O1', new Date(DUE)], [['S'], 'courier_pickup', 'O1', new Date(DUE)], [['S'], 'credential_delivery', 'O1', new Date(DUE)],
+      [['B', 'S'], 'meetup_handover', 'O1', new Date(DUE)],
+      [['S'], 'courier_pickup', 'O1', new Date(DUE)],
+      [['S'], 'credential_delivery', 'O1', new Date(DUE)],
     ]);
     expect(s.reminders.cancel).toHaveBeenCalledTimes(4);
   });
 
-  it('FR-NTF-07 FR-DSP-11 delivery ends the fulfilment deadlines and starts the buyer\'s dispute window; completion and settlement events cancel', async () => {
+  it("FR-NTF-07 FR-DSP-11 delivery ends the fulfilment deadlines and starts the buyer's dispute window; completion and settlement events cancel", async () => {
     const s = setup();
     await s.c.handle(ev('orders.order.delivered', { orderId: 'O1', buyerId: 'B', sellerId: 'S', disputeWindowEndsAt: DUE }));
     await s.c.handle(ev('orders.order.delivered', { orderId: 'O2', buyerId: 'B', sellerId: 'S' }));
@@ -56,7 +65,9 @@ describe('ReminderConsumers', () => {
 
   it('FR-NTF-07 an event that sets a deadline without naming both parties is retried, then reported; every mapped event is consumed', async () => {
     const s = setup();
-    await expect(s.c.handle(ev('orders.order.paid', { orderId: 'O1', buyerId: 'B', fulfilmentStep: 'meetup_handover', fulfilmentDueAt: DUE }))).rejects.toThrow('no sellerId');
+    await expect(s.c.handle(ev('orders.order.paid', { orderId: 'O1', buyerId: 'B', fulfilmentStep: 'meetup_handover', fulfilmentDueAt: DUE }))).rejects.toThrow(
+      'no sellerId',
+    );
     expect(s.reminders.schedule).not.toHaveBeenCalled();
     s.c.onModuleInit();
     expect(s.on.mock.calls.map(([type, name]) => [type, name])).toEqual(Object.keys(s.c.map).map((type) => [type, 'chat.reminders']));

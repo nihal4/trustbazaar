@@ -37,7 +37,19 @@ import { MetricsService } from './metrics/metrics.service';
     }),
   ],
   controllers: [HealthController],
-  providers: [configProvider, redisProvider, clockProvider, HealthService, EventBus, OutboxDispatcher, JobRunner, IdempotencyKeys, LiveGateway, { provide: LIVE, useExisting: LiveGateway }, MetricsService],
+  providers: [
+    configProvider,
+    redisProvider,
+    clockProvider,
+    HealthService,
+    EventBus,
+    OutboxDispatcher,
+    JobRunner,
+    IdempotencyKeys,
+    LiveGateway,
+    { provide: LIVE, useExisting: LiveGateway },
+    MetricsService,
+  ],
   exports: [TB_CONFIG, REDIS, CLOCK, EventBus, JobRunner, IdempotencyKeys, LIVE], // CONFIG_PORT is provided by Unit 7 (U7-01)
 })
 export class KernelModule implements OnModuleDestroy {

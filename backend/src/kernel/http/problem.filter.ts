@@ -50,6 +50,9 @@ export class ProblemFilter implements ExceptionFilter {
       body = { type: problemType('internal'), title: PROBLEMS.internal.title, status: 500 };
     }
 
-    res.status(status).type('application/problem+json').json({ ...body, correlationId: cid });
+    res
+      .status(status)
+      .type('application/problem+json')
+      .json({ ...body, correlationId: cid });
   }
 }

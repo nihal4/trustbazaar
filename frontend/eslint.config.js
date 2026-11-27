@@ -14,14 +14,33 @@ import sonarjs from 'eslint-plugin-sonarjs';
 import prettier from 'eslint-config-prettier';
 
 const FEATURES = [
-  'account', 'kyc', 'listings', 'search', 'auctions', 'checkout', 'orders', 'delivery', 'game',
-  'chat', 'notifications', 'disputes', 'ratings', 'seller', 'privacy',
+  'account',
+  'kyc',
+  'listings',
+  'search',
+  'auctions',
+  'checkout',
+  'orders',
+  'delivery',
+  'game',
+  'chat',
+  'notifications',
+  'disputes',
+  'ratings',
+  'seller',
+  'privacy',
 ];
 
 // Patterns use .gitignore syntax, matched against the import path as written.
 const intoFolder = (name) => [
-  `**/${name}`, `**/${name}/**`,
-  `../${name}`, `../${name}/**`, `../../${name}`, `../../${name}/**`, `../../../${name}`, `../../../${name}/**`,
+  `**/${name}`,
+  `**/${name}/**`,
+  `../${name}`,
+  `../${name}/**`,
+  `../../${name}`,
+  `../../${name}/**`,
+  `../../../${name}`,
+  `../../../${name}/**`,
 ];
 
 const staffOnly = {
@@ -112,7 +131,12 @@ export default tseslint.config(
     ignores: ['src/**/*.test.{ts,tsx}', 'src/**/*.stories.tsx'],
     plugins: { 'jsx-a11y': jsxA11y },
     rules: {
-      ...Object.fromEntries(Object.entries(jsxA11y.flatConfigs.recommended.rules).map(([name, value]) => [name, Array.isArray(value) ? ['warn', ...value.slice(1)] : value === 'off' || value === 0 ? 'off' : 'warn'])),
+      ...Object.fromEntries(
+        Object.entries(jsxA11y.flatConfigs.recommended.rules).map(([name, value]) => [
+          name,
+          Array.isArray(value) ? ['warn', ...value.slice(1)] : value === 'off' || value === 0 ? 'off' : 'warn',
+        ]),
+      ),
     },
   },
   {

@@ -75,7 +75,11 @@ export function Component() {
   if (order.isPending) return <p role="status">{t('shell.loading')}</p>;
   if (order.isError && !order.data) {
     if (isApiError(order.error, 401)) {
-      return <p><Link to={signInPath(`/orders/${id}`)}>{t('order.sign_in')}</Link></p>;
+      return (
+        <p>
+          <Link to={signInPath(`/orders/${id}`)}>{t('order.sign_in')}</Link>
+        </p>
+      );
     }
     return isApiError(order.error, 404) ? <h1>{t('order.not_found')}</h1> : <FormMessage kind="error">{errorText(order.error, t, lang)}</FormMessage>;
   }
@@ -98,47 +102,74 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
     <div className={styles.page}>
       {(awaiting || attempt) && <SimulatedBanner kind="payment" />}
       <div className={styles.cols}>
-      <div className={styles.main}>
-      <header className={styles.head}>
-        <span className={styles.thumb}>
-          {o.listing.photoKey && <img src={`/api/v1/listing-photos/${encodeURIComponent(o.listing.photoKey)}?size=thumb`} alt="" width={88} height={88} />}
-        </span>
-        <div className={styles.headText}>
-          <h1>{t('order.title', { title: o.listing.title })}</h1>
+        <div className={styles.main}>
+          <header className={styles.head}>
+            <span className={styles.thumb}>
+              {o.listing.photoKey && <img src={`/api/v1/listing-photos/${encodeURIComponent(o.listing.photoKey)}?size=thumb`} alt="" width={88} height={88} />}
+            </span>
+            <div className={styles.headText}>
+              <h1>{t('order.title', { title: o.listing.title })}</h1>
+            </div>
+            <dl className={styles.facts}>
+              <div>
+                <dt>{t('order.fact.status')}</dt>
+                <dd className={styles.status}>{t(`order.status.${o.status}`)}</dd>
+              </div>
+              <div>
+                <dt>{t('order.fact.role')}</dt>
+                <dd>{t(`order.role.${o.role}`)}</dd>
+              </div>
+              <div>
+                <dt>{t('order.fact.listing')}</dt>
+                <dd>
+                  <Link to={`/listings/${encodeURIComponent(o.listing.id)}`}>{t('order.listing_link')}</Link>
+                </dd>
+              </div>
+            </dl>
+          </header>
+          <Money o={o} t={t} lang={lang} />
+          <div className={styles.early}>
+            {attempt && <Return o={o} failed={failed} waited={waited} t={t} />}
+            <Breakdown o={o} t={t} lang={lang} />
+            {sheet && (
+              <PaymentSheet
+                order={{ id: o.id, total: o.total, key: orderKey(o.id) }}
+                t={t}
+                lang={lang}
+                onReceipt={(p) => {
+                  const paid = p as OrderView;
+                  downloadReceipt(paid, t, lang, paid.counterparty?.displayName || null);
+                }}
+                onClose={() => setSheet(false)}
+                onPaid={() => {
+                  setSheet(false);
+                  void queryClient.invalidateQueries({ queryKey: orderKey(o.id) });
+                }}
+              />
+            )}
+            {o.cancelledAt && o.cancelReason && CANCEL_REASONS.includes(o.cancelReason) && (
+              <p className={styles.hint}>{t(`order.cancel_reason.${o.cancelReason}`)}</p>
+            )}
+          </div>
+          {shipments.isError && <FormMessage kind="error">{errorText(shipments.error, t, lang)}</FormMessage>}
+          {game.data && o.status !== 'awaiting_payment' && <GameTab o={o} g={game.data} t={t} lang={lang} />}
+          {game.isError && o.status !== 'awaiting_payment' && <FormMessage kind="error">{errorText(game.error, t, lang)}</FormMessage>}
+          {ratings.data && <Ratings o={o} r={ratings.data} t={t} lang={lang} />}
         </div>
-        <dl className={styles.facts}>
-          <div><dt>{t('order.fact.status')}</dt><dd className={styles.status}>{t(`order.status.${o.status}`)}</dd></div>
-          <div><dt>{t('order.fact.role')}</dt><dd>{t(`order.role.${o.role}`)}</dd></div>
-          <div><dt>{t('order.fact.listing')}</dt><dd><Link to={`/listings/${encodeURIComponent(o.listing.id)}`}>{t('order.listing_link')}</Link></dd></div>
-        </dl>
-      </header>
-      <Money o={o} t={t} lang={lang} />
-      <div className={styles.early}>
-      {attempt && <Return o={o} failed={failed} waited={waited} t={t} />}
-      <Breakdown o={o} t={t} lang={lang} />
-      {sheet && (
-        <PaymentSheet order={{ id: o.id, total: o.total, key: orderKey(o.id) }} t={t} lang={lang} onReceipt={(p) => { const paid = p as OrderView; downloadReceipt(paid, t, lang, paid.counterparty?.displayName || null); }} onClose={() => setSheet(false)}
-          onPaid={() => { setSheet(false); void queryClient.invalidateQueries({ queryKey: orderKey(o.id) }); }} />
-      )}
-      {o.cancelledAt && o.cancelReason && CANCEL_REASONS.includes(o.cancelReason) && <p className={styles.hint}>{t(`order.cancel_reason.${o.cancelReason}`)}</p>}
-      </div>
-      {shipments.isError && <FormMessage kind="error">{errorText(shipments.error, t, lang)}</FormMessage>}
-      {game.data && o.status !== 'awaiting_payment' && <GameTab o={o} g={game.data} t={t} lang={lang} />}
-      {game.isError && o.status !== 'awaiting_payment' && <FormMessage kind="error">{errorText(game.error, t, lang)}</FormMessage>}
-      {ratings.data && <Ratings o={o} r={ratings.data} t={t} lang={lang} />}
-      </div>
-      <aside className={styles.rail} aria-label={t('order.next.label')}>
-      {/* the same slots in every state: 1 how it gets to the buyer (pay, meetup or courier), 2 deadlines, 3 shipment history, 4 what can be done, 5 dispute, 6 the other party */}
-      {awaiting && o.role === 'buyer' && <PayPanel o={o} t={t} lang={lang} onPay={() => setSheet(true)} />}
-      {handover.data && <Handover o={o} h={handover.data} t={t} lang={lang} />}
-      {handover.isError && <FormMessage kind="error">{errorText(handover.error, t, lang)}</FormMessage>}
-      {shipments.data && o.fulfilment === 'courier' && <Shipments o={o} items={shipments.data.items} t={t} lang={lang} />}
-      {!handover.isLoading && <Deadlines o={o} h={handover.data ?? null} t={t} lang={lang} />}
-      {shipments.data && <ShipmentHistory items={shipments.data.items} t={t} lang={lang} />}
-      {!handover.isLoading && <Actions o={o} t={t} lang={lang} extra={handoverOpen && handover.data ? <ProposeForm o={o} h={handover.data} t={t} lang={lang} /> : undefined} />}
-      {disputes.data && <DisputeSlot o={o} items={disputes.data.items} t={t} lang={lang} />}
-      <PartyCard o={o} t={t} lang={lang} />
-      </aside>
+        <aside className={styles.rail} aria-label={t('order.next.label')}>
+          {/* the same slots in every state: 1 how it gets to the buyer (pay, meetup or courier), 2 deadlines, 3 shipment history, 4 what can be done, 5 dispute, 6 the other party */}
+          {awaiting && o.role === 'buyer' && <PayPanel o={o} t={t} lang={lang} onPay={() => setSheet(true)} />}
+          {handover.data && <Handover o={o} h={handover.data} t={t} lang={lang} />}
+          {handover.isError && <FormMessage kind="error">{errorText(handover.error, t, lang)}</FormMessage>}
+          {shipments.data && o.fulfilment === 'courier' && <Shipments o={o} items={shipments.data.items} t={t} lang={lang} />}
+          {!handover.isLoading && <Deadlines o={o} h={handover.data ?? null} t={t} lang={lang} />}
+          {shipments.data && <ShipmentHistory items={shipments.data.items} t={t} lang={lang} />}
+          {!handover.isLoading && (
+            <Actions o={o} t={t} lang={lang} extra={handoverOpen && handover.data ? <ProposeForm o={o} h={handover.data} t={t} lang={lang} /> : undefined} />
+          )}
+          {disputes.data && <DisputeSlot o={o} items={disputes.data.items} t={t} lang={lang} />}
+          <PartyCard o={o} t={t} lang={lang} />
+        </aside>
       </div>
     </div>
   );
@@ -176,22 +207,42 @@ function Money({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
   const out = postmarkOf(o, lang);
   // the three stages in the buyer's words: Payment complete -> Money on hold -> Product confirmed (the last stage, when the seller is paid)
   const paidDone = steps.find((s) => s.key === 'payment')?.state === 'done';
-  const label = (k: 'payment' | 'handover' | 'done') => (k === 'payment' ? t(paidDone ? 'order.steps.payment_done' : 'order.steps.payment') : k === 'handover' ? t('order.steps.handover_held') : t('order.steps.done'));
+  const label = (k: 'payment' | 'handover' | 'done') =>
+    k === 'payment'
+      ? t(paidDone ? 'order.steps.payment_done' : 'order.steps.payment')
+      : k === 'handover'
+        ? t('order.steps.handover_held')
+        : t('order.steps.done');
   return (
     <section aria-labelledby="money-title" className={styles.moneyPanel}>
-      <h2 id="money-title" className={styles.moneyLabel}>{t('order.counterfoil.stub')}</h2>
+      <h2 id="money-title" className={styles.moneyLabel}>
+        {t('order.counterfoil.stub')}
+      </h2>
       <p className={styles.moneyAmount}>{formatMoney(BigInt(o.total), lang)}</p>
       <p className={styles.money}>{o.status === 'awaiting_payment' && o.role === 'buyer' ? t('order.counterfoil.unpaid') : moneyLine(o, t, lang)}</p>
       {out && <p className={styles.hint}>{t('order.money_out_on', { date: out })}</p>}
       {hasReceipt(o) && (
         <button type="button" className={styles.receiptLink} onClick={() => downloadReceipt(o, t, lang, o.counterparty?.displayName || null)}>
-          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M8 2v8m0 0L4.5 6.5M8 10l3.5-3.5M3 13h10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+            <path
+              d="M8 2v8m0 0L4.5 6.5M8 10l3.5-3.5M3 13h10"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
           {t('orders.receipt')}
         </button>
       )}
       {steps.length > 0 && (
-        <EscrowSteps current={current} label={t('order.steps.label')} labels={[label('payment'), label('handover'), label('done')]}
-          stateWords={{ done: t('order.steps.state.done'), current: t('order.steps.state.current'), next: t('order.steps.state.next') }} />
+        <EscrowSteps
+          current={current}
+          label={t('order.steps.label')}
+          labels={[label('payment'), label('handover'), label('done')]}
+          stateWords={{ done: t('order.steps.state.done'), current: t('order.steps.state.current'), next: t('order.steps.state.next') }}
+        />
       )}
     </section>
   );
@@ -202,16 +253,31 @@ function PartyCard({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
   const c = o.counterparty;
   if (!c?.displayName) return null;
   const which = o.role === 'buyer' ? 'seller' : 'buyer';
-  const initials = c.displayName.trim().split(/\s+/).slice(0, 2).map((w) => [...w][0] ?? '').join('').toUpperCase();
+  const initials = c.displayName
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => [...w][0] ?? '')
+    .join('')
+    .toUpperCase();
   return (
     <section aria-labelledby="party-title" className={styles.party}>
-      <h2 id="party-title" className={styles.partyHead}>{t(`order.party.${which}`)}</h2>
+      <h2 id="party-title" className={styles.partyHead}>
+        {t(`order.party.${which}`)}
+      </h2>
       <div className={styles.partyRow}>
-        <span className={styles.avatar} aria-hidden="true">{initials}</span>
+        <span className={styles.avatar} aria-hidden="true">
+          {initials}
+        </span>
         <div className={styles.partyInfo}>
           <p className={styles.partyLine}>
             <strong>{c.displayName}</strong>
-            {c.verified === true && <span className={styles.tick} title={t('order.party.verified')}><Tick /><span className={styles.srOnly}>{t('order.party.verified')}</span></span>}
+            {c.verified === true && (
+              <span className={styles.tick} title={t('order.party.verified')}>
+                <Tick />
+                <span className={styles.srOnly}>{t('order.party.verified')}</span>
+              </span>
+            )}
           </p>
           {c.joinMonth && <p className={styles.partySince}>{t('order.party.since', { year: toLocalDigits(c.joinMonth.slice(0, 4), lang) })}</p>}
         </div>
@@ -225,12 +291,25 @@ function PartyCard({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
 function OrderChat({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
   const { open, busy, error } = useOpenThread();
   const label = t(o.role === 'buyer' ? 'order.message_seller' : 'order.message_buyer');
-  if (o.threadId) return <Link className={styles.chatCell} to={`/messages/${encodeURIComponent(o.threadId)}`} aria-label={label} title={label}><ChatIcon /><span className={styles.chatLabel}>{t('order.chat.short')}</span></Link>;
+  if (o.threadId)
+    return (
+      <Link className={styles.chatCell} to={`/messages/${encodeURIComponent(o.threadId)}`} aria-label={label} title={label}>
+        <ChatIcon />
+        <span className={styles.chatLabel}>{t('order.chat.short')}</span>
+      </Link>
+    );
   if (o.role === 'seller') return null;
   return (
     <>
-      <button type="button" className={styles.chatCell} onClick={() => open(o.listing.id)} disabled={busy} aria-busy={busy} aria-label={label} title={label}><ChatIcon /><span className={styles.chatLabel}>{t('order.chat.short')}</span></button>
-      {error !== null && <div className={styles.chatError}><FormMessage kind="error">{errorText(error, t, lang)}</FormMessage></div>}
+      <button type="button" className={styles.chatCell} onClick={() => open(o.listing.id)} disabled={busy} aria-busy={busy} aria-label={label} title={label}>
+        <ChatIcon />
+        <span className={styles.chatLabel}>{t('order.chat.short')}</span>
+      </button>
+      {error !== null && (
+        <div className={styles.chatError}>
+          <FormMessage kind="error">{errorText(error, t, lang)}</FormMessage>
+        </div>
+      )}
     </>
   );
 }
@@ -259,7 +338,10 @@ function PayPanel({ o, t, lang, onPay }: { o: OrderView; t: T; lang: Lang; onPay
   const blockedByGame = isGame && !gameReady(game.data);
   const meet = useMutation({
     mutationFn: () => api.put(`/orders/${encodeURIComponent(o.id)}/fulfilment`, { fulfilment: 'self_pickup' }) as Promise<OrderView>,
-    onSuccess: (next) => { queryClient.setQueryData(orderKey(o.id), next); setChanging(false); },
+    onSuccess: (next) => {
+      queryClient.setQueryData(orderKey(o.id), next);
+      setChanging(false);
+    },
     onError: (e) => setMessage(errorText(e, t, lang)),
   });
   const ready = !!o.fulfilment && !over && !blockedByGame;
@@ -274,35 +356,70 @@ function PayPanel({ o, t, lang, onPay }: { o: OrderView; t: T; lang: Lang; onPay
         <div className={styles.choiceGrid} role="group" aria-label={t('pay.fulfilment')}>
           {o.fulfilmentOptions.includes('self_pickup') && (
             <button type="button" className={styles.choiceCell} disabled={meet.isPending || over} onClick={() => meet.mutate()}>
-              <strong>{t('pay.opt.meet')}</strong><span>{t('pay.opt.meet.note')}</span>
+              <strong>{t('pay.opt.meet')}</strong>
+              <span>{t('pay.opt.meet.note')}</span>
             </button>
           )}
           {o.fulfilmentOptions.includes('courier') && (
             <button type="button" className={styles.choiceCell} disabled={over} onClick={() => setCourier(true)}>
-              <strong>{t('pay.opt.courier')}</strong><span>{t('pay.opt.courier.note')}</span>
+              <strong>{t('pay.opt.courier')}</strong>
+              <span>{t('pay.opt.courier.note')}</span>
             </button>
           )}
         </div>
       ) : (
         <div className={styles.chosenGrid}>
-          <dl><div><dt>{t('pay.delivery')}</dt><dd>{t(`pay.chosen.${o.fulfilment}`)}</dd></div></dl>
-          {!isGame && <button type="button" className={styles.changeCell} disabled={over} onClick={() => setChanging(true)}>{t('pay.change')}</button>}
+          <dl>
+            <div>
+              <dt>{t('pay.delivery')}</dt>
+              <dd>{t(`pay.chosen.${o.fulfilment}`)}</dd>
+            </div>
+          </dl>
+          {!isGame && (
+            <button type="button" className={styles.changeCell} disabled={over} onClick={() => setChanging(true)}>
+              {t('pay.change')}
+            </button>
+          )}
         </div>
       )}
       {courier && (
         <Popup id="courier-popup" title={t('courier.title')} closeLabel={t('actions.back')} onClose={() => setCourier(false)}>
-          <CourierChoice o={o} t={t} lang={lang} disabled={over} onDone={() => { setCourier(false); setChanging(false); }} />
+          <CourierChoice
+            o={o}
+            t={t}
+            lang={lang}
+            disabled={over}
+            onDone={() => {
+              setCourier(false);
+              setChanging(false);
+            }}
+          />
         </Popup>
       )}
       {isGame && game.data && <GamePrepare o={o} g={game.data} t={t} lang={lang} disabled={over} />}
       {isGame && game.isError && <FormMessage kind="error">{errorText(game.error, t, lang)}</FormMessage>}
-      {!over && !ready && <p id="pay-why" className={styles.hint}>{t(blockedByGame ? 'pay.step_game_first' : 'pay.choose_fulfilment')}</p>}
-      {over ? <p className={styles.error}>{t('pay.window_over')}</p> : (
+      {!over && !ready && (
+        <p id="pay-why" className={styles.hint}>
+          {t(blockedByGame ? 'pay.step_game_first' : 'pay.choose_fulfilment')}
+        </p>
+      )}
+      {over ? (
+        <p className={styles.error}>{t('pay.window_over')}</p>
+      ) : (
         <div className={styles.payRow}>
-          <div><span>{t('pay.total')}</span><strong>{total}</strong></div>
-          {ready
-            ? <button type="button" className={styles.primary} onClick={onPay}>{t('pay.pay', { total })}</button>
-            : <button type="button" className={styles.primary} disabled aria-describedby="pay-why">{t('pay.pay', { total })}</button>}
+          <div>
+            <span>{t('pay.total')}</span>
+            <strong>{total}</strong>
+          </div>
+          {ready ? (
+            <button type="button" className={styles.primary} onClick={onPay}>
+              {t('pay.pay', { total })}
+            </button>
+          ) : (
+            <button type="button" className={styles.primary} disabled aria-describedby="pay-why">
+              {t('pay.pay', { total })}
+            </button>
+          )}
         </div>
       )}
     </section>

@@ -11,7 +11,10 @@ describe('SEC-SES-01 access tokens', () => {
   async function session() {
     const { a, b } = await s.signedIn();
     const token = b.cookies.get('__Host-tb_at')!;
-    const [h, p] = token.split('.').slice(0, 2).map((x) => JSON.parse(Buffer.from(x, 'base64url').toString()));
+    const [h, p] = token
+      .split('.')
+      .slice(0, 2)
+      .map((x) => JSON.parse(Buffer.from(x, 'base64url').toString()));
     return { a, b, token, header: h as { alg: string; kid: string }, payload: p as { sub: string; sid: string; pt: string; iat: number; exp: number } };
   }
   const withToken = (token: string) => {

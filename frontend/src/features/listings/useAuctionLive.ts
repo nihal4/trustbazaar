@@ -89,23 +89,35 @@ export function useAuctionLive({ initial, t, lang, signedIn, own }: { initial: A
       leave();
     };
   }, [live, signedIn, id, refetch, refreshMine]);
-  useLiveEvent('auction.state', (p) => {
-    if (p.auctionId !== id) return;
-    const at = Date.parse(String(p.serverTime));
-    if (Number.isFinite(at)) serverClock.sampleMessage(at, Date.now());
-    accept(p as unknown as AuctionState);
-  }, signedIn);
-  useLiveEvent('auction.closed', (p) => {
-    if (p.auctionId !== id) return;
-    void refetch();
-    refreshMine();
-    void queryClient.invalidateQueries({ queryKey: listingKey(id) });
-  }, signedIn);
-  useLiveEvent('auction.outbid', (p) => {
-    if (p.auctionId !== id) return;
-    say(t('auction.you_are_outbid'), true);
-    refreshMine();
-  }, signedIn);
+  useLiveEvent(
+    'auction.state',
+    (p) => {
+      if (p.auctionId !== id) return;
+      const at = Date.parse(String(p.serverTime));
+      if (Number.isFinite(at)) serverClock.sampleMessage(at, Date.now());
+      accept(p as unknown as AuctionState);
+    },
+    signedIn,
+  );
+  useLiveEvent(
+    'auction.closed',
+    (p) => {
+      if (p.auctionId !== id) return;
+      void refetch();
+      refreshMine();
+      void queryClient.invalidateQueries({ queryKey: listingKey(id) });
+    },
+    signedIn,
+  );
+  useLiveEvent(
+    'auction.outbid',
+    (p) => {
+      if (p.auctionId !== id) return;
+      say(t('auction.you_are_outbid'), true);
+      refreshMine();
+    },
+    signedIn,
+  );
 
   // polling: guests have no live channel; signed-in pages check every minute as well (DV-55)
   const now = useServerNow();
@@ -142,7 +154,6 @@ export function useAuctionLive({ initial, t, lang, signedIn, own }: { initial: A
       say(t('auction.announce.one_minute'), true);
     }
   }, [left, open, say, t]);
-
 
   const countdown = formatCountdown(left, lang);
   const mine = myStatus.data;

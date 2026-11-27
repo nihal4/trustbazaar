@@ -4,7 +4,10 @@ import { act, cleanup, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { untilServerTime, useSecondsLeft } from './countdown';
 
-afterEach(() => { cleanup(); vi.useRealTimers(); });
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
 /** Each render's (wait started?, seconds left), to catch a render that shows a started wait as free. */
 const renders: [boolean, number][] = [];
@@ -15,8 +18,12 @@ function Wait() {
   renders.push([until !== null, left]);
   return (
     <>
-      <button type="button" disabled={left > 0}>{left > 0 ? `New code in ${left} s` : 'Send a new code'}</button>
-      <button type="button" onClick={() => setUntil(Date.now() + 60_000)}>start</button>
+      <button type="button" disabled={left > 0}>
+        {left > 0 ? `New code in ${left} s` : 'Send a new code'}
+      </button>
+      <button type="button" onClick={() => setUntil(Date.now() + 60_000)}>
+        start
+      </button>
     </>
   );
 }
@@ -27,7 +34,9 @@ describe('waiting times', () => {
     render(<Wait />);
     expect(screen.getByRole('button', { name: 'Send a new code' })).toBeTruthy();
     // the click and its render, without letting any effect run in between
-    act(() => { screen.getByRole('button', { name: 'start' }).click(); });
+    act(() => {
+      screen.getByRole('button', { name: 'start' }).click();
+    });
     const b = screen.getByRole('button', { name: /New code in \d+ s/ });
     expect(b.textContent).toBe('New code in 60 s');
     expect(b.hasAttribute('disabled')).toBe(true);
@@ -37,10 +46,16 @@ describe('waiting times', () => {
   it('SEC-AUTH-09 the wait counts down each second and ends at zero', () => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] });
     render(<Wait />);
-    act(() => { screen.getByRole('button', { name: 'start' }).click(); });
-    act(() => { vi.advanceTimersByTime(1_000); });
+    act(() => {
+      screen.getByRole('button', { name: 'start' }).click();
+    });
+    act(() => {
+      vi.advanceTimersByTime(1_000);
+    });
     expect(screen.getByRole('button', { name: 'New code in 59 s' })).toBeTruthy();
-    act(() => { vi.advanceTimersByTime(59_000); });
+    act(() => {
+      vi.advanceTimersByTime(59_000);
+    });
     expect(screen.getByRole('button', { name: 'Send a new code' }).hasAttribute('disabled')).toBe(false);
   });
 

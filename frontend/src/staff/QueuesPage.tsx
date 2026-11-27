@@ -46,7 +46,10 @@ function Queue({ queue, me, t, lang }: { queue: QueueName; me: StaffMe; t: T; la
   });
   const claim = useMutation({
     mutationFn: (path: string) => api.post(path, {}),
-    onSuccess: () => { setMessage({ kind: 'success', text: t('staff.claim.done') }); void queryClient.invalidateQueries({ queryKey: queueKey(queue) }); },
+    onSuccess: () => {
+      setMessage({ kind: 'success', text: t('staff.claim.done') });
+      void queryClient.invalidateQueries({ queryKey: queueKey(queue) });
+    },
     onError: (e) => {
       const name = problemName(e);
       setMessage({ kind: 'error', text: name && CLAIM_PROBLEMS.has(name) ? t(`staff.claim.${name}`) : errorText(e, t, lang) });
@@ -56,7 +59,9 @@ function Queue({ queue, me, t, lang }: { queue: QueueName; me: StaffMe; t: T; la
   const notYet = items.isError && isApiError(items.error, 409) && problemName(items.error) === 'feature-off';
   return (
     <section aria-labelledby="queue-title">
-      <h1 id="queue-title" className={styles.pageTitle}>{t(`staff.queue.${queue}`)}</h1>
+      <h1 id="queue-title" className={styles.pageTitle}>
+        {t(`staff.queue.${queue}`)}
+      </h1>
       <p className={styles.hint}>{t('staff.queue.order')}</p>
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
       {items.isPending && <p role="status">{t('shell.loading')}</p>}
@@ -70,10 +75,14 @@ function Queue({ queue, me, t, lang }: { queue: QueueName; me: StaffMe; t: T; la
             <tr>
               <th scope="col">{t('staff.queue.col.case')}</th>
               <th scope="col">{t('staff.queue.col.details')}</th>
-              <th scope="col" className={styles.num}>{t('staff.queue.col.amount')}</th>
+              <th scope="col" className={styles.num}>
+                {t('staff.queue.col.amount')}
+              </th>
               <th scope="col">{t('staff.queue.col.waiting')}</th>
               <th scope="col">{t('staff.queue.col.who')}</th>
-              <th scope="col"><span className={styles.visuallyHidden}>{t('staff.queue.col.action')}</span></th>
+              <th scope="col">
+                <span className={styles.visuallyHidden}>{t('staff.queue.col.action')}</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -83,24 +92,47 @@ function Queue({ queue, me, t, lang }: { queue: QueueName; me: StaffMe; t: T; la
               const late = item.overdue || item.ageHours >= 24;
               return (
                 <tr key={item.id} className={item.overdue ? styles.overdue : undefined}>
-                  <th scope="row" data-label={t('staff.queue.col.case')}>{t('staff.queue.ref', { id: short(item.id) })}</th>
-                  <td data-label={t('staff.queue.col.details')}><Summary queue={queue} item={item} t={t} lang={lang} /></td>
-                  <td data-label={t('staff.queue.col.amount')} className={styles.num}>{amount}</td>
+                  <th scope="row" data-label={t('staff.queue.col.case')}>
+                    {t('staff.queue.ref', { id: short(item.id) })}
+                  </th>
+                  <td data-label={t('staff.queue.col.details')}>
+                    <Summary queue={queue} item={item} t={t} lang={lang} />
+                  </td>
+                  <td data-label={t('staff.queue.col.amount')} className={styles.num}>
+                    {amount}
+                  </td>
                   <td data-label={t('staff.queue.col.waiting')}>
                     <span className={late ? styles.late : styles.age}>
-                      {item.overdue && <>{t('staff.queue.overdue')} · </>}{age(item.ageHours, t, lang)}
+                      {item.overdue && <>{t('staff.queue.overdue')} · </>}
+                      {age(item.ageHours, t, lang)}
                     </span>
                     <span className={styles.since}>{t('staff.queue.since', { at: formatDateTime(Date.parse(item.since), lang) })}</span>
                   </td>
                   <td data-label={t('staff.queue.col.who')}>
-                    {item.assignedTo === me.id ? t('staff.claim.yours') : item.assignedTo ? t('staff.claim.other') : path ? t('staff.claim.open') : t('staff.claim.none_needed')}
+                    {item.assignedTo === me.id
+                      ? t('staff.claim.yours')
+                      : item.assignedTo
+                        ? t('staff.claim.other')
+                        : path
+                          ? t('staff.claim.open')
+                          : t('staff.claim.none_needed')}
                   </td>
                   <td className={styles.act}>
                     {casePath(queue, item.id) && (!path || item.assignedTo === me.id) && (
-                      <Link className={styles.openLink} to={casePath(queue, item.id)!}>{t('staff.queue.open', { ref: short(item.id) })}</Link>
+                      <Link className={styles.openLink} to={casePath(queue, item.id)!}>
+                        {t('staff.queue.open', { ref: short(item.id) })}
+                      </Link>
                     )}
                     {path && !item.assignedTo && (
-                      <button type="button" className={styles.claim} disabled={claim.isPending} onClick={() => { setMessage(null); claim.mutate(path); }}>
+                      <button
+                        type="button"
+                        className={styles.claim}
+                        disabled={claim.isPending}
+                        onClick={() => {
+                          setMessage(null);
+                          claim.mutate(path);
+                        }}
+                      >
                         {t('staff.claim.button', { ref: short(item.id) })}
                       </button>
                     )}
@@ -125,7 +157,12 @@ function Summary({ queue, item, t, lang }: { queue: QueueName; item: QueueItem; 
         <p>
           {t('staff.item.dispute', { type: s('type'), status: s('status') })}
           {s('decisionTargetAt') && ` · ${t('staff.item.decide_by', { when: formatDeadline(Date.parse(s('decisionTargetAt')), now, lang) })}`}
-          {item.fourEyes === true && <> · <strong>{t('staff.item.four_eyes')}</strong></>}
+          {item.fourEyes === true && (
+            <>
+              {' '}
+              · <strong>{t('staff.item.four_eyes')}</strong>
+            </>
+          )}
         </p>
       );
     case 'reports':
@@ -133,9 +170,19 @@ function Summary({ queue, item, t, lang }: { queue: QueueName; item: QueueItem; 
     case 'flagged_activity':
       return <p>{t('staff.item.signal', { kind: s('kind') })}</p>;
     case 'kyc':
-      return <p>{t('staff.item.kyc', { doc: s('docType') })}{Array.isArray(item.flags) && item.flags.length > 0 ? ` · ${t('staff.item.flags', { flags: (item.flags as string[]).join(', ') })}` : ''}</p>;
+      return (
+        <p>
+          {t('staff.item.kyc', { doc: s('docType') })}
+          {Array.isArray(item.flags) && item.flags.length > 0 ? ` · ${t('staff.item.flags', { flags: (item.flags as string[]).join(', ') })}` : ''}
+        </p>
+      );
     case 'listings_review':
-      return <p><strong>{s('title')}</strong>{s('reason') && ` · ${s('reason')}`}</p>;
+      return (
+        <p>
+          <strong>{s('title')}</strong>
+          {s('reason') && ` · ${s('reason')}`}
+        </p>
+      );
     case 'ownership_proofs':
       return <p>{t('staff.item.ownership', { game: s('game'), platform: s('platform'), player: s('playerId') })}</p>;
     case 'payout_accounts':

@@ -6,7 +6,7 @@ const sid = '22222222-2222-4222-8222-222222222222';
 const other = '33333333-3333-4333-8333-333333333333';
 
 describe('CSRF token', () => {
-  it('SEC-SES-04 header and cookie carrying this session\'s HMAC pass', () => {
+  it("SEC-SES-04 header and cookie carrying this session's HMAC pass", () => {
     const t = csrfToken(key, sid);
     expect(csrfMatches(key, sid, t, t)).toBe(true);
   });

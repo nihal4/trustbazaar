@@ -8,8 +8,7 @@ const LINE = '#dde3e0';
 const HOT = '#ff6b35';
 const FONT = `'Figtree','Hind Siliguri','Noto Sans Bengali','Segoe UI',-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif`;
 
-export const esc = (s: string): string =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+export const esc = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 /** A link is shown only if it is an http(s) address; anything else is left as plain text. */
 const safeUrl = (u: string): string | null => (/^https?:\/\/[^\s<>"']+$/.test(u) ? u : null);
@@ -39,7 +38,12 @@ export function renderEmailHtml({ subject, bn, en, vars }: EmailParts): string {
   const button = link
     ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:6px 0 20px 0;"><tr><td style="background:${HOT};"><a href="${esc(link)}" style="display:inline-block;padding:13px 26px;font-size:16px;font-weight:700;color:${INK};text-decoration:none;font-family:${FONT};">${esc(vars.button ?? 'Open')}</a></td></tr></table>`
     : '';
-  const block = (lang: string, text: string) => `<div lang="${lang}">${text.split('\n').filter(Boolean).map((p) => paragraph(p, link)).join('')}</div>`;
+  const block = (lang: string, text: string) =>
+    `<div lang="${lang}">${text
+      .split('\n')
+      .filter(Boolean)
+      .map((p) => paragraph(p, link))
+      .join('')}</div>`;
   return `<!doctype html>
 <html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${esc(subject)}</title></head>
 <body style="margin:0;padding:0;background:#eef2f0;font-family:${FONT};">

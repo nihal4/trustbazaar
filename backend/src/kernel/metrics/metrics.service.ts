@@ -37,26 +37,37 @@ export class MetricsService implements OnApplicationBootstrap, OnApplicationShut
     MetricsService.gauges = true;
     collectDefaultMetrics({ register: registry, prefix: 'tb_' });
     new Gauge({
-      name: 'tb_websocket_connections', help: 'Open live (Socket.IO) connections on this instance', registers: [registry],
+      name: 'tb_websocket_connections',
+      help: 'Open live (Socket.IO) connections on this instance',
+      registers: [registry],
       collect() {
         this.set(MetricsService.current?.live.connections() ?? 0);
       },
     });
     new Gauge({
-      name: 'tb_outbox_pending', help: 'Events not yet dispatched, per unit outbox', labelNames: ['outbox'], registers: [registry],
+      name: 'tb_outbox_pending',
+      help: 'Events not yet dispatched, per unit outbox',
+      labelNames: ['outbox'],
+      registers: [registry],
       async collect() {
         for (const o of await (MetricsService.current?.outboxes() ?? [])) this.set({ outbox: o.outbox }, o.pending);
       },
     });
     new Gauge({
-      name: 'tb_outbox_oldest_seconds', help: 'Age of the oldest undispatched event, per unit outbox (alert above 5 minutes)', labelNames: ['outbox'], registers: [registry],
+      name: 'tb_outbox_oldest_seconds',
+      help: 'Age of the oldest undispatched event, per unit outbox (alert above 5 minutes)',
+      labelNames: ['outbox'],
+      registers: [registry],
       async collect() {
         for (const o of await (MetricsService.current?.outboxes() ?? [])) this.set({ outbox: o.outbox }, o.oldestSeconds);
       },
     });
     const jobGauge = (name: string, help: string, pick: (s: ReturnType<JobRunner['stats']>[number]) => number) =>
       new Gauge({
-        name, help, labelNames: ['job'], registers: [registry],
+        name,
+        help,
+        labelNames: ['job'],
+        registers: [registry],
         collect() {
           for (const s of MetricsService.current?.jobs.stats() ?? []) this.set({ job: s.name }, pick(s));
         },
@@ -72,9 +83,11 @@ export class MetricsService implements OnApplicationBootstrap, OnApplicationShut
   async outboxes(): Promise<{ outbox: string; pending: number; oldestSeconds: number }[]> {
     try {
       const rows = (await this.db.query(
-        OUTBOXES.map((o, i) => `SELECT $${i + 1}::text AS outbox, count(*)::int AS pending,
+        OUTBOXES.map(
+          (o, i) => `SELECT $${i + 1}::text AS outbox, count(*)::int AS pending,
                  coalesce(extract(epoch FROM now() - min(created_at)), 0)::float AS oldest
-            FROM ${o}.outbox WHERE dispatched_at IS NULL`).join(' UNION ALL '),
+            FROM ${o}.outbox WHERE dispatched_at IS NULL`,
+        ).join(' UNION ALL '),
         [...OUTBOXES],
       )) as { outbox: string; pending: number; oldest: number }[];
       return rows.map((r) => ({ outbox: r.outbox, pending: r.pending, oldestSeconds: r.oldest }));

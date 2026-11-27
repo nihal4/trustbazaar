@@ -45,7 +45,12 @@ export class StockService implements ListingsPort, OnModuleInit {
     const [{ status }] = await tx.query(`SELECT status FROM listings.listings WHERE id = $1`, [listingId]);
     if (before.status !== 'sold' && status === 'sold') {
       await tx.getRepository(ListingStatusChange).insert({
-        listingId, fromStatus: before.status, toStatus: 'sold', actorType: 'system', actorId: null, reason: 'every unit sold',
+        listingId,
+        fromStatus: before.status,
+        toStatus: 'sold',
+        actorType: 'system',
+        actorId: null,
+        reason: 'every unit sold',
       });
       await publish(tx, 'listings.listing.sold', listingId, { listingId, sellerId: before.sellerId, itemKind: before.itemKind });
     }
@@ -61,13 +66,27 @@ export class StockService implements ListingsPort, OnModuleInit {
       m.getRepository(Clarification).find({ where: { listingId }, order: { createdAt: 'ASC', id: 'ASC' } }),
     ]);
     // the device identifier's keyed hash travels in the order's snapshot (never shown) for the check at the meetup (U10-23)
-    const [dev] = (await m.query(`SELECT encode(serial_hmac, 'hex') AS digest, serial_last4 FROM listings.listings WHERE id = $1`, [listingId])) as { digest: string | null; serial_last4: string | null }[];
+    const [dev] = (await m.query(`SELECT encode(serial_hmac, 'hex') AS digest, serial_last4 FROM listings.listings WHERE id = $1`, [listingId])) as {
+      digest: string | null;
+      serial_last4: string | null;
+    }[];
     return {
-      serialDigest: dev?.digest ?? null, serialLast4: dev?.serial_last4 ?? null,
-      listingId: l.id, sellerId: l.sellerId, itemKind: l.itemKind, saleFormat: l.saleFormat, status: l.status,
+      serialDigest: dev?.digest ?? null,
+      serialLast4: dev?.serial_last4 ?? null,
+      listingId: l.id,
+      sellerId: l.sellerId,
+      itemKind: l.itemKind,
+      saleFormat: l.saleFormat,
+      status: l.status,
       category: { id: category.id, slug: category.slug, nameEn: category.nameEn, nameBn: category.nameBn },
-      title: l.title, description: l.description, condition: l.condition, noVisibleDefects: l.noVisibleDefects,
-      fulfilmentOptions: l.fulfilmentOptions, weightClass: l.weightClass, sizeClass: l.sizeClass, district: l.areaDistrict,
+      title: l.title,
+      description: l.description,
+      condition: l.condition,
+      noVisibleDefects: l.noVisibleDefects,
+      fulfilmentOptions: l.fulfilmentOptions,
+      weightClass: l.weightClass,
+      sizeClass: l.sizeClass,
+      district: l.areaDistrict,
       price: l.price,
       clarifications: clarifications.map((c) => ({ body: c.body, at: c.createdAt.toISOString() })),
       photoKeys: photos.filter((p) => p.removedAt === null).map((p) => p.storageKey),

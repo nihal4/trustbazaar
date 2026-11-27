@@ -2,11 +2,20 @@
 // notice itself. The parties never see each other's words; each sees its own statements and these messages.
 import { Logger } from '@nestjs/common';
 
-interface Queryable { query(sql: string, params?: unknown[]): Promise<unknown> }
+interface Queryable {
+  query(sql: string, params?: unknown[]): Promise<unknown>;
+}
 const log = new Logger('DisputeMessages');
 
 /** Keeps one message for one party; the same key twice is one message (the notice's own dedupe key). A failure is logged and never stops the dispute. */
-export async function recordMessage(db: Queryable, disputeId: string, userId: string, template: string, params: Record<string, unknown>, key: string): Promise<void> {
+export async function recordMessage(
+  db: Queryable,
+  disputeId: string,
+  userId: string,
+  template: string,
+  params: Record<string, unknown>,
+  key: string,
+): Promise<void> {
   try {
     await db.query(
       `INSERT INTO disputes.messages (dispute_id, user_id, template, params, key) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (user_id, key) DO NOTHING`,

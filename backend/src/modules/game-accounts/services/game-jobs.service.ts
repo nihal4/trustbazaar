@@ -20,7 +20,7 @@ import { TakeoverService } from './takeover.service';
 
 /** I-63 and DV-39. */
 export const RETENTION = { accessLog: '2 years', soldScreenshot: '2 years', otherScreenshot: '30 days' };
-const OVERDUE_REKEY = 'The seller did not send the login details again for the buyer\'s new key in time.';
+const OVERDUE_REKEY = "The seller did not send the login details again for the buyer's new key in time.";
 
 @Injectable()
 export class GameJobsService {
@@ -67,7 +67,7 @@ export class GameJobsService {
       async (h, m) => {
         await m.query(`SAVEPOINT overdue`);
         try {
-          if (!(((await m.query(`SELECT game_accounts.rekey_overdue($1) AS moved`, [h.order_id])) as { moved: boolean }[])[0].moved)) return;
+          if (!((await m.query(`SELECT game_accounts.rekey_overdue($1) AS moved`, [h.order_id])) as { moved: boolean }[])[0].moved) return;
           await this.disputes.open({ orderId: h.order_id, type: 'credentials_invalid', description: OVERDUE_REKEY, by: 'system' }, m);
           opened++;
         } catch (err) {
@@ -83,13 +83,22 @@ export class GameJobsService {
 
   /** Every hour (DV-33): issued ownership codes past their validity. */
   async expireCodes(): Promise<number> {
-    const [, n] = (await this.db.query(`UPDATE game_accounts.ownership_proofs SET status = 'expired' WHERE status = 'issued' AND expires_at <= now()`)) as [unknown, number];
+    const [, n] = (await this.db.query(`UPDATE game_accounts.ownership_proofs SET status = 'expired' WHERE status = 'issued' AND expires_at <= now()`)) as [
+      unknown,
+      number,
+    ];
     return n;
   }
 
   /** Daily (I-63, DV-39): the access log and screenshots past retention; returns the screenshot files erased. */
   async purge(r: typeof RETENTION = RETENTION): Promise<number> {
-    const keys = ((await this.db.query(`SELECT game_accounts.purge_due($1::interval, $2::interval, $3::interval) AS key`, [r.accessLog, r.soldScreenshot, r.otherScreenshot])) as { key: string }[]).map((k) => k.key);
+    const keys = (
+      (await this.db.query(`SELECT game_accounts.purge_due($1::interval, $2::interval, $3::interval) AS key`, [
+        r.accessLog,
+        r.soldScreenshot,
+        r.otherScreenshot,
+      ])) as { key: string }[]
+    ).map((k) => k.key);
     let erased = 0;
     for (const key of keys) {
       try {

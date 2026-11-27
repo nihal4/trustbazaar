@@ -16,7 +16,10 @@ import { useStaffT } from '../text';
 import styles from '../staff.module.css';
 
 type Json = null | boolean | number | string | Json[] | { [k: string]: Json };
-interface ConfigSet { version: number; values: Record<string, Json> }
+interface ConfigSet {
+  version: number;
+  values: Record<string, Json>;
+}
 const configKey = ['admin', 'config'] as const;
 /** The emergency switches (CP-30's emergency.control): changed only by proposal. */
 export const SWITCHES = ['SW-new_orders', 'SW-payouts', 'CP-36'];
@@ -57,9 +60,16 @@ function Switches({ set, t, lang }: { set: ConfigSet; t: T; lang: Lang }) {
       {SWITCHES.filter((c) => c in set.values).map((code) => {
         const on = set.values[code] === true;
         return (
-          <Action key={code} title={`${t(`admin.param.${code}`)}: ${t(on ? 'admin.switches.on' : 'admin.switches.off')}`}
-            button={t(on ? 'admin.switches.propose_off' : 'admin.switches.propose_on')} consequence={t('staff.member.four_eyes_consequence')} t={t} lang={lang}
-            run={(reason) => api.post('/admin/config/proposals', { changes: { [code]: !on }, reason })} done={() => t('staff.member.proposed')} />
+          <Action
+            key={code}
+            title={`${t(`admin.param.${code}`)}: ${t(on ? 'admin.switches.on' : 'admin.switches.off')}`}
+            button={t(on ? 'admin.switches.propose_off' : 'admin.switches.propose_on')}
+            consequence={t('staff.member.four_eyes_consequence')}
+            t={t}
+            lang={lang}
+            run={(reason) => api.post('/admin/config/proposals', { changes: { [code]: !on }, reason })}
+            done={() => t('staff.member.proposed')}
+          />
         );
       })}
     </section>
@@ -69,7 +79,13 @@ function Switches({ set, t, lang }: { set: ConfigSet; t: T; lang: Lang }) {
 function Editor({ set, t, lang }: { set: ConfigSet; t: T; lang: Lang }) {
   const api = useApi();
   const queryClient = useQueryClient();
-  const codes = useMemo(() => Object.keys(set.values).filter((c) => !SWITCHES.includes(c)).sort(), [set]);
+  const codes = useMemo(
+    () =>
+      Object.keys(set.values)
+        .filter((c) => !SWITCHES.includes(c))
+        .sort(),
+    [set],
+  );
   const [draft, setDraft] = useState<Record<string, Json>>(() => structuredClone(set.values));
   const [bad, setBad] = useState<Set<string>>(new Set());
   const [violations, setViolations] = useState<string[] | null>(null);
@@ -80,7 +96,13 @@ function Editor({ set, t, lang }: { set: ConfigSet; t: T; lang: Lang }) {
   const edit = (code: string, path: (string | number)[], value: Json, ok: boolean) => {
     setViolations(null);
     setDraft((d) => ({ ...d, [code]: setAt(d[code], path, value) }));
-    setBad((b) => { const n = new Set(b); const k = `${code}:${path.join('.')}`; if (ok) n.delete(k); else n.add(k); return n; });
+    setBad((b) => {
+      const n = new Set(b);
+      const k = `${code}:${path.join('.')}`;
+      if (ok) n.delete(k);
+      else n.add(k);
+      return n;
+    });
   };
   const check = async () => {
     setCheckError(null);
@@ -99,7 +121,10 @@ function Editor({ set, t, lang }: { set: ConfigSet; t: T; lang: Lang }) {
         {codes.map((code) => (
           <li key={code} className={code in changes ? styles.changed : undefined}>
             <fieldset className={styles.choice}>
-              <legend><strong>{code}</strong> · {t(`admin.param.${code}`)}{GUARDED.has(code) ? ` · ${t('admin.config.four_eyes')}` : ''}</legend>
+              <legend>
+                <strong>{code}</strong> · {t(`admin.param.${code}`)}
+                {GUARDED.has(code) ? ` · ${t('admin.config.four_eyes')}` : ''}
+              </legend>
               <Value code={code} path={[]} value={draft[code]} original={set.values[code]} onChange={edit} t={t} />
             </fieldset>
           </li>
@@ -107,20 +132,32 @@ function Editor({ set, t, lang }: { set: ConfigSet; t: T; lang: Lang }) {
       </ul>
       <div className={styles.panel}>
         <p>{changed.length ? t('admin.config.changed', { codes: changed.join(', ') }) : t('admin.config.unchanged')}</p>
-        <p><button type="button" className={styles.secondary} disabled={!changed.length || bad.size > 0} onClick={() => void check()}>{t('admin.config.check')}</button></p>
+        <p>
+          <button type="button" className={styles.secondary} disabled={!changed.length || bad.size > 0} onClick={() => void check()}>
+            {t('admin.config.check')}
+          </button>
+        </p>
         {checkError && <FormMessage kind="error">{checkError}</FormMessage>}
         {violations && violations.length === 0 && <FormMessage kind="success">{t('admin.config.no_violations')}</FormMessage>}
         {violations && violations.length > 0 && (
           <div role="alert" className={styles.warning}>
             <p>{t('admin.config.violations')}</p>
-            <ul>{violations.map((v) => <li key={v}>{v}</li>)}</ul>
+            <ul>
+              {violations.map((v) => (
+                <li key={v}>{v}</li>
+              ))}
+            </ul>
           </div>
         )}
         {bad.size > 0 && <FormMessage kind="error">{t('admin.config.bad_fields')}</FormMessage>}
       </div>
       {changed.length > 0 && bad.size === 0 && (
-        <Action title={t(guarded ? 'admin.config.propose_title' : 'admin.config.publish_title')} button={t(guarded ? 'admin.config.propose' : 'admin.config.publish')}
-          consequence={t(guarded ? 'staff.member.four_eyes_consequence' : 'admin.config.publish_consequence')} t={t} lang={lang}
+        <Action
+          title={t(guarded ? 'admin.config.propose_title' : 'admin.config.publish_title')}
+          button={t(guarded ? 'admin.config.propose' : 'admin.config.publish')}
+          consequence={t(guarded ? 'staff.member.four_eyes_consequence' : 'admin.config.publish_consequence')}
+          t={t}
+          lang={lang}
           run={async (reason) => {
             try {
               return await api.post(guarded ? '/admin/config/proposals' : '/admin/config', { changes, reason });
@@ -133,24 +170,47 @@ function Editor({ set, t, lang }: { set: ConfigSet; t: T; lang: Lang }) {
             }
           }}
           done={(r) => (guarded ? t('staff.member.proposed') : t('admin.config.published', { version: String((r as { version: number }).version) }))}
-          onDone={() => { if (!guarded) void queryClient.invalidateQueries({ queryKey: ['admin'] }); }} />
+          onDone={() => {
+            if (!guarded) void queryClient.invalidateQueries({ queryKey: ['admin'] });
+          }}
+        />
       )}
     </section>
   );
 }
 
 /** One parameter's value as fields: objects by key, lists as comma-separated text, numbers and durations as text. */
-function Value({ code, path, value, original, onChange, t }: {
-  code: string; path: (string | number)[]; value: Json; original: Json; t: T;
+function Value({
+  code,
+  path,
+  value,
+  original,
+  onChange,
+  t,
+}: {
+  code: string;
+  path: (string | number)[];
+  value: Json;
+  original: Json;
+  t: T;
   onChange: (code: string, path: (string | number)[], value: Json, ok: boolean) => void;
 }) {
   if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
     return (
       <div className={styles.fields}>
-        {Object.keys(value).sort().map((k) => (
-          <Value key={k} code={code} path={[...path, k]} value={value[k]} t={t} onChange={onChange}
-            original={original && typeof original === 'object' && !Array.isArray(original) ? original[k] : null} />
-        ))}
+        {Object.keys(value)
+          .sort()
+          .map((k) => (
+            <Value
+              key={k}
+              code={code}
+              path={[...path, k]}
+              value={value[k]}
+              t={t}
+              onChange={onChange}
+              original={original && typeof original === 'object' && !Array.isArray(original) ? original[k] : null}
+            />
+          ))}
       </div>
     );
   }
@@ -167,16 +227,48 @@ function Value({ code, path, value, original, onChange, t }: {
   return <Field id={id} label={label} value={value} original={original} onChange={(v, ok) => onChange(code, path, v, ok)} t={t} />;
 }
 
-function Field({ id, label, value, original, onChange, t }: { id: string; label: string; value: Json; original: Json; onChange: (v: Json, ok: boolean) => void; t: T }) {
+function Field({
+  id,
+  label,
+  value,
+  original,
+  onChange,
+  t,
+}: {
+  id: string;
+  label: string;
+  value: Json;
+  original: Json;
+  onChange: (v: Json, ok: boolean) => void;
+  t: T;
+}) {
   const [text, setText] = useState(() => show(value));
   const [error, setError] = useState(false);
   const numeric = typeof original === 'number' || (Array.isArray(original) && typeof original[0] === 'number');
   return (
     <div className={styles.field}>
-      <label htmlFor={id}>{label}{Array.isArray(original) ? ` (${t('admin.config.list')})` : ''}</label>
-      <input id={id} value={text} inputMode={numeric ? 'numeric' : undefined} aria-invalid={error || undefined} aria-describedby={error ? `${id}-error` : undefined}
-        onChange={(e) => { setText(e.target.value); const r = parse(e.target.value, original); setError(!r.ok); onChange(r.value, r.ok); }} />
-      {error && <p id={`${id}-error`} className={styles.fieldError}>{t(numeric ? 'admin.config.need_number' : 'admin.config.need_value')}</p>}
+      <label htmlFor={id}>
+        {label}
+        {Array.isArray(original) ? ` (${t('admin.config.list')})` : ''}
+      </label>
+      <input
+        id={id}
+        value={text}
+        inputMode={numeric ? 'numeric' : undefined}
+        aria-invalid={error || undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
+        onChange={(e) => {
+          setText(e.target.value);
+          const r = parse(e.target.value, original);
+          setError(!r.ok);
+          onChange(r.value, r.ok);
+        }}
+      />
+      {error && (
+        <p id={`${id}-error`} className={styles.fieldError}>
+          {t(numeric ? 'admin.config.need_number' : 'admin.config.need_value')}
+        </p>
+      )}
     </div>
   );
 }
@@ -187,12 +279,25 @@ export function parse(text: string, original: Json): { ok: boolean; value: Json 
   const s = text.trim();
   const number = (x: string) => (/^-?\d+$/.test(x) ? Number(x) : NaN);
   if (Array.isArray(original)) {
-    const parts = s.split(',').map((x) => x.trim()).filter(Boolean);
-    if (typeof original[0] === 'number') { const ns = parts.map(number); return { ok: parts.length > 0 && ns.every(Number.isFinite), value: ns }; }
+    const parts = s
+      .split(',')
+      .map((x) => x.trim())
+      .filter(Boolean);
+    if (typeof original[0] === 'number') {
+      const ns = parts.map(number);
+      return { ok: parts.length > 0 && ns.every(Number.isFinite), value: ns };
+    }
     return { ok: parts.length > 0, value: parts };
   }
-  if (typeof original === 'number') { const n = number(s); return { ok: Number.isFinite(n), value: Number.isFinite(n) ? n : s }; }
-  if (original === null) { if (s === '') return { ok: true, value: null }; const n = number(s); return { ok: true, value: Number.isFinite(n) ? n : s }; }
+  if (typeof original === 'number') {
+    const n = number(s);
+    return { ok: Number.isFinite(n), value: Number.isFinite(n) ? n : s };
+  }
+  if (original === null) {
+    if (s === '') return { ok: true, value: null };
+    const n = number(s);
+    return { ok: true, value: Number.isFinite(n) ? n : s };
+  }
   return { ok: s.length > 0, value: s };
 }
 function setAt(root: Json, path: (string | number)[], value: Json): Json {
@@ -206,7 +311,10 @@ function Versions({ t, lang }: { t: T; lang: Lang }) {
   const api = useApi();
   const v = useQuery({
     queryKey: ['admin', 'config', 'versions'],
-    queryFn: ({ signal }) => api.get('/admin/config/versions', { signal }) as Promise<{ version: number; createdBy: string | null; reason: string; approvalId: string | null; createdAt: string }[]>,
+    queryFn: ({ signal }) =>
+      api.get('/admin/config/versions', { signal }) as Promise<
+        { version: number; createdBy: string | null; reason: string; approvalId: string | null; createdAt: string }[]
+      >,
     staleTime: 0,
     retry: false,
   });

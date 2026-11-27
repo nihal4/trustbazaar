@@ -54,10 +54,7 @@ export class HealthService {
 
   async readiness(): Promise<Readiness> {
     if (this.draining) return { ready: false, draining: true, postgres: 'up', redis: 'up' };
-    const [postgres, redis] = await Promise.all([
-      probe(() => this.db.query('SELECT 1')),
-      probe(() => this.redis.ping()),
-    ]);
+    const [postgres, redis] = await Promise.all([probe(() => this.db.query('SELECT 1')), probe(() => this.redis.ping())]);
     const ready = postgres === 'up' && redis === 'up';
     if (!ready) this.log.warn(`not ready: postgres ${postgres}, redis ${redis}`);
     return { ready, postgres, redis };

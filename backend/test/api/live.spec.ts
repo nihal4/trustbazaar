@@ -37,7 +37,11 @@ describe('live connection', () => {
       s.once('connect_error', (e) => reject(e));
     });
   }
-  const refused = (headers: Record<string, string>) => connect(headers).then(() => 'connected', (e: Error) => e.message);
+  const refused = (headers: Record<string, string>) =>
+    connect(headers).then(
+      () => 'connected',
+      (e: Error) => e.message,
+    );
   async function person() {
     const userId = await fx.user();
     const sid = await fx.session({ userId });
@@ -115,7 +119,7 @@ describe('live connection', () => {
     expect(await sneaky).toBe('none');
   });
 
-  it('SEC-SES-05 signing out closes the session\'s connections at once', async () => {
+  it("SEC-SES-05 signing out closes the session's connections at once", async () => {
     const u = await person();
     const s = await connect(u.headers);
     const r = await fetch(t.url('/auth/signout'), { method: 'POST', headers: fx.headers(u.sid, u.userId, 'user') });
@@ -148,7 +152,12 @@ describe('live connection', () => {
     const orderId = randomUUID();
     const seller = await fx.user();
     await t.app.get(NotificationConsumers).handle({
-      outbox: 'orders', id: randomUUID(), type: 'orders.order.paid', aggregateId: orderId, createdAt: new Date(), attempt: 1,
+      outbox: 'orders',
+      id: randomUUID(),
+      type: 'orders.order.paid',
+      aggregateId: orderId,
+      createdAt: new Date(),
+      attempt: 1,
       payload: { orderId, buyerId: u.userId, sellerId: seller, total: '250000', listingTitle: 'Lamp' },
     });
     expect(await got).toEqual({ id: expect.any(String), title: 'পেমেন্ট গৃহীত হয়েছে', unread: 1, subject: { type: 'order', id: orderId } });

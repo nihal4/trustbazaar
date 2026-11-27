@@ -32,23 +32,47 @@ export function Component() {
         <>
           <section className={styles.panel} aria-labelledby="report-facts">
             <h2 id="report-facts">{t('staff.report.facts')}</h2>
-            <Facts rows={[
-              [t('staff.report.target'), s('targetType') === 'listing'
-                ? <Link to={`/staff/listings/${encodeURIComponent(s('targetId'))}`}>{t('staff.report.open_listing', { ref: short(s('targetId')) })}</Link>
-                : t('staff.report.member', { ref: short(s('targetId')) })],
-              [t('staff.report.category'), s('category')],
-              [t('staff.report.made'), formatDateTime(Date.parse(r.since), lang)],
-              [t('staff.report.status'), r.status],
-            ]} />
+            <Facts
+              rows={[
+                [
+                  t('staff.report.target'),
+                  s('targetType') === 'listing' ? (
+                    <Link to={`/staff/listings/${encodeURIComponent(s('targetId'))}`}>{t('staff.report.open_listing', { ref: short(s('targetId')) })}</Link>
+                  ) : (
+                    t('staff.report.member', { ref: short(s('targetId')) })
+                  ),
+                ],
+                [t('staff.report.category'), s('category')],
+                [t('staff.report.made'), formatDateTime(Date.parse(r.since), lang)],
+                [t('staff.report.status'), r.status],
+              ]}
+            />
             <h3>{t('staff.report.text')}</h3>
             <p className={styles.text}>{s('text') || t('staff.report.no_text')}</p>
           </section>
-          <Action title={t('staff.report.resolve_title')} button={t('staff.report.resolve_button')} consequence={t('staff.report.resolve_consequence')} t={t} lang={lang}
-            reasonLabel={t('staff.report.resolution')} valid={outcome !== ''} invalidText={t('staff.report.choose')}
+          <Action
+            title={t('staff.report.resolve_title')}
+            button={t('staff.report.resolve_button')}
+            consequence={t('staff.report.resolve_consequence')}
+            t={t}
+            lang={lang}
+            reasonLabel={t('staff.report.resolution')}
+            valid={outcome !== ''}
+            invalidText={t('staff.report.choose')}
             run={(resolution) => api.post(`/staff/reports/${encodeURIComponent(id)}/resolution`, { outcome, resolution })}
-            done={() => t('staff.report.resolved')} onDone={() => void queryClient.invalidateQueries({ queryKey: queueKey('reports') })}>
-            <Choice legend={t('staff.report.outcome')} name="report-outcome" value={outcome}
-              options={[['dismissed', t('staff.review.dismissed')], ['actioned', t('staff.review.actioned')]]} onChange={setOutcome} />
+            done={() => t('staff.report.resolved')}
+            onDone={() => void queryClient.invalidateQueries({ queryKey: queueKey('reports') })}
+          >
+            <Choice
+              legend={t('staff.report.outcome')}
+              name="report-outcome"
+              value={outcome}
+              options={[
+                ['dismissed', t('staff.review.dismissed')],
+                ['actioned', t('staff.review.actioned')],
+              ]}
+              onChange={setOutcome}
+            />
           </Action>
           {s('subjectUser') && <UserActions userId={s('subjectUser')} related={{ type: 'report', id }} t={t} lang={lang} />}
         </>

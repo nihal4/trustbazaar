@@ -75,17 +75,26 @@ export function Component() {
   const create = useMutation({
     // courier is chosen on the order page with its quote; the order is created without a method (Unit 2, FR-DLV-02)
     mutationFn: ({ q, f }: { q: number; f: 'self_pickup' | 'courier' | 'game_account' }) =>
-      api.post('/orders', { listingId, quantity: q, ...(f === 'self_pickup' ? { fulfilment: 'self_pickup' } : {}) }, { idempotent: true }) as Promise<{ id: string }>,
+      api.post('/orders', { listingId, quantity: q, ...(f === 'self_pickup' ? { fulfilment: 'self_pickup' } : {}) }, { idempotent: true }) as Promise<{
+        id: string;
+      }>,
     // paying: a pickup order is paid right here, in the payment sheet; courier needs the address and quote on the order page, a game account its key
     onSuccess: (o, v) => (v.f === 'self_pickup' ? setPaying(o.id) : void navigate(`/orders/${encodeURIComponent(o.id)}`)),
     onError: (e) => {
       const name = problemName(e);
-      setError(name === 'not-available' ? t('checkout.unavailable')
-        : name === 'order-limit' ? t('checkout.limit')
-        : name === 'transaction-not-allowed' ? t('checkout.verify')
-        : name === 'feature-off' ? t('checkout.not_active')
-        : isApiError(e, 403) ? t('checkout.own')
-        : errorText(e, t, lang));
+      setError(
+        name === 'not-available'
+          ? t('checkout.unavailable')
+          : name === 'order-limit'
+            ? t('checkout.limit')
+            : name === 'transaction-not-allowed'
+              ? t('checkout.verify')
+              : name === 'feature-off'
+                ? t('checkout.not_active')
+                : isApiError(e, 403)
+                  ? t('checkout.own')
+                  : errorText(e, t, lang),
+      );
       void listing.refetch();
     },
   });
@@ -96,11 +105,15 @@ export function Component() {
   if (listing.isError) return <FormMessage kind="error">{errorText(listing.error, t, lang)}</FormMessage>;
   const l = listing.data;
   const own = me.data.id === l.seller.id;
-  const blocked = own ? t('checkout.own')
-    : l.saleFormat !== 'fixed_price' || l.status !== 'active' || !l.price ? t('checkout.not_active')
-    : l.itemKind === 'game_account' && !browserKeepsKeys() ? t('checkout.game_browser')
-    : l.quantity.available < 1 ? t('checkout.unavailable')
-    : null;
+  const blocked = own
+    ? t('checkout.own')
+    : l.saleFormat !== 'fixed_price' || l.status !== 'active' || !l.price
+      ? t('checkout.not_active')
+      : l.itemKind === 'game_account' && !browserKeepsKeys()
+        ? t('checkout.game_browser')
+        : l.quantity.available < 1
+          ? t('checkout.unavailable')
+          : null;
   const max = l.quantity.available;
   const n = Number(toAsciiDigits(quantity).trim());
   const valid = Number.isInteger(n) && n >= 1 && n <= max;
@@ -109,7 +122,7 @@ export function Component() {
   const pickup = l.fulfilmentOptions !== 'courier_only';
   const courier = l.fulfilmentOptions === 'courier_only' || l.fulfilmentOptions === 'pickup_or_courier';
   const game = l.itemKind === 'game_account';
-  const chosen: 'self_pickup' | 'courier' | 'game_account' = game ? 'game_account' : method ?? (pickup ? 'self_pickup' : 'courier');
+  const chosen: 'self_pickup' | 'courier' | 'game_account' = game ? 'game_account' : (method ?? (pickup ? 'self_pickup' : 'courier'));
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -117,7 +130,14 @@ export function Component() {
     if (sending.current) return;
     sending.current = true;
     setError(null);
-    create.mutate({ q: n, f: chosen }, { onSettled: () => { sending.current = false; } });
+    create.mutate(
+      { q: n, f: chosen },
+      {
+        onSettled: () => {
+          sending.current = false;
+        },
+      },
+    );
   };
 
   const thumb = l.photos?.[0]?.thumbUrl;
@@ -128,65 +148,102 @@ export function Component() {
       <div className={styles.layout}>
         <div className={styles.main}>
           <section aria-labelledby="item-title" className={styles.item}>
-            <h2 id="item-title" className={styles.visuallyHidden}>{t('checkout.item')}</h2>
+            <h2 id="item-title" className={styles.visuallyHidden}>
+              {t('checkout.item')}
+            </h2>
             <span className={styles.thumb}>{thumb && <img src={thumb} alt="" width={96} height={96} />}</span>
             <div>
-              <p className={styles.itemTitle}><Link to={`/listings/${encodeURIComponent(l.id)}`}>{l.title}</Link></p>
+              <p className={styles.itemTitle}>
+                <Link to={`/listings/${encodeURIComponent(l.id)}`}>{l.title}</Link>
+              </p>
               {l.price && <p className={styles.hint}>{t('checkout.unit_price', { price: formatMoney(BigInt(l.price), lang) })}</p>}
             </div>
           </section>
-          {blocked
-            ? <FormMessage kind="info">{blocked}</FormMessage>
-            : (
-              <form id="checkout-form" onSubmit={submit} noValidate className={styles.form}>
-                {error && <FormMessage kind="error">{error}</FormMessage>}
-                {l.quantity.total > 1 && (
-                  <div className={styles.field}>
-                    <label htmlFor="checkout-quantity">{t('checkout.quantity')}</label>
-                    <input id="checkout-quantity" type="text" inputMode="numeric" value={quantity} maxLength={4}
-                      aria-describedby="checkout-available" onChange={(e) => setQuantity(e.target.value)} />
-                    <p id="checkout-available" className={styles.hint}>{t('checkout.available', { count: toLocalDigits(String(max), lang) })}</p>
-                  </div>
-                )}
-                {game
-                  ? (
-                    <div className={styles.gameNote}>
-                      <p><strong>{t('checkout.game_title')}</strong></p>
-                      <p>{t('checkout.game_same_browser')}</p>
-                      <p className={styles.hint}>{t('checkout.game_next')}</p>
+          {blocked ? (
+            <FormMessage kind="info">{blocked}</FormMessage>
+          ) : (
+            <form id="checkout-form" onSubmit={submit} noValidate className={styles.form}>
+              {error && <FormMessage kind="error">{error}</FormMessage>}
+              {l.quantity.total > 1 && (
+                <div className={styles.field}>
+                  <label htmlFor="checkout-quantity">{t('checkout.quantity')}</label>
+                  <input
+                    id="checkout-quantity"
+                    type="text"
+                    inputMode="numeric"
+                    value={quantity}
+                    maxLength={4}
+                    aria-describedby="checkout-available"
+                    onChange={(e) => setQuantity(e.target.value)}
+                  />
+                  <p id="checkout-available" className={styles.hint}>
+                    {t('checkout.available', { count: toLocalDigits(String(max), lang) })}
+                  </p>
+                </div>
+              )}
+              {game ? (
+                <div className={styles.gameNote}>
+                  <p>
+                    <strong>{t('checkout.game_title')}</strong>
+                  </p>
+                  <p>{t('checkout.game_same_browser')}</p>
+                  <p className={styles.hint}>{t('checkout.game_next')}</p>
+                </div>
+              ) : (
+                <fieldset className={styles.field}>
+                  <legend>{t('checkout.fulfilment')}</legend>
+                  {pickup && (
+                    <div className={styles.option}>
+                      <input
+                        id="checkout-pickup"
+                        type="radio"
+                        name="fulfilment"
+                        value="self_pickup"
+                        checked={chosen === 'self_pickup'}
+                        onChange={() => setMethod('self_pickup')}
+                      />
+                      <label htmlFor="checkout-pickup">{t('checkout.fulfilment.self_pickup')}</label>
                     </div>
-                  )
-                  : (
-                    <fieldset className={styles.field}>
-                      <legend>{t('checkout.fulfilment')}</legend>
-                      {pickup && (
-                        <div className={styles.option}>
-                          <input id="checkout-pickup" type="radio" name="fulfilment" value="self_pickup" checked={chosen === 'self_pickup'} onChange={() => setMethod('self_pickup')} />
-                          <label htmlFor="checkout-pickup">{t('checkout.fulfilment.self_pickup')}</label>
-                        </div>
-                      )}
-                      {courier && (
-                        <div className={styles.option}>
-                          <input id="checkout-courier" type="radio" name="fulfilment" value="courier" checked={chosen === 'courier'} onChange={() => setMethod('courier')} />
-                          <label htmlFor="checkout-courier">{t('checkout.fulfilment.courier')}</label>
-                        </div>
-                      )}
-                      {chosen === 'courier' && <p className={styles.hint}>{t('checkout.courier_note')}</p>}
-                    </fieldset>
                   )}
-              </form>
-            )}
+                  {courier && (
+                    <div className={styles.option}>
+                      <input
+                        id="checkout-courier"
+                        type="radio"
+                        name="fulfilment"
+                        value="courier"
+                        checked={chosen === 'courier'}
+                        onChange={() => setMethod('courier')}
+                      />
+                      <label htmlFor="checkout-courier">{t('checkout.fulfilment.courier')}</label>
+                    </div>
+                  )}
+                  {chosen === 'courier' && <p className={styles.hint}>{t('checkout.courier_note')}</p>}
+                </fieldset>
+              )}
+            </form>
+          )}
         </div>
         {!blocked && (
           <aside className={styles.summary} aria-labelledby="summary-title">
-            <h2 id="summary-title" className={styles.summaryLabel}>{t('checkout.summary')}</h2>
+            <h2 id="summary-title" className={styles.summaryLabel}>
+              {t('checkout.summary')}
+            </h2>
             {total && <p className={styles.summaryAmount}>{total}</p>}
             {total && chosen === 'courier' && <p className={styles.hint}>{t('checkout.total_plus_delivery', { total })}</p>}
-            <p><strong>{t('checkout.promise.title')}</strong></p>
+            <p>
+              <strong>{t('checkout.promise.title')}</strong>
+            </p>
             <div className={styles.steps}>
-              <EscrowSteps current={null} label={t('checkout.steps_label')} labels={[t('checkout.counterfoil.in'), t('checkout.counterfoil.held'), t('checkout.counterfoil.out')]} />
+              <EscrowSteps
+                current={null}
+                label={t('checkout.steps_label')}
+                labels={[t('checkout.counterfoil.in'), t('checkout.counterfoil.held'), t('checkout.counterfoil.out')]}
+              />
             </div>
-            <button type="submit" form="checkout-form" className={styles.primary} disabled={create.isPending}>{t('checkout.continue')}</button>
+            <button type="submit" form="checkout-form" className={styles.primary} disabled={create.isPending}>
+              {t('checkout.continue')}
+            </button>
             <p className={styles.hint}>{t('checkout.reserve_note')}</p>
           </aside>
         )}
@@ -201,8 +258,20 @@ function PayHost({ id, onDone }: { id: string; onDone: () => void }) {
   const { t, lang } = useT({ en: enOrders, bn: bnOrders });
   const api = useApi();
   const key = ['orders', id] as const; // the order page's own key, so the paid order is already there when it opens
-  const order = useQuery({ queryKey: key, queryFn: ({ signal }) => api.get(`/orders/${encodeURIComponent(id)}`, { signal }) as Promise<{ id: string; total: string }>, staleTime: 0, retry: false });
-  useEffect(() => { if (order.isError) onDone(); }, [order.isError, onDone]);
-  if (!order.data) return <p role="status" className={styles.visuallyHidden}>{t('shell.loading')}</p>;
+  const order = useQuery({
+    queryKey: key,
+    queryFn: ({ signal }) => api.get(`/orders/${encodeURIComponent(id)}`, { signal }) as Promise<{ id: string; total: string }>,
+    staleTime: 0,
+    retry: false,
+  });
+  useEffect(() => {
+    if (order.isError) onDone();
+  }, [order.isError, onDone]);
+  if (!order.data)
+    return (
+      <p role="status" className={styles.visuallyHidden}>
+        {t('shell.loading')}
+      </p>
+    );
   return <PaymentSheet order={{ id: order.data.id, total: order.data.total, key }} t={t} lang={lang} onClose={onDone} onPaid={onDone} />;
 }

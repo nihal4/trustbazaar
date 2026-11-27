@@ -17,12 +17,13 @@ describe('SEC-DAT-11 unpredictable identifiers', () => {
   it('SEC-DAT-11 users, orders and stored files get random identifiers from the database', async () => {
     const defaults = await s.fx.query<{ table_name: string; column_default: string | null }>(
       `SELECT table_schema || '.' || table_name AS table_name, column_default FROM information_schema.columns
-        WHERE column_name = 'id' AND (table_schema, table_name) IN (('identity','users'), ('orders','orders'), ('listings','listings'), ('identity','kyc_files'), ('disputes','disputes'), ('chat','threads'))`);
+        WHERE column_name = 'id' AND (table_schema, table_name) IN (('identity','users'), ('orders','orders'), ('listings','listings'), ('identity','kyc_files'), ('disputes','disputes'), ('chat','threads'))`,
+    );
     expect(defaults).toHaveLength(6);
     for (const d of defaults) expect(`${d.table_name} ${d.column_default}`).toMatch(/gen_random_uuid\(\)/);
   });
 
-  it('SEC-DAT-11 the identifiers in a member\'s own view are not counters', async () => {
+  it("SEC-DAT-11 the identifiers in a member's own view are not counters", async () => {
     const { a, b } = await s.signedIn();
     const me = (await (await b.get('/me')).json()) as { id: string };
     expect(me.id).toBe(a.userId);

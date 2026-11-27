@@ -22,17 +22,27 @@ export async function openAuction(fx: IdentityFixtures, sellerId: string, catego
     [sellerId, categoryId],
   );
   for (const position of [1, 2]) {
-    await fx.query(
-      `INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`,
-      [id, position, randomUUID().replace(/-/g, '')],
-    );
+    await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [
+      id,
+      position,
+      randomUUID().replace(/-/g, ''),
+    ]);
   }
   await fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [id]);
   await fx.query(
     `INSERT INTO auctions.auctions (listing_id, seller_id, start_price, reserve_price, inc_bps, inc_min, snipe_window, snipe_extension,
                                     starts_at, original_end_at, end_at)
      VALUES ($1, $2, $3, $4, 200, 5000, $5::interval, $6::interval, now() - $7::interval, now() + $8::interval, now() + $8::interval)`,
-    [id, sellerId, o.start ?? '100000', o.reserve ?? null, o.window ?? '2 minutes', o.extension ?? '2 minutes', o.startedAgo ?? '1 minute', o.endsIn ?? '1 day'],
+    [
+      id,
+      sellerId,
+      o.start ?? '100000',
+      o.reserve ?? null,
+      o.window ?? '2 minutes',
+      o.extension ?? '2 minutes',
+      o.startedAgo ?? '1 minute',
+      o.endsIn ?? '1 day',
+    ],
   );
   return id;
 }

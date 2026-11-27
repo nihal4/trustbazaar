@@ -73,8 +73,14 @@ export function Capture({ id, title, labelledBy, hint, facing, frame, allowFile,
     const f = e.target.files?.[0];
     e.target.value = '';
     if (!f) return;
-    if (!(IMAGE_TYPES as readonly string[]).includes(f.type)) { setFileError(t('capture.file_type')); return; }
-    if (f.size > MAX_IMAGE_BYTES) { setFileError(t('capture.too_large')); return; }
+    if (!(IMAGE_TYPES as readonly string[]).includes(f.type)) {
+      setFileError(t('capture.file_type'));
+      return;
+    }
+    if (f.size > MAX_IMAGE_BYTES) {
+      setFileError(t('capture.too_large'));
+      return;
+    }
     setFileError(null);
     onChange(f);
   };
@@ -86,18 +92,37 @@ export function Capture({ id, title, labelledBy, hint, facing, frame, allowFile,
       {shown && <FormMessage kind="error">{shown}</FormMessage>}
       {/* the camera view, darkened around the guide with the instruction in it (AC-KYC-2) */}
       <div className={`${styles.stage} ${frame === 'selfie' ? styles.selfieStage : ''}`}>
-        {value
-          ? <Preview image={value} alt={t('capture.preview_alt', { what: title })} />
-          : stream && <video ref={video} className={styles.video} autoPlay playsInline muted aria-label={t('capture.camera_view')} onLoadedData={() => setReady(true)} />}
+        {value ? (
+          <Preview image={value} alt={t('capture.preview_alt', { what: title })} />
+        ) : (
+          stream && (
+            <video ref={video} className={styles.video} autoPlay playsInline muted aria-label={t('capture.camera_view')} onLoadedData={() => setReady(true)} />
+          )
+        )}
         {!value && <span className={frame === 'selfie' ? styles.oval : styles.card} aria-hidden="true" />}
         {!value && <p className={styles.frameText}>{t(`frame.${frame}`)}</p>}
       </div>
       <div className={styles.nav}>
-        {value
-          ? <button type="button" className={styles.secondary} onClick={() => { onChange(null); void start(); }}>{t('capture.retake')}</button>
-          : stream
-            ? <button type="button" className={styles.primary} onClick={() => void take()} disabled={busy || !ready}>{t('capture.take')}</button>
-            : <button type="button" className={styles.primary} onClick={() => void start()} disabled={busy}>{t('capture.start')}</button>}
+        {value ? (
+          <button
+            type="button"
+            className={styles.secondary}
+            onClick={() => {
+              onChange(null);
+              void start();
+            }}
+          >
+            {t('capture.retake')}
+          </button>
+        ) : stream ? (
+          <button type="button" className={styles.primary} onClick={() => void take()} disabled={busy || !ready}>
+            {t('capture.take')}
+          </button>
+        ) : (
+          <button type="button" className={styles.primary} onClick={() => void start()} disabled={busy}>
+            {t('capture.start')}
+          </button>
+        )}
       </div>
       {problem && !value && (
         <FormMessage kind="info">

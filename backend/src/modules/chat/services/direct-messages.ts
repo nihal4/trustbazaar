@@ -18,52 +18,112 @@ type Texts = { subject?: [string, string]; body: [string, string] };
 const BOTH = (bn: string, en: string): [string, string] => [bn, en];
 
 export const MESSAGES: Record<string, Texts> = {
-  otp_register: { body: BOTH('TrustBazaar: আপনার নিবন্ধনের কোড {code}। {minutes} মিনিট বৈধ। কাউকে জানাবেন না।', 'TrustBazaar: your registration code is {code}. Valid for {minutes} minutes. Never share it.') },
+  otp_register: {
+    body: BOTH(
+      'TrustBazaar: আপনার নিবন্ধনের কোড {code}। {minutes} মিনিট বৈধ। কাউকে জানাবেন না।',
+      'TrustBazaar: your registration code is {code}. Valid for {minutes} minutes. Never share it.',
+    ),
+  },
   otp_signin_email: {
     subject: BOTH('আপনার TrustBazaar সাইন-ইন কোড', 'Your TrustBazaar sign-in code'),
-    body: BOTH('সাইন ইন করতে এই কোডটি দিন: {code}। {minutes} মিনিট বৈধ। আপনি সাইন ইন না করলে কাউকে কোডটি জানাবেন না এবং পাসওয়ার্ড বদলে নিন।', 'Enter this code to sign in: {code}. Valid for {minutes} minutes. If this was not you, never share the code and change your password.'),
+    body: BOTH(
+      'সাইন ইন করতে এই কোডটি দিন: {code}। {minutes} মিনিট বৈধ। আপনি সাইন ইন না করলে কাউকে কোডটি জানাবেন না এবং পাসওয়ার্ড বদলে নিন।',
+      'Enter this code to sign in: {code}. Valid for {minutes} minutes. If this was not you, never share the code and change your password.',
+    ),
   },
   otp_register_email: {
     subject: BOTH('আপনার TrustBazaar নিবন্ধনের কোড', 'Your TrustBazaar registration code'),
-    body: BOTH('আপনার নিবন্ধনের কোড {code}। {minutes} মিনিট বৈধ। কাউকে জানাবেন না।', 'Your registration code is {code}. Valid for {minutes} minutes. Never share it.'),
+    body: BOTH(
+      'আপনার নিবন্ধনের কোড {code}। {minutes} মিনিট বৈধ। কাউকে জানাবেন না।',
+      'Your registration code is {code}. Valid for {minutes} minutes. Never share it.',
+    ),
   },
-  otp_password_reset: { body: BOTH('TrustBazaar: পাসওয়ার্ড রিসেটের কোড {code}। {minutes} মিনিট বৈধ।', 'TrustBazaar: your password reset code is {code}. Valid for {minutes} minutes.') },
-  otp_phone_change: { body: BOTH('TrustBazaar: নতুন নম্বর যাচাইয়ের কোড {code}। {minutes} মিনিট বৈধ।', 'TrustBazaar: the code to confirm your new number is {code}. Valid for {minutes} minutes.') },
-  otp_step_up: { body: BOTH('TrustBazaar: নিশ্চিতকরণ কোড {code}। {minutes} মিনিট বৈধ। আপনি না চাইলে কাউকে জানাবেন না।', 'TrustBazaar: your confirmation code is {code}. Valid for {minutes} minutes. If you did not ask for it, share it with no one.') },
-  register_attempt_existing_number: { body: BOTH('TrustBazaar: এই নম্বরে নতুন অ্যাকাউন্ট খোলার চেষ্টা হয়েছে। এটি আপনি হলে সাইন ইন করুন।', 'TrustBazaar: someone tried to open a new account with this number. If it was you, sign in instead.') },
-  contact_change_attempt_existing_number: { body: BOTH('TrustBazaar: অন্য একটি অ্যাকাউন্ট এই নম্বর যোগ করার চেষ্টা করেছে। আপনার অ্যাকাউন্ট অপরিবর্তিত আছে।', 'TrustBazaar: another account tried to add this number. Your account is unchanged.') },
+  otp_password_reset: {
+    body: BOTH(
+      'TrustBazaar: পাসওয়ার্ড রিসেটের কোড {code}। {minutes} মিনিট বৈধ।',
+      'TrustBazaar: your password reset code is {code}. Valid for {minutes} minutes.',
+    ),
+  },
+  otp_phone_change: {
+    body: BOTH(
+      'TrustBazaar: নতুন নম্বর যাচাইয়ের কোড {code}। {minutes} মিনিট বৈধ।',
+      'TrustBazaar: the code to confirm your new number is {code}. Valid for {minutes} minutes.',
+    ),
+  },
+  otp_step_up: {
+    body: BOTH(
+      'TrustBazaar: নিশ্চিতকরণ কোড {code}। {minutes} মিনিট বৈধ। আপনি না চাইলে কাউকে জানাবেন না।',
+      'TrustBazaar: your confirmation code is {code}. Valid for {minutes} minutes. If you did not ask for it, share it with no one.',
+    ),
+  },
+  register_attempt_existing_number: {
+    body: BOTH(
+      'TrustBazaar: এই নম্বরে নতুন অ্যাকাউন্ট খোলার চেষ্টা হয়েছে। এটি আপনি হলে সাইন ইন করুন।',
+      'TrustBazaar: someone tried to open a new account with this number. If it was you, sign in instead.',
+    ),
+  },
+  contact_change_attempt_existing_number: {
+    body: BOTH(
+      'TrustBazaar: অন্য একটি অ্যাকাউন্ট এই নম্বর যোগ করার চেষ্টা করেছে। আপনার অ্যাকাউন্ট অপরিবর্তিত আছে।',
+      'TrustBazaar: another account tried to add this number. Your account is unchanged.',
+    ),
+  },
   contact_changed: {
     subject: BOTH('আপনার যোগাযোগের তথ্য পরিবর্তন হয়েছে', 'Your contact details were changed'),
-    body: BOTH('TrustBazaar: আপনার অ্যাকাউন্টের যোগাযোগের তথ্য পরিবর্তন করা হয়েছে। এটি আপনি না করলে সাপোর্টে যোগাযোগ করুন।', 'TrustBazaar: the contact details of your account were changed. If this was not you, contact support.'),
+    body: BOTH(
+      'TrustBazaar: আপনার অ্যাকাউন্টের যোগাযোগের তথ্য পরিবর্তন করা হয়েছে। এটি আপনি না করলে সাপোর্টে যোগাযোগ করুন।',
+      'TrustBazaar: the contact details of your account were changed. If this was not you, contact support.',
+    ),
   },
   signin_throttled: {
     subject: BOTH('আপনার অ্যাকাউন্টে বারবার ভুল সাইন-ইন', 'Repeated failed sign-ins to your account'),
-    body: BOTH('TrustBazaar: আপনার অ্যাকাউন্টে কয়েকবার ভুল পাসওয়ার্ড দেওয়া হয়েছে, তাই সাইন-ইন সাময়িকভাবে ধীর করা হয়েছে। পাসওয়ার্ড রিসেট করলে তা উঠে যাবে।', 'TrustBazaar: several wrong passwords were entered for your account, so sign-in is slowed for a while. Resetting your password lifts it.'),
+    body: BOTH(
+      'TrustBazaar: আপনার অ্যাকাউন্টে কয়েকবার ভুল পাসওয়ার্ড দেওয়া হয়েছে, তাই সাইন-ইন সাময়িকভাবে ধীর করা হয়েছে। পাসওয়ার্ড রিসেট করলে তা উঠে যাবে।',
+      'TrustBazaar: several wrong passwords were entered for your account, so sign-in is slowed for a while. Resetting your password lifts it.',
+    ),
   },
   email_verify: {
     subject: BOTH('আপনার ই-মেইল যাচাই করুন', 'Confirm your e-mail address'),
-    body: BOTH('আপনার ই-মেইল যাচাই করতে এই লিংকটি খুলুন ({hours} ঘণ্টা বৈধ): {link}', 'Open this link to confirm your e-mail address (valid for {hours} hours): {link}'),
+    body: BOTH(
+      'আপনার ই-মেইল যাচাই করতে এই লিংকটি খুলুন ({hours} ঘণ্টা বৈধ): {link}',
+      'Open this link to confirm your e-mail address (valid for {hours} hours): {link}',
+    ),
   },
   email_change: {
     subject: BOTH('নতুন ই-মেইল নিশ্চিত করুন', 'Confirm your new e-mail address'),
-    body: BOTH('নতুন ই-মেইল নিশ্চিত করতে এই লিংকটি খুলুন ({hours} ঘণ্টা বৈধ): {link}', 'Open this link to confirm your new e-mail address (valid for {hours} hours): {link}'),
+    body: BOTH(
+      'নতুন ই-মেইল নিশ্চিত করতে এই লিংকটি খুলুন ({hours} ঘণ্টা বৈধ): {link}',
+      'Open this link to confirm your new e-mail address (valid for {hours} hours): {link}',
+    ),
   },
   password_reset: {
     subject: BOTH('পাসওয়ার্ড রিসেট', 'Reset your password'),
-    body: BOTH('পাসওয়ার্ড রিসেট করতে এই লিংকটি খুলুন ({minutes} মিনিট বৈধ): {link}। আপনি না চাইলে এটি উপেক্ষা করুন।', 'Open this link to reset your password (valid for {minutes} minutes): {link}. If you did not ask for it, ignore this e-mail.'),
+    body: BOTH(
+      'পাসওয়ার্ড রিসেট করতে এই লিংকটি খুলুন ({minutes} মিনিট বৈধ): {link}। আপনি না চাইলে এটি উপেক্ষা করুন।',
+      'Open this link to reset your password (valid for {minutes} minutes): {link}. If you did not ask for it, ignore this e-mail.',
+    ),
   },
   // to administrators (Unit 7, FR-DSP-08; U7-06): staff have no language setting, so both languages as for every message here
   disputes_overdue: {
     subject: BOTH('সময় পেরিয়ে যাওয়া অভিযোগ', 'Disputes past their decision target'),
-    body: BOTH('TrustBazaar: {count}টি অভিযোগের সিদ্ধান্তের লক্ষ্য সময় পেরিয়ে গেছে। সবচেয়ে পুরনোটি {oldest_days} দিন আগে খোলা হয়েছিল। স্টাফ কনসোলের অভিযোগের তালিকা দেখুন।', 'TrustBazaar: {count} disputes are past their decision target. The oldest was opened {oldest_days} days ago. See the disputes queue in the staff console.'),
+    body: BOTH(
+      'TrustBazaar: {count}টি অভিযোগের সিদ্ধান্তের লক্ষ্য সময় পেরিয়ে গেছে। সবচেয়ে পুরনোটি {oldest_days} দিন আগে খোলা হয়েছিল। স্টাফ কনসোলের অভিযোগের তালিকা দেখুন।',
+      'TrustBazaar: {count} disputes are past their decision target. The oldest was opened {oldest_days} days ago. See the disputes queue in the staff console.',
+    ),
   },
   account_created: {
     subject: BOTH('আপনার TrustBazaar অ্যাকাউন্ট তৈরি হয়েছে', 'Your TrustBazaar account is ready'),
-    body: BOTH('{name}, আপনার TrustBazaar অ্যাকাউন্ট তৈরি হয়েছে। সাইন ইন করতে নিচের বোতাম বা লিংকটি খুলুন: {link}\nআপনি এটি না খুলে থাকলে সাপোর্টে জানান।', '{name}, your TrustBazaar account has been created. Open the button or link below to sign in: {link}\nIf you did not create it, tell support.'),
+    body: BOTH(
+      '{name}, আপনার TrustBazaar অ্যাকাউন্ট তৈরি হয়েছে। সাইন ইন করতে নিচের বোতাম বা লিংকটি খুলুন: {link}\nআপনি এটি না খুলে থাকলে সাপোর্টে জানান।',
+      '{name}, your TrustBazaar account has been created. Open the button or link below to sign in: {link}\nIf you did not create it, tell support.',
+    ),
   },
   register_attempt_existing_email: {
     subject: BOTH('নিবন্ধনের চেষ্টা', 'A registration attempt'),
-    body: BOTH('কেউ এই ই-মেইল দিয়ে নতুন TrustBazaar অ্যাকাউন্ট খোলার চেষ্টা করেছে। এটি আপনি হলে সাইন ইন করুন।', 'Someone tried to open a new TrustBazaar account with this e-mail address. If it was you, sign in instead.'),
+    body: BOTH(
+      'কেউ এই ই-মেইল দিয়ে নতুন TrustBazaar অ্যাকাউন্ট খোলার চেষ্টা করেছে। এটি আপনি হলে সাইন ইন করুন।',
+      'Someone tried to open a new TrustBazaar account with this e-mail address. If it was you, sign in instead.',
+    ),
   },
 };
 
@@ -103,10 +163,14 @@ export class DirectMessages implements NotificationPort {
       status = 'failed';
       throw e;
     } finally {
-      await this.db.query(
-        `INSERT INTO notify.sms_log (phone_hmac, purpose, status, provider_ref, simulated, at) VALUES ($1, $2, $3, $4, $5, $6)`,
-        [this.phoneHmac(phone), purpose, status, ref, this.sms.simulated, this.clock.now()],
-      );
+      await this.db.query(`INSERT INTO notify.sms_log (phone_hmac, purpose, status, provider_ref, simulated, at) VALUES ($1, $2, $3, $4, $5, $6)`, [
+        this.phoneHmac(phone),
+        purpose,
+        status,
+        ref,
+        this.sms.simulated,
+        this.clock.now(),
+      ]);
     }
   }
 

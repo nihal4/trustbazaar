@@ -34,7 +34,11 @@ export const SHILL = {
 } as const;
 
 type Kind = 'new_account_cluster' | 'linked_to_seller' | 'last_second_pattern' | 'self_outbid_pattern';
-interface Raised { kind: Kind; score: number; detail: Record<string, unknown> }
+interface Raised {
+  kind: Kind;
+  score: number;
+  detail: Record<string, unknown>;
+}
 
 /** 0 to 1, rising by `step` for each unit past the threshold; three decimals (numeric(4,3)). */
 const scoreOf = (base: number, over: number, step: number): number => Math.round(Math.min(1, base + Math.max(0, over) * step) * 1000) / 1000;
@@ -71,8 +75,12 @@ export class ShillDetector {
 
   /** One auction: each pattern found and not yet flagged on it becomes a flag and an event. */
   async scan(auctionId: string): Promise<number> {
-    const found = [await this.newAccountCluster(auctionId), await this.linkedToSeller(auctionId), await this.lastSecond(auctionId), await this.selfOutbid(auctionId)]
-      .filter((r): r is Raised => r !== null);
+    const found = [
+      await this.newAccountCluster(auctionId),
+      await this.linkedToSeller(auctionId),
+      await this.lastSecond(auctionId),
+      await this.selfOutbid(auctionId),
+    ].filter((r): r is Raised => r !== null);
     let raised = 0;
     for (const r of found) {
       await this.db.transaction(async (m) => {
@@ -80,10 +88,12 @@ export class ShillDetector {
         await m.query(`SELECT pg_advisory_xact_lock(hashtextextended('auctions.flag:' || $1 || ':' || $2, 0))`, [auctionId, r.kind]);
         const [exists] = (await m.query(`SELECT 1 FROM auctions.flags WHERE auction_id = $1 AND kind = $2`, [auctionId, r.kind])) as unknown[];
         if (exists) return;
-        const [{ id }] = (await m.query(
-          `INSERT INTO auctions.flags (auction_id, kind, score, detail) VALUES ($1, $2, $3, $4) RETURNING id::text`,
-          [auctionId, r.kind, r.score, JSON.stringify(r.detail)],
-        )) as { id: string }[];
+        const [{ id }] = (await m.query(`INSERT INTO auctions.flags (auction_id, kind, score, detail) VALUES ($1, $2, $3, $4) RETURNING id::text`, [
+          auctionId,
+          r.kind,
+          r.score,
+          JSON.stringify(r.detail),
+        ])) as { id: string }[];
         await publish(m, 'auctions.flag.raised', auctionId, { auctionId, flagId: id, kind: r.kind, score: r.score });
         raised++;
       });
@@ -116,7 +126,14 @@ export class ShillDetector {
     return {
       kind: 'new_account_cluster',
       score: scoreOf(0.5, (fresh.length - SHILL.newBidders) * 1.5 + (small - SHILL.smallRaises), 0.1),
-      detail: { bidders: await this.aliases(auctionId, fresh.map((f) => f.bidderId)), smallRaises: small, newAccountDays: SHILL.newAccountDays },
+      detail: {
+        bidders: await this.aliases(
+          auctionId,
+          fresh.map((f) => f.bidderId),
+        ),
+        smallRaises: small,
+        newAccountDays: SHILL.newAccountDays,
+      },
     };
   }
 
@@ -163,8 +180,12 @@ export class ShillDetector {
       kind: 'last_second_pattern',
       score: scoreOf(0.4, most - SHILL.lastSecondAuctions + (rows.length - 1), 0.15),
       detail: {
-        bidders: await this.aliases(auctionId, rows.map((r) => r.bidder_id)),
-        auctions: Object.fromEntries(rows.map((r) => [r.bidder_id, r.auctions])), windowDays: 30,
+        bidders: await this.aliases(
+          auctionId,
+          rows.map((r) => r.bidder_id),
+        ),
+        auctions: Object.fromEntries(rows.map((r) => [r.bidder_id, r.auctions])),
+        windowDays: 30,
       },
     };
   }
@@ -193,17 +214,22 @@ export class ShillDetector {
       kind: 'self_outbid_pattern',
       score: scoreOf(0.5, most - SHILL.selfOutbidAuctions + (rows.length - 1), 0.1),
       detail: {
-        bidders: await this.aliases(auctionId, rows.map((r) => r.bidder_id)),
-        auctions: Object.fromEntries(rows.map((r) => [r.bidder_id, r.auctions])), windowDays: 90,
+        bidders: await this.aliases(
+          auctionId,
+          rows.map((r) => r.bidder_id),
+        ),
+        auctions: Object.fromEntries(rows.map((r) => [r.bidder_id, r.auctions])),
+        windowDays: 90,
       },
     };
   }
 
   /** The detail names bidders as on the auction ("Bidder 2") and by id, for the operator (the flag is staff-only). */
   private async aliases(auctionId: string, ids: string[]): Promise<{ alias: number | null; bidderId: string }[]> {
-    const rows = (await this.db.query(
-      `SELECT bidder_id, alias_no FROM auctions.bidder_aliases WHERE auction_id = $1 AND bidder_id = ANY($2::uuid[])`, [auctionId, ids],
-    )) as { bidder_id: string; alias_no: number }[];
+    const rows = (await this.db.query(`SELECT bidder_id, alias_no FROM auctions.bidder_aliases WHERE auction_id = $1 AND bidder_id = ANY($2::uuid[])`, [
+      auctionId,
+      ids,
+    ])) as { bidder_id: string; alias_no: number }[];
     const by = new Map(rows.map((r) => [r.bidder_id, r.alias_no]));
     return ids.map((id) => ({ alias: by.get(id) ?? null, bidderId: id }));
   }

@@ -1,7 +1,15 @@
 // What the grid draws on the sign-in page (U10-25): cells, not drawings. Only the name: TRUST over BAZAAR in a 3 by 5 letter face. A picture is a list of cell
 // offsets and a kind: 'o' is drawn in the hot colour, 'w' in the pale colour of the logotype's "bazaar". Fixed data.
-export interface Cell { x: number; y: number; k: 'o' | 'w' }
-export interface Picture { cells: Cell[]; w: number; h: number }
+export interface Cell {
+  x: number;
+  y: number;
+  k: 'o' | 'w';
+}
+export interface Picture {
+  cells: Cell[];
+  w: number;
+  h: number;
+}
 
 const LETTERS: Record<string, string[]> = {
   T: ['111', '010', '010', '010', '010'],
@@ -15,14 +23,21 @@ const LETTERS: Record<string, string[]> = {
 
 const fromRows = (rows: string[], k: 'o' | 'w', dx = 0, dy = 0): Cell[] => {
   const out: Cell[] = [];
-  rows.forEach((row, y) => [...row].forEach((ch, x) => { if (ch === '#' || ch === '1') out.push({ x: x + dx, y: y + dy, k }); }));
+  rows.forEach((row, y) =>
+    [...row].forEach((ch, x) => {
+      if (ch === '#' || ch === '1') out.push({ x: x + dx, y: y + dy, k });
+    }),
+  );
   return out;
 };
 
 const word = (text: string, k: 'o' | 'w', dy: number): { cells: Cell[]; w: number } => {
   const cells: Cell[] = [];
   let x = 0;
-  for (const ch of text) { cells.push(...fromRows(LETTERS[ch], k, x, dy)); x += 4; }
+  for (const ch of text) {
+    cells.push(...fromRows(LETTERS[ch], k, x, dy));
+    x += 4;
+  }
   return { cells, w: x - 1 };
 };
 
@@ -33,4 +48,3 @@ export function nameArt(): Picture {
   const shift = Math.floor((b.w - a.w) / 2);
   return { cells: [...a.cells.map((c) => ({ ...c, x: c.x + shift })), ...b.cells], w: b.w, h: 11 };
 }
-

@@ -16,7 +16,7 @@ describe('RateLimiterPortAdapter', () => {
     expect(hit).toHaveBeenCalledWith('rl:bid:user-1:auction-1', 4, 60);
   });
 
-  it('FR-AUC-17 without a usable CP-35 value the rule\'s own limit applies', async () => {
+  it("FR-AUC-17 without a usable CP-35 value the rule's own limit applies", async () => {
     for (const cp35 of [undefined, { bids_per_min: 0 }, { bids_per_min: 'ten' }]) {
       const { hit, port } = setup(cp35);
       await port.consume('bid', 's');

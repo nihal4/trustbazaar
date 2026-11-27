@@ -13,8 +13,17 @@ const staff = { type: 'staff', staffId: 'st', sessionId: 's2', role: 'operator' 
 function service() {
   const fn = () => jest.fn(async (...args: unknown[]) => ({ args }));
   return {
-    categories: fn(), create: jest.fn(async () => ({ listing: { id: 'l1' }, repeated: true })), update: fn(), addPhoto: fn(), removePhoto: fn(),
-    publish: fn(), clarify: fn(), cancel: fn(), view: fn(), mine: fn(), photoFile: jest.fn(),
+    categories: fn(),
+    create: jest.fn(async () => ({ listing: { id: 'l1' }, repeated: true })),
+    update: fn(),
+    addPhoto: fn(),
+    removePhoto: fn(),
+    publish: fn(),
+    clarify: fn(),
+    cancel: fn(),
+    view: fn(),
+    mine: fn(),
+    photoFile: jest.fn(),
   };
 }
 
@@ -34,7 +43,10 @@ describe('listings controllers', () => {
     await c.cancel('l1', user);
     await c.view('l1', undefined);
     expect(s.update).toHaveBeenCalledWith('u1', 'l1', { title: 'x' });
-    expect(s.addPhoto.mock.calls).toEqual([['u1', 'l1', Buffer.from('b'), true], ['u1', 'l1', undefined, false]]);
+    expect(s.addPhoto.mock.calls).toEqual([
+      ['u1', 'l1', Buffer.from('b'), true],
+      ['u1', 'l1', undefined, false],
+    ]);
     expect(s.clarify).toHaveBeenCalledWith('u1', 'l1', 'note');
     expect(s.view).toHaveBeenCalledWith('l1', undefined);
     await new CategoriesController(s as unknown as ListingService).categories();

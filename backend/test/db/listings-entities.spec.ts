@@ -16,19 +16,36 @@ describe('listings and auctions entities', () => {
   });
   afterAll(async () => fx?.close());
 
-  it('SEC-INF-03 the application account writes a listing through the entity; the search column is the database\'s', async () => {
+  it("SEC-INF-03 the application account writes a listing through the entity; the search column is the database's", async () => {
     const seller = await fx.user();
     const saved = await inRolledBackTransaction(async (q) => {
       const cat = await q.manager.getRepository(Category).save({
-        slug: `probe-${randomUUID().slice(0, 8)}`, nameEn: 'Phones', nameBn: 'ফোন', itemKind: 'physical', prohibited: false, sortOrder: 1,
+        slug: `probe-${randomUUID().slice(0, 8)}`,
+        nameEn: 'Phones',
+        nameBn: 'ফোন',
+        itemKind: 'physical',
+        prohibited: false,
+        sortOrder: 1,
       });
       const listings = q.manager.getRepository(Listing);
       const l = await listings.save(
         listings.create({
-          sellerId: seller, itemKind: 'physical', saleFormat: 'fixed_price', categoryId: cat.id, title: 'Probe phone for sale',
-          description: 'A phone listed by the entity probe, never published.', condition: 'used', noVisibleDefects: true,
-          fulfilmentOptions: 'pickup_only', areaDistrict: 'Dhaka', approxLat: '23.811', approxLng: '90.412', price: '1500000',
-          quantityTotal: 1, quantityAvailable: 1, status: 'draft',
+          sellerId: seller,
+          itemKind: 'physical',
+          saleFormat: 'fixed_price',
+          categoryId: cat.id,
+          title: 'Probe phone for sale',
+          description: 'A phone listed by the entity probe, never published.',
+          condition: 'used',
+          noVisibleDefects: true,
+          fulfilmentOptions: 'pickup_only',
+          areaDistrict: 'Dhaka',
+          approxLat: '23.811',
+          approxLng: '90.412',
+          price: '1500000',
+          quantityTotal: 1,
+          quantityAvailable: 1,
+          status: 'draft',
         }),
       );
       return listings.findOneByOrFail({ id: l.id });
@@ -39,7 +56,10 @@ describe('listings and auctions entities', () => {
 
   it('DC-6 the auctions outbox accepts only listings and auctions event names', async () => {
     await expect(
-      inRolledBackTransaction((q) => q.manager.getRepository(AuctionsOutboxEvent).insert({ eventType: 'orders.order.paid', aggregateId: randomUUID(), payload: {} }), ENTITIES),
+      inRolledBackTransaction(
+        (q) => q.manager.getRepository(AuctionsOutboxEvent).insert({ eventType: 'orders.order.paid', aggregateId: randomUUID(), payload: {} }),
+        ENTITIES,
+      ),
     ).rejects.toThrow();
     const ok = await inRolledBackTransaction(
       (q) => q.manager.getRepository(AuctionsOutboxEvent).insert({ eventType: 'auctions.bid.outbid', aggregateId: randomUUID(), payload: {} }),

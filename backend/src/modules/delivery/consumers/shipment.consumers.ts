@@ -21,9 +21,21 @@ export class ShipmentConsumers implements OnModuleInit {
 
   /** A paid courier order: its forward shipment, then the first booking (section 7.2). */
   private async onPaid(e: OutboxEvent): Promise<void> {
-    const p = e.payload as { orderId?: string; fulfilment?: string | null; itemKind?: string; sellerId?: string; fulfilmentDueAt?: string; deliveryQuoteId?: string | null };
+    const p = e.payload as {
+      orderId?: string;
+      fulfilment?: string | null;
+      itemKind?: string;
+      sellerId?: string;
+      fulfilmentDueAt?: string;
+      deliveryQuoteId?: string | null;
+    };
     if (p.fulfilment !== 'courier' || p.itemKind !== 'physical' || !p.sellerId || !p.fulfilmentDueAt || !p.deliveryQuoteId) return;
-    await this.shipments.createForward({ orderId: p.orderId ?? e.aggregateId, sellerId: p.sellerId, quoteId: p.deliveryQuoteId, pickupDueAt: p.fulfilmentDueAt });
+    await this.shipments.createForward({
+      orderId: p.orderId ?? e.aggregateId,
+      sellerId: p.sellerId,
+      quoteId: p.deliveryQuoteId,
+      pickupDueAt: p.fulfilmentDueAt,
+    });
   }
 
   /** Saved addresses are only for future orders: erased when the account closes. Shipment copies follow DV-30. */

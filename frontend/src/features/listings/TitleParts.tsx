@@ -5,5 +5,14 @@ import styles from './listings.module.css';
 
 export function TitleParts({ text }: { text: string }) {
   const parts = text.split(/(?<=,)\s+/);
-  return <>{parts.map((p, i) => <Fragment key={i}>{i > 0 ? ' ' : ''}<span className={styles.titlePart}>{p}</span></Fragment>)}</>;
+  return (
+    <>
+      {parts.map((p, i) => (
+        <Fragment key={i}>
+          {i > 0 ? ' ' : ''}
+          <span className={styles.titlePart}>{p}</span>
+        </Fragment>
+      ))}
+    </>
+  );
 }

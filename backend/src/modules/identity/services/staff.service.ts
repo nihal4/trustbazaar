@@ -44,12 +44,14 @@ const summary = (r: Record<string, unknown>): StaffSummary => ({
   createdBy: r.created_by as string | null,
   disabledAt: r.disabled_at as Date | null,
 });
-const rowsOf = <T>(result: unknown): T[] =>
-  (Array.isArray(result) && Array.isArray(result[0]) && typeof result[1] === 'number' ? result[0] : result) as T[];
+const rowsOf = <T>(result: unknown): T[] => (Array.isArray(result) && Array.isArray(result[0]) && typeof result[1] === 'number' ? result[0] : result) as T[];
 const isUniqueViolation = (e: unknown) => e instanceof QueryFailedError && (e as unknown as { code?: string }).code === '23505';
 
 /** A generated first password: 128 random bits, readable in four groups. */
-export const initialPassword = () => randomBytes(16).toString('base64url').replace(/(.{6})(?=.)/g, '$1-');
+export const initialPassword = () =>
+  randomBytes(16)
+    .toString('base64url')
+    .replace(/(.{6})(?=.)/g, '$1-');
 
 @Injectable()
 export class StaffService implements OnModuleInit {
@@ -88,8 +90,14 @@ export class StaffService implements OnModuleInit {
           [n.email.trim().toLowerCase(), n.displayName.trim(), n.role, hash, phone, byStaffId, this.clock.now()],
         );
         await this.audit.record(m, {
-          actorType: 'staff', actorId: byStaffId, action: 'staff.account.created', objectType: 'staff', objectId: row.id,
-          after: { email: row.email, role: row.role, status: row.status }, sourceIp: ctx.ip, correlationId: ctx.correlationId,
+          actorType: 'staff',
+          actorId: byStaffId,
+          action: 'staff.account.created',
+          objectType: 'staff',
+          objectId: row.id,
+          after: { email: row.email, role: row.role, status: row.status },
+          sourceIp: ctx.ip,
+          correlationId: ctx.correlationId,
         });
         return { staff: summary(row), initialPassword: password };
       });
@@ -107,15 +115,25 @@ export class StaffService implements OnModuleInit {
       const [before] = await m.query(`SELECT status FROM identity.staff_accounts WHERE id = $1 FOR UPDATE`, [staffId]);
       if (!before) throw new Problem('not-found');
       if (before.status === 'disabled') throw new Problem('approval-closed');
-      const [row] = rowsOf<Record<string, unknown>>(await m.query(
-        `UPDATE identity.staff_accounts SET status = 'disabled', disabled_at = $2, disabled_by = $3 WHERE id = $1
+      const [row] = rowsOf<Record<string, unknown>>(
+        await m.query(
+          `UPDATE identity.staff_accounts SET status = 'disabled', disabled_at = $2, disabled_by = $3 WHERE id = $1
          RETURNING id, email, display_name, role, status, created_at, created_by, disabled_at`,
-        [staffId, now, byStaffId],
-      ));
+          [staffId, now, byStaffId],
+        ),
+      );
       await this.sessions.endAllStaffIn(m, staffId, 'staff_disabled', byStaffId, ctx);
       await this.audit.record(m, {
-        actorType: 'staff', actorId: byStaffId, action: 'staff.account.disabled', objectType: 'staff', objectId: staffId,
-        before: { status: before.status }, after: { status: 'disabled' }, reason, sourceIp: ctx.ip, correlationId: ctx.correlationId,
+        actorType: 'staff',
+        actorId: byStaffId,
+        action: 'staff.account.disabled',
+        objectType: 'staff',
+        objectId: staffId,
+        before: { status: before.status },
+        after: { status: 'disabled' },
+        reason,
+        sourceIp: ctx.ip,
+        correlationId: ctx.correlationId,
       });
       return summary(row);
     });
@@ -123,10 +141,7 @@ export class StaffService implements OnModuleInit {
 
   /** FR-OPS-03: an MFA reset is proposed; a second administrator approves it (staff.mfa_reset). */
   proposeMfaReset(byStaffId: string, staffId: string, reason: string, ctx: RequestContext): Promise<ApprovalView> {
-    return this.approvals.propose(
-      { action: 'staff.mfa_reset', targetType: 'staff', targetId: staffId, reason, requiredRole: 'administrator', byStaffId },
-      ctx,
-    );
+    return this.approvals.propose({ action: 'staff.mfa_reset', targetType: 'staff', targetId: staffId, reason, requiredRole: 'administrator', byStaffId }, ctx);
   }
 
   /** FR-OPS-06: a declared conflict of interest with a user. */
@@ -140,8 +155,14 @@ export class StaffService implements OnModuleInit {
         [staffId, userId, reason.trim(), this.clock.now()],
       );
       await this.audit.record(m, {
-        actorType: 'staff', actorId: staffId, action: 'staff.conflict.declared', objectType: 'user', objectId: userId,
-        reason: reason.trim(), sourceIp: ctx.ip, correlationId: ctx.correlationId,
+        actorType: 'staff',
+        actorId: staffId,
+        action: 'staff.conflict.declared',
+        objectType: 'user',
+        objectId: userId,
+        reason: reason.trim(),
+        sourceIp: ctx.ip,
+        correlationId: ctx.correlationId,
       });
     });
   }
@@ -168,9 +189,17 @@ export class StaffService implements OnModuleInit {
     await m.query(`UPDATE identity.staff_accounts SET status = 'pending_mfa' WHERE id = $1`, [a.targetId]);
     await this.sessions.endAllStaffIn(m, a.targetId, 'mfa_reset', a.decidedBy!, ctx);
     await this.audit.record(m, {
-      actorType: 'staff', actorId: a.decidedBy, action: 'staff.mfa.reset', objectType: 'staff', objectId: a.targetId,
-      before: { status: s.status }, after: { status: 'pending_mfa' }, reason: a.reason, approvalId: a.id,
-      sourceIp: ctx.ip, correlationId: ctx.correlationId,
+      actorType: 'staff',
+      actorId: a.decidedBy,
+      action: 'staff.mfa.reset',
+      objectType: 'staff',
+      objectId: a.targetId,
+      before: { status: s.status },
+      after: { status: 'pending_mfa' },
+      reason: a.reason,
+      approvalId: a.id,
+      sourceIp: ctx.ip,
+      correlationId: ctx.correlationId,
     });
   }
 }

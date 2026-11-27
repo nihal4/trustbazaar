@@ -10,7 +10,10 @@ import { createQueryClient } from './query';
 // The shell, the API client of each document and the language switch
 // (docs/design/08_frontend.pdf, sections 3, 4.2, 4.3, 6.1 and 7).
 
-interface Call { url: string; init: RequestInit }
+interface Call {
+  url: string;
+  init: RequestInit;
+}
 
 /** A fake backend: answers by path; records every request. */
 function backend(answers: Record<string, () => Response>) {
@@ -23,11 +26,15 @@ function backend(answers: Record<string, () => Response>) {
   return { calls, fetch: fetch as typeof globalThis.fetch };
 }
 
-const json = (status: number, body: unknown) => () =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+const json = (status: number, body: unknown) => () => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 const header = (c: Call, name: string) => new Headers(c.init.headers).get(name);
 
-const Page = ({ title }: { title: string }) => <><h1>{title}</h1><Link to="/next">next</Link></>;
+const Page = ({ title }: { title: string }) => (
+  <>
+    <h1>{title}</h1>
+    <Link to="/next">next</Link>
+  </>
+);
 
 function mount(setup: Partial<DocumentSetup>, opts: { at?: string; lang?: 'en' | 'bn'; fetch?: typeof globalThis.fetch; cookies?: string } = {}) {
   const routes: RouteObject[] = setup.routes ?? [
@@ -51,7 +58,11 @@ function mount(setup: Partial<DocumentSetup>, opts: { at?: string; lang?: 'en' |
 const storage = () => localStorage;
 
 beforeEach(() => {
-  try { storage().clear(); } catch { /* none */ }
+  try {
+    storage().clear();
+  } catch {
+    /* none */
+  }
   document.documentElement.lang = '';
 });
 afterEach(cleanup);
@@ -119,8 +130,10 @@ describe('the API client of each document', () => {
       '/api/v1/staff/me': json(401, {}),
       '/api/v1/staff/auth/refresh': json(401, {}),
     });
-    const doc = mount({ kind: 'staff', home: { path: '/staff', sameDocument: true } },
-      { fetch: be.fetch, cookies: '__Host-tb_csrf=user-csrf; __Host-tb_scsrf=staff-csrf' });
+    const doc = mount(
+      { kind: 'staff', home: { path: '/staff', sameDocument: true } },
+      { fetch: be.fetch, cookies: '__Host-tb_csrf=user-csrf; __Host-tb_scsrf=staff-csrf' },
+    );
     await expect(doc.api.get('/staff/approvals')).rejects.toBeInstanceOf(ApiError);
     const paths = be.calls.map((c) => new URL(c.url, 'https://tb.test').pathname);
     expect(paths).toEqual(['/api/v1/staff/approvals', '/api/v1/staff/me', '/api/v1/staff/auth/refresh']);
@@ -130,11 +143,12 @@ describe('the API client of each document', () => {
 });
 
 describe('when the session ends', () => {
-  const ended = () => backend({
-    '/api/v1/orders/7': json(401, {}),
-    '/api/v1/me': json(401, {}),
-    '/api/v1/auth/refresh': json(401, {}),
-  });
+  const ended = () =>
+    backend({
+      '/api/v1/orders/7': json(401, {}),
+      '/api/v1/me': json(401, {}),
+      '/api/v1/auth/refresh': json(401, {}),
+    });
 
   it('SEC-SES-03 a refused refresh clears every cached answer, says so, and goes to sign-in returning here', async () => {
     const be = ended();
@@ -142,7 +156,9 @@ describe('when the session ends', () => {
     doc.queryClient.setQueryData(['orders', '7'], { total: '1255000' });
     doc.queryClient.setQueryData(['me'], { name: 'Previous user' });
 
-    await act(async () => { await expect(doc.api.get('/orders/7')).rejects.toBeInstanceOf(ApiError); });
+    await act(async () => {
+      await expect(doc.api.get('/orders/7')).rejects.toBeInstanceOf(ApiError);
+    });
 
     expect(doc.queryClient.getQueryCache().getAll()).toEqual([]);
     expect((await screen.findByRole('alert')).textContent).toContain('You have been signed out');
@@ -154,7 +170,9 @@ describe('when the session ends', () => {
     const be = ended();
     const doc = mount({}, { at: '/orders/7', fetch: be.fetch, lang: 'bn' });
     doc.queryClient.setQueryData(['me'], { displayName: 'Previous user' });
-    await act(async () => { await doc.api.get('/orders/7').catch(() => undefined); });
+    await act(async () => {
+      await doc.api.get('/orders/7').catch(() => undefined);
+    });
     expect((await screen.findByRole('alert')).textContent).toContain('আপনি সাইন আউট হয়ে গেছেন');
     expect(doc.router.state.location.pathname).toBe('/orders/7');
     fireEvent.click(screen.getByRole('button', { name: 'বন্ধ করুন' }));
@@ -165,7 +183,9 @@ describe('when the session ends', () => {
     const be = ended();
     const doc = mount({ signIn: signInHere }, { at: '/orders/7', fetch: be.fetch, lang: 'en' });
     doc.queryClient.setQueryData(['categories'], [{ id: 'c1' }]);
-    await act(async () => { await doc.api.get('/orders/7').catch(() => undefined); });
+    await act(async () => {
+      await doc.api.get('/orders/7').catch(() => undefined);
+    });
     expect(screen.queryByRole('alert')).toBeNull();
     expect(doc.router.state.location.pathname).toBe('/orders/7');
     expect(doc.queryClient.getQueryData(['categories'])).toEqual([{ id: 'c1' }]);

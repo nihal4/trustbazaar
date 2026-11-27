@@ -12,21 +12,28 @@ describe('SEC-ACC-02 object-level access', () => {
     const buyer = await s.signedIn({ kyc: 'verified' });
     const stranger = await s.signedIn({ kyc: 'verified' });
     const [{ id: category }] = await s.fx.query<{ id: number }>(
-      `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'Fans', 'পাখা', 'physical') RETURNING id`, [`acc02-${randomUUID().slice(0, 8)}`]);
+      `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'Fans', 'পাখা', 'physical') RETURNING id`,
+      [`acc02-${randomUUID().slice(0, 8)}`],
+    );
     const [{ id: listing }] = await s.fx.query<{ id: string }>(
       `INSERT INTO listings.listings (seller_id, item_kind, sale_format, category_id, title, description, condition, no_visible_defects,
           fulfilment_options, weight_class, size_class, area_district, approx_lat, approx_lng, price, quantity_total, quantity_available)
        VALUES ($1, 'physical', 'fixed_price', $2, 'Table fan', 'A table fan, written by the access test.', 'used', true,
-          'pickup_only', 'up_to_1kg', 'small', 'Dhaka', 23.81, 90.41, 300000, 1, 1) RETURNING id`, [seller.a.userId, category]);
+          'pickup_only', 'up_to_1kg', 'small', 'Dhaka', 23.81, 90.41, 300000, 1, 1) RETURNING id`,
+      [seller.a.userId, category],
+    );
     const [{ id: order }] = await s.fx.query<{ id: string }>(
       `INSERT INTO orders.orders (kind, listing_id, item_kind, buyer_id, seller_id, quantity, unit_price, item_price, fulfilment, delivery_fee, total,
           listing_snapshot, commission_bps, delivery_margin_bps, params_version, payment_due_at, status, paid_at, fulfilment_step, fulfilment_due_at)
        VALUES ('fixed_price', $1, 'physical', $2, $3, 1, 300000, 300000, 'self_pickup', 0, 300000, '{"title":"Table fan"}', 500, 1000, 1,
-               now(), 'paid', now(), 'meetup_handover', now() + interval '3 days') RETURNING id`, [listing, buyer.a.userId, seller.a.userId]);
+               now(), 'paid', now(), 'meetup_handover', now() + interval '3 days') RETURNING id`,
+      [listing, buyer.a.userId, seller.a.userId],
+    );
     const [{ id: dispute }] = await s.fx.query<{ id: string }>(
       `INSERT INTO disputes.disputes (order_id, buyer_id, seller_id, item_kind, type, description, item_price, amount_collected, seller_due_at)
        VALUES ($1, $2, $3, 'physical', 'not_as_described', 'The fan does not turn at all.', 300000, 300000, now() + interval '2 days') RETURNING id`,
-      [order, buyer.a.userId, seller.a.userId]);
+      [order, buyer.a.userId, seller.a.userId],
+    );
     return { seller, buyer, stranger, listing, order, dispute };
   }
 
@@ -43,7 +50,7 @@ describe('SEC-ACC-02 object-level access', () => {
     expect(l.title).toBe('Table fan');
   });
 
-  it('SEC-ACC-02 a refusal looks the same for another person\'s object and for one that does not exist', async () => {
+  it("SEC-ACC-02 a refusal looks the same for another person's object and for one that does not exist", async () => {
     const x = await seeded();
     const theirs = await x.stranger.b.get(`/orders/${x.order}`);
     const none = await x.stranger.b.get(`/orders/${randomUUID()}`);
@@ -52,7 +59,12 @@ describe('SEC-ACC-02 object-level access', () => {
 
   it('SEC-ACC-02 a chat thread: only its two parties read and write it', async () => {
     const x = await seeded();
-    for (const n of [1, 2]) await s.fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [x.listing, n, randomUUID().replace(/-/g, '')]);
+    for (const n of [1, 2])
+      await s.fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [
+        x.listing,
+        n,
+        randomUUID().replace(/-/g, ''),
+      ]);
     await s.fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [x.listing]);
     const thread = (await (await x.buyer.b.post(`/listings/${x.listing}/threads`, {})).json()) as { id: string };
     expect((await x.seller.b.get(`/threads/${thread.id}/messages`)).status).toBe(200);
@@ -60,7 +72,7 @@ describe('SEC-ACC-02 object-level access', () => {
     expect([403, 404]).toContain((await x.stranger.b.post(`/threads/${thread.id}/messages`, { clientId: randomUUID(), text: 'Hello from outside' })).status);
   });
 
-  it('SEC-ACC-02 KYC documents: a member reaches only their own; the routes take no other member\'s identifier at all', async () => {
+  it("SEC-ACC-02 KYC documents: a member reaches only their own; the routes take no other member's identifier at all", async () => {
     const owner = await s.signedIn({ kyc: 'unsubmitted' });
     await submitKyc(owner.b);
     const other = await s.signedIn({ kyc: 'unsubmitted' });

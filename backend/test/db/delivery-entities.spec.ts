@@ -21,7 +21,13 @@ describe('delivery entities', () => {
     const sealed = randomBytes(48); // the encrypted address (U4-02 seals it); the database only checks its length
     const saved = await inRolledBackTransaction(async (q) => {
       const area = await q.manager.getRepository(Area).save({
-        district: 'Dhaka', nameEn: `Probe ${randomUUID().slice(0, 8)}`, nameBn: 'প্রোব', zone: 'inside_dhaka', lat: '23.811', lng: '90.412', active: true,
+        district: 'Dhaka',
+        nameEn: `Probe ${randomUUID().slice(0, 8)}`,
+        nameBn: 'প্রোব',
+        zone: 'inside_dhaka',
+        lat: '23.811',
+        lng: '90.412',
+        active: true,
       });
       const addresses = q.manager.getRepository(SavedAddress);
       const a = await addresses.save(addresses.create({ userId: user, kind: 'dropoff', label: 'Home', areaId: area.id, addressEnc: sealed }));
@@ -34,7 +40,10 @@ describe('delivery entities', () => {
 
   it('DC-6 the delivery outbox accepts only delivery event names', async () => {
     await expect(
-      inRolledBackTransaction((q) => q.manager.getRepository(DeliveryOutboxEvent).insert({ eventType: 'orders.order.paid', aggregateId: randomUUID(), payload: {} }), ENTITIES),
+      inRolledBackTransaction(
+        (q) => q.manager.getRepository(DeliveryOutboxEvent).insert({ eventType: 'orders.order.paid', aggregateId: randomUUID(), payload: {} }),
+        ENTITIES,
+      ),
     ).rejects.toThrow();
     const ok = await inRolledBackTransaction(
       (q) => q.manager.getRepository(DeliveryOutboxEvent).insert({ eventType: 'delivery.issue.opened', aggregateId: randomUUID(), payload: {} }),

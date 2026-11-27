@@ -31,7 +31,11 @@ export class DeliveryAdminController {
 
   @Staff('administrator')
   @Patch('areas/:id')
-  changeArea(@Param('id', new ParseIntPipe({ exceptionFactory: () => new Problem('not-found') })) id: number, @Body() dto: AreaPatchDto, @CurrentPrincipal() p: Principal) {
+  changeArea(
+    @Param('id', new ParseIntPipe({ exceptionFactory: () => new Problem('not-found') })) id: number,
+    @Body() dto: AreaPatchDto,
+    @CurrentPrincipal() p: Principal,
+  ) {
     return this.areas.update(staffOf(p).staffId, id, dto);
   }
 
@@ -64,7 +68,11 @@ export class DeliveryAdminController {
 
   @Staff('administrator')
   @Patch('meetup-points/:id')
-  changePoint(@Param('id', new ParseUUIDPipe({ exceptionFactory: () => new Problem('not-found') })) id: string, @Body() dto: MeetupPointPatchDto, @CurrentPrincipal() p: Principal) {
+  changePoint(
+    @Param('id', new ParseUUIDPipe({ exceptionFactory: () => new Problem('not-found') })) id: string,
+    @Body() dto: MeetupPointPatchDto,
+    @CurrentPrincipal() p: Principal,
+  ) {
     return this.points.update(staffOf(p).staffId, id, dto);
   }
 }

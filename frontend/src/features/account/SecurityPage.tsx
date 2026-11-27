@@ -107,8 +107,7 @@ function Sessions({ list, error }: { list: SessionSummary[]; error: unknown }) {
       <p>{t('sessions.last_used', { at: formatDateTime(Date.parse(s.lastSeenAt), lang) })}</p>
       <p>{t('sessions.started', { at: formatDateTime(Date.parse(s.createdAt), lang) })}</p>
       {!s.current && (
-        <button type="button" disabled={busy !== null}
-          onClick={() => void run(s.id, () => api.del(`/auth/sessions/${encodeURIComponent(s.id)}`))}>
+        <button type="button" disabled={busy !== null} onClick={() => void run(s.id, () => api.del(`/auth/sessions/${encodeURIComponent(s.id)}`))}>
           {t('sessions.end')}
         </button>
       )}
@@ -126,8 +125,12 @@ function Sessions({ list, error }: { list: SessionSummary[]; error: unknown }) {
         </button>
       )}
       {others.length > 0 && (
-        <button type="button" className={styles.secondary} disabled={busy !== null}
-          onClick={() => void run('others', () => api.request('POST', '/auth/sessions/end-others'))}>
+        <button
+          type="button"
+          className={styles.secondary}
+          disabled={busy !== null}
+          onClick={() => void run('others', () => api.request('POST', '/auth/sessions/end-others'))}
+        >
           {t('sessions.end_others')}
         </button>
       )}
@@ -153,7 +156,11 @@ async function withStepUp<R>(call: () => Promise<R>): Promise<R | 'cancelled'> {
 
 function PasswordChange() {
   const { t } = useAccountT();
-  return <SettingRow id="password-popup" title={t('password.change_title')}><PasswordForm /></SettingRow>;
+  return (
+    <SettingRow id="password-popup" title={t('password.change_title')}>
+      <PasswordForm />
+    </SettingRow>
+  );
 }
 
 function PasswordForm() {
@@ -178,13 +185,12 @@ function PasswordForm() {
     setBusy(true);
     setMessage(null);
     try {
-      const r = await withStepUp(() => api.post('/auth/password/change', { currentPassword: current, newPassword: next },
-        { stepUpAction: 'password.change' }));
+      const r = await withStepUp(() => api.post('/auth/password/change', { currentPassword: current, newPassword: next }, { stepUpAction: 'password.change' }));
       if (r !== 'cancelled') {
         setCurrent('');
         setNext('');
         setMessage({ kind: 'success', text: t('password.changed') });
-        await queryClient.invalidateQueries({ queryKey: SESSIONS_KEY });   // the others are shown as ended
+        await queryClient.invalidateQueries({ queryKey: SESSIONS_KEY }); // the others are shown as ended
       }
     } catch (err) {
       const reason = rejectedPasswordReason(err);
@@ -201,11 +207,25 @@ function PasswordForm() {
       <p>{t('password.change_intro')}</p>
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
       <form onSubmit={submit} noValidate>
-        <TextField id="password-current" label={t('password.current')} value={current} onChange={setCurrent}
-          error={errors.current} type="password" autoComplete="current-password" />
-        <TextField id="password-new" label={t('reset.new_password')}
+        <TextField
+          id="password-current"
+          label={t('password.current')}
+          value={current}
+          onChange={setCurrent}
+          error={errors.current}
+          type="password"
+          autoComplete="current-password"
+        />
+        <TextField
+          id="password-new"
+          label={t('reset.new_password')}
           hint={t('reset.password_hint', { min: digits(PASSWORD.minSingleFactor, lang), minMfa: digits(PASSWORD.minWithMfa, lang) })}
-          value={next} onChange={setNext} error={errors.next} type="password" autoComplete="new-password" />
+          value={next}
+          onChange={setNext}
+          error={errors.next}
+          type="password"
+          autoComplete="new-password"
+        />
         <SubmitButton busy={busy}>{t('password.change_submit')}</SubmitButton>
       </form>
     </>
@@ -215,7 +235,11 @@ function PasswordForm() {
 function PhoneChange() {
   const { t } = useAccountT();
   const me = useMe();
-  return <SettingRow id="phone-popup" title={t('contact.phone_title')} summary={me.data?.phoneMasked}><PhoneForm /></SettingRow>;
+  return (
+    <SettingRow id="phone-popup" title={t('contact.phone_title')} summary={me.data?.phoneMasked}>
+      <PhoneForm />
+    </SettingRow>
+  );
 }
 
 function PhoneForm() {
@@ -235,13 +259,19 @@ function PhoneForm() {
     ev?.preventDefault();
     if (busy) return;
     const p = bangladeshiMobile(phone);
-    if (!p) { setError(t('field.phone_invalid')); return; }
+    if (!p) {
+      setError(t('field.phone_invalid'));
+      return;
+    }
     setBusy(true);
     setError(null);
     setMessage(null);
     try {
       const r = await withStepUp(() => api.post('/me/phone/change', { phone: p }, { stepUpAction: 'phone.change' }) as Promise<{ resendAt: string }>);
-      if (r !== 'cancelled') { setSentTo(p); setResendUntil(untilServerTime(r.resendAt)); }
+      if (r !== 'cancelled') {
+        setSentTo(p);
+        setResendUntil(untilServerTime(r.resendAt));
+      }
     } catch (err) {
       const wait = retryAfter(err);
       if (wait !== null) setResendUntil(untilAfter(wait));
@@ -256,7 +286,10 @@ function PhoneForm() {
   const verify = async (ev: FormEvent) => {
     ev.preventDefault();
     if (busy) return;
-    if (!isSixDigits(code)) { setError(t('code.six_digits')); return; }
+    if (!isSixDigits(code)) {
+      setError(t('code.six_digits'));
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -270,8 +303,10 @@ function PhoneForm() {
       const name = problemName(err);
       if (name === 'otp-failed') setError(t('code.wrong'));
       else if (name === 'otp-expired') setError(t('code.expired'));
-      else if (name === 'contact-unavailable') { setSentTo(null); setError(t('contact.unavailable')); }
-      else setMessage({ kind: 'error', text: otherError(err, t, lang) });
+      else if (name === 'contact-unavailable') {
+        setSentTo(null);
+        setError(t('contact.unavailable'));
+      } else setMessage({ kind: 'error', text: otherError(err, t, lang) });
     } finally {
       setBusy(false);
     }
@@ -280,28 +315,35 @@ function PhoneForm() {
   return (
     <>
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
-      {sentTo === null
-        ? (
-          <form onSubmit={start} noValidate>
-            <TextField id="phone-new" label={t('contact.new_phone')} hint={t('field.phone_hint')} value={phone} onChange={setPhone}
-              error={error ?? undefined} type="tel" inputMode="tel" autoComplete="tel" />
-            <SubmitButton busy={busy} disabled={resendIn > 0}>
-              {resendIn > 0 ? t('wait.seconds', { time: formatWait(resendIn, lang) }) : t('contact.phone_submit')}
-            </SubmitButton>
-          </form>
-        )
-        : (
-          <form onSubmit={verify} noValidate>
-            <p>{t('register.code_sent', { phone: sentTo })}</p>
-            <CodeField id="phone-code" label={t('code.label')} value={code} onChange={setCode} error={error ?? undefined} />
-            <div className={styles.actions}>
-              <SubmitButton busy={busy}>{t('contact.phone_verify')}</SubmitButton>
-              <button type="button" disabled={resendIn > 0 || busy} onClick={() => void start()}>
-                {resendIn > 0 ? t('code.resend_in', { time: formatWait(resendIn, lang) }) : t('code.resend')}
-              </button>
-            </div>
-          </form>
-        )}
+      {sentTo === null ? (
+        <form onSubmit={start} noValidate>
+          <TextField
+            id="phone-new"
+            label={t('contact.new_phone')}
+            hint={t('field.phone_hint')}
+            value={phone}
+            onChange={setPhone}
+            error={error ?? undefined}
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+          />
+          <SubmitButton busy={busy} disabled={resendIn > 0}>
+            {resendIn > 0 ? t('wait.seconds', { time: formatWait(resendIn, lang) }) : t('contact.phone_submit')}
+          </SubmitButton>
+        </form>
+      ) : (
+        <form onSubmit={verify} noValidate>
+          <p>{t('register.code_sent', { phone: sentTo })}</p>
+          <CodeField id="phone-code" label={t('code.label')} value={code} onChange={setCode} error={error ?? undefined} />
+          <div className={styles.actions}>
+            <SubmitButton busy={busy}>{t('contact.phone_verify')}</SubmitButton>
+            <button type="button" disabled={resendIn > 0 || busy} onClick={() => void start()}>
+              {resendIn > 0 ? t('code.resend_in', { time: formatWait(resendIn, lang) }) : t('code.resend')}
+            </button>
+          </div>
+        </form>
+      )}
     </>
   );
 }
@@ -309,7 +351,11 @@ function PhoneForm() {
 function EmailChange() {
   const { t } = useAccountT();
   const me = useMe();
-  return <SettingRow id="email-popup" title={t('contact.email_title')} summary={me.data?.email}><EmailForm /></SettingRow>;
+  return (
+    <SettingRow id="email-popup" title={t('contact.email_title')} summary={me.data?.email}>
+      <EmailForm />
+    </SettingRow>
+  );
 }
 
 function EmailForm() {
@@ -323,7 +369,10 @@ function EmailForm() {
   const submit = async (ev: FormEvent) => {
     ev.preventDefault();
     if (busy) return;
-    if (!looksLikeEmail(email)) { setError(t('field.email_invalid')); return; }
+    if (!looksLikeEmail(email)) {
+      setError(t('field.email_invalid'));
+      return;
+    }
     setBusy(true);
     setError(null);
     setMessage(null);
@@ -343,8 +392,15 @@ function EmailForm() {
     <>
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
       <form onSubmit={submit} noValidate>
-        <TextField id="email-new" label={t('contact.new_email')} value={email} onChange={setEmail} error={error ?? undefined}
-          type="email" autoComplete="email" />
+        <TextField
+          id="email-new"
+          label={t('contact.new_email')}
+          value={email}
+          onChange={setEmail}
+          error={error ?? undefined}
+          type="email"
+          autoComplete="email"
+        />
         <SubmitButton busy={busy}>{t('contact.email_submit')}</SubmitButton>
       </form>
     </>
@@ -386,7 +442,11 @@ function EmailCodeSetting() {
       {on && me.data.mfaEnabled && <p className={styles.hint}>{t('email_code.app_instead')}</p>}
       {on && !me.data.mfaEnabled && !me.data.emailVerified && <p className={styles.hint}>{t('email_code.verify_first')}</p>}
       {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
-      <p><button type="button" className={styles.secondary} disabled={busy} onClick={() => void change()}>{t(on ? 'email_code.turn_off' : 'email_code.turn_on')}</button></p>
+      <p>
+        <button type="button" className={styles.secondary} disabled={busy} onClick={() => void change()}>
+          {t(on ? 'email_code.turn_off' : 'email_code.turn_on')}
+        </button>
+      </p>
     </section>
   );
 }

@@ -44,7 +44,7 @@ export function rejectedPasswordReason(error: unknown): string | null {
 }
 
 /** Seconds to wait after a 429, or null. */
-export const retryAfter = (error: unknown): number | null => (isApiError(error, 429) ? error.retryAfter ?? 60 : null);
+export const retryAfter = (error: unknown): number | null => (isApiError(error, 429) ? (error.retryAfter ?? 60) : null);
 
 /** The generic text for an answer no screen-specific message covers. */
 export const otherError = (error: unknown, t: T, lang: Lang) => errorText(error, t, lang);

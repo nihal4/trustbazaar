@@ -86,6 +86,7 @@ describe('the account catalogues', () => {
 describe('the first entry of sign-in', () => {
   it('FR-ACC-13 only a mobile number or an e-mail of a valid form passes; markup, spaces and slips do not', () => {
     for (const ok of ['01712345678', '+880 1712-345678', 'rahim@example.com', 'r.a+tag@mail.example.co.uk']) expect(loginProblem(ok)).toBeNull();
-    for (const bad of ['', 'c', 'nihal', 'nihal@', '@x.com', 'a@b', 'a b@c.com', '<b>a</b>@x.com', 'a@x.c0m', '.a@x.com', 'a..b@x.com', 'a@-x.com', 'a@x..com']) expect(loginProblem(bad)).toBe('invalid');
+    for (const bad of ['', 'c', 'nihal', 'nihal@', '@x.com', 'a@b', 'a b@c.com', '<b>a</b>@x.com', 'a@x.c0m', '.a@x.com', 'a..b@x.com', 'a@-x.com', 'a@x..com'])
+      expect(loginProblem(bad)).toBe('invalid');
   });
 });

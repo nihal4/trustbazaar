@@ -38,7 +38,8 @@ describe('SEC-INF-02 the data stores stay inside', () => {
 
   it('SEC-INF-02 only the web container publishes a port', () => {
     const published = [...compose.matchAll(/^ {2}([a-z][\w-]*):[\s\S]*?(?=^ {2}[a-z][\w-]*:|^[a-z]|$(?![\s\S]))/gm)]
-      .filter((m) => /^\s+ports:/m.test(m[0])).map((m) => m[1]);
+      .filter((m) => /^\s+ports:/m.test(m[0]))
+      .map((m) => m[1]);
     expect(published).toEqual(['web']);
   });
 });

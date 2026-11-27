@@ -20,7 +20,7 @@ describe('GET /me', () => {
   const ip = () => `203.0.113.${randomInt(1, 255)}, 10.9.${randomInt(0, 255)}.${randomInt(1, 255)}`;
   const me = (headers: Record<string, string> = {}) => fetch(t.url('/me'), { headers: { 'x-forwarded-for': ip(), ...headers } });
 
-  it('IF-UI-01 answers the signed-in user\'s own account, with the number masked', async () => {
+  it("IF-UI-01 answers the signed-in user's own account, with the number masked", async () => {
     const userId = await fx.user({ kyc: 'verified', emailVerified: true });
     const sid = await fx.session({ userId });
     const r = await me(fx.headers(sid, userId, 'user'));
@@ -28,8 +28,16 @@ describe('GET /me', () => {
     const body = await r.json();
     const [u] = await fx.query<{ phone_e164: string; email: string }>(`SELECT phone_e164, email FROM identity.users WHERE id = $1`, [userId]);
     expect(body).toEqual({
-      id: userId, displayName: 'Test user', phoneMasked: `***${u.phone_e164.slice(-3)}`, email: u.email,
-      emailVerified: true, kycStatus: 'verified', accountStatus: 'active', mfaEnabled: false, emailTwoStep: true, memberSince: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+      id: userId,
+      displayName: 'Test user',
+      phoneMasked: `***${u.phone_e164.slice(-3)}`,
+      email: u.email,
+      emailVerified: true,
+      kycStatus: 'verified',
+      accountStatus: 'active',
+      mfaEnabled: false,
+      emailTwoStep: true,
+      memberSince: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
     });
     expect(JSON.stringify(body)).not.toContain(u.phone_e164); // SEC-DAT-07
   });
@@ -43,7 +51,9 @@ describe('GET /me', () => {
     expect((await me(fx.headers(ended, userId, 'user'))).status).toBe(401);
     const sid = await fx.session({ userId });
     const h = fx.headers(sid, userId, 'user');
-    const statuses = await Promise.all(Array.from({ length: 30 }, () => fetch(t.url('/me'), { headers: { 'x-forwarded-for': '203.0.113.7, 10.0.0.1', ...h } }).then((r) => r.status)));
+    const statuses = await Promise.all(
+      Array.from({ length: 30 }, () => fetch(t.url('/me'), { headers: { 'x-forwarded-for': '203.0.113.7, 10.0.0.1', ...h } }).then((r) => r.status)),
+    );
     expect(new Set(statuses)).toEqual(new Set([200]));
   });
 

@@ -18,7 +18,12 @@ describe('orders', () => {
     fx = await IdentityFixtures.open();
     const tag = randomUUID().slice(0, 8);
     const cat = async (kind: string) =>
-      (await fx.query<{ id: number }>(`INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'c', 'বি', $2) RETURNING id`, [`o-${kind.replace('_', '-')}-${tag}`, kind]))[0].id;
+      (
+        await fx.query<{ id: number }>(`INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'c', 'বি', $2) RETURNING id`, [
+          `o-${kind.replace('_', '-')}-${tag}`,
+          kind,
+        ])
+      )[0].id;
     phones = await cat('physical');
     games = await cat('game_account');
   });
@@ -47,7 +52,10 @@ describe('orders', () => {
   }
 
   /** An active listing, written as tb_app (two photos, published). */
-  async function listing(sellerId: string, o: { price?: number; quantity?: number; fulfilment?: string; kind?: 'physical' | 'game_account'; format?: 'fixed_price' | 'auction' } = {}) {
+  async function listing(
+    sellerId: string,
+    o: { price?: number; quantity?: number; fulfilment?: string; kind?: 'physical' | 'game_account'; format?: 'fixed_price' | 'auction' } = {},
+  ) {
     const kind = o.kind ?? 'physical';
     const format = o.format ?? 'fixed_price';
     const physical = kind === 'physical';
@@ -56,20 +64,42 @@ describe('orders', () => {
           fulfilment_options, weight_class, size_class, area_district, approx_lat, approx_lng, price, quantity_total, quantity_available)
        VALUES ($1, $2, $3, $4, 'Phone for the order tests', 'A phone in good condition, written by the order tests.', $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $14)
        RETURNING id`,
-      [sellerId, kind, format, physical ? phones : games, physical ? 'used' : null, physical ? true : null, physical ? o.fulfilment ?? 'pickup_or_courier' : null,
-       physical ? 'up_to_1kg' : null, physical ? 'small' : null, physical ? 'Dhaka' : null, physical ? 23.81 : null, physical ? 90.41 : null,
-       format === 'fixed_price' ? o.price ?? 1_500_000 : null, o.quantity ?? 1],
+      [
+        sellerId,
+        kind,
+        format,
+        physical ? phones : games,
+        physical ? 'used' : null,
+        physical ? true : null,
+        physical ? (o.fulfilment ?? 'pickup_or_courier') : null,
+        physical ? 'up_to_1kg' : null,
+        physical ? 'small' : null,
+        physical ? 'Dhaka' : null,
+        physical ? 23.81 : null,
+        physical ? 90.41 : null,
+        format === 'fixed_price' ? (o.price ?? 1_500_000) : null,
+        o.quantity ?? 1,
+      ],
     );
     if (physical) {
       for (const n of [1, 2]) {
-        await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [id, n, randomUUID().replace(/-/g, '')]);
+        await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [
+          id,
+          n,
+          randomUUID().replace(/-/g, ''),
+        ]);
       }
     }
     await fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [id]);
     return id;
   }
   const stock = async (id: string) =>
-    (await fx.query<{ quantity_available: number; quantity_reserved: number }>(`SELECT quantity_available, quantity_reserved FROM listings.listings WHERE id = $1`, [id]))[0];
+    (
+      await fx.query<{ quantity_available: number; quantity_reserved: number }>(
+        `SELECT quantity_available, quantity_reserved FROM listings.listings WHERE id = $1`,
+        [id],
+      )
+    )[0];
   const errorsOf = async (r: Response) => {
     const b = await r.json();
     return { type: b.type, errors: (b.errors ?? []).map((e: { field: string; reason: string }) => `${e.field}:${e.reason}`) };
@@ -84,18 +114,34 @@ describe('orders', () => {
     expect(r.status).toBe(201);
     const o = await r.json();
     expect(o).toMatchObject({
-      kind: 'fixed_price', role: 'buyer', status: 'awaiting_payment', quantity: 2, unitPrice: '1250000', itemPrice: '2500000', deliveryFee: '0', total: '2500000',
-      fulfilment: 'self_pickup', fulfilmentOptions: ['self_pickup', 'courier'], escrow: null, listing: { id, title: 'Phone for the order tests' },
+      kind: 'fixed_price',
+      role: 'buyer',
+      status: 'awaiting_payment',
+      quantity: 2,
+      unitPrice: '1250000',
+      itemPrice: '2500000',
+      deliveryFee: '0',
+      total: '2500000',
+      fulfilment: 'self_pickup',
+      fulfilmentOptions: ['self_pickup', 'courier'],
+      escrow: null,
+      listing: { id, title: 'Phone for the order tests' },
     });
     const holdMs = Date.parse(o.paymentDueAt) - before;
     const cp13 = (await t.app.get<ConfigPort>(CONFIG_PORT).current()).ms('CP-13'); // 15 minutes unless an administrator changed it
     expect(holdMs).toBeGreaterThan(cp13 - 60_000);
     expect(holdMs).toBeLessThanOrEqual(cp13 + 5_000);
     expect(await stock(id)).toEqual({ quantity_available: 1, quantity_reserved: 2 });
-    const [row] = await fx.query(`SELECT commission_bps, delivery_margin_bps, params_version, listing_snapshot->>'price' AS snap_price FROM orders.orders WHERE id = $1`, [o.id]);
+    const [row] = await fx.query(
+      `SELECT commission_bps, delivery_margin_bps, params_version, listing_snapshot->>'price' AS snap_price FROM orders.orders WHERE id = $1`,
+      [o.id],
+    );
     expect(row).toEqual({ commission_bps: 500, delivery_margin_bps: 1000, params_version: expect.any(Number), snap_price: '1250000' });
     const [ev] = await fx.query(`SELECT event_type, payload FROM orders.outbox WHERE aggregate_id = $1`, [o.id]);
-    expect(ev).toMatchObject({ event_type: 'orders.order.created', payload: { listingId: id, buyerId: buyer.userId, sellerId: seller.userId, quantity: 2, total: '2500000' } });
+    expect(ev).toMatchObject({
+      event_type: 'orders.order.created',
+      payload: { listingId: id, buyerId: buyer.userId, sellerId: seller.userId, quantity: 2, total: '2500000' },
+    });
     const [audit] = await fx.query(`SELECT actor_type, actor_id FROM audit.events WHERE action = 'orders.order.created' AND object_id = $1`, [o.id]);
     expect(audit).toEqual({ actor_type: 'user', actor_id: buyer.userId });
   });
@@ -180,14 +226,18 @@ describe('orders', () => {
     const courier = await buyer.call('PUT', `/orders/${o.id}/fulfilment`, { fulfilment: 'courier' }); // on since U4-04, with a quote
     expect(courier.status).toBe(400);
     expect(await errorsOf(courier)).toEqual({ type: '/problems/validation-failed', errors: ['quoteId:required-for-courier'] });
-    expect((await errorsOf(await buyer.call('PUT', `/orders/${o.id}/fulfilment`, { fulfilment: 'game_account' }))).errors).toEqual(['fulfilment:not-offered-by-listing']);
+    expect((await errorsOf(await buyer.call('PUT', `/orders/${o.id}/fulfilment`, { fulfilment: 'game_account' }))).errors).toEqual([
+      'fulfilment:not-offered-by-listing',
+    ]);
     expect((await seller.call('PUT', `/orders/${o.id}/fulfilment`, { fulfilment: 'self_pickup' })).status).toBe(403);
     const ok = await buyer.call('PUT', `/orders/${o.id}/fulfilment`, { fulfilment: 'self_pickup' });
     expect(ok.status).toBe(200);
     expect(await ok.json()).toMatchObject({ fulfilment: 'self_pickup', total: '1500000' });
 
     const pickupOnly = await listing(seller.userId, { fulfilment: 'pickup_only' });
-    expect((await errorsOf(await buyer.call('POST', '/orders', { listingId: pickupOnly, quantity: 1, fulfilment: 'courier' }))).errors).toEqual(['fulfilment:not-offered-by-listing']);
+    expect((await errorsOf(await buyer.call('POST', '/orders', { listingId: pickupOnly, quantity: 1, fulfilment: 'courier' }))).errors).toEqual([
+      'fulfilment:not-offered-by-listing',
+    ]);
     const game = await listing(seller.userId, { kind: 'game_account' });
     const g = await buyer.call('POST', '/orders', { listingId: game, quantity: 1, fulfilment: 'self_pickup' });
     expect(await errorsOf(g)).toEqual({ type: '/problems/validation-failed', errors: ['fulfilment:not-offered-by-listing'] }); // only the sealed handover (U5-03)
@@ -205,7 +255,10 @@ describe('orders', () => {
     expect(mine.items.map((i: { id: string }) => i.id)).toEqual([o2.id, o1.id]);
     expect(mine.nextCursor).toBeNull();
     const sold = await (await seller.call('GET', '/orders?role=seller')).json();
-    expect(sold.items.map((i: { id: string; role: string }) => [i.id, i.role])).toEqual([[o2.id, 'seller'], [o1.id, 'seller']]);
+    expect(sold.items.map((i: { id: string; role: string }) => [i.id, i.role])).toEqual([
+      [o2.id, 'seller'],
+      [o1.id, 'seller'],
+    ]);
     expect((await (await seller.call('GET', `/orders/${o1.id}`)).json()).role).toBe('seller');
     expect((await buyer.call('GET', '/orders?cursor=nonsense')).status).toBe(400);
   });

@@ -17,10 +17,21 @@ import type { OrderView } from './model';
 import styles from './orders.module.css';
 
 export interface RatingView {
-  id: string; orderId: string; stars: number; text: string | null; createdAt: string; editableUntil: string; editedAt: string | null;
+  id: string;
+  orderId: string;
+  stars: number;
+  text: string | null;
+  createdAt: string;
+  editableUntil: string;
+  editedAt: string | null;
   reply: { text: string; at: string } | null;
 }
-export interface OrderRatings { canRate: boolean; rateUntil: string | null; mine: RatingView | null; received: RatingView | null }
+export interface OrderRatings {
+  canRate: boolean;
+  rateUntil: string | null;
+  mine: RatingView | null;
+  received: RatingView | null;
+}
 export const ratingsKey = (orderId: string) => ['orders', orderId, 'ratings'] as const;
 
 export function useOrderRatings(o: OrderView) {
@@ -38,8 +49,13 @@ export function useOrderRatings(o: OrderView) {
 /** One star, drawn once; filled when it is part of the rating. */
 const Star = ({ on }: { on: boolean }) => (
   <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" focusable="false">
-    <path d="M12 2.8 L14.9 8.9 L21.5 9.7 L16.6 14.2 L17.9 20.8 L12 17.5 L6.1 20.8 L7.4 14.2 L2.5 9.7 L9.1 8.9 Z"
-      fill={on ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+    <path
+      d="M12 2.8 L14.9 8.9 L21.5 9.7 L16.6 14.2 L17.9 20.8 L12 17.5 L6.1 20.8 L7.4 14.2 L2.5 9.7 L9.1 8.9 Z"
+      fill={on ? 'currentColor' : 'none'}
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
@@ -73,7 +89,16 @@ function StarsField({ id, value, onChange, t, lang }: { id: string; value: numbe
       <div className={styles.starGrid}>
         {[1, 2, 3, 4, 5].map((n) => (
           <span key={n} className={styles.starCell}>
-            <input id={`${id}-${n}`} type="radio" name={id} checked={value === n} onChange={() => onChange(n)} onClick={() => { if (value === n) onChange(0); }} />
+            <input
+              id={`${id}-${n}`}
+              type="radio"
+              name={id}
+              checked={value === n}
+              onChange={() => onChange(n)}
+              onClick={() => {
+                if (value === n) onChange(0);
+              }}
+            />
             <label htmlFor={`${id}-${n}`} data-n={toLocalDigits(String(n), lang)} className={n <= value ? styles.starOn : undefined}>
               <Star on={n <= value} />
               <span className={styles.srOnly}>{starsText(n, t, lang)}</span>
@@ -85,18 +110,17 @@ function StarsField({ id, value, onChange, t, lang }: { id: string; value: numbe
   );
 }
 
-function RatingForm({ o, t, lang, label, initial, onDone }: {
-  o: OrderView; t: T; lang: Lang; label: string; initial?: RatingView; onDone?: () => void;
-}) {
+function RatingForm({ o, t, lang, label, initial, onDone }: { o: OrderView; t: T; lang: Lang; label: string; initial?: RatingView; onDone?: () => void }) {
   const api = useApi();
   const queryClient = useQueryClient();
   const [stars, setStars] = useState(initial?.stars ?? 0);
   const [text, setText] = useState(initial?.text ?? '');
   const [message, setMessage] = useState<string | null>(null);
   const save = useMutation({
-    mutationFn: () => initial
-      ? api.patch(`/ratings/${encodeURIComponent(initial.id)}`, { stars, text: text.trim() || null })
-      : api.post(`/orders/${encodeURIComponent(o.id)}/rating`, { stars, ...(text.trim() ? { text: text.trim() } : {}) }),
+    mutationFn: () =>
+      initial
+        ? api.patch(`/ratings/${encodeURIComponent(initial.id)}`, { stars, text: text.trim() || null })
+        : api.post(`/orders/${encodeURIComponent(o.id)}/rating`, { stars, ...(text.trim() ? { text: text.trim() } : {}) }),
     onSuccess: () => {
       setMessage(null);
       void queryClient.invalidateQueries({ queryKey: ratingsKey(o.id) });
@@ -116,11 +140,27 @@ function RatingForm({ o, t, lang, label, initial, onDone }: {
       {message && <FormMessage kind="error">{message}</FormMessage>}
       <StarsField id={`${id}-stars`} value={stars} onChange={setStars} t={t} lang={lang} />
       <label htmlFor={`${id}-text`}>{t('rating.text')}</label>
-      <textarea id={`${id}-text`} className={styles.ratingText} value={text} rows={3} maxLength={1000} onChange={(e) => setText(e.target.value)} aria-describedby={`${id}-hint`} />
-      <p id={`${id}-hint`} className={styles.hint}>{t('rating.public_note')}</p>
+      <textarea
+        id={`${id}-text`}
+        className={styles.ratingText}
+        value={text}
+        rows={3}
+        maxLength={1000}
+        onChange={(e) => setText(e.target.value)}
+        aria-describedby={`${id}-hint`}
+      />
+      <p id={`${id}-hint`} className={styles.hint}>
+        {t('rating.public_note')}
+      </p>
       <div className={styles.buttons}>
-        <button type="submit" className={styles.primary} disabled={save.isPending}>{t(initial ? 'rating.save_edit' : 'rating.send')}</button>
-        {onDone && <button type="button" className={styles.secondary} onClick={onDone}>{t('actions.back')}</button>}
+        <button type="submit" className={styles.primary} disabled={save.isPending}>
+          {t(initial ? 'rating.save_edit' : 'rating.send')}
+        </button>
+        {onDone && (
+          <button type="button" className={styles.secondary} onClick={onDone}>
+            {t('actions.back')}
+          </button>
+        )}
       </div>
     </form>
   );
@@ -130,8 +170,13 @@ function Shown({ rating, t, lang }: { rating: RatingView; t: T; lang: Lang }) {
   return (
     <>
       <p className={styles.shownStars}>
-        <span className={styles.starRow} aria-hidden="true">{[1, 2, 3, 4, 5].map((n) => <Star key={n} on={n <= rating.stars} />)}</span>
-        <strong>{starsText(rating.stars, t, lang)}</strong>{rating.editedAt ? ` · ${t('rating.edited')}` : ''}
+        <span className={styles.starRow} aria-hidden="true">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <Star key={n} on={n <= rating.stars} />
+          ))}
+        </span>
+        <strong>{starsText(rating.stars, t, lang)}</strong>
+        {rating.editedAt ? ` · ${t('rating.edited')}` : ''}
       </p>
       {rating.text && <p className={styles.wrap}>{rating.text}</p>}
       {rating.reply && <p className={styles.reply}>{t('rating.reply_shown', { text: rating.reply.text })}</p>}
@@ -151,7 +196,9 @@ function Mine({ o, rating, t, lang }: { o: OrderView; rating: RatingView; t: T; 
       {editable && (
         <>
           <p className={styles.hint}>{t('rating.edit_until', { until: formatDateTime(Date.parse(rating.editableUntil), lang) })}</p>
-          <button type="button" className={styles.secondary} onClick={() => setEditing(true)}>{t('rating.edit')}</button>
+          <button type="button" className={styles.secondary} onClick={() => setEditing(true)}>
+            {t('rating.edit')}
+          </button>
         </>
       )}
     </div>
@@ -165,7 +212,10 @@ function Received({ o, rating, from, t, lang }: { o: OrderView; rating: RatingVi
   const [message, setMessage] = useState<string | null>(null);
   const reply = useMutation({
     mutationFn: () => api.post(`/ratings/${encodeURIComponent(rating.id)}/reply`, { text: text.trim() }),
-    onSuccess: () => { setText(''); void queryClient.invalidateQueries({ queryKey: ratingsKey(o.id) }); },
+    onSuccess: () => {
+      setText('');
+      void queryClient.invalidateQueries({ queryKey: ratingsKey(o.id) });
+    },
     onError: (e) => setMessage(errorText(e, t, lang)),
   });
   return (
@@ -173,13 +223,23 @@ function Received({ o, rating, from, t, lang }: { o: OrderView; rating: RatingVi
       <h3>{t(`rating.from_${from}`)}</h3>
       <Shown rating={rating} t={t} lang={lang} />
       {!rating.reply && (
-        <form className={styles.form} noValidate onSubmit={(e) => { e.preventDefault(); if (text.trim()) reply.mutate(); else setMessage(t('rating.reply_empty')); }}>
+        <form
+          className={styles.form}
+          noValidate
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (text.trim()) reply.mutate();
+            else setMessage(t('rating.reply_empty'));
+          }}
+        >
           <label htmlFor={`reply-${rating.id}`}>{t('rating.reply')}</label>
           <p className={styles.hint}>{t('rating.reply_note')}</p>
           {message && <FormMessage kind="error">{message}</FormMessage>}
           <textarea id={`reply-${rating.id}`} className={styles.ratingText} value={text} rows={3} maxLength={1000} onChange={(e) => setText(e.target.value)} />
           <div className={styles.buttons}>
-            <button type="submit" className={styles.primary} disabled={reply.isPending}>{t('rating.send_reply')}</button>
+            <button type="submit" className={styles.primary} disabled={reply.isPending}>
+              {t('rating.send_reply')}
+            </button>
           </div>
         </form>
       )}

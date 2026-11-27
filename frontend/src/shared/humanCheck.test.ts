@@ -7,10 +7,19 @@ import { leadingZeroBits, sha256, solvePow } from './pow';
 
 const hex = (b: Uint8Array) => Buffer.from(b).toString('hex');
 const nodeSha = (s: string) => createHash('sha256').update(s).digest('hex');
-const challenge = (o: Record<string, unknown> = {}) => ({ id: 'c0ffee-1', algorithm: 'sha256', prefix: 'ab12', difficulty: 8, expiresAt: '2026-11-23T00:05:00Z', ...o });
-const asked = (c: unknown = challenge()) => new Response(JSON.stringify({ type: '/problems/human-verification-required', title: 'wait', status: 428, challenge: c }), {
-  status: 428, headers: { 'Content-Type': 'application/problem+json' },
+const challenge = (o: Record<string, unknown> = {}) => ({
+  id: 'c0ffee-1',
+  algorithm: 'sha256',
+  prefix: 'ab12',
+  difficulty: 8,
+  expiresAt: '2026-11-23T00:05:00Z',
+  ...o,
 });
+const asked = (c: unknown = challenge()) =>
+  new Response(JSON.stringify({ type: '/problems/human-verification-required', title: 'wait', status: 428, challenge: c }), {
+    status: 428,
+    headers: { 'Content-Type': 'application/problem+json' },
+  });
 const ok = () => new Response('{"ok":true}', { status: 200, headers: { 'Content-Type': 'application/json' } });
 
 describe('solver', () => {
@@ -63,8 +72,15 @@ describe('fetch wrapper', () => {
 
   it('SEC-ABU-02 other answers, and challenges this client cannot or should not solve, pass through untouched', async () => {
     const solve = vi.fn();
-    for (const res of [ok(), new Response('', { status: 429 }), new Response('not json', { status: 428 }),
-      asked({ algorithm: 'md5' }), asked({ difficulty: 40 }), asked({ id: 'a:b' }), asked(null)]) {
+    for (const res of [
+      ok(),
+      new Response('', { status: 429 }),
+      new Response('not json', { status: 428 }),
+      asked({ algorithm: 'md5' }),
+      asked({ difficulty: 40 }),
+      asked({ id: 'a:b' }),
+      asked(null),
+    ]) {
       const f = vi.fn().mockResolvedValue(res);
       expect(await withHumanCheck(f, solve)('/x')).toBe(res);
       expect(f).toHaveBeenCalledTimes(1);

@@ -29,5 +29,4 @@ export function fieldErrors(error: unknown): FieldError[] {
   });
 }
 
-export const isApiError = (e: unknown, status?: number): e is ApiError =>
-  e instanceof ApiError && (status === undefined || e.status === status);
+export const isApiError = (e: unknown, status?: number): e is ApiError => e instanceof ApiError && (status === undefined || e.status === status);

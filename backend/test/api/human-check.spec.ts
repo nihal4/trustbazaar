@@ -36,8 +36,15 @@ describe('human verification', () => {
     expect(r.status).toBe(428);
     const body = await r.json();
     expect(body).toMatchObject({
-      type: '/problems/human-verification-required', status: 428,
-      challenge: { id: expect.stringMatching(/^[0-9a-f-]{36}$/), algorithm: 'sha256', prefix: expect.stringMatching(/^[0-9a-f]{32}$/), difficulty: 16, expiresAt: expect.any(String) },
+      type: '/problems/human-verification-required',
+      status: 428,
+      challenge: {
+        id: expect.stringMatching(/^[0-9a-f-]{36}$/),
+        algorithm: 'sha256',
+        prefix: expect.stringMatching(/^[0-9a-f]{32}$/),
+        difficulty: 16,
+        expiresAt: expect.any(String),
+      },
     });
     const proof = proofOf(body.challenge);
     expect(leadingZeroBits(powDigest(body.challenge.prefix, proof.split(':')[1]))).toBeGreaterThanOrEqual(16);

@@ -1,4 +1,21 @@
-import { Body, Controller, Delete, Get, Header, HttpCode, Param, ParseEnumPipe, ParseUUIDPipe, Patch, Post, Query, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  HttpCode,
+  Param,
+  ParseEnumPipe,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  Req,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsIn, IsInt, IsOptional, IsString, IsUUID, Length, Matches, Max, MaxLength, Min, ValidateNested } from 'class-validator';
@@ -311,7 +328,9 @@ export class TrustController {
   /** FR-OPS-01: one of the eight queues, oldest first, with age; disputes overdue first (DV-52). */
   @Staff('operator')
   @Get('staff/queues/:queue')
-  queue(@Param('queue', new ParseEnumPipe(Object.fromEntries(QUEUES.map((q) => [q, q])), { exceptionFactory: () => new Problem('not-found') })) queue: QueueName) {
+  queue(
+    @Param('queue', new ParseEnumPipe(Object.fromEntries(QUEUES.map((q) => [q, q])), { exceptionFactory: () => new Problem('not-found') })) queue: QueueName,
+  ) {
     return this.queues.list(queue);
   }
 
@@ -372,11 +391,16 @@ export class TrustController {
   @RateLimit('dispute-evidence')
   @Post('disputes/:id/evidence')
   @HttpCode(201)
-  @UseInterceptors(FileInterceptor('file', {
-    limits: { fileSize: MAX_EVIDENCE_VIDEO_BYTES, files: 1, fields: 0, parts: 1 },
-    // a type that is not evidence is refused before the body is buffered
-    fileFilter: (_req, f, cb) => ([...EVIDENCE_MIME, ...EVIDENCE_VIDEO_MIME] as string[]).includes(f.mimetype) ? cb(null, true) : cb(new Problem('validation-failed', { errors: [{ field: 'file', reason: 'type' }] }), false),
-  }))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: MAX_EVIDENCE_VIDEO_BYTES, files: 1, fields: 0, parts: 1 },
+      // a type that is not evidence is refused before the body is buffered
+      fileFilter: (_req, f, cb) =>
+        ([...EVIDENCE_MIME, ...EVIDENCE_VIDEO_MIME] as string[]).includes(f.mimetype)
+          ? cb(null, true)
+          : cb(new Problem('validation-failed', { errors: [{ field: 'file', reason: 'type' }] }), false),
+    }),
+  )
   evidence(@Id('id') id: string, @UploadedFile() file: { buffer: Buffer; mimetype: string; size: number } | undefined, @CurrentPrincipal() p: Principal) {
     if (!file) throw new Problem('validation-failed', { errors: [{ field: 'file', reason: 'required' }] });
     return this.disputes.evidence(userOf(p), id, file);
@@ -509,7 +533,13 @@ export class TrustController {
   @Staff('operator')
   @Post('staff/disputes/:id/decision')
   @HttpCode(200)
-  async decide(@Id('id') id: string, @Body() dto: DecisionDto, @CurrentPrincipal() p: Principal, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  async decide(
+    @Id('id') id: string,
+    @Body() dto: DecisionDto,
+    @CurrentPrincipal() p: Principal,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const r = await this.cases.decide(staffOf(p), id, dto, ctx(req));
     if (r.status === 'proposed') res.status(202);
     return r;

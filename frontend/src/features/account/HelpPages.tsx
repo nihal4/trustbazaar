@@ -16,7 +16,9 @@ export function PrivacyPage() {
       <h1 id="help-title">{t('privacy.title')}</h1>
       <p className={styles.version}>{t('help.version', { version: toLocalDigits(LEGAL_VERSIONS.privacy, lang) })}</p>
       <PrivacyPoints />
-      <p><Link to="/help/terms">{t('privacy.terms')}</Link></p>
+      <p>
+        <Link to="/help/terms">{t('privacy.terms')}</Link>
+      </p>
     </article>
   );
 }
@@ -28,7 +30,9 @@ export function TermsPage() {
       <h1 id="help-title">{t('privacy.terms')}</h1>
       <p className={styles.version}>{t('help.version', { version: toLocalDigits(LEGAL_VERSIONS.terms, lang) })}</p>
       <TermsBody />
-      <p><Link to="/help/privacy">{t('privacy.full_notice')}</Link></p>
+      <p>
+        <Link to="/help/privacy">{t('privacy.full_notice')}</Link>
+      </p>
     </article>
   );
 }

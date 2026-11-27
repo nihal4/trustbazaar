@@ -14,25 +14,61 @@ import bn from '../../messages/bn/orders.json';
 
 configure({ asyncUtilTimeout: 3000 });
 beforeEach(() => vi.stubGlobal('indexedDB', { open: () => ({}) }));
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 const HOUR = 3_600_000;
 const iso = (offset: number) => new Date(Date.now() + offset).toISOString();
 const order = (o: Partial<OrderView> = {}): OrderView => ({
-  id: 'o-1', kind: 'fixed_price', role: 'buyer', status: 'awaiting_payment',
-  listing: { id: 'l-1', title: 'PUBG level 70', itemKind: 'game_account', photoKey: null }, threadId: null, quantity: 1,
-  itemPrice: '500000', deliveryFee: '0', total: '500000', fulfilment: 'game_account', fulfilmentOptions: ['game_account'],
-  paymentDueAt: iso(HOUR), paidAt: null, fulfilmentDueAt: null, deliveryEventAt: null, closedAt: null, cancellationRequest: null, escrow: null,
+  id: 'o-1',
+  kind: 'fixed_price',
+  role: 'buyer',
+  status: 'awaiting_payment',
+  listing: { id: 'l-1', title: 'PUBG level 70', itemKind: 'game_account', photoKey: null },
+  threadId: null,
+  quantity: 1,
+  itemPrice: '500000',
+  deliveryFee: '0',
+  total: '500000',
+  fulfilment: 'game_account',
+  fulfilmentOptions: ['game_account'],
+  paymentDueAt: iso(HOUR),
+  paidAt: null,
+  fulfilmentDueAt: null,
+  deliveryEventAt: null,
+  closedAt: null,
+  cancellationRequest: null,
+  escrow: null,
   ...o,
 });
 const game = (g: Partial<GameView> = {}): GameView => ({
-  orderId: 'o-1', role: 'buyer', disclosure: { currentVersion: 1, acknowledgedVersion: null, acknowledgedAt: null },
-  status: 'preparing', keyVersion: 0, rekeysUsed: 0, credentialsDueAt: null, firstDeliveredAt: null, deliveredAt: null, takeoverDueAt: null,
-  rekeyDueAt: null, takenOverAt: null, takeoverSource: null,
-  steps: { password: null, recovery_email: null, recovery_phone: null, social_logins: null, two_step: null }, protectionEndsAt: null, ...g,
+  orderId: 'o-1',
+  role: 'buyer',
+  disclosure: { currentVersion: 1, acknowledgedVersion: null, acknowledgedAt: null },
+  status: 'preparing',
+  keyVersion: 0,
+  rekeysUsed: 0,
+  credentialsDueAt: null,
+  firstDeliveredAt: null,
+  deliveredAt: null,
+  takeoverDueAt: null,
+  rekeyDueAt: null,
+  takenOverAt: null,
+  takeoverSource: null,
+  steps: { password: null, recovery_email: null, recovery_phone: null, social_logins: null, two_step: null },
+  protectionEndsAt: null,
+  ...g,
 });
 const held = (o: Partial<NonNullable<OrderView['escrow']>> = {}): OrderView['escrow'] => ({
-  state: 'held', releasePolicy: 'game_protection', amountCollected: '500000', amountRefunded: '0', disputeWindowEndsAt: null, autoReleaseAt: iso(72 * HOUR), ...o,
+  state: 'held',
+  releasePolicy: 'game_protection',
+  amountCollected: '500000',
+  amountRefunded: '0',
+  disputeWindowEndsAt: null,
+  autoReleaseAt: iso(72 * HOUR),
+  ...o,
 });
 
 type Answer = (c: Call) => Response | Promise<Response>;
@@ -55,12 +91,15 @@ function backend(answers: Record<string, Answer | Answer[]> = {}, o: { order?: (
 describe('before payment', () => {
   it('FR-GAM-05 FR-GAM-07 the disclosure is acknowledged by its version, then the key is created on secure.html; payment waits for both', async () => {
     let current = game();
-    const be = backend({
-      'POST /orders/o-1/game/acknowledge': () => {
-        current = game({ disclosure: { currentVersion: 1, acknowledgedVersion: 1, acknowledgedAt: iso(0) } });
-        return json(200, current)();
+    const be = backend(
+      {
+        'POST /orders/o-1/game/acknowledge': () => {
+          current = game({ disclosure: { currentVersion: 1, acknowledgedVersion: 1, acknowledgedAt: iso(0) } });
+          return json(200, current)();
+        },
       },
-    }, { game: () => current });
+      { game: () => current },
+    );
     renderApp('/orders/o-1', be);
     expect(await screen.findByText(/^The game's publisher may forbid transferring accounts/)).toBeTruthy();
     expect(screen.getByText(/^It does not cover any action by the publisher\./)).toBeTruthy();
@@ -76,7 +115,10 @@ describe('before payment', () => {
     expect((screen.queryByRole('button', { name: /^Pay ৳/ }) as HTMLButtonElement | null)?.disabled ?? true).toBe(true); // nothing can be paid yet: no Pay button, or a disabled one
     cleanup();
 
-    renderApp('/orders/o-1', backend({}, { game: () => game({ disclosure: { currentVersion: 1, acknowledgedVersion: 1, acknowledgedAt: iso(0) }, keyVersion: 1 }) }));
+    renderApp(
+      '/orders/o-1',
+      backend({}, { game: () => game({ disclosure: { currentVersion: 1, acknowledgedVersion: 1, acknowledgedAt: iso(0) }, keyVersion: 1 }) }),
+    );
     expect(await screen.findByText('Your key is ready in this browser. You can pay now.')).toBeTruthy();
     expect(screen.getByRole('button', { name: /^Pay ৳/ })).toBeTruthy();
   });
@@ -96,10 +138,16 @@ describe('before payment', () => {
 
 describe('after payment', () => {
   it('FR-GAM-10 FR-GAM-13 the seller is sent to seal the credentials before the deadline; the buyer opens them in the same browser', async () => {
-    renderApp('/orders/o-1', backend({}, {
-      order: () => order({ role: 'seller', status: 'paid', paidAt: iso(-HOUR), escrow: held() }),
-      game: () => game({ role: 'seller', status: 'awaiting_credentials', keyVersion: 1, credentialsDueAt: iso(5 * HOUR) }),
-    }));
+    renderApp(
+      '/orders/o-1',
+      backend(
+        {},
+        {
+          order: () => order({ role: 'seller', status: 'paid', paidAt: iso(-HOUR), escrow: held() }),
+          game: () => game({ role: 'seller', status: 'awaiting_credentials', keyVersion: 1, credentialsDueAt: iso(5 * HOUR) }),
+        },
+      ),
+    );
     expect(await screen.findByText('Send the login details to the buyer, sealed in your browser.')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Send the login details' }).getAttribute('href')).toBe('/secure/orders/o-1/deliver');
     const section = screen.getByRole('heading', { name: 'Game account handover' }).closest('section')!;
@@ -107,10 +155,16 @@ describe('after payment', () => {
     expect(within(section).getByRole('definition').textContent).toMatch(/\(in (5|4) h/);
     cleanup();
 
-    renderApp('/orders/o-1', backend({}, {
-      order: () => order({ status: 'paid', paidAt: iso(-HOUR), escrow: held() }),
-      game: () => game({ status: 'delivered', keyVersion: 1, deliveredAt: iso(-HOUR), takeoverDueAt: iso(23 * HOUR) }),
-    }));
+    renderApp(
+      '/orders/o-1',
+      backend(
+        {},
+        {
+          order: () => order({ status: 'paid', paidAt: iso(-HOUR), escrow: held() }),
+          game: () => game({ status: 'delivered', keyVersion: 1, deliveredAt: iso(-HOUR), takeoverDueAt: iso(23 * HOUR) }),
+        },
+      ),
+    );
     expect(await screen.findByRole('link', { name: 'Open the login details' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Open the login details' }).getAttribute('href')).toBe('/secure/orders/o-1/credentials');
     expect(screen.getByText('Take over the account by')).toBeTruthy();
@@ -119,11 +173,16 @@ describe('after payment', () => {
 
   it('FR-GAM-10 right after payment the handover may still be preparing: the page asks again until the seller is asked for the details', async () => {
     let n = 0;
-    const be = backend({}, {
-      order: () => order({ role: 'seller', status: 'paid', paidAt: iso(0), escrow: held() }),
-      game: () => (++n < 3 ? game({ role: 'seller', keyVersion: 1, disclosure: { currentVersion: 1, acknowledgedVersion: 1, acknowledgedAt: iso(0) } })
-        : game({ role: 'seller', status: 'awaiting_credentials', keyVersion: 1, credentialsDueAt: iso(24 * HOUR) })),
-    });
+    const be = backend(
+      {},
+      {
+        order: () => order({ role: 'seller', status: 'paid', paidAt: iso(0), escrow: held() }),
+        game: () =>
+          ++n < 3
+            ? game({ role: 'seller', keyVersion: 1, disclosure: { currentVersion: 1, acknowledgedVersion: 1, acknowledgedAt: iso(0) } })
+            : game({ role: 'seller', status: 'awaiting_credentials', keyVersion: 1, credentialsDueAt: iso(24 * HOUR) }),
+      },
+    );
     renderApp('/orders/o-1', be);
     expect(await screen.findByRole('link', { name: 'Send the login details' }, { timeout: 7000 })).toBeTruthy();
     expect(be.called('GET /orders/o-1/game').length).toBeGreaterThanOrEqual(3);
@@ -131,12 +190,18 @@ describe('after payment', () => {
 
   it('FR-GAM-17 after the takeover the buyer may release the payment early, with its consequence and step-up', async () => {
     let current = order({ status: 'paid', paidAt: iso(-HOUR), deliveryEventAt: iso(-HOUR), escrow: held() });
-    const be = backend({
-      'POST /orders/o-1/release-early': () => { current = order({ status: 'closed', paidAt: iso(-HOUR), escrow: held({ state: 'released' }) }); return json(200, current)(); },
-    }, {
-      order: () => current,
-      game: () => game({ status: 'taken_over', keyVersion: 1, takenOverAt: iso(-HOUR), protectionEndsAt: iso(72 * HOUR) }),
-    });
+    const be = backend(
+      {
+        'POST /orders/o-1/release-early': () => {
+          current = order({ status: 'closed', paidAt: iso(-HOUR), escrow: held({ state: 'released' }) });
+          return json(200, current)();
+        },
+      },
+      {
+        order: () => current,
+        game: () => game({ status: 'taken_over', keyVersion: 1, takenOverAt: iso(-HOUR), protectionEndsAt: iso(72 * HOUR) }),
+      },
+    );
     renderApp('/orders/o-1', be);
     fireEvent.click(await screen.findByRole('button', { name: 'Release the payment early' }));
     const dialog = await screen.findByRole('dialog', { name: 'Release the payment early' });

@@ -15,8 +15,18 @@ const HEADER = '/* Generated from theme.ts by `npm run mantine:css` (theme.test.
 
 /** The CSS Mantine would inject for this theme: its variables and its global classes. */
 function generated(): string {
-  const html = renderToStaticMarkup(<MantineProvider theme={theme} forceColorScheme="light" deduplicateCssVariables={false}><span /></MantineProvider>);
-  const blocks = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1].replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, '&'));
+  const html = renderToStaticMarkup(
+    <MantineProvider theme={theme} forceColorScheme="light" deduplicateCssVariables={false}>
+      <span />
+    </MantineProvider>,
+  );
+  const blocks = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) =>
+    m[1]
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#x27;/g, "'")
+      .replace(/&amp;/g, '&'),
+  );
   return HEADER + blocks.map((b) => b.replace(/}/g, '}\n')).join('\n');
 }
 
@@ -31,7 +41,11 @@ describe('Mantine theme', () => {
   });
 
   it('SEC-WEB-01 the provider adds no <style> element to the page', () => {
-    const { container } = render(<MantineProvider {...MANTINE_PROVIDER_PROPS}><Button>Sell an item</Button></MantineProvider>);
+    const { container } = render(
+      <MantineProvider {...MANTINE_PROVIDER_PROPS}>
+        <Button>Sell an item</Button>
+      </MantineProvider>,
+    );
     expect(document.querySelectorAll('style')).toHaveLength(0);
     expect(container.querySelector('button')).not.toBeNull();
   });
@@ -41,13 +55,16 @@ describe('Mantine theme', () => {
       const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
       return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
     };
-    const ratio = (a: string, b: string) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+    const ratio = (a: string, b: string) => {
+      const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
+      return (x + 0.05) / (y + 0.05);
+    };
     const c = theme.colors!;
-    expect(ratio(c.brand![7], '#FFFFFF')).toBeGreaterThanOrEqual(4.5);   // white text on buttons, teal links
-    expect(ratio(c.gray![7], '#FFFFFF')).toBeGreaterThanOrEqual(4.5);   // muted text
-    expect(ratio(c.gray![6], '#FFFFFF')).toBeGreaterThanOrEqual(4.5);   // placeholders
-    expect(ratio(c.gray![7], c.gray![1])).toBeGreaterThanOrEqual(4.5);  // muted text on mist
-    expect(ratio(c.red![6], '#FFFFFF')).toBeGreaterThanOrEqual(4.5);    // errors
-    expect(ratio(c.gray![5], '#FFFFFF')).toBeGreaterThanOrEqual(3);     // input, checkbox and radio borders
+    expect(ratio(c.brand![7], '#FFFFFF')).toBeGreaterThanOrEqual(4.5); // white text on buttons, teal links
+    expect(ratio(c.gray![7], '#FFFFFF')).toBeGreaterThanOrEqual(4.5); // muted text
+    expect(ratio(c.gray![6], '#FFFFFF')).toBeGreaterThanOrEqual(4.5); // placeholders
+    expect(ratio(c.gray![7], c.gray![1])).toBeGreaterThanOrEqual(4.5); // muted text on mist
+    expect(ratio(c.red![6], '#FFFFFF')).toBeGreaterThanOrEqual(4.5); // errors
+    expect(ratio(c.gray![5], '#FFFFFF')).toBeGreaterThanOrEqual(3); // input, checkbox and radio borders
   });
 });

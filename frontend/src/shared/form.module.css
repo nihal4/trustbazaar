@@ -85,7 +85,9 @@
 }
 
 .primary {
-  transition: background-color 120ms ease, border-color 120ms ease;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
   min-height: 48px;
   padding: 0 1.75rem;
   border: 1px solid var(--tb-btn-line);
@@ -337,7 +339,9 @@ div.error > :first-child {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   line-height: 1;
-  transition: border-color 120ms ease, background 120ms ease;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
 }
 
 .codeCells > span:last-child {
@@ -379,12 +383,20 @@ div.error > :first-child {
 }
 
 @keyframes codeBlink {
-  50% { opacity: 0; }
+  50% {
+    opacity: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .codeGroup[data-focused] .codeCells > span[data-here]::after { animation: none; }
+  .codeGroup[data-focused] .codeCells > span[data-here]::after {
+    animation: none;
+  }
 }
 
 /* a link in the list of errors is a target of its own: at least 28 px high (WCAG 2.5.8) */
-.summary a { display: inline-block; min-height: 28px; padding-block: 3px; }
+.summary a {
+  display: inline-block;
+  min-height: 28px;
+  padding-block: 3px;
+}

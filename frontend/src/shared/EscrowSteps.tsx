@@ -22,16 +22,26 @@ export interface EscrowStepsProps {
   label?: string;
 }
 
-export function EscrowSteps({ labels, current, classes = { list: styles.list, done: styles.done, current: styles.current }, stateWords, label }: EscrowStepsProps) {
+export function EscrowSteps({
+  labels,
+  current,
+  classes = { list: styles.list, done: styles.done, current: styles.current },
+  stateWords,
+  label,
+}: EscrowStepsProps) {
   const at = current === 'done' ? ORDER.length : current === null ? -1 : ORDER.indexOf(current);
   return (
     <ol className={classes.list} aria-label={label} role="list">
       {labels.map((text, i) => {
         const state = i < at ? 'done' : i === at ? 'current' : 'next';
         return (
-          <li key={ORDER[i]} className={state === 'done' ? classes.done : state === 'current' ? classes.current : undefined} aria-current={state === 'current' ? 'step' : undefined}>
+          <li
+            key={ORDER[i]}
+            className={state === 'done' ? classes.done : state === 'current' ? classes.current : undefined}
+            aria-current={state === 'current' ? 'step' : undefined}
+          >
             {text}
-            {stateWords && <span className={styles.sr}>{' '}{stateWords[state]}</span>}
+            {stateWords && <span className={styles.sr}> {stateWords[state]}</span>}
           </li>
         );
       })}

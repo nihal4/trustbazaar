@@ -9,7 +9,13 @@ import { IdentityFixtures } from '../support/identity';
 // K-04: the outbox dispatcher over the seven outboxes (DC-6, DV-67; docs/design/09_integration.pdf section
 // 3.2), against PostgreSQL. The background poller is off in this file; the tests drain by hand.
 const OUTBOX_PREFIX: Record<string, string> = {
-  identity: 'identity', orders: 'orders', auctions: 'auctions', delivery: 'delivery', game_accounts: 'game_accounts', chat: 'chat', disputes: 'disputes',
+  identity: 'identity',
+  orders: 'orders',
+  auctions: 'auctions',
+  delivery: 'delivery',
+  game_accounts: 'game_accounts',
+  chat: 'chat',
+  disputes: 'disputes',
 };
 
 describe('outbox dispatcher', () => {
@@ -53,8 +59,12 @@ describe('outbox dispatcher', () => {
     return id;
   };
   const row = async (outbox: string, id: string) =>
-    (await fx.query<{ attempts: number; dispatched_at: Date | null; next_attempt_at: Date }>(
-      `SELECT attempts, dispatched_at, next_attempt_at FROM ${outbox}.outbox WHERE id = $1`, [id]))[0];
+    (
+      await fx.query<{ attempts: number; dispatched_at: Date | null; next_attempt_at: Date }>(
+        `SELECT attempts, dispatched_at, next_attempt_at FROM ${outbox}.outbox WHERE id = $1`,
+        [id],
+      )
+    )[0];
   const due = (outbox: string, id: string) => fx.query(`UPDATE ${outbox}.outbox SET next_attempt_at = now() - interval '1 second' WHERE id = $1`, [id]);
 
   it('DC-6 an event from each of the seven outboxes reaches its consumers once and is marked dispatched', async () => {

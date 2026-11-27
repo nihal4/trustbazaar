@@ -4,8 +4,22 @@ import { DataSource } from 'typeorm';
 import { loadConfig } from '../../src/kernel/config/config';
 import type { Principal } from '../../src/kernel/http/principal';
 import {
-  APPROVAL_SERVICE, ApprovalServicePort, AUDIT_SERVICE, AuditServicePort, FILE_VAULT, FileVaultPort, IDENTITY_COMMANDS, IDENTITY_CRYPTO,
-  IDENTITY_QUERY, IdentityCommands, IdentityCryptoPort, IdentityQuery, RATE_LIMITER, RateLimiterPort, STAFF_QUERY, StaffQuery,
+  APPROVAL_SERVICE,
+  ApprovalServicePort,
+  AUDIT_SERVICE,
+  AuditServicePort,
+  FILE_VAULT,
+  FileVaultPort,
+  IDENTITY_COMMANDS,
+  IDENTITY_CRYPTO,
+  IDENTITY_QUERY,
+  IdentityCommands,
+  IdentityCryptoPort,
+  IdentityQuery,
+  RATE_LIMITER,
+  RateLimiterPort,
+  STAFF_QUERY,
+  StaffQuery,
 } from '../../src/modules/identity/ports';
 import { KycReviewService } from '../../src/modules/identity/services/kyc-review.service';
 import { KycService } from '../../src/modules/identity/services/kyc.service';
@@ -72,9 +86,18 @@ describe('identity ports', () => {
 
     it('I-8 getPrincipal returns the account facts and when KYC was verified', async () => {
       const a = await fx.account({ kyc: 'pending_review' });
-      expect(await query.getPrincipal(a.userId)).toMatchObject({ id: a.userId, kycStatus: 'pending_review', accountStatus: 'active', emailVerified: true, verifiedAt: null });
+      expect(await query.getPrincipal(a.userId)).toMatchObject({
+        id: a.userId,
+        kycStatus: 'pending_review',
+        accountStatus: 'active',
+        emailVerified: true,
+        verifiedAt: null,
+      });
       await db.query(`UPDATE identity.users SET kyc_status = 'verified' WHERE id = $1`, [a.userId]);
-      await db.query(`INSERT INTO identity.kyc_status_history (user_id, from_status, to_status, actor_type) VALUES ($1, 'pending_review', 'verified', 'system')`, [a.userId]);
+      await db.query(
+        `INSERT INTO identity.kyc_status_history (user_id, from_status, to_status, actor_type) VALUES ($1, 'pending_review', 'verified', 'system')`,
+        [a.userId],
+      );
       expect((await query.getPrincipal(a.userId)).verifiedAt).toBeInstanceOf(Date);
     });
 
@@ -105,7 +128,9 @@ describe('identity ports', () => {
       const review = t.app.get(KycReviewService);
       const ctx = { ip: null, userAgent: null, correlationId: null };
       const ch = await kyc.livenessChallenge(a.userId);
-      const img = await sharp({ create: { width: 300, height: 200, channels: 3, background: 'white' } }).jpeg().toBuffer();
+      const img = await sharp({ create: { width: 300, height: 200, channels: 3, background: 'white' } })
+        .jpeg()
+        .toBuffer();
       const { submissionId } = await kyc.submit(
         a.userId,
         { docType: 'nid', docNumber: String(randomInt(1e9, 1e10)), fullName: 'Ayesha Siddiqua', dateOfBirth: '1993-07-15', challengeId: ch.challengeId },
@@ -169,7 +194,14 @@ describe('identity ports', () => {
       });
       expect(() => approvals.registerHandler(action, async () => undefined)).toThrow();
       const [x, y] = [await fx.staffAccount('administrator'), await fx.staffAccount('administrator')];
-      const p = await approvals.propose({ action, targetType: 'test', targetId: target, reason: 'A test of the handler registry', requiredRole: 'administrator', byStaffId: x.staffId });
+      const p = await approvals.propose({
+        action,
+        targetType: 'test',
+        targetId: target,
+        reason: 'A test of the handler registry',
+        requiredRole: 'administrator',
+        byStaffId: x.staffId,
+      });
       await approvals.decide(p.id, y.staffId, 'approved');
       const rows = await fx.query(`SELECT approval_id FROM audit.events WHERE action = 'test.effect.applied' AND object_id = $1`, [target]);
       expect(rows).toEqual([{ approval_id: p.id }]);
@@ -199,7 +231,9 @@ describe('identity ports', () => {
     it('SEC-DAT-08 a stored image is re-encoded without metadata, encrypted, and served only to the viewer’s session', async () => {
       const u = await signedIn();
       const tagged = await sharp({ create: { width: 800, height: 600, channels: 3, background: 'blue' } })
-        .jpeg().withExif({ IFD3: { GPSLatitudeRef: 'N', GPSLatitude: '23/1 48/1 0/1' } }).toBuffer();
+        .jpeg()
+        .withExif({ IFD3: { GPSLatitudeRef: 'N', GPSLatitude: '23/1 48/1 0/1' } })
+        .toBuffer();
       const f = await vault.store({ purpose: 'ownership_proof', ownerId: u.userId, bytes: tagged });
       expect(f).toMatchObject({ mime: 'image/jpeg' });
       expect(f.key).toMatch(/^v1\.ownership_proof\./);
@@ -224,14 +258,18 @@ describe('identity ports', () => {
       await b.post('/staff/auth/mfa', { code: authenticator.generate(op.totpSecret!) });
       const [s] = await fx.query<{ id: string }>(`SELECT id FROM identity.sessions WHERE staff_id = $1 AND ended_at IS NULL`, [op.staffId]);
       const viewer: Principal = { type: 'staff', staffId: op.staffId, sessionId: s.id, role: 'operator' };
-      const img = await sharp({ create: { width: 50, height: 50, channels: 3, background: 'red' } }).png().toBuffer();
+      const img = await sharp({ create: { width: 50, height: 50, channels: 3, background: 'red' } })
+        .png()
+        .toBuffer();
       const f = await vault.store({ purpose: 'dispute_evidence', ownerId: randomUUID(), bytes: img });
       await expect(vault.signedLink(f.key, viewer)).rejects.toMatchObject({ problem: 'validation-failed' });
       const { url } = await vault.signedLink(f.key, viewer, 'Reviewing evidence for a dispute');
       expect((await b.get(url.replace('/api/v1', ''))).status).toBe(200);
       const [a] = await fx.query(`SELECT reason FROM audit.events WHERE action = 'files.file.viewed' AND actor_id = $1`, [op.staffId]);
       expect(a.reason).toBe('Reviewing evidence for a dispute');
-      await expect(vault.store({ purpose: 'chat_image', ownerId: randomUUID(), bytes: Buffer.from('not an image at all') })).rejects.toMatchObject({ problem: 'validation-failed' });
+      await expect(vault.store({ purpose: 'chat_image', ownerId: randomUUID(), bytes: Buffer.from('not an image at all') })).rejects.toMatchObject({
+        problem: 'validation-failed',
+      });
     });
   });
 });

@@ -26,16 +26,35 @@ export const MEETUP_BUFFER = '2 hours';
 
 type HandoverStatus = 'arranging' | 'agreed' | 'completed' | 'locked' | 'cancelled';
 interface HandoverRow {
-  order_id: string; buyer_id: string; seller_id: string; status: HandoverStatus; due_at: Date; code_version: number; wrong_entries: number;
-  agreed_proposal_id: string | null; locked_at: Date | null; completed_at: Date | null; cancelled_at: Date | null;
+  order_id: string;
+  buyer_id: string;
+  seller_id: string;
+  status: HandoverStatus;
+  due_at: Date;
+  code_version: number;
+  wrong_entries: number;
+  agreed_proposal_id: string | null;
+  locked_at: Date | null;
+  completed_at: Date | null;
+  cancelled_at: Date | null;
 }
 /** A place of the parties' own (FR-DLV-04; Decisions log, U4-03): shown with a safety notice by the client. */
-export interface OwnPlaceView { name: string; lat: number | null; lng: number | null; mapUrl: string | null }
+export interface OwnPlaceView {
+  name: string;
+  lat: number | null;
+  lng: number | null;
+  mapUrl: string | null;
+}
 export interface ProposalView {
-  id: string; byMe: boolean; meetAt: string; note: string | null;
+  id: string;
+  byMe: boolean;
+  meetAt: string;
+  note: string | null;
   /** exactly one of the two: a suggested point (FR-DLV-03) or a place of the parties' own */
-  point: PointView | null; place: OwnPlaceView | null;
-  status: 'proposed' | 'accepted' | 'declined' | 'withdrawn' | 'superseded' | 'lapsed'; createdAt: string;
+  point: PointView | null;
+  place: OwnPlaceView | null;
+  status: 'proposed' | 'accepted' | 'declined' | 'withdrawn' | 'superseded' | 'lapsed';
+  createdAt: string;
 }
 export interface HandoverView {
   orderId: string;
@@ -91,10 +110,12 @@ export class HandoverService {
 
   /** orders.order.paid for a self-pickup order: the handover, due at the order's fulfilment deadline (CP-15). Idempotent. */
   async open(o: { orderId: string; buyerId: string; sellerId: string; dueAt: string }): Promise<void> {
-    await this.db.query(
-      `INSERT INTO delivery.handovers (order_id, buyer_id, seller_id, due_at) VALUES ($1, $2, $3, $4) ON CONFLICT (order_id) DO NOTHING`,
-      [o.orderId, o.buyerId, o.sellerId, o.dueAt],
-    );
+    await this.db.query(`INSERT INTO delivery.handovers (order_id, buyer_id, seller_id, due_at) VALUES ($1, $2, $3, $4) ON CONFLICT (order_id) DO NOTHING`, [
+      o.orderId,
+      o.buyerId,
+      o.sellerId,
+      o.dueAt,
+    ]);
   }
 
   /** orders.escrow.refunded: an open or locked handover is cancelled, and an open proposal with it. Idempotent. */
@@ -120,14 +141,44 @@ export class HandoverService {
         WHERE p.order_id = $1 ORDER BY (p.status = 'proposed') DESC, p.created_at DESC, p.id`,
       [orderId],
     )) as {
-      id: string; proposed_by: string; meet_at: Date; note: string | null; status: ProposalView['status']; created_at: Date;
-      place_name: string | null; place_lat: string | null; place_lng: string | null;
-      point_id: string | null; kind: PointView['kind']; name_en: string; name_bn: string; district: string; lat: string; lng: string; guidance: string | null; active: boolean;
+      id: string;
+      proposed_by: string;
+      meet_at: Date;
+      note: string | null;
+      status: ProposalView['status'];
+      created_at: Date;
+      place_name: string | null;
+      place_lat: string | null;
+      place_lng: string | null;
+      point_id: string | null;
+      kind: PointView['kind'];
+      name_en: string;
+      name_bn: string;
+      district: string;
+      lat: string;
+      lng: string;
+      guidance: string | null;
+      active: boolean;
     }[];
     const items: ProposalView[] = proposals.map((p) => ({
-      id: p.id, byMe: p.proposed_by === userId, meetAt: p.meet_at.toISOString(), note: p.note, status: p.status, createdAt: p.created_at.toISOString(),
+      id: p.id,
+      byMe: p.proposed_by === userId,
+      meetAt: p.meet_at.toISOString(),
+      note: p.note,
+      status: p.status,
+      createdAt: p.created_at.toISOString(),
       point: p.point_id
-        ? pointView({ id: p.point_id, kind: p.kind, name_en: p.name_en, name_bn: p.name_bn, district: p.district, lat: p.lat, lng: p.lng, guidance: p.guidance, active: p.active })
+        ? pointView({
+            id: p.point_id,
+            kind: p.kind,
+            name_en: p.name_en,
+            name_bn: p.name_bn,
+            district: p.district,
+            lat: p.lat,
+            lng: p.lng,
+            guidance: p.guidance,
+            active: p.active,
+          })
         : null,
       place: p.place_name ? ownPlace(p.place_name, p.place_lat, p.place_lng) : null,
     }));
@@ -146,7 +197,9 @@ export class HandoverService {
       // the code is shown only once the device is checked, when the item has an identifier
       code: buyer && open && (!device || device.matched) ? deriveCode(this.config.secrets.handoverKey.reveal(), orderId, h.code_version) : null,
       deviceCheck: device ? { required: true, matched: device.matched, last4: device.last4, attemptsLeft: device.attemptsLeft } : null,
-      photoCount: buyer ? null : ((await this.db.query(`SELECT count(*)::int AS n FROM delivery.handover_photos WHERE order_id = $1`, [orderId])) as { n: number }[])[0]?.n ?? 0,
+      photoCount: buyer
+        ? null
+        : (((await this.db.query(`SELECT count(*)::int AS n FROM delivery.handover_photos WHERE order_id = $1`, [orderId])) as { n: number }[])[0]?.n ?? 0),
       attemptsLeft: buyer ? null : Math.max(0, maxWrong - h.wrong_entries),
       completedAt: h.completed_at?.toISOString() ?? null,
       lockedAt: h.locked_at?.toISOString() ?? null,
@@ -157,7 +210,9 @@ export class HandoverService {
   private async deviceState(orderId: string, buyerId: string): Promise<{ matched: boolean; last4: string; attemptsLeft: number } | null> {
     const id = await this.orders.deviceIdentifier(orderId);
     if (!id) return null;
-    const rows = (await this.db.query(`SELECT matched FROM delivery.device_checks WHERE order_id = $1 AND user_id = $2`, [orderId, buyerId])) as { matched: boolean }[];
+    const rows = (await this.db.query(`SELECT matched FROM delivery.device_checks WHERE order_id = $1 AND user_id = $2`, [orderId, buyerId])) as {
+      matched: boolean;
+    }[];
     return { matched: rows.some((r) => r.matched), last4: id.last4, attemptsLeft: Math.max(0, DEVICE_TRIES - rows.filter((r) => !r.matched).length) };
   }
 
@@ -199,7 +254,12 @@ export class HandoverService {
       if (n >= MAX_HANDOVER_PHOTOS) throw new Problem('validation-failed', { errors: [{ field: 'file', reason: 'too-many' }] });
       const stored = await this.vault.store({ purpose: 'dispute_evidence', ownerId: userId, bytes: new Uint8Array(file.buffer) });
       try {
-        await m.query(`INSERT INTO delivery.handover_photos (order_id, seller_id, storage_key, sha256) VALUES ($1, $2, $3, decode($4, 'hex'))`, [orderId, userId, stored.key, stored.sha256]);
+        await m.query(`INSERT INTO delivery.handover_photos (order_id, seller_id, storage_key, sha256) VALUES ($1, $2, $3, decode($4, 'hex'))`, [
+          orderId,
+          userId,
+          stored.key,
+          stored.sha256,
+        ]);
       } catch (err) {
         await this.vault.erase(stored.key).catch(() => undefined);
         throw err;
@@ -222,7 +282,11 @@ export class HandoverService {
    * A suggested point, or a place of the parties' own: its name (plain text, 3 to 120 characters) and an optional pin
    * in Bangladesh (Decisions log, U4-03). Never both.
    */
-  async propose(userId: string, orderId: string, p: { pointId?: string; placeName?: string; placeLat?: number; placeLng?: number; meetAt: string; note?: string }): Promise<HandoverView> {
+  async propose(
+    userId: string,
+    orderId: string,
+    p: { pointId?: string; placeName?: string; placeLat?: number; placeLng?: number; meetAt: string; note?: string },
+  ): Promise<HandoverView> {
     await this.party(this.db.manager, orderId, userId);
     const note = p.note?.normalize('NFC').trim() || null;
     if (note && note.length > 200) throw new Problem('validation-failed', { errors: [{ field: 'note', reason: 'too-long' }] });
@@ -233,22 +297,36 @@ export class HandoverService {
     if (place && (place.length < 3 || place.length > 120)) errors.push({ field: 'placeName', reason: 'length' });
     if ((p.placeLat === undefined) !== (p.placeLng === undefined)) errors.push({ field: 'placeLat', reason: 'pin-needs-both' });
     if (p.pointId && p.placeLat !== undefined) errors.push({ field: 'placeLat', reason: 'pin-only-for-own-place' });
-    if (p.placeLat !== undefined && (p.placeLat < 20 || p.placeLat > 27 || p.placeLng! < 88 || p.placeLng! > 93)) errors.push({ field: 'placeLat', reason: 'outside-bangladesh' });
+    if (p.placeLat !== undefined && (p.placeLat < 20 || p.placeLat > 27 || p.placeLng! < 88 || p.placeLng! > 93))
+      errors.push({ field: 'placeLat', reason: 'outside-bangladesh' });
     if (errors.length) throw new Problem('validation-failed', { errors });
-    await this.db.query(
-      `SELECT delivery.propose_meetup($1, $2, $3, $4, $5, $6::interval, $7::interval, $8, round($9::numeric, 5), round($10::numeric, 5))`,
-      [orderId, userId, p.pointId ?? null, p.meetAt, note, MEETUP_LEAD, MEETUP_BUFFER, place, p.placeLat ?? null, p.placeLng ?? null],
-    ).catch(fromDeliveryDb);
+    await this.db
+      .query(`SELECT delivery.propose_meetup($1, $2, $3, $4, $5, $6::interval, $7::interval, $8, round($9::numeric, 5), round($10::numeric, 5))`, [
+        orderId,
+        userId,
+        p.pointId ?? null,
+        p.meetAt,
+        note,
+        MEETUP_LEAD,
+        MEETUP_BUFFER,
+        place,
+        p.placeLat ?? null,
+        p.placeLng ?? null,
+      ])
+      .catch(fromDeliveryDb);
     return this.view(userId, orderId);
   }
 
   /** accept or decline: the other party only; a proposal whose time has passed lapses instead (it is saved). */
   async respond(userId: string, orderId: string, proposalId: string, accept: boolean): Promise<HandoverView & { outcome: string }> {
     await this.party(this.db.manager, orderId, userId);
-    const [own] = (await this.db.query(`SELECT proposed_by FROM delivery.meetup_proposals WHERE id = $1 AND order_id = $2`, [proposalId, orderId])) as { proposed_by: string }[];
+    const [own] = (await this.db.query(`SELECT proposed_by FROM delivery.meetup_proposals WHERE id = $1 AND order_id = $2`, [proposalId, orderId])) as {
+      proposed_by: string;
+    }[];
     if (!own) throw new Problem('not-found');
     if (own.proposed_by === userId) throw new Problem('forbidden', { errors: [{ field: 'proposalId', reason: 'own-proposal' }] });
-    const [{ outcome }] = (await this.db.query(`SELECT delivery.respond_meetup($1, $2, $3)::text AS outcome`, [proposalId, userId, accept])
+    const [{ outcome }] = (await this.db
+      .query(`SELECT delivery.respond_meetup($1, $2, $3)::text AS outcome`, [proposalId, userId, accept])
       .catch(fromDeliveryDb)) as { outcome: string }[];
     return { ...(await this.view(userId, orderId)), outcome };
   }
@@ -258,10 +336,13 @@ export class HandoverService {
     await this.party(this.db.manager, orderId, userId);
     const res = (await this.db.query(
       `UPDATE delivery.meetup_proposals SET status = 'withdrawn', responded_at = now()
-        WHERE id = $1 AND order_id = $2 AND proposed_by = $3 AND status = 'proposed' RETURNING id`, [proposalId, orderId, userId],
+        WHERE id = $1 AND order_id = $2 AND proposed_by = $3 AND status = 'proposed' RETURNING id`,
+      [proposalId, orderId, userId],
     )) as unknown[];
     if (((Array.isArray(res[0]) ? res[0] : res) as unknown[]).length === 0) {
-      const [p] = (await this.db.query(`SELECT proposed_by FROM delivery.meetup_proposals WHERE id = $1 AND order_id = $2`, [proposalId, orderId])) as { proposed_by: string }[];
+      const [p] = (await this.db.query(`SELECT proposed_by FROM delivery.meetup_proposals WHERE id = $1 AND order_id = $2`, [proposalId, orderId])) as {
+        proposed_by: string;
+      }[];
       if (!p) throw new Problem('not-found');
       if (p.proposed_by !== userId) throw new Problem('forbidden', { errors: [{ field: 'proposalId', reason: 'not-your-proposal' }] });
       throw refusal('proposalId', 'proposal_closed');
@@ -284,11 +365,15 @@ export class HandoverService {
         throw facts.buyerId === userId ? new Problem('forbidden', { errors: [{ field: 'code', reason: 'seller-only' }] }) : new Problem('not-found');
       }
       if (facts.status !== 'paid' || facts.fulfilment !== 'self_pickup') throw refusal('handover', 'handover_closed');
-      const [h] = (await m.query(`SELECT code_version, wrong_entries FROM delivery.handovers WHERE order_id = $1 FOR UPDATE`, [orderId])) as { code_version: number; wrong_entries: number }[];
+      const [h] = (await m.query(`SELECT code_version, wrong_entries FROM delivery.handovers WHERE order_id = $1 FOR UPDATE`, [orderId])) as {
+        code_version: number;
+        wrong_entries: number;
+      }[];
       if (!h) throw new Problem('not-found');
       const correct = codeMatches(entered, deriveCode(this.config.secrets.handoverKey.reveal(), orderId, h.code_version));
-      const [{ r }] = (await m.query(`SELECT delivery.record_code_entry($1, $2, $3, $4) AS r`, [orderId, userId, correct, maxWrong])
-        .catch(fromDeliveryDb)) as { r: 'accepted' | 'wrong' | 'locked' }[];
+      const [{ r }] = (await m.query(`SELECT delivery.record_code_entry($1, $2, $3, $4) AS r`, [orderId, userId, correct, maxWrong]).catch(fromDeliveryDb)) as {
+        r: 'accepted' | 'wrong' | 'locked';
+      }[];
       if (r === 'locked') await announceNewIssues(m, orderId); // the code_locked issue (I-62; U4-04)
       if (r === 'accepted') {
         const at = this.clock.now();
@@ -316,13 +401,25 @@ export class HandoverService {
       // the lock's issue is settled by the same decision (section 9)
       await m.query(
         `UPDATE delivery.issues SET status = 'resolved', resolved_by = $2, resolved_at = now(), resolution = $3
-          WHERE order_id = $1 AND kind = 'code_locked' AND status = 'open'`, [orderId, staffId, `unlocked: ${why}`],
+          WHERE order_id = $1 AND kind = 'code_locked' AND status = 'open'`,
+        [orderId, staffId, `unlocked: ${why}`],
       );
-      await m.query(`INSERT INTO delivery.outbox (event_type, aggregate_id, payload) VALUES ('delivery.handover.unlocked', $1, $2)`,
-        [orderId, JSON.stringify({ orderId, codeVersion: v })]);
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: 'delivery.handover.unlocked', objectType: 'order', objectId: orderId, after: { codeVersion: v }, reason: why,
-      }, m);
+      await m.query(`INSERT INTO delivery.outbox (event_type, aggregate_id, payload) VALUES ('delivery.handover.unlocked', $1, $2)`, [
+        orderId,
+        JSON.stringify({ orderId, codeVersion: v }),
+      ]);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: 'delivery.handover.unlocked',
+          objectType: 'order',
+          objectId: orderId,
+          after: { codeVersion: v },
+          reason: why,
+        },
+        m,
+      );
     });
   }
 

@@ -39,7 +39,9 @@ export class AuctionStaffService {
     if (!/^\d{1,18}$/.test(bidId)) throw new Problem('not-found');
     const state = await this.db.transaction(async (m) => {
       const [b] = (await m.query(`SELECT auction_id, bidder_id, voided_at FROM auctions.bids WHERE id = $1`, [bidId])) as {
-        auction_id: string; bidder_id: string; voided_at: Date | null;
+        auction_id: string;
+        bidder_id: string;
+        voided_at: Date | null;
       }[];
       if (!b) throw new Problem('not-found');
       const before = await this.lockOpen(m, b.auction_id);
@@ -48,12 +50,24 @@ export class AuctionStaffService {
       await m.query(`SELECT auctions.recompute($1)`, [b.auction_id]);
       const [after] = (await m.query(`SELECT leader_id FROM auctions.auctions WHERE listing_id = $1`, [b.auction_id])) as { leader_id: string | null }[];
       await publish(m, 'auctions.bid.voided', b.auction_id, {
-        auctionId: b.auction_id, bidId, bidderId: b.bidder_id, previousLeader: before.leader_id, leader: after.leader_id,
+        auctionId: b.auction_id,
+        bidId,
+        bidderId: b.bidder_id,
+        previousLeader: before.leader_id,
+        leader: after.leader_id,
       });
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: 'auctions.bid.voided', objectType: 'auction', objectId: b.auction_id,
-        after: { bidId, bidderId: b.bidder_id }, reason,
-      }, m);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: 'auctions.bid.voided',
+          objectType: 'auction',
+          objectId: b.auction_id,
+          after: { bidId, bidderId: b.bidder_id },
+          reason,
+        },
+        m,
+      );
       return (await readAuctionState(m, b.auction_id))!;
     });
     this.broadcast(state, null);
@@ -68,7 +82,10 @@ export class AuctionStaffService {
     const reason = reasonOf(rawReason);
     const state = await this.db.transaction(async (m) => {
       const a = await this.lockOpen(m, auctionId);
-      const [l] = (await m.query(`SELECT status, item_kind FROM listings.listings WHERE id = $1 FOR UPDATE`, [auctionId])) as { status: string; item_kind: string }[];
+      const [l] = (await m.query(`SELECT status, item_kind FROM listings.listings WHERE id = $1 FOR UPDATE`, [auctionId])) as {
+        status: string;
+        item_kind: string;
+      }[];
       if (l.status !== 'active') throw new Problem('listing-state'); // a listing in review is removed instead (U3-08)
       await m.query(`UPDATE auctions.auctions SET status = 'cancelled', closed_at = now(), version = version + 1 WHERE listing_id = $1`, [auctionId]);
       await m.query(`UPDATE listings.listings SET status = 'cancelled' WHERE id = $1`, [auctionId]);
@@ -76,14 +93,23 @@ export class AuctionStaffService {
         `INSERT INTO listings.status_history (listing_id, from_status, to_status, actor_type, actor_id, reason) VALUES ($1, 'active', 'cancelled', 'staff', $2, $3)`,
         [auctionId, staffId, `cancelled by an operator: ${reason}`],
       );
-      const bidders = ((await m.query(`SELECT DISTINCT bidder_id FROM auctions.bids WHERE auction_id = $1`, [auctionId])) as { bidder_id: string }[])
-        .map((r) => r.bidder_id);
+      const bidders = ((await m.query(`SELECT DISTINCT bidder_id FROM auctions.bids WHERE auction_id = $1`, [auctionId])) as { bidder_id: string }[]).map(
+        (r) => r.bidder_id,
+      );
       await publish(m, 'auctions.auction.cancelled', auctionId, { auctionId, sellerId: a.seller_id, bidderIds: bidders, by: 'operator' });
       await publish(m, 'listings.listing.cancelled', auctionId, { listingId: auctionId, sellerId: a.seller_id, itemKind: l.item_kind });
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: 'auctions.auction.cancelled', objectType: 'auction', objectId: auctionId,
-        after: { bidders: bidders.length }, reason,
-      }, m);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: 'auctions.auction.cancelled',
+          objectType: 'auction',
+          objectId: auctionId,
+          after: { bidders: bidders.length },
+          reason,
+        },
+        m,
+      );
       return (await readAuctionState(m, auctionId))!;
     });
     this.broadcast(state, { auctionId, status: 'cancelled', finalPrice: null });
@@ -105,10 +131,17 @@ export class AuctionStaffService {
           GROUP BY ba.alias_no, b.bidder_id ORDER BY max(b.max_amount) DESC, ba.alias_no`,
         [auctionId],
       )) as { alias_no: number; bidder_id: string; maximum: string; bids: number; last_bid_at: Date }[];
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: 'auctions.maximums.viewed', objectType: 'auction', objectId: auctionId,
-        after: { bidders: rows.length },
-      }, m);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: 'auctions.maximums.viewed',
+          objectType: 'auction',
+          objectId: auctionId,
+          after: { bidders: rows.length },
+        },
+        m,
+      );
       return {
         auctionId,
         bidders: rows.map((r) => ({ alias: r.alias_no, bidderId: r.bidder_id, maximum: r.maximum, bids: r.bids, lastBidAt: r.last_bid_at.toISOString() })),
@@ -121,25 +154,36 @@ export class AuctionStaffService {
     const note = reasonOf(rawNote, 'note');
     if (!/^\d{1,18}$/.test(flagId)) throw new Problem('not-found');
     await this.db.transaction(async (m) => {
-      const res = (await m.query(
-        `UPDATE auctions.flags SET reviewed_at = now() WHERE id = $1 AND auction_id = $2 AND reviewed_at IS NULL RETURNING kind`, [flagId, auctionId],
-      )) as unknown[];
+      const res = (await m.query(`UPDATE auctions.flags SET reviewed_at = now() WHERE id = $1 AND auction_id = $2 AND reviewed_at IS NULL RETURNING kind`, [
+        flagId,
+        auctionId,
+      ])) as unknown[];
       const [row] = (Array.isArray(res[0]) ? res[0] : res) as { kind: string }[]; // TypeORM: [rows, count] for UPDATE
       if (!row) {
         const [exists] = (await m.query(`SELECT 1 FROM auctions.flags WHERE id = $1 AND auction_id = $2`, [flagId, auctionId])) as unknown[];
         throw exists ? new Problem('listing-state', { errors: [{ field: 'flag', reason: 'already-reviewed' }] }) : new Problem('not-found');
       }
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: 'auctions.flag.reviewed', objectType: 'auction', objectId: auctionId,
-        after: { flagId, kind: row.kind }, reason: note,
-      }, m);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: 'auctions.flag.reviewed',
+          objectType: 'auction',
+          objectId: auctionId,
+          after: { flagId, kind: row.kind },
+          reason: note,
+        },
+        m,
+      );
     });
   }
 
   /** The auction row, locked; an auction that is not open cannot be voided in or cancelled. */
   private async lockOpen(m: EntityManager, auctionId: string): Promise<{ seller_id: string; leader_id: string | null }> {
     const [a] = (await m.query(`SELECT seller_id, leader_id, status FROM auctions.auctions WHERE listing_id = $1 FOR UPDATE`, [auctionId])) as {
-      seller_id: string; leader_id: string | null; status: string;
+      seller_id: string;
+      leader_id: string | null;
+      status: string;
     }[];
     if (!a) throw new Problem('not-found');
     if (a.status !== 'open') throw new Problem('listing-state', { errors: [{ field: 'auction', reason: `auction-${a.status}` }] });

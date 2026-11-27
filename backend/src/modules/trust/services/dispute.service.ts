@@ -35,7 +35,11 @@ const PHYSICAL: readonly DisputeType[] = ['not_as_described', 'damaged', 'not_re
  */
 const AFTER_MEETUP_CODE: readonly DisputeType[] = ['not_as_described'];
 const typesFor = (itemKind: string, fulfilment: string | null, deliveryEventAt: string | null): readonly DisputeType[] =>
-  itemKind !== 'game_account' && fulfilment === 'self_pickup' && deliveryEventAt !== null ? AFTER_MEETUP_CODE : itemKind === 'game_account' ? GAME_BY_BUYER : PHYSICAL;
+  itemKind !== 'game_account' && fulfilment === 'self_pickup' && deliveryEventAt !== null
+    ? AFTER_MEETUP_CODE
+    : itemKind === 'game_account'
+      ? GAME_BY_BUYER
+      : PHYSICAL;
 /** The game-account types (FR-DSP-01); credentials_invalid is opened only by Unit 5. */
 const GAME: readonly DisputeType[] = ['credentials_invalid', 'seller_recovery', 'other'];
 const GAME_BY_BUYER: readonly DisputeType[] = ['seller_recovery', 'other'];
@@ -48,9 +52,24 @@ export const MAX_EVIDENCE_VIDEO_BYTES = 52_428_800; // a video: 50 MB, at most M
 export const MAX_EVIDENCE_VIDEOS = 2;
 
 interface DisputeRow {
-  id: string; order_id: string; buyer_id: string; seller_id: string; item_kind: string; type: DisputeType; description: string; status: string;
-  opened_at: Date; seller_due_at: Date; info_due_at: Date | null; review_started_at: Date | null; decision_target_at: Date | null;
-  outcome: string | null; item_refund: string | null; decision_reason: string | null; decided_at: Date | null; withdrawn_at: Date | null;
+  id: string;
+  order_id: string;
+  buyer_id: string;
+  seller_id: string;
+  item_kind: string;
+  type: DisputeType;
+  description: string;
+  status: string;
+  opened_at: Date;
+  seller_due_at: Date;
+  info_due_at: Date | null;
+  review_started_at: Date | null;
+  decision_target_at: Date | null;
+  outcome: string | null;
+  item_refund: string | null;
+  decision_reason: string | null;
+  decided_at: Date | null;
+  withdrawn_at: Date | null;
 }
 
 /** The database's refusals, as problems the parties can read. */
@@ -90,12 +109,19 @@ export class DisputeService implements DisputeCommands {
   async types(buyerId: string, orderId: string): Promise<{ types: DisputeType[]; openDisputeId: string | null }> {
     const o = await this.orders.getOrderForParty(orderId, buyerId); // not-found for a stranger
     if (o.role !== 'buyer') throw new Problem('not-found');
-    const [open] = (await this.db.query(`SELECT id FROM disputes.disputes WHERE order_id = $1 AND status NOT IN ('decided', 'withdrawn')`, [orderId])) as { id: string }[];
+    const [open] = (await this.db.query(`SELECT id FROM disputes.disputes WHERE order_id = $1 AND status NOT IN ('decided', 'withdrawn')`, [orderId])) as {
+      id: string;
+    }[];
     if (open) return { types: [], openDisputeId: open.id };
-    const withdrawn = new Set(((await this.db.query(`SELECT type FROM disputes.disputes WHERE order_id = $1 AND status = 'withdrawn'`, [orderId])) as { type: DisputeType }[]).map((r) => r.type));
+    const withdrawn = new Set(
+      ((await this.db.query(`SELECT type FROM disputes.disputes WHERE order_id = $1 AND status = 'withdrawn'`, [orderId])) as { type: DisputeType }[]).map(
+        (r) => r.type,
+      ),
+    );
     const allowed: DisputeType[] = [];
     const game = o.listing.itemKind === 'game_account';
-    for (const type of typesFor(o.listing.itemKind, o.fulfilment, o.deliveryEventAt)) if (!withdrawn.has(type) && (await this.windowOk(orderId, type, game))) allowed.push(type);
+    for (const type of typesFor(o.listing.itemKind, o.fulfilment, o.deliveryEventAt))
+      if (!withdrawn.has(type) && (await this.windowOk(orderId, type, game))) allowed.push(type);
     return { types: allowed, openDisputeId: null };
   }
 
@@ -109,12 +135,28 @@ export class DisputeService implements DisputeCommands {
       `SELECT d.id, d.type, d.status, d.opened_at, d.outcome, d.decided_at, d.withdrawn_at,
               (SELECT count(*)::int FROM disputes.messages m WHERE m.dispute_id = d.id AND m.user_id = $2
                   AND m.at > coalesce((SELECT r.seen_at FROM disputes.chat_reads r WHERE r.dispute_id = d.id AND r.user_id = $2), '-infinity')) AS unseen
-         FROM disputes.disputes d WHERE d.order_id = $1 ORDER BY d.opened_at DESC, d.id`, [orderId, userId],
-    )) as { id: string; type: DisputeType; status: string; opened_at: Date; outcome: string | null; decided_at: Date | null; withdrawn_at: Date | null; unseen: number }[];
+         FROM disputes.disputes d WHERE d.order_id = $1 ORDER BY d.opened_at DESC, d.id`,
+      [orderId, userId],
+    )) as {
+      id: string;
+      type: DisputeType;
+      status: string;
+      opened_at: Date;
+      outcome: string | null;
+      decided_at: Date | null;
+      withdrawn_at: Date | null;
+      unseen: number;
+    }[];
     return {
       items: rows.map((r) => ({
-        id: r.id, type: r.type, status: r.status, openedAt: r.opened_at.toISOString(), outcome: r.outcome,
-        decidedAt: r.decided_at?.toISOString() ?? null, withdrawnAt: r.withdrawn_at?.toISOString() ?? null, unseen: r.unseen,
+        id: r.id,
+        type: r.type,
+        status: r.status,
+        openedAt: r.opened_at.toISOString(),
+        outcome: r.outcome,
+        decidedAt: r.decided_at?.toISOString() ?? null,
+        withdrawnAt: r.withdrawn_at?.toISOString() ?? null,
+        unseen: r.unseen,
       })),
     };
   }
@@ -124,7 +166,8 @@ export class DisputeService implements DisputeCommands {
     const view = await this.orders.getOrderForParty(orderId, buyerId);
     if (view.role !== 'buyer') throw new Problem('not-found');
     // FR-GAM-14: "the credentials do not work" is the handover's own report (Unit 5), which also stops the takeover
-    if (d.type === 'credentials_invalid' && view.listing.itemKind === 'game_account') throw new Problem('validation-failed', { errors: [{ field: 'type', reason: 'use-the-handover-report' }] });
+    if (d.type === 'credentials_invalid' && view.listing.itemKind === 'game_account')
+      throw new Problem('validation-failed', { errors: [{ field: 'type', reason: 'use-the-handover-report' }] });
     const disputeId = await this.db.transaction((m) => this.open({ orderId, type: d.type, description: d.description, by: 'buyer' }, m, view));
     await this.afterOpen(disputeId, view);
     return { disputeId };
@@ -148,10 +191,19 @@ export class DisputeService implements DisputeCommands {
     const windowOk = facts.escrowState === 'held' && (await this.windowOk(o.orderId, o.type, game));
     const sellerWindow = (await this.params.current()).get<string>('CP-20');
     try {
-      const [{ id }] = (await tx.query(
-        `SELECT disputes.open($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::interval, $11) AS id`,
-        [o.orderId, facts.buyerId, facts.sellerId, facts.itemKind, o.type, description, view.itemPrice, view.escrow?.amountCollected ?? view.total, windowOk, sellerWindow, o.by],
-      )) as { id: string }[];
+      const [{ id }] = (await tx.query(`SELECT disputes.open($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::interval, $11) AS id`, [
+        o.orderId,
+        facts.buyerId,
+        facts.sellerId,
+        facts.itemKind,
+        o.type,
+        description,
+        view.itemPrice,
+        view.escrow?.amountCollected ?? view.total,
+        windowOk,
+        sellerWindow,
+        o.by,
+      ])) as { id: string }[];
       await this.escrow.freezeForDispute(o.orderId, id, tx); // FR-DSP-02: no automatic release from here
       if (o.by === 'system') {
         // a dispute the system opens (Unit 5, a game account) never runs afterOpen: the parties' chats get the same two messages inside this transaction
@@ -172,16 +224,39 @@ export class DisputeService implements DisputeCommands {
   async messages(viewer: Principal & { type: 'user' }, disputeId: string) {
     const d = await this.forParty(viewer.userId, disputeId);
     const role = d.buyer_id === viewer.userId ? 'buyer' : 'seller';
-    const own = (await this.db.query(`SELECT text, at FROM disputes.statements WHERE dispute_id = $1 AND party = $2`, [disputeId, role])) as { text: string | null; at: Date }[];
-    const files = (await this.db.query(`SELECT id, storage_key, mime, at FROM disputes.evidence WHERE dispute_id = $1 AND party = $2`, [disputeId, role])) as { id: string; storage_key: string | null; mime: string; at: Date }[];
-    const sent = (await this.db.query(`SELECT template, params, at FROM disputes.messages WHERE dispute_id = $1 AND user_id = $2`, [disputeId, viewer.userId])) as { template: string; params: Record<string, unknown>; at: Date }[];
-    const [seen] = (await this.db.query(`SELECT seen_at FROM disputes.chat_reads WHERE dispute_id = $1 AND user_id = $2`, [disputeId, viewer.userId])) as { seen_at: Date }[];
+    const own = (await this.db.query(`SELECT text, at FROM disputes.statements WHERE dispute_id = $1 AND party = $2`, [disputeId, role])) as {
+      text: string | null;
+      at: Date;
+    }[];
+    const files = (await this.db.query(`SELECT id, storage_key, mime, at FROM disputes.evidence WHERE dispute_id = $1 AND party = $2`, [disputeId, role])) as {
+      id: string;
+      storage_key: string | null;
+      mime: string;
+      at: Date;
+    }[];
+    const sent = (await this.db.query(`SELECT template, params, at FROM disputes.messages WHERE dispute_id = $1 AND user_id = $2`, [
+      disputeId,
+      viewer.userId,
+    ])) as { template: string; params: Record<string, unknown>; at: Date }[];
+    const [seen] = (await this.db.query(`SELECT seen_at FROM disputes.chat_reads WHERE dispute_id = $1 AND user_id = $2`, [disputeId, viewer.userId])) as {
+      seen_at: Date;
+    }[];
     const items = [
       ...own.map((s) => ({ from: 'you' as const, text: s.text, at: s.at.toISOString() })),
-      ...(await Promise.all(files.map(async (f) => ({
-        from: 'you' as const, file: { id: f.id, mime: f.mime, link: f.storage_key ? await this.vault.signedLink(f.storage_key, viewer) : null }, at: f.at.toISOString(),
-      })))),
-      ...sent.map((m) => ({ from: 'trustbazaar' as const, template: m.template, params: m.params, at: m.at.toISOString(), unseen: !seen || m.at > seen.seen_at })),
+      ...(await Promise.all(
+        files.map(async (f) => ({
+          from: 'you' as const,
+          file: { id: f.id, mime: f.mime, link: f.storage_key ? await this.vault.signedLink(f.storage_key, viewer) : null },
+          at: f.at.toISOString(),
+        })),
+      )),
+      ...sent.map((m) => ({
+        from: 'trustbazaar' as const,
+        template: m.template,
+        params: m.params,
+        at: m.at.toISOString(),
+        unseen: !seen || m.at > seen.seen_at,
+      })),
     ].sort((a, b) => a.at.localeCompare(b.at));
     return { role, status: d.status, items };
   }
@@ -190,7 +265,8 @@ export class DisputeService implements DisputeCommands {
   async markSeen(userId: string, disputeId: string): Promise<{ seenAt: string }> {
     await this.forParty(userId, disputeId);
     const [row] = (await this.db.query(
-      `INSERT INTO disputes.chat_reads (dispute_id, user_id) VALUES ($1, $2) ON CONFLICT (dispute_id, user_id) DO UPDATE SET seen_at = now() RETURNING seen_at`, [disputeId, userId],
+      `INSERT INTO disputes.chat_reads (dispute_id, user_id) VALUES ($1, $2) ON CONFLICT (dispute_id, user_id) DO UPDATE SET seen_at = now() RETURNING seen_at`,
+      [disputeId, userId],
     )) as { seen_at: Date }[];
     return { seenAt: row.seen_at.toISOString() };
   }
@@ -200,9 +276,13 @@ export class DisputeService implements DisputeCommands {
     const d = await this.forParty(viewer.userId, disputeId);
     const role = d.buyer_id === viewer.userId ? 'buyer' : 'seller';
     // the parties never see each other's words (U10-23, Decisions log): a party sees its own statements only; TrustBazaar's messages are in the chat
-    const statements = (await this.db.query(`SELECT party, text, at FROM disputes.statements WHERE dispute_id = $1 AND party = $2 ORDER BY id`, [disputeId, role])) as { party: string; text: string | null; at: Date }[];
+    const statements = (await this.db.query(`SELECT party, text, at FROM disputes.statements WHERE dispute_id = $1 AND party = $2 ORDER BY id`, [
+      disputeId,
+      role,
+    ])) as { party: string; text: string | null; at: Date }[];
     const evidence = (await this.db.query(
-      `SELECT id, storage_key, mime, byte_size, at FROM disputes.evidence WHERE dispute_id = $1 AND party = $2 ORDER BY at`, [disputeId, role],
+      `SELECT id, storage_key, mime, byte_size, at FROM disputes.evidence WHERE dispute_id = $1 AND party = $2 ORDER BY at`,
+      [disputeId, role],
     )) as { id: string; storage_key: string | null; mime: string; byte_size: number; at: Date }[];
     const iso = (x: Date | null) => (x ? x.toISOString() : null);
     // U10-23 (FR-TNS-10): the seller's step while the item is on its way back: a meetup return is recorded by the seller, after the identifier check if the item has one
@@ -211,20 +291,38 @@ export class DisputeService implements DisputeCommands {
       const o = await this.orders.getOrderForParty(d.order_id, viewer.userId);
       const dev = await this.orders.deviceIdentifier(d.order_id);
       const checks = (await this.db.query(`SELECT matched FROM disputes.return_checks WHERE dispute_id = $1`, [disputeId])) as { matched: boolean }[];
-      returnStep = { manual: o.fulfilment === 'self_pickup', last4: dev?.last4 ?? null, check: checks.some((c) => c.matched) ? 'matched' : checks.length > 0 ? 'mismatch' : 'none' };
+      returnStep = {
+        manual: o.fulfilment === 'self_pickup',
+        last4: dev?.last4 ?? null,
+        check: checks.some((c) => c.matched) ? 'matched' : checks.length > 0 ? 'mismatch' : 'none',
+      };
     }
     return {
       returnStep,
-      id: d.id, orderId: d.order_id, role, type: d.type, status: d.status, description: role === 'buyer' ? d.description : null,
-      openedAt: d.opened_at.toISOString(), sellerDueAt: d.seller_due_at.toISOString(), infoDueAt: iso(d.info_due_at),
-      reviewStartedAt: iso(d.review_started_at), decisionTargetAt: iso(d.decision_target_at),
+      id: d.id,
+      orderId: d.order_id,
+      role,
+      type: d.type,
+      status: d.status,
+      description: role === 'buyer' ? d.description : null,
+      openedAt: d.opened_at.toISOString(),
+      sellerDueAt: d.seller_due_at.toISOString(),
+      infoDueAt: iso(d.info_due_at),
+      reviewStartedAt: iso(d.review_started_at),
+      decisionTargetAt: iso(d.decision_target_at),
       outcome: d.outcome ? { kind: d.outcome, itemRefund: d.item_refund, reason: d.decision_reason, decidedAt: iso(d.decided_at) } : null,
       withdrawnAt: iso(d.withdrawn_at),
       statements: statements.map((s) => ({ party: s.party, text: s.text, at: s.at.toISOString() })),
-      evidence: await Promise.all(evidence.map(async (e) => ({
-        // a purged file (I-63) stays listed, without a link
-        id: e.id, mime: e.mime, size: e.byte_size, at: e.at.toISOString(), link: e.storage_key ? await this.vault.signedLink(e.storage_key, viewer) : null,
-      }))),
+      evidence: await Promise.all(
+        evidence.map(async (e) => ({
+          // a purged file (I-63) stays listed, without a link
+          id: e.id,
+          mime: e.mime,
+          size: e.byte_size,
+          at: e.at.toISOString(),
+          link: e.storage_key ? await this.vault.signedLink(e.storage_key, viewer) : null,
+        })),
+      ),
     };
   }
 
@@ -254,7 +352,8 @@ export class DisputeService implements DisputeCommands {
   async evidence(userId: string, disputeId: string, file: { buffer: Buffer; mimetype: string; size: number }): Promise<{ evidenceId: string }> {
     const d = await this.forParty(userId, disputeId);
     const video = (EVIDENCE_VIDEO_MIME as readonly string[]).includes(file.mimetype);
-    if (!video && !(EVIDENCE_MIME as readonly string[]).includes(file.mimetype)) throw new Problem('validation-failed', { errors: [{ field: 'file', reason: 'type' }] });
+    if (!video && !(EVIDENCE_MIME as readonly string[]).includes(file.mimetype))
+      throw new Problem('validation-failed', { errors: [{ field: 'file', reason: 'type' }] });
     if (!video && file.size > MAX_EVIDENCE_BYTES) throw new Problem('validation-failed', { errors: [{ field: 'file', reason: 'size' }] });
     if (!LIVE.includes(d.status)) throw new Problem('validation-failed', { errors: [{ field: 'dispute', reason: 'closed' }] });
     const party = d.seller_id === userId ? 'seller' : 'buyer';
@@ -262,7 +361,10 @@ export class DisputeService implements DisputeCommands {
     return this.db.transaction(async (m) => {
       await m.query(`SELECT 1 FROM disputes.disputes WHERE id = $1 FOR UPDATE`, [disputeId]);
       if (video) {
-        const [{ n }] = (await m.query(`SELECT count(*)::int AS n FROM disputes.evidence WHERE dispute_id = $1 AND party = $2 AND mime LIKE 'video/%'`, [disputeId, party])) as { n: number }[];
+        const [{ n }] = (await m.query(`SELECT count(*)::int AS n FROM disputes.evidence WHERE dispute_id = $1 AND party = $2 AND mime LIKE 'video/%'`, [
+          disputeId,
+          party,
+        ])) as { n: number }[];
         if (n >= MAX_EVIDENCE_VIDEOS) throw new Problem('validation-failed', { errors: [{ field: 'file', reason: 'too_many_videos' }] });
       }
       const stored = await this.vault.store({ purpose: video ? 'dispute_video' : 'dispute_evidence', ownerId: userId, bytes: new Uint8Array(file.buffer) });
@@ -314,7 +416,10 @@ export class DisputeService implements DisputeCommands {
       const [{ started }] = (await this.db.query(`SELECT disputes.seller_window_ended($1, $2::interval) AS started`, [id, target])) as { started: boolean }[];
       if (started) {
         n++;
-        const [row] = (await this.db.query(`SELECT buyer_id, seller_id FROM disputes.disputes WHERE id = $1`, [id])) as { buyer_id: string; seller_id: string }[];
+        const [row] = (await this.db.query(`SELECT buyer_id, seller_id FROM disputes.disputes WHERE id = $1`, [id])) as {
+          buyer_id: string;
+          seller_id: string;
+        }[];
         for (const user of [row.buyer_id, row.seller_id]) await recordMessage(this.db, id, user, 'dispute.review_started', {}, `dispute:${id}:review-started`);
       }
     }
@@ -335,7 +440,8 @@ export class DisputeService implements DisputeCommands {
   /** After the opening's commit: the thread is held (I-40) and both parties told (FR-DSP-03). */
   private async afterOpen(disputeId: string, view: OrderView): Promise<void> {
     const thread = await this.chat.threadFor(view.listing.id, view.buyerId);
-    if (thread) await this.chat.hold(thread, 'dispute', disputeId).catch((err: Error) => this.log.warn(`holding the thread of dispute ${disputeId}: ${err.message}`));
+    if (thread)
+      await this.chat.hold(thread, 'dispute', disputeId).catch((err: Error) => this.log.warn(`holding the thread of dispute ${disputeId}: ${err.message}`));
     const hours = Math.round((await this.params.current()).ms('CP-20') / 3_600_000);
     await this.tell(view.sellerId, 'dispute.opened_seller', { listing_title: view.listing.title, hours }, `dispute:${disputeId}:opened`);
     await this.tell(view.buyerId, 'dispute.opened_buyer', { listing_title: view.listing.title }, `dispute:${disputeId}:opened`);
@@ -343,13 +449,24 @@ export class DisputeService implements DisputeCommands {
 
   private async releaseThread(view: OrderView, disputeId: string): Promise<void> {
     const thread = await this.chat.threadFor(view.listing.id, view.buyerId);
-    if (thread) await this.chat.release(thread, 'dispute', disputeId).catch((err: Error) => this.log.warn(`releasing the thread of dispute ${disputeId}: ${err.message}`));
+    if (thread)
+      await this.chat
+        .release(thread, 'dispute', disputeId)
+        .catch((err: Error) => this.log.warn(`releasing the thread of dispute ${disputeId}: ${err.message}`));
   }
 
-  private async tell(userId: string, template: string, params: Record<string, string | number>, key: string, chatExtra: Record<string, string | number> = {}): Promise<void> {
+  private async tell(
+    userId: string,
+    template: string,
+    params: Record<string, string | number>,
+    key: string,
+    chatExtra: Record<string, string | number> = {},
+  ): Promise<void> {
     const dispute = disputeOfKey(key);
     if (dispute) await recordMessage(this.db, dispute, userId, template, { ...params, ...chatExtra }, key);
-    await this.notifier.notify(userId, template, params, key, dispute ? { type: 'dispute', id: dispute } : undefined).catch((err: Error) => this.log.warn(`notice ${template} to ${userId}: ${err.message}`));
+    await this.notifier
+      .notify(userId, template, params, key, dispute ? { type: 'dispute', id: dispute } : undefined)
+      .catch((err: Error) => this.log.warn(`notice ${template} to ${userId}: ${err.message}`));
   }
 
   /** The dispute, for one of its parties only (SEC-SDL-09: not-found for anyone else). */

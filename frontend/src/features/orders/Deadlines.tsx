@@ -9,12 +9,17 @@ import type { Lang } from '../../shared/language/lang';
 import { ms, type HandoverView, type OrderView } from './model';
 import styles from './orders.module.css';
 
-export interface Deadline { key: string; at: number }
+export interface Deadline {
+  key: string;
+  at: number;
+}
 
 /** The deadlines that apply now, in time order. Pure, for the tests. */
 export function deadlinesOf(o: OrderView, h: HandoverView | null): Deadline[] {
   const out: Deadline[] = [];
-  const add = (key: string, at: number | null) => { if (at !== null) out.push({ key, at }); };
+  const add = (key: string, at: number | null) => {
+    if (at !== null) out.push({ key, at });
+  };
   if (o.status === 'awaiting_payment') add('deadline.payment', ms(o.paymentDueAt));
   if (o.status === 'paid' && o.escrow?.state === 'held') {
     if (o.deliveryEventAt === null) {
@@ -36,12 +41,16 @@ export function Deadlines({ o, h, t, lang }: { o: OrderView; h: HandoverView | n
   // every deadline is a ruled cell, label over value (in the Meetup handover it is the first row of its grid; otherwise the head of the rail)
   return (
     <section aria-labelledby="deadlines-title" className={styles.deadlineWrap}>
-      <h2 id="deadlines-title" className={styles.srOnly}>{t('deadlines.title')}</h2>
+      <h2 id="deadlines-title" className={styles.srOnly}>
+        {t('deadlines.title')}
+      </h2>
       <dl className={styles.deadlineGrid}>
         {list.map((d) => (
           <div key={d.key} className={soon(d) ? styles.urgent : undefined}>
             <dt>{t(d.key)}</dt>
-            <dd><Moment at={d.at} now={now} t={t} lang={lang} /></dd>
+            <dd>
+              <Moment at={d.at} now={now} t={t} lang={lang} />
+            </dd>
           </div>
         ))}
       </dl>

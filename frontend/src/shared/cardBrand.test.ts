@@ -5,7 +5,7 @@ import { cardLooksComplete, detectBrand, formatCardNumber, formatExpiry, maskWal
 // FR-PAY-01: the payment sheet of the simulated provider accepts any card details, but tells the buyer which card the number looks like and shapes the
 // fields to it. Nothing here validates a real card.
 
-describe('the payment sheet\'s card fields', () => {
+describe("the payment sheet's card fields", () => {
   it('FR-PAY-01 recognise Visa, Mastercard, American Express, Discover, Diners, JCB, UnionPay, RuPay and Maestro from the first digits', () => {
     const at = (n: string) => detectBrand(n).id;
     expect(at('4242424242424242')).toBe('visa');
@@ -26,7 +26,7 @@ describe('the payment sheet\'s card fields', () => {
     expect(formatCardNumber('4242 abc 4242')).toBe('4242 4242');
     expect(formatExpiry('1229')).toBe('12/29');
     expect(cardLooksComplete('4242 4242 4242 4242', '12/29', '123')).toBe(true);
-    expect(cardLooksComplete('3782 822463 10005', '01/30', '1234')).toBe(true);        // American Express: four digits
+    expect(cardLooksComplete('3782 822463 10005', '01/30', '1234')).toBe(true); // American Express: four digits
     expect(cardLooksComplete('3782 822463 10005', '01/30', '123')).toBe(false);
     expect(cardLooksComplete('4242 4242', '12/29', '123')).toBe(false);
     expect(cardLooksComplete('4242 4242 4242 4242', '13/29', '123')).toBe(false);

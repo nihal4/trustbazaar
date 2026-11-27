@@ -10,7 +10,8 @@ describe('ClosureService', () => {
     const m = {
       query: jest.fn(async (sql: string) => {
         if (sql.includes('FROM identity.kyc_submissions')) return o.pendingKyc ? [{}] : [];
-        if (sql.includes('FOR UPDATE')) return o.status === undefined ? [{ account_status: 'active' }] : o.status === 'none' ? [] : [{ account_status: o.status }];
+        if (sql.includes('FOR UPDATE'))
+          return o.status === undefined ? [{ account_status: 'active' }] : o.status === 'none' ? [] : [{ account_status: o.status }];
         if (sql.includes('RETURNING erase_after')) return [[{ erase_after: new Date('2026-12-17T00:00:00Z') }], 1];
         if (sql.includes('erase_user')) return o.erased ?? [];
         if (sql.includes('erase_rejected_kyc')) return [{ storage_key: 'r1' }];
@@ -22,7 +23,11 @@ describe('ClosureService', () => {
     const db = { manager: m, query: m.query, transaction: async (cb: (x: typeof m) => unknown) => cb(m) };
     const sessions = { endAllIn: jest.fn() };
     const audit = { record: jest.fn() };
-    const vault = { erase: jest.fn(async (_p: string, k: string) => { if (k === 'bad') throw new Error('disk'); }) };
+    const vault = {
+      erase: jest.fn(async (_p: string, k: string) => {
+        if (k === 'bad') throw new Error('disk');
+      }),
+    };
     const params = { current: async () => ({ get: () => '30 days' }) };
     const svc = new ClosureService(db as never, sessions as never, audit as never, vault as never, params as never);
     return { svc, m, sessions, audit, vault };
@@ -44,7 +49,11 @@ describe('ClosureService', () => {
     expect(s.m.query).toHaveBeenCalledWith(expect.stringContaining("account_status = 'closed'"), ['U', '30 days']);
     expect(s.sessions.endAllIn).toHaveBeenCalledWith(s.m, 'U', null, 'closed', CTX);
     expect(s.audit.record).toHaveBeenCalledWith(s.m, expect.objectContaining({ action: 'identity.account.closed', sourceIp: '203.0.113.1' }));
-    expect(outbox).toHaveBeenCalledWith({ eventType: 'identity.account.closed', aggregateId: 'U', payload: { userId: 'U', eraseAfter: '2026-12-17T00:00:00.000Z' } });
+    expect(outbox).toHaveBeenCalledWith({
+      eventType: 'identity.account.closed',
+      aggregateId: 'U',
+      payload: { userId: 'U', eraseAfter: '2026-12-17T00:00:00.000Z' },
+    });
     await expect(setup({ status: 'closed' }).svc.close('U', CTX)).rejects.toThrow(Problem);
     await expect(setup({ status: 'none' }).svc.close('U', CTX)).rejects.toThrow(Problem);
   });

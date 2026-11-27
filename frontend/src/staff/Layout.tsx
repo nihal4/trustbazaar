@@ -26,43 +26,66 @@ export function Component() {
   const queryClient = useQueryClient();
   const signOut = useMutation({
     mutationFn: () => api.post('/staff/auth/signout', {}),
-    onSettled: () => { queryClient.clear(); void navigate('/staff/signin', { replace: true }); },
+    onSettled: () => {
+      queryClient.clear();
+      void navigate('/staff/signin', { replace: true });
+    },
   });
   if (me.isPending) return <p role="status">{t('shell.loading')}</p>;
-  if (me.isError) return isApiError(me.error, 401) ? <p role="status">{t('shell.loading')}</p> : <FormMessage kind="error">{errorText(me.error, t, lang)}</FormMessage>;
+  if (me.isError)
+    return isApiError(me.error, 401) ? <p role="status">{t('shell.loading')}</p> : <FormMessage kind="error">{errorText(me.error, t, lang)}</FormMessage>;
   const s = me.data;
   const operator = s.role === 'operator';
   return (
     <div className={styles.console}>
       <aside className={styles.side}>
-        <p className={styles.who}><strong>{s.displayName}</strong><span>{t(`staff.role.${s.role}`)}</span></p>
+        <p className={styles.who}>
+          <strong>{s.displayName}</strong>
+          <span>{t(`staff.role.${s.role}`)}</span>
+        </p>
         <nav aria-label={t('staff.nav')}>
           {operator && (
             <>
               <QueueLinks t={t} lang={lang} />
               <p className={styles.group}>{t('staff.nav.more')}</p>
               <ul className={styles.nav}>
-                <li><NavLink to="/staff/approvals">{t('staff.nav.approvals')}</NavLink></li>
-                <li><NavLink to="/staff/terms">{t('staff.nav.terms')}</NavLink></li>
+                <li>
+                  <NavLink to="/staff/approvals">{t('staff.nav.approvals')}</NavLink>
+                </li>
+                <li>
+                  <NavLink to="/staff/terms">{t('staff.nav.terms')}</NavLink>
+                </li>
               </ul>
             </>
           )}
           {!operator && (
             <>
               <ul className={styles.nav}>
-                <li><NavLink to="/staff/approvals">{t('staff.nav.approvals')}</NavLink></li>
+                <li>
+                  <NavLink to="/staff/approvals">{t('staff.nav.approvals')}</NavLink>
+                </li>
               </ul>
               <p className={styles.group}>{t('staff.nav.administration')}</p>
               <ul className={styles.nav}>
-                <li><NavLink to="/admin/config">{t('staff.nav.config')}</NavLink></li>
-                <li><NavLink to="/admin/staff">{t('staff.nav.staff')}</NavLink></li>
-                <li><NavLink to="/admin/reference">{t('staff.nav.reference')}</NavLink></li>
-                <li><NavLink to="/admin/audit">{t('staff.nav.audit')}</NavLink></li>
+                <li>
+                  <NavLink to="/admin/config">{t('staff.nav.config')}</NavLink>
+                </li>
+                <li>
+                  <NavLink to="/admin/staff">{t('staff.nav.staff')}</NavLink>
+                </li>
+                <li>
+                  <NavLink to="/admin/reference">{t('staff.nav.reference')}</NavLink>
+                </li>
+                <li>
+                  <NavLink to="/admin/audit">{t('staff.nav.audit')}</NavLink>
+                </li>
               </ul>
             </>
           )}
         </nav>
-        <button type="button" className={styles.signOut} disabled={signOut.isPending} onClick={() => signOut.mutate()}>{t('staff.sign_out')}</button>
+        <button type="button" className={styles.signOut} disabled={signOut.isPending} onClick={() => signOut.mutate()}>
+          {t('staff.sign_out')}
+        </button>
       </aside>
       <div className={styles.content}>
         {s.session && <SessionTimer session={s.session} />}
@@ -95,7 +118,8 @@ function QueueLinks({ t, lang }: { t: T; lang: Lang }) {
               <span>{t(`staff.queue.${q}`)}</span>
               {n !== undefined && n > 0 && (
                 <span className={styles.count}>
-                  {toLocalDigits(String(n), lang)}{n >= QUEUE_LIMIT ? '+' : ''}
+                  {toLocalDigits(String(n), lang)}
+                  {n >= QUEUE_LIMIT ? '+' : ''}
                   <span className={styles.visuallyHidden}>{t('staff.nav.waiting')}</span>
                 </span>
               )}

@@ -12,15 +12,6 @@ import { TrustModule } from './modules/trust/trust.module';
 // One NestJS application: the kernel first, then the seven unit modules in unit order
 // (BUILDING.md section 3; docs/design/09_integration.pdf, section 2).
 @Module({
-  imports: [
-    KernelModule,
-    IdentityModule,
-    OrdersModule,
-    ListingsModule,
-    DeliveryModule,
-    GameAccountsModule,
-    ChatModule,
-    TrustModule,
-  ],
+  imports: [KernelModule, IdentityModule, OrdersModule, ListingsModule, DeliveryModule, GameAccountsModule, ChatModule, TrustModule],
 })
 export class AppModule {}

@@ -4,7 +4,15 @@ import { CLOCK, Clock } from '../../../kernel/clock';
 import { CONFIG_PORT, ConfigPort } from '../../../kernel/config-port';
 import { Problem } from '../../../kernel/http/problems';
 import {
-  AUDIT_SERVICE, AuditServicePort, CallContext, IDENTITY_COMMANDS, IdentityCommands, IDENTITY_QUERY, IdentityQuery, STAFF_QUERY, StaffQuery,
+  AUDIT_SERVICE,
+  AuditServicePort,
+  CallContext,
+  IDENTITY_COMMANDS,
+  IdentityCommands,
+  IDENTITY_QUERY,
+  IdentityQuery,
+  STAFF_QUERY,
+  StaffQuery,
 } from '../../identity/ports';
 import type { SanctionKind } from '../db/enums';
 import type { Restrictions, SanctionPort } from '../ports';
@@ -24,7 +32,12 @@ import type { Restrictions, SanctionPort } from '../ports';
 const SUSPENSIONS: readonly SanctionKind[] = ['selling_suspended', 'buying_suspended', 'account_suspended'];
 export type RelatedType = 'report' | 'dispute' | 'signal';
 
-interface SanctionRow { id: string; user_id: string; kind: SanctionKind; lifted_at: Date | null }
+interface SanctionRow {
+  id: string;
+  user_id: string;
+  kind: SanctionKind;
+  lifted_at: Date | null;
+}
 
 @Injectable()
 export class SanctionService implements SanctionPort {
@@ -40,13 +53,18 @@ export class SanctionService implements SanctionPort {
 
   /** SanctionPort (Unit 1's assertCanTransact and @Verified, I-43). */
   async restrictions(userId: string): Promise<Restrictions> {
-    const [r] = (await this.db.query(`SELECT can_sell, can_buy_bid, fraud_hold FROM trust.restrictions($1)`, [userId])) as { can_sell: boolean; can_buy_bid: boolean; fraud_hold: boolean }[];
+    const [r] = (await this.db.query(`SELECT can_sell, can_buy_bid, fraud_hold FROM trust.restrictions($1)`, [userId])) as {
+      can_sell: boolean;
+      can_buy_bid: boolean;
+      fraud_hold: boolean;
+    }[];
     return { canSell: r.can_sell, canBuyBid: r.can_buy_bid, fraudHold: r.fraud_hold };
   }
 
   /** POST /staff/users/{id}/sanctions (FR-TNS-03). */
   async apply(
-    staffId: string, userId: string,
+    staffId: string,
+    userId: string,
     a: { kind: SanctionKind; reason: string; endsAt?: Date | null; fraud?: boolean; related?: { type: RelatedType; id: string } },
     ctx: CallContext = {},
   ): Promise<{ sanctionId: string }> {
@@ -67,11 +85,29 @@ export class SanctionService implements SanctionPort {
         [userId, a.kind, reason, fraud, endsAt, staffId, a.related?.type ?? null, a.related?.id ?? null],
       )) as { id: string }[];
       if (a.kind === 'account_suspended') await this.identity.suspendAccount(userId, reason, staffId, { fraud, ctx, tx: m, sanctionId: id });
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: 'trust.sanction.applied', objectType: 'user', objectId: userId,
-        after: { sanctionId: id, kind: a.kind, fraud, endsAt: endsAt?.toISOString() ?? null }, reason, sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null,
-      }, m);
-      await this.publish(m, 'trust.sanction.applied', userId, { userId, sanctionId: id, kind: a.kind, reason, fraud, endsAt: endsAt?.toISOString() ?? null, automatic: false });
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: 'trust.sanction.applied',
+          objectType: 'user',
+          objectId: userId,
+          after: { sanctionId: id, kind: a.kind, fraud, endsAt: endsAt?.toISOString() ?? null },
+          reason,
+          sourceIp: ctx.ip ?? null,
+          correlationId: ctx.correlationId ?? null,
+        },
+        m,
+      );
+      await this.publish(m, 'trust.sanction.applied', userId, {
+        userId,
+        sanctionId: id,
+        kind: a.kind,
+        reason,
+        fraud,
+        endsAt: endsAt?.toISOString() ?? null,
+        automatic: false,
+      });
       return { sanctionId: id };
     });
   }
@@ -80,10 +116,19 @@ export class SanctionService implements SanctionPort {
    * DELETE /staff/users/{id}/sanctions: lifts a live suspension with a reason. An account suspension is not lifted
    * here: four-eyes approval of Unit 1's account.reinstate is proposed, and the lift follows the reinstatement.
    */
-  async lift(staffId: string, userId: string, sanctionId: string, liftReason: string, ctx: CallContext = {}): Promise<{ sanctionId: string; status: 'lifted' | 'proposed'; approvalId?: string }> {
+  async lift(
+    staffId: string,
+    userId: string,
+    sanctionId: string,
+    liftReason: string,
+    ctx: CallContext = {},
+  ): Promise<{ sanctionId: string; status: 'lifted' | 'proposed'; approvalId?: string }> {
     const reason = liftReason.normalize('NFC').trim();
     if (reason.length < 10) throw new Problem('validation-failed', { errors: [{ field: 'reason', reason: 'too-short' }] });
-    const [s] = (await this.db.query(`SELECT id, user_id, kind, lifted_at FROM trust.sanctions WHERE id = $1 AND user_id = $2`, [sanctionId, userId])) as SanctionRow[];
+    const [s] = (await this.db.query(`SELECT id, user_id, kind, lifted_at FROM trust.sanctions WHERE id = $1 AND user_id = $2`, [
+      sanctionId,
+      userId,
+    ])) as SanctionRow[];
     if (!s || s.lifted_at) throw new Problem('not-found');
     if (!SUSPENSIONS.includes(s.kind)) throw new Problem('validation-failed', { errors: [{ field: 'sanctionId', reason: 'not-liftable' }] }); // a warning is a record
     await this.staff.assertNoConflict(staffId, [userId]);
@@ -93,13 +138,24 @@ export class SanctionService implements SanctionPort {
     }
     await this.db.transaction(async (m) => {
       const rows = (await m.query(
-        `UPDATE trust.sanctions SET lifted_at = now(), lifted_by = $2, lift_reason = $3 WHERE id = $1 AND lifted_at IS NULL RETURNING id`, [sanctionId, staffId, reason],
+        `UPDATE trust.sanctions SET lifted_at = now(), lifted_by = $2, lift_reason = $3 WHERE id = $1 AND lifted_at IS NULL RETURNING id`,
+        [sanctionId, staffId, reason],
       )) as unknown[];
       if ((Array.isArray(rows[0]) ? rows[0] : rows).length === 0) throw new Problem('not-found'); // lifted meanwhile
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: 'trust.sanction.lifted', objectType: 'user', objectId: userId,
-        after: { sanctionId, kind: s.kind }, reason, sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null,
-      }, m);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: 'trust.sanction.lifted',
+          objectType: 'user',
+          objectId: userId,
+          after: { sanctionId, kind: s.kind },
+          reason,
+          sourceIp: ctx.ip ?? null,
+          correlationId: ctx.correlationId ?? null,
+        },
+        m,
+      );
       await this.publish(m, 'trust.sanction.lifted', userId, { userId, sanctionId, kind: s.kind });
     });
     return { sanctionId, status: 'lifted' };
@@ -124,9 +180,13 @@ export class SanctionService implements SanctionPort {
   /** FR-TNS-04: a strike, once per order and reason; at CP-47 strikes in its window, selling is suspended (once). */
   async strike(sellerId: string, reason: 'unilateral_cancel' | 'missed_deadline' | 'dispute_lost', orderId: string): Promise<boolean> {
     const cp = (await this.params.current()).get<{ strikes: number; window: string }>('CP-47');
-    const [{ suspended }] = (await this.db.query(
-      `SELECT trust.record_strike($1, $2, $3, $4::interval, $5) AS suspended`, [sellerId, reason, orderId, cp.window, cp.strikes],
-    )) as { suspended: boolean }[];
+    const [{ suspended }] = (await this.db.query(`SELECT trust.record_strike($1, $2, $3, $4::interval, $5) AS suspended`, [
+      sellerId,
+      reason,
+      orderId,
+      cp.window,
+      cp.strikes,
+    ])) as { suspended: boolean }[];
     return suspended;
   }
 

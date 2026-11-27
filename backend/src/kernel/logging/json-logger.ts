@@ -12,7 +12,12 @@ import { redact } from './redact';
 
 const ORDER = ['error', 'warn', 'info', 'debug'] as const;
 const LEVEL: Record<NestLevel, 'fatal' | 'error' | 'warn' | 'info' | 'debug'> = {
-  fatal: 'fatal', error: 'error', warn: 'warn', log: 'info', debug: 'debug', verbose: 'debug',
+  fatal: 'fatal',
+  error: 'error',
+  warn: 'warn',
+  log: 'info',
+  debug: 'debug',
+  verbose: 'debug',
 };
 
 export type LogLine = { time: string; level: string; module: string; msg: string; correlationId?: string } & Record<string, unknown>;
@@ -69,7 +74,8 @@ export class JsonLogger implements LoggerService {
     } else msg = String(message);
     for (const a of args) {
       if (a instanceof Error) fields.error = a;
-      else if (typeof a === 'string' && level === 'error') fields.stack = a; // Nest's error(message, stack, context)
+      else if (typeof a === 'string' && level === 'error')
+        fields.stack = a; // Nest's error(message, stack, context)
       else if (a && typeof a === 'object') Object.assign(fields, a);
       else if (a !== undefined) fields.detail = a;
     }
@@ -77,8 +83,12 @@ export class JsonLogger implements LoggerService {
     const safe = redact(fields) as Record<string, unknown>;
     for (const k of ['time', 'level', 'module', 'correlationId']) delete safe[k]; // the line's own fields cannot be forged
     const line: LogLine = {
-      time: this.now().toISOString(), level: LEVEL[level], module, msg: redact(msg) as string,
-      ...(correlationId ? { correlationId } : {}), ...safe,
+      time: this.now().toISOString(),
+      level: LEVEL[level],
+      module,
+      msg: redact(msg) as string,
+      ...(correlationId ? { correlationId } : {}),
+      ...safe,
     };
     this.write(JSON.stringify(line));
   }

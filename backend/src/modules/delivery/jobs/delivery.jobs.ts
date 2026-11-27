@@ -34,7 +34,11 @@ export class DeliveryJobs implements OnModuleInit {
       // the mock's webhooks go to the same handler as a provider's, signature check included (section 7.4, step 1)
       mock.setWebhookSink((headers, body) => this.statuses.webhook(mock.provider, headers, body));
       if (mock.autoAdvanceSeconds > 0) {
-        this.jobs.register({ name: 'delivery.mock_courier.advance', intervalMs: Math.max(5, Math.min(mock.autoAdvanceSeconds, 60)) * 1000, run: () => mock.advanceDue() });
+        this.jobs.register({
+          name: 'delivery.mock_courier.advance',
+          intervalMs: Math.max(5, Math.min(mock.autoAdvanceSeconds, 60)) * 1000,
+          run: () => mock.advanceDue(),
+        });
       }
     }
   }

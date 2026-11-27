@@ -29,8 +29,14 @@ describe('the kept choice', () => {
   const memory = (): Storage => {
     const m = new Map<string, string>();
     return {
-      getItem: (k) => m.get(k) ?? null, setItem: (k, v) => void m.set(k, v), removeItem: (k) => void m.delete(k),
-      clear: () => m.clear(), key: (i) => [...m.keys()][i] ?? null, get length() { return m.size; },
+      getItem: (k) => m.get(k) ?? null,
+      setItem: (k, v) => void m.set(k, v),
+      removeItem: (k) => void m.delete(k),
+      clear: () => m.clear(),
+      key: (i) => [...m.keys()][i] ?? null,
+      get length() {
+        return m.size;
+      },
     };
   };
 
@@ -45,7 +51,15 @@ describe('the kept choice', () => {
     const store = memory();
     store.setItem('tb-lang', 'fr');
     expect(readStoredLang(store)).toBeNull();
-    const broken = { ...memory(), getItem: () => { throw new Error('blocked'); }, setItem: () => { throw new Error('blocked'); } };
+    const broken = {
+      ...memory(),
+      getItem: () => {
+        throw new Error('blocked');
+      },
+      setItem: () => {
+        throw new Error('blocked');
+      },
+    };
     expect(() => storeLang('bn', broken)).not.toThrow();
     expect(readStoredLang(broken)).toBeNull();
   });

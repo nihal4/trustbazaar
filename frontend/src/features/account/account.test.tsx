@@ -17,14 +17,28 @@ const enterLogin = async (value: string, label: string | RegExp = 'Mobile number
   fireEvent.click(screen.getByRole('button', { name: cont }));
   await screen.findByLabelText(password);
 };
-const tick = (cb: () => void) => act(async () => { cb(); await Promise.resolve(); });
+const tick = (cb: () => void) =>
+  act(async () => {
+    cb();
+    await Promise.resolve();
+  });
 
 describe('register', () => {
   const started = json(202, { registrationId: 'r-1', resendAt: new Date(Date.now() + 60_000).toISOString() });
   /** registration is six steps, one question each: the name, the e-mail address, the password twice, the e-mail code, the number, the terms */
   const next = (name = 'Continue') => click(name);
-  const toEmail = async () => { await screen.findByRole('heading', { name: 'Create your account' }); type('Full name', 'Rahim Uddin'); next(); await screen.findByLabelText('E-mail address'); };
-  const toPassword = async () => { await toEmail(); type('E-mail address', 'rahim@example.com'); next(); await screen.findByLabelText('Password'); };
+  const toEmail = async () => {
+    await screen.findByRole('heading', { name: 'Create your account' });
+    type('Full name', 'Rahim Uddin');
+    next();
+    await screen.findByLabelText('E-mail address');
+  };
+  const toPassword = async () => {
+    await toEmail();
+    type('E-mail address', 'rahim@example.com');
+    next();
+    await screen.findByLabelText('Password');
+  };
   const toCode = async () => {
     await toPassword();
     type('Password', 'correct horse battery staple');
@@ -32,8 +46,18 @@ describe('register', () => {
     next();
     await screen.findByRole('heading', { name: 'Enter the code' });
   };
-  const toNumber = async () => { await toCode(); type('Code', '১২৩৪৫৬'); next('Confirm'); await screen.findByLabelText('Mobile number'); };
-  const toTerms = async () => { await toNumber(); type('Mobile number', '০১৭১২-৩৪৫৬৭৮'); next(); await screen.findByLabelText('I am 18 years old or older.'); };
+  const toNumber = async () => {
+    await toCode();
+    type('Code', '১২৩৪৫৬');
+    next('Confirm');
+    await screen.findByLabelText('Mobile number');
+  };
+  const toTerms = async () => {
+    await toNumber();
+    type('Mobile number', '০১৭১২-৩৪৫৬৭৮');
+    next();
+    await screen.findByLabelText('I am 18 years old or older.');
+  };
 
   it('FR-ACC-01 the page asks one thing at a time, in order, and nothing is sent before the password step is done', async () => {
     const be = fakeBackend({ 'POST /auth/register': started });
@@ -45,7 +69,11 @@ describe('register', () => {
     type('Confirm password', 'correct horse battery staple');
     next();
     await screen.findByRole('heading', { name: 'Enter the code' });
-    expect(be.called('POST /auth/register')[0].body).toEqual({ email: 'rahim@example.com', displayName: 'Rahim Uddin', password: 'correct horse battery staple' });
+    expect(be.called('POST /auth/register')[0].body).toEqual({
+      email: 'rahim@example.com',
+      displayName: 'Rahim Uddin',
+      password: 'correct horse battery staple',
+    });
     expect(screen.getByText(/We sent a 6-digit code to rahim@example.com/)).toBeTruthy();
     expect(screen.getByRole('button', { name: /Send again in \d+ s/ }).getAttribute('aria-disabled')).toBe('true');
   });
@@ -107,8 +135,12 @@ describe('register', () => {
     await waitFor(() => expect(doc.router.state.location.pathname).toBe('/signin'));
     expect(be.called('POST /auth/register/verify')[0].body).toEqual({ registrationId: 'r-1', code: '123456' });
     expect(be.called('POST /auth/register/complete')[0].body).toEqual({
-      registrationId: 'r-1', phone: '+8801712345678', password: 'correct horse battery staple', adultConfirmed: true,
-      termsVersion: '2026-11-27', privacyVersion: '2026-11-01',
+      registrationId: 'r-1',
+      phone: '+8801712345678',
+      password: 'correct horse battery staple',
+      adultConfirmed: true,
+      termsVersion: '2026-11-27',
+      privacyVersion: '2026-11-01',
     });
     expect(((await screen.findByLabelText('Mobile number or e-mail')) as HTMLInputElement).value).toBe('rahim@example.com');
     expect(screen.getByRole('status').textContent).toBe('Your account is ready. Sign in to continue.');
@@ -190,7 +222,8 @@ describe('register', () => {
 
   it('FR-ACC-03 a refused sign-up (the number or the e-mail has an account) says so generically and starts again at the name', async () => {
     const be = fakeBackend({
-      'POST /auth/register': started, 'POST /auth/register/verify': noContent(),
+      'POST /auth/register': started,
+      'POST /auth/register/verify': noContent(),
       'POST /auth/register/complete': problem(409, 'registration-refused', {}),
     });
     renderApp('/register', be);
@@ -204,9 +237,14 @@ describe('register', () => {
 
   it.each([[422], [400]])('FR-ACC-04 a %s naming termsVersion or privacyVersion as not current asks for a reload, not a generic error', async (status) => {
     const be = fakeBackend({
-      'POST /auth/register': started, 'POST /auth/register/verify': noContent(),
-      'POST /auth/register/complete': problem(status, 'validation-failed',
-        { errors: [{ field: 'termsVersion', reason: 'not-current' }, { field: 'privacyVersion', reason: 'not-current' }] }),
+      'POST /auth/register': started,
+      'POST /auth/register/verify': noContent(),
+      'POST /auth/register/complete': problem(status, 'validation-failed', {
+        errors: [
+          { field: 'termsVersion', reason: 'not-current' },
+          { field: 'privacyVersion', reason: 'not-current' },
+        ],
+      }),
     });
     renderApp('/register', be);
     await toTerms();
@@ -273,7 +311,7 @@ describe('sign in', () => {
     const [id, nonce] = second.headers.get('X-Human-Proof')!.split(':');
     expect(id).toBe('c-1');
     expect(createHash('sha256').update(`5e1f:${nonce}`).digest()[0]).toBe(0);
-    expect(screen.queryByText(/not correct|too long|wrong/i)).toBeNull();                      // no refusal is shown (the alert region itself is always there)
+    expect(screen.queryByText(/not correct|too long|wrong/i)).toBeNull(); // no refusal is shown (the alert region itself is always there)
   });
 
   it('SEC-AUTH-04 the growing delay is a countdown on the button', async () => {
@@ -300,9 +338,9 @@ describe('sign in', () => {
     await screen.findByRole('heading', { name: 'Enter your second code' });
     expect(be.called('POST /auth/signin')[0].body).toEqual({ login: '+8801712345678', password: 'correct horse battery staple' });
 
-    expect(document.querySelectorAll('[class*=codeCells] > span')).toHaveLength(6);      // an authenticator code: six cells
+    expect(document.querySelectorAll('[class*=codeCells] > span')).toHaveLength(6); // an authenticator code: six cells
     type('Code', 'abcd-efgh-ijkl');
-    expect(document.querySelector('[class*=codeCells][data-text]')?.textContent).toBe('abcd-efgh-ijkl');   // letters: a recovery code, one line of text
+    expect(document.querySelector('[class*=codeCells][data-text]')?.textContent).toBe('abcd-efgh-ijkl'); // letters: a recovery code, one line of text
     click('Sign in');
     expect((await screen.findByRole('alert')).textContent).toBe('The code is not correct.');
     click('Sign in');
@@ -396,13 +434,19 @@ describe('account and security', () => {
   it('FR-REV-04 the profile shows the rating, the completed deals and the month the member joined, with the initial in the photo place', async () => {
     const be = fakeBackend({
       'GET /me': json(200, { ...standInMe, kycStatus: 'verified', memberSince: '2026-11-10T08:00:00Z' }),
-      [`GET /users/${standInMe.id}/trust`]: json(200, { userId: standInMe.id, averageRating: 4.5, ratingCount: 12, completedTransactions: 7, badges: { verified: true, pro: false } }),
+      [`GET /users/${standInMe.id}/trust`]: json(200, {
+        userId: standInMe.id,
+        averageRating: 4.5,
+        ratingCount: 12,
+        completedTransactions: 7,
+        badges: { verified: true, pro: false },
+      }),
     });
     renderApp('/account', be);
     expect(await screen.findByText('4.5 out of 5 (12)')).toBeTruthy();
     expect(screen.getByText('7')).toBeTruthy();
     expect(screen.getByText('November 2026')).toBeTruthy();
-    expect(screen.getByRole('heading', { level: 2, name: 'Rahim Verified' })).toBeTruthy();   // the verified badge follows the name
+    expect(screen.getByRole('heading', { level: 2, name: 'Rahim Verified' })).toBeTruthy(); // the verified badge follows the name
     expect(screen.getByText('Identity check: Verified')).toBeTruthy();
     expect(screen.getByRole('heading', { level: 2, name: 'Personal information' })).toBeTruthy();
     expect(screen.getByRole('heading', { level: 2, name: 'Verification' })).toBeTruthy();
@@ -441,7 +485,14 @@ describe('account and security', () => {
     const be = fakeBackend({
       'GET /auth/sessions': json(200, [
         { id: 's-1', current: true, device: 'Chrome on Android', approxLocation: null, createdAt: '2026-10-20T04:00:00Z', lastSeenAt: '2026-11-01T12:00:00Z' },
-        { id: 's-2', current: false, device: 'Firefox on Windows', approxLocation: null, createdAt: '2026-10-01T04:00:00Z', lastSeenAt: '2026-10-31T18:30:00Z' },
+        {
+          id: 's-2',
+          current: false,
+          device: 'Firefox on Windows',
+          approxLocation: null,
+          createdAt: '2026-10-01T04:00:00Z',
+          lastSeenAt: '2026-10-31T18:30:00Z',
+        },
       ]),
       'POST /auth/sessions/end-others': json(200, { ended: 1 }),
     });
@@ -460,7 +511,10 @@ describe('account and security', () => {
     const be = fakeBackend({
       'GET /auth/sessions': json(200, []),
       'GET /me': () => json(200, { ...standInMe, emailVerified: true, emailTwoStep: on })(),
-      'POST /me/security/email-code/enable': () => { on = true; return json(200, { emailTwoStep: true })(); },
+      'POST /me/security/email-code/enable': () => {
+        on = true;
+        return json(200, { emailTwoStep: true })();
+      },
       'POST /auth/step-up/start': json(200, { method: 'sms', resendAt: new Date(Date.now() + 60_000).toISOString() }),
     });
     renderApp('/account/security', be);
@@ -468,10 +522,10 @@ describe('account and security', () => {
     expect(await within(section).findByText(/^Off\. You sign in with your password alone/)).toBeTruthy();
     fireEvent.click(within(section).getByRole('button', { name: 'Turn on the e-mail code' }));
     expect(await within(section).findByText('The code by e-mail is on.')).toBeTruthy();
-    expect(be.called('POST /auth/step-up/start')).toHaveLength(0);                             // turning on asks for nothing more
+    expect(be.called('POST /auth/step-up/start')).toHaveLength(0); // turning on asks for nothing more
     expect(await within(section).findByText(/^On\. After your password/)).toBeTruthy();
     fireEvent.click(within(section).getByRole('button', { name: 'Turn off the e-mail code' }));
-    await screen.findByRole('dialog', { name: 'Confirm it is you' });                         // turning off is behind step-up
+    await screen.findByRole('dialog', { name: 'Confirm it is you' }); // turning off is behind step-up
     expect(be.called('POST /auth/signin')).toHaveLength(0);
   });
 
@@ -483,7 +537,7 @@ describe('account and security', () => {
       'POST /auth/password/change': noContent(),
     });
     renderApp('/account/security', be);
-    fireEvent.click(await screen.findByRole('button', { name: 'Change your password' }));          // the form is in a popup
+    fireEvent.click(await screen.findByRole('button', { name: 'Change your password' })); // the form is in a popup
     type('Current password', 'old one');
     type('New password', 'a new long passphrase');
     click('Change password');
@@ -527,8 +581,11 @@ describe('account and security', () => {
     const tabs = await screen.findByRole('navigation', { name: 'Your account' });
     const links = within(tabs).getAllByRole('link');
     expect(links.map((a) => [a.textContent, a.getAttribute('href')])).toEqual([
-      ['Profile', '/account'], ['Security', '/account/security'], ['Notifications', '/notifications'],
-      ['Messages', '/messages'], ['Your data', '/account/privacy'],
+      ['Profile', '/account'],
+      ['Security', '/account/security'],
+      ['Notifications', '/notifications'],
+      ['Messages', '/messages'],
+      ['Your data', '/account/privacy'],
     ]);
     expect(links.filter((a) => a.getAttribute('aria-current') === 'page').map((a) => a.textContent)).toEqual(['Security']);
   });
@@ -541,9 +598,9 @@ describe('sign-in and registration layout', () => {
     expect(screen.queryByText('Protected by a short check in your browser. No puzzles.')).toBeNull();
     const link = screen.getByRole('link', { name: 'Create an account' });
     expect(link.getAttribute('href')).toBe(`/register?next=${encodeURIComponent('/orders')}`);
-    expect(button.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();   // after the button, not above the field
-    expect(screen.getByText(/^New to TrustBazaar\?/)).toBeTruthy();                                      // not 'welcome back' and 'new' in one breath
-    expect(screen.queryByText('Your money waits with us')).toBeNull();                              // no advertising on the sign-in page
+    expect(button.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy(); // after the button, not above the field
+    expect(screen.getByText(/^New to TrustBazaar\?/)).toBeTruthy(); // not 'welcome back' and 'new' in one breath
+    expect(screen.queryByText('Your money waits with us')).toBeNull(); // no advertising on the sign-in page
   });
 
   it('FR-ACC-12 with the default second step a code is asked after the password, sent to the e-mail (masked); the box remembers the device; a new code can be asked for after the wait', async () => {
@@ -561,7 +618,7 @@ describe('sign-in and registration layout', () => {
     expect(screen.getByText('We sent a 6-digit code to r***m@example.com. It is valid for 10 minutes.')).toBeTruthy();
     expect(screen.getByRole('button', { name: /^Send again in \d+ s$/ }).getAttribute('aria-disabled')).toBe('true'); // 60 seconds first
     const remember = screen.getByLabelText('Remember this device for 30 days') as HTMLInputElement;
-    expect(remember.checked).toBe(false);                                                   // never ticked for the user
+    expect(remember.checked).toBe(false); // never ticked for the user
     type('Code', '482 913'.replace(' ', ''));
     fireEvent.click(remember);
     click('Sign in');
@@ -598,7 +655,8 @@ describe('sign-in and registration layout', () => {
 
   it('FR-ACC-13 an entry that is not a mobile number or an e-mail of a valid form is turned back on the page: nothing is sent; an e-mail whose domain cannot receive mail is turned back after the check, with no sign-in tried', async () => {
     const be = fakeBackend({
-      'POST /auth/login-check': (c) => json(200, (c.body as { login: string }).login.endsWith('@examle.com') ? { ok: false, reason: 'domain' } : { ok: true })(),
+      'POST /auth/login-check': (c) =>
+        json(200, (c.body as { login: string }).login.endsWith('@examle.com') ? { ok: false, reason: 'domain' } : { ok: true })(),
     });
     renderApp('/signin', be);
     await screen.findByRole('heading', { name: 'Sign in' });
@@ -606,14 +664,14 @@ describe('sign-in and registration layout', () => {
       type('Mobile number or e-mail', bad);
       click('Continue');
       expect((await screen.findByRole('alert')).textContent).toBe('Enter a valid mobile number or e-mail address.');
-      expect(screen.queryByLabelText('Password')).toBeNull();                                // it did not move on
+      expect(screen.queryByLabelText('Password')).toBeNull(); // it did not move on
     }
-    expect(be.called('POST /auth/login-check')).toHaveLength(0);                             // and nothing was sent
+    expect(be.called('POST /auth/login-check')).toHaveLength(0); // and nothing was sent
     type('Mobile number or e-mail', 'nihal@examle.com');
     click('Continue');
     expect((await screen.findByRole('alert')).textContent).toBe('Nothing can be delivered to examle.com. Check the part after the @.');
     expect(screen.queryByLabelText('Password')).toBeNull();
-    expect(be.called('POST /auth/signin')).toHaveLength(0);                                  // the sign-in was never tried
+    expect(be.called('POST /auth/signin')).toHaveLength(0); // the sign-in was never tried
     type('Mobile number or e-mail', 'nihal@gmail.com');
     click('Continue');
     expect(await screen.findByLabelText('Password')).toBeTruthy();
@@ -625,7 +683,7 @@ describe('sign-in and registration layout', () => {
     const doc = renderApp('/signin', be);
     await screen.findByRole('heading', { name: 'Sign in' });
     expect(document.title).toBe('Sign in – TrustBazaar');
-    expect(document.querySelectorAll('[role="alert"]').length).toBeGreaterThan(0);               // there before any message
+    expect(document.querySelectorAll('[role="alert"]').length).toBeGreaterThan(0); // there before any message
     type('Mobile number or e-mail', 'c');
     click('Continue');
     const field = screen.getByLabelText('Mobile number or e-mail');
@@ -637,7 +695,7 @@ describe('sign-in and registration layout', () => {
     click('Sign in');
     await screen.findByText('The number, e-mail or password is not correct.');
     expect(screen.getByLabelText('Password').getAttribute('aria-invalid')).toBe('true');
-    doc.router.navigate(-1);                                                                      // the browser's Back
+    doc.router.navigate(-1); // the browser's Back
     expect(await screen.findByLabelText('Mobile number or e-mail')).toBeTruthy();
     expect(screen.queryByLabelText('Password')).toBeNull();
   });
@@ -645,7 +703,7 @@ describe('sign-in and registration layout', () => {
   it('FR-ACC-05 the password asks for itself after the number or e-mail; Change goes back; the eye shows and hides what was typed', async () => {
     renderApp('/signin', fakeBackend({}));
     await screen.findByRole('heading', { name: 'Sign in' });
-    expect(screen.queryByLabelText('Password')).toBeNull();                       // not before the first step
+    expect(screen.queryByLabelText('Password')).toBeNull(); // not before the first step
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
     expect((await screen.findByRole('alert')).textContent).toBe('Enter a valid mobile number or e-mail address.');
     await enterLogin('rahim@example.com');
@@ -661,7 +719,7 @@ describe('sign-in and registration layout', () => {
     expect(screen.getByRole('button', { name: 'Hide password' }).getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(screen.getByRole('button', { name: 'Change' }));
     expect(((await screen.findByLabelText('Mobile number or e-mail')) as HTMLInputElement).value).toBe('rahim@example.com');
-    expect(screen.queryByLabelText('Password')).toBeNull();                        // the password is asked again, not kept
+    expect(screen.queryByLabelText('Password')).toBeNull(); // the password is asked again, not kept
   });
 
   it('SEC-ABU-02 registration has no notice about its human check either, and a refusal stands under its field and is tied to it (AC-ACC-2)', async () => {

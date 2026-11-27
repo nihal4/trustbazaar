@@ -56,7 +56,11 @@ describe('meetup handover', () => {
     const staffId = await fx.staff(role);
     const sid = await fx.session({ staffId });
     const call = (method: string, path: string, body?: unknown) =>
-      fetch(t.url(path), { method, headers: { ...fx.headers(sid, staffId, 'staff'), ...(body !== undefined ? { 'content-type': 'application/json' } : {}) }, body: body === undefined ? undefined : JSON.stringify(body) });
+      fetch(t.url(path), {
+        method,
+        headers: { ...fx.headers(sid, staffId, 'staff'), ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
+        body: body === undefined ? undefined : JSON.stringify(body),
+      });
     return { staffId, call };
   }
   async function member(at?: { lat: number; lng: number }) {
@@ -65,7 +69,11 @@ describe('meetup handover', () => {
     const sid = await fx.session({ userId });
     const ip = `203.0.113.${randomInt(1, 255)}, 198.51.100.${randomInt(1, 255)}`;
     const call = (method: string, path: string, body?: unknown) =>
-      fetch(t.url(path), { method, headers: { ...fx.headers(sid, userId, 'user'), 'x-forwarded-for': ip, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) }, body: body === undefined ? undefined : JSON.stringify(body) });
+      fetch(t.url(path), {
+        method,
+        headers: { ...fx.headers(sid, userId, 'user'), 'x-forwarded-for': ip, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
+        body: body === undefined ? undefined : JSON.stringify(body),
+      });
     const json = async <T = Record<string, unknown>>(method: string, path: string, body?: unknown, status = 200) => {
       const r = await call(method, path, body);
       expect({ path, status: r.status }).toEqual({ path, status });
@@ -79,8 +87,14 @@ describe('meetup handover', () => {
     return { userId, call, json, upload };
   }
   type View = {
-    status: string; role: string; dueAt: string; code: string | null; attemptsLeft: number | null;
-    suggestions: { id: string; nameEn: string; mapUrl: string }[]; proposals: { id: string; status: string; byMe: boolean }[]; agreed: { meetAt: string } | null;
+    status: string;
+    role: string;
+    dueAt: string;
+    code: string | null;
+    attemptsLeft: number | null;
+    suggestions: { id: string; nameEn: string; mapUrl: string }[];
+    proposals: { id: string; status: string; byMe: boolean }[];
+    agreed: { meetAt: string } | null;
   };
 
   /** A self-pickup order paid as a confirmed payment leaves it, with Unit 2's orders.order.paid delivered. */
@@ -93,19 +107,52 @@ describe('meetup handover', () => {
           listing_snapshot, commission_bps, delivery_margin_bps, params_version, payment_due_at, status, paid_at, fulfilment_step, fulfilment_due_at)
        VALUES ('fixed_price', $1, 'physical', $2, $3, 1, 1000000, 1000000, $4, $5, $6, $7, $10::jsonb, 500, 1000, 1, now(), 'paid', now(), $8, now() + $9::interval)
        RETURNING id, fulfilment_due_at AS due`,
-      [randomUUID(), buyer.userId, seller.userId, fulfilment, fulfilment === 'courier' ? randomUUID() : null, fulfilment === 'courier' ? 15000 : 0,
-       fulfilment === 'courier' ? 1015000 : 1000000, fulfilment === 'courier' ? 'courier_pickup' : 'meetup_handover', o.dueIn ?? '7 days',
-       JSON.stringify(o.serial ? { title: 'Item', serialDigest: deviceDigest(t.app.get<TbConfig>(TB_CONFIG).secrets.handoverKey.reveal(), o.serial).toString('hex'), serialLast4: deviceLast4(o.serial) } : { title: 'Item' })],
+      [
+        randomUUID(),
+        buyer.userId,
+        seller.userId,
+        fulfilment,
+        fulfilment === 'courier' ? randomUUID() : null,
+        fulfilment === 'courier' ? 15000 : 0,
+        fulfilment === 'courier' ? 1015000 : 1000000,
+        fulfilment === 'courier' ? 'courier_pickup' : 'meetup_handover',
+        o.dueIn ?? '7 days',
+        JSON.stringify(
+          o.serial
+            ? {
+                title: 'Item',
+                serialDigest: deviceDigest(t.app.get<TbConfig>(TB_CONFIG).secrets.handoverKey.reveal(), o.serial).toString('hex'),
+                serialLast4: deviceLast4(o.serial),
+              }
+            : { title: 'Item' },
+        ),
+      ],
     );
-    await fx.query(`INSERT INTO payments.attempts (purpose, order_id, payer_id, provider, amount, status, expires_at, confirmed_at) VALUES ('order', $1, $2, 'bkash', 1000000, 'succeeded', now(), now())`, [id, buyer.userId]);
+    await fx.query(
+      `INSERT INTO payments.attempts (purpose, order_id, payer_id, provider, amount, status, expires_at, confirmed_at) VALUES ('order', $1, $2, 'bkash', 1000000, 'succeeded', now(), now())`,
+      [id, buyer.userId],
+    );
     await fx.query(`INSERT INTO orders.escrows (order_id, release_policy, amount_collected) VALUES ($1, 'standard', 1000000)`, [id]);
     await paidEvent(id, buyer.userId, seller.userId, fulfilment, due);
     return { id, buyer, seller };
   }
   async function paidEvent(id: string, buyer: string, seller: string, fulfilment: string, due: Date) {
-    await fx.query(`INSERT INTO orders.outbox (event_type, aggregate_id, payload, next_attempt_at) VALUES ('orders.order.paid', $1, $2, now() - interval '1 second')`, [id, JSON.stringify({
-      orderId: id, kind: 'fixed_price', itemKind: 'physical', buyerId: buyer, sellerId: seller, fulfilment, fulfilmentDueAt: due.toISOString(), total: '1000000',
-    })]);
+    await fx.query(
+      `INSERT INTO orders.outbox (event_type, aggregate_id, payload, next_attempt_at) VALUES ('orders.order.paid', $1, $2, now() - interval '1 second')`,
+      [
+        id,
+        JSON.stringify({
+          orderId: id,
+          kind: 'fixed_price',
+          itemKind: 'physical',
+          buyerId: buyer,
+          sellerId: seller,
+          fulfilment,
+          fulfilmentDueAt: due.toISOString(),
+          total: '1000000',
+        }),
+      ],
+    );
     await drainAll();
   }
   /** Other suites leave undelivered events behind (their dispatcher is off too): drain until nothing is left. */
@@ -117,7 +164,12 @@ describe('meetup handover', () => {
     }
   }
   const handover = async (id: string) =>
-    (await fx.query<{ status: string; wrong_entries: number; code_version: number }>(`SELECT status, wrong_entries, code_version FROM delivery.handovers WHERE order_id = $1`, [id]))[0];
+    (
+      await fx.query<{ status: string; wrong_entries: number; code_version: number }>(
+        `SELECT status, wrong_entries, code_version FROM delivery.handovers WHERE order_id = $1`,
+        [id],
+      )
+    )[0];
   const inHours = (h: number) => new Date(Date.now() + h * 3_600_000).toISOString();
   const reason = (r: Response) => r.json().then((b: { errors?: { reason: string; attemptsLeft?: number }[] }) => b.errors?.[0]);
 
@@ -165,8 +217,13 @@ describe('meetup handover', () => {
     expect(v3.proposals.map((p) => p.status).sort()).toEqual(['accepted', 'proposed', 'superseded']);
     const open = v3.proposals.find((p) => p.status === 'proposed')!.id;
     expect((await o.seller.call('POST', `/orders/${o.id}/meetup-proposals/${open}/withdraw`)).status).toBe(403);
-    expect((await o.buyer.json<View>('POST', `/orders/${o.id}/meetup-proposals/${open}/withdraw`)).proposals.find((p) => p.id === open)?.status).toBe('withdrawn');
-    expect(await reason(await o.buyer.call('POST', `/orders/${o.id}/meetup-proposals/${open}/withdraw`))).toEqual({ field: 'proposalId', reason: 'proposal_closed' });
+    expect((await o.buyer.json<View>('POST', `/orders/${o.id}/meetup-proposals/${open}/withdraw`)).proposals.find((p) => p.id === open)?.status).toBe(
+      'withdrawn',
+    );
+    expect(await reason(await o.buyer.call('POST', `/orders/${o.id}/meetup-proposals/${open}/withdraw`))).toEqual({
+      field: 'proposalId',
+      reason: 'proposal_closed',
+    });
 
     const declined = await o.buyer.json<View>('POST', `/orders/${o.id}/meetup-proposals`, { pointId: points[0], meetAt: inHours(10) }, 201);
     const d = declined.proposals.find((p) => p.status === 'proposed')!.id;
@@ -174,62 +231,94 @@ describe('meetup handover', () => {
 
     const adm = await admin();
     expect((await adm.call('PATCH', `/admin/meetup-points/${points[3]}`, { active: false })).status).toBe(200);
-    expect(await reason(await o.buyer.call('POST', `/orders/${o.id}/meetup-proposals`, { pointId: points[3], meetAt: inHours(6) }))).toEqual({ field: 'pointId', reason: 'point_not_active' });
+    expect(await reason(await o.buyer.call('POST', `/orders/${o.id}/meetup-proposals`, { pointId: points[3], meetAt: inHours(6) }))).toEqual({
+      field: 'pointId',
+      reason: 'point_not_active',
+    });
     expect((await (await member()).call('POST', `/orders/${o.id}/meetup-proposals`, { pointId: points[0], meetAt: inHours(6) })).status).toBe(404);
   });
 
   it('FR-DLV-04 the parties may agree on a place of their own, with or without a map pin; the other must still accept', async () => {
     const o = await paidOrder();
     type P = { id: string; status: string; point: unknown; place: { name: string; lat: number | null; mapUrl: string | null } | null };
-    const v = await o.seller.json<{ proposals: P[] }>('POST', `/orders/${o.id}/meetup-proposals`,
-      { placeName: 'Coffee shop at the Zindabazar junction', placeLat: 24.8951234, placeLng: 91.8681234, meetAt: inHours(6) }, 201);
+    const v = await o.seller.json<{ proposals: P[] }>(
+      'POST',
+      `/orders/${o.id}/meetup-proposals`,
+      { placeName: 'Coffee shop at the Zindabazar junction', placeLat: 24.8951234, placeLng: 91.8681234, meetAt: inHours(6) },
+      201,
+    );
     expect(v.proposals[0]).toMatchObject({ status: 'proposed', point: null, place: { name: 'Coffee shop at the Zindabazar junction', lat: 24.89512 } });
     expect(v.proposals[0].place?.mapUrl).toMatch(/openstreetmap/);
-    const agreed = await o.buyer.json<{ status: string; agreed: { place: { name: string } | null; point: unknown } }>('POST', `/orders/${o.id}/meetup-proposals/${v.proposals[0].id}/accept`);
+    const agreed = await o.buyer.json<{ status: string; agreed: { place: { name: string } | null; point: unknown } }>(
+      'POST',
+      `/orders/${o.id}/meetup-proposals/${v.proposals[0].id}/accept`,
+    );
     expect(agreed).toMatchObject({ status: 'agreed', agreed: { point: null, place: { name: 'Coffee shop at the Zindabazar junction' } } });
 
-    const noPin = await o.buyer.json<{ proposals: P[] }>('POST', `/orders/${o.id}/meetup-proposals`, { placeName: 'Main gate of the mosque', meetAt: inHours(7) }, 201);
+    const noPin = await o.buyer.json<{ proposals: P[] }>(
+      'POST',
+      `/orders/${o.id}/meetup-proposals`,
+      { placeName: 'Main gate of the mosque', meetAt: inHours(7) },
+      201,
+    );
     expect(noPin.proposals[0].place).toEqual({ name: 'Main gate of the mosque', lat: null, lng: null, mapUrl: null });
     expect((await o.buyer.call('POST', `/orders/${o.id}/meetup-proposals`, { pointId: points[0], placeName: 'Cafe', meetAt: inHours(7) })).status).toBe(400);
     expect((await o.buyer.call('POST', `/orders/${o.id}/meetup-proposals`, { meetAt: inHours(7) })).status).toBe(400);
-    expect((await o.buyer.call('POST', `/orders/${o.id}/meetup-proposals`, { placeName: 'Abroad', placeLat: 40, placeLng: 91, meetAt: inHours(7) })).status).toBe(400);
+    expect(
+      (await o.buyer.call('POST', `/orders/${o.id}/meetup-proposals`, { placeName: 'Abroad', placeLat: 40, placeLng: 91, meetAt: inHours(7) })).status,
+    ).toBe(400);
   });
 
-  it('FR-DLV-06 U10-23 an item with a device identifier: the buyer\'s code is withheld until the device he types matches the listing; wrong tries are counted and locked; only the buyer checks; no number is kept', async () => {
+  it("FR-DLV-06 U10-23 an item with a device identifier: the buyer's code is withheld until the device he types matches the listing; wrong tries are counted and locked; only the buyer checks; no number is kept", async () => {
     const o = await paidOrder({ serial: '35-209900 176148 1' });
     type View = { code: string | null; deviceCheck: { required: boolean; matched: boolean; last4: string; attemptsLeft: number } | null };
-    const view = async (who: { call: (m: string, p: string) => Promise<Response> }) => (await (await who.call('GET', `/orders/${o.id}/handover`)).json()) as View;
+    const view = async (who: { call: (m: string, p: string) => Promise<Response> }) =>
+      (await (await who.call('GET', `/orders/${o.id}/handover`)).json()) as View;
     const before = await view(o.buyer);
     expect(before).toMatchObject({ code: null, deviceCheck: { required: true, matched: false, last4: '1481', attemptsLeft: 5 } });
     expect((await view(o.seller)).deviceCheck).toBeNull(); // the seller is not asked
     expect(await reason(await o.seller.call('POST', `/orders/${o.id}/device-check`, { value: '352099001761481' }))).toMatchObject({ reason: 'buyer-only' });
     // a wrong number, then the right one (spaces and dashes do not matter)
-    expect(await (await o.buyer.call('POST', `/orders/${o.id}/device-check`, { value: '352099001761480' })).json()).toEqual({ matched: false, attemptsLeft: 4 });
+    expect(await (await o.buyer.call('POST', `/orders/${o.id}/device-check`, { value: '352099001761480' })).json()).toEqual({
+      matched: false,
+      attemptsLeft: 4,
+    });
     expect((await view(o.buyer)).code).toBeNull();
-    expect(await (await o.buyer.call('POST', `/orders/${o.id}/device-check`, { value: '35 2099 0017 61481' })).json()).toEqual({ matched: true, attemptsLeft: 4 });
+    expect(await (await o.buyer.call('POST', `/orders/${o.id}/device-check`, { value: '35 2099 0017 61481' })).json()).toEqual({
+      matched: true,
+      attemptsLeft: 4,
+    });
     const after = await view(o.buyer);
     expect(after.code).toMatch(/^[0-9]{6}$/);
     expect(after.deviceCheck).toMatchObject({ matched: true });
     // only the result is kept, never the number
-    expect((await fx.query<{ matched: boolean }>(`SELECT matched FROM delivery.device_checks WHERE order_id = $1 ORDER BY id`, [o.id])).map((r) => r.matched)).toEqual([false, true]);
+    expect(
+      (await fx.query<{ matched: boolean }>(`SELECT matched FROM delivery.device_checks WHERE order_id = $1 ORDER BY id`, [o.id])).map((r) => r.matched),
+    ).toEqual([false, true]);
     // an item without an identifier needs no check; five wrong tries lock the check
     const plain = await paidOrder();
-    expect(await reason(await plain.buyer.call('POST', `/orders/${plain.id}/device-check`, { value: '352099001761481' }))).toMatchObject({ reason: 'no-device' });
+    expect(await reason(await plain.buyer.call('POST', `/orders/${plain.id}/device-check`, { value: '352099001761481' }))).toMatchObject({
+      reason: 'no-device',
+    });
     const locked = await paidOrder({ serial: 'SN12345678' });
     for (let i = 0; i < 5; i++) expect((await locked.buyer.call('POST', `/orders/${locked.id}/device-check`, { value: 'WRONG12345' })).status).toBe(200);
     expect(await reason(await locked.buyer.call('POST', `/orders/${locked.id}/device-check`, { value: 'SN12345678' }))).toMatchObject({ reason: 'locked' });
   });
 
-  it('FR-DLV-06 U10-23 the seller adds photos of the item before the code: images only, at most three, the seller only, while the handover is open; the seller\'s view counts them', async () => {
+  it("FR-DLV-06 U10-23 the seller adds photos of the item before the code: images only, at most three, the seller only, while the handover is open; the seller's view counts them", async () => {
     const o = await paidOrder();
     // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
     const sharp = require('sharp') as typeof import('sharp').default;
-    const png = await sharp({ create: { width: 200, height: 150, channels: 3, background: '#a77' } }).png().toBuffer();
-    const send = (who: { upload: (path: string, bytes: Buffer, type: string) => Promise<Response> }, bytes = png, type = 'image/png') => who.upload(`/orders/${o.id}/handover-photos`, bytes, type);
+    const png = await sharp({ create: { width: 200, height: 150, channels: 3, background: '#a77' } })
+      .png()
+      .toBuffer();
+    const send = (who: { upload: (path: string, bytes: Buffer, type: string) => Promise<Response> }, bytes = png, type = 'image/png') =>
+      who.upload(`/orders/${o.id}/handover-photos`, bytes, type);
     expect(await (await send(o.seller)).json()).toEqual({ count: 1 });
     expect(await reason(await send(o.buyer))).toMatchObject({ reason: 'seller-only' });
     expect(await reason(await send(o.seller, Buffer.from('%PDF-1.4'), 'application/pdf'))).toMatchObject({ reason: 'type' });
-    await send(o.seller); await send(o.seller);
+    await send(o.seller);
+    await send(o.seller);
     expect(await reason(await send(o.seller))).toMatchObject({ reason: 'too-many' });
     const view = (await (await o.seller.call('GET', `/orders/${o.id}/handover`)).json()) as { photoCount: number | null };
     expect(view.photoCount).toBe(3);
@@ -237,7 +326,7 @@ describe('meetup handover', () => {
     expect((await fx.query(`SELECT 1 FROM delivery.handover_photos WHERE order_id = $1 AND storage_key IS NOT NULL`, [o.id])).length).toBe(3);
   });
 
-  it('FR-DLV-06 the seller\'s correct entry of the buyer\'s code completes the handover and is the delivery event, in one transaction', async () => {
+  it("FR-DLV-06 the seller's correct entry of the buyer's code completes the handover and is the delivery event, in one transaction", async () => {
     const o = await paidOrder();
     const { code } = await o.buyer.json<View>('GET', `/orders/${o.id}/handover`);
     expect((await o.buyer.call('POST', `/orders/${o.id}/handover-code`, { code })).status).toBe(403); // the seller enters it
@@ -250,22 +339,31 @@ describe('meetup handover', () => {
 
     const [r] = await fx.query<{ step: Date | null; event: Date | null; source: string; window: Date | null }>(
       `SELECT o.fulfilment_done_at AS step, o.delivery_event_at AS event, o.delivery_event_source AS source, e.dispute_window_ends_at AS window
-         FROM orders.orders o JOIN orders.escrows e ON e.order_id = o.id WHERE o.id = $1`, [o.id]);
+         FROM orders.orders o JOIN orders.escrows e ON e.order_id = o.id WHERE o.id = $1`,
+      [o.id],
+    );
     expect(r.source).toBe('handover_code');
     expect(r.step?.toISOString()).toBe(done.completedAt);
     expect(r.event?.toISOString()).toBe(done.completedAt);
     expect(r.window).not.toBeNull(); // the dispute window starts now (FR-PAY-07)
-    expect(await fx.query(`SELECT correct FROM delivery.code_entries WHERE order_id = $1 ORDER BY id`, [o.id])).toEqual([{ correct: false }, { correct: true }]);
+    expect(await fx.query(`SELECT correct FROM delivery.code_entries WHERE order_id = $1 ORDER BY id`, [o.id])).toEqual([
+      { correct: false },
+      { correct: true },
+    ]);
     expect(await fx.query(`SELECT 1 FROM delivery.outbox WHERE event_type = 'delivery.handover.completed' AND aggregate_id = $1`, [o.id])).toHaveLength(1);
     expect((await o.buyer.json<View>('GET', `/orders/${o.id}/handover`)).code).toBeNull(); // closed: no code any more
     expect(await reason(await o.seller.call('POST', `/orders/${o.id}/handover-code`, { code }))).toEqual({ field: 'handover', reason: 'handover_closed' });
   });
 
-  it('CP-45 five wrong entries lock the code and open an issue; an operator\'s unlock issues a new code', async () => {
+  it("CP-45 five wrong entries lock the code and open an issue; an operator's unlock issues a new code", async () => {
     const o = await paidOrder();
     const { code } = await o.buyer.json<View>('GET', `/orders/${o.id}/handover`);
     const bad = code === '123456' ? '654321' : '123456';
-    for (let i = 4; i >= 1; i--) expect(await reason(await o.seller.call('POST', `/orders/${o.id}/handover-code`, { code: bad }))).toMatchObject({ reason: 'wrong_code', attemptsLeft: i });
+    for (let i = 4; i >= 1; i--)
+      expect(await reason(await o.seller.call('POST', `/orders/${o.id}/handover-code`, { code: bad }))).toMatchObject({
+        reason: 'wrong_code',
+        attemptsLeft: i,
+      });
     expect(await reason(await o.seller.call('POST', `/orders/${o.id}/handover-code`, { code: bad }))).toEqual({ field: 'code', reason: 'code_locked' });
     expect(await handover(o.id)).toEqual({ status: 'locked', wrong_entries: 5, code_version: 1 });
     expect(await reason(await o.seller.call('POST', `/orders/${o.id}/handover-code`, { code }))).toEqual({ field: 'code', reason: 'code_locked' }); // even the right one
@@ -276,7 +374,9 @@ describe('meetup handover', () => {
     expect((await o.seller.call('POST', `/staff/orders/${o.id}/handover/unlock`, { reason: 'Spoke to both parties by phone.' })).status).toBe(401);
     expect((await op.call('POST', `/staff/orders/${o.id}/handover/unlock`, { reason: 'Spoke to both parties by phone.' })).status).toBe(204);
     expect(await handover(o.id)).toEqual({ status: 'arranging', wrong_entries: 0, code_version: 2 });
-    expect(await fx.query(`SELECT status, resolved_by FROM delivery.issues WHERE order_id = $1 AND kind = 'code_locked'`, [o.id])).toEqual([{ status: 'resolved', resolved_by: op.staffId }]);
+    expect(await fx.query(`SELECT status, resolved_by FROM delivery.issues WHERE order_id = $1 AND kind = 'code_locked'`, [o.id])).toEqual([
+      { status: 'resolved', resolved_by: op.staffId },
+    ]);
     const fresh = (await o.buyer.json<View>('GET', `/orders/${o.id}/handover`)).code!;
     expect(fresh).not.toBe(code);
     expect(await reason(await o.seller.call('POST', `/orders/${o.id}/handover-code`, { code }))).toMatchObject({ reason: 'wrong_code', attemptsLeft: 4 }); // the old code is gone
@@ -291,7 +391,10 @@ describe('meetup handover', () => {
 
     const o = await paidOrder();
     await o.buyer.json('POST', `/orders/${o.id}/meetup-proposals`, { pointId: points[0], meetAt: inHours(5) }, 201);
-    await fx.query(`INSERT INTO orders.outbox (event_type, aggregate_id, payload, next_attempt_at) VALUES ('orders.escrow.refunded', $1, $2, now() - interval '1 second')`, [o.id, JSON.stringify({ orderId: o.id })]);
+    await fx.query(
+      `INSERT INTO orders.outbox (event_type, aggregate_id, payload, next_attempt_at) VALUES ('orders.escrow.refunded', $1, $2, now() - interval '1 second')`,
+      [o.id, JSON.stringify({ orderId: o.id })],
+    );
     await drainAll();
     expect(await handover(o.id)).toMatchObject({ status: 'cancelled' });
     const v = await o.buyer.json<View>('GET', `/orders/${o.id}/handover`);
@@ -302,13 +405,23 @@ describe('meetup handover', () => {
   it('FR-DLV-03 administrators maintain the meetup points; operators and users cannot', async () => {
     const adm = await admin();
     const op = await admin('operator');
-    const point = { kind: 'police_station', nameEn: 'Kotwali Police Station (test)', nameBn: 'কোতোয়ালী থানা', district: 'Sylhet', lat: 24.8912345, lng: 91.8712345 };
+    const point = {
+      kind: 'police_station',
+      nameEn: 'Kotwali Police Station (test)',
+      nameBn: 'কোতোয়ালী থানা',
+      district: 'Sylhet',
+      lat: 24.8912345,
+      lng: 91.8712345,
+    };
     expect((await op.call('POST', '/admin/meetup-points', point)).status).toBe(403);
     expect((await adm.call('POST', '/admin/meetup-points', { ...point, lat: 30 })).status).toBe(400);
     const r = await adm.call('POST', '/admin/meetup-points', point);
     const p = (await r.json()) as { id: string; lat: number; guidance: string | null };
     expect(p).toMatchObject({ lat: 24.89123, guidance: null });
-    expect(await (await adm.call('PATCH', `/admin/meetup-points/${p.id}`, { guidance: 'Inside the guarded forecourt' })).json()).toMatchObject({ guidance: 'Inside the guarded forecourt', nameEn: point.nameEn });
+    expect(await (await adm.call('PATCH', `/admin/meetup-points/${p.id}`, { guidance: 'Inside the guarded forecourt' })).json()).toMatchObject({
+      guidance: 'Inside the guarded forecourt',
+      nameEn: point.nameEn,
+    });
     const list = (await (await adm.call('GET', '/admin/meetup-points')).json()) as { items: { id: string }[] };
     expect(list.items.some((x) => x.id === p.id)).toBe(true);
     expect(await fx.query(`SELECT 1 FROM audit.events WHERE action LIKE 'delivery.meetup_point.%' AND object_id = $1`, [p.id])).toHaveLength(2);
@@ -317,16 +430,24 @@ describe('meetup handover', () => {
   it('FR-DLV-04 a proposal whose time has passed lapses (U4-05 job) and can no longer be accepted', async () => {
     const o = await paidOrder();
     type P = { id: string; status: string };
-    const v = await o.buyer.json<{ proposals: P[] }>('POST', `/orders/${o.id}/meetup-proposals`, { placeName: 'Tea stall by the lake', meetAt: inHours(2) }, 201);
-    const pid = v.proposals[0].id;
-    const upkeepAt = (aheadMs: number) => new UpkeepService(
-      t.app.get(DataSource), t.app.get(StatusService), t.app.get(FULFILMENT_ORDERS), t.app.get(CONFIG_PORT), t.app.get(REDIS),
-      { now: () => new Date(t.app.get<{ now(): Date }>(CLOCK).now().getTime() + aheadMs) },
+    const v = await o.buyer.json<{ proposals: P[] }>(
+      'POST',
+      `/orders/${o.id}/meetup-proposals`,
+      { placeName: 'Tea stall by the lake', meetAt: inHours(2) },
+      201,
     );
+    const pid = v.proposals[0].id;
+    const upkeepAt = (aheadMs: number) =>
+      new UpkeepService(t.app.get(DataSource), t.app.get(StatusService), t.app.get(FULFILMENT_ORDERS), t.app.get(CONFIG_PORT), t.app.get(REDIS), {
+        now: () => new Date(t.app.get<{ now(): Date }>(CLOCK).now().getTime() + aheadMs),
+      });
     await upkeepAt(0).lapseProposals();
     expect((await o.seller.json<{ proposals: P[] }>('GET', `/orders/${o.id}/handover`)).proposals.find((p) => p.id === pid)?.status).toBe('proposed');
     expect(await upkeepAt(3 * 3_600_000).lapseProposals()).toBeGreaterThanOrEqual(1);
     expect((await o.seller.json<{ proposals: P[] }>('GET', `/orders/${o.id}/handover`)).proposals.find((p) => p.id === pid)?.status).toBe('lapsed');
-    expect(await reason(await o.seller.call('POST', `/orders/${o.id}/meetup-proposals/${pid}/accept`))).toEqual({ field: 'proposalId', reason: 'proposal_closed' });
+    expect(await reason(await o.seller.call('POST', `/orders/${o.id}/meetup-proposals/${pid}/accept`))).toEqual({
+      field: 'proposalId',
+      reason: 'proposal_closed',
+    });
   });
 });

@@ -24,11 +24,19 @@ import styles from './orders.module.css';
 
 export type HandoverStatus = 'preparing' | 'awaiting_credentials' | 'delivered' | 'rekey_requested' | 'disputed' | 'taken_over' | 'cancelled' | 'closed';
 export interface GameView {
-  orderId: string; role: 'buyer' | 'seller';
+  orderId: string;
+  role: 'buyer' | 'seller';
   disclosure: { currentVersion: number; acknowledgedVersion: number | null; acknowledgedAt: string | null };
-  status: HandoverStatus | null; keyVersion: number; rekeysUsed: number;
-  credentialsDueAt: string | null; firstDeliveredAt: string | null; deliveredAt: string | null; takeoverDueAt: string | null;
-  rekeyDueAt: string | null; takenOverAt: string | null; takeoverSource: 'checklist' | 'window_end' | null;
+  status: HandoverStatus | null;
+  keyVersion: number;
+  rekeysUsed: number;
+  credentialsDueAt: string | null;
+  firstDeliveredAt: string | null;
+  deliveredAt: string | null;
+  takeoverDueAt: string | null;
+  rekeyDueAt: string | null;
+  takenOverAt: string | null;
+  takeoverSource: 'checklist' | 'window_end' | null;
   steps: Record<'password' | 'recovery_email' | 'recovery_phone' | 'social_logins' | 'two_step', string | null>;
   protectionEndsAt: string | null;
 }
@@ -77,35 +85,58 @@ export function GamePrepare({ o, g, t, lang, disabled }: { o: OrderView; g: Game
   const acknowledged = g.disclosure.acknowledgedVersion === version;
   const ack = useMutation({
     mutationFn: () => api.post(`/orders/${encodeURIComponent(o.id)}/game/acknowledge`, { version }),
-    onSuccess: () => { setMessage(null); void queryClient.invalidateQueries({ queryKey: gameKey(o.id) }); },
+    onSuccess: () => {
+      setMessage(null);
+      void queryClient.invalidateQueries({ queryKey: gameKey(o.id) });
+    },
     onError: (e) => setMessage(errorText(e, t, lang)),
   });
   if (!gameBrowserReady()) return <FormMessage kind="error">{t('game.browser_unsupported')}</FormMessage>;
   return (
     <div className={styles.game}>
       <h3>{t('game.disclosure_title')}</h3>
-      {known
-        ? <div className={styles.disclosure}>{[1, 2, 3].map((n) => <p key={n}>{t(`game.disclosure.v${version}.${n}`)}</p>)}</div>
-        : <FormMessage kind="error">{t('game.disclosure_unknown')}</FormMessage>}
+      {known ? (
+        <div className={styles.disclosure}>
+          {[1, 2, 3].map((n) => (
+            <p key={n}>{t(`game.disclosure.v${version}.${n}`)}</p>
+          ))}
+        </div>
+      ) : (
+        <FormMessage kind="error">{t('game.disclosure_unknown')}</FormMessage>
+      )}
       {message && <FormMessage kind="error">{message}</FormMessage>}
-      {acknowledged
-        ? <p><strong>{t('game.acknowledged', { at: formatDateTime(Date.parse(g.disclosure.acknowledgedAt ?? ''), lang) })}</strong></p>
-        : known && (
+      {acknowledged ? (
+        <p>
+          <strong>{t('game.acknowledged', { at: formatDateTime(Date.parse(g.disclosure.acknowledgedAt ?? ''), lang) })}</strong>
+        </p>
+      ) : (
+        known && (
           <>
             <div className={styles.check}>
               <input id="disclosure-read" type="checkbox" checked={read} onChange={(e) => setRead(e.target.checked)} />
               <label htmlFor="disclosure-read">{t('game.understand')}</label>
             </div>
-            <button type="button" className={styles.secondary} disabled={!read || ack.isPending || disabled} onClick={() => ack.mutate()}>{t('game.acknowledge')}</button>
+            <button type="button" className={styles.secondary} disabled={!read || ack.isPending || disabled} onClick={() => ack.mutate()}>
+              {t('game.acknowledge')}
+            </button>
           </>
-        )}
+        )
+      )}
       {acknowledged && (
         <>
           <h3>{t('game.key_title')}</h3>
           <p>{t('game.same_browser')}</p>
-          {g.keyVersion >= 1
-            ? <p><strong>{t('game.key_ready')}</strong></p>
-            : <p><a className={styles.primaryLink} href={secureHref(o.id, 'key')}>{t('game.create_key')}</a></p>}
+          {g.keyVersion >= 1 ? (
+            <p>
+              <strong>{t('game.key_ready')}</strong>
+            </p>
+          ) : (
+            <p>
+              <a className={styles.primaryLink} href={secureHref(o.id, 'key')}>
+                {t('game.create_key')}
+              </a>
+            </p>
+          )}
         </>
       )}
     </div>
@@ -127,14 +158,35 @@ export function GameTab({ o, g, t, lang }: { o: OrderView; g: GameView; t: T; la
   return (
     <section aria-labelledby="game-title" className={styles.panel}>
       <h2 id="game-title">{t('game.title')}</h2>
-      <p><strong>{g.status ? t(`game.status.${g.status}.${g.role}`) : t('game.status.none')}</strong></p>
+      <p>
+        <strong>{g.status ? t(`game.status.${g.status}.${g.role}`) : t('game.status.none')}</strong>
+      </p>
       {deadlines.some(([, at]) => at) && (
         <dl className={styles.deadlines}>
-          {deadlines.filter(([, at]) => at).map(([key, at]) => <div key={key}><dt>{t(key)}</dt><dd>{formatDeadline(Date.parse(at as string), now, lang)}</dd></div>)}
+          {deadlines
+            .filter(([, at]) => at)
+            .map(([key, at]) => (
+              <div key={key}>
+                <dt>{t(key)}</dt>
+                <dd>{formatDeadline(Date.parse(at as string), now, lang)}</dd>
+              </div>
+            ))}
         </dl>
       )}
-      {sealFor && <p><a className={styles.primaryLink} href={secureHref(o.id, 'deliver')}>{t('game.deliver_link')}</a></p>}
-      {open && <p><a className={styles.primaryLink} href={secureHref(o.id, 'credentials')}>{t('game.credentials_link')}</a></p>}
+      {sealFor && (
+        <p>
+          <a className={styles.primaryLink} href={secureHref(o.id, 'deliver')}>
+            {t('game.deliver_link')}
+          </a>
+        </p>
+      )}
+      {open && (
+        <p>
+          <a className={styles.primaryLink} href={secureHref(o.id, 'credentials')}>
+            {t('game.credentials_link')}
+          </a>
+        </p>
+      )}
       {open && <p className={styles.hint}>{t('game.same_browser')}</p>}
       {buyer && g.status === 'taken_over' && <ReleaseEarly o={o} g={g} t={t} lang={lang} />}
     </section>
@@ -166,11 +218,19 @@ function ReleaseEarly({ o, g, t, lang }: { o: OrderView; g: GameView; t: T; lang
   return (
     <div>
       {message && <FormMessage kind="error">{message}</FormMessage>}
-      <button type="button" className={styles.secondary} onClick={() => setConfirming(true)}>{t('game.release_early')}</button>
+      <button type="button" className={styles.secondary} onClick={() => setConfirming(true)}>
+        {t('game.release_early')}
+      </button>
       {confirming && (
-        <ConfirmDialog id="release-early" title={t('game.release_early')} busy={release.isPending}
-          confirmLabel={t('actions.release_button', { amount })} cancelLabel={t('actions.back')}
-          onConfirm={() => release.mutate()} onCancel={() => setConfirming(false)}>
+        <ConfirmDialog
+          id="release-early"
+          title={t('game.release_early')}
+          busy={release.isPending}
+          confirmLabel={t('actions.release_button', { amount })}
+          cancelLabel={t('actions.back')}
+          onConfirm={() => release.mutate()}
+          onCancel={() => setConfirming(false)}
+        >
           <p>{t('confirm.release_early', { amount, at: at ? formatDateTime(Date.parse(at), lang) : '—' })}</p>
         </ConfirmDialog>
       )}

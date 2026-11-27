@@ -1,9 +1,7 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { DataSource, EntityManager, QueryFailedError } from 'typeorm';
 import { Problem } from '../../../kernel/http/problems';
-import {
-  Approval, APPROVAL_SERVICE, ApprovalServicePort, AUDIT_SERVICE, AuditServicePort, CallContext,
-} from '../../identity/ports';
+import { Approval, APPROVAL_SERVICE, ApprovalServicePort, AUDIT_SERVICE, AuditServicePort, CallContext } from '../../identity/ports';
 import { ConfigService } from './config.service';
 
 // Parameter changes by administrators (Unit 7 section "Parameters and Feature Switches"; FR-OPS-03,
@@ -54,12 +52,13 @@ export class ConfigAdminService implements OnModuleInit {
   }
 
   async versions(): Promise<ConfigVersionView[]> {
-    const rows = await this.db.query(
-      `SELECT version, created_by, reason, approval_id, created_at FROM staff.config_versions ORDER BY version DESC LIMIT 200`,
-    );
+    const rows = await this.db.query(`SELECT version, created_by, reason, approval_id, created_at FROM staff.config_versions ORDER BY version DESC LIMIT 200`);
     return rows.map((r: Record<string, unknown>) => ({
-      version: r.version as number, createdBy: r.created_by as string | null, reason: r.reason as string,
-      approvalId: r.approval_id as string | null, createdAt: r.created_at as Date,
+      version: r.version as number,
+      createdBy: r.created_by as string | null,
+      reason: r.reason as string,
+      approvalId: r.approval_id as string | null,
+      createdAt: r.created_at as Date,
     }));
   }
 
@@ -70,11 +69,14 @@ export class ConfigAdminService implements OnModuleInit {
    */
   async violations(changes: Record<string, unknown>, q: Queryable = this.db): Promise<string[]> {
     const { values } = await this.currentSet(q);
-    const unknown = Object.keys(changes).filter((k) => !(k in values)).map((k) => `unknown parameter ${k}`);
+    const unknown = Object.keys(changes)
+      .filter((k) => !(k in values))
+      .map((k) => `unknown parameter ${k}`);
     if (unknown.length) return unknown;
     try {
       const [{ bad }] = await q.query(`SELECT staff.config_violations($1::jsonb || $2::jsonb, $1::jsonb) AS bad`, [
-        JSON.stringify(values), JSON.stringify(changes),
+        JSON.stringify(values),
+        JSON.stringify(changes),
       ]);
       return bad as string[];
     } catch (e) {
@@ -95,7 +97,15 @@ export class ConfigAdminService implements OnModuleInit {
     await this.check(changes);
     const action = Object.keys(changes).some((k) => k.startsWith('SW-')) ? 'emergency.control' : 'config.publish';
     return this.approvals.propose(
-      { action, targetType: 'config', targetId: '00000000-0000-0000-0000-00000000c0f1', payload: { changes }, reason, requiredRole: 'administrator', byStaffId },
+      {
+        action,
+        targetType: 'config',
+        targetId: '00000000-0000-0000-0000-00000000c0f1',
+        payload: { changes },
+        reason,
+        requiredRole: 'administrator',
+        byStaffId,
+      },
       ctx,
     );
   }
@@ -126,9 +136,16 @@ export class ConfigAdminService implements OnModuleInit {
     const changed = Object.keys(changes);
     await this.audit.record(
       {
-        actorType: 'staff', actorId: o.approvedBy ?? byStaffId, action: 'staff.config.published', objectType: 'config_version',
-        before: Object.fromEntries(changed.map((k) => [k, before[k]])), after: { version, ...changes }, reason, approvalId,
-        sourceIp: o.ctx?.ip ?? null, correlationId: o.ctx?.correlationId ?? null,
+        actorType: 'staff',
+        actorId: o.approvedBy ?? byStaffId,
+        action: 'staff.config.published',
+        objectType: 'config_version',
+        before: Object.fromEntries(changed.map((k) => [k, before[k]])),
+        after: { version, ...changes },
+        reason,
+        approvalId,
+        sourceIp: o.ctx?.ip ?? null,
+        correlationId: o.ctx?.correlationId ?? null,
       },
       m,
     );

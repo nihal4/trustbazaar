@@ -53,10 +53,30 @@ export interface GameAccountQueries {
 export interface GameEvidence {
   details: { game: string; platform: string; playerId: string; contents: string } | null;
   /** The latest proof of the listing; the screenshot's FileVault key for a signed link (null once purged, DV-39). */
-  proof: { code: string; status: string; submittedAt: Date | null; reviewedAt: Date | null; reviewedBy: string | null; liveCheck: string | null; reason: string | null; screenshotKey: string | null; screenshotSha256: string | null } | null;
+  proof: {
+    code: string;
+    status: string;
+    submittedAt: Date | null;
+    reviewedAt: Date | null;
+    reviewedBy: string | null;
+    liveCheck: string | null;
+    reason: string | null;
+    screenshotKey: string | null;
+    screenshotSha256: string | null;
+  } | null;
   handover: {
-    status: string; disclosureVersion: number; disclosureAckAt: Date; keyVersion: number; rekeysUsed: number; credentialsDueAt: Date | null; firstDeliveredAt: Date | null;
-    deliveredAt: Date | null; takeoverDueAt: Date | null; takenOverAt: Date | null; takeoverSource: string | null; disputedAt: Date | null;
+    status: string;
+    disclosureVersion: number;
+    disclosureAckAt: Date;
+    keyVersion: number;
+    rekeysUsed: number;
+    credentialsDueAt: Date | null;
+    firstDeliveredAt: Date | null;
+    deliveredAt: Date | null;
+    takeoverDueAt: Date | null;
+    takenOverAt: Date | null;
+    takeoverSource: string | null;
+    disputedAt: Date | null;
   };
   confirmations: { step: string; at: Date; sessionId: string }[];
   accessLog: { at: Date; userId: string; sessionId: string; keyVersion: number; sourceIp: string | null }[];

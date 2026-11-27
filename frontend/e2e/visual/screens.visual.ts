@@ -33,7 +33,14 @@ for (const screen of SCREENS.filter((s) => s.name !== 'order-seller')) {
 
 // Interactive states: where the duplicated buttons, steppers and popups live, and a page-load picture does not show them
 const STATES = [
-  { name: 'order-seller-handover-popup', fixture: 'order-seller', open: async (page: import('@playwright/test').Page) => { await page.getByRole('button', { name: 'Start the handover' }).click(); await page.getByRole('dialog').waitFor(); } },
+  {
+    name: 'order-seller-handover-popup',
+    fixture: 'order-seller',
+    open: async (page: import('@playwright/test').Page) => {
+      await page.getByRole('button', { name: 'Start the handover' }).click();
+      await page.getByRole('dialog').waitFor();
+    },
+  },
 ];
 for (const state of STATES) {
   for (const theme of ['dark', 'light'] as const) {

@@ -221,7 +221,9 @@ describe('staff, approvals and the audit log', () => {
       const b = await signedInStaff('administrator');
       const target = await fx.staffAccount('operator');
       const proposed = await (await a.b.post(`/admin/staff/${target.staffId}/mfa-reset`, { reason: 'Authenticator app was reinstalled' })).json();
-      await fx.query(`UPDATE identity.approvals SET proposed_at = now() - interval '73 hours', expires_at = now() - interval '1 hour' WHERE id = $1`, [proposed.id]);
+      await fx.query(`UPDATE identity.approvals SET proposed_at = now() - interval '73 hours', expires_at = now() - interval '1 hour' WHERE id = $1`, [
+        proposed.id,
+      ]);
       expect((await problem(await b.b.post(`/staff/approvals/${proposed.id}/decision`, { decision: 'approved' }))).type).toBe('/problems/approval-closed');
       const [row] = await fx.query(`SELECT decision, executed_at FROM identity.approvals WHERE id = $1`, [proposed.id]);
       expect(row).toEqual({ decision: 'expired', executed_at: null });
@@ -255,7 +257,11 @@ describe('staff, approvals and the audit log', () => {
       const rows = await (await admin.b.get(`/admin/audit?action=staff.account.disabled&objectId=${op.staffId}`)).json();
       expect(rows).toHaveLength(1);
       expect(rows[0]).toMatchObject({
-        actorType: 'staff', actorId: admin.staffId, objectType: 'staff', before: { status: 'active' }, after: { status: 'disabled' },
+        actorType: 'staff',
+        actorId: admin.staffId,
+        objectType: 'staff',
+        before: { status: 'active' },
+        after: { status: 'disabled' },
         reason: 'Contract has ended now',
       });
       expect(rows[0].correlationId).toMatch(/^[0-9a-f-]{36}$/);

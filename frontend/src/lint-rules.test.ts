@@ -15,22 +15,17 @@ async function errors(file: string, code: string): Promise<string[]> {
 
 describe('text only', () => {
   it('SEC-INP-03 dangerouslySetInnerHTML is refused', async () => {
-    const found = await errors(
-      'src/features/chat/Message.tsx',
-      'export const M = ({ t }: { t: string }) => <p dangerouslySetInnerHTML={{ __html: t }} />;\n',
-    );
+    const found = await errors('src/features/chat/Message.tsx', 'export const M = ({ t }: { t: string }) => <p dangerouslySetInnerHTML={{ __html: t }} />;\n');
     expect(found).toEqual([expect.stringMatching(/^react\/no-danger/)]);
   });
 
-  it.each([
-    ['el.innerHTML = text;'],
-    ['el.outerHTML = text;'],
-    ["el.insertAdjacentHTML('beforeend', text);"],
-    ['document.write(text);'],
-  ])('SEC-INP-03 %s is refused', async (line) => {
-    const found = await errors('src/shared/Show.ts', `export function show(el: HTMLElement, text: string) { ${line} }\n`);
-    expect(found).toEqual([expect.stringMatching(/SEC-INP-03/)]);
-  });
+  it.each([['el.innerHTML = text;'], ['el.outerHTML = text;'], ["el.insertAdjacentHTML('beforeend', text);"], ['document.write(text);']])(
+    'SEC-INP-03 %s is refused',
+    async (line) => {
+      const found = await errors('src/shared/Show.ts', `export function show(el: HTMLElement, text: string) { ${line} }\n`);
+      expect(found).toEqual([expect.stringMatching(/SEC-INP-03/)]);
+    },
+  );
 
   it('SEC-INP-03 textContent is allowed', async () => {
     expect(await errors('src/shared/Show.ts', 'export function show(el: HTMLElement, t: string) { el.textContent = t; }\n')).toEqual([]);
@@ -38,14 +33,13 @@ describe('text only', () => {
 });
 
 describe('browser storage', () => {
-  it.each([
-    ["localStorage.setItem('token', t);"],
-    ["window.localStorage.setItem('token', t);"],
-    ["sessionStorage.setItem('draft', t);"],
-  ])('SEC-SES-03 %s is refused', async (line) => {
-    const found = await errors('src/features/account/session.ts', `export function keep(t: string) { ${line} }\n`);
-    expect(found).toEqual([expect.stringMatching(/SEC-SES-03/)]);
-  });
+  it.each([["localStorage.setItem('token', t);"], ["window.localStorage.setItem('token', t);"], ["sessionStorage.setItem('draft', t);"]])(
+    'SEC-SES-03 %s is refused',
+    async (line) => {
+      const found = await errors('src/features/account/session.ts', `export function keep(t: string) { ${line} }\n`);
+      expect(found).toEqual([expect.stringMatching(/SEC-SES-03/)]);
+    },
+  );
 
   it('SEC-SES-03 the language module may keep the language choice', async () => {
     expect(await errors('src/shared/language/storage.ts', "export const k = () => localStorage.getItem('tb-lang');\n")).toEqual([]);
@@ -73,9 +67,7 @@ describe('import boundaries', () => {
     ['src/features/orders/OrderPage.tsx', '../../features/chat/Thread'],
     ['src/features/game/screens/Offer.tsx', '../../listings/ListingCard'],
   ])('NFR-MNT-07 Unit 8 section 3.2: %s may not import %s', async (file, path) => {
-    expect(await errors(file, `import '${path}';\n`)).toEqual([
-      expect.stringMatching(/a feature may not import another feature/),
-    ]);
+    expect(await errors(file, `import '${path}';\n`)).toEqual([expect.stringMatching(/a feature may not import another feature/)]);
   });
 
   it.each([
@@ -89,9 +81,7 @@ describe('import boundaries', () => {
   it.each([['react'], ['react-dom/client'], ['../features/game/Credentials'], ['../shared/Money']])(
     'SEC-GAM-03 the credentials entry may not import %s',
     async (path) => {
-      expect(await errors('src/entries/secure.tsx', `import '${path}';\n`)).toEqual([
-        expect.stringMatching(/SEC-GAM-03/),
-      ]);
+      expect(await errors('src/entries/secure.tsx', `import '${path}';\n`)).toEqual([expect.stringMatching(/SEC-GAM-03/)]);
     },
   );
 

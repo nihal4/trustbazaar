@@ -27,7 +27,8 @@ describe('orders under concurrency', () => {
     fx = await IdentityFixtures.open();
     db = t.app.get(DataSource);
     [{ id: category }] = await fx.query<{ id: number }>(
-      `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'c', 'বি', 'physical') RETURNING id`, [`race-${randomUUID().slice(0, 8)}`],
+      `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'c', 'বি', 'physical') RETURNING id`,
+      [`race-${randomUUID().slice(0, 8)}`],
     );
   });
   afterAll(async () => {
@@ -44,7 +45,8 @@ describe('orders under concurrency', () => {
     const ip = `203.0.113.${randomInt(1, 255)}, 10.5.${randomInt(0, 255)}.${randomInt(1, 255)}`;
     const call = (method: string, path: string, body?: unknown, extra: Record<string, string> = {}) =>
       fetch(t.url(path), {
-        method, redirect: 'manual',
+        method,
+        redirect: 'manual',
         headers: { ...fx.headers(sid, userId, 'user'), 'x-forwarded-for': ip, ...(body !== undefined ? { 'content-type': 'application/json' } : {}), ...extra },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
@@ -59,7 +61,12 @@ describe('orders under concurrency', () => {
                'pickup_or_courier', 'up_to_1kg', 'small', 'Dhaka', 23.81, 90.41, 1500000, $3, $3) RETURNING id`,
       [sellerId, category, quantity],
     );
-    for (const n of [1, 2]) await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [id, n, randomUUID().replace(/-/g, '')]);
+    for (const n of [1, 2])
+      await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [
+        id,
+        n,
+        randomUUID().replace(/-/g, ''),
+      ]);
     await fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [id]);
     return id;
   }
@@ -74,10 +81,28 @@ describe('orders under concurrency', () => {
       `INSERT INTO orders.orders (kind, listing_id, item_kind, buyer_id, seller_id, quantity, unit_price, item_price, fulfilment, delivery_quote_id, delivery_fee, total,
           listing_snapshot, commission_bps, delivery_margin_bps, params_version, payment_due_at, status, paid_at, fulfilment_step, fulfilment_due_at)
        VALUES ('fixed_price', $1, $2, $3, $4, 1, $5, $5, $6, $7, $8, $9, '{"title":"Item"}', 500, 1000, 1, now(), 'paid', now(), $10, now() + interval '7 days') RETURNING id`,
-      [randomUUID(), o.game ? 'game_account' : 'physical', buyer.userId, seller.userId, price, fulfilment, o.courier ? randomUUID() : null, fee, price + fee, step],
+      [
+        randomUUID(),
+        o.game ? 'game_account' : 'physical',
+        buyer.userId,
+        seller.userId,
+        price,
+        fulfilment,
+        o.courier ? randomUUID() : null,
+        fee,
+        price + fee,
+        step,
+      ],
     );
-    await fx.query(`INSERT INTO payments.attempts (purpose, order_id, payer_id, provider, amount, status, expires_at, confirmed_at, provider_txn_id) VALUES ('order', $1, $2, 'bkash', $3, 'succeeded', now(), now(), 'txn')`, [id, buyer.userId, price + fee]);
-    await fx.query(`INSERT INTO orders.escrows (order_id, release_policy, amount_collected) VALUES ($1, $2, $3)`, [id, o.game ? 'game_protection' : 'standard', price + fee]);
+    await fx.query(
+      `INSERT INTO payments.attempts (purpose, order_id, payer_id, provider, amount, status, expires_at, confirmed_at, provider_txn_id) VALUES ('order', $1, $2, 'bkash', $3, 'succeeded', now(), now(), 'txn')`,
+      [id, buyer.userId, price + fee],
+    );
+    await fx.query(`INSERT INTO orders.escrows (order_id, release_policy, amount_collected) VALUES ($1, $2, $3)`, [
+      id,
+      o.game ? 'game_protection' : 'standard',
+      price + fee,
+    ]);
     if (o.deliveredAgo) {
       const [{ at }] = await fx.query<{ at: Date }>(`SELECT now() - $1::interval AS at`, [o.deliveredAgo]);
       await db.transaction(async (m: EntityManager) => {
@@ -107,7 +132,10 @@ describe('orders under concurrency', () => {
     const lost = await Promise.all(answers.filter((r) => r.status === 409).map((r) => r.json()));
     expect(new Set(lost.map((b) => b.type))).toEqual(new Set(['/problems/not-available']));
     expect(await count(`orders.orders WHERE listing_id = $1`, [id])).toBe(1);
-    expect(await one(`SELECT quantity_available, quantity_reserved FROM listings.listings WHERE id = $1`, [id])).toEqual({ quantity_available: 0, quantity_reserved: 1 });
+    expect(await one(`SELECT quantity_available, quantity_reserved FROM listings.listings WHERE id = $1`, [id])).toEqual({
+      quantity_available: 0,
+      quantity_reserved: 1,
+    });
   });
 
   it('AC-2 twenty buyers for three units: exactly three orders, never an over-sale', async () => {
@@ -117,7 +145,10 @@ describe('orders under concurrency', () => {
     const answers = await Promise.all(buyers.map((b) => b.call('POST', '/orders', { listingId: id, quantity: 1, fulfilment: 'self_pickup' })));
     expect(answers.filter((r) => r.status === 201)).toHaveLength(3);
     expect(await count(`orders.orders WHERE listing_id = $1`, [id])).toBe(3);
-    expect(await one(`SELECT quantity_available, quantity_reserved FROM listings.listings WHERE id = $1`, [id])).toEqual({ quantity_available: 0, quantity_reserved: 3 });
+    expect(await one(`SELECT quantity_available, quantity_reserved FROM listings.listings WHERE id = $1`, [id])).toEqual({
+      quantity_available: 0,
+      quantity_reserved: 3,
+    });
   });
 
   it('AC-4 one mock payment confirmed by 15 callbacks and 5 queries at once is applied exactly once', async () => {
@@ -182,10 +213,21 @@ describe('orders under concurrency', () => {
     expect(before.slice(10)).toEqual(Array(5).fill(409));
     expect(await one(`SELECT state FROM orders.escrows WHERE order_id = $1`, [o.id])).toEqual({ state: 'held' });
     const sessions = await Promise.all(Array.from({ length: 5 }, () => fx.session({ userId: o.buyer.userId })));
-    const early = await Promise.all(sessions.map(async (sid) =>
-      (await fetch(t.url(`/orders/${o.id}/release-early`), {
-        method: 'POST', headers: { ...fx.headers(sid, o.buyer.userId, 'user'), 'x-forwarded-for': `203.0.113.${randomInt(1, 255)}, 10.4.0.1`, 'x-step-up': await fx.stepUpGrant(sid, 'game.release_early') },
-      })).status));
+    const early = await Promise.all(
+      sessions.map(
+        async (sid) =>
+          (
+            await fetch(t.url(`/orders/${o.id}/release-early`), {
+              method: 'POST',
+              headers: {
+                ...fx.headers(sid, o.buyer.userId, 'user'),
+                'x-forwarded-for': `203.0.113.${randomInt(1, 255)}, 10.4.0.1`,
+                'x-step-up': await fx.stepUpGrant(sid, 'game.release_early'),
+              },
+            })
+          ).status,
+      ),
+    );
     expect(early.filter((s) => s === 200)).toHaveLength(1);
     expect(early.filter((s) => s === 409)).toHaveLength(4);
     await settledOnce(o.id);
@@ -217,13 +259,18 @@ describe('orders under concurrency', () => {
     await p.buyer.call('POST', `/orders/${p.id}/confirm-receipt`);
     const { id: accountId } = await one<{ id: string }>(
       `INSERT INTO payments.payout_accounts (user_id, kind, wallet_e164, status, effective_at)
-       VALUES ($1, 'bkash_wallet', (SELECT phone_e164 FROM identity.users WHERE id = $1), 'active', now() - interval '1 day') RETURNING id`, [p.seller.userId]);
+       VALUES ($1, 'bkash_wallet', (SELECT phone_e164 FROM identity.users WHERE id = $1), 'active', now() - interval '1 day') RETURNING id`,
+      [p.seller.userId],
+    );
     await fx.query(`UPDATE payments.payouts SET status = 'pending', payout_account_id = $2 WHERE order_id = $1`, [p.id, accountId]);
     const refunds = t.app.get(RefundService);
     const payouts = t.app.get(PayoutService);
     for (let i = 0; i < 10; i++) {
       await Promise.all([...Array.from({ length: 5 }, () => refunds.processDue()), ...Array.from({ length: 5 }, () => payouts.processDue())]);
-      const done = await one<{ r: string; p: string }>(`SELECT (SELECT status FROM payments.refunds WHERE order_id = $1) AS r, (SELECT status FROM payments.payouts WHERE order_id = $2) AS p`, [r.id, p.id]);
+      const done = await one<{ r: string; p: string }>(
+        `SELECT (SELECT status FROM payments.refunds WHERE order_id = $1) AS r, (SELECT status FROM payments.payouts WHERE order_id = $2) AS p`,
+        [r.id, p.id],
+      );
       if (done.r === 'succeeded' && done.p === 'sent') break; // other test files leave due rows ahead of ours
     }
     expect(await count(`payments.journal_entries WHERE order_id = $1 AND kind = 'refund_paid'`, [r.id])).toBe(1);
@@ -231,16 +278,22 @@ describe('orders under concurrency', () => {
   });
 
   it('FR-PAY-14 thirty orders settled at once: every settlement adds up and every journal entry balances', async () => {
-    const orders = await Promise.all(Array.from({ length: 30 }, (_, i) => paid({ deliveredAgo: '1 hour', price: randomInt(100, 50_000_000), courier: i % 2 === 0 })));
+    const orders = await Promise.all(
+      Array.from({ length: 30 }, (_, i) => paid({ deliveredAgo: '1 hour', price: randomInt(100, 50_000_000), courier: i % 2 === 0 })),
+    );
     await Promise.all(orders.map((o) => o.buyer.call('POST', `/orders/${o.id}/confirm-receipt`)));
     const ids = orders.map((o) => o.id);
     const bad = await fx.query(
       `SELECT order_id FROM payments.settlements WHERE order_id = ANY($1)
-          AND seller_payout + commission + courier_payout + delivery_margin + refund_total <> amount_collected`, [ids]);
+          AND seller_payout + commission + courier_payout + delivery_margin + refund_total <> amount_collected`,
+      [ids],
+    );
     expect(bad).toEqual([]);
     expect(await count(`payments.settlements WHERE order_id = ANY($1)`, [ids])).toBe(30);
     const unbalanced = await fx.query(
-      `SELECT e.id FROM payments.journal_entries e JOIN payments.journal_lines l ON l.entry_id = e.id WHERE e.order_id = ANY($1) GROUP BY e.id HAVING sum(l.amount) <> 0`, [ids]);
+      `SELECT e.id FROM payments.journal_entries e JOIN payments.journal_lines l ON l.entry_id = e.id WHERE e.order_id = ANY($1) GROUP BY e.id HAVING sum(l.amount) <> 0`,
+      [ids],
+    );
     expect(unbalanced).toEqual([]);
   });
 });

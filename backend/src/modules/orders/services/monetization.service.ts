@@ -59,7 +59,12 @@ export const addMonth = (d: Date) => {
   return n;
 };
 const view = (s: Subscription): SubscriptionView => ({
-  id: s.id, status: s.status, provider: s.provider, currentPeriodEnd: s.currentPeriodEnd.toISOString(), cancelledAt: s.cancelledAt?.toISOString() ?? null, failedRenewals: s.failedRenewals,
+  id: s.id,
+  status: s.status,
+  provider: s.provider,
+  currentPeriodEnd: s.currentPeriodEnd.toISOString(),
+  cancelledAt: s.cancelledAt?.toISOString() ?? null,
+  failedRenewals: s.failedRenewals,
 });
 
 @Injectable()
@@ -83,7 +88,8 @@ export class MonetizationService implements OnModuleInit, ProStatusQuery {
     this.payments.registerSubject('subscription', this.paySubscription, this.renewalFailed);
     // section 5.13: end featured periods; process renewals and lapses
     this.jobs.register({
-      name: 'payments.monetization', intervalMs: 5 * 60_000,
+      name: 'payments.monetization',
+      intervalMs: 5 * 60_000,
       run: async () => (await this.endFeatured()) + (await this.processSubscriptions()) + (await this.expireAttempts()),
     });
   }
@@ -108,9 +114,18 @@ export class MonetizationService implements OnModuleInit, ProStatusQuery {
         if (l.sellerId !== sellerId) throw new Problem('not-found');
         if (l.status !== 'active') throw new Problem('listing-state', { errors: [{ field: 'listing', reason: 'not-active' }] });
         const now = this.clock.now();
-        const { identifiers: [p] } = await m.getRepository(FeaturedPurchase).insert({ listingId, sellerId, hours, fee: fee.toString() });
-        const { identifiers: [a] } = await m.getRepository(PaymentAttempt).insert({
-          purpose: 'featured_listing', subjectId: p.id as string, payerId: sellerId, provider, amount: fee.toString(), expiresAt: this.expiry(provider, now),
+        const {
+          identifiers: [p],
+        } = await m.getRepository(FeaturedPurchase).insert({ listingId, sellerId, hours, fee: fee.toString() });
+        const {
+          identifiers: [a],
+        } = await m.getRepository(PaymentAttempt).insert({
+          purpose: 'featured_listing',
+          subjectId: p.id as string,
+          payerId: sellerId,
+          provider,
+          amount: fee.toString(),
+          expiresAt: this.expiry(provider, now),
         });
         await m.getRepository(FeaturedPurchase).update({ id: p.id as string }, { attemptId: a.id as string });
         return { attempt: await m.getRepository(PaymentAttempt).findOneByOrFail({ id: a.id as string }), title: l.title };
@@ -119,7 +134,8 @@ export class MonetizationService implements OnModuleInit, ProStatusQuery {
       return attempt.id;
     });
     const a = await this.db.getRepository(PaymentAttempt).findOneByOrFail({ id });
-    if (a.payerId !== sellerId || a.purpose !== 'featured_listing') throw new Problem('validation-failed', { errors: [{ field: 'Idempotency-Key', reason: 'reused' }] });
+    if (a.payerId !== sellerId || a.purpose !== 'featured_listing')
+      throw new Problem('validation-failed', { errors: [{ field: 'Idempotency-Key', reason: 'reused' }] });
     return { purchaseId: a.subjectId, hours, ...(await this.payments.startView(id)) };
   }
 
@@ -131,28 +147,45 @@ export class MonetizationService implements OnModuleInit, ProStatusQuery {
     const l = await this.listings.snapshot(p.listingId, m).catch(() => null);
     if (!l || l.status !== 'active') return { accepted: false, reason: 'listing-not-active' };
     // a period already running (or queued) for the listing: this one follows it
-    const [{ last }] = (await m.query(
-      `SELECT max(ends_at) AS last FROM payments.featured_purchases WHERE listing_id = $1 AND ends_at > $2 AND id <> $3`,
-      [p.listingId, now, p.id],
-    )) as { last: Date | null }[];
+    const [{ last }] = (await m.query(`SELECT max(ends_at) AS last FROM payments.featured_purchases WHERE listing_id = $1 AND ends_at > $2 AND id <> $3`, [
+      p.listingId,
+      now,
+      p.id,
+    ])) as { last: Date | null }[];
     const startsAt = last && last > now ? last : now;
     const endsAt = new Date(startsAt.getTime() + p.hours * 3_600_000);
     await m.getRepository(FeaturedPurchase).update({ id: p.id }, { startsAt, endsAt });
     await m.getRepository(OrdersOutboxEvent).insert({
-      eventType: 'payments.featured.started', aggregateId: p.id,
-      payload: { purchaseId: p.id, listingId: p.listingId, sellerId: p.sellerId, hours: p.hours, startsAt: startsAt.toISOString(), endsAt: endsAt.toISOString() },
+      eventType: 'payments.featured.started',
+      aggregateId: p.id,
+      payload: {
+        purchaseId: p.id,
+        listingId: p.listingId,
+        sellerId: p.sellerId,
+        hours: p.hours,
+        startsAt: startsAt.toISOString(),
+        endsAt: endsAt.toISOString(),
+      },
     });
-    await this.audit.record({ actorType: 'provider', action: 'payments.featured.started', objectType: 'listing', objectId: p.listingId, after: { purchaseId: p.id, hours: p.hours, startsAt, endsAt } }, m);
+    await this.audit.record(
+      {
+        actorType: 'provider',
+        action: 'payments.featured.started',
+        objectType: 'listing',
+        objectId: p.listingId,
+        after: { purchaseId: p.id, hours: p.hours, startsAt, endsAt },
+      },
+      m,
+    );
     return { accepted: true, account: 'revenue_featured', memo: `featured listing ${p.listingId}, ${p.hours} hours` };
   };
 
   /** The monetization job: end the periods past their end (payments.featured.ended, once each). */
   async endFeatured(): Promise<number> {
     const now = this.clock.now();
-    const due = (await this.db.query(
-      `SELECT id FROM payments.featured_purchases WHERE ends_at <= $1 AND ended_at IS NULL ORDER BY ends_at LIMIT ${BATCH}`,
-      [now],
-    )) as { id: string }[];
+    const due = (await this.db.query(`SELECT id FROM payments.featured_purchases WHERE ends_at <= $1 AND ended_at IS NULL ORDER BY ends_at LIMIT ${BATCH}`, [
+      now,
+    ])) as { id: string }[];
     let n = 0;
     for (const { id } of due) {
       const ended = await this.db.transaction(async (m: EntityManager) => {
@@ -164,7 +197,8 @@ export class MonetizationService implements OnModuleInit, ProStatusQuery {
         const p = rows[0];
         await m.getRepository(FeaturedPurchase).update({ id }, { endedAt: now });
         await m.getRepository(OrdersOutboxEvent).insert({
-          eventType: 'payments.featured.ended', aggregateId: id,
+          eventType: 'payments.featured.ended',
+          aggregateId: id,
           payload: { purchaseId: id, listingId: p.listing_id, sellerId: p.seller_id, endsAt: p.ends_at.toISOString() },
         });
         return true;
@@ -192,7 +226,9 @@ export class MonetizationService implements OnModuleInit, ProStatusQuery {
         this.log.warn(`attempt ${a.id} could not be queried: ${(e as Error).message}`);
         continue;
       }
-      const [, count] = (await this.db.query(`UPDATE payments.attempts SET status = 'expired' WHERE id = $1 AND status IN ('created', 'redirected')`, [a.id])) as [unknown, number];
+      const [, count] = (await this.db.query(`UPDATE payments.attempts SET status = 'expired' WHERE id = $1 AND status IN ('created', 'redirected')`, [
+        a.id,
+      ])) as [unknown, number];
       n += count;
     }
     return n;
@@ -217,8 +253,14 @@ export class MonetizationService implements OnModuleInit, ProStatusQuery {
   }
 
   /** POST /me/subscription: pay a month (first or next), or undo a cancellation within the paid month. */
-  async subscribe(userId: string, provider: ProviderId, idempotencyKey: string | undefined):
-    Promise<{ resumed: true; subscription: SubscriptionView } | ({ resumed: false; subscriptionId: string; renewal: boolean } & Awaited<ReturnType<PaymentService['startView']>>)> {
+  async subscribe(
+    userId: string,
+    provider: ProviderId,
+    idempotencyKey: string | undefined,
+  ): Promise<
+    | { resumed: true; subscription: SubscriptionView }
+    | ({ resumed: false; subscriptionId: string; renewal: boolean } & Awaited<ReturnType<PaymentService['startView']>>)
+  > {
     if (!this.providers[provider]) throw new Problem('feature-off', { errors: [{ field: 'provider', reason: 'not-available-in-this-mode' }] });
     const resumed = await this.db.transaction(async (m) => {
       await this.lockUser(m, userId);
@@ -234,9 +276,21 @@ export class MonetizationService implements OnModuleInit, ProStatusQuery {
     const { id } = await this.idempotency.once('subscription', userId, idempotencyKey, async () => {
       const attempt = await this.db.transaction(async (m) => {
         await this.lockUser(m, userId);
-        const live = await m.getRepository(Subscription).findOne({ where: [{ userId, status: 'active' }, { userId, status: 'past_due' }] });
-        const { identifiers: [a] } = await m.getRepository(PaymentAttempt).insert({
-          purpose: 'subscription', subjectId: live?.id ?? randomUUID(), payerId: userId, provider, amount: String(price), expiresAt: this.expiry(provider, this.clock.now()),
+        const live = await m.getRepository(Subscription).findOne({
+          where: [
+            { userId, status: 'active' },
+            { userId, status: 'past_due' },
+          ],
+        });
+        const {
+          identifiers: [a],
+        } = await m.getRepository(PaymentAttempt).insert({
+          purpose: 'subscription',
+          subjectId: live?.id ?? randomUUID(),
+          payerId: userId,
+          provider,
+          amount: String(price),
+          expiresAt: this.expiry(provider, this.clock.now()),
         });
         return m.getRepository(PaymentAttempt).findOneByOrFail({ id: a.id as string });
       });
@@ -244,7 +298,8 @@ export class MonetizationService implements OnModuleInit, ProStatusQuery {
       return attempt.id;
     });
     const a = await this.db.getRepository(PaymentAttempt).findOneByOrFail({ id });
-    if (a.payerId !== userId || a.purpose !== 'subscription') throw new Problem('validation-failed', { errors: [{ field: 'Idempotency-Key', reason: 'reused' }] });
+    if (a.payerId !== userId || a.purpose !== 'subscription')
+      throw new Problem('validation-failed', { errors: [{ field: 'Idempotency-Key', reason: 'reused' }] });
     const renewal = (await this.db.getRepository(Subscription).countBy({ id: a.subjectId! })) > 0;
     return { resumed: false, subscriptionId: a.subjectId!, renewal, ...(await this.payments.startView(id)) };
   }
@@ -253,7 +308,12 @@ export class MonetizationService implements OnModuleInit, ProStatusQuery {
   async cancel(userId: string): Promise<SubscriptionView> {
     return this.db.transaction(async (m) => {
       await this.lockUser(m, userId);
-      const s = await m.getRepository(Subscription).findOne({ where: [{ userId, status: 'active' }, { userId, status: 'past_due' }] });
+      const s = await m.getRepository(Subscription).findOne({
+        where: [
+          { userId, status: 'active' },
+          { userId, status: 'past_due' },
+        ],
+      });
       if (!s) throw new Problem('not-found');
       const now = this.clock.now();
       await m.getRepository(Subscription).update({ id: s.id }, { status: 'cancelled', cancelledAt: now });
@@ -268,17 +328,22 @@ export class MonetizationService implements OnModuleInit, ProStatusQuery {
     const userId = attempt.payerId;
     await this.lockUser(m, userId);
     const s = await m.getRepository(Subscription).findOne({ where: { id: attempt.subjectId! }, lock: { mode: 'pessimistic_write' } });
-    const other = await m.query(
-      `SELECT 1 FROM payments.subscriptions WHERE user_id = $1 AND status IN ('active', 'past_due') AND id <> $2`, [userId, attempt.subjectId],
-    ) as unknown[];
+    const other = (await m.query(`SELECT 1 FROM payments.subscriptions WHERE user_id = $1 AND status IN ('active', 'past_due') AND id <> $2`, [
+      userId,
+      attempt.subjectId,
+    ])) as unknown[];
     if (other.length) return { accepted: false, reason: 'another-subscription-live' };
     let after: Subscription;
     if (s) {
       const end = addMonth(s.currentPeriodEnd > now ? s.currentPeriodEnd : now);
-      await m.getRepository(Subscription).update({ id: s.id }, { status: 'active', currentPeriodEnd: end, failedRenewals: 0, cancelledAt: null, provider: attempt.provider });
+      await m
+        .getRepository(Subscription)
+        .update({ id: s.id }, { status: 'active', currentPeriodEnd: end, failedRenewals: 0, cancelledAt: null, provider: attempt.provider });
       after = { ...s, status: 'active', currentPeriodEnd: end, failedRenewals: 0, cancelledAt: null, provider: attempt.provider };
     } else {
-      await m.getRepository(Subscription).insert({ id: attempt.subjectId!, userId, status: 'active', currentPeriodEnd: addMonth(now), provider: attempt.provider });
+      await m
+        .getRepository(Subscription)
+        .insert({ id: attempt.subjectId!, userId, status: 'active', currentPeriodEnd: addMonth(now), provider: attempt.provider });
       after = await m.getRepository(Subscription).findOneByOrFail({ id: attempt.subjectId! });
     }
     await this.changed(m, after, s ? 'renewed' : 'started');
@@ -325,14 +390,28 @@ export class MonetizationService implements OnModuleInit, ProStatusQuery {
   private async changed(m: EntityManager, s: Subscription, change: 'started' | 'renewed' | 'resumed' | 'cancelled' | 'renewal_due' | 'lapsed') {
     const price = change === 'renewal_due' ? (await this.params.current()).get<Cp48>('CP-48').monthly_poisha : null;
     await m.getRepository(OrdersOutboxEvent).insert({
-      eventType: 'payments.subscription.changed', aggregateId: s.id,
-      payload: { subscriptionId: s.id, userId: s.userId, status: s.status, change, currentPeriodEnd: s.currentPeriodEnd.toISOString(), ...(price !== null ? { amount: String(price) } : {}) },
+      eventType: 'payments.subscription.changed',
+      aggregateId: s.id,
+      payload: {
+        subscriptionId: s.id,
+        userId: s.userId,
+        status: s.status,
+        change,
+        currentPeriodEnd: s.currentPeriodEnd.toISOString(),
+        ...(price !== null ? { amount: String(price) } : {}),
+      },
     });
-    await this.audit.record({
-      actorType: change === 'cancelled' || change === 'resumed' ? 'user' : change === 'started' || change === 'renewed' ? 'provider' : 'system',
-      actorId: change === 'cancelled' || change === 'resumed' ? s.userId : null,
-      action: `payments.subscription.${change}`, objectType: 'subscription', objectId: s.id, after: { status: s.status, currentPeriodEnd: s.currentPeriodEnd },
-    }, m);
+    await this.audit.record(
+      {
+        actorType: change === 'cancelled' || change === 'resumed' ? 'user' : change === 'started' || change === 'renewed' ? 'provider' : 'system',
+        actorId: change === 'cancelled' || change === 'resumed' ? s.userId : null,
+        action: `payments.subscription.${change}`,
+        objectType: 'subscription',
+        objectId: s.id,
+        after: { status: s.status, currentPeriodEnd: s.currentPeriodEnd },
+      },
+      m,
+    );
   }
 
   /** One subscription change per user at a time (subscribe, pay, cancel). */

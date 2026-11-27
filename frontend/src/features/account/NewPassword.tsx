@@ -18,7 +18,11 @@ import styles from './account.module.css';
 export type ResetProof = { token: string } | { phone: string };
 type Target = 'code' | 'password' | 'mfa';
 
-export function NewPasswordForm({ proof, onDone, onLinkRefused }: {
+export function NewPasswordForm({
+  proof,
+  onDone,
+  onLinkRefused,
+}: {
   proof: ResetProof;
   onDone: () => void;
   /** the link's token was refused or has expired */
@@ -41,15 +45,22 @@ export function NewPasswordForm({ proof, onDone, onLinkRefused }: {
   const submit = async (ev: FormEvent) => {
     ev.preventDefault();
     if (busy) return;
-    if (phone && !isSixDigits(code)) { say(t('code.six_digits'), 'code'); return; }
+    if (phone && !isSixDigits(code)) {
+      say(t('code.six_digits'), 'code');
+      return;
+    }
     // only the upper bound is certain here: an MFA user may use 8 characters (Unit 1 decides)
     const problem = passwordLengthProblem(password, true);
-    if (problem) { say(passwordReasonText(problem, t, lang), 'password'); return; }
+    if (problem) {
+      say(passwordReasonText(problem, t, lang), 'password');
+      return;
+    }
     setBusy(true);
     setMessage(null);
     try {
       await api.post('/auth/password/reset', {
-        ...(phone ? { phone, code: toAsciiDigits(code).trim() } : proof), newPassword: password,
+        ...(phone ? { phone, code: toAsciiDigits(code).trim() } : proof),
+        newPassword: password,
         ...(askMfa && mfaCode.trim() ? { mfaCode: toAsciiDigits(mfaCode).trim() } : {}),
       });
       onDone();
@@ -59,9 +70,13 @@ export function NewPasswordForm({ proof, onDone, onLinkRefused }: {
       const reason = rejectedPasswordReason(err);
       const wait = retryAfter(err);
       if (reason) say(passwordReasonText(reason, t, lang), 'password');
-      else if (wait !== null) { setWaitUntil(untilAfter(wait)); say(t('signin.too_many'), null); }
-      else if (name === 'mfa-required') { setAskMfa(true); say(t('reset.mfa_needed'), askMfa ? 'mfa' : null, !askMfa); }
-      else if (name === 'mfa-failed') say(t('code.wrong'), 'mfa');
+      else if (wait !== null) {
+        setWaitUntil(untilAfter(wait));
+        say(t('signin.too_many'), null);
+      } else if (name === 'mfa-required') {
+        setAskMfa(true);
+        say(t('reset.mfa_needed'), askMfa ? 'mfa' : null, !askMfa);
+      } else if (name === 'mfa-failed') say(t('code.wrong'), 'mfa');
       else if (name === 'otp-failed' && phone) say(t('code.wrong'), 'code');
       else if ((name === 'otp-expired' || name === 'link-invalid') && phone) say(t('reset.code_expired'), 'code');
       else if (name === 'otp-failed' || name === 'otp-expired' || name === 'link-invalid') onLinkRefused?.();
@@ -74,9 +89,17 @@ export function NewPasswordForm({ proof, onDone, onLinkRefused }: {
     <form onSubmit={(e) => void submit(e)} noValidate className={styles.stepForm}>
       <div className={styles.fieldGroup}>
         {phone && <CodeField id="reset-code" label={t('code.label')} value={code} onChange={setCode} autoFocus {...aria('code')} />}
-        <TextField id="reset-password" label={t('reset.new_password')}
+        <TextField
+          id="reset-password"
+          label={t('reset.new_password')}
           hint={t('reset.password_hint', { min: digits(PASSWORD.minSingleFactor, lang), minMfa: digits(PASSWORD.minWithMfa, lang) })}
-          value={password} onChange={setPassword} type="password" autoComplete="new-password" autoFocus={!phone} {...aria('password')} />
+          value={password}
+          onChange={setPassword}
+          type="password"
+          autoComplete="new-password"
+          autoFocus={!phone}
+          {...aria('password')}
+        />
         {askMfa && <CodeField id="reset-mfa" label={t('reset.mfa_code')} value={mfaCode} onChange={setMfaCode} allowRecovery autoFocus {...aria('mfa')} />}
         <Slot id="reset-message" message={message?.text ?? null} ok={Boolean(message?.ok)} />
       </div>
@@ -92,10 +115,28 @@ export function ResetDone({ rows, head }: { rows: number; head: number }) {
   const { t } = useAccountT();
   const navigate = useNavigate();
   return (
-    <AuthSplit stepKey="done" rows={rows} headCells={head} head={<h1 id="reset-head">{t('reset.title')}</h1>}
-      foot={<p className={styles.footNote}>{t('signin.no_account')} <Link to="/register">{t('register.link')}</Link></p>}>
-      <form onSubmit={(e) => { e.preventDefault(); navigate('/signin', { replace: true }); }} noValidate className={styles.stepForm}>
-        <p role="status" className={styles.stepText}>{t('reset.done')}</p>
+    <AuthSplit
+      stepKey="done"
+      rows={rows}
+      headCells={head}
+      head={<h1 id="reset-head">{t('reset.title')}</h1>}
+      foot={
+        <p className={styles.footNote}>
+          {t('signin.no_account')} <Link to="/register">{t('register.link')}</Link>
+        </p>
+      }
+    >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          navigate('/signin', { replace: true });
+        }}
+        noValidate
+        className={styles.stepForm}
+      >
+        <p role="status" className={styles.stepText}>
+          {t('reset.done')}
+        </p>
         <SubmitButton busy={false}>{t('signin.submit')}</SubmitButton>
       </form>
     </AuthSplit>

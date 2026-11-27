@@ -5,7 +5,19 @@ import { Popup } from '../../shared/Popup';
 import { useAccountT } from './common';
 import styles from './account.module.css';
 
-export function SettingRow({ id, title, summary, locked = false, children }: { id: string; title: string; summary?: string | null; locked?: boolean; children: ReactNode }) {
+export function SettingRow({
+  id,
+  title,
+  summary,
+  locked = false,
+  children,
+}: {
+  id: string;
+  title: string;
+  summary?: string | null;
+  locked?: boolean;
+  children: ReactNode;
+}) {
   const { t } = useAccountT();
   const [open, setOpen] = useState(false);
   return (
@@ -14,7 +26,11 @@ export function SettingRow({ id, title, summary, locked = false, children }: { i
         <span>{title}</span>
         {summary && <span className={styles.settingValue}>{summary}</span>}
       </button>
-      {open && <Popup id={id} title={title} closeLabel={t('legal.close')} busy={locked} onClose={() => setOpen(false)}>{children}</Popup>}
+      {open && (
+        <Popup id={id} title={title} closeLabel={t('legal.close')} busy={locked} onClose={() => setOpen(false)}>
+          {children}
+        </Popup>
+      )}
     </li>
   );
 }

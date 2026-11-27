@@ -21,7 +21,9 @@ export type Closed = { auctionId: string; status: 'sold' | 'unsold'; price: stri
 /** listing active -> ended_unsold, with its history row and event (FR-AUC-09, FR-AUC-15). */
 export async function endUnsold(m: EntityManager, listingId: string, reason: string): Promise<void> {
   const [l] = (await m.query(`SELECT seller_id, item_kind, status FROM listings.listings WHERE id = $1 FOR UPDATE`, [listingId])) as {
-    seller_id: string; item_kind: string; status: string;
+    seller_id: string;
+    item_kind: string;
+    status: string;
   }[];
   if (!l || l.status !== 'active') return;
   await m.query(`UPDATE listings.listings SET status = 'ended_unsold' WHERE id = $1`, [listingId]);
@@ -81,9 +83,11 @@ export class AuctionCloser {
   }
 
   private async award(m: EntityManager, auctionId: string): Promise<Closed> {
-    const [a] = (await m.query(
-      `SELECT seller_id, winner_id, final_price::text AS price FROM auctions.auctions WHERE listing_id = $1`, [auctionId],
-    )) as { seller_id: string; winner_id: string; price: string }[];
+    const [a] = (await m.query(`SELECT seller_id, winner_id, final_price::text AS price FROM auctions.auctions WHERE listing_id = $1`, [auctionId])) as {
+      seller_id: string;
+      winner_id: string;
+      price: string;
+    }[];
     // the single unit is held for the winner until paid (sold), or released when no bidder is left (Decisions log, U3-05)
     const held = await m.query(
       `UPDATE listings.listings SET quantity_available = quantity_available - 1, quantity_reserved = quantity_reserved + 1
@@ -93,26 +97,48 @@ export class AuctionCloser {
     if (held.length === 0) throw new Error(`auction ${auctionId}: the listing's unit is not available`);
     const order = await this.orders.createAuctionOrder({ listingId: auctionId, winnerId: a.winner_id, price: BigInt(a.price), kind: 'auction' }, m);
     await publish(m, 'auctions.auction.awarded', auctionId, {
-      auctionId, listingId: auctionId, sellerId: a.seller_id, winnerId: a.winner_id, price: a.price, orderId: order.id,
+      auctionId,
+      listingId: auctionId,
+      sellerId: a.seller_id,
+      winnerId: a.winner_id,
+      price: a.price,
+      orderId: order.id,
     });
-    await this.audit.record({
-      actorType: 'system', action: 'auctions.auction.awarded', objectType: 'auction', objectId: auctionId,
-      before: { status: 'open' }, after: { status: 'awarded', winnerId: a.winner_id, price: a.price, orderId: order.id },
-    }, m);
+    await this.audit.record(
+      {
+        actorType: 'system',
+        action: 'auctions.auction.awarded',
+        objectType: 'auction',
+        objectId: auctionId,
+        before: { status: 'open' },
+        after: { status: 'awarded', winnerId: a.winner_id, price: a.price, orderId: order.id },
+      },
+      m,
+    );
     return { auctionId, status: 'sold', price: a.price };
   }
 
   private async unsold(m: EntityManager, auctionId: string): Promise<Closed> {
-    const [a] = (await m.query(
-      `SELECT seller_id, bid_count, current_price::text AS price FROM auctions.auctions WHERE listing_id = $1`, [auctionId],
-    )) as { seller_id: string; bid_count: number; price: string | null }[];
+    const [a] = (await m.query(`SELECT seller_id, bid_count, current_price::text AS price FROM auctions.auctions WHERE listing_id = $1`, [auctionId])) as {
+      seller_id: string;
+      bid_count: number;
+      price: string | null;
+    }[];
     const reason = a.bid_count === 0 ? 'no_bids' : 'reserve_not_met';
     await endUnsold(m, auctionId, `auction closed: ${reason.replace(/_/g, ' ')}`);
     await publish(m, 'auctions.auction.unsold', auctionId, { auctionId, listingId: auctionId, sellerId: a.seller_id, reason });
-    await this.audit.record({
-      actorType: 'system', action: 'auctions.auction.unsold', objectType: 'auction', objectId: auctionId,
-      before: { status: 'open' }, after: { status: 'unsold' }, reason,
-    }, m);
+    await this.audit.record(
+      {
+        actorType: 'system',
+        action: 'auctions.auction.unsold',
+        objectType: 'auction',
+        objectId: auctionId,
+        before: { status: 'open' },
+        after: { status: 'unsold' },
+        reason,
+      },
+      m,
+    );
     return { auctionId, status: 'unsold', price: null };
   }
 

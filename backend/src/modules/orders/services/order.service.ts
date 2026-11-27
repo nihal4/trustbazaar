@@ -32,7 +32,7 @@ const OPTIONS: Record<string, Fulfilment[]> = {
   courier_only: ['courier'],
   pickup_or_courier: ['self_pickup', 'courier'],
 };
-const optionsOf = (s: ListingSnapshot): Fulfilment[] => (s.itemKind === 'game_account' ? ['game_account'] : OPTIONS[s.fulfilmentOptions ?? ''] ?? []);
+const optionsOf = (s: ListingSnapshot): Fulfilment[] => (s.itemKind === 'game_account' ? ['game_account'] : (OPTIONS[s.fulfilmentOptions ?? ''] ?? []));
 
 interface Cp27 {
   new_days: number;
@@ -91,16 +91,29 @@ export class OrderService implements OrdersPort {
         if (snap.itemKind === 'game_account' && !c.fulfilment) c = { ...c, fulfilment: 'game_account' };
         if (c.fulfilment) {
           const refusal = fulfilmentRefusal(c.fulfilment, optionsOf(snap), this.delivery.shipsCourier);
-          if (refusal) throw new Problem(refusal === 'not-offered-by-listing' ? 'validation-failed' : 'feature-off', { errors: [{ field: 'fulfilment', reason: refusal }] });
-          if (c.fulfilment === 'courier' && !c.quoteId) throw new Problem('validation-failed', { errors: [{ field: 'quoteId', reason: 'required-for-courier' }] });
+          if (refusal)
+            throw new Problem(refusal === 'not-offered-by-listing' ? 'validation-failed' : 'feature-off', {
+              errors: [{ field: 'fulfilment', reason: refusal }],
+            });
+          if (c.fulfilment === 'courier' && !c.quoteId)
+            throw new Problem('validation-failed', { errors: [{ field: 'quoteId', reason: 'required-for-courier' }] });
         }
         const unitPrice = BigInt(snap.price!);
         const itemPrice = unitPrice * BigInt(c.quantity);
         await this.assertWithinLimits(m, buyerId, verifiedAt, itemPrice, params);
         const now = this.clock.now();
         return this.insert(m, {
-          kind: 'fixed_price', snap, buyerId, quantity: c.quantity, unitPrice, fulfilment: c.fulfilment ?? null, quoteId: c.quoteId,
-          paymentDueAt: new Date(now.getTime() + params.ms('CP-13')), params, version: params.version, actor: { type: 'user', id: buyerId },
+          kind: 'fixed_price',
+          snap,
+          buyerId,
+          quantity: c.quantity,
+          unitPrice,
+          fulfilment: c.fulfilment ?? null,
+          quoteId: c.quoteId,
+          paymentDueAt: new Date(now.getTime() + params.ms('CP-13')),
+          params,
+          version: params.version,
+          actor: { type: 'user', id: buyerId },
         });
       });
     });
@@ -132,7 +145,8 @@ export class OrderService implements OrdersPort {
       if (o.buyerId !== buyerId) throw new Problem('forbidden'); // the seller sees the order, the buyer chooses
       if (o.status !== 'awaiting_payment') throw new Problem('order-state');
       const refusal = fulfilmentRefusal(fulfilment, optionsOf(o.listingSnapshot as ListingSnapshot), this.delivery.shipsCourier);
-      if (refusal) throw new Problem(refusal === 'not-offered-by-listing' ? 'validation-failed' : 'feature-off', { errors: [{ field: 'fulfilment', reason: refusal }] });
+      if (refusal)
+        throw new Problem(refusal === 'not-offered-by-listing' ? 'validation-failed' : 'feature-off', { errors: [{ field: 'fulfilment', reason: refusal }] });
       if (fulfilment === 'courier') {
         if (!quoteId) throw new Problem('validation-failed', { errors: [{ field: 'quoteId', reason: 'required-for-courier' }] });
         if (o.fulfilment === 'courier') return; // already chosen: a quote is claimed once per order (quote_one_per_order)
@@ -147,15 +161,26 @@ export class OrderService implements OrdersPort {
 
   // ---------------------------------------------------------------- OrdersPort (section 3.3)
 
-  async createAuctionOrder(a: { listingId: string; winnerId: string; price: bigint; kind: 'auction' | 'second_chance' }, tx?: EntityManager): Promise<OrderView> {
+  async createAuctionOrder(
+    a: { listingId: string; winnerId: string; price: bigint; kind: 'auction' | 'second_chance' },
+    tx?: EntityManager,
+  ): Promise<OrderView> {
     const params = await this.params.current();
     const create = async (m: EntityManager) => {
       const snap = await this.listings.snapshot(a.listingId, m);
       if (snap.saleFormat !== 'auction') throw new Error(`listing ${a.listingId} is not an auction`);
       const window = params.ms(a.kind === 'auction' ? 'CP-10' : 'CP-11'); // FR-AUC-14, FR-AUC-15
       return this.insert(m, {
-        kind: a.kind, snap, buyerId: a.winnerId, quantity: 1, unitPrice: a.price, fulfilment: snap.itemKind === 'game_account' ? 'game_account' : null,
-        paymentDueAt: new Date(this.clock.now().getTime() + window), params, version: params.version, actor: { type: 'system', id: null },
+        kind: a.kind,
+        snap,
+        buyerId: a.winnerId,
+        quantity: 1,
+        unitPrice: a.price,
+        fulfilment: snap.itemKind === 'game_account' ? 'game_account' : null,
+        paymentDueAt: new Date(this.clock.now().getTime() + window),
+        params,
+        version: params.version,
+        actor: { type: 'system', id: null },
       });
     };
     const id = tx ? await create(tx) : await this.db.transaction(create);
@@ -191,16 +216,40 @@ export class OrderService implements OrdersPort {
       const reason = o.kind === 'fixed_price' ? 'checkout_expired' : 'payment_window_expired';
       await m.query(`UPDATE payments.attempts SET status = 'expired' WHERE order_id = $1 AND status IN ('created', 'redirected')`, [orderId]);
       await m.getRepository(Order).update({ id: orderId }, { status: 'cancelled', cancelledAt: now, cancelReason: reason });
-      const facts = { orderId, kind: o.kind, listingId: o.listingId, listingTitle: (o.listingSnapshot as { title?: string } | null)?.title ?? null, quantity: o.quantity, buyerId: o.buyerId, sellerId: o.sellerId, reason };
+      const facts = {
+        orderId,
+        kind: o.kind,
+        listingId: o.listingId,
+        listingTitle: (o.listingSnapshot as { title?: string } | null)?.title ?? null,
+        quantity: o.quantity,
+        buyerId: o.buyerId,
+        sellerId: o.sellerId,
+        reason,
+      };
       await m.getRepository(OrdersOutboxEvent).insert({ eventType: 'orders.order.cancelled', aggregateId: orderId, payload: facts });
-      if (o.kind !== 'fixed_price') await m.getRepository(OrdersOutboxEvent).insert({ eventType: 'orders.order.payment_expired', aggregateId: orderId, payload: facts });
-      await this.audit.record({ actorType: 'system', action: 'orders.order.cancelled', objectType: 'order', objectId: orderId, before: { status: 'awaiting_payment' }, after: { status: 'cancelled' }, reason }, m);
+      if (o.kind !== 'fixed_price')
+        await m.getRepository(OrdersOutboxEvent).insert({ eventType: 'orders.order.payment_expired', aggregateId: orderId, payload: facts });
+      await this.audit.record(
+        {
+          actorType: 'system',
+          action: 'orders.order.cancelled',
+          objectType: 'order',
+          objectId: orderId,
+          before: { status: 'awaiting_payment' },
+          after: { status: 'cancelled' },
+          reason,
+        },
+        m,
+      );
       return true;
     });
   }
 
   async deviceIdentifier(orderId: string): Promise<{ digest: string; last4: string } | null> {
-    const [row] = (await this.db.query(`SELECT listing_snapshot->>'serialDigest' AS digest, listing_snapshot->>'serialLast4' AS last4 FROM orders.orders WHERE id = $1`, [orderId])) as { digest: string | null; last4: string | null }[];
+    const [row] = (await this.db.query(
+      `SELECT listing_snapshot->>'serialDigest' AS digest, listing_snapshot->>'serialLast4' AS last4 FROM orders.orders WHERE id = $1`,
+      [orderId],
+    )) as { digest: string | null; last4: string | null }[];
     return row?.digest && row.last4 ? { digest: row.digest, last4: row.last4 } : null;
   }
 
@@ -209,9 +258,18 @@ export class OrderService implements OrdersPort {
     if (!o) throw new Problem('not-found');
     const e = await tx.getRepository(Escrow).findOneBy({ orderId });
     return {
-      orderId: o.id, status: o.status, itemKind: o.itemKind, listingId: o.listingId, buyerId: o.buyerId, sellerId: o.sellerId,
-      fulfilment: o.fulfilment, fulfilmentStep: o.fulfilmentStep, fulfilmentDueAt: o.fulfilmentDueAt,
-      stepRecorded: o.fulfilmentDoneAt !== null, deliveryEventRecorded: o.deliveryEventAt !== null, escrowState: e?.state ?? null,
+      orderId: o.id,
+      status: o.status,
+      itemKind: o.itemKind,
+      listingId: o.listingId,
+      buyerId: o.buyerId,
+      sellerId: o.sellerId,
+      fulfilment: o.fulfilment,
+      fulfilmentStep: o.fulfilmentStep,
+      fulfilmentDueAt: o.fulfilmentDueAt,
+      stepRecorded: o.fulfilmentDoneAt !== null,
+      deliveryEventRecorded: o.deliveryEventAt !== null,
+      escrowState: e?.state ?? null,
     };
   }
 
@@ -251,34 +309,69 @@ export class OrderService implements OrdersPort {
   private async insert(
     m: EntityManager,
     o: {
-      kind: 'fixed_price' | 'auction' | 'second_chance'; snap: ListingSnapshot; buyerId: string; quantity: number; unitPrice: bigint;
-      fulfilment: Fulfilment | null; paymentDueAt: Date; params: ParameterValues; version: number; actor: { type: 'user' | 'system'; id: string | null };
+      kind: 'fixed_price' | 'auction' | 'second_chance';
+      snap: ListingSnapshot;
+      buyerId: string;
+      quantity: number;
+      unitPrice: bigint;
+      fulfilment: Fulfilment | null;
+      paymentDueAt: Date;
+      params: ParameterValues;
+      version: number;
+      actor: { type: 'user' | 'system'; id: string | null };
       quoteId?: string;
     },
   ): Promise<string> {
     const itemPrice = o.unitPrice * BigInt(o.quantity);
     const courier = o.fulfilment === 'courier';
     const { identifiers } = await m.getRepository(Order).insert({
-      kind: o.kind, listingId: o.snap.listingId, itemKind: o.snap.itemKind, buyerId: o.buyerId, sellerId: o.snap.sellerId,
+      kind: o.kind,
+      listingId: o.snap.listingId,
+      itemKind: o.snap.itemKind,
+      buyerId: o.buyerId,
+      sellerId: o.snap.sellerId,
       // a courier order is written first without its method: the quote is claimed by the order's id (courier_needs_quote)
-      quantity: o.quantity, unitPrice: o.unitPrice.toString(), itemPrice: itemPrice.toString(), fulfilment: courier ? null : o.fulfilment,
-      deliveryFee: '0', total: itemPrice.toString(), listingSnapshot: o.snap,
+      quantity: o.quantity,
+      unitPrice: o.unitPrice.toString(),
+      itemPrice: itemPrice.toString(),
+      fulfilment: courier ? null : o.fulfilment,
+      deliveryFee: '0',
+      total: itemPrice.toString(),
+      listingSnapshot: o.snap,
       // FR-MON-02, FR-MON-10: the rates of the day are kept on the order; a Pro Seller's when the seller is Pro now
       commissionBps: o.params.get<{ standard_bps: number; pro_bps: number }>('CP-25')[(await this.pro.isPro(o.snap.sellerId, m)) ? 'pro_bps' : 'standard_bps'],
       deliveryMarginBps: o.params.get<number>('CP-26'),
-      paramsVersion: o.version, paymentDueAt: o.paymentDueAt,
+      paramsVersion: o.version,
+      paymentDueAt: o.paymentDueAt,
     });
     const orderId = identifiers[0].id as string;
     let total = itemPrice;
     if (courier) total = itemPrice + (await this.applyQuote(m, orderId, o.buyerId, o.snap.listingId, o.quantity, o.quoteId!, itemPrice));
     await m.getRepository(OrdersOutboxEvent).insert({
-      eventType: 'orders.order.created', aggregateId: orderId,
+      eventType: 'orders.order.created',
+      aggregateId: orderId,
       // paymentDueAt: the payment window, which Notifications reminds the buyer of (FR-NTF-07, U6-06)
-      payload: { orderId, kind: o.kind, listingId: o.snap.listingId, listingTitle: o.snap.title, buyerId: o.buyerId, sellerId: o.snap.sellerId, quantity: o.quantity, total: total.toString(), paymentDueAt: o.paymentDueAt.toISOString() },
+      payload: {
+        orderId,
+        kind: o.kind,
+        listingId: o.snap.listingId,
+        listingTitle: o.snap.title,
+        buyerId: o.buyerId,
+        sellerId: o.snap.sellerId,
+        quantity: o.quantity,
+        total: total.toString(),
+        paymentDueAt: o.paymentDueAt.toISOString(),
+      },
     });
     await this.audit.record(
-      { actorType: o.actor.type, actorId: o.actor.id, action: 'orders.order.created', objectType: 'order', objectId: orderId,
-        after: { kind: o.kind, listingId: o.snap.listingId, quantity: o.quantity, total: total.toString(), paramsVersion: o.version } },
+      {
+        actorType: o.actor.type,
+        actorId: o.actor.id,
+        action: 'orders.order.created',
+        objectType: 'order',
+        objectId: orderId,
+        after: { kind: o.kind, listingId: o.snap.listingId, quantity: o.quantity, total: total.toString(), paramsVersion: o.version },
+      },
       m,
     );
     return orderId;
@@ -288,11 +381,25 @@ export class OrderService implements OrdersPort {
    * I-21, FR-DLV-09: Unit 4 claims the courier quote for this order in this transaction (DC-13); its fee becomes the
    * order's delivery fee and part of the one total the buyer pays. Returns the fee.
    */
-  private async applyQuote(m: EntityManager, orderId: string, buyerId: string, listingId: string, quantity: number, quoteId: string, itemPrice: bigint): Promise<bigint> {
+  private async applyQuote(
+    m: EntityManager,
+    orderId: string,
+    buyerId: string,
+    listingId: string,
+    quantity: number,
+    quoteId: string,
+    itemPrice: bigint,
+  ): Promise<bigint> {
     const fee = await this.delivery.claimQuote({ quoteId, orderId, buyerId, listingId, quantity }, m);
-    await m.getRepository(Order).update({ id: orderId }, {
-      fulfilment: 'courier', deliveryQuoteId: quoteId, deliveryFee: fee.toString(), total: (itemPrice + fee).toString(),
-    });
+    await m.getRepository(Order).update(
+      { id: orderId },
+      {
+        fulfilment: 'courier',
+        deliveryQuoteId: quoteId,
+        deliveryFee: fee.toString(),
+        total: (itemPrice + fee).toString(),
+      },
+    );
     return fee;
   }
 
@@ -305,14 +412,21 @@ export class OrderService implements OrdersPort {
     if (order.role !== 'buyer') throw new Problem('not-found');
     // the proof is only as good as what the server checks: the current version of the terms, and a step the order is really at
     if (version !== TERMS_VERSION[kind]) throw new Problem('validation-failed', { errors: [{ field: 'version', reason: 'outdated' }] });
-    const now = kind === 'courier' ? order.status === 'awaiting_payment' && (order.fulfilment === null || order.fulfilment === 'courier')
-      : kind === 'handover_code' ? order.status === 'paid' && order.fulfilment === 'self_pickup'
-        : order.status === 'paid';
+    const now =
+      kind === 'courier'
+        ? order.status === 'awaiting_payment' && (order.fulfilment === null || order.fulfilment === 'courier')
+        : kind === 'handover_code'
+          ? order.status === 'paid' && order.fulfilment === 'self_pickup'
+          : order.status === 'paid';
     if (!now) throw new Problem('validation-failed', { errors: [{ field: 'kind', reason: 'not-now' }] });
-    const [again] = (await this.db.query(`SELECT accepted_at FROM orders.terms_acceptances WHERE order_id = $1 AND user_id = $2 AND kind = $3 AND terms_version = $4 ORDER BY accepted_at LIMIT 1`, [orderId, userId, kind, version])) as { accepted_at: Date }[];
+    const [again] = (await this.db.query(
+      `SELECT accepted_at FROM orders.terms_acceptances WHERE order_id = $1 AND user_id = $2 AND kind = $3 AND terms_version = $4 ORDER BY accepted_at LIMIT 1`,
+      [orderId, userId, kind, version],
+    )) as { accepted_at: Date }[];
     if (again) return { acceptedAt: again.accepted_at.toISOString() }; // accepted before: the first time stays the proof
     const [row] = (await this.db.query(
-      `INSERT INTO orders.terms_acceptances (order_id, user_id, kind, terms_version) VALUES ($1, $2, $3, $4) RETURNING accepted_at`, [orderId, userId, kind, version],
+      `INSERT INTO orders.terms_acceptances (order_id, user_id, kind, terms_version) VALUES ($1, $2, $3, $4) RETURNING accepted_at`,
+      [orderId, userId, kind, version],
     )) as { accepted_at: Date }[];
     return { acceptedAt: row.accepted_at.toISOString() };
   }
@@ -326,20 +440,43 @@ export class OrderService implements OrdersPort {
     const iso = (d: Date | null) => d?.toISOString() ?? null;
     // the other party's public name, for the orders list and the receipt (Decisions log, U10-23)
     const otherId = o.buyerId === userId ? o.sellerId : o.buyerId;
-    const other = await this.identity.getPublicProfile(otherId).then((p) => ({ id: otherId, displayName: p.displayName, verified: p.verified, joinMonth: p.joinMonth }), () => ({ id: otherId, displayName: '', verified: false, joinMonth: '' }));
+    const other = await this.identity.getPublicProfile(otherId).then(
+      (p) => ({ id: otherId, displayName: p.displayName, verified: p.verified, joinMonth: p.joinMonth }),
+      () => ({ id: otherId, displayName: '', verified: false, joinMonth: '' }),
+    );
     return {
-      id: o.id, kind: o.kind, role: o.buyerId === userId ? 'buyer' : 'seller', status: o.status,
+      id: o.id,
+      kind: o.kind,
+      role: o.buyerId === userId ? 'buyer' : 'seller',
+      status: o.status,
       listing: { id: o.listingId, title: snap.title, itemKind: o.itemKind, photoKey: snap.photoKeys?.[0] ?? null },
-      buyerId: o.buyerId, sellerId: o.sellerId, counterparty: other, quantity: o.quantity,
-      unitPrice: o.unitPrice, itemPrice: o.itemPrice, deliveryFee: o.deliveryFee, total: o.total,
-      fulfilment: o.fulfilment, fulfilmentOptions: optionsOf(snap),
-      paymentDueAt: o.paymentDueAt.toISOString(), paidAt: iso(o.paidAt), fulfilmentStep: o.fulfilmentStep,
-      fulfilmentDueAt: iso(o.fulfilmentDueAt), deliveryEventAt: iso(o.deliveryEventAt), cancelledAt: iso(o.cancelledAt),
-      cancelReason: o.cancelReason, closedAt: iso(o.closedAt), createdAt: o.createdAt.toISOString(),
+      buyerId: o.buyerId,
+      sellerId: o.sellerId,
+      counterparty: other,
+      quantity: o.quantity,
+      unitPrice: o.unitPrice,
+      itemPrice: o.itemPrice,
+      deliveryFee: o.deliveryFee,
+      total: o.total,
+      fulfilment: o.fulfilment,
+      fulfilmentOptions: optionsOf(snap),
+      paymentDueAt: o.paymentDueAt.toISOString(),
+      paidAt: iso(o.paidAt),
+      fulfilmentStep: o.fulfilmentStep,
+      fulfilmentDueAt: iso(o.fulfilmentDueAt),
+      deliveryEventAt: iso(o.deliveryEventAt),
+      cancelledAt: iso(o.cancelledAt),
+      cancelReason: o.cancelReason,
+      closedAt: iso(o.closedAt),
+      createdAt: o.createdAt.toISOString(),
       cancellationRequest: req ? { id: req.id, status: req.status, reason: req.reason, createdAt: req.createdAt.toISOString() } : null,
       escrow: e && {
-        state: e.state, releasePolicy: e.releasePolicy, amountCollected: e.amountCollected, amountRefunded: e.amountRefunded,
-        disputeWindowEndsAt: iso(e.disputeWindowEndsAt), autoReleaseAt: iso(e.autoReleaseAt),
+        state: e.state,
+        releasePolicy: e.releasePolicy,
+        amountCollected: e.amountCollected,
+        amountRefunded: e.amountRefunded,
+        disputeWindowEndsAt: iso(e.disputeWindowEndsAt),
+        autoReleaseAt: iso(e.autoReleaseAt),
       },
     };
   }

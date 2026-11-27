@@ -35,7 +35,9 @@ export function Component() {
       {approvals.isError && <FormMessage kind="error">{errorText(approvals.error, t, lang)}</FormMessage>}
       {approvals.isSuccess && approvals.data.length === 0 && <p>{t('staff.approvals.none')}</p>}
       <ul className={styles.items}>
-        {(approvals.data ?? []).map((a) => <ApprovalItem key={a.id} a={a} t={t} lang={lang} />)}
+        {(approvals.data ?? []).map((a) => (
+          <ApprovalItem key={a.id} a={a} t={t} lang={lang} />
+        ))}
       </ul>
     </div>
   );
@@ -49,9 +51,17 @@ function ApprovalItem({ a, t, lang }: { a: Approval; t: T; lang: Lang }) {
   const [deciding, setDeciding] = useState<'approved' | 'rejected' | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const decide = useMutation({
-    mutationFn: (decision: 'approved' | 'rejected') => api.post(`/staff/approvals/${encodeURIComponent(a.id)}/decision`, { decision, ...(note.trim() ? { note: note.trim() } : {}) }),
-    onSuccess: () => { setDeciding(null); void queryClient.invalidateQueries({ queryKey: approvalsKey }); },
-    onError: (e) => { setDeciding(null); setMessage(errorText(e, t, lang)); void queryClient.invalidateQueries({ queryKey: approvalsKey }); },
+    mutationFn: (decision: 'approved' | 'rejected') =>
+      api.post(`/staff/approvals/${encodeURIComponent(a.id)}/decision`, { decision, ...(note.trim() ? { note: note.trim() } : {}) }),
+    onSuccess: () => {
+      setDeciding(null);
+      void queryClient.invalidateQueries({ queryKey: approvalsKey });
+    },
+    onError: (e) => {
+      setDeciding(null);
+      setMessage(errorText(e, t, lang));
+      void queryClient.invalidateQueries({ queryKey: approvalsKey });
+    },
   });
   const action = APPROVAL_ACTIONS.has(a.action) ? t(`staff.approval.${a.action}`) : a.action;
   const details = Object.entries(a.payload ?? {}).filter(([, v]) => ['string', 'number', 'boolean'].includes(typeof v));
@@ -60,23 +70,56 @@ function ApprovalItem({ a, t, lang }: { a: Approval; t: T; lang: Lang }) {
     <li className={styles.card} aria-labelledby={`approval-${a.id}`}>
       <h2 id={`approval-${a.id}`}>{action}</h2>
       <dl className={styles.facts}>
-        <dt>{t('staff.approvals.target')}</dt><dd>{t('staff.approvals.target_value', { type: a.targetType, id: a.targetId.slice(0, 8) })}</dd>
-        <dt>{t('staff.approvals.reason')}</dt><dd className={styles.text}>{a.reason}</dd>
-        <dt>{t('staff.approvals.proposed')}</dt><dd>{formatDateTime(Date.parse(a.proposedAt), lang)}</dd>
-        <dt>{t('staff.approvals.expires')}</dt><dd>{formatDeadline(Date.parse(a.expiresAt), now, lang)}</dd>
-        {details.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{String(v)}</dd></div>)}
+        <dt>{t('staff.approvals.target')}</dt>
+        <dd>{t('staff.approvals.target_value', { type: a.targetType, id: a.targetId.slice(0, 8) })}</dd>
+        <dt>{t('staff.approvals.reason')}</dt>
+        <dd className={styles.text}>{a.reason}</dd>
+        <dt>{t('staff.approvals.proposed')}</dt>
+        <dd>{formatDateTime(Date.parse(a.proposedAt), lang)}</dd>
+        <dt>{t('staff.approvals.expires')}</dt>
+        <dd>{formatDeadline(Date.parse(a.expiresAt), now, lang)}</dd>
+        {details.map(([k, v]) => (
+          <div key={k}>
+            <dt>{k}</dt>
+            <dd>{String(v)}</dd>
+          </div>
+        ))}
       </dl>
       {message && <FormMessage kind="error">{message}</FormMessage>}
       <label htmlFor={noteId}>{t('staff.approvals.note')}</label>
       <textarea id={noteId} rows={2} maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} />
       <p className={styles.buttons}>
-        <button type="button" className={styles.primary} onClick={() => { setMessage(null); setDeciding('approved'); }}>{t('staff.approvals.approve')}</button>
-        <button type="button" className={styles.secondary} onClick={() => { setMessage(null); setDeciding('rejected'); }}>{t('staff.approvals.reject')}</button>
+        <button
+          type="button"
+          className={styles.primary}
+          onClick={() => {
+            setMessage(null);
+            setDeciding('approved');
+          }}
+        >
+          {t('staff.approvals.approve')}
+        </button>
+        <button
+          type="button"
+          className={styles.secondary}
+          onClick={() => {
+            setMessage(null);
+            setDeciding('rejected');
+          }}
+        >
+          {t('staff.approvals.reject')}
+        </button>
       </p>
       {deciding && (
-        <ConfirmDialog id={`decide-${a.id}`} title={t(deciding === 'approved' ? 'staff.approvals.confirm_approve' : 'staff.approvals.confirm_reject', { action })}
-          busy={decide.isPending} confirmLabel={t(deciding === 'approved' ? 'staff.approvals.approve' : 'staff.approvals.reject')} cancelLabel={t('staff.approvals.back')}
-          onConfirm={() => decide.mutate(deciding)} onCancel={() => setDeciding(null)}>
+        <ConfirmDialog
+          id={`decide-${a.id}`}
+          title={t(deciding === 'approved' ? 'staff.approvals.confirm_approve' : 'staff.approvals.confirm_reject', { action })}
+          busy={decide.isPending}
+          confirmLabel={t(deciding === 'approved' ? 'staff.approvals.approve' : 'staff.approvals.reject')}
+          cancelLabel={t('staff.approvals.back')}
+          onConfirm={() => decide.mutate(deciding)}
+          onCancel={() => setDeciding(null)}
+        >
           <p>{t(deciding === 'approved' ? 'staff.approvals.approve_consequence' : 'staff.approvals.reject_consequence')}</p>
         </ConfirmDialog>
       )}

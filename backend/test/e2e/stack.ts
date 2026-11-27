@@ -62,7 +62,13 @@ async function main() {
   );
   for (const n of [1, 2]) {
     const p = await photo('phone');
-    await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, $4, $5)`, [listingId, n, p.key, p.width, p.height]);
+    await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, $4, $5)`, [
+      listingId,
+      n,
+      p.key,
+      p.width,
+      p.height,
+    ]);
   }
   await fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [listingId]);
 
@@ -76,7 +82,13 @@ async function main() {
   );
   for (const n of [1, 2]) {
     const p = await photo('camera');
-    await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, $4, $5)`, [disputeListingId, n, p.key, p.width, p.height]);
+    await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, $4, $5)`, [
+      disputeListingId,
+      n,
+      p.key,
+      p.width,
+      p.height,
+    ]);
   }
   await fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [disputeListingId]);
 
@@ -84,7 +96,8 @@ async function main() {
   // approved listing (FR-GAM-01 to FR-GAM-04)
   const tag = randomUUID().slice(0, 8);
   const [{ id: gameCategory }] = await fx.query<{ id: number }>(
-    `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'Game accounts', 'গেম অ্যাকাউন্ট', 'game_account') RETURNING id`, [`games-${tag}`],
+    `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'Game accounts', 'গেম অ্যাকাউন্ট', 'game_account') RETURNING id`,
+    [`games-${tag}`],
   );
   const [{ id: gameId }] = await fx.query<{ id: number }>(
     `INSERT INTO game_accounts.games (slug, name, platforms, code_placement, publisher_note) VALUES ($1, 'eFootball', '{android,ios}', 'the bio', 'The publisher may forbid transfers.') RETURNING id`,
@@ -96,7 +109,10 @@ async function main() {
     [seller.userId, gameCategory],
   );
   const player = String(10_000_000 + Math.floor(Math.random() * 89_999_999));
-  await fx.query(`INSERT INTO game_accounts.details (listing_id, seller_id, game_id, platform, player_id, contents) VALUES ($1, $2, $3, 'android', $4, 'Division 1, three epic players.')`, [gameListingId, seller.userId, gameId, player]);
+  await fx.query(
+    `INSERT INTO game_accounts.details (listing_id, seller_id, game_id, platform, player_id, contents) VALUES ($1, $2, $3, 'android', $4, 'Division 1, three epic players.')`,
+    [gameListingId, seller.userId, gameId, player],
+  );
   await fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [gameListingId]);
   await fx.query(`INSERT INTO game_accounts.claims (game_id, player_id_norm, listing_id) VALUES ($1, $2, $3)`, [gameId, player, gameListingId]);
 
@@ -104,14 +120,25 @@ async function main() {
   const auctionId = await openAuction(fx, seller.userId, categoryId, { start: '100000', endsIn: '1 day' });
   for (const { position } of await fx.query<{ position: number }>(`SELECT position FROM listings.listing_photos WHERE listing_id = $1`, [auctionId])) {
     const p = await photo('camera');
-    await fx.query(`UPDATE listings.listing_photos SET storage_key = $3, width = $4, height = $5 WHERE listing_id = $1 AND position = $2`, [auctionId, position, p.key, p.width, p.height]);
+    await fx.query(`UPDATE listings.listing_photos SET storage_key = $3, width = $4, height = $5 WHERE listing_id = $1 AND position = $2`, [
+      auctionId,
+      position,
+      p.key,
+      p.width,
+      p.height,
+    ]);
   }
 
   // the buyer's order, made through the API as the web client makes it
   const sid = await fx.session({ userId: buyer.userId });
   const res = await fetch(`http://127.0.0.1:${port}/api/v1/orders`, {
     method: 'POST',
-    headers: { ...fx.headers(sid, buyer.userId, 'user'), 'content-type': 'application/json', origin: process.env.PUBLIC_ORIGIN, 'idempotency-key': randomUUID() },
+    headers: {
+      ...fx.headers(sid, buyer.userId, 'user'),
+      'content-type': 'application/json',
+      origin: process.env.PUBLIC_ORIGIN,
+      'idempotency-key': randomUUID(),
+    },
     body: JSON.stringify({ listingId, quantity: 1, fulfilment: 'self_pickup' }),
   });
   if (!res.ok) throw new Error(`the seed order was refused: ${res.status} ${await res.text()}`);
@@ -129,7 +156,11 @@ async function main() {
     operator: { email: operator.email, password: operator.password, totpSecret: operator.totpSecret },
     operator2: { email: operator2.email, password: operator2.password, totpSecret: operator2.totpSecret },
     administrator: { email: administrator.email, password: administrator.password, totpSecret: administrator.totpSecret },
-    listingId, orderId, auctionId, disputeListingId, gameListingId,
+    listingId,
+    orderId,
+    auctionId,
+    disputeListingId,
+    gameListingId,
   };
   writeFileSync(out, JSON.stringify(fixtures, null, 2));
   await ds.destroy();

@@ -5,8 +5,18 @@ import { Problem } from '../../../kernel/http/problems';
 import { NOTIFIER, Notifier } from '../../chat/ports';
 import { DELIVERY_COMMANDS, DeliveryCommands } from '../../delivery/ports';
 import {
-  Approval, APPROVAL_SERVICE, ApprovalServicePort, AUDIT_SERVICE, AuditServicePort, CallContext, FILE_VAULT, FileVaultPort, IDENTITY_QUERY, IdentityQuery,
-  STAFF_QUERY, StaffQuery,
+  Approval,
+  APPROVAL_SERVICE,
+  ApprovalServicePort,
+  AUDIT_SERVICE,
+  AuditServicePort,
+  CallContext,
+  FILE_VAULT,
+  FileVaultPort,
+  IDENTITY_QUERY,
+  IdentityQuery,
+  STAFF_QUERY,
+  StaffQuery,
 } from '../../identity/ports';
 
 // Lawful disclosure and the dispute case-file retention (docs/design/07_disputes_trust_staff.pdf section 9 and the
@@ -21,8 +31,17 @@ import {
 export const CASE_FILE_RETENTION = '2 years';
 
 interface DisclosureRow {
-  id: string; subject_user: string; authority: string; legal_reference: string; scope: string; requested_by: string; approval_id: string | null;
-  disclosed_at: Date | null; user_notified_at: Date | null; withheld_reason: string | null; created_at: Date;
+  id: string;
+  subject_user: string;
+  authority: string;
+  legal_reference: string;
+  scope: string;
+  requested_by: string;
+  approval_id: string | null;
+  disclosed_at: Date | null;
+  user_notified_at: Date | null;
+  withheld_reason: string | null;
+  created_at: Date;
 }
 
 @Injectable()
@@ -52,7 +71,8 @@ export class PrivacyService implements OnModuleInit {
   ): Promise<{ disclosureId: string; approvalId: string; status: 'proposed' }> {
     const withheld = r.withheldReason?.normalize('NFC').trim() || null;
     if (r.notifyUser && withheld) throw new Problem('validation-failed', { errors: [{ field: 'withheldReason', reason: 'only-when-not-notified' }] });
-    if (!r.notifyUser && (!withheld || withheld.length < 10)) throw new Problem('validation-failed', { errors: [{ field: 'withheldReason', reason: 'required' }] });
+    if (!r.notifyUser && (!withheld || withheld.length < 10))
+      throw new Problem('validation-failed', { errors: [{ field: 'withheldReason', reason: 'required' }] });
     await this.identity.getPublicProfile(r.userId); // not-found for an unknown user
     await this.staff.assertNoConflict(staffId, [r.userId]); // FR-OPS-06
     return this.db.transaction(async (m) => {
@@ -60,16 +80,34 @@ export class PrivacyService implements OnModuleInit {
         `INSERT INTO staff.disclosures (subject_user, authority, legal_reference, scope, requested_by) VALUES ($1, $2, $3, $4, $5) RETURNING id`,
         [r.userId, r.authority.normalize('NFC').trim(), r.legalReference.normalize('NFC').trim(), r.scope.normalize('NFC').trim(), staffId],
       )) as { id: string }[];
-      const approval = await this.approvals.propose({
-        action: 'disclosure.approve', targetType: 'disclosure', targetId: id, requiredRole: 'operator', byStaffId: staffId,
-        reason: `${r.authority.trim()}, ${r.legalReference.trim()}: ${r.scope.trim()}`.slice(0, 1000),
-        payload: { userId: r.userId, notifyUser: r.notifyUser, withheldReason: withheld },
-      }, ctx, m);
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: 'staff.disclosure.requested', objectType: 'user', objectId: r.userId, approvalId: approval.id,
-        after: { disclosureId: id, authority: r.authority.trim(), legalReference: r.legalReference.trim(), notifyUser: r.notifyUser }, reason: r.scope.trim(),
-        sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null,
-      }, m);
+      const approval = await this.approvals.propose(
+        {
+          action: 'disclosure.approve',
+          targetType: 'disclosure',
+          targetId: id,
+          requiredRole: 'operator',
+          byStaffId: staffId,
+          reason: `${r.authority.trim()}, ${r.legalReference.trim()}: ${r.scope.trim()}`.slice(0, 1000),
+          payload: { userId: r.userId, notifyUser: r.notifyUser, withheldReason: withheld },
+        },
+        ctx,
+        m,
+      );
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: 'staff.disclosure.requested',
+          objectType: 'user',
+          objectId: r.userId,
+          approvalId: approval.id,
+          after: { disclosureId: id, authority: r.authority.trim(), legalReference: r.legalReference.trim(), notifyUser: r.notifyUser },
+          reason: r.scope.trim(),
+          sourceIp: ctx.ip ?? null,
+          correlationId: ctx.correlationId ?? null,
+        },
+        m,
+      );
       return { disclosureId: id, approvalId: approval.id, status: 'proposed' as const };
     });
   }
@@ -80,9 +118,18 @@ export class PrivacyService implements OnModuleInit {
     if (!d) throw new Problem('not-found');
     const iso = (x: Date | null) => (x ? x.toISOString() : null);
     return {
-      id: d.id, userId: d.subject_user, authority: d.authority, legalReference: d.legal_reference, scope: d.scope, requestedBy: d.requested_by,
-      approvalId: d.approval_id, status: d.disclosed_at ? 'disclosed' : 'proposed', disclosedAt: iso(d.disclosed_at),
-      userNotifiedAt: iso(d.user_notified_at), withheldReason: d.withheld_reason, createdAt: d.created_at.toISOString(),
+      id: d.id,
+      userId: d.subject_user,
+      authority: d.authority,
+      legalReference: d.legal_reference,
+      scope: d.scope,
+      requestedBy: d.requested_by,
+      approvalId: d.approval_id,
+      status: d.disclosed_at ? 'disclosed' : 'proposed',
+      disclosedAt: iso(d.disclosed_at),
+      userNotifiedAt: iso(d.user_notified_at),
+      withheldReason: d.withheld_reason,
+      createdAt: d.created_at.toISOString(),
     };
   }
 
@@ -96,13 +143,24 @@ export class PrivacyService implements OnModuleInit {
     )) as [{ subject_user: string; authority: string }[], number];
     if (!rows[0].length) throw new Problem('approval-closed');
     const d = rows[0][0];
-    await this.audit.record({
-      actorType: 'staff', actorId: a.decidedBy ?? a.proposedBy, action: 'staff.disclosure.approved', objectType: 'user', objectId: d.subject_user, approvalId: a.id,
-      after: { disclosureId: a.targetId, notified: p.notifyUser }, reason: p.notifyUser ? null : p.withheldReason,
-    }, tx);
+    await this.audit.record(
+      {
+        actorType: 'staff',
+        actorId: a.decidedBy ?? a.proposedBy,
+        action: 'staff.disclosure.approved',
+        objectType: 'user',
+        objectId: d.subject_user,
+        approvalId: a.id,
+        after: { disclosureId: a.targetId, notified: p.notifyUser },
+        reason: p.notifyUser ? null : p.withheldReason,
+      },
+      tx,
+    );
     if (p.notifyUser) {
-      await tx.query(`INSERT INTO disputes.outbox (event_type, aggregate_id, payload) VALUES ('staff.disclosure.made', $1, $2)`,
-        [a.targetId, JSON.stringify({ disclosureId: a.targetId, userId: d.subject_user, authority: d.authority })]);
+      await tx.query(`INSERT INTO disputes.outbox (event_type, aggregate_id, payload) VALUES ('staff.disclosure.made', $1, $2)`, [
+        a.targetId,
+        JSON.stringify({ disclosureId: a.targetId, userId: d.subject_user, authority: d.authority }),
+      ]);
     }
   }
 

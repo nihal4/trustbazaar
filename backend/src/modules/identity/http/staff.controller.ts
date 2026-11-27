@@ -11,7 +11,12 @@ import { StaffService } from '../services/staff.service';
 import { AuditQueryDto, ConflictDto, DecisionDto, MfaDto, NewStaffDto, ReasonDto, StaffEnrolDto, StaffSignInDto } from './auth.dto';
 import { cookie, ctxOf } from './request';
 import {
-  clearStaffSessionCookies, setStaffSessionCookies, setStaffTicketCookie, STAFF_ENROL_COOKIE, STAFF_MFA_COOKIE, STAFF_REFRESH_COOKIE,
+  clearStaffSessionCookies,
+  setStaffSessionCookies,
+  setStaffTicketCookie,
+  STAFF_ENROL_COOKIE,
+  STAFF_MFA_COOKIE,
+  STAFF_REFRESH_COOKIE,
 } from './session-cookies';
 
 // Staff console API (Unit 1 sections 4.2 and 6.7 to 6.8; I-51). Staff sessions use their own cookies.
@@ -176,8 +181,13 @@ export class AdminController {
   @Get('audit')
   read(@Query() q: AuditQueryDto) {
     return this.audit.list({
-      actorId: q.actorId, objectId: q.objectId, action: q.action, before: q.before,
-      from: q.from ? new Date(q.from) : undefined, to: q.to ? new Date(q.to) : undefined, limit: q.limit ? Number(q.limit) : undefined,
+      actorId: q.actorId,
+      objectId: q.objectId,
+      action: q.action,
+      before: q.before,
+      from: q.from ? new Date(q.from) : undefined,
+      to: q.to ? new Date(q.to) : undefined,
+      limit: q.limit ? Number(q.limit) : undefined,
     });
   }
 

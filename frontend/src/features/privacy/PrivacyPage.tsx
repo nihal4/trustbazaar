@@ -25,7 +25,11 @@ import styles from './privacy.module.css';
 const CATALOGUES = { en, bn };
 
 interface ExportStatus {
-  id: string; status: 'preparing' | 'ready' | 'expired'; requestedAt: string; readyAt: string | null; expiresAt: string | null;
+  id: string;
+  status: 'preparing' | 'ready' | 'expired';
+  requestedAt: string;
+  readyAt: string | null;
+  expiresAt: string | null;
   download: { url: string; expiresAt: string } | null;
 }
 const exportKey = ['me', 'data-export'] as const;
@@ -42,12 +46,19 @@ export function Component() {
     retry: false,
     refetchInterval: (q) => (q.state.data?.status === 'preparing' ? 30_000 : false),
   });
-  if (exp.isError && isApiError(exp.error, 401)) return <p><Link to={signInPath('/account/privacy')}>{t('privacy.sign_in')}</Link></p>;
+  if (exp.isError && isApiError(exp.error, 401))
+    return (
+      <p>
+        <Link to={signInPath('/account/privacy')}>{t('privacy.sign_in')}</Link>
+      </p>
+    );
   return (
     <div className={styles.page}>
       <AccountTabs t={t} />
       <h1>{t('privacy.title')}</h1>
-      <p className={styles.lead}>{t('privacy.intro')} <Link to="/help/privacy">{t('privacy.notice_link')}</Link></p>
+      <p className={styles.lead}>
+        {t('privacy.intro')} <Link to="/help/privacy">{t('privacy.notice_link')}</Link>
+      </p>
       <div className={styles.cols}>
         <DataExport status={exp.data ?? null} loading={exp.isPending} error={exp.isError ? exp.error : null} t={t} lang={lang} />
         <CloseAccount t={t} lang={lang} />
@@ -62,7 +73,10 @@ function DataExport({ status, loading, error, t, lang }: { status: ExportStatus 
   const [message, setMessage] = useState<string | null>(null);
   const ask = useMutation({
     mutationFn: () => api.post('/me/data-export', {}, { stepUpAction: 'data.export' }) as Promise<ExportStatus>,
-    onSuccess: (s) => { setMessage(null); queryClient.setQueryData(exportKey, s); },
+    onSuccess: (s) => {
+      setMessage(null);
+      queryClient.setQueryData(exportKey, s);
+    },
     onError: (e) => {
       if (e instanceof StepUpCancelled) return;
       const name = problemName(e);
@@ -85,7 +99,11 @@ function DataExport({ status, loading, error, t, lang }: { status: ExportStatus 
       {status?.status === 'ready' && status.download && (
         <div className={styles.ready}>
           <p>{t('export.ready', { until: formatDateTime(Date.parse(status.download.expiresAt), lang) })}</p>
-          <p><a className={styles.primaryLink} href={fileHref(status.download.url)} download="trustbazaar-data.zip">{t('export.download')}</a></p>
+          <p>
+            <a className={styles.primaryLink} href={fileHref(status.download.url)} download="trustbazaar-data.zip">
+              {t('export.download')}
+            </a>
+          </p>
           {status.expiresAt && <p className={styles.hint}>{t('export.deleted_on', { at: formatDateTime(Date.parse(status.expiresAt), lang) })}</p>}
         </div>
       )}
@@ -130,7 +148,9 @@ function CloseAccount({ t, lang }: { t: T; lang: Lang }) {
       <section aria-labelledby="close-title" className={styles.panel}>
         <h2 id="close-title">{t('close.title')}</h2>
         <FormMessage kind="success">{t('close.done')}</FormMessage>
-        <p><a href="/">{t('close.home')}</a></p>
+        <p>
+          <a href="/">{t('close.home')}</a>
+        </p>
       </section>
     );
   }
@@ -147,14 +167,27 @@ function CloseAccount({ t, lang }: { t: T; lang: Lang }) {
       {reasons.length > 0 && (
         <FormMessage kind="error">
           {t('close.refused')}
-          <ul>{reasons.map((r) => <li key={r}>{t(`close.reason.${r}`)}</li>)}</ul>
+          <ul>
+            {reasons.map((r) => (
+              <li key={r}>{t(`close.reason.${r}`)}</li>
+            ))}
+          </ul>
         </FormMessage>
       )}
       {message && <FormMessage kind="error">{message}</FormMessage>}
-      <button type="button" className={styles.danger} onClick={() => setConfirming(true)} disabled={close.isPending}>{t('close.button')}</button>
+      <button type="button" className={styles.danger} onClick={() => setConfirming(true)} disabled={close.isPending}>
+        {t('close.button')}
+      </button>
       {confirming && (
-        <ConfirmDialog id="close-account" title={t('close.title')} busy={close.isPending}
-          confirmLabel={t('close.confirm_button')} cancelLabel={t('close.keep')} onConfirm={() => close.mutate()} onCancel={() => setConfirming(false)}>
+        <ConfirmDialog
+          id="close-account"
+          title={t('close.title')}
+          busy={close.isPending}
+          confirmLabel={t('close.confirm_button')}
+          cancelLabel={t('close.keep')}
+          onConfirm={() => close.mutate()}
+          onCancel={() => setConfirming(false)}
+        >
           <p>{t('close.confirm')}</p>
         </ConfirmDialog>
       )}

@@ -36,8 +36,19 @@ const UNIT_MS: Record<string, number> = {
 
 /** "15 minutes", "1 day 2 hours", "1 year" -> milliseconds (the interval texts of the parameter set). */
 export function durationMs(text: string): number {
-  const parts = [...text.trim().toLowerCase().matchAll(/(\d+(?:\.\d+)?)\s*(second|minute|hour|day|week|month|year)s?/g)];
-  if (parts.length === 0 || parts.map((p) => p[0]).join(' ').replace(/\s+/g, ' ') !== text.trim().toLowerCase().replace(/\s+/g, ' ')) {
+  const parts = [
+    ...text
+      .trim()
+      .toLowerCase()
+      .matchAll(/(\d+(?:\.\d+)?)\s*(second|minute|hour|day|week|month|year)s?/g),
+  ];
+  if (
+    parts.length === 0 ||
+    parts
+      .map((p) => p[0])
+      .join(' ')
+      .replace(/\s+/g, ' ') !== text.trim().toLowerCase().replace(/\s+/g, ' ')
+  ) {
     throw new Error(`not a duration: "${text}"`);
   }
   return parts.reduce((sum, p) => sum + Number(p[1]) * UNIT_MS[p[2]], 0);

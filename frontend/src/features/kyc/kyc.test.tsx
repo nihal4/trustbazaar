@@ -9,10 +9,15 @@ import type { KycStatusView } from './model';
 // The KYC wizard (IF-UI-02, NFR-USE-02, FR-KYC-01, FR-KYC-02, FR-KYC-06, FR-KYC-09; section 5.2).
 // The camera is a stand-in here; the real one is the end-to-end run with Chromium's fake camera (U8-11).
 
-configure({ asyncUtilTimeout: 3000 });   // the first lazy load of the wizard can take over a second
+configure({ asyncUtilTimeout: 3000 }); // the first lazy load of the wizard can take over a second
 
 const status = (s: Partial<KycStatusView> = {}): KycStatusView => ({
-  status: 'unsubmitted', changedAt: '2026-11-01T06:00:00Z', rejection: null, submissionsLeft: 3, expectedReviewHours: 24, ...s,
+  status: 'unsubmitted',
+  changedAt: '2026-11-01T06:00:00Z',
+  rejection: null,
+  submissionsLeft: 3,
+  expectedReviewHours: 24,
+  ...s,
 });
 const challenge = (action = 'turn_head_left', id = 'ch-1') =>
   json(200, { challengeId: id, action, expiresAt: new Date(Date.now() + 10 * 60_000).toISOString() });
@@ -25,7 +30,15 @@ function standInCamera(o: { denied?: boolean } = {}) {
       if (o.denied) throw Object.assign(new Error('blocked'), { name: 'NotAllowedError' });
       const s = { stopped: false };
       streams.push(s);
-      return { getTracks: () => [{ stop: () => { s.stopped = true; } }] } as unknown as MediaStream;
+      return {
+        getTracks: () => [
+          {
+            stop: () => {
+              s.stopped = true;
+            },
+          },
+        ],
+      } as unknown as MediaStream;
     },
     capture: async () => new Blob([new Uint8Array([0xff, 0xd8, 0xff, ++n])], { type: 'image/jpeg' }),
   };
@@ -33,9 +46,9 @@ function standInCamera(o: { denied?: boolean } = {}) {
 }
 
 function mount(be: ReturnType<typeof fakeBackend>, camera: Camera, lang: 'en' | 'bn' = 'en') {
-  return renderDocument('/account/kyc', be, lang,
-    { routes: kycRoutes, home: { path: '/', sameDocument: false }, titleKey: 'shell.document.kyc' },
-    (root) => <CameraContext.Provider value={camera}>{root}</CameraContext.Provider>);
+  return renderDocument('/account/kyc', be, lang, { routes: kycRoutes, home: { path: '/', sameDocument: false }, titleKey: 'shell.document.kyc' }, (root) => (
+    <CameraContext.Provider value={camera}>{root}</CameraContext.Provider>
+  ));
 }
 
 const click = (name: string | RegExp) => fireEvent.click(screen.getByRole('button', { name }));
@@ -44,7 +57,7 @@ const statusBar = () => screen.getByRole('region', { name: 'Your verification' }
 
 async function takePhoto() {
   click('Start the camera');
-  const take = await screen.findByRole('button', { name: 'Take the photo' }) as HTMLButtonElement;
+  const take = (await screen.findByRole('button', { name: 'Take the photo' })) as HTMLButtonElement;
   expect(take.disabled).toBe(true); // until the camera's first frame
   fireEvent.loadedData(screen.getByLabelText('Camera view'));
   fireEvent.click(take);
@@ -61,23 +74,34 @@ async function fillDetails() {
 beforeEach(() => {
   vi.stubGlobal('URL', Object.assign(URL, { createObjectURL: () => 'blob:tb-test', revokeObjectURL: () => {} }));
 });
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 describe('requirements and status', () => {
   it('IF-UI-02 the steps show where the user is, the side panel the photo rules and who sees the ID, and the header a way out (AC-KYC-1, AC-KYC-3)', async () => {
     const be = fakeBackend({ 'GET /kyc/status': json(200, status()) });
-    renderDocument('/account/kyc', be, 'en',
+    renderDocument(
+      '/account/kyc',
+      be,
+      'en',
       { routes: kycRoutes, home: { path: '/', sameDocument: false }, titleKey: 'shell.document.kyc', exit: { href: '/account', labelKey: 'shell.kyc_later' } },
-      (root) => <CameraContext.Provider value={standInCamera().camera}>{root}</CameraContext.Provider>);
+      (root) => <CameraContext.Provider value={standInCamera().camera}>{root}</CameraContext.Provider>,
+    );
     await screen.findByRole('heading', { name: 'What you need' });
     expect(screen.getByRole('link', { name: 'Finish later' }).getAttribute('href')).toBe('/account');
-    expect(screen.queryByRole('heading', { name: 'Only for checking you' })).toBeNull();   // the intro says it already
+    expect(screen.queryByRole('heading', { name: 'Only for checking you' })).toBeNull(); // the intro says it already
     click('Start');
     await screen.findByRole('heading', { name: 'Your document details' });
     await fillDetails();
     await screen.findByRole('heading', { name: 'Front of your NID', level: 2 });
     const steps = screen.getByRole('list', { name: 'Steps' });
-    expect(within(steps).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Your details(done)', '2Your document(now)', '3Selfies(to come)', '4Send(to come)']);
+    expect(
+      within(steps)
+        .getAllByRole('listitem')
+        .map((li) => li.textContent),
+    ).toEqual(['Your details(done)', '2Your document(now)', '3Selfies(to come)', '4Send(to come)']);
     expect(screen.getByRole('heading', { name: 'Before you take it' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Only for checking you' }).parentElement?.textContent).toContain('seen only by our verification team');
     expect(screen.getByText('The whole card inside the frame')).toBeTruthy();
@@ -92,7 +116,7 @@ describe('requirements and status', () => {
     click('Choose a date');
     const dialog = await screen.findByRole('dialog', { name: 'Date of birth' });
     fireEvent.change(within(dialog).getByLabelText('Year'), { target: { value: '1995' } });
-    fireEvent.change(within(dialog).getByLabelText('Month'), { target: { value: '3' } });   // April
+    fireEvent.change(within(dialog).getByLabelText('Month'), { target: { value: '3' } }); // April
     expect(within(dialog).getAllByRole('gridcell')).toHaveLength(30);
     fireEvent.click(within(dialog).getByRole('gridcell', { name: /12 April 1995/ }));
     expect((screen.getByLabelText('Date of birth') as HTMLInputElement).value).toBe('1995-04-12');
@@ -140,7 +164,10 @@ describe('requirements and status', () => {
 
   it('FR-KYC-06 a rejection shows its reason with what to do, and the note from the team as text', async () => {
     const be = fakeBackend({
-      'GET /kyc/status': json(200, status({ status: 'rejected', rejection: { reason: 'image_unreadable', note: '<b>Back side</b> is blurred' }, submissionsLeft: 2 })),
+      'GET /kyc/status': json(
+        200,
+        status({ status: 'rejected', rejection: { reason: 'image_unreadable', note: '<b>Back side</b> is blurred' }, submissionsLeft: 2 }),
+      ),
     });
     mount(be, standInCamera().camera);
     await screen.findByText('Your last submission was not accepted.');
@@ -148,27 +175,29 @@ describe('requirements and status', () => {
     expect(screen.getByText('Note from our team: <b>Back side</b> is blurred')).toBeTruthy();
     expect(statusBar().querySelector('b')).toBeNull();
     expect(statusBar().textContent).toContain('You can submit 2 more times in 30 days.');
-    expect(screen.getByRole('heading', { name: 'What you need' })).toBeTruthy();   // FR-KYC-09: it may be sent again
+    expect(screen.getByRole('heading', { name: 'What you need' })).toBeTruthy(); // FR-KYC-09: it may be sent again
   });
 
   it('FR-KYC-06 duplicate identity is shown with its guidance; any reason the client does not know reads as the generic one', async () => {
     const be = fakeBackend({
-      'GET /kyc/status': [
-        json(200, status({ status: 'rejected', rejection: { reason: 'duplicate_identity', note: null } })),
-      ],
+      'GET /kyc/status': [json(200, status({ status: 'rejected', rejection: { reason: 'duplicate_identity', note: null } }))],
     });
     mount(be, standInCamera().camera);
     expect(await screen.findByText(/already linked to another account. If that account is yours, sign in to it/)).toBeTruthy();
     cleanup();
-    mount(fakeBackend({ 'GET /kyc/status': json(200, status({ status: 'rejected', rejection: { reason: 'blacklisted', note: null } })) }),
-      standInCamera().camera);
+    mount(
+      fakeBackend({ 'GET /kyc/status': json(200, status({ status: 'rejected', rejection: { reason: 'blacklisted', note: null } })) }),
+      standInCamera().camera,
+    );
     expect(await screen.findByText('We could not verify this identity. Contact support.')).toBeTruthy();
     expect(document.body.textContent).not.toMatch(/blacklist/i);
   });
 
   it('FR-KYC-09 with no attempts left, or after revocation, there is no wizard', async () => {
-    mount(fakeBackend({ 'GET /kyc/status': json(200, status({ status: 'rejected', rejection: { reason: 'other', note: null }, submissionsLeft: 0 })) }),
-      standInCamera().camera);
+    mount(
+      fakeBackend({ 'GET /kyc/status': json(200, status({ status: 'rejected', rejection: { reason: 'other', note: null }, submissionsLeft: 0 })) }),
+      standInCamera().camera,
+    );
     expect(await screen.findByText(/used every attempt for now/)).toBeTruthy();
     expect(screen.queryByRole('heading', { name: 'What you need' })).toBeNull();
     cleanup();
@@ -183,8 +212,7 @@ describe('requirements and status', () => {
   });
 
   it('IF-UI-02 without a session the page offers sign-in in the user app, returning here', async () => {
-    mount(fakeBackend({ 'GET /kyc/status': problem(401, 'session-ended'), 'POST /auth/refresh': problem(401, 'session-ended') }),
-      standInCamera().camera);
+    mount(fakeBackend({ 'GET /kyc/status': problem(401, 'session-ended'), 'POST /auth/refresh': problem(401, 'session-ended') }), standInCamera().camera);
     const link = await screen.findByRole('link', { name: 'Sign in' });
     expect(link.getAttribute('href')).toBe(`/signin?next=${encodeURIComponent('/account/kyc')}`);
   });
@@ -196,7 +224,10 @@ describe('the submission', () => {
     const be = fakeBackend({
       'GET /kyc/status': () => json(200, status(sent ? { status: 'pending_review' } : {}))(),
       'GET /kyc/liveness-challenge': challenge('turn_head_left'),
-      'POST /kyc/submissions': () => { sent = true; return json(202, { submissionId: 's-1', status: 'pending_review', expectedReviewHours: 24 })(); },
+      'POST /kyc/submissions': () => {
+        sent = true;
+        return json(202, { submissionId: 's-1', status: 'pending_review', expectedReviewHours: 24 })();
+      },
     });
     const cam = standInCamera();
     mount(be, cam.camera);
@@ -225,7 +256,7 @@ describe('the submission', () => {
     await screen.findByRole('heading', { name: 'Check and send' });
     expect(screen.getByText('1234567890')).toBeTruthy();
     expect(screen.getByText('Rahim  Uddin'.replace(/\s+/g, ' '))).toBeTruthy();
-    expect(be.called('POST /kyc/submissions')).toEqual([]);           // nothing sent before the last step
+    expect(be.called('POST /kyc/submissions')).toEqual([]); // nothing sent before the last step
     click('Send for review');
 
     expect(await screen.findByText('Waiting for review.')).toBeTruthy();
@@ -233,15 +264,23 @@ describe('the submission', () => {
     expect(be.called('POST /kyc/submissions')).toHaveLength(1);
     const form = submission.body as FormData;
     expect(Object.fromEntries(['docType', 'docNumber', 'fullName', 'dateOfBirth', 'challengeId'].map((k) => [k, form.get(k)]))).toEqual({
-      docType: 'nid', docNumber: '1234567890', fullName: 'Rahim Uddin', dateOfBirth: '1995-04-12', challengeId: 'ch-1',
+      docType: 'nid',
+      docNumber: '1234567890',
+      fullName: 'Rahim Uddin',
+      dateOfBirth: '1995-04-12',
+      challengeId: 'ch-1',
     });
-    expect([...form.keys()].filter((k) => !['docType', 'docNumber', 'fullName', 'dateOfBirth', 'challengeId'].includes(k)))
-      .toEqual(['doc_front', 'doc_back', 'selfie_neutral', 'selfie_action']);
+    expect([...form.keys()].filter((k) => !['docType', 'docNumber', 'fullName', 'dateOfBirth', 'challengeId'].includes(k))).toEqual([
+      'doc_front',
+      'doc_back',
+      'selfie_neutral',
+      'selfie_action',
+    ]);
     expect((form.get('doc_front') as File).type).toBe('image/jpeg');
-    expect(submission.headers.get('Content-Type')).toBeNull();           // the browser sets the multipart boundary
+    expect(submission.headers.get('Content-Type')).toBeNull(); // the browser sets the multipart boundary
     expect(submission.headers.get('X-CSRF-Token')).toBe('csrf-1');
     expect(cam.streams).toHaveLength(4);
-    expect(cam.streams.every((x) => x.stopped)).toBe(true);              // the camera is released after each photo
+    expect(cam.streams.every((x) => x.stopped)).toBe(true); // the camera is released after each photo
   });
 
   it('FR-KYC-02 the images are kept only in memory: nothing is written to browser storage', async () => {
@@ -273,8 +312,13 @@ describe('the submission', () => {
     click('Continue');
 
     await screen.findByRole('heading', { name: 'Back of your NID', level: 2 });
-    fireEvent.change(await (async () => { click('Start the camera'); return screen.findByLabelText('Choose a photo of the document'); })(),
-      { target: { files: [new File([new Uint8Array([4])], 'back.webp', { type: 'image/webp' })] } });
+    fireEvent.change(
+      await (async () => {
+        click('Start the camera');
+        return screen.findByLabelText('Choose a photo of the document');
+      })(),
+      { target: { files: [new File([new Uint8Array([4])], 'back.webp', { type: 'image/webp' })] } },
+    );
     await screen.findByRole('button', { name: 'Take it again' });
     click('Continue');
 
@@ -341,7 +385,9 @@ describe('the images already sent', () => {
     mount(be, standInCamera().camera);
     fireEvent.click(await screen.findByRole('button', { name: 'Show the images you sent' }));
     const list = await screen.findByRole('list');
-    const sources = within(list).getAllByRole('img').map((i) => i.getAttribute('src'));
+    const sources = within(list)
+      .getAllByRole('img')
+      .map((i) => i.getAttribute('src'));
     expect(sources).toEqual(['/api/v1/files/v/tok-front']);
   });
 });

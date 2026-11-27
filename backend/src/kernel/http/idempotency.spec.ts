@@ -10,11 +10,13 @@ function fakeRedis(o: { down?: boolean } = {}) {
   };
   const redis = {
     store,
-    set: o.down ? fail : async (k: string, v: string, ...args: string[]) => {
-      if (args.includes('NX') && store.has(k)) return null;
-      store.set(k, v);
-      return 'OK';
-    },
+    set: o.down
+      ? fail
+      : async (k: string, v: string, ...args: string[]) => {
+          if (args.includes('NX') && store.has(k)) return null;
+          store.set(k, v);
+          return 'OK';
+        },
     get: async (k: string) => store.get(k) ?? null,
     del: async (k: string) => Number(store.delete(k)),
   };

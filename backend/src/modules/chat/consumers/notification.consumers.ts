@@ -15,7 +15,10 @@ type Mapper = (e: OutboxEvent) => Promise<Notice[]> | Notice[];
 const CONSUMER = 'chat.notifications';
 /** The notice of each sanction kind (listing removal comes with U3-08). */
 const SANCTION_NOTICE: Record<string, string> = {
-  warning: 'trust.warning', selling_suspended: 'trust.selling_suspended', buying_suspended: 'trust.buying_suspended', account_suspended: 'trust.account_suspended',
+  warning: 'trust.warning',
+  selling_suspended: 'trust.selling_suspended',
+  buying_suspended: 'trust.buying_suspended',
+  account_suspended: 'trust.account_suspended',
 };
 const str = (v: unknown) => (typeof v === 'string' ? v : '');
 
@@ -30,7 +33,9 @@ export class NotificationConsumers implements OnModuleInit {
   /** Event type -> the notices it makes. */
   readonly map: Record<string, Mapper> = {
     // security notices: app, e-mail and SMS; they cannot be switched off (FR-NTF-06)
-    'identity.signin.new_device': (e) => [{ to: e.payload.userId, code: 'security.signin_new_device', params: { device: str(e.payload.device).slice(0, 80) || '?' } }],
+    'identity.signin.new_device': (e) => [
+      { to: e.payload.userId, code: 'security.signin_new_device', params: { device: str(e.payload.device).slice(0, 80) || '?' } },
+    ],
     'identity.password.changed': (e) => [{ to: e.payload.userId, code: 'security.password_changed' }],
     'identity.contact.changed': (e) => [{ to: e.payload.userId, code: e.payload.kind === 'email' ? 'security.email_changed' : 'security.phone_changed' }],
     'identity.mfa.enabled': (e) => [{ to: e.payload.userId, code: 'security.mfa_enabled' }],
@@ -43,15 +48,20 @@ export class NotificationConsumers implements OnModuleInit {
     // a suspension by a Unit 7 sanction is told by the sanction's own notice, which gives the reason (U7-04)
     'identity.account.suspended': (e) => (e.payload.sanctionId ? [] : [{ to: e.payload.userId, code: 'account.suspended' }]),
     'identity.account.reinstated': (e) => [{ to: e.payload.userId, code: 'account.reinstated' }],
-    'payments.payout_account.reviewed': (e) => [{ to: e.payload.userId, code: e.payload.decision === 'approve' ? 'payment.payout_account_approved' : 'payment.payout_account_rejected' }],
+    'payments.payout_account.reviewed': (e) => [
+      { to: e.payload.userId, code: e.payload.decision === 'approve' ? 'payment.payout_account_approved' : 'payment.payout_account_rejected' },
+    ],
     // orders (FR-NTF-03)
-    'orders.order.created': (e) => (e.payload.kind === 'fixed_price' ? [] : [this.order(e, e.payload.buyerId, 'order.auction_won', { amount_bdt: taka(e.payload.total) })]),
+    'orders.order.created': (e) =>
+      e.payload.kind === 'fixed_price' ? [] : [this.order(e, e.payload.buyerId, 'order.auction_won', { amount_bdt: taka(e.payload.total) })],
     'orders.order.paid': (e) => [
       this.order(e, e.payload.buyerId, 'order.paid_buyer', { amount_bdt: taka(e.payload.total) }),
       this.order(e, e.payload.sellerId, 'order.paid_seller'),
     ],
     'orders.order.cancelled': (e) =>
-      e.payload.reason === 'checkout_expired' || e.payload.reason === 'payment_window_expired' ? [this.order(e, e.payload.buyerId, 'order.unpaid_cancelled')] : [],
+      e.payload.reason === 'checkout_expired' || e.payload.reason === 'payment_window_expired'
+        ? [this.order(e, e.payload.buyerId, 'order.unpaid_cancelled')]
+        : [],
     'orders.order.delivered': (e) => [this.order(e, e.payload.buyerId, 'order.delivered'), this.order(e, e.payload.sellerId, 'order.delivered')],
     'orders.cancellation.requested': (e) => [this.order(e, e.payload.sellerId, 'order.cancellation_requested')],
     'orders.cancellation.declined': (e) => [this.order(e, e.payload.buyerId, 'order.cancellation_declined')],
@@ -70,14 +80,25 @@ export class NotificationConsumers implements OnModuleInit {
     ],
     'orders.escrow.frozen': (e) => [this.order(e, e.payload.buyerId, 'escrow.frozen'), this.order(e, e.payload.sellerId, 'escrow.frozen')],
     // payments
-    'payments.refund.succeeded': (e) => [{ to: e.payload.buyerId, code: 'payment.refund_sent', params: { amount_bdt: taka(e.payload.amount) }, subject: this.subjectOf(e) }],
-    'payments.refund.manual_required': (e) => [{ to: e.payload.buyerId, code: 'payment.refund_delayed', params: { amount_bdt: taka(e.payload.amount) }, subject: this.subjectOf(e) }],
-    'payments.payout.sent': (e) => [{ to: e.payload.sellerId, code: 'payment.payout_sent', params: { amount_bdt: taka(e.payload.amount) }, subject: this.subjectOf(e) }],
-    'payments.payout.failed': (e) => [{ to: e.payload.sellerId, code: 'payment.payout_failed', params: { amount_bdt: taka(e.payload.amount) }, subject: this.subjectOf(e) }],
+    'payments.refund.succeeded': (e) => [
+      { to: e.payload.buyerId, code: 'payment.refund_sent', params: { amount_bdt: taka(e.payload.amount) }, subject: this.subjectOf(e) },
+    ],
+    'payments.refund.manual_required': (e) => [
+      { to: e.payload.buyerId, code: 'payment.refund_delayed', params: { amount_bdt: taka(e.payload.amount) }, subject: this.subjectOf(e) },
+    ],
+    'payments.payout.sent': (e) => [
+      { to: e.payload.sellerId, code: 'payment.payout_sent', params: { amount_bdt: taka(e.payload.amount) }, subject: this.subjectOf(e) },
+    ],
+    'payments.payout.failed': (e) => [
+      { to: e.payload.sellerId, code: 'payment.payout_failed', params: { amount_bdt: taka(e.payload.amount) }, subject: this.subjectOf(e) },
+    ],
     // Pro Seller (FR-MON-06, FR-MON-08; U2-06): the month ended unpaid, and the lapse after a second miss
     'payments.subscription.changed': (e) =>
-      e.payload.change === 'renewal_due' ? [{ to: e.payload.userId, code: 'payment.pro_renewal_due', params: { amount_bdt: taka(e.payload.amount) } }]
-        : e.payload.change === 'lapsed' ? [{ to: e.payload.userId, code: 'payment.pro_lapsed' }] : [],
+      e.payload.change === 'renewal_due'
+        ? [{ to: e.payload.userId, code: 'payment.pro_renewal_due', params: { amount_bdt: taka(e.payload.amount) } }]
+        : e.payload.change === 'lapsed'
+          ? [{ to: e.payload.userId, code: 'payment.pro_lapsed' }]
+          : [],
     // trust and safety (FR-TNS-03, FR-TNS-09; U7-04): the sanction's reason, never the details of a report's outcome
     'trust.sanction.applied': (e) => {
       const code = e.payload.kind === 'selling_suspended' && e.payload.automatic ? 'trust.selling_suspended_strikes' : SANCTION_NOTICE[str(e.payload.kind)];
@@ -85,7 +106,8 @@ export class NotificationConsumers implements OnModuleInit {
       return code ? [{ to: str(e.payload.userId) || e.aggregateId, code, params }] : [];
     },
     // an account suspension ends with Unit 1's reinstatement notice
-    'trust.sanction.lifted': (e) => (e.payload.kind === 'account_suspended' ? [] : [{ to: str(e.payload.userId) || e.aggregateId, code: 'trust.sanction_lifted' }]),
+    'trust.sanction.lifted': (e) =>
+      e.payload.kind === 'account_suspended' ? [] : [{ to: str(e.payload.userId) || e.aggregateId, code: 'trust.sanction_lifted' }],
     'trust.report.resolved': (e) => [{ to: e.payload.reporterId, code: e.payload.actioned ? 'trust.report_actioned' : 'trust.report_dismissed' }],
     // listings
     'listings.listing.published': async (e) => {
@@ -96,18 +118,37 @@ export class NotificationConsumers implements OnModuleInit {
     // U3-08: an operator returned a held listing to its seller, or removed a listing; the operator's reason is given
     'listings.listing.returned': async (e) => {
       const l = await this.listings.snapshot(e.aggregateId);
-      return [{ to: l.sellerId, code: 'listing.returned', params: { listing_title: l.title, reason: str(e.payload.reason).slice(0, 500) || '—' }, subject: { type: 'listing', id: e.aggregateId } }];
+      return [
+        {
+          to: l.sellerId,
+          code: 'listing.returned',
+          params: { listing_title: l.title, reason: str(e.payload.reason).slice(0, 500) || '—' },
+          subject: { type: 'listing', id: e.aggregateId },
+        },
+      ];
     },
     'listings.listing.removed': async (e) => {
       const l = await this.listings.snapshot(e.aggregateId);
-      return [{ to: l.sellerId, code: 'listing.removed', params: { listing_title: l.title, reason: str(e.payload.reason).slice(0, 500) || '—' }, subject: { type: 'listing', id: e.aggregateId } }];
+      return [
+        {
+          to: l.sellerId,
+          code: 'listing.removed',
+          params: { listing_title: l.title, reason: str(e.payload.reason).slice(0, 500) || '—' },
+          subject: { type: 'listing', id: e.aggregateId },
+        },
+      ];
     },
     // game accounts (U5-02): an approval is told by listing.published; a rejection gives the operator's reason
     'game_accounts.ownership.rejected': async (e) => {
       const l = await this.listings.snapshot(e.aggregateId);
-      return [{
-        to: l.sellerId, code: 'listing.ownership_rejected', params: { listing_title: l.title, reason: str(e.payload.reason).slice(0, 500) || '—' }, subject: { type: 'listing', id: e.aggregateId },
-      }];
+      return [
+        {
+          to: l.sellerId,
+          code: 'listing.ownership_rejected',
+          params: { listing_title: l.title, reason: str(e.payload.reason).slice(0, 500) || '—' },
+          subject: { type: 'listing', id: e.aggregateId },
+        },
+      ];
     },
   };
 
@@ -132,7 +173,12 @@ export class NotificationConsumers implements OnModuleInit {
   }
 
   private order(e: OutboxEvent, to: unknown, code: string, extra: Record<string, number> = {}): Notice {
-    return { to, code, params: { listing_title: str(e.payload.listingTitle) || '—', ...extra }, subject: { type: 'order', id: str(e.payload.orderId) || e.aggregateId } };
+    return {
+      to,
+      code,
+      params: { listing_title: str(e.payload.listingTitle) || '—', ...extra },
+      subject: { type: 'order', id: str(e.payload.orderId) || e.aggregateId },
+    };
   }
 
   private subjectOf(e: OutboxEvent): Subject | undefined {

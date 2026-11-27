@@ -16,10 +16,12 @@ describe('metrics (NFR-OBS-03, SEC-LOG-05)', () => {
     run('/api/v1/unit-test/:id', 201);
     run(undefined, 404);
     const counts = await series('tb_http_requests_total');
-    expect(counts).toEqual(expect.arrayContaining([
-      expect.objectContaining({ labels: { method: 'POST', route: '/api/v1/unit-test/:id', status: '2xx' }, value: 1 }),
-      expect.objectContaining({ labels: { method: 'POST', route: 'unmatched', status: '4xx' } }),
-    ]));
+    expect(counts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ labels: { method: 'POST', route: '/api/v1/unit-test/:id', status: '2xx' }, value: 1 }),
+        expect.objectContaining({ labels: { method: 'POST', route: 'unmatched', status: '4xx' } }),
+      ]),
+    );
   });
 
   it('SEC-LOG-05 a database refusal of an escrow change is counted; other errors are not', async () => {
@@ -34,7 +36,12 @@ describe('metrics (NFR-OBS-03, SEC-LOG-05)', () => {
   });
 
   it('NFR-OBS-03 the outbox gauges skip a scrape the database cannot answer; no server without a port', async () => {
-    const s = new MetricsService({ query: jest.fn().mockRejectedValue(new Error('down')) } as never, { stats: () => [] } as never, { connections: () => 0 } as never, { metricsPort: null } as never);
+    const s = new MetricsService(
+      { query: jest.fn().mockRejectedValue(new Error('down')) } as never,
+      { stats: () => [] } as never,
+      { connections: () => 0 } as never,
+      { metricsPort: null } as never,
+    );
     expect(await s.outboxes()).toEqual([]);
     await s.onApplicationBootstrap();
     expect(s.port()).toBeNull();
@@ -47,8 +54,15 @@ describe('shutdown signals (DV-66)', () => {
   it('DV-66 SIGTERM starts one shutdown; a second signal is ignored; a failure exits 1', async () => {
     const before = process.listenerCount('SIGTERM');
     const exit = jest.fn();
-    const close = jest.fn(async () => { throw new Error('boom'); });
-    const app = { get: () => { throw new Error('no app'); }, close } as never;
+    const close = jest.fn(async () => {
+      throw new Error('boom');
+    });
+    const app = {
+      get: () => {
+        throw new Error('no app');
+      },
+      close,
+    } as never;
     onShutdownSignals(app, exit);
     expect(process.listenerCount('SIGTERM')).toBe(before + 1);
     process.emit('SIGTERM');

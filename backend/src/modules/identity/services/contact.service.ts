@@ -20,8 +20,7 @@ import { RequestContext } from './session.service';
 // and the old address is told. Earlier e-mail links of the account stop working.
 // If the new number already belongs to an open account, the same is done as at registration: a code is
 // made but not sent, its owner is told, and the answer is the same (SEC-AUTH-06).
-const rowsOf = <T>(result: unknown): T[] =>
-  (Array.isArray(result) && Array.isArray(result[0]) && typeof result[1] === 'number' ? result[0] : result) as T[];
+const rowsOf = <T>(result: unknown): T[] => (Array.isArray(result) && Array.isArray(result[0]) && typeof result[1] === 'number' ? result[0] : result) as T[];
 
 /** I-51 (c): the signed-in user's own account, for the web client (U1-13; Decisions log). */
 export interface Me {
@@ -62,8 +61,15 @@ export class ContactService {
     );
     if (!u) throw new Problem('session-ended');
     return {
-      id: u.id, displayName: u.display_name, phoneMasked: u.phone_e164 ? `***${String(u.phone_e164).slice(-3)}` : null, email: u.email,
-      emailVerified: u.email_verified_at !== null, kycStatus: u.kyc_status, accountStatus: u.account_status, mfaEnabled: u.mfa_enabled, emailTwoStep: u.email_two_step,
+      id: u.id,
+      displayName: u.display_name,
+      phoneMasked: u.phone_e164 ? `***${String(u.phone_e164).slice(-3)}` : null,
+      email: u.email,
+      emailVerified: u.email_verified_at !== null,
+      kycStatus: u.kyc_status,
+      accountStatus: u.account_status,
+      mfaEnabled: u.mfa_enabled,
+      emailTwoStep: u.email_two_step,
       memberSince: new Date(u.created_at).toISOString(),
     };
   }
@@ -71,8 +77,20 @@ export class ContactService {
   /** U10-25: the member's choice of the e-mail code at sign-in. Turning it off is behind step-up; turning it on is not. Audited. */
   async setEmailTwoStep(userId: string, enabled: boolean, ctx: { ip?: string | null; correlationId?: string | null } = {}): Promise<{ emailTwoStep: boolean }> {
     await this.db.transaction(async (m) => {
-      const r = await m.query(`UPDATE identity.users SET email_two_step = $2, updated_at = now() WHERE id = $1 AND email_two_step <> $2 RETURNING id`, [userId, enabled]);
-      if (r.length > 0) await this.audit.record(m, { actorType: 'user', actorId: userId, action: enabled ? 'identity.email_two_step.enabled' : 'identity.email_two_step.disabled', objectType: 'user', objectId: userId, sourceIp: ctx.ip, correlationId: ctx.correlationId });
+      const r = await m.query(`UPDATE identity.users SET email_two_step = $2, updated_at = now() WHERE id = $1 AND email_two_step <> $2 RETURNING id`, [
+        userId,
+        enabled,
+      ]);
+      if (r.length > 0)
+        await this.audit.record(m, {
+          actorType: 'user',
+          actorId: userId,
+          action: enabled ? 'identity.email_two_step.enabled' : 'identity.email_two_step.disabled',
+          objectType: 'user',
+          objectId: userId,
+          sourceIp: ctx.ip,
+          correlationId: ctx.correlationId,
+        });
     });
     return { emailTwoStep: enabled };
   }
@@ -103,7 +121,11 @@ export class ContactService {
         const [ch] = await m.query(`SELECT phone_e164 FROM identity.otp_challenges WHERE id = $1`, [check.challengeId]);
         const [me] = await m.query(`SELECT phone_e164 FROM identity.users WHERE id = $1 FOR UPDATE`, [userId]);
         old = me.phone_e164;
-        await m.query(`UPDATE identity.users SET phone_e164 = $2, phone_verified_at = $3, updated_at = $3 WHERE id = $1`, [userId, ch.phone_e164, this.clock.now()]);
+        await m.query(`UPDATE identity.users SET phone_e164 = $2, phone_verified_at = $3, updated_at = $3 WHERE id = $1`, [
+          userId,
+          ch.phone_e164,
+          this.clock.now(),
+        ]);
         await this.changed(m, userId, 'phone', ctx);
         return 'ok' as const;
       });
@@ -113,7 +135,10 @@ export class ContactService {
       if (!isUniqueViolation(e)) throw e;
       // Another open account holds the number: the code is used up all the same.
       await this.db.transaction(async (m) => {
-        const [ch] = await m.query(`SELECT id FROM identity.otp_challenges WHERE ${where} ORDER BY created_at DESC, id LIMIT 1 FOR UPDATE`, [userId, sessionId]);
+        const [ch] = await m.query(`SELECT id FROM identity.otp_challenges WHERE ${where} ORDER BY created_at DESC, id LIMIT 1 FOR UPDATE`, [
+          userId,
+          sessionId,
+        ]);
         if (ch) await this.otp.markUsed(m, ch.id);
       });
       throw new Problem('contact-unavailable');
@@ -127,10 +152,12 @@ export class ContactService {
     if (String(me?.email).toLowerCase() === email) throw new Problem('validation-failed', { errors: [{ field: 'email', reason: 'unchanged' }] });
     const hours = (await this.params.current()).ms('CP-06', 'verify') / 3_600_000;
     const token = generateLinkToken();
-    await this.db.query(
-      `INSERT INTO identity.one_time_tokens (purpose, user_id, token_hash, new_email, expires_at) VALUES ('email_change', $1, $2, $3, $4)`,
-      [userId, hashLinkToken(token), email, new Date(this.clock.now().getTime() + hours * 3_600_000)],
-    );
+    await this.db.query(`INSERT INTO identity.one_time_tokens (purpose, user_id, token_hash, new_email, expires_at) VALUES ('email_change', $1, $2, $3, $4)`, [
+      userId,
+      hashLinkToken(token),
+      email,
+      new Date(this.clock.now().getTime() + hours * 3_600_000),
+    ]);
     await this.notify.sendEmail(email, 'email_change', { link: `${this.config.publicOrigin}/verify-email#token=${token}`, hours: String(hours) });
   }
 
@@ -160,8 +187,13 @@ export class ContactService {
         }
         await m.query(`UPDATE identity.users SET email_verified_at = COALESCE(email_verified_at, $2), updated_at = $2 WHERE id = $1`, [t.user_id, now]);
         await this.audit.record(m, {
-          actorType: 'user', actorId: t.user_id, action: 'identity.email.verified', objectType: 'user', objectId: t.user_id,
-          sourceIp: ctx.ip, correlationId: ctx.correlationId,
+          actorType: 'user',
+          actorId: t.user_id,
+          action: 'identity.email.verified',
+          objectType: 'user',
+          objectId: t.user_id,
+          sourceIp: ctx.ip,
+          correlationId: ctx.correlationId,
         });
         return true;
       });
@@ -179,10 +211,10 @@ export class ContactService {
     const now = this.clock.now();
     const [me] = await m.query(`SELECT email FROM identity.users WHERE id = $1 FOR UPDATE`, [userId]);
     await m.query(`UPDATE identity.users SET email = $2, email_verified_at = $3, updated_at = $3 WHERE id = $1`, [userId, newEmail, now]);
-    await m.query(
-      `UPDATE identity.one_time_tokens SET used_at = $2 WHERE user_id = $1 AND purpose IN ('email_verify', 'email_change') AND used_at IS NULL`,
-      [userId, now],
-    );
+    await m.query(`UPDATE identity.one_time_tokens SET used_at = $2 WHERE user_id = $1 AND purpose IN ('email_verify', 'email_change') AND used_at IS NULL`, [
+      userId,
+      now,
+    ]);
     await this.changed(m, userId, 'email', ctx);
     return me.email;
   }
@@ -190,8 +222,13 @@ export class ContactService {
   private async changed(m: EntityManager, userId: string, kind: 'phone' | 'email', ctx: RequestContext): Promise<void> {
     await publish(m, 'identity.contact.changed', userId, { userId, kind });
     await this.audit.record(m, {
-      actorType: 'user', actorId: userId, action: `identity.contact.${kind}_changed`, objectType: 'user', objectId: userId,
-      sourceIp: ctx.ip, correlationId: ctx.correlationId,
+      actorType: 'user',
+      actorId: userId,
+      action: `identity.contact.${kind}_changed`,
+      objectType: 'user',
+      objectId: userId,
+      sourceIp: ctx.ip,
+      correlationId: ctx.correlationId,
     });
   }
 }

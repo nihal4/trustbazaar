@@ -13,7 +13,7 @@ describe('SEC-AUTH-11 password change ends other sessions', () => {
     return ((await (await b.post('/auth/step-up/verify', { action: 'password.change', code })).json()) as { grant: string }).grant;
   }
 
-  it('SEC-AUTH-11 the session that changes the password stays; the user\'s two other sessions end', async () => {
+  it("SEC-AUTH-11 the session that changes the password stays; the user's two other sessions end", async () => {
     const { a, b } = await s.signedIn();
     const phone = s.browser();
     const laptop = s.browser();

@@ -22,7 +22,10 @@ describe('problem documents', () => {
     expect(r.status).toBe(403);
     expect(r.type).toBe('application/problem+json');
     expect(r.body).toEqual({
-      type: '/problems/step-up-required', title: 'Please confirm it is you to continue.', status: 403, correlationId: 'cid-1',
+      type: '/problems/step-up-required',
+      title: 'Please confirm it is you to continue.',
+      status: 403,
+      correlationId: 'cid-1',
     });
   });
 

@@ -37,7 +37,12 @@ describe('payout accounts and payouts', () => {
     const call = (method: string, path: string, body?: unknown, extra: Record<string, string> = {}) =>
       fetch(t.url(path), {
         method,
-        headers: { ...fx.headers(sid, userId, 'user'), 'x-forwarded-for': ip(), ...(body !== undefined ? { 'content-type': 'application/json' } : {}), ...extra },
+        headers: {
+          ...fx.headers(sid, userId, 'user'),
+          'x-forwarded-for': ip(),
+          ...(body !== undefined ? { 'content-type': 'application/json' } : {}),
+          ...extra,
+        },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
     const stepped = async (body: unknown) => call('POST', '/me/payout-account', body, { 'x-step-up': await fx.stepUpGrant(sid, 'payout.change') });
@@ -69,7 +74,8 @@ describe('payout accounts and payouts', () => {
   }
   const statusOf = async (id: string) => (await one<{ status: string }>(`SELECT status FROM payments.payouts WHERE id = $1`, [id])).status;
   /** Ends the cooling-off of the seller's account now, as if CP-29 had passed. */
-  const cooled = (userId: string) => fx.query(`UPDATE payments.payout_accounts SET effective_at = now() - interval '1 second' WHERE user_id = $1 AND status = 'cooling_off'`, [userId]);
+  const cooled = (userId: string) =>
+    fx.query(`UPDATE payments.payout_accounts SET effective_at = now() - interval '1 second' WHERE user_id = $1 AND status = 'cooling_off'`, [userId]);
   /** Delivers every waiting event; earlier test files and runs may leave more than one batch (100). */
   const deliver = async () => {
     for (let i = 0; i < 100; i++) {
@@ -77,7 +83,9 @@ describe('payout accounts and payouts', () => {
       if (r.dispatched + r.failed + r.givenUp === 0) break;
     }
   };
-  const drain = async () => { for (let i = 0; i < 50 && (await payouts.processDue()).length > 0; i++); }; // other specs leave due payouts too
+  const drain = async () => {
+    for (let i = 0; i < 50 && (await payouts.processDue()).length > 0; i++);
+  }; // other specs leave due payouts too
 
   it('FR-PAY-17 a wallet only on the verified number, after step-up; it cools off and the seller is alerted', async () => {
     const s = await seller();
@@ -100,7 +108,10 @@ describe('payout accounts and payouts', () => {
     const s = await seller();
     const waiting = await payout(s.userId, 'waiting_account');
     const first = (await (await s.stepped({ kind: 'nagad_wallet', walletNumber: s.phone })).json()).account;
-    expect(await one(`SELECT status, payout_account_id FROM payments.payouts WHERE id = $1`, [waiting.id])).toEqual({ status: 'waiting_cooling_off', payout_account_id: first.id });
+    expect(await one(`SELECT status, payout_account_id FROM payments.payouts WHERE id = $1`, [waiting.id])).toEqual({
+      status: 'waiting_cooling_off',
+      payout_account_id: first.id,
+    });
     const second = (await (await s.stepped({ kind: 'bkash_wallet', walletNumber: s.phone })).json()).account;
     expect(await one(`SELECT status FROM payments.payout_accounts WHERE id = $1`, [first.id])).toEqual({ status: 'replaced' });
     expect(await one(`SELECT payout_account_id FROM payments.payouts WHERE id = $1`, [waiting.id])).toEqual({ payout_account_id: second.id });
@@ -108,32 +119,60 @@ describe('payout accounts and payouts', () => {
     expect(await statusOf(waiting.id)).toBe('waiting_cooling_off'); // not before CP-29
     await cooled(s.userId);
     await drain();
-    const p = await one<{ status: string; provider_ref: string; attempts_made: number }>(`SELECT status, provider_ref, attempts_made FROM payments.payouts WHERE id = $1`, [waiting.id]);
+    const p = await one<{ status: string; provider_ref: string; attempts_made: number }>(
+      `SELECT status, provider_ref, attempts_made FROM payments.payouts WHERE id = $1`,
+      [waiting.id],
+    );
     expect(p).toEqual({ status: 'sent', provider_ref: expect.stringMatching(/^simpayout_/), attempts_made: 1 });
     expect(await one(`SELECT status FROM payments.payout_accounts WHERE id = $1`, [second.id])).toEqual({ status: 'active' });
-    const lines = await fx.query(`SELECT l.account_code, l.amount FROM payments.journal_lines l JOIN payments.journal_entries e ON e.id = l.entry_id WHERE e.kind = 'payout_sent' AND e.source_id = $1 ORDER BY 1`, [waiting.id]);
-    expect(lines).toEqual([{ account_code: 'payout_clearing', amount: '-950000' }, { account_code: 'seller_payable', amount: '950000' }]);
+    const lines = await fx.query(
+      `SELECT l.account_code, l.amount FROM payments.journal_lines l JOIN payments.journal_entries e ON e.id = l.entry_id WHERE e.kind = 'payout_sent' AND e.source_id = $1 ORDER BY 1`,
+      [waiting.id],
+    );
+    expect(lines).toEqual([
+      { account_code: 'payout_clearing', amount: '-950000' },
+      { account_code: 'seller_payable', amount: '950000' },
+    ]);
     const list = await (await s.call('GET', '/me/payouts')).json();
     expect(list).toEqual({ items: [expect.objectContaining({ id: waiting.id, status: 'sent', simulated: true, amount: '950000' })], nextCursor: null });
   });
 
-  it('FR-PAY-17 a bank account waits for the operator\'s name check against the KYC name, then cools off', async () => {
+  it("FR-PAY-17 a bank account waits for the operator's name check against the KYC name, then cools off", async () => {
     const a = await fx.account({ kyc: 'unsubmitted' });
     const op = await fx.staffAccount('operator');
     const ctx = { ip: null, userAgent: null, correlationId: null };
     const ch = await t.app.get(KycService).livenessChallenge(a.userId);
-    const img = await sharp({ create: { width: 300, height: 200, channels: 3, background: 'white' } }).jpeg().toBuffer();
-    const { submissionId } = await t.app.get(KycService).submit(
-      a.userId, { docType: 'nid', docNumber: String(randomInt(1e9, 1e10)), fullName: 'Rahim Uddin', dateOfBirth: '1990-01-01', challengeId: ch.challengeId },
-      { doc_front: img, doc_back: img, selfie_neutral: img, selfie_action: img }, ctx,
-    );
+    const img = await sharp({ create: { width: 300, height: 200, channels: 3, background: 'white' } })
+      .jpeg()
+      .toBuffer();
+    const { submissionId } = await t.app
+      .get(KycService)
+      .submit(
+        a.userId,
+        { docType: 'nid', docNumber: String(randomInt(1e9, 1e10)), fullName: 'Rahim Uddin', dateOfBirth: '1990-01-01', challengeId: ch.challengeId },
+        { doc_front: img, doc_back: img, selfie_neutral: img, selfie_action: img },
+        ctx,
+      );
     await t.app.get(KycReviewService).claim(op.staffId, submissionId, ctx);
     await t.app.get(KycReviewService).decide(op.staffId, submissionId, { decision: 'approve' }, ctx);
     const sid = await fx.session({ userId: a.userId });
-    const bank = { kind: 'bank', bankName: 'Dutch-Bangla Bank', branchName: 'Motijheel', routingNumber: '090271234', accountName: 'Rahim Uddin', accountNumber: '1234567890123' };
+    const bank = {
+      kind: 'bank',
+      bankName: 'Dutch-Bangla Bank',
+      branchName: 'Motijheel',
+      routingNumber: '090271234',
+      accountName: 'Rahim Uddin',
+      accountNumber: '1234567890123',
+    };
     const r = await fetch(t.url('/me/payout-account'), {
-      method: 'POST', body: JSON.stringify(bank),
-      headers: { ...fx.headers(sid, a.userId, 'user'), 'content-type': 'application/json', 'x-forwarded-for': ip(), 'x-step-up': await fx.stepUpGrant(sid, 'payout.change') },
+      method: 'POST',
+      body: JSON.stringify(bank),
+      headers: {
+        ...fx.headers(sid, a.userId, 'user'),
+        'content-type': 'application/json',
+        'x-forwarded-for': ip(),
+        'x-step-up': await fx.stepUpGrant(sid, 'payout.change'),
+      },
     });
     const { account } = await r.json();
     expect(account).toMatchObject({ kind: 'bank', status: 'pending_review', accountLast4: '0123', effectiveAt: null });
@@ -149,7 +188,9 @@ describe('payout accounts and payouts', () => {
     const d = await staff('POST', `/staff/payout-accounts/${account.id}/decision`, { decision: 'approve', reason: 'Name matches the NID' });
     expect((await d.json()).account).toMatchObject({ status: 'cooling_off' });
     expect((await staff('POST', `/staff/payout-accounts/${account.id}/decision`, { decision: 'reject', reason: 'again' })).status).toBe(409);
-    expect(await fx.query(`SELECT reason FROM audit.events WHERE action = 'payments.payout_account.approved' AND object_id = $1`, [account.id])).toEqual([{ reason: 'Name matches the NID' }]);
+    expect(await fx.query(`SELECT reason FROM audit.events WHERE action = 'payments.payout_account.approved' AND object_id = $1`, [account.id])).toEqual([
+      { reason: 'Name matches the NID' },
+    ]);
   });
 
   it('FR-TNS-05 a fraud suspension holds unsent payouts; an operator lifts the hold with a reason', async () => {

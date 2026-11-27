@@ -16,7 +16,11 @@ const s = suite([Undeclared]);
 
 describe('SEC-ACC-01 deny by default', () => {
   it('SEC-ACC-01 every route of the backend declares its policy (the test-only one excepted)', () => {
-    expect(routesOf(s.t.app).filter((r) => !r.policy && !r.path.includes('test-acc-01')).map(routeName)).toEqual([]);
+    expect(
+      routesOf(s.t.app)
+        .filter((r) => !r.policy && !r.path.includes('test-acc-01'))
+        .map(routeName),
+    ).toEqual([]);
   });
 
   it('SEC-ACC-01 a route without a policy is refused to everyone, signed in or not', async () => {

@@ -21,24 +21,36 @@ describe('signals', () => {
     await t?.close();
   });
 
-  const event = (type: string, aggregateId: string, payload: Record<string, unknown>, createdAt = new Date()): OutboxEvent =>
-    ({ outbox: type.split('.')[0], id: String(randomInt(1, 2 ** 31)), type, aggregateId, payload, createdAt, attempt: 1 });
+  const event = (type: string, aggregateId: string, payload: Record<string, unknown>, createdAt = new Date()): OutboxEvent => ({
+    outbox: type.split('.')[0],
+    id: String(randomInt(1, 2 ** 31)),
+    type,
+    aggregateId,
+    payload,
+    createdAt,
+    attempt: 1,
+  });
   const consume = async (e: OutboxEvent) => {
     const c = bus.consumersOf(e.type).find((x) => x.name === 'trust.signals');
     await c!.handler(e);
   };
   const signals = (source: string) =>
     fx.query<{ id: string; kind: string; subject_user: string | null; detail: Record<string, unknown>; status: string }>(
-      `SELECT id, kind, subject_user, detail, status FROM trust.signals WHERE source_ref = $1`, [source]);
+      `SELECT id, kind, subject_user, detail, status FROM trust.signals WHERE source_ref = $1`,
+      [source],
+    );
   async function operator() {
     const staffId = await fx.staff('operator');
     const sid = await fx.session({ staffId });
     const headers = fx.headers(sid, staffId, 'staff');
     return {
       staffId,
-      call: (method: string, path: string, body?: unknown) => fetch(t.url(path), {
-        method, headers: { ...headers, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) }, body: body === undefined ? undefined : JSON.stringify(body),
-      }),
+      call: (method: string, path: string, body?: unknown) =>
+        fetch(t.url(path), {
+          method,
+          headers: { ...headers, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
+          body: body === undefined ? undefined : JSON.stringify(body),
+        }),
     };
   }
 
@@ -52,21 +64,38 @@ describe('signals', () => {
       event('delivery.issue.opened', orderId, { issueId, orderId, kind: 'code_locked' }),
     ];
     for (const e of [...events, ...events]) await consume(e);
-    expect(await signals(`auctions.flag:${flagId}`)).toEqual([expect.objectContaining({ kind: 'shill_bidding', subject_user: null, detail: { auctionId, flag: 'shill_score', score: 0.82 }, status: 'open' })]);
-    expect(await signals(`listing:${listingId}`)).toEqual([expect.objectContaining({ kind: 'relisting', subject_user: seller, detail: { listingId, previousListingId: previous, similarity: 0.91, reason: 'cancelled' } })]);
-    expect(await signals(`delivery.issue:${issueId}`)).toEqual([expect.objectContaining({ kind: 'delivery_issue', detail: { issueId, orderId, issue: 'code_locked' } })]);
+    expect(await signals(`auctions.flag:${flagId}`)).toEqual([
+      expect.objectContaining({ kind: 'shill_bidding', subject_user: null, detail: { auctionId, flag: 'shill_score', score: 0.82 }, status: 'open' }),
+    ]);
+    expect(await signals(`listing:${listingId}`)).toEqual([
+      expect.objectContaining({
+        kind: 'relisting',
+        subject_user: seller,
+        detail: { listingId, previousListingId: previous, similarity: 0.91, reason: 'cancelled' },
+      }),
+    ]);
+    expect(await signals(`delivery.issue:${issueId}`)).toEqual([
+      expect.objectContaining({ kind: 'delivery_issue', detail: { issueId, orderId, issue: 'code_locked' } }),
+    ]);
   });
 
   it('DV-51 chat flags make one signal per sender per day, with the count, the flags and the threads; a message counts once', async () => {
     const [sender, other] = [await fx.user(), await fx.user()];
     const [t1, t2] = [randomUUID(), randomUUID()];
     const noon = new Date('2026-11-10T06:00:00Z'); // 12:00 in Dhaka
-    const flag = (thread: string, messageId: number, flags: string[], from = sender, at = noon) => event('chat.message.flagged', thread, { messageId, flags, sender: from }, at);
+    const flag = (thread: string, messageId: number, flags: string[], from = sender, at = noon) =>
+      event('chat.message.flagged', thread, { messageId, flags, sender: from }, at);
     const m1 = flag(t1, 101, ['phone_number']);
     for (const e of [m1, flag(t1, 102, ['phone_number', 'payment_phrase']), m1, flag(t2, 103, ['link'])]) await consume(e);
     const [s] = await signals(`chat:${sender}:2026-11-10`);
     expect(s).toMatchObject({ kind: 'chat_flags', subject_user: sender, status: 'open' });
-    expect(s.detail).toEqual({ day: '2026-11-10', count: 3, messageIds: ['101', '102', '103'], threadIds: [t1, t2], flags: { phone_number: 2, payment_phrase: 1, link: 1 } });
+    expect(s.detail).toEqual({
+      day: '2026-11-10',
+      count: 3,
+      messageIds: ['101', '102', '103'],
+      threadIds: [t1, t2],
+      flags: { phone_number: 2, payment_phrase: 1, link: 1 },
+    });
     await consume(flag(t1, 104, ['link'], sender, new Date('2026-11-10T19:00:00Z'))); // 01:00 on the 11th in Dhaka: the next day
     await consume(flag(t1, 105, ['link'], other));
     expect((await signals(`chat:${sender}:2026-11-11`))[0].detail).toMatchObject({ count: 1 });
@@ -87,8 +116,9 @@ describe('signals', () => {
     expect([r.status, await r.json()]).toEqual([200, { signalId: id, status: 'actioned' }]);
     expect((await op.call('POST', `/staff/signals/${id}/review`, { outcome: 'dismissed', note: 'Changed my mind about this.' })).status).toBe(400); // closed
     expect((await op.call('POST', `/staff/signals/${randomUUID()}/review`, { outcome: 'dismissed', note: 'Looks like a normal relisting.' })).status).toBe(404);
-    expect(await fx.query(`SELECT status, reviewed_by, note FROM trust.signals WHERE id = $1`, [id]))
-      .toEqual([{ status: 'actioned', reviewed_by: op.staffId, note: 'Same phone relisted after a cancelled sale; warned.' }]);
+    expect(await fx.query(`SELECT status, reviewed_by, note FROM trust.signals WHERE id = $1`, [id])).toEqual([
+      { status: 'actioned', reviewed_by: op.staffId, note: 'Same phone relisted after a cancelled sale; warned.' },
+    ]);
     expect(await fx.query(`SELECT action FROM audit.events WHERE object_id = $1`, [id])).toEqual([{ action: 'trust.signal.actioned' }]);
     expect((await fetch(t.url(`/staff/signals/${id}/review`), { method: 'POST' })).status).toBe(401);
   });

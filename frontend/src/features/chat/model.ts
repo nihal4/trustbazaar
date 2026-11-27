@@ -16,7 +16,10 @@ export interface ThreadSummary {
   lastMessageAt: string | null;
   closed: boolean;
 }
-export interface ThreadPage { items: ThreadSummary[]; nextCursor: string | null }
+export interface ThreadPage {
+  items: ThreadSummary[];
+  nextCursor: string | null;
+}
 
 /** A message as GET /threads/{id}/messages gives it. */
 export interface ServerMessage {

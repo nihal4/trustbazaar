@@ -70,7 +70,11 @@ export function Component() {
   }
   if (!terms.data || (id && listing.isPending)) return <p role="status">{t('shell.loading')}</p>;
   if (id && (listing.isError || !listing.data?.own)) {
-    return <div className={styles.page}><h1>{t('sell.not_found')}</h1></div>;
+    return (
+      <div className={styles.page}>
+        <h1>{t('sell.not_found')}</h1>
+      </div>
+    );
   }
   const l = listing.data ?? null;
   const drafting = !l || l.status === 'draft';
@@ -79,17 +83,34 @@ export function Component() {
       <h1 className={styles.title}>{l ? t('sell.title_edit', { title: l.title }) : t('sell.title_new')}</h1>
       {drafting && <SellSteps l={l} minPhotos={terms.data.photos.min} t={t} />}
       <div className={styles.main}>
-      {l && <p><strong>{t(`sell.status.${l.status}`)}</strong>{l.status !== 'draft' && <> · <Link to={`/listings/${encodeURIComponent(l.id)}`}>{t('sell.view_listing')}</Link></>}</p>}
-      <p className={styles.hint}>{t('sell.limits', { count: toLocalDigits(String(terms.data.activeListings.count), lang), limit: toLocalDigits(String(terms.data.activeListings.limit), lang) })}</p>
-      {(!l || l.status === 'draft' || (l.status === 'active' && !l.locked && l.saleFormat === 'fixed_price')) && (
-        <DetailsForm key={l?.own?.updatedAt ?? 'new'} l={l} terms={terms.data} t={t} lang={lang} />
-      )}
-      {l && l.itemKind === 'physical' && l.status === 'draft' && <Photos l={l} terms={terms.data} t={t} lang={lang} />}
-      {l && l.itemKind === 'game_account' && (l.status === 'draft' || l.status === 'pending_review') && <GameListing l={l} t={t} lang={lang} />}
-      {l && l.status === 'draft' && <Publish l={l} terms={terms.data} t={t} lang={lang} />}
-      {l && l.status === 'pending_review' && <FormMessage kind="info">{t(l.itemKind === 'game_account' ? 'sell.game.in_review' : 'sell.in_review')}</FormMessage>}
-      {l && l.status === 'active' && (l.locked || l.saleFormat === 'auction') && <p>{t('sell.locked_note')}</p>}
-      {l && l.status === 'active' && <Clarifications l={l} t={t} lang={lang} />}
+        {l && (
+          <p>
+            <strong>{t(`sell.status.${l.status}`)}</strong>
+            {l.status !== 'draft' && (
+              <>
+                {' '}
+                · <Link to={`/listings/${encodeURIComponent(l.id)}`}>{t('sell.view_listing')}</Link>
+              </>
+            )}
+          </p>
+        )}
+        <p className={styles.hint}>
+          {t('sell.limits', {
+            count: toLocalDigits(String(terms.data.activeListings.count), lang),
+            limit: toLocalDigits(String(terms.data.activeListings.limit), lang),
+          })}
+        </p>
+        {(!l || l.status === 'draft' || (l.status === 'active' && !l.locked && l.saleFormat === 'fixed_price')) && (
+          <DetailsForm key={l?.own?.updatedAt ?? 'new'} l={l} terms={terms.data} t={t} lang={lang} />
+        )}
+        {l && l.itemKind === 'physical' && l.status === 'draft' && <Photos l={l} terms={terms.data} t={t} lang={lang} />}
+        {l && l.itemKind === 'game_account' && (l.status === 'draft' || l.status === 'pending_review') && <GameListing l={l} t={t} lang={lang} />}
+        {l && l.status === 'draft' && <Publish l={l} terms={terms.data} t={t} lang={lang} />}
+        {l && l.status === 'pending_review' && (
+          <FormMessage kind="info">{t(l.itemKind === 'game_account' ? 'sell.game.in_review' : 'sell.in_review')}</FormMessage>
+        )}
+        {l && l.status === 'active' && (l.locked || l.saleFormat === 'auction') && <p>{t('sell.locked_note')}</p>}
+        {l && l.status === 'active' && <Clarifications l={l} t={t} lang={lang} />}
       </div>
     </div>
   );
@@ -99,7 +120,10 @@ export function Component() {
  * Where a new or draft listing stands (Daylight design, docs/design/10_visual.md, section 7.7): the item, then its
  * photos (or the game account's details), then publishing; each done, now or still to come, in words as well.
  */
-export function sellStepsOf(l: EditableListing | null, minPhotos: number): { key: 'details' | 'photos' | 'game' | 'publish'; state: 'done' | 'current' | 'next' }[] {
+export function sellStepsOf(
+  l: EditableListing | null,
+  minPhotos: number,
+): { key: 'details' | 'photos' | 'game' | 'publish'; state: 'done' | 'current' | 'next' }[] {
   const game = l?.itemKind === 'game_account';
   const media = game ? 'game' : 'photos';
   const mediaDone = !!l && !game && l.photos.length >= minPhotos;
@@ -123,8 +147,6 @@ function SellSteps({ l, minPhotos, t }: { l: EditableListing | null; minPhotos: 
     </ol>
   );
 }
-
-
 
 function useAreas() {
   const api = useApi();
@@ -181,15 +203,17 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
         setAreaId(String(near.id));
         setLocated({ lat: Math.round(p.coords.latitude * 1000) / 1000, lng: Math.round(p.coords.longitude * 1000) / 1000 });
       },
-      () => { setLocating(false); setMessage(t('sell.location_unavailable')); },
+      () => {
+        setLocating(false);
+        setMessage(t('sell.location_unavailable'));
+      },
       { enableHighAccuracy: false, timeout: 10_000, maximumAge: 300_000 },
     );
   };
 
   const save = useMutation({
-    mutationFn: (body: Record<string, unknown>) => (l
-      ? api.patch(`/listings/${encodeURIComponent(l.id)}`, body)
-      : api.post('/listings', body, { idempotent: true })) as Promise<EditableListing>,
+    mutationFn: (body: Record<string, unknown>) =>
+      (l ? api.patch(`/listings/${encodeURIComponent(l.id)}`, body) : api.post('/listings', body, { idempotent: true })) as Promise<EditableListing>,
     onSuccess: (saved) => {
       setMessage(null);
       setErrors([]);
@@ -226,18 +250,28 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
     if (problems.length || sending.current) return;
     const body: Record<string, unknown> = {
       ...(draft ? { categoryId: Number(categoryId) } : {}),
-      title: title.trim(), description: description.trim(),
-      ...(game ? {} : {
-        condition, noVisibleDefects: noDefects,
-        ...(serial.trim() !== '' ? { serial: serial.trim() } : {}),
-        fulfilmentOptions: fulfilment, weightClass: courier ? weight : null, sizeClass: courier ? size : null,
-      }),
+      title: title.trim(),
+      description: description.trim(),
+      ...(game
+        ? {}
+        : {
+            condition,
+            noVisibleDefects: noDefects,
+            ...(serial.trim() !== '' ? { serial: serial.trim() } : {}),
+            fulfilmentOptions: fulfilment,
+            weightClass: courier ? weight : null,
+            sizeClass: courier ? size : null,
+          }),
       ...(saleFormat === 'fixed_price' ? { price: String(poisha), quantity: game ? 1 : q } : {}),
       ...(area && !game ? { area: { district: area.district, lat: located?.lat ?? area.lat, lng: located?.lng ?? area.lng } } : {}),
       ...(!l ? { itemKind, saleFormat } : {}),
     };
     sending.current = true;
-    save.mutate(body, { onSettled: () => { sending.current = false; } });
+    save.mutate(body, {
+      onSettled: () => {
+        sending.current = false;
+      },
+    });
   };
 
   const options = (categories.data ?? []).filter((c) => c.itemKind === itemKind);
@@ -248,7 +282,11 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
       {errors.length > 0 && (
         <div role="alert" className={styles.errors}>
           <p>{t('sell.fix')}</p>
-          <ul>{errors.map((x) => <li key={x}>{x}</li>)}</ul>
+          <ul>
+            {errors.map((x) => (
+              <li key={x}>{x}</li>
+            ))}
+          </ul>
         </div>
       )}
       {message && <FormMessage kind="error">{message}</FormMessage>}
@@ -257,7 +295,16 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
           <legend>{t('sell.kind')}</legend>
           {(['physical', 'game_account'] as const).map((k) => (
             <div key={k}>
-              <input id={`kind-${k}`} type="radio" name="kind" checked={itemKind === k} onChange={() => { setItemKind(k); setCategoryId(''); }} />
+              <input
+                id={`kind-${k}`}
+                type="radio"
+                name="kind"
+                checked={itemKind === k}
+                onChange={() => {
+                  setItemKind(k);
+                  setCategoryId('');
+                }}
+              />
               <label htmlFor={`kind-${k}`}>{t(`sell.kind.${k}`)}</label>
             </div>
           ))}
@@ -286,20 +333,35 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
               </option>
             ))}
           </select>
-          <p id="category-hint" className={styles.hint}>{t('sell.prohibited_policy')} <Link to="/help/terms">{t('sell.policy_link')}</Link></p>
+          <p id="category-hint" className={styles.hint}>
+            {t('sell.prohibited_policy')} <Link to="/help/terms">{t('sell.policy_link')}</Link>
+          </p>
         </>
       )}
       <label htmlFor="title">{t('sell.field.title')}</label>
       <input id="title" value={title} maxLength={120} onChange={(e) => setTitle(e.target.value)} />
       <label htmlFor="description">{t('sell.field.description')}</label>
-      <textarea id="description" value={description} rows={6} maxLength={5000} onChange={(e) => setDescription(e.target.value)} aria-describedby="description-hint" />
-      <p id="description-hint" className={styles.hint}>{t('sell.description_hint')}</p>
+      <textarea
+        id="description"
+        value={description}
+        rows={6}
+        maxLength={5000}
+        onChange={(e) => setDescription(e.target.value)}
+        aria-describedby="description-hint"
+      />
+      <p id="description-hint" className={styles.hint}>
+        {t('sell.description_hint')}
+      </p>
       {!game && (
         <>
           <label htmlFor="condition">{t('sell.field.condition')}</label>
           <select id="condition" value={condition} onChange={(e) => setCondition(e.target.value)}>
             <option value="">{t('sell.choose')}</option>
-            {CONDITIONS.map((c) => <option key={c} value={c}>{t(`sell.condition.${c}`)}</option>)}
+            {CONDITIONS.map((c) => (
+              <option key={c} value={c}>
+                {t(`sell.condition.${c}`)}
+              </option>
+            ))}
           </select>
           <div className={styles.check}>
             <input id="no-defects" type="checkbox" checked={noDefects} onChange={(e) => setNoDefects(e.target.checked)} />
@@ -309,25 +371,47 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
           {!game && draft && ['mobile-phones', 'laptops-computers'].includes(categories.data?.find((c) => String(c.id) === categoryId)?.slug ?? '') && (
             <>
               <label htmlFor="serial">{t('sell.field.serial')}</label>
-              <input id="serial" value={serial} maxLength={40} autoComplete="off" inputMode="text" aria-describedby="serial-hint" onChange={(e) => setSerial(e.target.value)} />
-              <p id="serial-hint" className={styles.hint}>{l?.serialLast4 ? t('sell.serial_saved', { last4: l.serialLast4 }) : t('sell.serial_hint')}</p>
+              <input
+                id="serial"
+                value={serial}
+                maxLength={40}
+                autoComplete="off"
+                inputMode="text"
+                aria-describedby="serial-hint"
+                onChange={(e) => setSerial(e.target.value)}
+              />
+              <p id="serial-hint" className={styles.hint}>
+                {l?.serialLast4 ? t('sell.serial_saved', { last4: l.serialLast4 }) : t('sell.serial_hint')}
+              </p>
             </>
           )}
           <label htmlFor="fulfilment">{t('sell.field.fulfilmentOptions')}</label>
           <select id="fulfilment" value={fulfilment} onChange={(e) => setFulfilment(e.target.value)}>
-            {FULFILMENT.map((f) => <option key={f} value={f}>{t(`sell.fulfilment.${f}`)}</option>)}
+            {FULFILMENT.map((f) => (
+              <option key={f} value={f}>
+                {t(`sell.fulfilment.${f}`)}
+              </option>
+            ))}
           </select>
           {courier && (
             <>
               <label htmlFor="weight">{t('sell.field.weightClass')}</label>
               <select id="weight" value={weight} onChange={(e) => setWeight(e.target.value)}>
                 <option value="">{t('sell.choose')}</option>
-                {WEIGHTS.map((w) => <option key={w} value={w}>{t(`sell.weight.${w}`)}</option>)}
+                {WEIGHTS.map((w) => (
+                  <option key={w} value={w}>
+                    {t(`sell.weight.${w}`)}
+                  </option>
+                ))}
               </select>
               <label htmlFor="size">{t('sell.field.sizeClass')}</label>
               <select id="size" value={size} onChange={(e) => setSize(e.target.value)}>
                 <option value="">{t('sell.choose')}</option>
-                {SIZES.map((s) => <option key={s} value={s}>{t(`sell.size.${s}`)}</option>)}
+                {SIZES.map((s) => (
+                  <option key={s} value={s}>
+                    {t(`sell.size.${s}`)}
+                  </option>
+                ))}
               </select>
             </>
           )}
@@ -354,17 +438,35 @@ function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; terms: 
       {!game && (
         <>
           <label htmlFor="area">{t('sell.field.area')}</label>
-          <select id="area" value={areaId} onChange={(e) => { setAreaId(e.target.value); setLocated(null); }} aria-describedby="area-hint">
+          <select
+            id="area"
+            value={areaId}
+            onChange={(e) => {
+              setAreaId(e.target.value);
+              setLocated(null);
+            }}
+            aria-describedby="area-hint"
+          >
             <option value="">{l?.own?.area ? t('sell.area_keep', { district: l.own.area.district }) : t('sell.area_choose')}</option>
-            {(areas.data?.items ?? []).map((a) => <option key={a.id} value={String(a.id)}>{`${lang === 'bn' ? a.nameBn : a.nameEn}, ${a.district}`}</option>)}
+            {(areas.data?.items ?? []).map((a) => (
+              <option key={a.id} value={String(a.id)}>{`${lang === 'bn' ? a.nameBn : a.nameEn}, ${a.district}`}</option>
+            ))}
           </select>
-          <p id="area-hint" className={styles.hint}>{t('sell.area_hint')}</p>
-          <p><button type="button" className={styles.secondary} onClick={locate} disabled={locating || !areas.data} aria-busy={locating}>{t('sell.use_location')}</button></p>
+          <p id="area-hint" className={styles.hint}>
+            {t('sell.area_hint')}
+          </p>
+          <p>
+            <button type="button" className={styles.secondary} onClick={locate} disabled={locating || !areas.data} aria-busy={locating}>
+              {t('sell.use_location')}
+            </button>
+          </p>
           {located && area && <p className={styles.hint}>{t('sell.located', { area: `${lang === 'bn' ? area.nameBn : area.nameEn}, ${area.district}` })}</p>}
         </>
       )}
       <div className={styles.buttons}>
-        <button type="submit" className={styles.primary} disabled={save.isPending}>{t(l ? 'sell.save' : 'sell.create')}</button>
+        <button type="submit" className={styles.primary} disabled={save.isPending}>
+          {t(l ? 'sell.save' : 'sell.create')}
+        </button>
       </div>
     </form>
   );
@@ -390,7 +492,10 @@ function Photos({ l, terms, t, lang }: { l: EditableListing; terms: SellingTerms
     const refused: string[] = [];
     for (const [i, f] of files.entries()) {
       setProgress(t('sell.photo_progress', { n: toLocalDigits(String(i + 1), lang), of: toLocalDigits(String(files.length), lang), name: f.name }));
-      if (!/^image\/(jpeg|png|webp)$/.test(f.type) || f.size > terms.photos.maxBytes) { refused.push(f.name); continue; }
+      if (!/^image\/(jpeg|png|webp)$/.test(f.type) || f.size > terms.photos.maxBytes) {
+        refused.push(f.name);
+        continue;
+      }
       const form = new FormData();
       form.set('showsDefects', defects ? 'true' : 'false');
       form.set('photo', f, f.name);
@@ -413,7 +518,9 @@ function Photos({ l, terms, t, lang }: { l: EditableListing; terms: SellingTerms
   return (
     <section aria-labelledby="photos-title" className={styles.panel}>
       <h2 id="photos-title">{t('sell.photos')}</h2>
-      <p className={styles.hint}>{t('sell.photos_hint', { min: toLocalDigits(String(terms.photos.min), lang), max: toLocalDigits(String(terms.photos.max), lang) })}</p>
+      <p className={styles.hint}>
+        {t('sell.photos_hint', { min: toLocalDigits(String(terms.photos.min), lang), max: toLocalDigits(String(terms.photos.max), lang) })}
+      </p>
       {message && <FormMessage kind="error">{message}</FormMessage>}
       <ul className={styles.photos}>
         {l.photos.map((p, i) => (
@@ -438,8 +545,15 @@ function Photos({ l, terms, t, lang }: { l: EditableListing; terms: SellingTerms
           <div className={styles.addTile}>
             <label htmlFor="photo-files">{t('sell.add_photos', { left: toLocalDigits(String(left), lang) })}</label>
             <span className={styles.hint}>{t('sell.add_photos_formats')}</span>
-            <input ref={input} id="photo-files" type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={progress !== null}
-              onChange={(e) => void upload(e.target.files)} />
+            <input
+              ref={input}
+              id="photo-files"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              disabled={progress !== null}
+              onChange={(e) => void upload(e.target.files)}
+            />
           </div>
         </>
       )}
@@ -490,7 +604,15 @@ function Publish({ l, terms, t, lang }: { l: EditableListing; terms: SellingTerm
   return (
     <form onSubmit={submit} noValidate className={`${styles.panel} ${styles.form}`} aria-labelledby="publish-title">
       <h2 id="publish-title">{t('sell.publish_title')}</h2>
-      {errors.length > 0 && <div role="alert" className={styles.errors}><ul>{errors.map((x) => <li key={x}>{x}</li>)}</ul></div>}
+      {errors.length > 0 && (
+        <div role="alert" className={styles.errors}>
+          <ul>
+            {errors.map((x) => (
+              <li key={x}>{x}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       {done && <FormMessage kind="success">{done}</FormMessage>}
       {auction && (
         <>
@@ -498,10 +620,16 @@ function Publish({ l, terms, t, lang }: { l: EditableListing; terms: SellingTerm
           <input id="start-price" inputMode="decimal" value={start} onChange={(e) => setStart(e.target.value)} />
           <label htmlFor="reserve-price">{t('sell.reserve_price')}</label>
           <input id="reserve-price" inputMode="decimal" value={reserve} onChange={(e) => setReserve(e.target.value)} aria-describedby="reserve-hint" />
-          <p id="reserve-hint" className={styles.hint}>{t('sell.reserve_hint')}</p>
+          <p id="reserve-hint" className={styles.hint}>
+            {t('sell.reserve_hint')}
+          </p>
           <label htmlFor="duration">{t('sell.duration')}</label>
           <select id="duration" value={duration} onChange={(e) => setDuration(e.target.value)}>
-            {terms.auctionDurations.map((d) => <option key={d} value={d}>{durationLabel(d, t, lang)}</option>)}
+            {terms.auctionDurations.map((d) => (
+              <option key={d} value={d}>
+                {durationLabel(d, t, lang)}
+              </option>
+            ))}
           </select>
         </>
       )}
@@ -509,7 +637,9 @@ function Publish({ l, terms, t, lang }: { l: EditableListing; terms: SellingTerm
       <p>{t('sell.commission_payout', { percent: percentOf(terms.commissionBps, lang) })}</p>
       <p>{t(auction ? 'sell.fixed_after_publish_auction' : 'sell.fixed_after_publish')}</p>
       <div className={styles.buttons}>
-        <button type="submit" className={styles.primary} disabled={publish.isPending || blocked}>{t('sell.publish')}</button>
+        <button type="submit" className={styles.primary} disabled={publish.isPending || blocked}>
+          {t('sell.publish')}
+        </button>
       </div>
     </form>
   );
@@ -522,7 +652,11 @@ function Clarifications({ l, t, lang }: { l: EditableListing; t: T; lang: Lang }
   const [message, setMessage] = useState<string | null>(null);
   const add = useMutation({
     mutationFn: () => api.post(`/listings/${encodeURIComponent(l.id)}/clarifications`, { body: body.trim() }),
-    onSuccess: () => { setBody(''); setMessage(null); void queryClient.invalidateQueries({ queryKey: listingKey(l.id) }); },
+    onSuccess: () => {
+      setBody('');
+      setMessage(null);
+      void queryClient.invalidateQueries({ queryKey: listingKey(l.id) });
+    },
     onError: (e) => setMessage(errorText(e, t, lang)),
   });
   return (
@@ -530,13 +664,31 @@ function Clarifications({ l, t, lang }: { l: EditableListing; t: T; lang: Lang }
       <h2 id="clarify-title">{t('sell.clarifications')}</h2>
       <p className={styles.hint}>{t('sell.clarifications_hint')}</p>
       {l.clarifications.length > 0 && (
-        <ul>{l.clarifications.map((c) => <li key={c.id}><span className={styles.hint}>{formatDateTime(Date.parse(c.at), lang)}:</span> {c.body}</li>)}</ul>
+        <ul>
+          {l.clarifications.map((c) => (
+            <li key={c.id}>
+              <span className={styles.hint}>{formatDateTime(Date.parse(c.at), lang)}:</span> {c.body}
+            </li>
+          ))}
+        </ul>
       )}
       {message && <FormMessage kind="error">{message}</FormMessage>}
-      <form noValidate className={styles.form} onSubmit={(e) => { e.preventDefault(); if (body.trim()) add.mutate(); else setMessage(t('sell.clarification_empty')); }}>
+      <form
+        noValidate
+        className={styles.form}
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (body.trim()) add.mutate();
+          else setMessage(t('sell.clarification_empty'));
+        }}
+      >
         <label htmlFor="clarification">{t('sell.add_clarification')}</label>
         <textarea id="clarification" value={body} rows={3} maxLength={1000} onChange={(e) => setBody(e.target.value)} />
-        <div className={styles.buttons}><button type="submit" className={styles.primary} disabled={add.isPending}>{t('sell.send_clarification')}</button></div>
+        <div className={styles.buttons}>
+          <button type="submit" className={styles.primary} disabled={add.isPending}>
+            {t('sell.send_clarification')}
+          </button>
+        </div>
       </form>
     </section>
   );

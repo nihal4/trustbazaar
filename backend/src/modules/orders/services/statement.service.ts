@@ -40,22 +40,48 @@ export interface PayoutLine {
 }
 
 type SettlementRow = {
-  order_id: string; title: string | null; created_at: Date; amount_collected: string; item_price: string; delivery_fee: string; commission: string;
-  commission_bps: number; courier_payout: string; delivery_margin: string; delivery_margin_bps: number; seller_payout: string; refund_total: string;
+  order_id: string;
+  title: string | null;
+  created_at: Date;
+  amount_collected: string;
+  item_price: string;
+  delivery_fee: string;
+  commission: string;
+  commission_bps: number;
+  courier_payout: string;
+  delivery_margin: string;
+  delivery_margin_bps: number;
+  seller_payout: string;
+  refund_total: string;
 };
 
 const SETTLEMENT_COLUMNS = `s.order_id, o.listing_snapshot->>'title' AS title, s.created_at, s.amount_collected::text, s.item_price::text, s.delivery_fee::text,
   s.commission::text, s.commission_bps, s.courier_payout::text, s.delivery_margin::text, s.delivery_margin_bps, s.seller_payout::text, s.refund_total::text`;
 
 const settlementView = (r: SettlementRow): SettlementView => ({
-  orderId: r.order_id, title: r.title, settledAt: r.created_at.toISOString(), amountCollected: r.amount_collected, itemPrice: r.item_price, deliveryFee: r.delivery_fee,
-  commission: r.commission, commissionBps: r.commission_bps, courierPayout: r.courier_payout, deliveryMargin: r.delivery_margin, deliveryMarginBps: r.delivery_margin_bps,
-  sellerPayout: r.seller_payout, refundTotal: r.refund_total,
+  orderId: r.order_id,
+  title: r.title,
+  settledAt: r.created_at.toISOString(),
+  amountCollected: r.amount_collected,
+  itemPrice: r.item_price,
+  deliveryFee: r.delivery_fee,
+  commission: r.commission,
+  commissionBps: r.commission_bps,
+  courierPayout: r.courier_payout,
+  deliveryMargin: r.delivery_margin,
+  deliveryMarginBps: r.delivery_margin_bps,
+  sellerPayout: r.seller_payout,
+  refundTotal: r.refund_total,
 });
 
 type PayoutRow = { id: string; order_id: string; amount: string; status: string; simulated: boolean; created_at: Date; sent_at: Date | null };
 const payoutView = (p: PayoutRow): PayoutLine => ({
-  id: p.id, amount: p.amount, status: p.status, simulated: p.simulated, createdAt: p.created_at.toISOString(), sentAt: p.sent_at?.toISOString() ?? null,
+  id: p.id,
+  amount: p.amount,
+  status: p.status,
+  simulated: p.simulated,
+  createdAt: p.created_at.toISOString(),
+  sentAt: p.sent_at?.toISOString() ?? null,
 });
 
 @Injectable()
@@ -73,13 +99,36 @@ export class StatementService {
          FROM orders.orders WHERE id = $1`,
       [orderId],
     )) as {
-      id: string; buyer_id: string; seller_id: string; kind: string; title: string | null; quantity: number; unit_price: string; item_price: string;
-      delivery_fee: string; total: string; status: string; created_at: Date; paid_at: Date | null; closed_at: Date | null; cancelled_at: Date | null;
+      id: string;
+      buyer_id: string;
+      seller_id: string;
+      kind: string;
+      title: string | null;
+      quantity: number;
+      unit_price: string;
+      item_price: string;
+      delivery_fee: string;
+      total: string;
+      status: string;
+      created_at: Date;
+      paid_at: Date | null;
+      closed_at: Date | null;
+      cancelled_at: Date | null;
     }[];
     if (!o || (o.buyer_id !== userId && o.seller_id !== userId)) throw new Problem('not-found');
     const order = {
-      id: o.id, kind: o.kind, title: o.title, quantity: o.quantity, unitPrice: o.unit_price, itemPrice: o.item_price, deliveryFee: o.delivery_fee, total: o.total,
-      status: o.status, createdAt: o.created_at.toISOString(), paidAt: o.paid_at?.toISOString() ?? null, closedAt: o.closed_at?.toISOString() ?? null,
+      id: o.id,
+      kind: o.kind,
+      title: o.title,
+      quantity: o.quantity,
+      unitPrice: o.unit_price,
+      itemPrice: o.item_price,
+      deliveryFee: o.delivery_fee,
+      total: o.total,
+      status: o.status,
+      createdAt: o.created_at.toISOString(),
+      paidAt: o.paid_at?.toISOString() ?? null,
+      closedAt: o.closed_at?.toISOString() ?? null,
       cancelledAt: o.cancelled_at?.toISOString() ?? null,
     };
     const [s] = (await this.db.query(
@@ -102,10 +151,20 @@ export class StatementService {
         order,
         payments: payments.map((p) => ({
           // a duplicate or rejected payment is money in that is owed straight back (refunds lists it)
-          attemptId: p.id, provider: p.provider, amount: p.amount, accepted: p.status === 'succeeded', confirmedAt: p.confirmed_at.toISOString(),
+          attemptId: p.id,
+          provider: p.provider,
+          amount: p.amount,
+          accepted: p.status === 'succeeded',
+          confirmedAt: p.confirmed_at.toISOString(),
         })),
         refunds: refunds.map((r) => ({
-          id: r.id, attemptId: r.attempt_id, amount: r.amount, reason: r.reason, status: r.status, createdAt: r.created_at.toISOString(), completedAt: r.completed_at?.toISOString() ?? null,
+          id: r.id,
+          attemptId: r.attempt_id,
+          amount: r.amount,
+          reason: r.reason,
+          status: r.status,
+          createdAt: r.created_at.toISOString(),
+          completedAt: r.completed_at?.toISOString() ?? null,
         })),
         settlement: s ? { settledAt: s.created_at.toISOString(), amountCollected: s.amount_collected, refundTotal: s.refund_total } : null,
       };
@@ -118,7 +177,10 @@ export class StatementService {
   }
 
   /** GET /me/statements (FR-PAY-21, IF-UI-08). */
-  async statements(sellerId: string, cursor?: string): Promise<{ items: (SettlementView & { payout: PayoutLine | null })[]; owed: string; nextCursor: string | null }> {
+  async statements(
+    sellerId: string,
+    cursor?: string,
+  ): Promise<{ items: (SettlementView & { payout: PayoutLine | null })[]; owed: string; nextCursor: string | null }> {
     const after = decodeCursor(cursor);
     const rows = (await this.db.query(
       `SELECT ${SETTLEMENT_COLUMNS}, ${cursorAt('s.created_at')} AS cursor_at

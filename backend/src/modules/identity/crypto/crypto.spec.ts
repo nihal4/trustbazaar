@@ -6,10 +6,17 @@ import { ARGON2_PARAMS, PasswordHasher } from './password';
 import { checkTotp, hashRecoveryCode } from './totp';
 
 const env = {
-  DATABASE_URL: 'postgres://u:p@h/db', REDIS_URL: 'redis://h:6379/0',
-  JWT_KEY_V1: 'k'.repeat(32), FIELD_KEY_V1: 'field-key-version-1-0123456789abcdef', KYC_KEK_V1: 'q'.repeat(32),
-  BIDX_KEY: 'b'.repeat(32), CSRF_KEY: 'c'.repeat(32), LINK_KEY: 'l'.repeat(32), OTP_PEPPER: 'o'.repeat(32),
-  CALLBACK_STATE_KEY: 's'.repeat(32), HANDOVER_KEY: 'h'.repeat(32),
+  DATABASE_URL: 'postgres://u:p@h/db',
+  REDIS_URL: 'redis://h:6379/0',
+  JWT_KEY_V1: 'k'.repeat(32),
+  FIELD_KEY_V1: 'field-key-version-1-0123456789abcdef',
+  KYC_KEK_V1: 'q'.repeat(32),
+  BIDX_KEY: 'b'.repeat(32),
+  CSRF_KEY: 'c'.repeat(32),
+  LINK_KEY: 'l'.repeat(32),
+  OTP_PEPPER: 'o'.repeat(32),
+  CALLBACK_STATE_KEY: 's'.repeat(32),
+  HANDOVER_KEY: 'h'.repeat(32),
 };
 const keys = loadConfig(env).keys.field;
 const ctx = { table: 'totp_factors', column: 'secret_enc', rowId: '11111111-1111-4111-8111-111111111111' };
@@ -19,7 +26,12 @@ describe('passwords', () => {
 
   it('SEC-AUTH-03 passwords are Argon2id with at least 19 MiB, 2 iterations, parallelism 1', async () => {
     const h = await hasher.hash('correct horse battery staple');
-    const params = Object.fromEntries(h.split('$')[3].split(',').map((kv) => kv.split('=')));
+    const params = Object.fromEntries(
+      h
+        .split('$')[3]
+        .split(',')
+        .map((kv) => kv.split('=')),
+    );
     expect(h.startsWith('$argon2id$')).toBe(true);
     expect(params).toEqual({ m: '19456', t: '2', p: '1' });
     expect(await hasher.verifyOrDummy(h, 'correct horse battery staple')).toBe(true);
@@ -81,8 +93,7 @@ describe('TOTP', () => {
   const secret = authenticator.generateSecret();
   const now = new Date('2026-11-01T00:00:15Z');
   const step = Math.floor(now.getTime() / 30000);
-  const codeAt = (offsetSteps: number) =>
-    authenticator.clone({ epoch: now.getTime() + offsetSteps * 30000 }).generate(secret);
+  const codeAt = (offsetSteps: number) => authenticator.clone({ epoch: now.getTime() + offsetSteps * 30000 }).generate(secret);
 
   it('FR-ACC-06 the current code is accepted and its step returned', () => {
     expect(checkTotp(secret, codeAt(0), now)).toBe(step);

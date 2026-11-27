@@ -16,9 +16,16 @@ export interface SellerOrder {
 }
 
 export interface PayoutAccount {
-  id: string; kind: 'bkash_wallet' | 'nagad_wallet' | 'bank'; status: 'pending_review' | 'cooling_off' | 'active' | 'rejected' | 'replaced';
-  walletMasked: string | null; bankName: string | null; branchName: string | null; accountName: string | null; accountLast4: string | null;
-  effectiveAt: string | null; createdAt: string;
+  id: string;
+  kind: 'bkash_wallet' | 'nagad_wallet' | 'bank';
+  status: 'pending_review' | 'cooling_off' | 'active' | 'rejected' | 'replaced';
+  walletMasked: string | null;
+  bankName: string | null;
+  branchName: string | null;
+  accountName: string | null;
+  accountLast4: string | null;
+  effectiveAt: string | null;
+  createdAt: string;
 }
 
 export type Why = 'cancel_request' | 'hand_over' | 'ship';
@@ -50,4 +57,3 @@ export function accountStatus(a: PayoutAccount, t: T, lang: Lang): string {
   if (a.status === 'cooling_off' && a.effectiveAt) return t('seller.account_status.cooling_off', { at: formatDateTime(Date.parse(a.effectiveAt), lang) });
   return t(`seller.account_status.${a.status}`);
 }
-

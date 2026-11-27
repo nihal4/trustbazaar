@@ -30,9 +30,13 @@ export function SessionTimer({ session }: { session: NonNullable<StaffMe['sessio
   const absoluteAt = Date.parse(session.absoluteExpiresAt);
 
   useEffect(() => {
-    const mark = () => { lastActive.current = Date.now(); };
+    const mark = () => {
+      lastActive.current = Date.now();
+    };
     for (const e of ['pointerdown', 'keydown'] as const) document.addEventListener(e, mark, { capture: true, passive: true });
-    return () => { for (const e of ['pointerdown', 'keydown'] as const) document.removeEventListener(e, mark, { capture: true }); };
+    return () => {
+      for (const e of ['pointerdown', 'keydown'] as const) document.removeEventListener(e, mark, { capture: true });
+    };
   }, []);
 
   const refresh = async () => {
@@ -61,13 +65,24 @@ export function SessionTimer({ session }: { session: NonNullable<StaffMe['sessio
   });
 
   if (absoluteAt - now <= WARN && absoluteAt <= idleAt) {
-    return <div role="alert" className={styles.warning}>{t('staff.session.absolute', { at: formatDateTime(absoluteAt, lang) })}</div>;
+    return (
+      <div role="alert" className={styles.warning}>
+        {t('staff.session.absolute', { at: formatDateTime(absoluteAt, lang) })}
+      </div>
+    );
   }
-  if (left > WARN || left <= 0) return failed ? <div role="alert" className={styles.warning}>{t('staff.session.refresh_failed')}</div> : null;
+  if (left > WARN || left <= 0)
+    return failed ? (
+      <div role="alert" className={styles.warning}>
+        {t('staff.session.refresh_failed')}
+      </div>
+    ) : null;
   return (
     <div role="alert" className={styles.warning}>
       <p>{t('staff.session.idle', { left: formatCountdown(left, lang).text })}</p>
-      <button type="button" className={styles.primary} onClick={() => void refresh()}>{t('staff.session.stay')}</button>
+      <button type="button" className={styles.primary} onClick={() => void refresh()}>
+        {t('staff.session.stay')}
+      </button>
     </div>
   );
 }

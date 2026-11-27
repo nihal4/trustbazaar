@@ -64,8 +64,9 @@ export function StepUpDialog({ request }: { request: StepUpRequest }) {
     } catch (err) {
       const name = problemName(err);
       if (isApiError(err, 429)) setWaitUntil(untilAfter(err.retryAfter ?? 60));
-      setError(name === 'otp-failed' || name === 'mfa-failed' ? t('stepup.wrong_code')
-        : name === 'otp-expired' ? t('stepup.expired') : errorText(err, t, lang));
+      setError(
+        name === 'otp-failed' || name === 'mfa-failed' ? t('stepup.wrong_code') : name === 'otp-expired' ? t('stepup.expired') : errorText(err, t, lang),
+      );
       setBusy(false);
     }
   };
@@ -73,11 +74,19 @@ export function StepUpDialog({ request }: { request: StepUpRequest }) {
   // while the start has not been answered "Loading…" is said; when it was refused (a wait, for instance) the refusal alone is said, not both
   const instruction = started?.method === 'totp' ? t('stepup.totp') : started?.method === 'sms' ? t('stepup.sms') : error ? null : t('shell.loading');
   return (
-    <Popup id="stepup" title={t("stepup.title")} closeLabel={t("stepup.cancel")} decorativeClose isStepUp busy={busy} onClose={cancel}>
+    <Popup id="stepup" title={t('stepup.title')} closeLabel={t('stepup.cancel')} decorativeClose isStepUp busy={busy} onClose={cancel}>
       <form onSubmit={submit}>
         {instruction && <p>{instruction}</p>}
         {error && <FormMessage kind="error">{error}</FormMessage>}
-        <CodeField id="stepup-code" label={t('stepup.code_label')} value={code} onChange={setCode} data-autofocus required allowRecovery={started?.method !== 'sms'} />
+        <CodeField
+          id="stepup-code"
+          label={t('stepup.code_label')}
+          value={code}
+          onChange={setCode}
+          data-autofocus
+          required
+          allowRecovery={started?.method !== 'sms'}
+        />
         <PopupActions>
           <button type="submit" disabled={busy || !started || waitFor > 0} aria-busy={busy || undefined}>
             {waitFor > 0 ? t('stepup.wait', { time: formatWait(waitFor, lang) }) : t('stepup.confirm')}
@@ -87,7 +96,9 @@ export function StepUpDialog({ request }: { request: StepUpRequest }) {
               {resendIn > 0 ? t('stepup.resend_in', { time: formatWait(resendIn, lang) }) : t('stepup.resend')}
             </button>
           )}
-          <button type="button" onClick={cancel}>{t('stepup.cancel')}</button>
+          <button type="button" onClick={cancel}>
+            {t('stepup.cancel')}
+          </button>
         </PopupActions>
       </form>
     </Popup>

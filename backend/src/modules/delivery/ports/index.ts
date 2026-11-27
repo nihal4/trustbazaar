@@ -73,7 +73,10 @@ export interface DeliveryIssue {
   resolution: string | null;
 }
 
-export interface Page<T> { items: T[]; nextCursor: string | null }
+export interface Page<T> {
+  items: T[];
+  nextCursor: string | null;
+}
 
 /** An address as staff see it: the area in clear, the lines masked unless a reason was given (SEC-ACC-05). */
 export interface RecordAddress {
@@ -90,16 +93,45 @@ export interface RecordAddress {
 export interface FulfilmentRecord {
   orderId: string;
   handover: null | {
-    status: string; dueAt: string; codeVersion: number; wrongEntries: number;
-    lockedAt: string | null; completedAt: string | null; cancelledAt: string | null;
-    proposals: { id: string; proposedBy: string; point: string | null; place: string | null; meetAt: string; status: string; createdAt: string; respondedAt: string | null }[];
+    status: string;
+    dueAt: string;
+    codeVersion: number;
+    wrongEntries: number;
+    lockedAt: string | null;
+    completedAt: string | null;
+    cancelledAt: string | null;
+    proposals: {
+      id: string;
+      proposedBy: string;
+      point: string | null;
+      place: string | null;
+      meetAt: string;
+      status: string;
+      createdAt: string;
+      respondedAt: string | null;
+    }[];
     codeEntries: { codeVersion: number; correct: boolean; at: string }[];
   };
   shipments: {
-    id: string; direction: 'forward' | 'return'; provider: string; simulated: boolean; consignmentId: string | null; status: string; fee: string;
-    pickupDueAt: string | null; bookedAt: string | null; pickedUpAt: string | null; deliveredAt: string | null; returnedAt: string | null;
-    cancelledAt: string | null; orderCancelledAt: string | null; failedAttempts: number; returnCharge: string | null; bookingAttempts: number;
-    pickup: RecordAddress; dropoff: RecordAddress;
+    id: string;
+    direction: 'forward' | 'return';
+    provider: string;
+    simulated: boolean;
+    consignmentId: string | null;
+    status: string;
+    fee: string;
+    pickupDueAt: string | null;
+    bookedAt: string | null;
+    pickedUpAt: string | null;
+    deliveredAt: string | null;
+    returnedAt: string | null;
+    cancelledAt: string | null;
+    orderCancelledAt: string | null;
+    failedAttempts: number;
+    returnCharge: string | null;
+    bookingAttempts: number;
+    pickup: RecordAddress;
+    dropoff: RecordAddress;
     history: { from: string | null; to: string; source: string; eventId: string | null; at: string }[];
   }[];
   issues: DeliveryIssue[];

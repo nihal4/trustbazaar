@@ -40,13 +40,21 @@ export class IdentityFixtures {
 
   async user(o: { kyc?: string; emailVerified?: boolean; status?: 'active' | 'suspended' | 'closed' } = {}): Promise<string> {
     const closed = o.status === 'closed';
-    const [{ id }] = await withFreshPhone((local) => this.db.query(
-      `INSERT INTO identity.users (display_name, phone_e164, phone_verified_at, email, email_verified_at, password_hash,
+    const [{ id }] = await withFreshPhone((local) =>
+      this.db.query(
+        `INSERT INTO identity.users (display_name, phone_e164, phone_verified_at, email, email_verified_at, password_hash,
                                    password_single_factor_ok, adult_confirmed_at, kyc_status, account_status, closed_at)
        VALUES ('Test user', $1, now(), $2, $3, '$argon2id$v=19$test', true, now(), $4, $5, $6) RETURNING id`,
-      [`+88${local}`, `t-${randomUUID()}@tb.test`, o.emailVerified === false ? null : new Date(), o.kyc ?? 'verified',
-       o.status ?? 'active', closed ? new Date() : null],
-    ));
+        [
+          `+88${local}`,
+          `t-${randomUUID()}@tb.test`,
+          o.emailVerified === false ? null : new Date(),
+          o.kyc ?? 'verified',
+          o.status ?? 'active',
+          closed ? new Date() : null,
+        ],
+      ),
+    );
     return id;
   }
 
@@ -97,15 +105,24 @@ export class IdentityFixtures {
                                       ended_at, end_reason, last_seen_at)
        VALUES ($1, $2, $3, now() + make_interval(secs => $4), now() + make_interval(secs => $5), $6, $7, now() - interval '1 hour')
        RETURNING id`,
-      [isUser ? 'user' : 'staff', isUser ? principal.userId : null, isUser ? null : principal.staffId, idle, absolute,
-       o.ended ? new Date() : null, o.ended ? 'logout' : null],
+      [
+        isUser ? 'user' : 'staff',
+        isUser ? principal.userId : null,
+        isUser ? null : principal.staffId,
+        idle,
+        absolute,
+        o.ended ? new Date() : null,
+        o.ended ? 'logout' : null,
+      ],
     );
     return id;
   }
 
   /** A user who can sign in: a real Argon2id password, and optionally TOTP with recovery codes. */
   /** `emailTwoStep` is off unless a test asks for it, so the many tests that sign in with the password alone keep doing so (U10-25); the tests of the step turn it on. */
-  async account(o: { password?: string; mfa?: boolean; status?: 'active' | 'suspended' | 'closed'; weakHash?: boolean; kyc?: string; emailTwoStep?: boolean } = {}) {
+  async account(
+    o: { password?: string; mfa?: boolean; status?: 'active' | 'suspended' | 'closed'; weakHash?: boolean; kyc?: string; emailTwoStep?: boolean } = {},
+  ) {
     const password = o.password ?? `pw-${randomUUID()}`;
     const params = o.weakHash ? { ...ARGON2_PARAMS, memoryCost: 4096, timeCost: 1 } : ARGON2_PARAMS;
     const hash = await argon2.hash(password, params);
@@ -134,7 +151,10 @@ export class IdentityFixtures {
         [factorId, id, blob, this.config.keys.field.current],
       );
       for (let i = 0; i < 3; i++) {
-        const code = randomBytes(6).toString('hex').toUpperCase().replace(/(.{4})(.{4})(.{4})/, '$1-$2-$3');
+        const code = randomBytes(6)
+          .toString('hex')
+          .toUpperCase()
+          .replace(/(.{4})(.{4})(.{4})/, '$1-$2-$3');
         recoveryCodes.push(code);
         await this.db.query(`INSERT INTO identity.recovery_codes (totp_factor_id, code_hash) VALUES ($1, $2)`, [factorId, hashRecoveryCode(code)]);
       }

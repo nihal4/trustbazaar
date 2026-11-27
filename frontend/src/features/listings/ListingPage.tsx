@@ -38,7 +38,8 @@ export function Component() {
   const { pathname } = useLocation();
   const listing = useQuery({
     queryKey: listingKey(id),
-    queryFn: async ({ signal }) => (await takeEarly<ListingView>(`/listings/${id}`)) ?? (api.get(`/listings/${encodeURIComponent(id)}`, { signal }) as Promise<ListingView>),
+    queryFn: async ({ signal }) =>
+      (await takeEarly<ListingView>(`/listings/${id}`)) ?? (api.get(`/listings/${encodeURIComponent(id)}`, { signal }) as Promise<ListingView>),
     staleTime: FRESHNESS.search,
     retry: false,
   });
@@ -76,9 +77,16 @@ export function Component() {
 
   if (listing.isPending) return <p role="status">{t('shell.loading')}</p>;
   if (listing.isError) {
-    return isApiError(listing.error, 404)
-      ? <div><h1>{t('listing.not_found')}</h1><p><Link to="/search">{t('shell.home_link')}</Link></p></div>
-      : <FormMessage kind="error">{errorText(listing.error, t, lang)}</FormMessage>;
+    return isApiError(listing.error, 404) ? (
+      <div>
+        <h1>{t('listing.not_found')}</h1>
+        <p>
+          <Link to="/search">{t('shell.home_link')}</Link>
+        </p>
+      </div>
+    ) : (
+      <FormMessage kind="error">{errorText(listing.error, t, lang)}</FormMessage>
+    );
   }
   const l = listing.data;
   const own = me.data?.id === l.seller.id;
@@ -91,48 +99,72 @@ export function Component() {
       </div>
       {/* the right-hand column on wide screens (title, price, buy, seller) is one block that stays in view while the photos and the description scroll */}
       <div className={styles.rail} ref={rail}>
-      <header className={styles.head}>
-        <p className={styles.crumb}>
-          <Link to={`/search?category=${l.category.id}`}>{category}</Link>
-          {l.itemKind === 'game_account' && <span className={styles.kind}>{t('listing.game_account')}</span>}
-        </p>
-        <h1 className={styles.title}><TitleParts text={l.title} /></h1>
-        <Status l={l} own={own} t={t} />
-        {l.itemKind === 'game_account' && (
-          <section aria-labelledby="game-risk-title" className={styles.risk}>
-            <h2 id="game-risk-title">{t('listing.game_risk_title')}</h2>
-            {[1, 2, 3].map((n) => <p key={n}>{t(`listing.game_risk.${n}`)}</p>)}
-          </section>
-        )}
-      </header>
-      <aside className={styles.side}>
-        {l.saleFormat === 'auction' && l.auction
-          ? (<>
+        <header className={styles.head}>
+          <p className={styles.crumb}>
+            <Link to={`/search?category=${l.category.id}`}>{category}</Link>
+            {l.itemKind === 'game_account' && <span className={styles.kind}>{t('listing.game_account')}</span>}
+          </p>
+          <h1 className={styles.title}>
+            <TitleParts text={l.title} />
+          </h1>
+          <Status l={l} own={own} t={t} />
+          {l.itemKind === 'game_account' && (
+            <section aria-labelledby="game-risk-title" className={styles.risk}>
+              <h2 id="game-risk-title">{t('listing.game_risk_title')}</h2>
+              {[1, 2, 3].map((n) => (
+                <p key={n}>{t(`listing.game_risk.${n}`)}</p>
+              ))}
+            </section>
+          )}
+        </header>
+        <aside className={styles.side}>
+          {l.saleFormat === 'auction' && l.auction ? (
+            <>
               <AuctionPanel initial={l.auction} t={t} lang={lang} signedIn={signedIn} own={own} nextPath={pathname} extraHost={extraHost} />
-              {l.auction.status === 'open' && <p className={styles.promise}><Shield />{t('listing.promise.text')}</p>}
-            </>)
-          : <Buy l={l} own={own} t={t} lang={lang} />}
-        <section aria-labelledby="seller-title" className={styles.seller}>
-          <h2 id="seller-title" className={styles.visuallyHidden}>{t('listing.seller')}</h2>
-          <div className={l.seller.pro === true || l.seller.ratingCount ? `${styles.sellerRow} ${styles.sellerRowRated}` : styles.sellerRow}>
-            <span className={styles.avatar} aria-hidden="true">{initials(l.seller.displayName)}</span>
-            <div className={styles.sellerInfo}>
-              <p className={styles.sellerLine}>
-                <Link className={styles.sellerName} to={`/users/${encodeURIComponent(l.seller.id)}`}>{l.seller.displayName}</Link>
-                {l.seller.verified && <span className={styles.tick} title={t('listing.seller_verified')}><Tick /><span className={styles.visuallyHidden}>{t('listing.seller_verified')}</span></span>}
-              </p>
-              <p className={styles.sellerMeta}>{t('listing.seller_since', { year: toLocalDigits(l.seller.joinMonth.slice(0, 4), lang) })}</p>
-            </div>
-            {(l.seller.pro === true || l.seller.ratingCount) ? (
-              <div className={styles.sellerRating}>
-                {l.seller.ratingCount ? <Stars average={l.seller.ratingAverage ?? 0} count={l.seller.ratingCount} t={t} lang={lang} /> : null}
-                {l.seller.pro === true && <span className={styles.pro}>{t('listing.seller_pro')}</span>}
+              {l.auction.status === 'open' && (
+                <p className={styles.promise}>
+                  <Shield />
+                  {t('listing.promise.text')}
+                </p>
+              )}
+            </>
+          ) : (
+            <Buy l={l} own={own} t={t} lang={lang} />
+          )}
+          <section aria-labelledby="seller-title" className={styles.seller}>
+            <h2 id="seller-title" className={styles.visuallyHidden}>
+              {t('listing.seller')}
+            </h2>
+            <div className={l.seller.pro === true || l.seller.ratingCount ? `${styles.sellerRow} ${styles.sellerRowRated}` : styles.sellerRow}>
+              <span className={styles.avatar} aria-hidden="true">
+                {initials(l.seller.displayName)}
+              </span>
+              <div className={styles.sellerInfo}>
+                <p className={styles.sellerLine}>
+                  <Link className={styles.sellerName} to={`/users/${encodeURIComponent(l.seller.id)}`}>
+                    {l.seller.displayName}
+                  </Link>
+                  {l.seller.verified && (
+                    <span className={styles.tick} title={t('listing.seller_verified')}>
+                      <Tick />
+                      <span className={styles.visuallyHidden}>{t('listing.seller_verified')}</span>
+                    </span>
+                  )}
+                </p>
+                <p className={styles.sellerMeta}>{t('listing.seller_since', { year: toLocalDigits(l.seller.joinMonth.slice(0, 4), lang) })}</p>
               </div>
-            ) : null}
-            {!own && ['active', 'sold', 'ended_unsold'].includes(l.status) && <MessageSeller listingId={l.id} signedIn={signedIn} nextPath={pathname} t={t} lang={lang} />}
-          </div>
-        </section>
-      </aside>
+              {l.seller.pro === true || l.seller.ratingCount ? (
+                <div className={styles.sellerRating}>
+                  {l.seller.ratingCount ? <Stars average={l.seller.ratingAverage ?? 0} count={l.seller.ratingCount} t={t} lang={lang} /> : null}
+                  {l.seller.pro === true && <span className={styles.pro}>{t('listing.seller_pro')}</span>}
+                </div>
+              ) : null}
+              {!own && ['active', 'sold', 'ended_unsold'].includes(l.status) && (
+                <MessageSeller listingId={l.id} signedIn={signedIn} nextPath={pathname} t={t} lang={lang} />
+              )}
+            </div>
+          </section>
+        </aside>
       </div>
       <div className={styles.body}>
         <section aria-labelledby="description-title">
@@ -167,27 +199,57 @@ function Stars({ average, count, t, lang }: { average: number; count: number; t:
       <svg viewBox="0 0 12 12" width="16" height="16" aria-hidden="true" focusable="false" className={styles.starFill}>
         <path fill="currentColor" d="M6 .9 L7.7 4.4 L11.5 4.9 L8.7 7.5 L9.4 11.3 L6 9.5 L2.6 11.3 L3.3 7.5 L.5 4.9 L4.3 4.4 Z" />
       </svg>
-      <span aria-hidden="true">{shown} ({toLocalDigits(String(count), lang)})</span>
+      <span aria-hidden="true">
+        {shown} ({toLocalDigits(String(count), lang)})
+      </span>
     </span>
   );
 }
 
 const Shield = () => (
   <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false" className={styles.shield}>
-    <path d="M12 3 L20 6 V12 C20 16.5 16.5 19.8 12 21 C7.5 19.8 4 16.5 4 12 V6 Z M8.5 12.2 l2.4 2.4 l4.6 -5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    <path
+      d="M12 3 L20 6 V12 C20 16.5 16.5 19.8 12 21 C7.5 19.8 4 16.5 4 12 V6 Z M8.5 12.2 l2.4 2.4 l4.6 -5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
 /** The first letters of up to two words of the seller's name, for the round badge beside it. */
-const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map((w) => [...w][0] ?? '').join('').toUpperCase();
-
+const initials = (name: string) =>
+  name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => [...w][0] ?? '')
+    .join('')
+    .toUpperCase();
 
 type T = ReturnType<typeof useT>['t'];
 
 function Status({ l, own, t }: { l: ListingView; own: boolean; t: T }) {
-  if (l.status === 'sold') return <p role="status" className={styles.notice}>{t('listing.status.sold')}</p>;
-  if (l.status === 'ended_unsold') return <p role="status" className={styles.notice}>{t('listing.status.ended_unsold')}</p>;
-  if (l.status !== 'active' && own) return <p role="status" className={styles.notice}>{t('listing.status.not_public', { status: t(`listing.status.${l.status}`) })}</p>;
+  if (l.status === 'sold')
+    return (
+      <p role="status" className={styles.notice}>
+        {t('listing.status.sold')}
+      </p>
+    );
+  if (l.status === 'ended_unsold')
+    return (
+      <p role="status" className={styles.notice}>
+        {t('listing.status.ended_unsold')}
+      </p>
+    );
+  if (l.status !== 'active' && own)
+    return (
+      <p role="status" className={styles.notice}>
+        {t('listing.status.not_public', { status: t(`listing.status.${l.status}`) })}
+      </p>
+    );
   if (own) return <p className={styles.notice}>{t('listing.own')}</p>;
   return null;
 }
@@ -216,12 +278,28 @@ function Photos({ l, t, lang }: { l: ListingView; t: T; lang: Lang }) {
   };
   return (
     <section aria-labelledby="photos-title">
-      <h2 id="photos-title" className={styles.visuallyHidden}>{t('listing.photos')}</h2>
-      <div className={magnify ? `${styles.stage} ${styles.canZoom}` : styles.stage} style={{ aspectRatio: `${p.width} / ${p.height}` }}
-        onPointerMove={move} onPointerLeave={() => setGlass(null)}>
-        <img key={p.id} src={p.url} srcSet={`${p.thumbUrl} 400w, ${p.url} 1600w`} sizes="(min-width: 60rem) 40rem, 100vw"
-          width={p.width} height={p.height} alt={t('listing.photo_alt', { title: l.title, n: toLocalDigits(String(at + 1), lang), total })}
-          loading="eager" {...{ fetchpriority: 'high' }} onLoad={() => setRest(true)} onError={() => setRest(true)} />
+      <h2 id="photos-title" className={styles.visuallyHidden}>
+        {t('listing.photos')}
+      </h2>
+      <div
+        className={magnify ? `${styles.stage} ${styles.canZoom}` : styles.stage}
+        style={{ aspectRatio: `${p.width} / ${p.height}` }}
+        onPointerMove={move}
+        onPointerLeave={() => setGlass(null)}
+      >
+        <img
+          key={p.id}
+          src={p.url}
+          srcSet={`${p.thumbUrl} 400w, ${p.url} 1600w`}
+          sizes="(min-width: 60rem) 40rem, 100vw"
+          width={p.width}
+          height={p.height}
+          alt={t('listing.photo_alt', { title: l.title, n: toLocalDigits(String(at + 1), lang), total })}
+          loading="eager"
+          {...{ fetchpriority: 'high' }}
+          onLoad={() => setRest(true)}
+          onError={() => setRest(true)}
+        />
         {p.showsDefects && <span className={styles.badge}>{t('listing.shows_defects')}</span>}
         {magnify && glass && (
           <span className={styles.glass} aria-hidden="true" style={{ backgroundImage: `url("${p.url}")`, backgroundPosition: `${glass.x}% ${glass.y}%` }} />
@@ -231,8 +309,13 @@ function Photos({ l, t, lang }: { l: ListingView; t: T; lang: Lang }) {
         <ul className={styles.thumbs}>
           {l.photos.map((q, i) => (
             <li key={q.id}>
-              <button type="button" className={i === at ? `${styles.thumb} ${styles.thumbOn}` : styles.thumb} aria-pressed={i === at}
-                aria-label={t('listing.show_photo', { n: toLocalDigits(String(i + 1), lang), total })} onClick={() => setAt(i)}>
+              <button
+                type="button"
+                className={i === at ? `${styles.thumb} ${styles.thumbOn}` : styles.thumb}
+                aria-pressed={i === at}
+                aria-label={t('listing.show_photo', { n: toLocalDigits(String(i + 1), lang), total })}
+                onClick={() => setAt(i)}
+              >
                 <img {...(rest || i === at ? { src: q.thumbUrl } : {})} alt="" width={q.width} height={q.height} loading="lazy" />
               </button>
             </li>
@@ -251,17 +334,24 @@ function Buy({ l, own, t, lang }: { l: ListingView; own: boolean; t: T; lang: La
   const price = formatMoney(l.price, lang);
   return (
     <section className={styles.buy} aria-labelledby="price-title">
-      <h2 id="price-title" className={styles.buyLabel}>{t('listing.price')}</h2>
+      <h2 id="price-title" className={styles.buyLabel}>
+        {t('listing.price')}
+      </h2>
       <p className={styles.buyPrice}>{price}</p>
       {l.quantity.total > 1 && <p className={styles.buyNote}>{t('listing.available', { count: toLocalDigits(String(l.quantity.available), lang) })}</p>}
       {l.currentlyReserved && <p className={styles.notice}>{t('listing.currently_reserved')}</p>}
       {l.status === 'active' && !own && l.quantity.available > 0 && (
         <div className={styles.buyRow}>
-          <Link className={styles.buyButton} to={`/checkout/${encodeURIComponent(l.id)}`}>{t('listing.buy')}</Link>
+          <Link className={styles.buyButton} to={`/checkout/${encodeURIComponent(l.id)}`}>
+            {t('listing.buy')}
+          </Link>
           <SaveButton id={l.id} t={t} />
         </div>
       )}
-      <p className={styles.promise}><Shield />{t('listing.promise.text')}</p>
+      <p className={styles.promise}>
+        <Shield />
+        {t('listing.promise.text')}
+      </p>
     </section>
   );
 }
@@ -273,7 +363,9 @@ function SaveButton({ t }: { id: string; t: T }) {
   const toggle = () => setSaved((v) => !v);
   return (
     <button type="button" className={saved ? `${styles.saveButton} ${styles.saved}` : styles.saveButton} aria-pressed={saved} onClick={toggle}>
-      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M6 4 H18 V21 L12 16.5 L6 21 Z" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" /></svg>
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+        <path d="M6 4 H18 V21 L12 16.5 L6 21 Z" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+      </svg>
       {saved ? t('listing.saved') : t('listing.save')}
     </button>
   );
@@ -284,12 +376,39 @@ function Details({ l, t, lang }: { l: ListingView; t: T; lang: Lang }) {
     <section aria-labelledby="details-title">
       <h2 id="details-title">{t('listing.details')}</h2>
       <dl className={styles.details}>
-        <div><dt>{t('listing.category')}</dt><dd>{lang === 'bn' ? l.category.nameBn : l.category.nameEn}</dd></div>
-        {l.condition && <div><dt>{t('listing.condition')}</dt><dd>{t(`listing.condition.${l.condition}`)}</dd></div>}
-        {l.fulfilmentOptions && <div><dt>{t('listing.fulfilment')}</dt><dd>{t(`listing.fulfilment.${l.fulfilmentOptions}`)}</dd></div>}
-        {l.district && <div><dt>{t('listing.district')}</dt><dd>{l.district}</dd></div>}
-        {l.serialLast4 && <div><dt>{t('listing.serial')}</dt><dd>•••• {l.serialLast4}</dd></div>}
-        {l.noVisibleDefects !== null && <div className={styles.wide}><dd>{l.noVisibleDefects ? t('listing.no_visible_defects') : t('listing.defects_in_photos')}</dd></div>}
+        <div>
+          <dt>{t('listing.category')}</dt>
+          <dd>{lang === 'bn' ? l.category.nameBn : l.category.nameEn}</dd>
+        </div>
+        {l.condition && (
+          <div>
+            <dt>{t('listing.condition')}</dt>
+            <dd>{t(`listing.condition.${l.condition}`)}</dd>
+          </div>
+        )}
+        {l.fulfilmentOptions && (
+          <div>
+            <dt>{t('listing.fulfilment')}</dt>
+            <dd>{t(`listing.fulfilment.${l.fulfilmentOptions}`)}</dd>
+          </div>
+        )}
+        {l.district && (
+          <div>
+            <dt>{t('listing.district')}</dt>
+            <dd>{l.district}</dd>
+          </div>
+        )}
+        {l.serialLast4 && (
+          <div>
+            <dt>{t('listing.serial')}</dt>
+            <dd>•••• {l.serialLast4}</dd>
+          </div>
+        )}
+        {l.noVisibleDefects !== null && (
+          <div className={styles.wide}>
+            <dd>{l.noVisibleDefects ? t('listing.no_visible_defects') : t('listing.defects_in_photos')}</dd>
+          </div>
+        )}
       </dl>
     </section>
   );
@@ -299,13 +418,35 @@ function Details({ l, t, lang }: { l: ListingView; t: T; lang: Lang }) {
 function MessageSeller({ listingId, signedIn, nextPath, t, lang }: { listingId: string; signedIn: boolean; nextPath: string; t: T; lang: Lang }) {
   const { open, busy, error } = useOpenThread();
   // one ruled cell at the end of the seller row: a chat mark (its name is in the label, for the screen reader and the tooltip)
-  if (!signedIn) return <Link className={styles.chatCell} to={`/signin?next=${encodeURIComponent(nextPath)}`} aria-label={t('listing.message_seller_sign_in')} title={t('listing.message_seller_sign_in')}><ChatIcon /></Link>;
+  if (!signedIn)
+    return (
+      <Link
+        className={styles.chatCell}
+        to={`/signin?next=${encodeURIComponent(nextPath)}`}
+        aria-label={t('listing.message_seller_sign_in')}
+        title={t('listing.message_seller_sign_in')}
+      >
+        <ChatIcon />
+      </Link>
+    );
   return (
     <>
-      <button type="button" className={styles.chatCell} onClick={() => open(listingId)} disabled={busy} aria-busy={busy} aria-label={t('listing.message_seller')} title={t('listing.message_seller')}>
+      <button
+        type="button"
+        className={styles.chatCell}
+        onClick={() => open(listingId)}
+        disabled={busy}
+        aria-busy={busy}
+        aria-label={t('listing.message_seller')}
+        title={t('listing.message_seller')}
+      >
         <ChatIcon />
       </button>
-      {error !== null && <div className={styles.chatError}><FormMessage kind="error">{errorText(error, t, lang)}</FormMessage></div>}
+      {error !== null && (
+        <div className={styles.chatError}>
+          <FormMessage kind="error">{errorText(error, t, lang)}</FormMessage>
+        </div>
+      )}
     </>
   );
 }

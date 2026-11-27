@@ -25,11 +25,34 @@ import styles from './orders.module.css';
 
 export type DisputeType = 'not_as_described' | 'damaged' | 'not_received' | 'credentials_invalid' | 'seller_recovery' | 'other';
 export type DisputeStatus = 'open' | 'awaiting_seller' | 'under_review' | 'awaiting_return' | 'decided' | 'withdrawn';
-export interface DisputeSummary { id: string; type: DisputeType; status: DisputeStatus; openedAt: string; outcome: string | null; decidedAt: string | null; withdrawnAt: string | null; unseen?: number }
+export interface DisputeSummary {
+  id: string;
+  type: DisputeType;
+  status: DisputeStatus;
+  openedAt: string;
+  outcome: string | null;
+  decidedAt: string | null;
+  withdrawnAt: string | null;
+  unseen?: number;
+}
 export interface DisputeView {
-  id: string; orderId: string; role: 'buyer' | 'seller'; type: DisputeType; status: DisputeStatus; description: string | null;
-  openedAt: string; sellerDueAt: string; infoDueAt: string | null; reviewStartedAt: string | null; decisionTargetAt: string | null;
-  outcome: null | { kind: 'release' | 'full_refund' | 'partial_refund' | 'refund_after_return'; itemRefund: string | null; reason: string | null; decidedAt: string | null };
+  id: string;
+  orderId: string;
+  role: 'buyer' | 'seller';
+  type: DisputeType;
+  status: DisputeStatus;
+  description: string | null;
+  openedAt: string;
+  sellerDueAt: string;
+  infoDueAt: string | null;
+  reviewStartedAt: string | null;
+  decisionTargetAt: string | null;
+  outcome: null | {
+    kind: 'release' | 'full_refund' | 'partial_refund' | 'refund_after_return';
+    itemRefund: string | null;
+    reason: string | null;
+    decidedAt: string | null;
+  };
   withdrawnAt: string | null;
   /** the seller's step while the item comes back (U10-23) */
   returnStep?: { manual: boolean; last4: string | null; check: 'none' | 'matched' | 'mismatch' } | null;
@@ -46,7 +69,8 @@ export const MAX_VIDEO_BYTES = 52_428_800;
 const IMAGE = /^image\/(jpeg|png|webp)$/;
 const VIDEO = /^video\/(mp4|quicktime|webm)$/;
 /** A file the dispute accepts: a photo up to 10 MB or a video up to 50 MB. */
-export const usableEvidence = (f: { type: string; size: number }) => (IMAGE.test(f.type) && f.size <= MAX_BYTES) || (VIDEO.test(f.type) && f.size <= MAX_VIDEO_BYTES);
+export const usableEvidence = (f: { type: string; size: number }) =>
+  (IMAGE.test(f.type) && f.size <= MAX_BYTES) || (VIDEO.test(f.type) && f.size <= MAX_VIDEO_BYTES);
 const LIVE: DisputeStatus[] = ['open', 'awaiting_seller', 'under_review', 'awaiting_return'];
 export const disputesKey = (orderId: string) => ['orders', orderId, 'disputes'] as const;
 export const disputeKey = (id: string) => ['disputes', id] as const;
@@ -87,36 +111,61 @@ export function DisputeSlot({ o, items, t, lang }: { o: OrderView; items: Disput
   // a dispute is for what came (or did not come): only once the item is handed over or sent, or the seller's deadline has passed
   const received = o.deliveryEventAt !== null || (o.fulfilmentDueAt !== null && Date.parse(o.fulfilmentDueAt) < now);
   const d = dispute.data;
-  const deadlines: [string, string | null][] = d && live
-    ? [['dispute.deadline.seller', d.status === 'open' ? d.sellerDueAt : null], ['dispute.deadline.info', d.status === 'awaiting_seller' ? d.infoDueAt : null], ['dispute.deadline.decision', d.decisionTargetAt]]
-    : [];
+  const deadlines: [string, string | null][] =
+    d && live
+      ? [
+          ['dispute.deadline.seller', d.status === 'open' ? d.sellerDueAt : null],
+          ['dispute.deadline.info', d.status === 'awaiting_seller' ? d.infoDueAt : null],
+          ['dispute.deadline.decision', d.decisionTargetAt],
+        ]
+      : [];
   return (
     <>
       {d && (
         <section aria-labelledby="dispute-slot-title" className={styles.panel}>
           <h2 id="dispute-slot-title">{t('dispute.slot_title')}</h2>
           <dl className={styles.statusGrid}>
-            <div><dt>{t('handover.status_label')}</dt><dd>{t(`dispute.state.${d.status}`)}</dd></div>
-            <div><dt>{t('dispute.type')}</dt><dd>{t(`dispute.type.${d.type}`)}</dd></div>
+            <div>
+              <dt>{t('handover.status_label')}</dt>
+              <dd>{t(`dispute.state.${d.status}`)}</dd>
+            </div>
+            <div>
+              <dt>{t('dispute.type')}</dt>
+              <dd>{t(`dispute.type.${d.type}`)}</dd>
+            </div>
           </dl>
           {deadlines.some(([, at]) => at) && (
             <dl className={styles.deadlineGrid}>
-              {deadlines.filter(([, at]) => at).map(([key, at]) => (
-                <div key={key}><dt>{t(key)}</dt><dd><Moment at={Date.parse(at as string)} now={now} t={t} lang={lang} /></dd></div>
-              ))}
+              {deadlines
+                .filter(([, at]) => at)
+                .map(([key, at]) => (
+                  <div key={key}>
+                    <dt>{t(key)}</dt>
+                    <dd>
+                      <Moment at={Date.parse(at as string)} now={now} t={t} lang={lang} />
+                    </dd>
+                  </div>
+                ))}
             </dl>
           )}
           {d.outcome && (
             <dl className={styles.statusGrid}>
-              <div><dt>{t('dispute.outcome_title')}</dt><dd>{t(`dispute.outcome.${d.outcome.kind}`, { amount: d.outcome.itemRefund ? formatMoney(BigInt(d.outcome.itemRefund), lang) : '' })}</dd></div>
+              <div>
+                <dt>{t('dispute.outcome_title')}</dt>
+                <dd>{t(`dispute.outcome.${d.outcome.kind}`, { amount: d.outcome.itemRefund ? formatMoney(BigInt(d.outcome.itemRefund), lang) : '' })}</dd>
+              </div>
             </dl>
           )}
-          {sent && live && (sent.failed ? <FormMessage kind="error">{sent.failed}</FormMessage> : <FormMessage kind="success">{t('dispute.sent')}</FormMessage>)}
+          {sent &&
+            live &&
+            (sent.failed ? <FormMessage kind="error">{sent.failed}</FormMessage> : <FormMessage kind="success">{t('dispute.sent')}</FormMessage>)}
           <Link to={`/disputes/${encodeURIComponent(d.id)}`} className={`${styles.secondary} ${styles.cellButton} ${styles.cellLink}`}>
             {t('dispute.open_chat')}
             {(latest?.unseen ?? 0) > 0 && (
               <>
-                <span className={styles.badge} aria-hidden="true">{toLocalDigits(String(latest?.unseen ?? 0), lang)}</span>
+                <span className={styles.badge} aria-hidden="true">
+                  {toLocalDigits(String(latest?.unseen ?? 0), lang)}
+                </span>
                 <span className={styles.srOnly}>{t('dispute.unseen', { n: toLocalDigits(String(latest?.unseen ?? 0), lang) })}</span>
               </>
             )}
@@ -124,13 +173,20 @@ export function DisputeSlot({ o, items, t, lang }: { o: OrderView; items: Disput
         </section>
       )}
       {dispute.isError && <FormMessage kind="error">{errorText(dispute.error, t, lang)}</FormMessage>}
-      {o.role === 'buyer' && !live && o.status === 'paid' && (received
-        ? <OpenDispute o={o} t={t} lang={lang} onOpened={(failed) => setSent({ failed })} />
-        : (
+      {o.role === 'buyer' &&
+        !live &&
+        o.status === 'paid' &&
+        (received ? (
+          <OpenDispute o={o} t={t} lang={lang} onOpened={(failed) => setSent({ failed })} />
+        ) : (
           <section aria-labelledby="open-dispute-title" className={styles.panel}>
             <h2 id="open-dispute-title">{t('dispute.slot_title')}</h2>
-            <button type="button" className={`${styles.secondary} ${styles.cellButton}`} disabled aria-describedby="dispute-not-yet">{t('dispute.open_button')}</button>
-            <p id="dispute-not-yet" className={styles.hint}>{t('dispute.not_yet')}</p>
+            <button type="button" className={`${styles.secondary} ${styles.cellButton}`} disabled aria-describedby="dispute-not-yet">
+              {t('dispute.open_button')}
+            </button>
+            <p id="dispute-not-yet" className={styles.hint}>
+              {t('dispute.not_yet')}
+            </p>
           </section>
         ))}
     </>
@@ -142,7 +198,8 @@ function OpenDispute({ o, t, lang, onOpened }: { o: OrderView; t: T; lang: Lang;
   const queryClient = useQueryClient();
   const types = useQuery({
     queryKey: ['orders', o.id, 'dispute-types'],
-    queryFn: ({ signal }) => api.get(`/orders/${encodeURIComponent(o.id)}/dispute-types`, { signal }) as Promise<{ types: DisputeType[]; openDisputeId: string | null }>,
+    queryFn: ({ signal }) =>
+      api.get(`/orders/${encodeURIComponent(o.id)}/dispute-types`, { signal }) as Promise<{ types: DisputeType[]; openDisputeId: string | null }>,
     staleTime: FRESHNESS.money,
     retry: false,
   });
@@ -156,7 +213,11 @@ function OpenDispute({ o, t, lang, onOpened }: { o: OrderView; t: T; lang: Lang;
   const sending = useRef(false);
   const open = useMutation({
     mutationFn: async () => {
-      const { disputeId } = await api.post(`/orders/${encodeURIComponent(o.id)}/disputes`, { type, description: description.trim() }, { idempotent: true }) as { disputeId: string };
+      const { disputeId } = (await api.post(
+        `/orders/${encodeURIComponent(o.id)}/disputes`,
+        { type, description: description.trim() },
+        { idempotent: true },
+      )) as { disputeId: string };
       // the files follow the dispute, one by one; a refused file does not undo the dispute
       const failed: string[] = [];
       for (const [i, f] of files.entries()) {
@@ -189,7 +250,8 @@ function OpenDispute({ o, t, lang, onOpened }: { o: OrderView; t: T; lang: Lang;
     const wrong = chosen.find((f) => !usableEvidence(f));
     if (wrong) return setMessage(t('dispute.file_invalid', { name: wrong.name }));
     if (chosen.length > MAX_FILES) return setMessage(t('dispute.too_many_files', { max: toLocalDigits(String(MAX_FILES), lang) }));
-    if (chosen.filter((f) => VIDEO.test(f.type)).length > MAX_VIDEOS) return setMessage(t('dispute.too_many_videos', { max: toLocalDigits(String(MAX_VIDEOS), lang) }));
+    if (chosen.filter((f) => VIDEO.test(f.type)).length > MAX_VIDEOS)
+      return setMessage(t('dispute.too_many_videos', { max: toLocalDigits(String(MAX_VIDEOS), lang) }));
     setMessage(null);
     setFiles(chosen);
   };
@@ -203,15 +265,24 @@ function OpenDispute({ o, t, lang, onOpened }: { o: OrderView; t: T; lang: Lang;
   const send = () => {
     if (sending.current) return;
     sending.current = true;
-    open.mutate(undefined, { onSettled: () => { sending.current = false; } });
+    open.mutate(undefined, {
+      onSettled: () => {
+        sending.current = false;
+      },
+    });
   };
 
-  const closeForm = () => { setShown(false); setMessage(null); };
+  const closeForm = () => {
+    setShown(false);
+    setMessage(null);
+  };
   return (
     <section aria-labelledby="open-dispute-title" className={styles.panel}>
       <h2 id="open-dispute-title">{t('dispute.slot_title')}</h2>
       {message && !shown && <FormMessage kind="error">{message}</FormMessage>}
-      <button type="button" className={`${styles.secondary} ${styles.cellButton}`} onClick={() => setShown(true)}>{t('dispute.open_button')}</button>
+      <button type="button" className={`${styles.secondary} ${styles.cellButton}`} onClick={() => setShown(true)}>
+        {t('dispute.open_button')}
+      </button>
       {shown && !confirming && (
         <Popup id="open-dispute-form" title={t('dispute.open_title')} closeLabel={t('actions.back')} busy={open.isPending} onClose={closeForm}>
           <form onSubmit={submit} noValidate className={styles.form}>
@@ -227,25 +298,62 @@ function OpenDispute({ o, t, lang, onOpened }: { o: OrderView; t: T; lang: Lang;
               ))}
             </fieldset>
             <label htmlFor="dispute-description">{t('dispute.description')}</label>
-            <textarea id="dispute-description" value={description} rows={4} maxLength={4000} aria-describedby="dispute-description-hint"
-              onChange={(e) => setDescription(e.target.value)} />
-            <p id="dispute-description-hint" className={styles.hint}>{t('dispute.description_hint')}</p>
-            <label htmlFor="dispute-files">{t('dispute.files', { max: toLocalDigits(String(MAX_FILES), lang), videos: toLocalDigits(String(MAX_VIDEOS), lang) })}</label>
-            <input id="dispute-files" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm" multiple aria-describedby="dispute-files-hint" onChange={(e) => pick(e.target.files)} />
-            <p id="dispute-files-hint" className={styles.hint}>{t('dispute.files_hint')}</p>
+            <textarea
+              id="dispute-description"
+              value={description}
+              rows={4}
+              maxLength={4000}
+              aria-describedby="dispute-description-hint"
+              onChange={(e) => setDescription(e.target.value)}
+            />
+            <p id="dispute-description-hint" className={styles.hint}>
+              {t('dispute.description_hint')}
+            </p>
+            <label htmlFor="dispute-files">
+              {t('dispute.files', { max: toLocalDigits(String(MAX_FILES), lang), videos: toLocalDigits(String(MAX_VIDEOS), lang) })}
+            </label>
+            <input
+              id="dispute-files"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm"
+              multiple
+              aria-describedby="dispute-files-hint"
+              onChange={(e) => pick(e.target.files)}
+            />
+            <p id="dispute-files-hint" className={styles.hint}>
+              {t('dispute.files_hint')}
+            </p>
             {files.length > 0 && <p className={styles.hint}>{t('dispute.files_chosen', { n: toLocalDigits(String(files.length), lang) })}</p>}
             {progress && <p role="status">{progress}</p>}
             <div className={styles.popupButtons}>
-              <button type="submit" className={styles.primary} disabled={open.isPending}>{t('dispute.continue')}</button>
-              <button type="button" className={styles.secondary} onClick={closeForm}>{t('actions.back')}</button>
+              <button type="submit" className={styles.primary} disabled={open.isPending}>
+                {t('dispute.continue')}
+              </button>
+              <button type="button" className={styles.secondary} onClick={closeForm}>
+                {t('actions.back')}
+              </button>
             </div>
           </form>
         </Popup>
       )}
       {confirming && (
-        <Terms id="open-dispute" t={t} lang={lang} order={o.id} kind="dispute" title={t('dispute.terms_title')} intro={t('dispute.terms_intro')} prefix="dispute.terms" count={8}
-          check={t('dispute.terms_check')} agree={t('dispute.confirm_button')} back={t('actions.back')} busy={open.isPending}
-          onAgree={send} onClose={() => setConfirming(false)} />
+        <Terms
+          id="open-dispute"
+          t={t}
+          lang={lang}
+          order={o.id}
+          kind="dispute"
+          title={t('dispute.terms_title')}
+          intro={t('dispute.terms_intro')}
+          prefix="dispute.terms"
+          count={8}
+          check={t('dispute.terms_check')}
+          agree={t('dispute.confirm_button')}
+          back={t('actions.back')}
+          busy={open.isPending}
+          onAgree={send}
+          onClose={() => setConfirming(false)}
+        />
       )}
     </section>
   );
@@ -266,18 +374,33 @@ export function Withdraw({ d, o, t, lang }: { d: DisputeView; o: OrderView | nul
   const [message, setMessage] = useState<string | null>(null);
   const withdraw = useMutation({
     mutationFn: () => api.post(`/disputes/${encodeURIComponent(d.id)}/withdraw`, {}),
-    onSuccess: () => { setConfirming(false); refresh(); },
-    onError: (e) => { setConfirming(false); setMessage(errorText(e, t, lang)); refresh(); },
+    onSuccess: () => {
+      setConfirming(false);
+      refresh();
+    },
+    onError: (e) => {
+      setConfirming(false);
+      setMessage(errorText(e, t, lang));
+      refresh();
+    },
   });
   const at = o?.escrow?.autoReleaseAt ? formatDateTime(Date.parse(o.escrow.autoReleaseAt), lang) : t('dispute.release_time_unknown');
   return (
     <div>
       {message && <FormMessage kind="error">{message}</FormMessage>}
-      <button type="button" className={`${styles.secondary} ${styles.cellButton}`} onClick={() => setConfirming(true)}>{t('dispute.withdraw')}</button>
+      <button type="button" className={`${styles.secondary} ${styles.cellButton}`} onClick={() => setConfirming(true)}>
+        {t('dispute.withdraw')}
+      </button>
       {confirming && (
-        <ConfirmDialog id="withdraw-dispute" title={t('dispute.withdraw')} busy={withdraw.isPending}
-          confirmLabel={t('dispute.withdraw_button')} cancelLabel={t('actions.back')}
-          onConfirm={() => withdraw.mutate()} onCancel={() => setConfirming(false)}>
+        <ConfirmDialog
+          id="withdraw-dispute"
+          title={t('dispute.withdraw')}
+          busy={withdraw.isPending}
+          confirmLabel={t('dispute.withdraw_button')}
+          cancelLabel={t('actions.back')}
+          onConfirm={() => withdraw.mutate()}
+          onCancel={() => setConfirming(false)}
+        >
           <p>{t('confirm.withdraw_dispute', { at })}</p>
         </ConfirmDialog>
       )}

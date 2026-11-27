@@ -16,7 +16,17 @@ export type KycDocType = (typeof KYC_DOC_TYPE)[number];
 export const KYC_FILE_KIND = ['doc_front', 'doc_back', 'passport_photo_page', 'selfie_neutral', 'selfie_action'] as const;
 export type KycFileKind = (typeof KYC_FILE_KIND)[number];
 
-export const KYC_REASON = ['image_unreadable', 'selfie_mismatch', 'liveness_failed', 'document_expired', 'details_mismatch', 'underage', 'duplicate_identity', 'blacklisted', 'other'] as const;
+export const KYC_REASON = [
+  'image_unreadable',
+  'selfie_mismatch',
+  'liveness_failed',
+  'document_expired',
+  'details_mismatch',
+  'underage',
+  'duplicate_identity',
+  'blacklisted',
+  'other',
+] as const;
 export type KycReason = (typeof KYC_REASON)[number];
 
 export const KYC_STATUS = ['unsubmitted', 'pending_review', 'verified', 'rejected', 'revoked'] as const;
@@ -31,7 +41,17 @@ export type OtpPurpose = (typeof OTP_PURPOSE)[number];
 export const PRINCIPAL_TYPE = ['user', 'staff'] as const;
 export type PrincipalType = (typeof PRINCIPAL_TYPE)[number];
 
-export const SESSION_END_REASON = ['logout', 'user_ended', 'password_changed', 'refresh_reuse', 'suspended', 'closed', 'staff_disabled', 'emergency', 'mfa_reset'] as const;
+export const SESSION_END_REASON = [
+  'logout',
+  'user_ended',
+  'password_changed',
+  'refresh_reuse',
+  'suspended',
+  'closed',
+  'staff_disabled',
+  'emergency',
+  'mfa_reset',
+] as const;
 export type SessionEndReason = (typeof SESSION_END_REASON)[number];
 
 export const STAFF_ROLE = ['operator', 'administrator'] as const;

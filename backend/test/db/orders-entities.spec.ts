@@ -32,10 +32,23 @@ describe('orders and payments entities', () => {
       const orders = q.manager.getRepository(Order);
       const o = await orders.save(
         orders.create({
-          kind: 'fixed_price', listingId: randomUUID(), itemKind: 'physical', buyerId: buyer, sellerId: seller, quantity: 1,
-          unitPrice: '1250000', itemPrice: '1250000', fulfilment: 'self_pickup', deliveryFee: '0', total: '1250000',
-          listingSnapshot: { title: 'Probe' }, commissionBps: 500, deliveryMarginBps: 1000, paramsVersion: 1,
-          status: 'awaiting_payment', paymentDueAt: new Date(Date.now() + 3_600_000),
+          kind: 'fixed_price',
+          listingId: randomUUID(),
+          itemKind: 'physical',
+          buyerId: buyer,
+          sellerId: seller,
+          quantity: 1,
+          unitPrice: '1250000',
+          itemPrice: '1250000',
+          fulfilment: 'self_pickup',
+          deliveryFee: '0',
+          total: '1250000',
+          listingSnapshot: { title: 'Probe' },
+          commissionBps: 500,
+          deliveryMarginBps: 1000,
+          paramsVersion: 1,
+          status: 'awaiting_payment',
+          paymentDueAt: new Date(Date.now() + 3_600_000),
         }),
       );
       return orders.findOneByOrFail({ id: o.id });
@@ -46,7 +59,10 @@ describe('orders and payments entities', () => {
 
   it('DC-6 the orders outbox accepts only orders and payments event names', async () => {
     await expect(
-      inRolledBackTransaction((q) => q.manager.getRepository(OrdersOutboxEvent).insert({ eventType: 'identity.user.registered', aggregateId: randomUUID(), payload: {} }), ENTITIES),
+      inRolledBackTransaction(
+        (q) => q.manager.getRepository(OrdersOutboxEvent).insert({ eventType: 'identity.user.registered', aggregateId: randomUUID(), payload: {} }),
+        ENTITIES,
+      ),
     ).rejects.toThrow();
     const ok = await inRolledBackTransaction(
       (q) => q.manager.getRepository(OrdersOutboxEvent).insert({ eventType: 'payments.payout.sent', aggregateId: randomUUID(), payload: {} }),

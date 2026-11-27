@@ -68,9 +68,23 @@ export class MfaService {
       await m.query(`UPDATE identity.totp_factors SET removed_at = $2 WHERE user_id = $1 AND removed_at IS NULL`, [userId, now]);
       await m.query(
         `INSERT INTO identity.totp_factors (id, principal_type, user_id, secret_enc, key_version, created_at) VALUES ($1, 'user', $2, $3, $4, $5)`,
-        [factorId, userId, encryptField(this.config.keys.field, Buffer.from(secret), { table: 'totp_factors', column: 'secret_enc', rowId: factorId }), this.config.keys.field.current, now],
+        [
+          factorId,
+          userId,
+          encryptField(this.config.keys.field, Buffer.from(secret), { table: 'totp_factors', column: 'secret_enc', rowId: factorId }),
+          this.config.keys.field.current,
+          now,
+        ],
       );
-      await this.audit.record(m, { actorType: 'user', actorId: userId, action: 'identity.mfa.enrolment_started', objectType: 'user', objectId: userId, sourceIp: ctx.ip, correlationId: ctx.correlationId });
+      await this.audit.record(m, {
+        actorType: 'user',
+        actorId: userId,
+        action: 'identity.mfa.enrolment_started',
+        objectType: 'user',
+        objectId: userId,
+        sourceIp: ctx.ip,
+        correlationId: ctx.correlationId,
+      });
       return u.email ?? u.phone_e164;
     });
     return { otpauthUri: authenticator.keyuri(label, 'TrustBazaar', secret), secret };
@@ -95,7 +109,15 @@ export class MfaService {
       await m.query(`UPDATE identity.users SET mfa_enabled = true, updated_at = $2 WHERE id = $1`, [userId, now]);
       const codes = await this.issueCodes(m, f.id);
       await publish(m, 'identity.mfa.enabled', userId, { userId });
-      await this.audit.record(m, { actorType: 'user', actorId: userId, action: 'identity.mfa.enabled', objectType: 'user', objectId: userId, sourceIp: ctx.ip, correlationId: ctx.correlationId });
+      await this.audit.record(m, {
+        actorType: 'user',
+        actorId: userId,
+        action: 'identity.mfa.enabled',
+        objectType: 'user',
+        objectId: userId,
+        sourceIp: ctx.ip,
+        correlationId: ctx.correlationId,
+      });
       return { recoveryCodes: codes };
     });
   }
@@ -109,7 +131,10 @@ export class MfaService {
     let hash: string | null = null;
     if (!u.password_single_factor_ok || newPassword !== undefined) {
       if (newPassword === undefined) throw new Problem('password-rejected', { errors: [{ field: 'newPassword', reason: 'required-without-mfa' }] });
-      const refusal = checkPassword(newPassword, { mfa: false, context: { displayName: u.display_name, phoneE164: u.phone_e164, email: u.email ?? undefined } });
+      const refusal = checkPassword(newPassword, {
+        mfa: false,
+        context: { displayName: u.display_name, phoneE164: u.phone_e164, email: u.email ?? undefined },
+      });
       if (refusal) throw new Problem('password-rejected', { errors: [{ field: 'newPassword', reason: refusal }] });
       hash = await this.passwords.hash(newPassword);
     }
@@ -117,14 +142,26 @@ export class MfaService {
     if (!/^\d{6}$/.test(code) || (await this.secondFactor.check(userId, code, now)) !== 'totp') throw new Problem('otp-failed'); // 400, as step-up
     await this.db.transaction(async (m) => {
       if (hash) {
-        await m.query(`UPDATE identity.users SET password_hash = $2, password_single_factor_ok = true, password_changed_at = $3 WHERE id = $1`, [userId, hash, now]);
+        await m.query(`UPDATE identity.users SET password_hash = $2, password_single_factor_ok = true, password_changed_at = $3 WHERE id = $1`, [
+          userId,
+          hash,
+          now,
+        ]);
         await this.sessions.endAllIn(m, userId, sessionId, 'password_changed', ctx);
         await publish(m, 'identity.password.changed', userId, { userId, via: 'mfa_disable' });
       }
       await m.query(`UPDATE identity.totp_factors SET removed_at = $2 WHERE user_id = $1 AND removed_at IS NULL`, [userId, now]);
       await m.query(`UPDATE identity.users SET mfa_enabled = false, updated_at = $2 WHERE id = $1`, [userId, now]);
       await publish(m, 'identity.mfa.disabled', userId, { userId });
-      await this.audit.record(m, { actorType: 'user', actorId: userId, action: 'identity.mfa.disabled', objectType: 'user', objectId: userId, sourceIp: ctx.ip, correlationId: ctx.correlationId });
+      await this.audit.record(m, {
+        actorType: 'user',
+        actorId: userId,
+        action: 'identity.mfa.disabled',
+        objectType: 'user',
+        objectId: userId,
+        sourceIp: ctx.ip,
+        correlationId: ctx.correlationId,
+      });
     });
   }
 
@@ -132,14 +169,21 @@ export class MfaService {
   async regenerate(userId: string, ctx: RequestContext): Promise<{ recoveryCodes: string[] }> {
     const now = this.clock.now();
     return this.db.transaction(async (m) => {
-      const [f] = (await m.query(
-        `SELECT id FROM identity.totp_factors WHERE user_id = $1 AND removed_at IS NULL AND confirmed_at IS NOT NULL FOR UPDATE`,
-        [userId],
-      )) as { id: string }[];
+      const [f] = (await m.query(`SELECT id FROM identity.totp_factors WHERE user_id = $1 AND removed_at IS NULL AND confirmed_at IS NOT NULL FOR UPDATE`, [
+        userId,
+      ])) as { id: string }[];
       if (!f) throw new Problem('mfa-state', { errors: [{ field: 'mfa', reason: 'already-off' }] });
       await m.query(`UPDATE identity.recovery_codes SET used_at = $2 WHERE totp_factor_id = $1 AND used_at IS NULL`, [f.id, now]);
       const codes = await this.issueCodes(m, f.id);
-      await this.audit.record(m, { actorType: 'user', actorId: userId, action: 'identity.mfa.recovery_regenerated', objectType: 'user', objectId: userId, sourceIp: ctx.ip, correlationId: ctx.correlationId });
+      await this.audit.record(m, {
+        actorType: 'user',
+        actorId: userId,
+        action: 'identity.mfa.recovery_regenerated',
+        objectType: 'user',
+        objectId: userId,
+        sourceIp: ctx.ip,
+        correlationId: ctx.correlationId,
+      });
       return { recoveryCodes: codes };
     });
   }

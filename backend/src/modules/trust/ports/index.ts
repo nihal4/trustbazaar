@@ -18,15 +18,13 @@ export type ReportCategory = 'fraudulent' | 'counterfeit' | 'prohibited' | 'misr
  * user it concerns (subject_user), which the reporting unit knows (Decisions log, U6-03).
  */
 export type ReportTarget =
-  | { type: 'listing' | 'user' | 'thread'; id: string; subjectUserId: string }
-  | { type: 'message'; id: string; messageId: string; subjectUserId: string };
+  { type: 'listing' | 'user' | 'thread'; id: string; subjectUserId: string } | { type: 'message'; id: string; messageId: string; subjectUserId: string };
 
 /** Used by Unit 6 (FR-CHT-06). Implemented with U7-04; returns the report's id. */
 export interface ReportCommands {
   report(r: { reporterId: string; target: ReportTarget; category: ReportCategory; text?: string }): Promise<string>;
 }
 export const REPORT_COMMANDS = Symbol('REPORT_COMMANDS');
-
 
 /** What a user may do now (trust.restrictions over the live sanctions; FR-TNS-03, FR-TNS-05). Implemented with U7-04. */
 export interface Restrictions {

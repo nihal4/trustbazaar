@@ -28,23 +28,55 @@ class FakeRedis {
     this.kv.set(k, v);
     return 'OK';
   }
-  async get(k: string) { return this.kv.get(k) ?? null; }
-  async del(...ks: string[]) { ks.forEach((k) => this.kv.delete(k)); return ks.length; }
-  async exists(k: string) { return this.kv.has(k) ? 1 : 0; }
-  async incr(k: string) { const n = Number(this.kv.get(k) ?? 0) + 1; this.kv.set(k, String(n)); return n; }
-  async expire() { return 1; }
-  private zset(k: string) { if (!this.z.has(k)) this.z.set(k, new Map()); return this.z.get(k)!; }
-  async zadd(k: string, score: number, m: string) { this.zset(k).set(m, score); return 1; }
-  async zrem(k: string, m: string) { return this.zset(k).delete(m) ? 1 : 0; }
-  private sorted(k: string) { return [...this.zset(k).entries()].sort((a, b) => a[1] - b[1]); }
-  async zrevrange(k: string, a: number, b: number) { return this.sorted(k).reverse().slice(a, b + 1).map(([m]) => m); }
+  async get(k: string) {
+    return this.kv.get(k) ?? null;
+  }
+  async del(...ks: string[]) {
+    ks.forEach((k) => this.kv.delete(k));
+    return ks.length;
+  }
+  async exists(k: string) {
+    return this.kv.has(k) ? 1 : 0;
+  }
+  async incr(k: string) {
+    const n = Number(this.kv.get(k) ?? 0) + 1;
+    this.kv.set(k, String(n));
+    return n;
+  }
+  async expire() {
+    return 1;
+  }
+  private zset(k: string) {
+    if (!this.z.has(k)) this.z.set(k, new Map());
+    return this.z.get(k)!;
+  }
+  async zadd(k: string, score: number, m: string) {
+    this.zset(k).set(m, score);
+    return 1;
+  }
+  async zrem(k: string, m: string) {
+    return this.zset(k).delete(m) ? 1 : 0;
+  }
+  private sorted(k: string) {
+    return [...this.zset(k).entries()].sort((a, b) => a[1] - b[1]);
+  }
+  async zrevrange(k: string, a: number, b: number) {
+    return this.sorted(k)
+      .reverse()
+      .slice(a, b + 1)
+      .map(([m]) => m);
+  }
   async zremrangebyrank(k: string, a: number, b: number) {
     const s = this.sorted(k);
     const end = b < 0 ? s.length + b : b;
     s.slice(a, end + 1).forEach(([m]) => this.zset(k).delete(m));
     return 0;
   }
-  async zrangebyscore(k: string, min: number, max: number) { return this.sorted(k).filter(([, sc]) => sc >= min && sc <= max).map(([m]) => m); }
+  async zrangebyscore(k: string, min: number, max: number) {
+    return this.sorted(k)
+      .filter(([, sc]) => sc >= min && sc <= max)
+      .map(([m]) => m);
+  }
 }
 
 type Answer = (sql: string, params: unknown[]) => unknown;
@@ -57,7 +89,8 @@ const problemOf = async (p: Promise<unknown>) => {
   try {
     await p;
   } catch (e) {
-    if (e instanceof Problem) return [e.problem, ...((e.extra.errors as { field: string; reason: string }[] | undefined) ?? []).map((x) => `${x.field}:${x.reason}`)];
+    if (e instanceof Problem)
+      return [e.problem, ...((e.extra.errors as { field: string; reason: string }[] | undefined) ?? []).map((x) => `${x.field}:${x.reason}`)];
     throw e;
   }
   return null;
@@ -82,10 +115,21 @@ describe('MockCourier', () => {
     const redis = new FakeRedis();
     const mock = new MockCourier(redis as never, 'secret', () => now, auto);
     const sent: { headers: Record<string, string>; body: Buffer }[] = [];
-    mock.setWebhookSink(async (headers, body) => { sent.push({ headers, body }); return { outcome: 'applied' }; });
-    return { mock, redis, sent, tick: (s: number) => { now = new Date(now.getTime() + s * 1000); } };
+    mock.setWebhookSink(async (headers, body) => {
+      sent.push({ headers, body });
+      return { outcome: 'applied' };
+    });
+    return {
+      mock,
+      redis,
+      sent,
+      tick: (s: number) => {
+        now = new Date(now.getTime() + s * 1000);
+      },
+    };
   };
-  const book = (mock: MockCourier, ref = 'S1') => mock.book({ shipmentId: ref, pickup: ADDR, dropoff: { ...ADDR, area: 'Dhanmondi' }, parcel: { billedKg: 1, sizeClass: 'small' }, cashToCollect: 0 });
+  const book = (mock: MockCourier, ref = 'S1') =>
+    mock.book({ shipmentId: ref, pickup: ADDR, dropoff: { ...ADDR, area: 'Dhanmondi' }, parcel: { billedKg: 1, sizeClass: 'small' }, cashToCollect: 0 });
 
   it('SEC-PAY-07 FR-DLV-05 FR-DLV-14 the mock books once per merchant reference, never collects cash, and is simulated', async () => {
     const { mock } = make();
@@ -93,7 +137,9 @@ describe('MockCourier', () => {
     const a = await book(mock);
     expect(a.consignmentId).toMatch(/^MOCK-[0-9A-F]{12}$/);
     expect(await book(mock)).toEqual(a);
-    await expect(mock.book({ shipmentId: 'S2', pickup: ADDR, dropoff: ADDR, parcel: { billedKg: 1, sizeClass: 'small' }, cashToCollect: 5 as 0 })).rejects.toThrow(/never collects cash/);
+    await expect(
+      mock.book({ shipmentId: 'S2', pickup: ADDR, dropoff: ADDR, parcel: { billedKg: 1, sizeClass: 'small' }, cashToCollect: 5 as 0 }),
+    ).rejects.toThrow(/never collects cash/);
     expect(await mock.status(a.consignmentId)).toEqual({ status: 'booked', occurredAt: T0, eventId: `${a.consignmentId}-0` });
     expect((await mock.recent()).map((c) => [c.id, c.from, c.to])).toEqual([[a.consignmentId, 'Savar, Dhaka', 'Dhanmondi, Dhaka']]);
     await expect(mock.status('MOCK-000000000000')).rejects.toBeInstanceOf(MockUnknownConsignment);
@@ -132,7 +178,7 @@ describe('MockCourier', () => {
     expect(await mock.cancel(d)).toBe('already_picked_up');
   });
 
-  it('SEC-PAY-03 SEC-PAY-04 a webhook needs this environment\'s signature and a time within the tolerance', async () => {
+  it("SEC-PAY-03 SEC-PAY-04 a webhook needs this environment's signature and a time within the tolerance", async () => {
     const { mock } = make();
     const other = new MockCourier(new FakeRedis() as never, 'another secret', () => T0);
     const e = { eventId: 'E1', consignmentId: 'MOCK-1', status: 'picked_up' as const, occurredAt: T0 };
@@ -193,20 +239,42 @@ describe('CourierBreaker', () => {
 
 describe('BookingService', () => {
   const row = (o: Record<string, unknown> = {}) => ({
-    id: 'S1', order_id: 'O1', direction: 'forward', status: 'preparing', order_cancelled_at: null, booking_attempts: 0,
+    id: 'S1',
+    order_id: 'O1',
+    direction: 'forward',
+    status: 'preparing',
+    order_cancelled_at: null,
+    booking_attempts: 0,
     pickup_address_enc: sealed(shipmentContext('S1', 'pickup_address_enc'), { line1: 'Shop 4', contactName: 'Karim' }),
-    dropoff_address_enc: sealed(shipmentContext('S1', 'dropoff_address_enc')), pickup_area_id: 1, dropoff_area_id: 4,
-    billed_kg: 1, listing_id: 'L1', buyer_id: 'B', consignment_id: null, ...o,
+    dropoff_address_enc: sealed(shipmentContext('S1', 'dropoff_address_enc')),
+    pickup_area_id: 1,
+    dropoff_area_id: 4,
+    billed_kg: 1,
+    listing_id: 'L1',
+    buyer_id: 'B',
+    consignment_id: null,
+    ...o,
   });
-  const setup = (o: { row?: Record<string, unknown> | null; book?: () => Promise<{ consignmentId: string }>; stored?: number; after?: Record<string, unknown> } = {}) => {
+  const setup = (
+    o: { row?: Record<string, unknown> | null; book?: () => Promise<{ consignmentId: string }>; stored?: number; after?: Record<string, unknown> } = {},
+  ) => {
     const db = fakeDb((sql) => {
       if (sql.includes('JOIN delivery.quotes q')) return o.row === null ? [] : [row(o.row)];
-      if (sql.includes('FROM delivery.areas')) return [{ id: 1, district: 'Dhaka', name_en: 'Dhanmondi' }, { id: 4, district: 'Dhaka', name_en: 'Savar' }];
+      if (sql.includes('FROM delivery.areas'))
+        return [
+          { id: 1, district: 'Dhaka', name_en: 'Dhanmondi' },
+          { id: 4, district: 'Dhaka', name_en: 'Savar' },
+        ];
       if (sql.includes("SET status = 'booked'")) return [Array.from({ length: o.stored ?? 1 }, () => ({ simulated: true })), o.stored ?? 1];
       if (sql.includes('SELECT status, consignment_id')) return [{ status: 'preparing', consignment_id: null, order_cancelled_at: null, ...o.after }];
       return [];
     });
-    const courier = { provider: 'mock', simulated: true, book: jest.fn(o.book ?? (async () => ({ consignmentId: 'MOCK-1' }))), cancel: jest.fn(async () => 'cancelled') };
+    const courier = {
+      provider: 'mock',
+      simulated: true,
+      book: jest.fn(o.book ?? (async () => ({ consignmentId: 'MOCK-1' }))),
+      cancel: jest.fn(async () => 'cancelled'),
+    };
     const breaker = { failure: jest.fn(async () => undefined), success: jest.fn(async () => undefined) };
     const orders = { getOrderForParty: jest.fn(async () => ({ buyerId: 'B', sellerId: 'S' })) };
     const identity = { getVerifiedPhone: jest.fn(async (u: string) => (u === 'S' ? '+8801700000002' : '+8801700000001')) };
@@ -229,7 +297,9 @@ describe('BookingService', () => {
     const s = setup();
     expect(await s.svc.book('S1')).toBe('booked');
     expect(s.courier.book).toHaveBeenCalledWith({
-      shipmentId: 'S1', cashToCollect: 0, parcel: { billedKg: 1, sizeClass: 'small' },
+      shipmentId: 'S1',
+      cashToCollect: 0,
+      parcel: { billedKg: 1, sizeClass: 'small' },
       pickup: { line1: 'Shop 4', contactName: 'Karim', phone: '+8801700000002', district: 'Dhaka', area: 'Dhanmondi' },
       dropoff: { ...LINES, phone: '+8801700000001', district: 'Dhaka', area: 'Savar' },
     });
@@ -260,7 +330,9 @@ describe('BookingService', () => {
   });
 
   it('NFR-REL-04 DV-29 a failed booking is retried later; after the last attempt an operator issue is opened', async () => {
-    const fail = async () => { throw new Error('courier down'); };
+    const fail = async () => {
+      throw new Error('courier down');
+    };
     const s = setup({ book: fail });
     expect(await s.svc.book('S1')).toBe('retry');
     expect(s.breaker.failure).toHaveBeenCalled();
@@ -298,11 +370,18 @@ describe('StatusService', () => {
     });
     const courier = {
       provider: 'mock',
-      verifyWebhook: jest.fn((h: Record<string, string>) => { if (h.bad) throw new CourierSignatureError('bad'); return { consignmentId: 'MOCK-1', status: h.status ?? 'picked_up', occurredAt: T0, eventId: 'E1' }; }),
+      verifyWebhook: jest.fn((h: Record<string, string>) => {
+        if (h.bad) throw new CourierSignatureError('bad');
+        return { consignmentId: 'MOCK-1', status: h.status ?? 'picked_up', occurredAt: T0, eventId: 'E1' };
+      }),
       status: jest.fn(async () => ({ status: 'in_transit', occurredAt: T0, eventId: 'E2' })),
     };
     const orders = {
-      lockForFulfilment: jest.fn(async () => ({})), recordFulfilmentStep: jest.fn(), recordDeliveryEvent: jest.fn(), refundCourierReturned: jest.fn(), recordCourierCost: jest.fn(),
+      lockForFulfilment: jest.fn(async () => ({})),
+      recordFulfilmentStep: jest.fn(),
+      recordDeliveryEvent: jest.fn(),
+      refundCourierReturned: jest.fn(),
+      recordCourierCost: jest.fn(),
     };
     const params = { current: async () => ({ ms: () => 300_000 }) };
     const svc = new StatusService(db as never, courier as never, orders as never, params as never, { now: () => T0 });
@@ -361,35 +440,79 @@ describe('StatusService', () => {
   it('I-62 every issue a transaction opened is announced once as delivery.issue.opened', async () => {
     const db = fakeDb((sql) => (sql.includes('FROM delivery.issues') ? [{ id: 'I1', kind: 'status_refused' }] : []));
     await announceNewIssues(db.manager as never, 'O1');
-    expect(db.query.mock.calls[1]).toEqual([expect.stringContaining('delivery.outbox'), ['delivery.issue.opened', 'O1', JSON.stringify({ issueId: 'I1', orderId: 'O1', kind: 'status_refused' })]]);
+    expect(db.query.mock.calls[1]).toEqual([
+      expect.stringContaining('delivery.outbox'),
+      ['delivery.issue.opened', 'O1', JSON.stringify({ issueId: 'I1', orderId: 'O1', kind: 'status_refused' })],
+    ]);
   });
 });
 
 describe('ShipmentService', () => {
   const SHIP = (o: Record<string, unknown> = {}) => ({
-    id: 'S1', order_id: 'O1', direction: 'forward', provider: 'mock', simulated: true, quote_id: 'Q1', fee: '8000', status: 'booked',
-    pickup_due_at: T0, consignment_id: 'MOCK-1', pickup_area_id: 1, dropoff_area_id: 4,
+    id: 'S1',
+    order_id: 'O1',
+    direction: 'forward',
+    provider: 'mock',
+    simulated: true,
+    quote_id: 'Q1',
+    fee: '8000',
+    status: 'booked',
+    pickup_due_at: T0,
+    consignment_id: 'MOCK-1',
+    pickup_area_id: 1,
+    dropoff_area_id: 4,
     pickup_address_enc: sealed(shipmentContext('S1', 'pickup_address_enc'), { line1: 'Shop 4', contactName: 'Karim' }),
-    dropoff_address_enc: sealed(shipmentContext('S1', 'dropoff_address_enc')), addresses_erased_at: null,
-    booked_at: T0, picked_up_at: null, delivered_at: null, returned_at: null, cancelled_at: null, failed_attempts: 0, order_cancelled_at: null, ...o,
+    dropoff_address_enc: sealed(shipmentContext('S1', 'dropoff_address_enc')),
+    addresses_erased_at: null,
+    booked_at: T0,
+    picked_up_at: null,
+    delivered_at: null,
+    returned_at: null,
+    cancelled_at: null,
+    failed_attempts: 0,
+    order_cancelled_at: null,
+    ...o,
   });
   const setup = (answer: Answer = () => [], o: { order?: Record<string, unknown>; courier?: Record<string, unknown> } = {}) => {
     const db = fakeDb(answer);
     const booking = { book: jest.fn(async () => 'booked') };
     const statuses = { query: jest.fn(async () => ({})), apply: jest.fn(async () => ({})) };
-    const courier = { provider: 'mock', simulated: true, cancel: jest.fn(async () => 'cancelled'), requestReturn: jest.fn(async () => undefined), status: jest.fn(async () => ({ status: 'picked_up', occurredAt: T0, eventId: 'E' })), ...o.courier };
-    const orders = { getOrderForParty: jest.fn(async (_o: string, u: string) => { if (u === 'X') throw new Problem('not-found'); return { buyerId: 'B', sellerId: 'S', ...o.order }; }) };
+    const courier = {
+      provider: 'mock',
+      simulated: true,
+      cancel: jest.fn(async () => 'cancelled'),
+      requestReturn: jest.fn(async () => undefined),
+      status: jest.fn(async () => ({ status: 'picked_up', occurredAt: T0, eventId: 'E' })),
+      ...o.courier,
+    };
+    const orders = {
+      getOrderForParty: jest.fn(async (_o: string, u: string) => {
+        if (u === 'X') throw new Problem('not-found');
+        return { buyerId: 'B', sellerId: 'S', ...o.order };
+      }),
+    };
     const listings = { fulfilmentFacts: jest.fn(async () => ({ weightClass: 'up_to_1kg', sizeClass: 'small' })) };
     const audit = { record: jest.fn(async () => undefined) };
-    const svc = new ShipmentService(db as never, booking as never, statuses as never, courier as never, orders as never, crypto as never, listings as never, audit as never);
+    const svc = new ShipmentService(
+      db as never,
+      booking as never,
+      statuses as never,
+      courier as never,
+      orders as never,
+      crypto as never,
+      listings as never,
+      audit as never,
+    );
     return { svc, db, booking, statuses, courier, audit };
   };
   const has = (db: ReturnType<typeof fakeDb>, s: string) => db.query.mock.calls.some(([q]) => String(q).includes(s));
 
   it('FR-DLV-10 a paid courier order gets one forward shipment with copies of both addresses, then is booked', async () => {
     const s = setup((sql) => {
-      if (sql.includes('FROM delivery.quotes q LEFT JOIN')) return [{ fee: '8000', to_area_id: 4, order_id: 'O1', address_id: 'A1', address_enc: sealed('delivery.saved_addresses.address_enc:A1') }];
-      if (sql.includes("kind = 'pickup'")) return [{ id: 'A2', area_id: 1, address_enc: sealed('delivery.saved_addresses.address_enc:A2', { line1: 'Shop', contactName: 'K' }) }];
+      if (sql.includes('FROM delivery.quotes q LEFT JOIN'))
+        return [{ fee: '8000', to_area_id: 4, order_id: 'O1', address_id: 'A1', address_enc: sealed('delivery.saved_addresses.address_enc:A1') }];
+      if (sql.includes("kind = 'pickup'"))
+        return [{ id: 'A2', area_id: 1, address_enc: sealed('delivery.saved_addresses.address_enc:A2', { line1: 'Shop', contactName: 'K' }) }];
       if (sql.includes('INSERT INTO delivery.shipments')) return [{ id: 'new' }];
       return [];
     });
@@ -399,28 +522,50 @@ describe('ShipmentService', () => {
     const insert = s.db.query.mock.calls.find(([q]) => String(q).includes('INSERT INTO delivery.shipments'))!;
     expect(String((insert[1] as Buffer[])[8])).toContain(shipmentContext(id!, 'dropoff_address_enc')); // re-encrypted under the shipment
     // redelivered: the shipment exists, nothing is booked again
-    const again = setup((sql) => (sql.includes('FROM delivery.quotes q LEFT JOIN') ? [{ fee: '8000', to_area_id: 4, order_id: 'O1', address_id: 'A1', address_enc: sealed('delivery.saved_addresses.address_enc:A1') }] : []));
+    const again = setup((sql) =>
+      sql.includes('FROM delivery.quotes q LEFT JOIN')
+        ? [{ fee: '8000', to_area_id: 4, order_id: 'O1', address_id: 'A1', address_enc: sealed('delivery.saved_addresses.address_enc:A1') }]
+        : [],
+    );
     expect(await again.svc.createForward({ orderId: 'O1', sellerId: 'S', quoteId: 'Q1', pickupDueAt: T0.toISOString() })).toBeNull();
     expect(again.booking.book).not.toHaveBeenCalled();
   });
 
   it('FR-DLV-07 a drop-off address deleted after payment goes to an operator; a quote not claimed by the order is an error', async () => {
-    const gone = setup((sql) => (sql.includes('FROM delivery.quotes q LEFT JOIN') ? [{ fee: '8000', to_area_id: 4, order_id: 'O1', address_id: null, address_enc: null }] : []));
+    const gone = setup((sql) =>
+      sql.includes('FROM delivery.quotes q LEFT JOIN') ? [{ fee: '8000', to_area_id: 4, order_id: 'O1', address_id: null, address_enc: null }] : [],
+    );
     expect(await gone.svc.createForward({ orderId: 'O1', sellerId: 'S', quoteId: 'Q1', pickupDueAt: T0.toISOString() })).toBeNull();
-    expect(gone.db.query.mock.calls.find(([q]) => String(q).includes('INSERT INTO delivery.issues'))?.[1]).toEqual(['O1', JSON.stringify({ reason: 'dropoff_address_deleted' })]);
+    expect(gone.db.query.mock.calls.find(([q]) => String(q).includes('INSERT INTO delivery.issues'))?.[1]).toEqual([
+      'O1',
+      JSON.stringify({ reason: 'dropoff_address_deleted' }),
+    ]);
     await expect(setup(() => []).svc.createForward({ orderId: 'O1', sellerId: 'S', quoteId: 'Q1', pickupDueAt: '' })).rejects.toThrow(/not claimed/);
   });
 
-  it('FR-DLV-07 FR-DLV-14 each party sees their own address and the other\'s district; the seller is asked for a pickup address', async () => {
-    const rows = [SHIP(), SHIP({ id: 'S2', direction: 'return', status: 'preparing', pickup_address_enc: null, dropoff_address_enc: null, pickup_area_id: 4, dropoff_area_id: 1 })];
+  it("FR-DLV-07 FR-DLV-14 each party sees their own address and the other's district; the seller is asked for a pickup address", async () => {
+    const rows = [
+      SHIP(),
+      SHIP({ id: 'S2', direction: 'return', status: 'preparing', pickup_address_enc: null, dropoff_address_enc: null, pickup_area_id: 4, dropoff_area_id: 1 }),
+    ];
     const answer: Answer = (sql) => {
       if (sql.includes('FROM delivery.shipments WHERE order_id')) return rows;
-      if (sql.includes('FROM delivery.areas')) return [{ id: 1, district: 'Dhaka', name_en: 'Dhanmondi', name_bn: 'ধানমন্ডি' }, { id: 4, district: 'Dhaka', name_en: 'Savar', name_bn: 'সাভার' }];
+      if (sql.includes('FROM delivery.areas'))
+        return [
+          { id: 1, district: 'Dhaka', name_en: 'Dhanmondi', name_bn: 'ধানমন্ডি' },
+          { id: 4, district: 'Dhaka', name_en: 'Savar', name_bn: 'সাভার' },
+        ];
       if (sql.includes('shipment_history')) return [{ from_status: null, to_status: 'preparing', at: T0 }];
       return [];
     };
     const b = await setup(answer).svc.view('B', 'O1');
-    expect(b.items[0]).toMatchObject({ simulated: true, cashToCollect: '0', needsPickupAddress: false, myAddress: { ...LINES, area: { nameEn: 'Savar' } }, other: { district: 'Dhaka' } });
+    expect(b.items[0]).toMatchObject({
+      simulated: true,
+      cashToCollect: '0',
+      needsPickupAddress: false,
+      myAddress: { ...LINES, area: { nameEn: 'Savar' } },
+      other: { district: 'Dhaka' },
+    });
     expect(b.items[1].myAddress).toBeNull();
     const s = await setup(answer).svc.view('S', 'O1');
     expect(s.items[0].myAddress).toMatchObject({ line1: 'Shop 4' });
@@ -429,23 +574,40 @@ describe('ShipmentService', () => {
     expect(await problemOf(setup(answer).svc.view('X', 'O1'))).toEqual(['not-found']);
   });
 
-  it('FR-DLV-07 the pickup address: the seller\'s own saved pickup address, while the shipment is preparing', async () => {
-    const answer = (o: { status?: string; address?: boolean; ship?: boolean }): Answer => (sql) => {
-      if (sql.includes("direction = 'forward' FOR UPDATE")) return o.ship === false ? [] : [{ id: 'S1', status: o.status ?? 'preparing', order_cancelled_at: null }];
-      if (sql.includes("kind = 'pickup' AND deleted_at")) return o.address === false ? [] : [{ id: 'A2', area_id: 1, address_enc: sealed('delivery.saved_addresses.address_enc:A2') }];
-      return [];
-    };
+  it("FR-DLV-07 the pickup address: the seller's own saved pickup address, while the shipment is preparing", async () => {
+    const answer =
+      (o: { status?: string; address?: boolean; ship?: boolean }): Answer =>
+      (sql) => {
+        if (sql.includes("direction = 'forward' FOR UPDATE"))
+          return o.ship === false ? [] : [{ id: 'S1', status: o.status ?? 'preparing', order_cancelled_at: null }];
+        if (sql.includes("kind = 'pickup' AND deleted_at"))
+          return o.address === false ? [] : [{ id: 'A2', area_id: 1, address_enc: sealed('delivery.saved_addresses.address_enc:A2') }];
+        return [];
+      };
     expect(await problemOf(setup(answer({})).svc.setPickupAddress('B', 'O1', 'A2'))).toEqual(['forbidden', 'order:seller-only']);
     expect(await problemOf(setup(answer({ ship: false })).svc.setPickupAddress('S', 'O1', 'A2'))).toEqual(['not-found']);
-    expect(await problemOf(setup(answer({ status: 'booked' })).svc.setPickupAddress('S', 'O1', 'A2'))).toEqual(['order-state', 'shipment:already-booked-or-closed']);
-    expect(await problemOf(setup(answer({ address: false })).svc.setPickupAddress('S', 'O1', 'A9'))).toEqual(['validation-failed', 'addressId:not-a-pickup-address-of-yours']);
+    expect(await problemOf(setup(answer({ status: 'booked' })).svc.setPickupAddress('S', 'O1', 'A2'))).toEqual([
+      'order-state',
+      'shipment:already-booked-or-closed',
+    ]);
+    expect(await problemOf(setup(answer({ address: false })).svc.setPickupAddress('S', 'O1', 'A9'))).toEqual([
+      'validation-failed',
+      'addressId:not-a-pickup-address-of-yours',
+    ]);
     const ok = setup(answer({}));
     await ok.svc.setPickupAddress('S', 'O1', 'A2');
     expect(ok.booking.book).toHaveBeenCalledWith('S1');
   });
 
   it('FR-PAY-09 a refund cancels a preparing shipment, cancels a booking with the courier, or asks for the parcel back', async () => {
-    const at = (status: string | null): Answer => (sql) => (sql.includes("direction = 'forward' FOR UPDATE") ? (status ? [{ id: 'S1', status, consignment_id: status === 'preparing' ? null : 'MOCK-1', simulated: true }] : []) : []);
+    const at =
+      (status: string | null): Answer =>
+      (sql) =>
+        sql.includes("direction = 'forward' FOR UPDATE")
+          ? status
+            ? [{ id: 'S1', status, consignment_id: status === 'preparing' ? null : 'MOCK-1', simulated: true }]
+            : []
+          : [];
     const none = setup(at(null));
     await none.svc.cancelForRefund('O1');
     expect(has(none.db, 'order_cancelled_at')).toBe(false);
@@ -480,23 +642,44 @@ describe('ShipmentService', () => {
     const still = setup(booked, { courier: { status: jest.fn(async () => ({ status: 'booked', occurredAt: T0, eventId: 'E0' })) } });
     await still.svc.syncPickup('O1');
     expect(still.statuses.apply).not.toHaveBeenCalled();
-    const down = setup(booked, { courier: { status: jest.fn(async () => { throw new Error('timeout'); }) } });
+    const down = setup(booked, {
+      courier: {
+        status: jest.fn(async () => {
+          throw new Error('timeout');
+        }),
+      },
+    });
     await expect(down.svc.syncPickup('O1')).resolves.toBeUndefined();
   });
 
-  it('FR-DSP-06 return shipments: courier orders that were delivered, from the forward shipment\'s addresses swapped', async () => {
-    const forward = (o: Record<string, unknown> = {}): Answer => (sql) => {
-      if (sql.includes('JOIN delivery.quotes q ON q.id = s.quote_id')) return o.none ? [] : [{ ...SHIP({ status: 'delivered' }), buyer_id: 'B', listing_id: 'L1', quantity: 1, ...o }];
-      if (sql.includes('SELECT district, lat, lng')) return [{ district: 'Dhaka', lat: '23.858', lng: '90.267' }];
-      if (sql.includes('make_quote')) return [{ id: 'RQ', to_area_id: 1, billed_kg: 1, fee: '5000', fare_version: 1, expires_at: T0 }];
-      if (sql.includes('claim_quote')) return [{ fee: '5000' }];
-      if (sql.includes('SELECT to_area_id')) return [{ to_area_id: 1 }];
-      return [];
-    };
+  it("FR-DSP-06 return shipments: courier orders that were delivered, from the forward shipment's addresses swapped", async () => {
+    const forward =
+      (o: Record<string, unknown> = {}): Answer =>
+      (sql) => {
+        if (sql.includes('JOIN delivery.quotes q ON q.id = s.quote_id'))
+          return o.none ? [] : [{ ...SHIP({ status: 'delivered' }), buyer_id: 'B', listing_id: 'L1', quantity: 1, ...o }];
+        if (sql.includes('SELECT district, lat, lng')) return [{ district: 'Dhaka', lat: '23.858', lng: '90.267' }];
+        if (sql.includes('make_quote')) return [{ id: 'RQ', to_area_id: 1, billed_kg: 1, fee: '5000', fare_version: 1, expires_at: T0 }];
+        if (sql.includes('claim_quote')) return [{ fee: '5000' }];
+        if (sql.includes('SELECT to_area_id')) return [{ to_area_id: 1 }];
+        return [];
+      };
     expect(await problemOf(setup(forward({ none: true })).svc.quoteReturn('O1', 4, 1))).toEqual(['validation-failed', 'order:return-needs-a-courier-order']);
-    expect(await problemOf(setup(forward({ status: 'in_transit' })).svc.quoteReturn('O1', 4, 1))).toEqual(['order-state', 'shipment:not-delivered-or-addresses-erased']);
+    expect(await problemOf(setup(forward({ status: 'in_transit' })).svc.quoteReturn('O1', 4, 1))).toEqual([
+      'order-state',
+      'shipment:not-delivered-or-addresses-erased',
+    ]);
     expect(await problemOf(setup(forward()).svc.quoteReturn('O1', 1, 4))).toEqual(['validation-failed', 'areas:must-be-the-forward-shipment-areas-swapped']);
-    expect(await setup(forward()).svc.quoteReturn('O1', 4, 1)).toEqual({ id: 'RQ', orderId: 'O1', fromAreaId: 4, toAreaId: 1, billedKg: 1, fee: '5000', fareVersion: 1, expiresAt: T0.toISOString() });
+    expect(await setup(forward()).svc.quoteReturn('O1', 4, 1)).toEqual({
+      id: 'RQ',
+      orderId: 'O1',
+      fromAreaId: 4,
+      toAreaId: 1,
+      billedKg: 1,
+      fee: '5000',
+      fareVersion: 1,
+      expiresAt: T0.toISOString(),
+    });
     const s = setup(forward());
     const id = await s.svc.bookReturn('O1', 'RQ', 'buyer', s.db.manager as never);
     const insert = s.db.query.mock.calls.find(([q]) => String(q).includes('INSERT INTO delivery.shipments'))!;
@@ -507,12 +690,14 @@ describe('ShipmentService', () => {
   });
 
   it('FR-DSP-06 the seller confirms a returned item once; nobody else can', async () => {
-    const at = (o: { ship?: boolean; status?: string; done?: boolean }): Answer => (sql) => {
-      if (sql.includes("direction = 'return' FOR UPDATE")) return o.ship === false ? [] : [{ id: 'R1', status: o.status ?? 'in_transit', simulated: true }];
-      if (sql.includes("event_type = 'delivery.return.delivered'")) return o.done ? [{ created_at: T0 }] : [];
-      if (sql.includes('SELECT now()')) return [{ at: T0 }];
-      return [];
-    };
+    const at =
+      (o: { ship?: boolean; status?: string; done?: boolean }): Answer =>
+      (sql) => {
+        if (sql.includes("direction = 'return' FOR UPDATE")) return o.ship === false ? [] : [{ id: 'R1', status: o.status ?? 'in_transit', simulated: true }];
+        if (sql.includes("event_type = 'delivery.return.delivered'")) return o.done ? [{ created_at: T0 }] : [];
+        if (sql.includes('SELECT now()')) return [{ at: T0 }];
+        return [];
+      };
     expect(await problemOf(setup(at({})).svc.returnReceived('B', 'O1'))).toEqual(['forbidden', 'order:seller-only']);
     expect(await problemOf(setup(at({ ship: false })).svc.returnReceived('S', 'O1'))).toEqual(['not-found']);
     expect(await problemOf(setup(at({ status: 'cancelled' })).svc.returnReceived('S', 'O1'))).toEqual(['order-state', 'shipment:return-cancelled']);
@@ -526,7 +711,19 @@ describe('ShipmentService', () => {
 });
 
 describe('RecordsService', () => {
-  const issue = (o: Record<string, unknown> = {}) => ({ id: 'I1', order_id: 'O1', kind: 'pickup_after_cancel', detail: {}, status: 'open', created_at: T0, resolved_by: null, resolved_at: null, resolution: null, cursor_at: '2026-11-02T10:00:00.000000Z', ...o });
+  const issue = (o: Record<string, unknown> = {}) => ({
+    id: 'I1',
+    order_id: 'O1',
+    kind: 'pickup_after_cancel',
+    detail: {},
+    status: 'open',
+    created_at: T0,
+    resolved_by: null,
+    resolved_at: null,
+    resolution: null,
+    cursor_at: '2026-11-02T10:00:00.000000Z',
+    ...o,
+  });
   const setup = (answer: Answer) => {
     const db = fakeDb(answer);
     const audit = { record: jest.fn(async () => undefined) };
@@ -551,22 +748,60 @@ describe('RecordsService', () => {
 
     expect(await problemOf(setup(() => []).svc.resolveIssue('I1', 'ST', 'short'))).toEqual(['validation-failed', 'reason:too-short']);
     expect(await problemOf(setup(() => []).svc.resolveIssue('I1', 'ST', 'checked with the courier'))).toEqual(['not-found']);
-    expect(await problemOf(setup(() => [issue({ status: 'resolved' })]).svc.resolveIssue('I1', 'ST', 'checked with the courier'))).toEqual(['validation-failed', 'issue:not-open']);
+    expect(await problemOf(setup(() => [issue({ status: 'resolved' })]).svc.resolveIssue('I1', 'ST', 'checked with the courier'))).toEqual([
+      'validation-failed',
+      'issue:not-open',
+    ]);
     const ok = setup((sql) => (sql.includes('FOR UPDATE') ? [issue()] : []));
     await ok.svc.resolveIssue('I1', 'ST', 'checked with the courier');
-    expect(ok.audit.record).toHaveBeenCalledWith(expect.objectContaining({ action: 'delivery.issue.resolved', reason: 'checked with the courier' }), ok.db.manager);
+    expect(ok.audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'delivery.issue.resolved', reason: 'checked with the courier' }),
+      ok.db.manager,
+    );
   });
 
   it('SEC-ACC-05 FR-DSP-05 the fulfilment record masks addresses unless a reason is given, audits a full view, and never has the code', async () => {
     const answer: Answer = (sql) => {
-      if (sql.includes('FROM delivery.handovers')) return [{ status: 'completed', due_at: T0, code_version: 1, wrong_entries: 1, locked_at: null, completed_at: T0, cancelled_at: null }];
-      if (sql.includes('FROM delivery.meetup_proposals')) return [{ id: 'P1', proposed_by: 'B', point: 'Thana', place_name: null, meet_at: T0, status: 'accepted', created_at: T0, responded_at: T0 }];
-      if (sql.includes('FROM delivery.code_entries')) return [{ code_version: 1, correct: false, at: T0 }, { code_version: 1, correct: true, at: T0 }];
+      if (sql.includes('FROM delivery.handovers'))
+        return [{ status: 'completed', due_at: T0, code_version: 1, wrong_entries: 1, locked_at: null, completed_at: T0, cancelled_at: null }];
+      if (sql.includes('FROM delivery.meetup_proposals'))
+        return [{ id: 'P1', proposed_by: 'B', point: 'Thana', place_name: null, meet_at: T0, status: 'accepted', created_at: T0, responded_at: T0 }];
+      if (sql.includes('FROM delivery.code_entries'))
+        return [
+          { code_version: 1, correct: false, at: T0 },
+          { code_version: 1, correct: true, at: T0 },
+        ];
       if (sql.includes('FROM delivery.shipments s')) {
-        return [{ id: 'S1', direction: 'forward', provider: 'mock', simulated: true, consignment_id: 'MOCK-1', status: 'delivered', fee: '8000', pickup_due_at: T0, booked_at: T0,
-          picked_up_at: T0, delivered_at: T0, returned_at: null, cancelled_at: null, order_cancelled_at: null, failed_attempts: 0, return_charge: null, booking_attempts: 0,
-          pickup_area_id: 1, dropoff_area_id: 4, p_district: 'Dhaka', p_name: 'Dhanmondi', d_district: 'Dhaka', d_name: 'Savar', addresses_erased_at: null,
-          pickup_address_enc: null, dropoff_address_enc: sealed(shipmentContext('S1', 'dropoff_address_enc'), { ...LINES, landmark: 'Mosque' }) }];
+        return [
+          {
+            id: 'S1',
+            direction: 'forward',
+            provider: 'mock',
+            simulated: true,
+            consignment_id: 'MOCK-1',
+            status: 'delivered',
+            fee: '8000',
+            pickup_due_at: T0,
+            booked_at: T0,
+            picked_up_at: T0,
+            delivered_at: T0,
+            returned_at: null,
+            cancelled_at: null,
+            order_cancelled_at: null,
+            failed_attempts: 0,
+            return_charge: null,
+            booking_attempts: 0,
+            pickup_area_id: 1,
+            dropoff_area_id: 4,
+            p_district: 'Dhaka',
+            p_name: 'Dhanmondi',
+            d_district: 'Dhaka',
+            d_name: 'Savar',
+            addresses_erased_at: null,
+            pickup_address_enc: null,
+            dropoff_address_enc: sealed(shipmentContext('S1', 'dropoff_address_enc'), { ...LINES, landmark: 'Mosque' }),
+          },
+        ];
       }
       if (sql.includes('shipment_history')) return [{ from_status: null, to_status: 'preparing', source: 'system', event_id: null, at: T0 }];
       if (sql.includes('FROM delivery.issues')) return [issue({ status: 'resolved', resolved_by: 'ST', resolved_at: T0, resolution: 'done and dusted' })];
@@ -575,7 +810,15 @@ describe('RecordsService', () => {
     const masked = setup(answer);
     const r = await masked.svc.fulfilmentRecord('O1');
     expect(r.handover).toMatchObject({ status: 'completed', codeEntries: [{ correct: false }, { correct: true }], proposals: [{ point: 'Thana' }] });
-    expect(r.shipments[0].dropoff).toEqual({ area: { id: 4, district: 'Dhaka', nameEn: 'Savar' }, line1: 'H•••', line2: null, landmark: 'M•••', contactName: 'R•••', masked: true, erased: false });
+    expect(r.shipments[0].dropoff).toEqual({
+      area: { id: 4, district: 'Dhaka', nameEn: 'Savar' },
+      line1: 'H•••',
+      line2: null,
+      landmark: 'M•••',
+      contactName: 'R•••',
+      masked: true,
+      erased: false,
+    });
     expect(r.shipments[0].pickup).toMatchObject({ line1: null, masked: true });
     expect(JSON.stringify(r)).not.toMatch(/House|Rahim|"code"/);
     expect(masked.audit.record).not.toHaveBeenCalled();
@@ -609,35 +852,70 @@ describe('Courier wiring', () => {
     await p.fulfilmentRecord('O');
     await p.notReceivedAllowed('O');
     await p.openIssues('c');
-    for (const f of [quotes.claimQuote, shipments.syncPickup, shipments.quoteReturn, shipments.bookReturn, handovers.unlockHandoverCode, records.resolveIssue, records.fulfilmentRecord, records.notReceivedAllowed, records.openIssues]) {
+    for (const f of [
+      quotes.claimQuote,
+      shipments.syncPickup,
+      shipments.quoteReturn,
+      shipments.bookReturn,
+      handovers.unlockHandoverCode,
+      records.resolveIssue,
+      records.fulfilmentRecord,
+      records.notReceivedAllowed,
+      records.openIssues,
+    ]) {
       expect(f).toHaveBeenCalledTimes(1);
     }
   });
 
-  it('NFR-REL-03 the booking job runs every minute; the mock\'s webhooks go to the normal handler; auto-advance only when set', async () => {
+  it("NFR-REL-03 the booking job runs every minute; the mock's webhooks go to the normal handler; auto-advance only when set", async () => {
     const registered: { name: string; intervalMs: number; run(): Promise<unknown> }[] = [];
     const runner = { register: (j: (typeof registered)[number]) => registered.push(j) };
     const booking = { bookDue: jest.fn(async () => 2) };
     const statuses = { webhook: jest.fn(async () => ({ received: true })) };
-    const upkeep = { reconcile: jest.fn(async () => ({ done: 3, failed: 0 })), lapseProposals: jest.fn(async () => 1), eraseAddresses: jest.fn(async () => ({ done: 2, failed: 1 })), purgeProviderEvents: jest.fn(async () => 4) };
+    const upkeep = {
+      reconcile: jest.fn(async () => ({ done: 3, failed: 0 })),
+      lapseProposals: jest.fn(async () => 1),
+      eraseAddresses: jest.fn(async () => ({ done: 2, failed: 1 })),
+      purgeProviderEvents: jest.fn(async () => 4),
+    };
     const mock = new MockCourier(new FakeRedis() as never, 's', () => T0, 30);
     new DeliveryJobs(runner as never, booking as never, statuses as never, upkeep as never, mock).onModuleInit();
     expect(registered.map((j) => [j.name, j.intervalMs])).toEqual([
-      ['delivery.booking', 60_000], ['delivery.reconciliation', 1_800_000], ['delivery.proposal_lapse', 900_000],
-      ['delivery.address_erasure', 86_400_000], ['delivery.provider_events', 86_400_000], ['delivery.mock_courier.advance', 30_000],
+      ['delivery.booking', 60_000],
+      ['delivery.reconciliation', 1_800_000],
+      ['delivery.proposal_lapse', 900_000],
+      ['delivery.address_erasure', 86_400_000],
+      ['delivery.provider_events', 86_400_000],
+      ['delivery.mock_courier.advance', 30_000],
     ]);
     expect(await Promise.all(registered.map((j) => j.run()))).toEqual([2, 3, 1, 2, 4, 0]);
     const { consignmentId } = await mock.book({ shipmentId: 'S', pickup: ADDR, dropoff: ADDR, parcel: { billedKg: 1, sizeClass: 'small' }, cashToCollect: 0 });
     await mock.advance(consignmentId);
     expect(statuses.webhook).toHaveBeenCalledWith('mock', expect.any(Object), expect.any(Buffer));
     const plain: typeof registered = [];
-    new DeliveryJobs({ register: (j: (typeof registered)[number]) => plain.push(j) } as never, booking as never, statuses as never, upkeep as never, { provider: 'pathao' } as never).onModuleInit();
-    expect(plain.map((j) => j.name)).toEqual(['delivery.booking', 'delivery.reconciliation', 'delivery.proposal_lapse', 'delivery.address_erasure', 'delivery.provider_events']);
+    new DeliveryJobs(
+      { register: (j: (typeof registered)[number]) => plain.push(j) } as never,
+      booking as never,
+      statuses as never,
+      upkeep as never,
+      { provider: 'pathao' } as never,
+    ).onModuleInit();
+    expect(plain.map((j) => j.name)).toEqual([
+      'delivery.booking',
+      'delivery.reconciliation',
+      'delivery.proposal_lapse',
+      'delivery.address_erasure',
+      'delivery.provider_events',
+    ]);
   });
 
-  it('I-19 FR-PAY-09 paid courier orders get a shipment; refunds cancel it; a closed account\'s saved addresses are erased', async () => {
+  it("I-19 FR-PAY-09 paid courier orders get a shipment; refunds cancel it; a closed account's saved addresses are erased", async () => {
     const handlers: Record<string, (e: unknown) => Promise<void>> = {};
-    const bus = { on: (type: string, _name: string, h: (e: unknown) => Promise<void>) => { handlers[type] = h; } };
+    const bus = {
+      on: (type: string, _name: string, h: (e: unknown) => Promise<void>) => {
+        handlers[type] = h;
+      },
+    };
     const shipments = { createForward: jest.fn(async () => 'S1'), cancelForRefund: jest.fn(async () => undefined) };
     const db = fakeDb(() => []);
     new ShipmentConsumers(bus as never, shipments as never, db as never).onModuleInit();

@@ -48,7 +48,14 @@ export class JobRunner implements OnApplicationBootstrap, OnApplicationShutdown 
     if (this.jobs.has(job.name)) throw new Error(`job ${job.name} is already registered`);
     if (!(job.intervalMs >= 1_000)) throw new Error(`job ${job.name}: interval must be at least one second`);
     const stats: JobStats = {
-      name: job.name, intervalMs: job.intervalMs, runs: 0, failures: 0, handled: 0, lastStartedAt: null, lastDurationMs: null, lastError: null,
+      name: job.name,
+      intervalMs: job.intervalMs,
+      runs: 0,
+      failures: 0,
+      handled: 0,
+      lastStartedAt: null,
+      lastDurationMs: null,
+      lastError: null,
     };
     this.jobs.set(job.name, { job, stats });
     if (this.started) this.schedule(job.name, this.firstDelay(job));

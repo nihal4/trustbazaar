@@ -10,7 +10,10 @@ import { TakeoverService } from './takeover.service';
 const T = new Date('2026-12-01T10:00:00Z');
 const dbError = (message: string) => new QueryFailedError('q', [], Object.assign(new Error(message), { code: '23514' }));
 
-function setup(answer: (sql: string) => unknown = () => [], o: { facts?: Record<string, unknown>; dispute?: () => Promise<string>; notifyFails?: boolean } = {}) {
+function setup(
+  answer: (sql: string) => unknown = () => [],
+  o: { facts?: Record<string, unknown>; dispute?: () => Promise<string>; notifyFails?: boolean } = {},
+) {
   const calls: string[] = [];
   const query = jest.fn(async (sql: string, _p?: unknown[]) => {
     const r = answer(sql);
@@ -20,24 +23,35 @@ function setup(answer: (sql: string) => unknown = () => [], o: { facts?: Record<
   const m = { query };
   const db = { query, transaction: async <R>(fn: (x: unknown) => Promise<R>) => fn(m) };
   const orders = {
-    lockForFulfilment: jest.fn(async () => { calls.push('lock order'); return { itemKind: 'game_account', buyerId: 'B', sellerId: 'S', ...(o.facts ?? {}) }; }),
+    lockForFulfilment: jest.fn(async () => {
+      calls.push('lock order');
+      return { itemKind: 'game_account', buyerId: 'B', sellerId: 'S', ...(o.facts ?? {}) };
+    }),
     getOrderForParty: jest.fn(async () => ({ buyerId: 'B', sellerId: 'S', listing: { title: 'FF account' } })),
   };
   const escrow = { recordDeliveryEvent: jest.fn(async () => undefined) };
   const disputes = { open: jest.fn(o.dispute ?? (async () => 'D')) };
-  const notifier = { notify: jest.fn(async () => { if (o.notifyFails) throw new Error('down'); }) };
+  const notifier = {
+    notify: jest.fn(async () => {
+      if (o.notifyFails) throw new Error('down');
+    }),
+  };
   const params = { current: async () => ({ get: () => '24 hours', ms: () => 7 * 86_400_000 }) };
   const svc = new TakeoverService(db as never, orders as never, escrow as never, disputes as never, notifier as never, params as never);
   return { svc, query, m, orders, escrow, disputes, notifier, calls };
 }
-const failure = (p: Promise<unknown>) => p.then(() => 'ok', (e: Problem) => (e.extra?.errors as { reason: string }[] | undefined)?.[0]?.reason ?? e.problem);
+const failure = (p: Promise<unknown>) =>
+  p.then(
+    () => 'ok',
+    (e: Problem) => (e.extra?.errors as { reason: string }[] | undefined)?.[0]?.reason ?? e.problem,
+  );
 const point = async () => {
   const pair = await webcrypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveBits']);
   return Buffer.from(await webcrypto.subtle.exportKey('raw', pair.publicKey)).toString('base64url');
 };
 
 describe('TakeoverService', () => {
-  it('FR-GAM-13 FR-GAM-15 FR-GAM-16 each step is confirmed once; the fifth completes the takeover with Unit 2\'s delivery event, and both parties are told', async () => {
+  it("FR-GAM-13 FR-GAM-15 FR-GAM-16 each step is confirmed once; the fifth completes the takeover with Unit 2's delivery event, and both parties are told", async () => {
     const step = setup((q) => (q.includes('confirm_step') ? [{ done: false }] : [{ taken_over_at: null }]));
     expect(await step.svc.confirmStep('B', 'O', 'password', 'sess')).toEqual({ step: 'password', takenOverAt: null });
     expect(step.query.mock.calls[0][1]).toEqual(['O', 'B', 'password', 'sess']);
@@ -46,10 +60,13 @@ describe('TakeoverService', () => {
     expect(await last.svc.confirmStep('B', 'O', 'two_step', 'sess')).toEqual({ step: 'two_step', takenOverAt: T.toISOString() });
     expect(last.escrow.recordDeliveryEvent).toHaveBeenCalledWith('O', 'game_takeover', T, last.m);
     expect(last.notifier.notify.mock.calls.map((c) => [(c as unknown[])[0], (c as unknown[])[1], (c as unknown[])[2]])).toEqual([
-      ['B', 'game.takeover_completed', { listing_title: 'FF account', days: 7 }], ['S', 'game.takeover_completed', { listing_title: 'FF account', days: 7 }],
+      ['B', 'game.takeover_completed', { listing_title: 'FF account', days: 7 }],
+      ['S', 'game.takeover_completed', { listing_title: 'FF account', days: 7 }],
     ]); // a notice that fails is logged, not refused
     expect(await failure(setup(() => dbError('the takeover window has ended')).svc.confirmStep('B', 'O', 'password', 's'))).toBe('window-ended');
-    expect(await failure(setup(() => dbError('takeover is not in progress (disputed)')).svc.confirmStep('B', 'O', 'password', 's'))).toBe('takeover-not-in-progress');
+    expect(await failure(setup(() => dbError('takeover is not in progress (disputed)')).svc.confirmStep('B', 'O', 'password', 's'))).toBe(
+      'takeover-not-in-progress',
+    );
     expect(await failure(setup(undefined, { facts: { buyerId: 'X' } }).svc.confirmStep('S', 'O', 'password', 's'))).toBe('forbidden');
     expect(await failure(setup(undefined, { facts: { buyerId: 'X', sellerId: 'Y' } }).svc.confirmStep('B', 'O', 'password', 's'))).toBe('not-found');
     expect(await failure(setup(undefined, { facts: { itemKind: 'physical' } }).svc.confirmStep('B', 'O', 'password', 's'))).toBe('not-found');
@@ -59,12 +76,27 @@ describe('TakeoverService', () => {
     const s = setup();
     expect(await s.svc.reportInvalid('B', 'O')).toEqual({ disputeId: 'D' });
     expect(s.query.mock.calls[0]).toEqual(['SELECT game_accounts.report_invalid($1, $2)', ['O', 'B']]);
-    expect(s.disputes.open).toHaveBeenCalledWith({ orderId: 'O', type: 'credentials_invalid', description: 'The login details I received do not work.', by: 'buyer' }, s.m);
-    await setup().svc.reportInvalid('B', 'O', '  The game says the password is wrong.  ').then(() => undefined);
-    const off = setup(undefined, { dispute: async () => { throw new Problem('feature-off'); } }); // Unit 7 before U7-10
+    expect(s.disputes.open).toHaveBeenCalledWith(
+      { orderId: 'O', type: 'credentials_invalid', description: 'The login details I received do not work.', by: 'buyer' },
+      s.m,
+    );
+    await setup()
+      .svc.reportInvalid('B', 'O', '  The game says the password is wrong.  ')
+      .then(() => undefined);
+    const off = setup(undefined, {
+      dispute: async () => {
+        throw new Problem('feature-off');
+      },
+    }); // Unit 7 before U7-10
     expect(await failure(off.svc.reportInvalid('B', 'O'))).toBe('feature-off');
-    expect(await failure(setup(() => dbError('the recovery e-mail was confirmed as changed; credentials_invalid is no longer accepted')).svc.reportInvalid('B', 'O'))).toBe('recovery-email-confirmed');
-    expect(await failure(setup(() => dbError('a credentials_invalid report is accepted only during the takeover window')).svc.reportInvalid('B', 'O'))).toBe('window-ended');
+    expect(
+      await failure(
+        setup(() => dbError('the recovery e-mail was confirmed as changed; credentials_invalid is no longer accepted')).svc.reportInvalid('B', 'O'),
+      ),
+    ).toBe('recovery-email-confirmed');
+    expect(await failure(setup(() => dbError('a credentials_invalid report is accepted only during the takeover window')).svc.reportInvalid('B', 'O'))).toBe(
+      'window-ended',
+    );
     await expect(setup(() => dbError('other')).svc.reportInvalid('B', 'O')).rejects.toBeInstanceOf(QueryFailedError);
   });
 
@@ -78,10 +110,12 @@ describe('TakeoverService', () => {
     expect(await failure(setup().svc.requestRekey('B', 'O', 'sess', 'AAAA'))).toBe('not-a-p256-point');
     expect(await failure(setup().svc.requestRekey('B', 'O', 'sess', 'not base64!'))).toBe('not-a-p256-point');
     expect(await failure(setup(() => dbError('the one re-key has been used')).svc.requestRekey('B', 'O', 'sess', key))).toBe('rekey-used');
-    expect(await failure(setup(() => dbError('the buyer already controls the recovery e-mail; no re-key is needed')).svc.requestRekey('B', 'O', 'sess', key))).toBe('recovery-email-confirmed');
+    expect(
+      await failure(setup(() => dbError('the buyer already controls the recovery e-mail; no re-key is needed')).svc.requestRekey('B', 'O', 'sess', key)),
+    ).toBe('recovery-email-confirmed');
   });
 
-  it('FR-DSP-10 FR-GAM-14 Unit 7\'s ports: a withdrawn dispute resumes the takeover; whether a report is still allowed', async () => {
+  it("FR-DSP-10 FR-GAM-14 Unit 7's ports: a withdrawn dispute resumes the takeover; whether a report is still allowed", async () => {
     const s = setup();
     await s.svc.disputeWithdrawn('O', s.m as never);
     expect(s.query.mock.calls[0]).toEqual(['SELECT game_accounts.dispute_withdrawn($1)', ['O']]);
@@ -92,22 +126,57 @@ describe('TakeoverService', () => {
     expect(await setup(() => []).svc.credentialsInvalidAllowed('O')).toBe(false);
   });
 
-  it('FR-DSP-05 FR-GAM-18 the evidence for Unit 7: details, the listing\'s proof, the handover, confirmations and the access log; never a key', async () => {
+  it("FR-DSP-05 FR-GAM-18 the evidence for Unit 7: details, the listing's proof, the handover, confirmations and the access log; never a key", async () => {
     const s = setup((q) => {
-      if (q.startsWith('SELECT * FROM game_accounts.handovers')) return [{ listing_id: 'L', status: 'taken_over', disclosure_version: 1, disclosure_ack_at: T, key_version: 1, rekeys_used: 0, credentials_due_at: T, first_delivered_at: T, delivered_at: T, takeover_due_at: T, taken_over_at: T, takeover_source: 'checklist', disputed_at: null }];
+      if (q.startsWith('SELECT * FROM game_accounts.handovers'))
+        return [
+          {
+            listing_id: 'L',
+            status: 'taken_over',
+            disclosure_version: 1,
+            disclosure_ack_at: T,
+            key_version: 1,
+            rekeys_used: 0,
+            credentials_due_at: T,
+            first_delivered_at: T,
+            delivered_at: T,
+            takeover_due_at: T,
+            taken_over_at: T,
+            takeover_source: 'checklist',
+            disputed_at: null,
+          },
+        ];
       if (q.includes('FROM game_accounts.details')) return [{ name: 'CODM', platform: 'android', player_id: 'p1', contents: 'Legendary.' }];
-      if (q.includes('FROM game_accounts.ownership_proofs')) return [{ code: 'TB-0000-0000', status: 'approved', submitted_at: T, reviewed_at: T, reviewed_by: 'st', live_check: 'matched', review_reason: null, screenshot_key: 'k', sha256: 'ab' }];
+      if (q.includes('FROM game_accounts.ownership_proofs'))
+        return [
+          {
+            code: 'TB-0000-0000',
+            status: 'approved',
+            submitted_at: T,
+            reviewed_at: T,
+            reviewed_by: 'st',
+            live_check: 'matched',
+            review_reason: null,
+            screenshot_key: 'k',
+            sha256: 'ab',
+          },
+        ];
       if (q.includes('FROM game_accounts.confirmations')) return [{ step: 'password', at: T, session_id: 'sess' }];
       return [{ at: T, user_id: 'B', session_id: 'sess', key_version: 1, ip: '203.0.113.9' }];
     });
     const e = await s.svc.evidence('O');
     expect(e).toMatchObject({
-      details: { game: 'CODM', playerId: 'p1' }, proof: { code: 'TB-0000-0000', screenshotKey: 'k', screenshotSha256: 'ab' }, handover: { status: 'taken_over', takeoverSource: 'checklist' },
-      confirmations: [{ step: 'password', at: T, sessionId: 'sess' }], accessLog: [{ userId: 'B', keyVersion: 1, sourceIp: '203.0.113.9' }],
+      details: { game: 'CODM', playerId: 'p1' },
+      proof: { code: 'TB-0000-0000', screenshotKey: 'k', screenshotSha256: 'ab' },
+      handover: { status: 'taken_over', takeoverSource: 'checklist' },
+      confirmations: [{ step: 'password', at: T, sessionId: 'sess' }],
+      accessLog: [{ userId: 'B', keyVersion: 1, sourceIp: '203.0.113.9' }],
     });
     expect(JSON.stringify(e)).not.toMatch(/public_key|ciphertext/);
     expect(await setup(() => []).svc.evidence('O')).toBeNull();
-    const bare = await setup((q) => (q.startsWith('SELECT * FROM game_accounts.handovers') ? [{ listing_id: 'L', status: 'delivered' }] : [])).svc.evidence('O');
+    const bare = await setup((q) => (q.startsWith('SELECT * FROM game_accounts.handovers') ? [{ listing_id: 'L', status: 'delivered' }] : [])).svc.evidence(
+      'O',
+    );
     expect(bare).toMatchObject({ details: null, proof: null, confirmations: [], accessLog: [] });
   });
 });

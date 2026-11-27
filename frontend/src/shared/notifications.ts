@@ -10,7 +10,10 @@ import { useLiveEvent } from './live';
 import { useMe } from './me';
 import { FRESHNESS } from './query';
 
-export interface Subject { type: 'order' | 'listing' | 'payout' | 'refund' | 'account' | 'thread' | 'dispute'; id: string }
+export interface Subject {
+  type: 'order' | 'listing' | 'payout' | 'refund' | 'account' | 'thread' | 'dispute';
+  id: string;
+}
 export interface NotificationView {
   id: string;
   code: string;
@@ -20,8 +23,15 @@ export interface NotificationView {
   createdAt: string;
   readAt: string | null;
 }
-export interface NotificationPage { items: NotificationView[]; unread: number; nextCursor: string | null }
-export interface Preferences { language: Lang; emailTransactional: boolean }
+export interface NotificationPage {
+  items: NotificationView[];
+  unread: number;
+  nextCursor: string | null;
+}
+export interface Preferences {
+  language: Lang;
+  emailTransactional: boolean;
+}
 
 export const NOTIFICATIONS_KEY = ['notifications'] as const;
 export const PREFERENCES_KEY = ['me', 'notification-preferences'] as const;
@@ -99,5 +109,5 @@ export function useLanguageSync(): void {
   useEffect(() => {
     if (!me.isSuccess || !saved || saved === lang || save.isPending) return;
     save.mutate(lang);
-  }, [me.isSuccess, saved, lang]);   // `save` is left out: the request depends on the two languages alone
+  }, [me.isSuccess, saved, lang]); // `save` is left out: the request depends on the two languages alone
 }

@@ -7,8 +7,16 @@ import type { OrderView } from './model';
 
 // FR-PAY-01 (U10-23): the receipt of a paid order is one self-contained page with the TrustBazaar logo, the lines and the total, and nothing unescaped.
 const o = {
-  id: 'abcdef12-0000-4000-8000-000000000000', role: 'buyer', status: 'paid', paidAt: '2026-11-26T03:10:00Z', quantity: 2, itemPrice: '300000', deliveryFee: '12000', total: '312000',
-  fulfilment: 'courier', listing: { id: 'l', title: 'Lamp <script>alert(1)</script>', itemKind: 'physical', photoKey: null },
+  id: 'abcdef12-0000-4000-8000-000000000000',
+  role: 'buyer',
+  status: 'paid',
+  paidAt: '2026-11-26T03:10:00Z',
+  quantity: 2,
+  itemPrice: '300000',
+  deliveryFee: '12000',
+  total: '312000',
+  fulfilment: 'courier',
+  listing: { id: 'l', title: 'Lamp <script>alert(1)</script>', itemKind: 'physical', photoKey: null },
 } as unknown as OrderView;
 
 describe('the receipt', () => {

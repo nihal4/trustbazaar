@@ -48,10 +48,7 @@ export class ConfigService implements ConfigPort, OnModuleInit {
 
   /** SEC-IRM-04: never cached, so stopping new orders or payouts takes effect at once. */
   async switchOn(name: SwitchName): Promise<boolean> {
-    const [r] = await this.db.query(
-      `SELECT value FROM staff.config_values WHERE version = staff.current_config_version() AND code = $1`,
-      [name],
-    );
+    const [r] = await this.db.query(`SELECT value FROM staff.config_values WHERE version = staff.current_config_version() AND code = $1`, [name]);
     return r?.value === true;
   }
 

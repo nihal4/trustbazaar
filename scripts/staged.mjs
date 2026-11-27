@@ -9,6 +9,7 @@ const [app, tool, ...files] = process.argv.slice(2);
 const root = resolve(import.meta.dirname, '..');
 const cwd = resolve(root, app);
 const paths = files.map((f) => relative(cwd, resolve(root, f)));
-const args = tool === 'eslint' ? ['eslint', '--no-warn-ignored', '--max-warnings=999999', ...paths] : ['stylelint', '--allow-empty-input', ...paths];
+// the frontend has ESLint 9 (flat config: --no-warn-ignored skips an ignored file quietly); the backend's ESLint (.eslintrc.js) does not have that option
+const args = tool === 'eslint' ? ['eslint', ...(app === 'frontend' ? ['--no-warn-ignored'] : []), '--max-warnings=999999', ...paths] : ['stylelint', '--allow-empty-input', ...paths];
 const run = spawnSync('npx', ['--no-install', ...args], { cwd, stdio: 'inherit' });
 process.exit(run.status ?? 1);

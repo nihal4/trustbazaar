@@ -14,10 +14,18 @@ import { otherError, useAccountT } from './common';
 import styles from './account.module.css';
 
 const KYC_ACTION: Record<KycStatus, boolean> = {
-  unsubmitted: true, rejected: true, revoked: false, pending_review: false, verified: false,
+  unsubmitted: true,
+  rejected: true,
+  revoked: false,
+  pending_review: false,
+  verified: false,
 };
 
-interface TrustSummary { averageRating: number | null; ratingCount: number; completedTransactions: number }
+interface TrustSummary {
+  averageRating: number | null;
+  ratingCount: number;
+  completedTransactions: number;
+}
 
 /** The first letter of the name, for the photo place: there is no photo upload yet, so the member's initial stands in it. */
 const initialOf = (name: string) => (Array.from(name.trim())[0] ?? '?').toUpperCase();
@@ -45,9 +53,13 @@ export function Component() {
     try {
       await api.request('POST', '/auth/signout');
     } catch (err) {
-      if (!isApiError(err, 401)) { setMessage(otherError(err, t, lang)); setBusy(false); return; }
+      if (!isApiError(err, 401)) {
+        setMessage(otherError(err, t, lang));
+        setBusy(false);
+        return;
+      }
     }
-    queryClient.clear();   // nothing of this account stays on the device (section 4.3)
+    queryClient.clear(); // nothing of this account stays on the device (section 4.3)
     navigate('/', { replace: true });
   };
 
@@ -56,8 +68,12 @@ export function Component() {
 
   const u = me.data;
   const n = (v: number | string) => toLocalDigits(String(v), lang);
-  const since = u.memberSince ? new Intl.DateTimeFormat(lang === 'bn' ? 'bn-BD' : 'en-GB', { month: 'long', year: 'numeric', timeZone: 'Asia/Dhaka' }).format(new Date(u.memberSince)) : null;
-  const rating = trust.data?.ratingCount ? t('account.rating_value', { average: n((trust.data.averageRating ?? 0).toFixed(1)), count: n(trust.data.ratingCount) }) : t('account.no_ratings');
+  const since = u.memberSince
+    ? new Intl.DateTimeFormat(lang === 'bn' ? 'bn-BD' : 'en-GB', { month: 'long', year: 'numeric', timeZone: 'Asia/Dhaka' }).format(new Date(u.memberSince))
+    : null;
+  const rating = trust.data?.ratingCount
+    ? t('account.rating_value', { average: n((trust.data.averageRating ?? 0).toFixed(1)), count: n(trust.data.ratingCount) })
+    : t('account.no_ratings');
   return (
     <div className={styles.profile}>
       <AccountTabs t={t} />
@@ -66,15 +82,24 @@ export function Component() {
 
       {/* who: the photo place (the initial), the name, and what is verified, as marks */}
       <section className={styles.idBand} aria-label={u.displayName}>
-        <div className={styles.avatar} aria-hidden="true"><span>{initialOf(u.displayName)}</span></div>
+        <div className={styles.avatar} aria-hidden="true">
+          <span>{initialOf(u.displayName)}</span>
+        </div>
         <div className={styles.idText}>
           <h2 className={styles.nameLine}>
             <span>{u.displayName}</span>
-            {u.kycStatus === 'verified' && <span className={styles.tick} title={t('kyc.status.verified')}><Tick /><span className={styles.srOnly}>{t('kyc.status.verified')}</span></span>}
+            {u.kycStatus === 'verified' && (
+              <span className={styles.tick} title={t('kyc.status.verified')}>
+                <Tick />
+                <span className={styles.srOnly}>{t('kyc.status.verified')}</span>
+              </span>
+            )}
           </h2>
           <ul className={styles.marks}>
             <Mark on={u.kycStatus === 'verified'} text={`${t('account.kyc')}: ${t(`kyc.status.${u.kycStatus}`)}`} />
-            {u.email && <Mark on={u.emailVerified} text={`${t('field.email')}: ${t(u.emailVerified ? 'account.email_verified' : 'account.email_unverified')}`} />}
+            {u.email && (
+              <Mark on={u.emailVerified} text={`${t('field.email')}: ${t(u.emailVerified ? 'account.email_verified' : 'account.email_unverified')}`} />
+            )}
             <Mark on={u.mfaEnabled} text={`${t('account.mfa')}: ${t(u.mfaEnabled ? 'account.mfa_on' : 'account.mfa_off')}`} />
           </ul>
         </div>
@@ -82,9 +107,18 @@ export function Component() {
 
       {/* how they stand with others: three cells divided by lines */}
       <dl className={styles.stats}>
-        <div><dt>{t('account.rating')}</dt><dd>{trust.isPending && u.id ? '…' : rating}</dd></div>
-        <div><dt>{t('account.completed')}</dt><dd>{trust.isPending ? '…' : n(trust.data?.completedTransactions ?? 0)}</dd></div>
-        <div><dt>{t('account.member_since')}</dt><dd>{since ?? '–'}</dd></div>
+        <div>
+          <dt>{t('account.rating')}</dt>
+          <dd>{trust.isPending && u.id ? '…' : rating}</dd>
+        </div>
+        <div>
+          <dt>{t('account.completed')}</dt>
+          <dd>{trust.isPending ? '…' : n(trust.data?.completedTransactions ?? 0)}</dd>
+        </div>
+        <div>
+          <dt>{t('account.member_since')}</dt>
+          <dd>{since ?? '–'}</dd>
+        </div>
       </dl>
 
       {u.accountStatus === 'suspended' && <FormMessage kind="info">{t('account.suspended')}</FormMessage>}
@@ -101,7 +135,20 @@ export function Component() {
         <section aria-labelledby="profile-verification">
           <h2 id="profile-verification">{t('account.section_verification')}</h2>
           <dl className={styles.rows}>
-            <Row label={t('account.kyc')} value={<>{t(`kyc.status.${u.kycStatus}`)}{KYC_ACTION[u.kycStatus] && <> <a href="/account/kyc">{t('account.kyc_start')}</a></>}</>} />
+            <Row
+              label={t('account.kyc')}
+              value={
+                <>
+                  {t(`kyc.status.${u.kycStatus}`)}
+                  {KYC_ACTION[u.kycStatus] && (
+                    <>
+                      {' '}
+                      <a href="/account/kyc">{t('account.kyc_start')}</a>
+                    </>
+                  )}
+                </>
+              }
+            />
             {u.email && <Row label={t('field.email')} value={`${u.email} (${t(u.emailVerified ? 'account.email_verified' : 'account.email_unverified')})`} />}
             <Row label={t('account.mfa')} value={t(u.mfaEnabled ? 'account.mfa_on' : 'account.mfa_off')} />
           </dl>
@@ -109,8 +156,12 @@ export function Component() {
       </div>
 
       <ul className={styles.ruledLinks}>
-        <li><Link to="/seller">{t('account.seller_link')}</Link></li>
-        <li><Link to="/account/payout">{t('account.payout_link')}</Link></li>
+        <li>
+          <Link to="/seller">{t('account.seller_link')}</Link>
+        </li>
+        <li>
+          <Link to="/account/payout">{t('account.payout_link')}</Link>
+        </li>
       </ul>
       <button type="button" className={styles.signOut} onClick={() => void signOut()} disabled={busy}>
         {t('account.sign_out')}
@@ -120,11 +171,21 @@ export function Component() {
 }
 
 function Mark({ on, text }: { on: boolean; text: string }) {
-  return <li data-on={on || undefined}><span className={styles.dot} aria-hidden="true" />{text}</li>;
+  return (
+    <li data-on={on || undefined}>
+      <span className={styles.dot} aria-hidden="true" />
+      {text}
+    </li>
+  );
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
-  return <div><dt>{label}</dt><dd>{value}</dd></div>;
+  return (
+    <div>
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </div>
+  );
 }
 
 export function SignInPrompt({ next }: { next: string }) {
@@ -133,7 +194,9 @@ export function SignInPrompt({ next }: { next: string }) {
     <div className={styles.narrow}>
       <h1>{t('account.signed_out_title')}</h1>
       <p>{t('account.signed_out_text')}</p>
-      <p><Link to={`/signin?next=${encodeURIComponent(next)}`}>{t('signin.link')}</Link></p>
+      <p>
+        <Link to={`/signin?next=${encodeURIComponent(next)}`}>{t('signin.link')}</Link>
+      </p>
     </div>
   );
 }

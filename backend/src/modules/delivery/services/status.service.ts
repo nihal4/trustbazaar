@@ -53,9 +53,10 @@ export class StatusService {
       }
       throw err;
     }
-    const [s] = (await this.db.query(
-      `SELECT id FROM delivery.shipments WHERE provider = $1 AND consignment_id = $2`, [this.courier.provider, event.consignmentId],
-    )) as { id: string }[];
+    const [s] = (await this.db.query(`SELECT id FROM delivery.shipments WHERE provider = $1 AND consignment_id = $2`, [
+      this.courier.provider,
+      event.consignmentId,
+    ])) as { id: string }[];
     if (!s) {
       this.log.warn(`courier webhook for an unknown consignment ${event.consignmentId}: ignored`);
       return { received: true, outcome: 'unknown_consignment' };
@@ -78,21 +79,31 @@ export class StatusService {
    */
   async apply(shipmentId: string, r: CourierStatusReport, source: StatusSource): Promise<ApplyResult> {
     return this.db.transaction(async (m) => {
-      const [s] = (await m.query(`SELECT order_id, direction FROM delivery.shipments WHERE id = $1`, [shipmentId])) as { order_id: string; direction: 'forward' | 'return' }[];
+      const [s] = (await m.query(`SELECT order_id, direction FROM delivery.shipments WHERE id = $1`, [shipmentId])) as {
+        order_id: string;
+        direction: 'forward' | 'return';
+      }[];
       if (!s) throw new Problem('not-found');
       await this.orders.lockForFulfilment(s.order_id, m);
-      const [res] = (await m.query(
-        `SELECT * FROM delivery.apply_status($1, $2::delivery.shipment_status, $3, $4::delivery.status_source, $5, $6)`,
-        [shipmentId, r.status, r.occurredAt, source, r.eventId, r.returnCharge?.toString() ?? null],
-      )) as ApplyResult[];
+      const [res] = (await m.query(`SELECT * FROM delivery.apply_status($1, $2::delivery.shipment_status, $3, $4::delivery.status_source, $5, $6)`, [
+        shipmentId,
+        r.status,
+        r.occurredAt,
+        source,
+        r.eventId,
+        r.returnCharge?.toString() ?? null,
+      ])) as ApplyResult[];
       if (res.outcome === 'applied') {
-        const [after] = (await m.query(
-          `SELECT picked_up_at, delivered_at, return_charge FROM delivery.shipments WHERE id = $1`, [shipmentId],
-        )) as { picked_up_at: Date | null; delivered_at: Date | null; return_charge: string | null }[];
+        const [after] = (await m.query(`SELECT picked_up_at, delivered_at, return_charge FROM delivery.shipments WHERE id = $1`, [shipmentId])) as {
+          picked_up_at: Date | null;
+          delivered_at: Date | null;
+          return_charge: string | null;
+        }[];
         const charge = BigInt(after.return_charge ?? '0');
         if (s.direction === 'forward') {
           // FR-PAY-08: the step only for a pickup by the deadline; a late or after-cancel pickup is recorded but not counted
-          if (res.pickup_recorded && res.pickup_on_time && !res.after_cancel) await this.orders.recordFulfilmentStep(s.order_id, 'courier_pickup', after.picked_up_at!, m);
+          if (res.pickup_recorded && res.pickup_on_time && !res.after_cancel)
+            await this.orders.recordFulfilmentStep(s.order_id, 'courier_pickup', after.picked_up_at!, m);
           // FR-DLV-10: the query-confirmed delivery is the delivery event
           if (res.delivered && !res.after_cancel) await this.orders.recordDeliveryEvent(s.order_id, 'courier_delivered', after.delivered_at!, m);
           if (res.returned) {
@@ -102,10 +113,10 @@ export class StatusService {
           }
         } else if (res.returned) {
           // a return shipment the courier could not deliver to the seller: an operator arranges it (section 7.11)
-          await m.query(
-            `INSERT INTO delivery.issues (order_id, kind, detail) VALUES ($1, 'return_failed', $2) ON CONFLICT DO NOTHING`,
-            [s.order_id, JSON.stringify({ shipment: shipmentId, returnCharge: charge.toString() })],
-          );
+          await m.query(`INSERT INTO delivery.issues (order_id, kind, detail) VALUES ($1, 'return_failed', $2) ON CONFLICT DO NOTHING`, [
+            s.order_id,
+            JSON.stringify({ shipment: shipmentId, returnCharge: charge.toString() }),
+          ]);
         }
       }
       await announceNewIssues(m, s.order_id);

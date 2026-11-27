@@ -35,7 +35,15 @@ export interface ListingView {
   photos: { id: string; position: number; url: string; thumbUrl: string; width: number; height: number; showsDefects: boolean }[];
   clarifications: { id: string; body: string; at: string }[];
   auction: (AuctionState & { reservePrice?: string | null }) | null;
-  seller: { id: string; displayName: string; verified: boolean; joinMonth: string; /** not sent by the server yet: shown only when present (FR-ACC-10 rating summary; the Pro Seller tier) */ ratingAverage?: number | null; ratingCount?: number; pro?: boolean };
+  seller: {
+    id: string;
+    displayName: string;
+    verified: boolean;
+    joinMonth: string;
+    /** not sent by the server yet: shown only when present (FR-ACC-10 rating summary; the Pro Seller tier) */ ratingAverage?: number | null;
+    ratingCount?: number;
+    pro?: boolean;
+  };
   own?: unknown;
 }
 
@@ -48,9 +56,16 @@ export interface MyStatus {
   secondChanceOffer: { id: string; price: string; expiresAt: string } | null;
 }
 
-export interface BidHistory { items: { id: string; bidderAlias: number; amount: string; leading: boolean; at: string }[] }
+export interface BidHistory {
+  items: { id: string; bidderAlias: number; amount: string; leading: boolean; at: string }[];
+}
 
-export interface BidResult { bidId: string; outcome: 'leading' | 'outbid' | 'raised_own_max'; yourMaximum: string; state: AuctionState }
+export interface BidResult {
+  bidId: string;
+  outcome: 'leading' | 'outbid' | 'raised_own_max';
+  yourMaximum: string;
+  state: AuctionState;
+}
 
 export const listingKey = (id: string) => ['listings', id] as const;
 export const stateKey = (id: string) => ['auctions', id, 'state'] as const;

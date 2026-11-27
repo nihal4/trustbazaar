@@ -40,13 +40,13 @@ describe('SEC-DAT-04 signed file link spellings', () => {
       const token = signFileLink(key, claims(n));
       const last = token[token.length - 1];
       seen.add(last);
-      const group = ALPHABET.indexOf(last) >> 2;   // the characters with the same 4 data bits spell the same signature
+      const group = ALPHABET.indexOf(last) >> 2; // the characters with the same 4 data bits spell the same signature
       for (let v = group * 4; v < group * 4 + 4; v++) {
         if (ALPHABET[v] === last) continue;
         expect(verifyFileLink(key, token.slice(0, -1) + ALPHABET[v], now)).toBeNull();
       }
     }
-    expect(seen.size).toBe(16);   // a 32-byte signature ends in one of 16 characters (its 2 spare bits are 0); the loop visited all of them
+    expect(seen.size).toBe(16); // a 32-byte signature ends in one of 16 characters (its 2 spare bits are 0); the loop visited all of them
   });
 
   it('SEC-DAT-04 a token with extra or missing parts is refused', () => {

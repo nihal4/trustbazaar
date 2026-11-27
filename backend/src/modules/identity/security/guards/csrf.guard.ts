@@ -27,12 +27,7 @@ export class CsrfGuard implements CanActivate {
     if (policy?.kind === 'credential' && CREDENTIALS[policy.credential].crossSite) return true;
     if (req.header('origin') !== this.config.publicOrigin) throw new Problem('csrf-failed');
     if (req.principal && req.tbCookies) {
-      const ok = csrfMatches(
-        this.config.secrets.csrfKey,
-        req.principal.sessionId,
-        req.header('x-csrf-token'),
-        req.cookies?.[req.tbCookies.csrf],
-      );
+      const ok = csrfMatches(this.config.secrets.csrfKey, req.principal.sessionId, req.header('x-csrf-token'), req.cookies?.[req.tbCookies.csrf]);
       if (!ok) throw new Problem('csrf-failed');
     }
     return true;

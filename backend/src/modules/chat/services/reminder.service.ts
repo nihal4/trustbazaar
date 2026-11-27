@@ -19,9 +19,22 @@ import { NotificationService } from './notification.service';
 
 const BATCH = 100;
 
-export interface ReminderRun { sent: number; dropped: number; moved: number; failed: number }
+export interface ReminderRun {
+  sent: number;
+  dropped: number;
+  moved: number;
+  failed: number;
+}
 
-interface Claimed { id: string; user_id: string; kind: DeadlineKind; subject_id: string; due_at: Date; lead_s: number; lead_text: string }
+interface Claimed {
+  id: string;
+  user_id: string;
+  kind: DeadlineKind;
+  subject_id: string;
+  due_at: Date;
+  lead_s: number;
+  lead_text: string;
+}
 
 @Injectable()
 export class ReminderService {
@@ -87,13 +100,18 @@ export class ReminderService {
         }
         const hours = Math.round((r.lead_s / 3600) * 10) / 10;
         const id = await this.notices.create(
-          r.user_id, `reminder.${r.kind}`, { listing_title: d.listingTitle ?? '—', hours },
-          `reminder:${r.id}:${d.dueAt.toISOString()}`, { type: 'order', id: r.subject_id },
+          r.user_id,
+          `reminder.${r.kind}`,
+          { listing_title: d.listingTitle ?? '—', hours },
+          `reminder:${r.id}:${d.dueAt.toISOString()}`,
+          { type: 'order', id: r.subject_id },
         );
         if (id) await this.notices.push(r.user_id, id);
         run.sent++;
       } catch (err) {
-        await this.db.query(`UPDATE notify.reminders SET status = 'scheduled', sent_at = NULL WHERE id = $1 AND status = 'sent'`, [r.id]).catch(() => undefined);
+        await this.db
+          .query(`UPDATE notify.reminders SET status = 'scheduled', sent_at = NULL WHERE id = $1 AND status = 'sent'`, [r.id])
+          .catch(() => undefined);
         run.failed++;
         this.log.warn(`reminder ${r.id} (${r.kind}, order ${r.subject_id}): ${(err as Error).message}`);
       }

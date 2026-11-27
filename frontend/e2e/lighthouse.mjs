@@ -16,17 +16,29 @@ const fx = JSON.parse(readFileSync(process.env.E2E_FIXTURES ?? join(here, '.fixt
 const buyer = JSON.parse(readFileSync(join(here, '.states', 'buyer.json'), 'utf8'));
 const cookie = buyer.cookies.map((c) => `${c.name}=${c.value}`).join('; ');
 const LIMIT = 2500;
-const pages = [['home', '/', null], ['listing', `/listings/${fx.listingId}`, null], ['checkout', `/checkout/${fx.listingId}`, cookie]];
+const pages = [
+  ['home', '/', null],
+  ['listing', `/listings/${fx.listingId}`, null],
+  ['checkout', `/checkout/${fx.listingId}`, cookie],
+];
 
 const chrome = await chromeLauncher.launch({ chromePath: chromium.executablePath(), chromeFlags: ['--headless=new', '--no-sandbox'] });
 let failed = 0;
 try {
   for (const [name, path, cookies] of pages) {
-    const r = await lighthouse(`${base}${path}`, { port: chrome.port, onlyCategories: ['performance'], output: 'json', logLevel: 'error', ...(cookies ? { extraHeaders: { Cookie: cookies } } : {}) });
+    const r = await lighthouse(`${base}${path}`, {
+      port: chrome.port,
+      onlyCategories: ['performance'],
+      output: 'json',
+      logLevel: 'error',
+      ...(cookies ? { extraHeaders: { Cookie: cookies } } : {}),
+    });
     const lcp = r.lhr.audits['largest-contentful-paint'].numericValue;
     const ok = lcp <= LIMIT;
     if (!ok) failed++;
-    console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}: LCP ${Math.round(lcp)} ms (limit ${LIMIT}), performance score ${Math.round(r.lhr.categories.performance.score * 100)}`);
+    console.log(
+      `${ok ? 'PASS' : 'FAIL'}  ${name}: LCP ${Math.round(lcp)} ms (limit ${LIMIT}), performance score ${Math.round(r.lhr.categories.performance.score * 100)}`,
+    );
   }
 } finally {
   await chrome.kill();

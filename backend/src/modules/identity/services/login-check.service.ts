@@ -12,7 +12,9 @@ import { normaliseLogin } from './signin.service';
 // caught before the sign-in is tried. A lookup that cannot be answered (the resolver is down, a time-out) lets the sign-in go on.
 export type DomainState = 'yes' | 'no' | 'unknown';
 export const DOMAIN_RESOLVER = Symbol('DOMAIN_RESOLVER');
-export interface DomainResolver { exists(domain: string): Promise<DomainState> }
+export interface DomainResolver {
+  exists(domain: string): Promise<DomainState>;
+}
 
 const LOOKUP_MS = 2500;
 const NOT_THERE = new Set(['ENOTFOUND', 'ENODATA', 'ESERVFAIL', 'NXDOMAIN']);
@@ -54,8 +56,14 @@ export class LoginCheckService {
     if ('phone' in a) return { ok: true };
     const domain = domainToASCII(a.email.split('@')[1] ?? '').toLowerCase();
     const labels = domain.split('.');
-    if (!domain || labels.length < 2 || !/^[a-z0-9.-]+$/.test(domain) || !/^[a-z]{2,}$/.test(labels[labels.length - 1])
-      || labels.some((l) => l.length === 0 || l.length > 63 || l.startsWith('-') || l.endsWith('-'))) return { ok: false, reason: 'format' };
+    if (
+      !domain ||
+      labels.length < 2 ||
+      !/^[a-z0-9.-]+$/.test(domain) ||
+      !/^[a-z]{2,}$/.test(labels[labels.length - 1]) ||
+      labels.some((l) => l.length === 0 || l.length > 63 || l.startsWith('-') || l.endsWith('-'))
+    )
+      return { ok: false, reason: 'format' };
     // while no mail is really sent (EMAIL_MODE=log: the development and demonstration set-ups), whether the domain can receive mail does not matter, and
     // the reserved .test domain the demonstration accounts use never could
     if (this.config?.emailMode === 'log' && domain.endsWith('.test')) return { ok: true };

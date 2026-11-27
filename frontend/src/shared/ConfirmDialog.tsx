@@ -21,10 +21,16 @@ export interface ConfirmDialogProps {
 export function ConfirmDialog({ id, title, children, confirmLabel, cancelLabel, busy = false, onConfirm, onCancel }: ConfirmDialogProps) {
   return (
     <Popup id={id} title={title} closeLabel={cancelLabel} decorativeClose describedBy={`${id}-body`} busy={busy} onClose={onCancel}>
-      <div id={`${id}-body`} className={styles.body}>{children}</div>
+      <div id={`${id}-body`} className={styles.body}>
+        {children}
+      </div>
       <PopupActions>
-        <button type="button" onClick={onConfirm} disabled={busy} aria-busy={busy}>{confirmLabel}</button>
-        <button type="button" onClick={onCancel} disabled={busy} data-autofocus>{cancelLabel}</button>
+        <button type="button" onClick={onConfirm} disabled={busy} aria-busy={busy}>
+          {confirmLabel}
+        </button>
+        <button type="button" onClick={onCancel} disabled={busy} data-autofocus>
+          {cancelLabel}
+        </button>
       </PopupActions>
     </Popup>
   );

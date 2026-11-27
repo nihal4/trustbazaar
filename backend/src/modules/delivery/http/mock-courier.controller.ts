@@ -46,14 +46,20 @@ export class MockCourierController {
   async page(@Res() res: Response) {
     const mock = this.mock();
     const nonce = randomBytes(16).toString('base64');
-    const rows = (await mock.recent()).map((c) => {
-      const moves = (MOCK_NEXT[c.status] ?? []).map((s) => `<button type="button" data-c="${escape(c.id)}" data-s="${escape(s)}">${escape(s.replace(/_/g, ' '))}</button>`).join(' ');
-      const charge = MOCK_NEXT[c.status]?.includes('returned_to_seller')
-        ? ` <label>Return charge, BDT <input id="charge-${escape(c.id)}" inputmode="numeric" size="5"></label>` : '';
-      return `<tr><td><code>${escape(c.id)}</code></td><td>${escape(c.from)} → ${escape(c.to)}</td><td>${c.parcel.billedKg} kg, ${escape(c.parcel.sizeClass)}</td>
+    const rows = (await mock.recent())
+      .map((c) => {
+        const moves = (MOCK_NEXT[c.status] ?? [])
+          .map((s) => `<button type="button" data-c="${escape(c.id)}" data-s="${escape(s)}">${escape(s.replace(/_/g, ' '))}</button>`)
+          .join(' ');
+        const charge = MOCK_NEXT[c.status]?.includes('returned_to_seller')
+          ? ` <label>Return charge, BDT <input id="charge-${escape(c.id)}" inputmode="numeric" size="5"></label>`
+          : '';
+        return `<tr><td><code>${escape(c.id)}</code></td><td>${escape(c.from)} → ${escape(c.to)}</td><td>${c.parcel.billedKg} kg, ${escape(c.parcel.sizeClass)}</td>
 <td><strong>${escape(c.status.replace(/_/g, ' '))}</strong>${c.returnRequested ? ' (return requested)' : ''}</td><td>${moves || '—'}${charge}</td></tr>`;
-    }).join('\n');
-    const auto = mock.autoAdvanceSeconds > 0 ? `Parcels also move by themselves every ${mock.autoAdvanceSeconds} seconds.` : 'Parcels move only when you press a button.';
+      })
+      .join('\n');
+    const auto =
+      mock.autoAdvanceSeconds > 0 ? `Parcels also move by themselves every ${mock.autoAdvanceSeconds} seconds.` : 'Parcels move only when you press a button.';
     const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mock courier simulator</title><style nonce="${nonce}">body{font-family:system-ui,sans-serif;margin:16px;max-width:1100px}table{border-collapse:collapse;width:100%}
 td,th{border-bottom:1px solid #ccc;padding:6px;text-align:left;vertical-align:top}button{margin:2px}#msg{min-height:1.4em;color:#a00}</style></head><body>

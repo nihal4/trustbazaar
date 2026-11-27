@@ -6,7 +6,10 @@ import { STAFF_ME_KEY } from '../shared/me';
 export type StaffRole = 'operator' | 'administrator';
 /** GET /staff/me, with the session's CP-03 limits (Decisions log, U8-10). */
 export interface StaffMe {
-  id: string; email: string; displayName: string; role: StaffRole;
+  id: string;
+  email: string;
+  displayName: string;
+  role: StaffRole;
   session: { idleExpiresAt: string; absoluteExpiresAt: string } | null;
 }
 
@@ -21,7 +24,16 @@ export function useStaffMe() {
 }
 
 /** FR-OPS-01's eight queues, in the console's order (Unit 7 section 2.3). */
-export const QUEUES = ['disputes', 'reports', 'flagged_activity', 'kyc', 'listings_review', 'ownership_proofs', 'payout_accounts', 'payment_discrepancies'] as const;
+export const QUEUES = [
+  'disputes',
+  'reports',
+  'flagged_activity',
+  'kyc',
+  'listings_review',
+  'ownership_proofs',
+  'payout_accounts',
+  'payment_discrepancies',
+] as const;
 export type QueueName = (typeof QUEUES)[number];
 
 export const queueKey = (q: QueueName) => ['staff', 'queues', q] as const;
@@ -30,7 +42,13 @@ export const QUEUE_LIMIT = 200;
 
 /** GET /staff/queues/{queue}: oldest first, the overdue on top; each item names where it is acted on. */
 export interface QueueItem {
-  id: string; ageHours: number; since: string; status: string; assignedTo: string | null; overdue?: boolean; path: string;
+  id: string;
+  ageHours: number;
+  since: string;
+  status: string;
+  assignedTo: string | null;
+  overdue?: boolean;
+  path: string;
   [field: string]: unknown;
 }
 
@@ -45,11 +63,27 @@ export function claimPath(queue: QueueName, id: string): string | null {
 
 /** GET /staff/approvals: the open four-eyes proposals for my role, never my own (FR-OPS-05). */
 export interface Approval {
-  id: string; action: string; targetType: string; targetId: string; payload: Record<string, unknown>; reason: string;
-  requiredRole: StaffRole; proposedBy: string; proposedAt: string; expiresAt: string;
+  id: string;
+  action: string;
+  targetType: string;
+  targetId: string;
+  payload: Record<string, unknown>;
+  reason: string;
+  requiredRole: StaffRole;
+  proposedBy: string;
+  proposedAt: string;
+  expiresAt: string;
 }
 /** The four-eyes actions the server knows (Units 1, 7); any other is shown by its code. */
-export const APPROVAL_ACTIONS = new Set(['account.reinstate', 'blacklist.add', 'blacklist.remove', 'disclosure.approve', 'dispute.outcome_20000', 'kyc.revoke', 'staff.mfa_reset']);
+export const APPROVAL_ACTIONS = new Set([
+  'account.reinstate',
+  'blacklist.add',
+  'blacklist.remove',
+  'disclosure.approve',
+  'dispute.outcome_20000',
+  'kyc.revoke',
+  'staff.mfa_reset',
+]);
 
 /** Hours as the console shows an age: under a day in hours, else days and hours. */
 export function ageParts(hours: number): { days: number; hours: number } {
@@ -61,13 +95,21 @@ export function ageParts(hours: number): { days: number; hours: number } {
 export function casePath(queue: QueueName, id: string): string | null {
   const e = encodeURIComponent(id);
   switch (queue) {
-    case 'disputes': return `/staff/disputes/${e}`;
-    case 'reports': return `/staff/reports/${e}`;
-    case 'flagged_activity': return `/staff/signals/${e}`;
-    case 'kyc': return `/staff/kyc/${e}`;
-    case 'listings_review': return `/staff/listings/${e}`;
-    case 'ownership_proofs': return `/staff/ownership-proofs/${e}`;
-    case 'payout_accounts': return `/staff/payout-accounts/${e}`;
-    default: return null;
+    case 'disputes':
+      return `/staff/disputes/${e}`;
+    case 'reports':
+      return `/staff/reports/${e}`;
+    case 'flagged_activity':
+      return `/staff/signals/${e}`;
+    case 'kyc':
+      return `/staff/kyc/${e}`;
+    case 'listings_review':
+      return `/staff/listings/${e}`;
+    case 'ownership_proofs':
+      return `/staff/ownership-proofs/${e}`;
+    case 'payout_accounts':
+      return `/staff/payout-accounts/${e}`;
+    default:
+      return null;
   }
 }

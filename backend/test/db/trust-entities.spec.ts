@@ -24,7 +24,10 @@ describe('disputes, trust and staff entities', () => {
       const r = await requests.save(requests.create({ userId: user }));
       const saved = await requests.findOneByOrFail({ id: r.id });
       // the last statement: a refusal aborts the transaction, which is rolled back anyway
-      const second = await requests.insert({ userId: user }).then(() => 'accepted', () => 'refused');
+      const second = await requests.insert({ userId: user }).then(
+        () => 'accepted',
+        () => 'refused',
+      );
       return { saved, second };
     }, ENTITIES);
     expect(outcome.saved).toMatchObject({ userId: user, readyAt: null, fileKey: null, expiresAt: null });
@@ -34,7 +37,10 @@ describe('disputes, trust and staff entities', () => {
 
   it('DC-6 the disputes outbox accepts only disputes, trust and staff event names', async () => {
     await expect(
-      inRolledBackTransaction((q) => q.manager.getRepository(DisputesOutboxEvent).insert({ eventType: 'orders.order.paid', aggregateId: randomUUID(), payload: {} }), ENTITIES),
+      inRolledBackTransaction(
+        (q) => q.manager.getRepository(DisputesOutboxEvent).insert({ eventType: 'orders.order.paid', aggregateId: randomUUID(), payload: {} }),
+        ENTITIES,
+      ),
     ).rejects.toThrow();
     const ok = await inRolledBackTransaction(
       (q) => q.manager.getRepository(DisputesOutboxEvent).insert({ eventType: 'disputes.dispute.opened', aggregateId: randomUUID(), payload: {} }),

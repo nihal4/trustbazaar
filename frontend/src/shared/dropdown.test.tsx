@@ -5,10 +5,20 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { Dropdown } from './Dropdown';
 
 // NFR-USE-06 (keyboard and screen-reader use): the ruled dropdown is a combobox with a listbox, operable by keyboard alone.
-const OPTIONS: [string, string][] = [['new', 'New'], ['like_new', 'Like new'], ['used', 'Used'], ['for_parts', 'For parts']];
+const OPTIONS: [string, string][] = [
+  ['new', 'New'],
+  ['like_new', 'Like new'],
+  ['used', 'Used'],
+  ['for_parts', 'For parts'],
+];
 function Harness({ initial = '' }: { initial?: string }) {
   const [v, setV] = useState(initial);
-  return <><Dropdown id="d" label="Condition" value={v} onChange={setV} options={OPTIONS} any="Any" /><output data-testid="out">{v}</output></>;
+  return (
+    <>
+      <Dropdown id="d" label="Condition" value={v} onChange={setV} options={OPTIONS} any="Any" />
+      <output data-testid="out">{v}</output>
+    </>
+  );
 }
 const box = () => screen.getByRole('combobox', { name: /Condition/ });
 
@@ -31,7 +41,7 @@ describe('dropdown', () => {
     fireEvent.keyDown(box(), { key: 'ArrowDown' });
     fireEvent.keyDown(box(), { key: 'ArrowDown' });
     fireEvent.keyDown(box(), { key: 'ArrowDown' });
-    expect(box().getAttribute('aria-activedescendant')).toBe('d-option-2');   // the first ArrowDown opens the list, the next two move
+    expect(box().getAttribute('aria-activedescendant')).toBe('d-option-2'); // the first ArrowDown opens the list, the next two move
     fireEvent.keyDown(box(), { key: 'Enter' });
     expect(screen.getByTestId('out').textContent).toBe('like_new');
     expect(screen.queryByRole('listbox')).toBeNull();
@@ -61,7 +71,7 @@ describe('dropdown', () => {
     fireEvent.keyDown(box(), { key: 'l' });
     fireEvent.keyDown(box(), { key: 'i' });
     fireEvent.keyDown(box(), { key: 'k' });
-    expect(box().getAttribute('aria-activedescendant')).toBe('d-option-2');   // "Like new"
+    expect(box().getAttribute('aria-activedescendant')).toBe('d-option-2'); // "Like new"
   });
 
   it('NFR-USE-06 clicking an option chooses it, the empty choice clears, and a click outside closes the list', () => {

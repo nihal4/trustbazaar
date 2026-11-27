@@ -36,7 +36,16 @@ import { ListingsDataExport } from './services/data-export';
 // Repositories (DC-2) are TypeORM's, injected with @InjectRepository(Entity) inside this unit only.
 @Module({
   imports: [TypeOrmModule.forFeature(ENTITIES), IdentityModule],
-  controllers: [AuctionsStaffController, CategoriesController, ListingsController, MyListingsController, ListingPhotosController, AuctionsController, SearchController, ListingsStaffController],
+  controllers: [
+    AuctionsStaffController,
+    CategoriesController,
+    ListingsController,
+    MyListingsController,
+    ListingPhotosController,
+    AuctionsController,
+    SearchController,
+    ListingsStaffController,
+  ],
   providers: [
     ListingsDataExport,
     { provide: LISTINGS_DATA_EXPORT, useExisting: ListingsDataExport },

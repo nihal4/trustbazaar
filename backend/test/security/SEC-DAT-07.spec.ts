@@ -28,7 +28,17 @@ describe('SEC-DAT-07 no secrets in logs, errors or URLs', () => {
     const member = await s.signedIn({ kyc: 'unsubmitted' });
     const { docNumber } = await submitKyc(member.b);
     // and a service logging something careless is redacted too
-    new Logger('Careless').warn({ msg: 'oops', password, otp, token, nid: docNumber, accountNumber: '01711999888', ciphertext: 'c'.repeat(40), phone: a.phone, email: a.email });
+    new Logger('Careless').warn({
+      msg: 'oops',
+      password,
+      otp,
+      token,
+      nid: docNumber,
+      accountNumber: '01711999888',
+      ciphertext: 'c'.repeat(40),
+      phone: a.phone,
+      email: a.email,
+    });
 
     const log = lines.join('\n');
     expect(lines.length).toBeGreaterThan(0);
@@ -54,7 +64,8 @@ describe('SEC-DAT-07 no secrets in logs, errors or URLs', () => {
     expect(link).toMatch(/#token=/);
     expect(new URL(link).search).toBe('');
     const root = join(__dirname, '..', '..', 'src');
-    const walk = (d: string): string[] => readdirSync(d).flatMap((n) => (statSync(join(d, n)).isDirectory() ? walk(join(d, n)) : n.endsWith('.ts') && !n.endsWith('.spec.ts') ? [join(d, n)] : []));
+    const walk = (d: string): string[] =>
+      readdirSync(d).flatMap((n) => (statSync(join(d, n)).isDirectory() ? walk(join(d, n)) : n.endsWith('.ts') && !n.endsWith('.spec.ts') ? [join(d, n)] : []));
     const inQuery = walk(root).filter((f) => /[?&](token|code|otp|password|nid)=/.test(readFileSync(f, 'utf8')));
     expect(inQuery).toEqual([]);
   });

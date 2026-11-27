@@ -18,7 +18,12 @@ import { ListingService } from './listing.service';
 // Every decision is audited; the seller is told through listings.listing.returned and .removed (Unit 6).
 
 const VISIBILITY_EVENTS = [
-  'identity.kyc.verified', 'identity.kyc.revoked', 'identity.account.suspended', 'identity.account.reinstated', 'trust.sanction.applied', 'trust.sanction.lifted',
+  'identity.kyc.verified',
+  'identity.kyc.revoked',
+  'identity.account.suspended',
+  'identity.account.reinstated',
+  'trust.sanction.applied',
+  'trust.sanction.lifted',
 ];
 const reasonOf = (raw: string) => {
   const r = raw.normalize('NFC').trim();
@@ -42,10 +47,20 @@ export class ListingReviewService implements OnModuleInit {
   }
 
   /** POST /staff/listings/{id}/review (FR-LST-11): approve, or return to the seller with the reason. */
-  async review(staffId: string, listingId: string, decision: 'approve' | 'return', rawReason: string, ctx: CallContext = {}): Promise<{ status: 'active' | 'draft' }> {
+  async review(
+    staffId: string,
+    listingId: string,
+    decision: 'approve' | 'return',
+    rawReason: string,
+    ctx: CallContext = {},
+  ): Promise<{ status: 'active' | 'draft' }> {
     const reason = reasonOf(rawReason);
     return this.db.transaction(async (m) => {
-      const [l] = (await m.query(`SELECT seller_id, item_kind, title FROM listings.listings WHERE id = $1`, [listingId])) as { seller_id: string; item_kind: string; title: string }[];
+      const [l] = (await m.query(`SELECT seller_id, item_kind, title FROM listings.listings WHERE id = $1`, [listingId])) as {
+        seller_id: string;
+        item_kind: string;
+        title: string;
+      }[];
       if (!l) throw new Problem('not-found');
       if (l.item_kind === 'game_account') throw new Problem('listing-state', { errors: [{ field: 'listing', reason: 'use-the-ownership-review' }] }); // Unit 5
       if (decision === 'approve') await this.commands.approveForPublication(listingId, staffId, reason, m);
@@ -53,10 +68,19 @@ export class ListingReviewService implements OnModuleInit {
         if (!(await this.commands.returnToDraft(listingId, staffId, reason, m))) throw new Problem('listing-state');
         await publish(m, 'listings.listing.returned', listingId, { listingId, sellerId: l.seller_id, reason });
       }
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: decision === 'approve' ? 'listings.listing.approved' : 'listings.listing.returned', objectType: 'listing', objectId: listingId,
-        reason, sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null,
-      }, m);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: decision === 'approve' ? 'listings.listing.approved' : 'listings.listing.returned',
+          objectType: 'listing',
+          objectId: listingId,
+          reason,
+          sourceIp: ctx.ip ?? null,
+          correlationId: ctx.correlationId ?? null,
+        },
+        m,
+      );
       return { status: decision === 'approve' ? 'active' : 'draft' };
     });
   }
@@ -70,10 +94,20 @@ export class ListingReviewService implements OnModuleInit {
     const [l] = (await this.db.query(`SELECT seller_id FROM listings.listings WHERE id = $1`, [listingId])) as { seller_id: string }[];
     if (!l || !this.listings) throw new Problem('not-found');
     const view = (await this.listings.view(listingId, { userId: l.seller_id })) as Record<string, unknown> & { auction: Record<string, unknown> | null };
-    await this.db.transaction((m) => this.audit.record({
-      actorType: 'staff', actorId: staffId, action: 'listings.listing.staff_viewed', objectType: 'listing', objectId: listingId,
-      sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null,
-    }, m));
+    await this.db.transaction((m) =>
+      this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: 'listings.listing.staff_viewed',
+          objectType: 'listing',
+          objectId: listingId,
+          sourceIp: ctx.ip ?? null,
+          correlationId: ctx.correlationId ?? null,
+        },
+        m,
+      ),
+    );
     const { own: _own, auction, ...rest } = view;
     void _own;
     return { ...rest, auction: auction && Object.fromEntries(Object.entries(auction).filter(([k]) => k !== 'reservePrice')) };
@@ -84,36 +118,69 @@ export class ListingReviewService implements OnModuleInit {
     const reason = reasonOf(rawReason);
     await this.db.transaction(async (m) => {
       await this.commands.remove(listingId, staffId, reason, m);
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: 'listings.listing.removed', objectType: 'listing', objectId: listingId, reason,
-        sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null,
-      }, m);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: 'listings.listing.removed',
+          objectType: 'listing',
+          objectId: listingId,
+          reason,
+          sourceIp: ctx.ip ?? null,
+          correlationId: ctx.correlationId ?? null,
+        },
+        m,
+      );
     });
     return { status: 'removed' };
   }
 
   /** GET /staff/screening-terms. */
   async terms() {
-    const rows = (await this.db.query(`SELECT id, term, severity, added_by, added_at FROM listings.screening_terms ORDER BY term`)) as
-      { id: number; term: string; severity: string; added_by: string | null; added_at: Date }[];
+    const rows = (await this.db.query(`SELECT id, term, severity, added_by, added_at FROM listings.screening_terms ORDER BY term`)) as {
+      id: number;
+      term: string;
+      severity: string;
+      added_by: string | null;
+      added_at: Date;
+    }[];
     return { items: rows.map((r) => ({ id: r.id, term: r.term, severity: r.severity, addedBy: r.added_by, addedAt: r.added_at.toISOString() })) };
   }
 
   /** POST /staff/screening-terms (FR-LST-11): lower case, Bangla or English; applies to listings published from now on. */
-  async addTerm(staffId: string, rawTerm: string, severity: 'prohibited' | 'high_risk', ctx: CallContext = {}): Promise<{ id: number; term: string; severity: string }> {
+  async addTerm(
+    staffId: string,
+    rawTerm: string,
+    severity: 'prohibited' | 'high_risk',
+    ctx: CallContext = {},
+  ): Promise<{ id: number; term: string; severity: string }> {
     const term = rawTerm.normalize('NFC').trim().toLowerCase().replace(/\s+/g, ' ');
     if (term.length < 2 || term.length > 80) throw new Problem('validation-failed', { errors: [{ field: 'term', reason: 'length' }] });
     try {
       return await this.db.transaction(async (m) => {
-        const [r] = (await m.query(`INSERT INTO listings.screening_terms (term, severity, added_by) VALUES ($1, $2, $3) RETURNING id`, [term, severity, staffId])) as { id: number }[];
-        await this.audit.record({
-          actorType: 'staff', actorId: staffId, action: 'listings.screening_term.added', objectType: 'screening_term', objectId: null, after: { id: r.id, term, severity },
-          sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null,
-        }, m);
+        const [r] = (await m.query(`INSERT INTO listings.screening_terms (term, severity, added_by) VALUES ($1, $2, $3) RETURNING id`, [
+          term,
+          severity,
+          staffId,
+        ])) as { id: number }[];
+        await this.audit.record(
+          {
+            actorType: 'staff',
+            actorId: staffId,
+            action: 'listings.screening_term.added',
+            objectType: 'screening_term',
+            objectId: null,
+            after: { id: r.id, term, severity },
+            sourceIp: ctx.ip ?? null,
+            correlationId: ctx.correlationId ?? null,
+          },
+          m,
+        );
         return { id: r.id, term, severity };
       });
     } catch (err) {
-      if (err instanceof QueryFailedError && (err.driverError as { code?: string }).code === '23505') throw new Problem('validation-failed', { errors: [{ field: 'term', reason: 'taken' }] });
+      if (err instanceof QueryFailedError && (err.driverError as { code?: string }).code === '23505')
+        throw new Problem('validation-failed', { errors: [{ field: 'term', reason: 'taken' }] });
       throw err;
     }
   }
@@ -121,12 +188,24 @@ export class ListingReviewService implements OnModuleInit {
   /** DELETE /staff/screening-terms/{id}. */
   async deleteTerm(staffId: string, id: number, ctx: CallContext = {}): Promise<void> {
     await this.db.transaction(async (m) => {
-      const [[t]] = (await m.query(`DELETE FROM listings.screening_terms WHERE id = $1 RETURNING term, severity`, [id])) as [{ term: string; severity: string }[], number];
+      const [[t]] = (await m.query(`DELETE FROM listings.screening_terms WHERE id = $1 RETURNING term, severity`, [id])) as [
+        { term: string; severity: string }[],
+        number,
+      ];
       if (!t) throw new Problem('not-found');
-      await this.audit.record({
-        actorType: 'staff', actorId: staffId, action: 'listings.screening_term.deleted', objectType: 'screening_term', objectId: null, before: { id, term: t.term, severity: t.severity },
-        sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null,
-      }, m);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: 'listings.screening_term.deleted',
+          objectType: 'screening_term',
+          objectId: null,
+          before: { id, term: t.term, severity: t.severity },
+          sourceIp: ctx.ip ?? null,
+          correlationId: ctx.correlationId ?? null,
+        },
+        m,
+      );
     });
   }
 
@@ -140,7 +219,10 @@ export class ListingReviewService implements OnModuleInit {
       if (!(err instanceof Problem && err.problem === 'transaction-not-allowed')) throw err;
       visible = false;
     }
-    const [, n] = (await this.db.query(`UPDATE listings.listings SET seller_visible = $2 WHERE seller_id = $1 AND seller_visible <> $2`, [userId, visible])) as [unknown, number];
+    const [, n] = (await this.db.query(`UPDATE listings.listings SET seller_visible = $2 WHERE seller_id = $1 AND seller_visible <> $2`, [
+      userId,
+      visible,
+    ])) as [unknown, number];
     return n;
   }
 }

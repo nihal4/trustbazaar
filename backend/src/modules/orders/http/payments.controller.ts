@@ -47,7 +47,10 @@ export class PaymentsController {
   /** FR-PAY-02: where the browser lands after the provider; it shows the status and never confirms. */
   @Public()
   @Get('payments/return/:provider')
-  status(@Param('provider') provider: string, @Query('attempt', new ParseUUIDPipe({ version: '4', exceptionFactory: () => new Problem('not-found') })) attempt: string) {
+  status(
+    @Param('provider') provider: string,
+    @Query('attempt', new ParseUUIDPipe({ version: '4', exceptionFactory: () => new Problem('not-found') })) attempt: string,
+  ) {
     providerOf(provider);
     return this.payments.status(attempt);
   }

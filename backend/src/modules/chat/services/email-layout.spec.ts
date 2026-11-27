@@ -11,7 +11,7 @@ describe('the HTML of an e-mail', () => {
     expect(html).toContain('Trust</span><span');
     expect(html).not.toMatch(/<img|<script|<link|<iframe|src=|url\(|@import/i);
     expect(text).toContain('482913');
-    expect(subject).not.toContain('482913');                       // never in the subject line
+    expect(subject).not.toContain('482913'); // never in the subject line
   });
 
   it('FR-NTF-09 a link message has a button and the address as a link; only http and https addresses become links', () => {
@@ -28,6 +28,6 @@ describe('the HTML of an e-mail', () => {
     expect(html).not.toContain('<script>');
     expect(html).not.toContain('<b>B</b>');
     expect(html).toContain('&lt;script&gt;');
-    expect(html).not.toContain('12"><x');                          // a code with markup is not shown as a code
+    expect(html).not.toContain('12"><x'); // a code with markup is not shown as a code
   });
 });

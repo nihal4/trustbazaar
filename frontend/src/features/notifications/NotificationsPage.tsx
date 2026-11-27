@@ -14,7 +14,13 @@ import { useLanguage, useT } from '../../shared/language/Language';
 import type { Lang } from '../../shared/language/lang';
 import { useMe } from '../../shared/me';
 import {
-  fetchNotifications, NOTIFICATIONS_KEY, PREFERENCES_KEY, type NotificationPage, type NotificationView, type Preferences, type Subject,
+  fetchNotifications,
+  NOTIFICATIONS_KEY,
+  PREFERENCES_KEY,
+  type NotificationPage,
+  type NotificationView,
+  type Preferences,
+  type Subject,
 } from '../../shared/notifications';
 import { Popup } from '../../shared/Popup';
 import { isApiError } from '../../shared/problems';
@@ -30,13 +36,20 @@ export function subjectPath(s: Subject | null): string | null {
   if (!s) return null;
   const id = encodeURIComponent(s.id);
   switch (s.type) {
-    case 'order': return `/orders/${id}`;
-    case 'listing': return `/listings/${id}`;
-    case 'payout': return '/account/payout';
-    case 'account': return '/account/security';
-    case 'thread': return `/messages/${id}`;   // a chat notice opens the conversation (U8-13)
-    case 'dispute': return `/disputes/${id}`;   // a dispute notice opens the dispute chat (U10-23)
-    default: return null;   // a refund is shown on its order, which the notice text names
+    case 'order':
+      return `/orders/${id}`;
+    case 'listing':
+      return `/listings/${id}`;
+    case 'payout':
+      return '/account/payout';
+    case 'account':
+      return '/account/security';
+    case 'thread':
+      return `/messages/${id}`; // a chat notice opens the conversation (U8-13)
+    case 'dispute':
+      return `/disputes/${id}`; // a dispute notice opens the dispute chat (U10-23)
+    default:
+      return null; // a refund is shown on its order, which the notice text names
   }
 }
 
@@ -50,7 +63,9 @@ export function Component() {
       <div className={styles.page}>
         <h1>{t('notifications.title')}</h1>
         <p>{t('notifications.signed_out')}</p>
-        <p><Link to={`/signin?next=${encodeURIComponent('/notifications')}`}>{t('shell.sign_in')}</Link></p>
+        <p>
+          <Link to={`/signin?next=${encodeURIComponent('/notifications')}`}>{t('shell.sign_in')}</Link>
+        </p>
       </div>
     );
   }
@@ -122,28 +137,29 @@ function List({ t, lang }: { t: ReturnType<typeof useT>['t']; lang: Lang }) {
   );
   return (
     <section aria-labelledby="notifications-list-title" className={styles.listSection}>
-      <h2 id="notifications-list-title" className={styles.visuallyHidden}>{t('notifications.list')}</h2>
+      <h2 id="notifications-list-title" className={styles.visuallyHidden}>
+        {t('notifications.list')}
+      </h2>
       <div className={styles.toolbar}>
-        <p role="status">
-          {unread > 0 ? t('notifications.unread_count', { count: toLocalDigits(String(unread), lang) }) : t('notifications.all_read')}
-        </p>
+        <p role="status">{unread > 0 ? t('notifications.unread_count', { count: toLocalDigits(String(unread), lang) }) : t('notifications.all_read')}</p>
         {unread > 0 && (
-          <button type="button" className={styles.secondary} disabled={markRead.isPending}
-            onClick={() => markRead.mutate({ all: true })}>{t('notifications.mark_all')}</button>
+          <button type="button" className={styles.secondary} disabled={markRead.isPending} onClick={() => markRead.mutate({ all: true })}>
+            {t('notifications.mark_all')}
+          </button>
         )}
       </div>
       {message && <FormMessage kind="error">{message}</FormMessage>}
       {/* the page holds what is new; a notice that has been read is moved to the popup with the rest */}
-      {items.length === 0
-        ? <p>{t('notifications.empty')}</p>
-        : (
-          <>
-            {fresh.length > 0
-              ? <ul className={styles.list}>{fresh.map(row)}</ul>
-              : <p className={styles.none}>{t('notifications.none_new')}</p>}
-            <button type="button" className={styles.secondary} aria-haspopup="dialog" onClick={() => setAll(true)}>{t('notifications.show_all')}</button>
-          </>
-        )}
+      {items.length === 0 ? (
+        <p>{t('notifications.empty')}</p>
+      ) : (
+        <>
+          {fresh.length > 0 ? <ul className={styles.list}>{fresh.map(row)}</ul> : <p className={styles.none}>{t('notifications.none_new')}</p>}
+          <button type="button" className={styles.secondary} aria-haspopup="dialog" onClick={() => setAll(true)}>
+            {t('notifications.show_all')}
+          </button>
+        </>
+      )}
       {all && (
         <Popup id="notifications-popup" title={t('notifications.list')} closeLabel={t('notifications.close')} wide onClose={() => setAll(false)}>
           <ul className={`${styles.list} ${styles.listPopup}`}>{items.map(row)}</ul>
@@ -163,8 +179,12 @@ function When({ iso, lang }: { iso: string; lang: Lang }) {
   const p = dateParts(Date.parse(iso), lang);
   return (
     <time dateTime={iso} className={styles.when}>
-      <span className={styles.whenDate}>{p.day} {p.month} {p.year}</span>
-      <span className={styles.whenTime}>{p.weekday}, {p.time} {p.period}</span>
+      <span className={styles.whenDate}>
+        {p.day} {p.month} {p.year}
+      </span>
+      <span className={styles.whenTime}>
+        {p.weekday}, {p.time} {p.period}
+      </span>
     </time>
   );
 }
@@ -212,7 +232,9 @@ function PreferencesForm() {
         {(['bn', 'en'] as const).map((l) => (
           <div key={l}>
             <input id={`pref-lang-${l}`} type="radio" name="language" checked={lang === l} onChange={() => setLang(l)} />
-            <label htmlFor={`pref-lang-${l}`} lang={l}>{l === 'bn' ? 'বাংলা' : 'English'}</label>
+            <label htmlFor={`pref-lang-${l}`} lang={l}>
+              {l === 'bn' ? 'বাংলা' : 'English'}
+            </label>
           </div>
         ))}
       </fieldset>
@@ -220,7 +242,9 @@ function PreferencesForm() {
         {message && <FormMessage kind={message.kind}>{message.text}</FormMessage>}
         <CheckboxField id="pref-email" label={t('preferences.email')} checked={emailOn} onChange={setEmail} />
         <p className={styles.hint}>{t('preferences.email_hint')}</p>
-        <SubmitButton busy={save.isPending} disabled={email === null}>{t('preferences.save')}</SubmitButton>
+        <SubmitButton busy={save.isPending} disabled={email === null}>
+          {t('preferences.save')}
+        </SubmitButton>
       </form>
     </section>
   );

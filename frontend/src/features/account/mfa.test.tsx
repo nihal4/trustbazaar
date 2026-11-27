@@ -6,7 +6,7 @@ import { fakeBackend, json, noContent, problem, renderApp, standInMe, type Call 
 // MFA settings on the security page (FR-ACC-06, SEC-AUTH-01, SEC-AUTH-08; Unit 1 section 6.5 and the
 // U1-12 decisions).
 
-configure({ asyncUtilTimeout: 3000 });   // the first lazy load of the page and the QR module
+configure({ asyncUtilTimeout: 3000 }); // the first lazy load of the page and the QR module
 afterEach(cleanup);
 
 const SECRET = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
@@ -23,7 +23,13 @@ function mfaBackend(extra: Record<string, ((c: Call) => Response | Promise<Respo
     'GET /me': () => json(200, { ...standInMe, mfaEnabled: state.on })(),
     'GET /auth/sessions': json(200, []),
     'POST /me/mfa/totp': json(201, { otpauthUri: URI, secret: SECRET }),
-    'POST /me/mfa/totp/confirm': [problem(400, 'otp-failed'), () => { state.on = true; return json(200, { recoveryCodes: CODES })(); }],
+    'POST /me/mfa/totp/confirm': [
+      problem(400, 'otp-failed'),
+      () => {
+        state.on = true;
+        return json(200, { recoveryCodes: CODES })();
+      },
+    ],
     'POST /auth/step-up/start': json(200, { method: 'totp' }),
     'POST /auth/step-up/verify': json(200, { grant: 'grant-1', expiresInSeconds: 300 }),
     ...extra,
@@ -32,7 +38,9 @@ function mfaBackend(extra: Record<string, ((c: Call) => Response | Promise<Respo
 }
 
 /** the authenticator app is a row of the page; touching it opens its popup */
-const openMfa = async () => { fireEvent.click(await screen.findByRole('button', { name: /^Authenticator app/ })); };
+const openMfa = async () => {
+  fireEvent.click(await screen.findByRole('button', { name: /^Authenticator app/ }));
+};
 
 async function stepUp(code = '123456') {
   const dialog = await screen.findByRole('dialog', { name: 'Confirm it is you' });
@@ -75,7 +83,7 @@ describe('turning the authenticator app on', () => {
     renderApp('/account/security', be);
     await openMfa();
     fireEvent.click(await screen.findByRole('button', { name: 'Turn on the authenticator app' }));
-    expect(await screen.findByText(/Step 1 of 4/)).toBeTruthy();                       // step by step: the app, the code, the first code, the recovery codes
+    expect(await screen.findByText(/Step 1 of 4/)).toBeTruthy(); // step by step: the app, the code, the first code, the recovery codes
     click('Next');
     expect(await screen.findByText(/Step 2 of 4/)).toBeTruthy();
 
@@ -84,7 +92,7 @@ describe('turning the authenticator app on', () => {
     expect(qr.getAttribute('aria-label')).not.toContain(SECRET);
     expect(qr.querySelector('path')?.getAttribute('d')).toMatch(/^M\d+ \d+h1v1h-1z/);
     expect(qr.outerHTML).not.toMatch(/data:|https?:|<image|href/);
-    expect(document.querySelector('main img, main canvas')).toBeNull();   // the QR is SVG shapes; the logo in the header is an image file, outside main
+    expect(document.querySelector('main img, main canvas')).toBeNull(); // the QR is SVG shapes; the logo in the header is an image file, outside main
 
     expect(screen.getByText('JBSW Y3DP EHPK 3PXP JBSW Y3DP EHPK 3PXP')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Open in the authenticator app' }).getAttribute('href')).toBe(URI);
@@ -110,18 +118,22 @@ describe('turning the authenticator app on', () => {
     type('Code from the app', '১২৩৪৫৬');
     click('Turn on');
     const list = await screen.findByRole('list', { name: 'Recovery codes' });
-    expect(within(list).getAllByRole('listitem').map((li) => li.textContent)).toEqual(CODES);
+    expect(
+      within(list)
+        .getAllByRole('listitem')
+        .map((li) => li.textContent),
+    ).toEqual(CODES);
     expect(be.called('POST /me/mfa/totp/confirm')[1].body).toEqual({ code: '123456' });
     expect(screen.getByText(/Step 4 of 4/)).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Copy the codes' })).toBeTruthy();       // the codes can be copied
-    expect(screen.getByRole('button', { name: 'Save as a text file' })).toBeTruthy();  // or saved as a file
+    expect(screen.getByRole('button', { name: 'Copy the codes' })).toBeTruthy(); // the codes can be copied
+    expect(screen.getByRole('button', { name: 'Save as a text file' })).toBeTruthy(); // or saved as a file
 
     const done = screen.getByRole('button', { name: 'Done' });
     expect(done.hasAttribute('disabled')).toBe(true);
     fireEvent.click(screen.getByLabelText('I have saved these codes somewhere safe.'));
     fireEvent.click(done);
     expect(await screen.findByText('The authenticator app is on.')).toBeTruthy();
-    expect(screen.queryByText(CODES[0])).toBeNull();                         // shown once
+    expect(screen.queryByText(CODES[0])).toBeNull(); // shown once
     expect(await screen.findByRole('button', { name: 'Make new recovery codes' })).toBeTruthy();
   });
 
@@ -143,7 +155,12 @@ describe('turning the authenticator app on', () => {
 
     // eslint-disable-next-line no-restricted-globals
     expect([localStorage.length, sessionStorage.length]).toEqual([0, 0]);
-    const cached = JSON.stringify(doc.queryClient.getQueryCache().getAll().map((q) => q.state.data));
+    const cached = JSON.stringify(
+      doc.queryClient
+        .getQueryCache()
+        .getAll()
+        .map((q) => q.state.data),
+    );
     expect(cached).not.toContain(SECRET);
     expect(cached).not.toContain(CODES[0]);
   });
@@ -164,12 +181,18 @@ describe('with the authenticator app on', () => {
   });
 
   it('SEC-AUTH-01 turning it off asks for a new password when the current one is too short, then turns it off', async () => {
-    const { be, state } = mfaBackend({
-      'DELETE /me/mfa/totp': [
-        problem(422, 'password-rejected', { errors: [{ field: 'newPassword', reason: 'required-without-mfa' }] }),
-        () => { state.on = false; return noContent()(); },
-      ],
-    }, true);
+    const { be, state } = mfaBackend(
+      {
+        'DELETE /me/mfa/totp': [
+          problem(422, 'password-rejected', { errors: [{ field: 'newPassword', reason: 'required-without-mfa' }] }),
+          () => {
+            state.on = false;
+            return noContent()();
+          },
+        ],
+      },
+      true,
+    );
     renderApp('/account/security', be);
     await openMfa();
     await screen.findByRole('heading', { name: 'Turn off the authenticator app' });
@@ -204,9 +227,15 @@ describe('with the authenticator app on', () => {
   });
 
   it('FR-ACC-06 a state changed elsewhere (mfa-state) shows the current state again', async () => {
-    const { be, state } = mfaBackend({
-      'POST /me/mfa/recovery-codes': () => { state.on = false; return problem(409, 'mfa-state', { errors: [{ field: 'mfa', reason: 'already-off' }] })(); },
-    }, true);
+    const { be, state } = mfaBackend(
+      {
+        'POST /me/mfa/recovery-codes': () => {
+          state.on = false;
+          return problem(409, 'mfa-state', { errors: [{ field: 'mfa', reason: 'already-off' }] })();
+        },
+      },
+      true,
+    );
     renderApp('/account/security', be);
     await openMfa();
     fireEvent.click(await screen.findByRole('button', { name: 'Make new recovery codes' }));

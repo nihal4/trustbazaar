@@ -35,28 +35,69 @@ export function Component() {
         <>
           <section className={styles.panel} aria-labelledby="signal-facts">
             <h2 id="signal-facts">{t('staff.signal.facts')}</h2>
-            <Facts rows={[
-              [t('staff.signal.kind'), kind],
-              [t('staff.signal.raised'), formatDateTime(Date.parse(sig.since), lang)],
-              [t('staff.signal.member'), subject ? short(subject) : null],
-              ...Object.entries(detail).filter(([, v]) => v !== null && typeof v !== 'object').map(([k, v]) => [k, String(v)] as [string, string]),
-            ]} />
-            {str('listingId') && <p><Link className={styles.openLink} to={`/staff/listings/${encodeURIComponent(str('listingId'))}`}>{t('staff.report.open_listing', { ref: short(str('listingId')) })}</Link></p>}
+            <Facts
+              rows={[
+                [t('staff.signal.kind'), kind],
+                [t('staff.signal.raised'), formatDateTime(Date.parse(sig.since), lang)],
+                [t('staff.signal.member'), subject ? short(subject) : null],
+                ...Object.entries(detail)
+                  .filter(([, v]) => v !== null && typeof v !== 'object')
+                  .map(([k, v]) => [k, String(v)] as [string, string]),
+              ]}
+            />
+            {str('listingId') && (
+              <p>
+                <Link className={styles.openLink} to={`/staff/listings/${encodeURIComponent(str('listingId'))}`}>
+                  {t('staff.report.open_listing', { ref: short(str('listingId')) })}
+                </Link>
+              </p>
+            )}
           </section>
-          <Action title={t('staff.signal.review_title')} button={t('staff.signal.review_button')} consequence={t('staff.signal.review_consequence')} t={t} lang={lang}
-            reasonLabel={t('staff.signal.note')} valid={outcome !== ''} invalidText={t('staff.report.choose')}
+          <Action
+            title={t('staff.signal.review_title')}
+            button={t('staff.signal.review_button')}
+            consequence={t('staff.signal.review_consequence')}
+            t={t}
+            lang={lang}
+            reasonLabel={t('staff.signal.note')}
+            valid={outcome !== ''}
+            invalidText={t('staff.report.choose')}
             run={(note) => api.post(`/staff/signals/${encodeURIComponent(id)}/review`, { outcome, note })}
-            done={() => t('staff.signal.reviewed')} onDone={() => void queryClient.invalidateQueries({ queryKey: queueKey('flagged_activity') })}>
-            <Choice legend={t('staff.report.outcome')} name="signal-outcome" value={outcome}
-              options={[['dismissed', t('staff.review.dismissed')], ['actioned', t('staff.review.actioned')]]} onChange={setOutcome} />
+            done={() => t('staff.signal.reviewed')}
+            onDone={() => void queryClient.invalidateQueries({ queryKey: queueKey('flagged_activity') })}
+          >
+            <Choice
+              legend={t('staff.report.outcome')}
+              name="signal-outcome"
+              value={outcome}
+              options={[
+                ['dismissed', t('staff.review.dismissed')],
+                ['actioned', t('staff.review.actioned')],
+              ]}
+              onChange={setOutcome}
+            />
           </Action>
           {kind === 'shill_bidding' && str('auctionId') && (
-            <Action title={t('staff.signal.cancel_title')} button={t('staff.signal.cancel_button')} consequence={t('staff.signal.cancel_consequence')} t={t} lang={lang}
-              run={(reason) => api.post(`/staff/auctions/${encodeURIComponent(str('auctionId'))}/cancel`, { reason })} done={() => t('staff.signal.cancelled')} />
+            <Action
+              title={t('staff.signal.cancel_title')}
+              button={t('staff.signal.cancel_button')}
+              consequence={t('staff.signal.cancel_consequence')}
+              t={t}
+              lang={lang}
+              run={(reason) => api.post(`/staff/auctions/${encodeURIComponent(str('auctionId'))}/cancel`, { reason })}
+              done={() => t('staff.signal.cancelled')}
+            />
           )}
           {kind === 'delivery_issue' && str('issueId') && (
-            <Action title={t('staff.signal.issue_title')} button={t('staff.signal.issue_button')} consequence={t('staff.signal.issue_consequence')} t={t} lang={lang}
-              run={(reason) => api.post(`/staff/delivery/issues/${encodeURIComponent(str('issueId'))}/resolve`, { reason })} done={() => t('staff.signal.issue_done')} />
+            <Action
+              title={t('staff.signal.issue_title')}
+              button={t('staff.signal.issue_button')}
+              consequence={t('staff.signal.issue_consequence')}
+              t={t}
+              lang={lang}
+              run={(reason) => api.post(`/staff/delivery/issues/${encodeURIComponent(str('issueId'))}/resolve`, { reason })}
+              done={() => t('staff.signal.issue_done')}
+            />
           )}
           {subject && <UserActions userId={subject} related={{ type: 'signal', id }} t={t} lang={lang} />}
         </>

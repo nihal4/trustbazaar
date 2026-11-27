@@ -17,7 +17,9 @@ describe('featured listings', () => {
 
   async function setFee(fee: number | null) {
     await fx.query(`SELECT staff.publish_config($1::jsonb, $2, $3)`, [
-      JSON.stringify({ 'CP-37': { periods: ['24 hours', '48 hours'], fee_poisha: fee } }), staffId, 'Featured fee for the featured-listing tests',
+      JSON.stringify({ 'CP-37': { periods: ['24 hours', '48 hours'], fee_poisha: fee } }),
+      staffId,
+      'Featured fee for the featured-listing tests',
     ]);
     (t.app.get(CONFIG_PORT) as unknown as { invalidate(): void }).invalidate();
   }
@@ -27,7 +29,10 @@ describe('featured listings', () => {
     fx = await IdentityFixtures.open();
     monetization = t.app.get(MonetizationService);
     staffId = await fx.staff('administrator');
-    [{ id: category }] = await fx.query<{ id: number }>(`INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'c', 'বি', 'physical') RETURNING id`, [`feat-${randomUUID().slice(0, 8)}`]);
+    [{ id: category }] = await fx.query<{ id: number }>(
+      `INSERT INTO listings.categories (slug, name_en, name_bn, item_kind) VALUES ($1, 'c', 'বি', 'physical') RETURNING id`,
+      [`feat-${randomUUID().slice(0, 8)}`],
+    );
     await setFee(10_000); // BDT 100 a day
   });
   afterAll(async () => {
@@ -42,7 +47,8 @@ describe('featured listings', () => {
     const ip = `203.0.113.${randomInt(1, 255)}, 10.6.${randomInt(0, 255)}.${randomInt(1, 255)}`;
     const call = (method: string, path: string, body?: unknown, extra: Record<string, string> = {}) =>
       fetch(t.url(path), {
-        method, redirect: 'manual',
+        method,
+        redirect: 'manual',
         headers: { ...fx.headers(sid, userId, 'user'), 'x-forwarded-for': ip, ...(body !== undefined ? { 'content-type': 'application/json' } : {}), ...extra },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
@@ -56,7 +62,12 @@ describe('featured listings', () => {
           'pickup_only', 'Dhaka', 23.81, 90.41, 500000, 1, 1) RETURNING id`,
       [sellerId, category],
     );
-    for (const n of [1, 2]) await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 1, 1)`, [id, n, randomUUID().replace(/-/g, '')]);
+    for (const n of [1, 2])
+      await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 1, 1)`, [
+        id,
+        n,
+        randomUUID().replace(/-/g, ''),
+      ]);
     if (status !== 'draft') await fx.query(`UPDATE listings.listings SET status = $2, published_at = now() WHERE id = $1`, [id, status]);
     return id;
   }
@@ -64,7 +75,10 @@ describe('featured listings', () => {
   async function pay(redirectUrl: string, outcome: 'succeeded' | 'failed' = 'succeeded') {
     const page = new URL(redirectUrl);
     const form = await fetch(t.url(page.pathname.replace('/api/v1', '') + page.search), {
-      method: 'POST', redirect: 'manual', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: `outcome=${outcome}`,
+      method: 'POST',
+      redirect: 'manual',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: `outcome=${outcome}`,
     });
     expect(form.status).toBe(303);
     const cb = new URL(form.headers.get('location')!);
@@ -76,8 +90,13 @@ describe('featured listings', () => {
   /** Runs Listings' consumer of the latest event of a type for a purchase, as the dispatcher would. */
   async function deliver(type: string, purchaseId: string) {
     const e = await row<{ id: string; payload: Record<string, unknown>; created_at: Date }>(
-      `SELECT id::text, payload, created_at FROM orders.outbox WHERE event_type = $1 AND aggregate_id = $2 ORDER BY id DESC LIMIT 1`, [type, purchaseId]);
-    const c = t.app.get(EventBus).consumersOf(type).find((x) => x.name === 'listings.featured')!;
+      `SELECT id::text, payload, created_at FROM orders.outbox WHERE event_type = $1 AND aggregate_id = $2 ORDER BY id DESC LIMIT 1`,
+      [type, purchaseId],
+    );
+    const c = t.app
+      .get(EventBus)
+      .consumersOf(type)
+      .find((x) => x.name === 'listings.featured')!;
     await c.handler({ outbox: 'orders', id: e.id, type, aggregateId: purchaseId, payload: e.payload, createdAt: e.created_at, attempt: 1 } as OutboxEvent);
     return e.payload;
   }
@@ -89,21 +108,38 @@ describe('featured listings', () => {
     const r = await seller.call('POST', `/listings/${id}/feature`, { hours: 48, provider: 'bkash' }, { 'idempotency-key': randomUUID() });
     expect(r.status).toBe(201);
     const a = await r.json();
-    expect(a).toMatchObject({ hours: 48, provider: 'bkash', amount: '20000', purchaseId: expect.any(String), redirectUrl: expect.stringContaining('/mock-provider/') });
+    expect(a).toMatchObject({
+      hours: 48,
+      provider: 'bkash',
+      amount: '20000',
+      purchaseId: expect.any(String),
+      redirectUrl: expect.stringContaining('/mock-provider/'),
+    });
     expect(await row(`SELECT purpose, subject_id, payer_id, status FROM payments.attempts WHERE id = $1`, [a.attemptId])).toEqual({
-      purpose: 'featured_listing', subject_id: a.purchaseId, payer_id: seller.userId, status: 'redirected',
+      purpose: 'featured_listing',
+      subject_id: a.purchaseId,
+      payer_id: seller.userId,
+      status: 'redirected',
     });
 
     const landing = await pay(a.redirectUrl);
     expect(landing.pathname).toBe(`/payments/${a.attemptId}`);
     expect(landing.searchParams.get('result')).toBe('paid');
-    const p = await row<{ starts_at: Date; ends_at: Date; fee: string }>(`SELECT starts_at, ends_at, fee FROM payments.featured_purchases WHERE id = $1`, [a.purchaseId]);
+    const p = await row<{ starts_at: Date; ends_at: Date; fee: string }>(`SELECT starts_at, ends_at, fee FROM payments.featured_purchases WHERE id = $1`, [
+      a.purchaseId,
+    ]);
     expect(p.fee).toBe('20000');
     expect(p.ends_at.getTime() - p.starts_at.getTime()).toBe(48 * 3_600_000);
     // FR-MON-09: the fee is revenue (Dr provider_clearing / Cr revenue_featured)
-    expect(await fx.query(`SELECT account, revenue::text FROM (SELECT l.account_code AS account, -l.amount AS revenue FROM payments.journal_entries e JOIN payments.journal_lines l ON l.entry_id = e.id
-                              WHERE e.source_id = $1 AND e.kind = 'fee_received' ORDER BY l.amount) x`, [a.attemptId])).toEqual([
-      { account: 'revenue_featured', revenue: '20000' }, { account: 'provider_clearing', revenue: '-20000' },
+    expect(
+      await fx.query(
+        `SELECT account, revenue::text FROM (SELECT l.account_code AS account, -l.amount AS revenue FROM payments.journal_entries e JOIN payments.journal_lines l ON l.entry_id = e.id
+                              WHERE e.source_id = $1 AND e.kind = 'fee_received' ORDER BY l.amount) x`,
+        [a.attemptId],
+      ),
+    ).toEqual([
+      { account: 'revenue_featured', revenue: '20000' },
+      { account: 'provider_clearing', revenue: '-20000' },
     ]);
     expect(await row(`SELECT action FROM audit.events WHERE object_id = $1 AND action = 'payments.featured.started'`, [id])).toBeDefined();
 
@@ -132,16 +168,24 @@ describe('featured listings', () => {
     expect((await featuredUntil(id))!.getTime()).toBe(p2.ends_at.getTime());
 
     // the first period is over (moved back in time as the owner): the job ends it once; the label stays for the second
-    await fx.query(`UPDATE payments.featured_purchases SET starts_at = starts_at - interval '25 hours', ends_at = ends_at - interval '25 hours' WHERE id = $1`, [first]);
+    await fx.query(
+      `UPDATE payments.featured_purchases SET starts_at = starts_at - interval '25 hours', ends_at = ends_at - interval '25 hours' WHERE id = $1`,
+      [first],
+    );
     expect(await monetization.endFeatured()).toBeGreaterThanOrEqual(1);
     expect(await monetization.endFeatured()).toBe(0);
     expect(await row(`SELECT ended_at IS NOT NULL AS ended FROM payments.featured_purchases WHERE id = $1`, [first])).toEqual({ ended: true });
-    expect(await row(`SELECT count(*)::int AS n FROM orders.outbox WHERE event_type = 'payments.featured.ended' AND aggregate_id = $1`, [first])).toEqual({ n: 1 });
+    expect(await row(`SELECT count(*)::int AS n FROM orders.outbox WHERE event_type = 'payments.featured.ended' AND aggregate_id = $1`, [first])).toEqual({
+      n: 1,
+    });
     await deliver('payments.featured.ended', first);
     expect((await featuredUntil(id))!.getTime()).toBe(p2.ends_at.getTime());
 
     // the second ends too: the label is cleared
-    await fx.query(`UPDATE payments.featured_purchases SET starts_at = starts_at - interval '49 hours', ends_at = ends_at - interval '49 hours' WHERE id = $1`, [second]);
+    await fx.query(
+      `UPDATE payments.featured_purchases SET starts_at = starts_at - interval '49 hours', ends_at = ends_at - interval '49 hours' WHERE id = $1`,
+      [second],
+    );
     await fx.query(`UPDATE listings.listings SET featured_until = featured_until - interval '49 hours' WHERE id = $1`, [id]);
     await monetization.endFeatured();
     await deliver('payments.featured.ended', second);
@@ -194,7 +238,11 @@ describe('featured listings', () => {
     await fx.query(`UPDATE listings.listings SET status = 'ended_unsold' WHERE id = $1`, [id]);
     expect((await pay(a.redirectUrl)).searchParams.get('result')).toBe('late');
     expect(await row(`SELECT status FROM payments.attempts WHERE id = $1`, [a.attemptId])).toEqual({ status: 'succeeded_rejected' });
-    expect(await row(`SELECT amount::text, reason, order_id FROM payments.refunds WHERE attempt_id = $1`, [a.attemptId])).toEqual({ amount: '10000', reason: 'fee_refund', order_id: null });
+    expect(await row(`SELECT amount::text, reason, order_id FROM payments.refunds WHERE attempt_id = $1`, [a.attemptId])).toEqual({
+      amount: '10000',
+      reason: 'fee_refund',
+      order_id: null,
+    });
     expect(await row(`SELECT starts_at FROM payments.featured_purchases WHERE id = $1`, [a.purchaseId])).toEqual({ starts_at: null });
   });
 
@@ -206,7 +254,10 @@ describe('featured listings', () => {
     // the seller paid on the provider's page but the callback never came
     const page = new URL(paid.redirectUrl);
     await fetch(t.url(page.pathname.replace('/api/v1', '') + page.search), {
-      method: 'POST', redirect: 'manual', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: 'outcome=succeeded',
+      method: 'POST',
+      redirect: 'manual',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: 'outcome=succeeded',
     });
     await fx.query(`UPDATE payments.attempts SET expires_at = now() - interval '1 minute' WHERE id = ANY($1::uuid[])`, [[left.attemptId, paid.attemptId]]);
     await monetization.expireAttempts();

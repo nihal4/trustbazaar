@@ -34,7 +34,15 @@ export function ownershipCode(bytes: Buffer = randomBytes(5)): string {
   return `TB-${s.slice(0, 4)}-${s.slice(4)}`;
 }
 
-export interface GameView { id: number; slug: string; name: string; platforms: string[]; codePlacement: string; publisherNote: string; active: boolean }
+export interface GameView {
+  id: number;
+  slug: string;
+  name: string;
+  platforms: string[];
+  codePlacement: string;
+  publisherNote: string;
+  active: boolean;
+}
 
 @Injectable()
 export class OwnershipService {
@@ -52,7 +60,11 @@ export class OwnershipService {
   /** GET /games: the active games, by name. */
   async games(): Promise<{ items: Omit<GameView, 'active'>[] }> {
     const rows = (await this.db.query(`SELECT * FROM game_accounts.games WHERE active ORDER BY name`)) as Record<string, unknown>[];
-    return { items: rows.map((r) => this.game(r)).map(({ id, slug, name, platforms, codePlacement, publisherNote }) => ({ id, slug, name, platforms, codePlacement, publisherNote })) };
+    return {
+      items: rows
+        .map((r) => this.game(r))
+        .map(({ id, slug, name, platforms, codePlacement, publisherNote }) => ({ id, slug, name, platforms, codePlacement, publisherNote })),
+    };
   }
 
   /** POST /admin/games. */
@@ -64,11 +76,24 @@ export class OwnershipService {
           [g.slug, g.name.trim(), g.platforms.map((p) => p.trim()), g.codePlacement.trim(), g.publisherNote.trim()],
         )) as Record<string, unknown>[];
         const view = this.game(row);
-        await this.audit.record({ actorType: 'staff', actorId: staffId, action: 'games.catalogue.added', objectType: 'game', objectId: null, after: { ...view }, sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null }, m);
+        await this.audit.record(
+          {
+            actorType: 'staff',
+            actorId: staffId,
+            action: 'games.catalogue.added',
+            objectType: 'game',
+            objectId: null,
+            after: { ...view },
+            sourceIp: ctx.ip ?? null,
+            correlationId: ctx.correlationId ?? null,
+          },
+          m,
+        );
         return view;
       });
     } catch (err) {
-      if (err instanceof QueryFailedError && (err.driverError as { code?: string }).code === '23505') throw new Problem('validation-failed', { errors: [{ field: 'slug', reason: 'taken' }] });
+      if (err instanceof QueryFailedError && (err.driverError as { code?: string }).code === '23505')
+        throw new Problem('validation-failed', { errors: [{ field: 'slug', reason: 'taken' }] });
       throw err;
     }
   }
@@ -85,7 +110,20 @@ export class OwnershipService {
         [id, next.name.trim(), next.platforms.map((p) => p.trim()), next.codePlacement.trim(), next.publisherNote.trim(), next.active],
       )) as [Record<string, unknown>[], number];
       const view = this.game(row);
-      await this.audit.record({ actorType: 'staff', actorId: staffId, action: 'games.catalogue.updated', objectType: 'game', objectId: null, before: { ...b }, after: { ...view }, sourceIp: ctx.ip ?? null, correlationId: ctx.correlationId ?? null }, m);
+      await this.audit.record(
+        {
+          actorType: 'staff',
+          actorId: staffId,
+          action: 'games.catalogue.updated',
+          objectType: 'game',
+          objectId: null,
+          before: { ...b },
+          after: { ...view },
+          sourceIp: ctx.ip ?? null,
+          correlationId: ctx.correlationId ?? null,
+        },
+        m,
+      );
       return view;
     });
   }
@@ -110,7 +148,8 @@ export class OwnershipService {
       return { listingId: row.listing_id, gameId: row.game_id, platform: row.platform, playerId: row.player_id, contents: row.contents };
     } catch (err) {
       const e = err instanceof QueryFailedError ? (err.driverError as { code?: string; message?: string }) : {};
-      if (e.message?.includes('fixed once ownership proof')) throw new Problem('validation-failed', { errors: [{ field: 'playerId', reason: 'fixed-after-proof' }] });
+      if (e.message?.includes('fixed once ownership proof'))
+        throw new Problem('validation-failed', { errors: [{ field: 'playerId', reason: 'fixed-after-proof' }] });
       if (e.code === '23514') throw new Problem('validation-failed', { errors: [{ field: 'playerId', reason: 'invalid' }] });
       throw err;
     }
@@ -120,12 +159,16 @@ export class OwnershipService {
   async issueCode(sellerId: string, listingId: string): Promise<{ code: string; expiresAt: string; placement: string }> {
     await this.ownGameListing(sellerId, listingId);
     const [details] = (await this.db.query(
-      `SELECT g.code_placement FROM game_accounts.details d JOIN game_accounts.games g ON g.id = d.game_id WHERE d.listing_id = $1`, [listingId],
+      `SELECT g.code_placement FROM game_accounts.details d JOIN game_accounts.games g ON g.id = d.game_id WHERE d.listing_id = $1`,
+      [listingId],
     )) as { code_placement: string }[];
     if (!details) throw new Problem('validation-failed', { errors: [{ field: 'listing', reason: 'game-details-missing' }] });
     const now = this.clock.now();
     return this.db.transaction(async (m) => {
-      const [open] = (await m.query(`SELECT id, status FROM game_accounts.ownership_proofs WHERE listing_id = $1 AND status IN ('issued', 'submitted') FOR UPDATE`, [listingId])) as { id: string; status: string }[];
+      const [open] = (await m.query(
+        `SELECT id, status FROM game_accounts.ownership_proofs WHERE listing_id = $1 AND status IN ('issued', 'submitted') FOR UPDATE`,
+        [listingId],
+      )) as { id: string; status: string }[];
       if (open?.status === 'submitted') throw new Problem('validation-failed', { errors: [{ field: 'listing', reason: 'proof-under-review' }] });
       if (open) await m.query(`UPDATE game_accounts.ownership_proofs SET status = 'expired' WHERE id = $1`, [open.id]);
       const expires = new Date(now.getTime() + CODE_VALID_MS);
@@ -133,7 +176,12 @@ export class OwnershipService {
         const code = ownershipCode();
         try {
           await m.query(`SAVEPOINT code`);
-          await m.query(`INSERT INTO game_accounts.ownership_proofs (listing_id, code, issued_at, expires_at) VALUES ($1, $2, $3, $4)`, [listingId, code, now, expires]);
+          await m.query(`INSERT INTO game_accounts.ownership_proofs (listing_id, code, issued_at, expires_at) VALUES ($1, $2, $3, $4)`, [
+            listingId,
+            code,
+            now,
+            expires,
+          ]);
           await m.query(`RELEASE SAVEPOINT code`);
           return { code, expiresAt: expires.toISOString(), placement: details.code_placement };
         } catch (err) {
@@ -149,8 +197,11 @@ export class OwnershipService {
     const listing = await this.ownGameListing(sellerId, listingId);
     // the operator's approval publishes the listing, so the seller has asked to publish it first (Decisions log, U5-02)
     if (listing.status !== 'pending_review') throw new Problem('validation-failed', { errors: [{ field: 'listing', reason: 'not-submitted-for-review' }] });
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) throw new Problem('validation-failed', { errors: [{ field: 'file', reason: 'type' }] });
-    const [proof] = (await this.db.query(`SELECT id, expires_at FROM game_accounts.ownership_proofs WHERE listing_id = $1 AND status = 'issued'`, [listingId])) as { id: string; expires_at: Date }[];
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype))
+      throw new Problem('validation-failed', { errors: [{ field: 'file', reason: 'type' }] });
+    const [proof] = (await this.db.query(`SELECT id, expires_at FROM game_accounts.ownership_proofs WHERE listing_id = $1 AND status = 'issued'`, [
+      listingId,
+    ])) as { id: string; expires_at: Date }[];
     if (!proof) throw new Problem('validation-failed', { errors: [{ field: 'listing', reason: 'no-code' }] });
     if (proof.expires_at <= this.clock.now()) throw new Problem('validation-failed', { errors: [{ field: 'code', reason: 'code-expired' }] });
     const stored = await this.vault.store({ purpose: 'ownership_proof', ownerId: sellerId, bytes: new Uint8Array(file.buffer) });
@@ -169,17 +220,28 @@ export class OwnershipService {
   /** GET /listings/{id}/ownership: the seller's own view of the details and the proof (no screenshot). */
   async status(sellerId: string, listingId: string) {
     await this.ownGameListing(sellerId, listingId, true);
-    const [d] = (await this.db.query(`SELECT game_id, platform, player_id, contents FROM game_accounts.details WHERE listing_id = $1`, [listingId])) as
-      { game_id: number; platform: string; player_id: string; contents: string }[];
+    const [d] = (await this.db.query(`SELECT game_id, platform, player_id, contents FROM game_accounts.details WHERE listing_id = $1`, [listingId])) as {
+      game_id: number;
+      platform: string;
+      player_id: string;
+      contents: string;
+    }[];
     const [p] = (await this.db.query(
-      `SELECT code, status, expires_at, submitted_at, reviewed_at, live_check, review_reason FROM game_accounts.ownership_proofs WHERE listing_id = $1 ORDER BY issued_at DESC LIMIT 1`, [listingId],
+      `SELECT code, status, expires_at, submitted_at, reviewed_at, live_check, review_reason FROM game_accounts.ownership_proofs WHERE listing_id = $1 ORDER BY issued_at DESC LIMIT 1`,
+      [listingId],
     )) as { code: string; status: string; expires_at: Date; submitted_at: Date | null; reviewed_at: Date | null; review_reason: string | null }[];
     return {
       details: d ? { gameId: d.game_id, platform: d.platform, playerId: d.player_id, contents: d.contents } : null,
-      proof: p ? {
-        code: p.code, status: p.status === 'issued' && p.expires_at <= this.clock.now() ? 'expired' : p.status, expiresAt: p.expires_at.toISOString(),
-        submittedAt: p.submitted_at?.toISOString() ?? null, reviewedAt: p.reviewed_at?.toISOString() ?? null, reason: p.status === 'rejected' ? p.review_reason : null,
-      } : null,
+      proof: p
+        ? {
+            code: p.code,
+            status: p.status === 'issued' && p.expires_at <= this.clock.now() ? 'expired' : p.status,
+            expiresAt: p.expires_at.toISOString(),
+            submittedAt: p.submitted_at?.toISOString() ?? null,
+            reviewedAt: p.reviewed_at?.toISOString() ?? null,
+            reason: p.status === 'rejected' ? p.review_reason : null,
+          }
+        : null,
     };
   }
 
@@ -194,8 +256,13 @@ export class OwnershipService {
 
   private game(r: Record<string, unknown>): GameView {
     return {
-      id: Number(r.id), slug: String(r.slug), name: String(r.name), platforms: r.platforms as string[], codePlacement: String(r.code_placement),
-      publisherNote: String(r.publisher_note), active: Boolean(r.active),
+      id: Number(r.id),
+      slug: String(r.slug),
+      name: String(r.name),
+      platforms: r.platforms as string[],
+      codePlacement: String(r.code_placement),
+      publisherNote: String(r.publisher_note),
+      active: Boolean(r.active),
     };
   }
 }

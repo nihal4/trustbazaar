@@ -9,7 +9,10 @@ import { ProviderUnavailable } from './payment-provider';
 // verified with the Stripe-Signature header within the CP-32 tolerance (verifyStripeSignature).
 const API = 'https://api.stripe.com/v1';
 
-export type Fetch = (url: string, init: { method: string; headers: Record<string, string>; body?: string }) => Promise<{ ok: boolean; status: number; json(): Promise<unknown> }>;
+export type Fetch = (
+  url: string,
+  init: { method: string; headers: Record<string, string>; body?: string },
+) => Promise<{ ok: boolean; status: number; json(): Promise<unknown> }>;
 
 interface Session {
   id: string;
@@ -24,7 +27,9 @@ interface Session {
 
 /** application/x-www-form-urlencoded with Stripe's bracket notation for nested fields. */
 export function formEncode(fields: Record<string, string | number>): string {
-  return Object.entries(fields).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`).join('&');
+  return Object.entries(fields)
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+    .join('&');
 }
 
 export class StripeSignatureError extends Error {}
@@ -121,9 +126,18 @@ export class StripeProvider implements PaymentProvider {
   }
 
   /** FR-PAY-12: Stripe's refunds API on the payment intent, with the refund's idempotency key. */
-  async refund(r: { providerTxnId: string | null; amount: bigint; idempotencyKey: string }): Promise<{ status: 'succeeded' | 'pending' | 'unsupported'; providerRefundId?: string }> {
+  async refund(r: {
+    providerTxnId: string | null;
+    amount: bigint;
+    idempotencyKey: string;
+  }): Promise<{ status: 'succeeded' | 'pending' | 'unsupported'; providerRefundId?: string }> {
     if (!r.providerTxnId) return { status: 'unsupported' }; // no payment intent to refund: an operator handles it
-    const res = (await this.call('POST', '/refunds', r.idempotencyKey, formEncode({ payment_intent: r.providerTxnId, amount: r.amount.toString() }))) as unknown as { id: string; status: string };
+    const res = (await this.call(
+      'POST',
+      '/refunds',
+      r.idempotencyKey,
+      formEncode({ payment_intent: r.providerTxnId, amount: r.amount.toString() }),
+    )) as unknown as { id: string; status: string };
     if (res.status === 'failed' || res.status === 'canceled') throw new ProviderUnavailable(`stripe refund ${res.status}`);
     return { status: res.status === 'succeeded' ? 'succeeded' : 'pending', providerRefundId: res.id };
   }
@@ -137,8 +151,13 @@ export class StripeProvider implements PaymentProvider {
   /** A verified webhook event as a result; null for event types this unit does not act on. */
   static fromEvent(raw: Buffer): VerifiedResult | null {
     const e = JSON.parse(raw.toString('utf8')) as { id: string; type: string; data: { object: Session } };
-    if (e.type !== 'checkout.session.completed' && e.type !== 'checkout.session.async_payment_succeeded'
-        && e.type !== 'checkout.session.async_payment_failed' && e.type !== 'checkout.session.expired') return null;
+    if (
+      e.type !== 'checkout.session.completed' &&
+      e.type !== 'checkout.session.async_payment_succeeded' &&
+      e.type !== 'checkout.session.async_payment_failed' &&
+      e.type !== 'checkout.session.expired'
+    )
+      return null;
     const r = fromSession(e.data.object, e.id, e.type, 'signature', raw.toString('utf8'));
     if (e.type === 'checkout.session.async_payment_failed') r.status = 'failed';
     return r;

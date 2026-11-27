@@ -133,7 +133,12 @@ export interface ListingsQueries {
    * unknown listing or a game account (no fulfilment).
    */
   fulfilmentFacts(listingId: string): Promise<{
-    options: FulfilmentMethod[]; weightClass: WeightClass | null; sizeClass: SizeClass | null; district: string; approxLat: number; approxLng: number;
+    options: FulfilmentMethod[];
+    weightClass: WeightClass | null;
+    sizeClass: SizeClass | null;
+    district: string;
+    approxLat: number;
+    approxLng: number;
   }>;
   /** The listing a chat thread is about: its seller, title and status. Throws not-found for an unknown listing. */
   threadFacts(listingId: string): Promise<{ sellerId: string; title: string; status: ListingStatus }>;

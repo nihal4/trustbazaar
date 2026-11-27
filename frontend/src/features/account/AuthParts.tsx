@@ -9,8 +9,20 @@ import styles from './account.module.css';
 export function Slot({ message, ok = false, id }: { message: string | null; ok?: boolean; id: string }) {
   return (
     <div className={styles.slot}>
-      <div role="alert">{message && !ok && <p id={id} className={styles.slotError}>{message}</p>}</div>
-      <div role="status">{message && ok && <p id={id} className={styles.slotOk}>{message}</p>}</div>
+      <div role="alert">
+        {message && !ok && (
+          <p id={id} className={styles.slotError}>
+            {message}
+          </p>
+        )}
+      </div>
+      <div role="status">
+        {message && ok && (
+          <p id={id} className={styles.slotOk}>
+            {message}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

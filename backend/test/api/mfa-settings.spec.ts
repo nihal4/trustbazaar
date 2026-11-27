@@ -28,14 +28,30 @@ describe('MFA settings', () => {
     const call = (method: string, path: string, body?: unknown, extra: Record<string, string> = {}) =>
       fetch(t.url(path), {
         method,
-        headers: { ...fx.headers(sid, a.userId, 'user'), 'x-forwarded-for': ip, ...(body !== undefined ? { 'content-type': 'application/json' } : {}), ...extra },
+        headers: {
+          ...fx.headers(sid, a.userId, 'user'),
+          'x-forwarded-for': ip,
+          ...(body !== undefined ? { 'content-type': 'application/json' } : {}),
+          ...extra,
+        },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
     const grant = async (action: string) => ({ 'x-step-up': await fx.stepUpGrant(sid, action) });
     return { ...a, sid, call, grant };
   }
-  const user = (id: string) => fx.query<{ mfa_enabled: boolean; password_single_factor_ok: boolean }>(`SELECT mfa_enabled, password_single_factor_ok FROM identity.users WHERE id = $1`, [id]).then((r) => r[0]);
-  const events = (id: string) => fx.query<{ event_type: string }>(`SELECT event_type FROM identity.outbox WHERE aggregate_id = $1 AND event_type LIKE 'identity.mfa.%' ORDER BY created_at`, [id]).then((r) => r.map((e) => e.event_type));
+  const user = (id: string) =>
+    fx
+      .query<{ mfa_enabled: boolean; password_single_factor_ok: boolean }>(`SELECT mfa_enabled, password_single_factor_ok FROM identity.users WHERE id = $1`, [
+        id,
+      ])
+      .then((r) => r[0]);
+  const events = (id: string) =>
+    fx
+      .query<{ event_type: string }>(
+        `SELECT event_type FROM identity.outbox WHERE aggregate_id = $1 AND event_type LIKE 'identity.mfa.%' ORDER BY created_at`,
+        [id],
+      )
+      .then((r) => r.map((e) => e.event_type));
 
   it('FR-ACC-06 enrolment: a QR secret, confirmed by its first code, turns MFA on with ten recovery codes shown once', async () => {
     const a = await signedIn();
@@ -56,7 +72,8 @@ describe('MFA settings', () => {
     for (const code of recoveryCodes) expect(code).toMatch(/^[A-HJ-NP-Z2-9]{5}-[A-HJ-NP-Z2-9]{5}$/);
     expect(await user(a.userId)).toMatchObject({ mfa_enabled: true });
     const stored = await fx.query<{ code_hash: Buffer }>(
-      `SELECT r.code_hash FROM identity.recovery_codes r JOIN identity.totp_factors f ON f.id = r.totp_factor_id WHERE f.user_id = $1 AND f.removed_at IS NULL`, [a.userId],
+      `SELECT r.code_hash FROM identity.recovery_codes r JOIN identity.totp_factors f ON f.id = r.totp_factor_id WHERE f.user_id = $1 AND f.removed_at IS NULL`,
+      [a.userId],
     );
     expect(stored).toHaveLength(10);
     expect(stored.map((s) => s.code_hash.toString('latin1')).join()).not.toContain(recoveryCodes[0]); // hashed
@@ -114,7 +131,8 @@ describe('MFA settings', () => {
     const { recoveryCodes } = await r.json();
     expect(recoveryCodes).toHaveLength(10);
     const unused = await fx.query<{ n: number }>(
-      `SELECT count(*)::int AS n FROM identity.recovery_codes r JOIN identity.totp_factors f ON f.id = r.totp_factor_id WHERE f.user_id = $1 AND r.used_at IS NULL`, [a.userId],
+      `SELECT count(*)::int AS n FROM identity.recovery_codes r JOIN identity.totp_factors f ON f.id = r.totp_factor_id WHERE f.user_id = $1 AND r.used_at IS NULL`,
+      [a.userId],
     );
     expect(unused).toEqual([{ n: 10 }]); // the fixture's three are used up
     const off = await signedIn();

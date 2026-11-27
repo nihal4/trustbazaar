@@ -37,14 +37,17 @@ describe('chat holds, staff read, reports, detection terms and retention', () =>
     const headers = { ...fx.headers(sid, userId, 'user'), 'x-forwarded-for': ip };
     const call = (method: string, path: string, body?: unknown) =>
       fetch(t.url(path), {
-        method, headers: { ...headers, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
+        method,
+        headers: { ...headers, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
     const send = (thread: string, text: string) => call('POST', `/threads/${thread}/messages`, { clientId: randomUUID(), text });
     const image = async (thread: string) => {
       const form = new FormData();
       form.set('clientId', randomUUID());
-      const bytes = await sharp({ create: { width: 640, height: 480, channels: 3, background: '#a77' } }).jpeg().toBuffer();
+      const bytes = await sharp({ create: { width: 640, height: 480, channels: 3, background: '#a77' } })
+        .jpeg()
+        .toBuffer();
       form.set('image', new Blob([new Uint8Array(bytes)], { type: 'image/jpeg' }), 'i.jpg');
       return fetch(t.url(`/threads/${thread}/images`), { method: 'POST', headers, body: form });
     };
@@ -56,7 +59,8 @@ describe('chat holds, staff read, reports, detection terms and retention', () =>
     const headers = fx.headers(sid, staffId, 'staff');
     const call = (method: string, path: string, body?: unknown) =>
       fetch(t.url(path), {
-        method, headers: { ...headers, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
+        method,
+        headers: { ...headers, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
     return { staffId, call };
@@ -70,7 +74,11 @@ describe('chat holds, staff read, reports, detection terms and retention', () =>
       [sellerId, category],
     );
     for (const n of [1, 2]) {
-      await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [id, n, randomUUID().replace(/-/g, '')]);
+      await fx.query(`INSERT INTO listings.listing_photos (listing_id, position, storage_key, width, height) VALUES ($1, $2, $3, 800, 600)`, [
+        id,
+        n,
+        randomUUID().replace(/-/g, ''),
+      ]);
     }
     await fx.query(`UPDATE listings.listings SET status = 'active', published_at = now() WHERE id = $1`, [id]);
     return id;
@@ -97,7 +105,9 @@ describe('chat holds, staff read, reports, detection terms and retention', () =>
     // a report on the thread, claimed by this operator (U7-04: only the case's operator reads through it)
     const [{ id: caseId }] = await fx.query<{ id: string }>(
       `INSERT INTO trust.reports (reporter_id, target_type, target_id, subject_user, category, status, assigned_to)
-       VALUES ($1, 'thread', $2, $3, 'abusive', 'under_review', $4) RETURNING id`, [buyer.userId, thread, seller.userId, op.staffId]);
+       VALUES ($1, 'thread', $2, $3, 'abusive', 'under_review', $4) RETURNING id`,
+      [buyer.userId, thread, seller.userId, op.staffId],
+    );
     const path = `/staff/cases/report/${caseId}/threads/${thread}`;
     expect((await op.call('GET', path)).status).toBe(404); // no hold yet
     await commands.hold(thread, 'report', caseId);
@@ -105,8 +115,15 @@ describe('chat holds, staff read, reports, detection terms and retention', () =>
 
     const r = await op.call('GET', path);
     expect(r.status).toBe(200);
-    const body = (await r.json()) as { buyer: { displayName: string }; messages: { seq: number; from: string; text: string | null; image: { url: string } | null }[] };
-    expect(body.messages.map((m) => [m.seq, m.from, m.text])).toEqual([[1, 'buyer', 'Is the screen original?'], [2, 'seller', 'Yes, never replaced.'], [3, 'buyer', null]]);
+    const body = (await r.json()) as {
+      buyer: { displayName: string };
+      messages: { seq: number; from: string; text: string | null; image: { url: string } | null }[];
+    };
+    expect(body.messages.map((m) => [m.seq, m.from, m.text])).toEqual([
+      [1, 'buyer', 'Is the screen original?'],
+      [2, 'seller', 'Yes, never replaced.'],
+      [3, 'buyer', null],
+    ]);
     expect(body.messages[2].image?.url).toMatch(/^\/api\/v1\/files\/v\//);
     expect(Object.keys(body.buyer).sort()).toEqual(['displayName', 'verified']);
     expect(await logged(thread)).toBe('1');
@@ -122,7 +139,7 @@ describe('chat holds, staff read, reports, detection terms and retention', () =>
     expect(await logged(thread)).toBe('1');
   });
 
-  it('FR-CHT-06 FR-TNS-01 a participant reports a message into Unit 7\'s queue, which holds the thread; once per message; others cannot report', async () => {
+  it("FR-CHT-06 FR-TNS-01 a participant reports a message into Unit 7's queue, which holds the thread; once per message; others cannot report", async () => {
     const { seller, buyer, thread } = await pair();
     await seller.send(thread, 'Pay me outside the app.');
     await buyer.send(thread, 'No thanks.');
@@ -130,9 +147,13 @@ describe('chat holds, staff read, reports, detection terms and retention', () =>
     expect(sent.status).toBe(201);
     const { reportId } = (await sent.json()) as { reportId: string };
     const [report] = await fx.query<{ target_type: string; subject_user: string; status: string; message_id: string }>(
-      `SELECT target_type, subject_user, status, message_id::text FROM trust.reports WHERE id = $1`, [reportId]);
+      `SELECT target_type, subject_user, status, message_id::text FROM trust.reports WHERE id = $1`,
+      [reportId],
+    );
     expect(report).toMatchObject({ target_type: 'message', subject_user: seller.userId, status: 'open' });
-    expect(await fx.query(`SELECT case_type FROM chat.thread_holds WHERE thread_id = $1 AND case_id = $2 AND released_at IS NULL`, [thread, reportId])).toEqual([{ case_type: 'report' }]);
+    expect(await fx.query(`SELECT case_type FROM chat.thread_holds WHERE thread_id = $1 AND case_id = $2 AND released_at IS NULL`, [thread, reportId])).toEqual(
+      [{ case_type: 'report' }],
+    );
     const again = await buyer.call('POST', `/threads/${thread}/reports`, { category: 'abusive', messageSeq: 1 });
     expect(again.status).toBe(400);
     expect((await again.json()).errors).toEqual([{ field: 'target', reason: 'already-reported' }]);
@@ -161,7 +182,9 @@ describe('chat holds, staff read, reports, detection terms and retention', () =>
     expect((await op.call('DELETE', `/staff/chat/detection-terms?term=${encodeURIComponent(word)}`)).status).toBe(404);
     expect(await (await buyer.send(thread, `Message me on ${word} again`)).json()).toMatchObject({ flags: [] });
     const audit = await fx.query<{ action: string }>(
-      `SELECT action FROM audit.events WHERE actor_id = $1 AND action LIKE 'chat.detection_term.%' ORDER BY id`, [op.staffId]);
+      `SELECT action FROM audit.events WHERE actor_id = $1 AND action LIKE 'chat.detection_term.%' ORDER BY id`,
+      [op.staffId],
+    );
     expect(audit.map((a) => a.action)).toEqual(['chat.detection_term.added', 'chat.detection_term.removed']);
 
     expect((await buyer.call('GET', '/staff/chat/detection-terms')).status).toBe(401);
@@ -181,8 +204,13 @@ describe('chat holds, staff read, reports, detection terms and retention', () =>
     expect(await t.app.get(HoldService).purgeDue()).toBeGreaterThanOrEqual(1);
     const content = async (thread: string) =>
       fx.query<{ body: string | null; image_key: string | null; purged: boolean }>(
-        `SELECT body, image_key, purged_at IS NOT NULL AS purged FROM chat.messages WHERE thread_id = $1 ORDER BY seq`, [thread]);
-    expect(await content(a.thread)).toEqual([{ body: null, image_key: null, purged: true }, { body: null, image_key: null, purged: true }]);
+        `SELECT body, image_key, purged_at IS NOT NULL AS purged FROM chat.messages WHERE thread_id = $1 ORDER BY seq`,
+        [thread],
+      );
+    expect(await content(a.thread)).toEqual([
+      { body: null, image_key: null, purged: true },
+      { body: null, image_key: null, purged: true },
+    ]);
     expect((await content(b.thread)).map((m) => m.purged)).toEqual([false, false]); // held
     const page = (await (await a.buyer.call('GET', `/threads/${a.thread}/messages`)).json()) as { closed: boolean; items: { removed: boolean }[] };
     expect(page.closed).toBe(true);

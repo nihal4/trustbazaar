@@ -27,7 +27,13 @@ export function Component() {
 function Screening({ t, lang }: { t: T; lang: Lang }) {
   const api = useApi();
   const queryClient = useQueryClient();
-  const terms = useQuery({ queryKey: ['staff', 'screening-terms'], queryFn: ({ signal }) => api.get('/staff/screening-terms', { signal }) as Promise<{ items: { id: number; term: string; severity: string; addedAt: string }[] }>, staleTime: 0, retry: false });
+  const terms = useQuery({
+    queryKey: ['staff', 'screening-terms'],
+    queryFn: ({ signal }) =>
+      api.get('/staff/screening-terms', { signal }) as Promise<{ items: { id: number; term: string; severity: string; addedAt: string }[] }>,
+    staleTime: 0,
+    retry: false,
+  });
   const [term, setTerm] = useState('');
   const [severity, setSeverity] = useState<'prohibited' | 'high_risk' | ''>('');
   const refresh = () => void queryClient.invalidateQueries({ queryKey: ['staff', 'screening-terms'] });
@@ -42,17 +48,37 @@ function Screening({ t, lang }: { t: T; lang: Lang }) {
         {(terms.data?.items ?? []).map((x) => (
           <li key={x.id}>
             <strong>{x.term}</strong> · {t(`staff.terms.severity.${x.severity}`)} · {formatDateTime(Date.parse(x.addedAt), lang)}{' '}
-            <button type="button" className={styles.secondary} disabled={remove.isPending} onClick={() => remove.mutate(x.id)}>{t('staff.terms.remove', { term: x.term })}</button>
+            <button type="button" className={styles.secondary} disabled={remove.isPending} onClick={() => remove.mutate(x.id)}>
+              {t('staff.terms.remove', { term: x.term })}
+            </button>
           </li>
         ))}
       </ul>
-      <SaveForm title={t('staff.terms.add_screening')} button={t('admin.reference.add')} t={t} lang={lang}
+      <SaveForm
+        title={t('staff.terms.add_screening')}
+        button={t('admin.reference.add')}
+        t={t}
+        lang={lang}
         check={() => (term.trim() && severity ? null : t('staff.terms.incomplete'))}
         run={() => api.post('/staff/screening-terms', { term: term.trim(), severity })}
-        done={() => { refresh(); setTerm(''); setSeverity(''); return t('admin.reference.added'); }}>
+        done={() => {
+          refresh();
+          setTerm('');
+          setSeverity('');
+          return t('admin.reference.added');
+        }}
+      >
         <Text id="screening-term" label={t('staff.terms.term')} value={term} onChange={setTerm} maxLength={80} />
-        <Choice legend={t('staff.terms.severity')} name="screening-severity" value={severity}
-          options={[['prohibited', t('staff.terms.severity.prohibited')], ['high_risk', t('staff.terms.severity.high_risk')]]} onChange={setSeverity} />
+        <Choice
+          legend={t('staff.terms.severity')}
+          name="screening-severity"
+          value={severity}
+          options={[
+            ['prohibited', t('staff.terms.severity.prohibited')],
+            ['high_risk', t('staff.terms.severity.high_risk')],
+          ]}
+          onChange={setSeverity}
+        />
       </SaveForm>
     </section>
   );
@@ -61,7 +87,12 @@ function Screening({ t, lang }: { t: T; lang: Lang }) {
 function Detection({ t, lang }: { t: T; lang: Lang }) {
   const api = useApi();
   const queryClient = useQueryClient();
-  const terms = useQuery({ queryKey: ['staff', 'detection-terms'], queryFn: ({ signal }) => api.get('/staff/chat/detection-terms', { signal }) as Promise<{ items: { term: string; flag: string; addedAt: string }[] }>, staleTime: 0, retry: false });
+  const terms = useQuery({
+    queryKey: ['staff', 'detection-terms'],
+    queryFn: ({ signal }) => api.get('/staff/chat/detection-terms', { signal }) as Promise<{ items: { term: string; flag: string; addedAt: string }[] }>,
+    staleTime: 0,
+    retry: false,
+  });
   const [term, setTerm] = useState('');
   const [flag, setFlag] = useState<'payment_phrase' | 'off_platform_app' | 'credentials' | ''>('');
   const refresh = () => void queryClient.invalidateQueries({ queryKey: ['staff', 'detection-terms'] });
@@ -75,17 +106,38 @@ function Detection({ t, lang }: { t: T; lang: Lang }) {
         {(terms.data?.items ?? []).map((x) => (
           <li key={x.term}>
             <strong>{x.term}</strong> · {t(`staff.terms.flag.${x.flag}`)}{' '}
-            <button type="button" className={styles.secondary} disabled={remove.isPending} onClick={() => remove.mutate(x.term)}>{t('staff.terms.remove', { term: x.term })}</button>
+            <button type="button" className={styles.secondary} disabled={remove.isPending} onClick={() => remove.mutate(x.term)}>
+              {t('staff.terms.remove', { term: x.term })}
+            </button>
           </li>
         ))}
       </ul>
-      <SaveForm title={t('staff.terms.add_detection')} button={t('admin.reference.add')} t={t} lang={lang}
+      <SaveForm
+        title={t('staff.terms.add_detection')}
+        button={t('admin.reference.add')}
+        t={t}
+        lang={lang}
         check={() => (term.trim() && flag ? null : t('staff.terms.incomplete'))}
         run={() => api.post('/staff/chat/detection-terms', { term: term.trim(), flag })}
-        done={() => { refresh(); setTerm(''); setFlag(''); return t('admin.reference.added'); }}>
+        done={() => {
+          refresh();
+          setTerm('');
+          setFlag('');
+          return t('admin.reference.added');
+        }}
+      >
         <Text id="detection-term" label={t('staff.terms.term')} value={term} onChange={setTerm} />
-        <Choice legend={t('staff.terms.flag')} name="detection-flag" value={flag}
-          options={[['payment_phrase', t('staff.terms.flag.payment_phrase')], ['off_platform_app', t('staff.terms.flag.off_platform_app')], ['credentials', t('staff.terms.flag.credentials')]]} onChange={setFlag} />
+        <Choice
+          legend={t('staff.terms.flag')}
+          name="detection-flag"
+          value={flag}
+          options={[
+            ['payment_phrase', t('staff.terms.flag.payment_phrase')],
+            ['off_platform_app', t('staff.terms.flag.off_platform_app')],
+            ['credentials', t('staff.terms.flag.credentials')],
+          ]}
+          onChange={setFlag}
+        />
       </SaveForm>
     </section>
   );

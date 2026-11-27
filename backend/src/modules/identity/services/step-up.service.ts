@@ -43,7 +43,13 @@ export class StepUpService {
     return { method: 'sms', resendAt: new Date(this.clock.now().getTime() + 60_000).toISOString() };
   }
 
-  async verify(userId: string, sessionId: string, action: StepUpAction, code: string, ctx: RequestContext): Promise<{ grant: string; expiresInSeconds: number }> {
+  async verify(
+    userId: string,
+    sessionId: string,
+    action: StepUpAction,
+    code: string,
+    ctx: RequestContext,
+  ): Promise<{ grant: string; expiresInSeconds: number }> {
     await this.otp.countEntry(`user:${userId}`);
     const ok = await this.db.transaction(async (m) => {
       let accepted: boolean;
@@ -55,8 +61,14 @@ export class StepUpService {
         accepted = r.kind === 'ok';
       }
       await this.audit.record(m, {
-        actorType: 'user', actorId: userId, action: accepted ? 'identity.step_up.granted' : 'identity.step_up.failed',
-        objectType: 'session', objectId: sessionId, reason: action, sourceIp: ctx.ip, correlationId: ctx.correlationId,
+        actorType: 'user',
+        actorId: userId,
+        action: accepted ? 'identity.step_up.granted' : 'identity.step_up.failed',
+        objectType: 'session',
+        objectId: sessionId,
+        reason: action,
+        sourceIp: ctx.ip,
+        correlationId: ctx.correlationId,
       });
       return accepted;
     });

@@ -37,7 +37,7 @@ const DELIVERY_REFUSALS: [string, 'order-state' | 'validation-failed' | 'not-fou
   ['credentials are not expected now', 'order-state', 'handover', 'credentials-not-expected'],
   ['delivery deadline has passed', 'order-state', 'handover', 'deadline-passed'],
   ['re-delivery deadline has passed', 'order-state', 'handover', 'deadline-passed'],
-  ['but the buyer\'s current key is version', 'validation-failed', 'keyVersion', 'stale-key-version'],
+  ["but the buyer's current key is version", 'validation-failed', 'keyVersion', 'stale-key-version'],
   ['only the seller delivers', 'forbidden', 'order', 'seller-only'],
   ['only the buyer of this order', 'not-found', 'order', 'buyer-only'],
   ['no credentials are available', 'not-found', 'credentials', 'none'],
@@ -45,10 +45,25 @@ const DELIVERY_REFUSALS: [string, 'order-state' | 'validation-failed' | 'not-fou
 const str = (v: unknown) => (typeof v === 'string' ? v : '');
 
 interface HandoverRow {
-  status: string; disclosure_version: number; disclosure_ack_at: Date; key_version: number; rekeys_used: number;
-  credentials_due_at: Date | null; first_delivered_at: Date | null; delivered_at: Date | null; takeover_due_at: Date | null;
-  rekey_due_at: Date | null; taken_over_at: Date | null; cancelled_at: Date | null; closed_at: Date | null; takeover_source: string | null;
-  pw_changed_at: Date | null; recovery_email_at: Date | null; recovery_phone_at: Date | null; social_logins_at: Date | null; two_step_at: Date | null;
+  status: string;
+  disclosure_version: number;
+  disclosure_ack_at: Date;
+  key_version: number;
+  rekeys_used: number;
+  credentials_due_at: Date | null;
+  first_delivered_at: Date | null;
+  delivered_at: Date | null;
+  takeover_due_at: Date | null;
+  rekey_due_at: Date | null;
+  taken_over_at: Date | null;
+  cancelled_at: Date | null;
+  closed_at: Date | null;
+  takeover_source: string | null;
+  pw_changed_at: Date | null;
+  recovery_email_at: Date | null;
+  recovery_phone_at: Date | null;
+  social_logins_at: Date | null;
+  two_step_at: Date | null;
 }
 
 const iso = (d: Date | null) => d?.toISOString() ?? null;
@@ -84,13 +99,17 @@ export class HandoverService implements GameAccountPort {
     await this.featureOn();
     await this.gameOrder(buyerId, orderId, 'buyer');
     const raw = B64URL.test(publicKey) ? Buffer.from(publicKey, 'base64url') : Buffer.alloc(0);
-    if (raw.length !== 65 || raw[0] !== 4 || !onCurve(raw)) throw new Problem('validation-failed', { errors: [{ field: 'publicKey', reason: 'not-a-p256-point' }] });
+    if (raw.length !== 65 || raw[0] !== 4 || !onCurve(raw))
+      throw new Problem('validation-failed', { errors: [{ field: 'publicKey', reason: 'not-a-p256-point' }] });
     try {
-      const [{ version }] = (await this.db.query(`SELECT game_accounts.register_key($1, $2, $3, $4) AS version`, [orderId, buyerId, raw, sessionId])) as { version: number }[];
+      const [{ version }] = (await this.db.query(`SELECT game_accounts.register_key($1, $2, $3, $4) AS version`, [orderId, buyerId, raw, sessionId])) as {
+        version: number;
+      }[];
       return { keyVersion: version };
     } catch (err) {
       const message = err instanceof QueryFailedError ? ((err.driverError as { message?: string }).message ?? '') : '';
-      if (message.includes('acknowledge the disclosure first')) throw new Problem('validation-failed', { errors: [{ field: 'disclosure', reason: 'not-acknowledged' }] });
+      if (message.includes('acknowledge the disclosure first'))
+        throw new Problem('validation-failed', { errors: [{ field: 'disclosure', reason: 'not-acknowledged' }] });
       if (message.includes('the key is fixed')) throw new Problem('validation-failed', { errors: [{ field: 'publicKey', reason: 'key-fixed' }] });
       throw err;
     }
@@ -101,17 +120,28 @@ export class HandoverService implements GameAccountPort {
     const o = await this.gameOrder(userId, orderId);
     const [h] = (await this.db.query(`SELECT * FROM game_accounts.handovers WHERE order_id = $1`, [orderId])) as HandoverRow[];
     return {
-      orderId, role: o.role, disclosure: { currentVersion: DISCLOSURE_VERSION, acknowledgedVersion: h?.disclosure_version ?? null, acknowledgedAt: iso(h?.disclosure_ack_at ?? null) },
-      status: h?.status ?? null, keyVersion: h?.key_version ?? 0, rekeysUsed: h?.rekeys_used ?? 0,
-      credentialsDueAt: iso(h?.credentials_due_at ?? null), firstDeliveredAt: iso(h?.first_delivered_at ?? null), deliveredAt: iso(h?.delivered_at ?? null),
-      takeoverDueAt: iso(h?.takeover_due_at ?? null), rekeyDueAt: iso(h?.rekey_due_at ?? null), takenOverAt: iso(h?.taken_over_at ?? null),
+      orderId,
+      role: o.role,
+      disclosure: { currentVersion: DISCLOSURE_VERSION, acknowledgedVersion: h?.disclosure_version ?? null, acknowledgedAt: iso(h?.disclosure_ack_at ?? null) },
+      status: h?.status ?? null,
+      keyVersion: h?.key_version ?? 0,
+      rekeysUsed: h?.rekeys_used ?? 0,
+      credentialsDueAt: iso(h?.credentials_due_at ?? null),
+      firstDeliveredAt: iso(h?.first_delivered_at ?? null),
+      deliveredAt: iso(h?.delivered_at ?? null),
+      takeoverDueAt: iso(h?.takeover_due_at ?? null),
+      rekeyDueAt: iso(h?.rekey_due_at ?? null),
+      takenOverAt: iso(h?.taken_over_at ?? null),
       takeoverSource: h?.takeover_source ?? null,
       // FR-GAM-13: the confirmed checklist steps; FR-GAM-16: the protection period's end, Unit 2's release date
       steps: {
-        password: iso(h?.pw_changed_at ?? null), recovery_email: iso(h?.recovery_email_at ?? null), recovery_phone: iso(h?.recovery_phone_at ?? null),
-        social_logins: iso(h?.social_logins_at ?? null), two_step: iso(h?.two_step_at ?? null),
+        password: iso(h?.pw_changed_at ?? null),
+        recovery_email: iso(h?.recovery_email_at ?? null),
+        recovery_phone: iso(h?.recovery_phone_at ?? null),
+        social_logins: iso(h?.social_logins_at ?? null),
+        two_step: iso(h?.two_step_at ?? null),
       },
-      protectionEndsAt: h?.taken_over_at ? o.escrow?.autoReleaseAt ?? null : null,
+      protectionEndsAt: h?.taken_over_at ? (o.escrow?.autoReleaseAt ?? null) : null,
     };
   }
 
@@ -129,15 +159,26 @@ export class HandoverService implements GameAccountPort {
     const due = str(e.payload.fulfilmentDueAt);
     if (!due) throw new Error(`orders.order.paid ${e.id}: no fulfilmentDueAt for game-account order ${orderId}`); // I-29
     const asked = await this.db.transaction(async (m) => {
-      const [h] = (await m.query(`SELECT status, listing_id FROM game_accounts.handovers WHERE order_id = $1 FOR UPDATE`, [orderId])) as { status: string; listing_id: string }[];
+      const [h] = (await m.query(`SELECT status, listing_id FROM game_accounts.handovers WHERE order_id = $1 FOR UPDATE`, [orderId])) as {
+        status: string;
+        listing_id: string;
+      }[];
       if (!h) throw new Error(`orders.order.paid ${e.id}: game-account order ${orderId} has no handover`); // payment needs one (assertCheckoutReady)
       if (h.status !== 'preparing') return false; // delivered twice
       await m.query(`SELECT game_accounts.mark_paid($1, $2)`, [orderId, due]);
-      await m.query(`UPDATE game_accounts.claims SET order_id = $2 WHERE listing_id = $1 AND released_at IS NULL AND order_id IS NULL`, [h.listing_id, orderId]);
+      await m.query(`UPDATE game_accounts.claims SET order_id = $2 WHERE listing_id = $1 AND released_at IS NULL AND order_id IS NULL`, [
+        h.listing_id,
+        orderId,
+      ]);
       return true;
     });
     // I-32: the seller is asked, with the hours left (the dedupe key makes a redelivered event harmless)
-    await this.notice(str(e.payload.sellerId), 'game.credentials_requested', { listing_title: str(e.payload.listingTitle) || '—', hours: this.hoursUntil(new Date(due)) }, `game:${orderId}:requested`);
+    await this.notice(
+      str(e.payload.sellerId),
+      'game.credentials_requested',
+      { listing_title: str(e.payload.listingTitle) || '—', hours: this.hoursUntil(new Date(due)) },
+      `game:${orderId}:requested`,
+    );
     return asked;
   }
 
@@ -157,7 +198,11 @@ export class HandoverService implements GameAccountPort {
   }
 
   /** POST /orders/{id}/game/sealed (FR-GAM-09, FR-GAM-10): the seller's sealed delivery for the buyer's current key. */
-  async deliver(sellerId: string, orderId: string, d: { keyVersion: number; enc: string; ciphertext: string }): Promise<{ deliveredAt: string; takeoverDueAt: string }> {
+  async deliver(
+    sellerId: string,
+    orderId: string,
+    d: { keyVersion: number; enc: string; ciphertext: string },
+  ): Promise<{ deliveredAt: string; takeoverDueAt: string }> {
     // no CP-36 check: a paid order continues while the switch is off (FR-GAM-01)
     const o = await this.gameOrder(sellerId, orderId);
     if (o.role !== 'seller') throw new Problem('forbidden');
@@ -172,13 +217,28 @@ export class HandoverService implements GameAccountPort {
       .transaction(async (m) => {
         const facts = await this.orders.lockForFulfilment(orderId, m); // DC-14: the order first, then the handover
         if (facts.status !== 'paid') throw new Problem('order-state', { errors: [{ field: 'order', reason: facts.status }] });
-        const [{ first }] = (await m.query(`SELECT game_accounts.deliver($1, $2, $3, $4, $5, $6::interval) AS first`, [orderId, sellerId, d.keyVersion, enc, ciphertext, window])) as { first: boolean }[];
-        const [h] = (await m.query(`SELECT delivered_at, takeover_due_at FROM game_accounts.handovers WHERE order_id = $1`, [orderId])) as { delivered_at: Date; takeover_due_at: Date }[];
+        const [{ first }] = (await m.query(`SELECT game_accounts.deliver($1, $2, $3, $4, $5, $6::interval) AS first`, [
+          orderId,
+          sellerId,
+          d.keyVersion,
+          enc,
+          ciphertext,
+          window,
+        ])) as { first: boolean }[];
+        const [h] = (await m.query(`SELECT delivered_at, takeover_due_at FROM game_accounts.handovers WHERE order_id = $1`, [orderId])) as {
+          delivered_at: Date;
+          takeover_due_at: Date;
+        }[];
         if (first) await this.escrow.recordFulfilmentStep(orderId, 'credentials_delivered', h.delivered_at, m); // not again after a re-key
         return h;
       })
       .catch(refusal);
-    await this.notice(o.buyerId, 'game.credentials_delivered', { listing_title: o.listing.title, hours: this.hoursUntil(r.takeover_due_at) }, `game:${orderId}:delivered:${d.keyVersion}`);
+    await this.notice(
+      o.buyerId,
+      'game.credentials_delivered',
+      { listing_title: o.listing.title, hours: this.hoursUntil(r.takeover_due_at) },
+      `game:${orderId}:delivered:${d.keyVersion}`,
+    );
     return { deliveredAt: r.delivered_at.toISOString(), takeoverDueAt: r.takeover_due_at.toISOString() };
   }
 
@@ -201,13 +261,18 @@ export class HandoverService implements GameAccountPort {
   async onEscrowClosed(e: OutboxEvent): Promise<boolean> {
     const orderId = str(e.payload.orderId) || e.aggregateId;
     return this.db.transaction(async (m: EntityManager) => {
-      const [h] = (await m.query(`SELECT status, taken_over_at, listing_id FROM game_accounts.handovers WHERE order_id = $1 FOR UPDATE`, [orderId])) as
-        { status: string; taken_over_at: Date | null; listing_id: string }[];
+      const [h] = (await m.query(`SELECT status, taken_over_at, listing_id FROM game_accounts.handovers WHERE order_id = $1 FOR UPDATE`, [orderId])) as {
+        status: string;
+        taken_over_at: Date | null;
+        listing_id: string;
+      }[];
       if (!h) return false; // not a game account
       if (h.status !== 'cancelled' && h.status !== 'closed') {
         await m.query(`SELECT game_accounts.finish($1, $2)`, [orderId, h.taken_over_at === null && h.status !== 'disputed']);
       }
-      await m.query(`UPDATE game_accounts.claims SET released_at = now(), release_reason = 'escrow_terminal' WHERE listing_id = $1 AND released_at IS NULL`, [h.listing_id]);
+      await m.query(`UPDATE game_accounts.claims SET released_at = now(), release_reason = 'escrow_terminal' WHERE listing_id = $1 AND released_at IS NULL`, [
+        h.listing_id,
+      ]);
       return true;
     });
   }

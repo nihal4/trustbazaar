@@ -15,14 +15,30 @@ configure({ asyncUtilTimeout: 3000 });
 afterEach(cleanup);
 
 const notice = (n: Partial<NotificationView> & { id: string }): NotificationView => ({
-  code: 'order_paid', title: 'Payment received', body: 'Order TB-1001 is paid.', subject: { type: 'order', id: 'o-1' },
-  createdAt: '2026-11-01T12:00:00Z', readAt: null, ...n,
+  code: 'order_paid',
+  title: 'Payment received',
+  body: 'Order TB-1001 is paid.',
+  subject: { type: 'order', id: 'o-1' },
+  createdAt: '2026-11-01T12:00:00Z',
+  readAt: null,
+  ...n,
 });
 
 function backend(o: { prefs?: { language: 'bn' | 'en'; emailTransactional: boolean }; signedIn?: boolean; pages?: unknown[] } = {}) {
   const state = { prefs: o.prefs ?? { language: 'en' as const, emailTransactional: true }, readAll: false };
-  const first = { items: [notice({ id: 'n-1' }), notice({ id: 'n-2', title: 'New sign-in', body: '<b>Chrome</b> on Android', subject: { type: 'account', id: 'u-1' }, readAt: '2026-11-01T10:00:00Z' })], unread: 1, nextCursor: 'c-2' };
-  const second = { items: [notice({ id: 'n-3', title: 'Listing published', subject: { type: 'listing', id: 'l-9' }, readAt: '2026-10-30T10:00:00Z' })], unread: 1, nextCursor: null };
+  const first = {
+    items: [
+      notice({ id: 'n-1' }),
+      notice({ id: 'n-2', title: 'New sign-in', body: '<b>Chrome</b> on Android', subject: { type: 'account', id: 'u-1' }, readAt: '2026-11-01T10:00:00Z' }),
+    ],
+    unread: 1,
+    nextCursor: 'c-2',
+  };
+  const second = {
+    items: [notice({ id: 'n-3', title: 'Listing published', subject: { type: 'listing', id: 'l-9' }, readAt: '2026-10-30T10:00:00Z' })],
+    unread: 1,
+    nextCursor: null,
+  };
   const be = fakeBackend({
     'GET /me': o.signedIn === false ? json(401, { type: '/problems/session-ended' }) : json(200, standInMe),
     'POST /auth/refresh': json(401, {}),
@@ -30,9 +46,15 @@ function backend(o: { prefs?: { language: 'bn' | 'en'; emailTransactional: boole
       const page = c.query.get('cursor') === 'c-2' ? second : first;
       return json(200, state.readAll ? { ...page, unread: 0, items: page.items.map((i) => ({ ...i, readAt: i.readAt ?? '2026-11-01T13:00:00Z' })) } : page)();
     },
-    'POST /notifications/read': (c: Call) => { if ((c.body as { all?: boolean }).all) state.readAll = true; return json(200, { unread: 0 })(); },
+    'POST /notifications/read': (c: Call) => {
+      if ((c.body as { all?: boolean }).all) state.readAll = true;
+      return json(200, { unread: 0 })();
+    },
     'GET /me/notification-preferences': () => json(200, state.prefs)(),
-    'PUT /me/notification-preferences': (c: Call) => { state.prefs = { ...state.prefs, ...(c.body as object) }; return json(200, state.prefs)(); },
+    'PUT /me/notification-preferences': (c: Call) => {
+      state.prefs = { ...state.prefs, ...(c.body as object) };
+      return json(200, state.prefs)();
+    },
   });
   return { be, state };
 }
@@ -42,10 +64,13 @@ describe('the notification centre', () => {
     const { be } = backend();
     renderApp('/notifications', be);
     expect(await screen.findByText('1 unread')).toBeTruthy();
-    const page = () => within(screen.getByRole('main')).getAllByRole('listitem').filter((li) => !li.closest('nav') && !li.closest('dialog'));   // the notices, not the footer's or the tabs'
-    expect(page().map((li) => within(li).getByText(/Payment received|New sign-in/).textContent)).toEqual(['Payment received']);   // the read one has moved to the popup
+    const page = () =>
+      within(screen.getByRole('main'))
+        .getAllByRole('listitem')
+        .filter((li) => !li.closest('nav') && !li.closest('dialog')); // the notices, not the footer's or the tabs'
+    expect(page().map((li) => within(li).getByText(/Payment received|New sign-in/).textContent)).toEqual(['Payment received']); // the read one has moved to the popup
     expect(within(page()[0]).getByText('New')).toBeTruthy();
-    expect(within(page()[0]).getByText('1 Nov 2026')).toBeTruthy();           // the date, then the weekday and the time in Dhaka
+    expect(within(page()[0]).getByText('1 Nov 2026')).toBeTruthy(); // the date, then the weekday and the time in Dhaka
     expect(within(page()[0]).getByText('Sun, 6:00 PM')).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Show all notifications' }));
@@ -112,9 +137,12 @@ describe('the notification centre', () => {
   });
 
   it.each([
-    [{ type: 'order', id: 'o 1' }, '/orders/o%201'], [{ type: 'listing', id: 'l-9' }, '/listings/l-9'],
-    [{ type: 'payout', id: 'p-1' }, '/account/payout'], [{ type: 'account', id: 'u-1' }, '/account/security'],
-    [{ type: 'refund', id: 'r-1' }, null], [null, null],
+    [{ type: 'order', id: 'o 1' }, '/orders/o%201'],
+    [{ type: 'listing', id: 'l-9' }, '/listings/l-9'],
+    [{ type: 'payout', id: 'p-1' }, '/account/payout'],
+    [{ type: 'account', id: 'u-1' }, '/account/security'],
+    [{ type: 'refund', id: 'r-1' }, null],
+    [null, null],
   ] as const)('FR-NTF-04 a notice about %j leads to %s', (subject, path) => {
     expect(subjectPath(subject as never)).toBe(path);
   });

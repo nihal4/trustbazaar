@@ -30,15 +30,22 @@ export function createStepUpBroker(): StepUpBroker {
     listeners.forEach((l) => l());
   };
   return {
-    request: (action) => new Promise<string>((resolve, reject) => {
-      pending?.reject(new StepUpCancelled());   // one dialog at a time; a newer action replaces it
-      const req: StepUpRequest = {
-        action,
-        resolve: (grant) => { if (pending === req) set(null); resolve(grant); },
-        reject: (reason) => { if (pending === req) set(null); reject(reason); },
-      };
-      set(req);
-    }),
+    request: (action) =>
+      new Promise<string>((resolve, reject) => {
+        pending?.reject(new StepUpCancelled()); // one dialog at a time; a newer action replaces it
+        const req: StepUpRequest = {
+          action,
+          resolve: (grant) => {
+            if (pending === req) set(null);
+            resolve(grant);
+          },
+          reject: (reason) => {
+            if (pending === req) set(null);
+            reject(reason);
+          },
+        };
+        set(req);
+      }),
     current: () => pending,
     subscribe: (l) => {
       listeners.add(l);

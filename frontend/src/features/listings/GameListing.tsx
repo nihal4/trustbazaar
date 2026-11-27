@@ -17,8 +17,20 @@ import { FRESHNESS } from '../../shared/query';
 import { reasonTexts, type EditableListing } from './sell';
 import styles from './sell.module.css';
 
-export interface Game { id: number; slug: string; name: string; platforms: string[]; codePlacement: string; publisherNote: string }
-export interface GameDetails { gameId: number; platform: string; playerId: string; contents: string }
+export interface Game {
+  id: number;
+  slug: string;
+  name: string;
+  platforms: string[];
+  codePlacement: string;
+  publisherNote: string;
+}
+export interface GameDetails {
+  gameId: number;
+  platform: string;
+  playerId: string;
+  contents: string;
+}
 export type ProofStatus = 'issued' | 'expired' | 'submitted' | 'approved' | 'rejected';
 export interface Ownership {
   details: GameDetails | null;
@@ -71,7 +83,9 @@ function GameDetailsForm({ l, details, fixed, t, lang }: { l: EditableListing; d
   const save = useMutation({
     mutationFn: (body: GameDetails) => api.put(`/listings/${encodeURIComponent(l.id)}/game-details`, body),
     onSuccess: () => {
-      setErrors([]); setMessage(null); setSaved(true);
+      setErrors([]);
+      setMessage(null);
+      setSaved(true);
       void queryClient.invalidateQueries({ queryKey: ownershipKey(l.id) });
     },
     onError: (e) => {
@@ -99,30 +113,64 @@ function GameDetailsForm({ l, details, fixed, t, lang }: { l: EditableListing; d
       {errors.length > 0 && (
         <div role="alert" className={styles.errors}>
           <p>{t('sell.fix')}</p>
-          <ul>{errors.map((x) => <li key={x}>{x}</li>)}</ul>
+          <ul>
+            {errors.map((x) => (
+              <li key={x}>{x}</li>
+            ))}
+          </ul>
         </div>
       )}
       {message && <FormMessage kind="error">{message}</FormMessage>}
       {saved && <FormMessage kind="success">{t('sell.game.saved')}</FormMessage>}
       <label htmlFor="game">{t('sell.field.gameId')}</label>
-      <select id="game" value={gameId} disabled={fixed} onChange={(e) => { setGameId(e.target.value); setPlatform(''); }}>
+      <select
+        id="game"
+        value={gameId}
+        disabled={fixed}
+        onChange={(e) => {
+          setGameId(e.target.value);
+          setPlatform('');
+        }}
+      >
         <option value="">{t('sell.choose')}</option>
-        {(games.data?.items ?? []).map((g) => <option key={g.id} value={String(g.id)}>{g.name}</option>)}
+        {(games.data?.items ?? []).map((g) => (
+          <option key={g.id} value={String(g.id)}>
+            {g.name}
+          </option>
+        ))}
       </select>
       {game && <p className={styles.hint}>{game.publisherNote}</p>}
       <label htmlFor="platform">{t('sell.field.platform')}</label>
       <select id="platform" value={platform} disabled={fixed || !game} onChange={(e) => setPlatform(e.target.value)}>
         <option value="">{t('sell.choose')}</option>
-        {(game?.platforms ?? []).map((p) => <option key={p} value={p}>{p}</option>)}
+        {(game?.platforms ?? []).map((p) => (
+          <option key={p} value={p}>
+            {p}
+          </option>
+        ))}
       </select>
       <label htmlFor="player-id">{t('sell.field.playerId')}</label>
-      <input id="player-id" value={playerId} maxLength={64} disabled={fixed} autoComplete="off" onChange={(e) => setPlayerId(e.target.value)} aria-describedby="player-id-hint" />
-      <p id="player-id-hint" className={styles.hint}>{t(fixed ? 'sell.game.player_id_fixed' : 'sell.game.player_id_hint')}</p>
+      <input
+        id="player-id"
+        value={playerId}
+        maxLength={64}
+        disabled={fixed}
+        autoComplete="off"
+        onChange={(e) => setPlayerId(e.target.value)}
+        aria-describedby="player-id-hint"
+      />
+      <p id="player-id-hint" className={styles.hint}>
+        {t(fixed ? 'sell.game.player_id_fixed' : 'sell.game.player_id_hint')}
+      </p>
       <label htmlFor="contents">{t('sell.field.contents')}</label>
       <textarea id="contents" value={contents} rows={4} maxLength={2000} onChange={(e) => setContents(e.target.value)} aria-describedby="contents-hint" />
-      <p id="contents-hint" className={styles.hint}>{t('sell.game.contents_hint')}</p>
+      <p id="contents-hint" className={styles.hint}>
+        {t('sell.game.contents_hint')}
+      </p>
       <div className={styles.buttons}>
-        <button type="submit" className={styles.primary} disabled={save.isPending}>{t('sell.game.save')}</button>
+        <button type="submit" className={styles.primary} disabled={save.isPending}>
+          {t('sell.game.save')}
+        </button>
       </div>
     </form>
   );
@@ -143,7 +191,11 @@ function Proof({ l, o, t, lang }: { l: EditableListing; o: Ownership; t: T; lang
   };
   const code = useMutation({
     mutationFn: () => api.post(`/listings/${encodeURIComponent(l.id)}/ownership-code`, {}) as Promise<{ code: string; expiresAt: string; placement: string }>,
-    onSuccess: (r) => { setMessage(null); setPlacement(r.placement); void refresh(); },
+    onSuccess: (r) => {
+      setMessage(null);
+      setPlacement(r.placement);
+      void refresh();
+    },
     onError: fail,
   });
   const upload = useMutation({
@@ -152,8 +204,15 @@ function Proof({ l, o, t, lang }: { l: EditableListing; o: Ownership; t: T; lang
       form.set('file', file, file.name);
       return api.post(`/listings/${encodeURIComponent(l.id)}/ownership-proof`, form);
     },
-    onSuccess: () => { setMessage(null); if (input.current) input.current.value = ''; void refresh(); },
-    onError: (e) => { if (input.current) input.current.value = ''; fail(e); },
+    onSuccess: () => {
+      setMessage(null);
+      if (input.current) input.current.value = '';
+      void refresh();
+    },
+    onError: (e) => {
+      if (input.current) input.current.value = '';
+      fail(e);
+    },
   });
   const p = o.proof;
   const expired = p?.status === 'expired' || (p?.status === 'issued' && Date.parse(p.expiresAt) <= now);
@@ -163,21 +222,40 @@ function Proof({ l, o, t, lang }: { l: EditableListing; o: Ownership; t: T; lang
       <h2 id="proof-title">{t('sell.game.proof_title')}</h2>
       <p className={styles.hint}>{t('sell.game.proof_hint')}</p>
       {message && <FormMessage kind="error">{message}</FormMessage>}
-      {p && <p><strong>{t(`sell.game.proof.${expired ? 'expired' : p.status}`)}</strong></p>}
+      {p && (
+        <p>
+          <strong>{t(`sell.game.proof.${expired ? 'expired' : p.status}`)}</strong>
+        </p>
+      )}
       {p?.status === 'rejected' && p.reason && <p>{t('sell.game.rejected_reason', { reason: p.reason })}</p>}
       {p?.status === 'issued' && !expired && (
         <>
-          <p>{t('sell.game.code_is')} <strong className={styles.code}>{p.code}</strong></p>
+          <p>
+            {t('sell.game.code_is')} <strong className={styles.code}>{p.code}</strong>
+          </p>
           {placement && <p>{t('sell.game.placement', { placement })}</p>}
           <p>{t('sell.game.code_expires', { when: formatDeadline(Date.parse(p.expiresAt), now, lang) })}</p>
           <label htmlFor="proof-file">{t('sell.game.upload')}</label>
-          <input ref={input} id="proof-file" type="file" accept="image/jpeg,image/png,image/webp" disabled={upload.isPending}
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) upload.mutate(f); }} />
+          <input
+            ref={input}
+            id="proof-file"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            disabled={upload.isPending}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) upload.mutate(f);
+            }}
+          />
           {upload.isPending && <p role="status">{t('sell.game.uploading')}</p>}
         </>
       )}
       {canAsk && (
-        <p><button type="button" className={styles.primary} disabled={code.isPending} onClick={() => code.mutate()}>{t(p ? 'sell.game.new_code' : 'sell.game.get_code')}</button></p>
+        <p>
+          <button type="button" className={styles.primary} disabled={code.isPending} onClick={() => code.mutate()}>
+            {t(p ? 'sell.game.new_code' : 'sell.game.get_code')}
+          </button>
+        </p>
       )}
     </section>
   );

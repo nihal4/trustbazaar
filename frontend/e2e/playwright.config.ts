@@ -23,15 +23,15 @@ export default defineConfig({
   use: { baseURL: base, locale: 'en-GB', timezoneId: 'Asia/Dhaka', trace: 'retain-on-failure' },
   webServer: local
     ? [
-      {
-        command: 'npx ts-node --transpile-only test/e2e/stack.ts',
-        cwd: '../../backend',
-        url: 'http://127.0.0.1:3100/api/v1/health/live',
-        reuseExistingServer: true,
-        timeout: 120_000,
-        env: { E2E_FIXTURES: `${here}/.fixtures.json` },
-      },
-      { command: 'node e2e/serve.mjs', cwd: '..', url: `${base}/healthz`, reuseExistingServer: true, timeout: 30_000 },
-    ]
+        {
+          command: 'npx ts-node --transpile-only test/e2e/stack.ts',
+          cwd: '../../backend',
+          url: 'http://127.0.0.1:3100/api/v1/health/live',
+          reuseExistingServer: true,
+          timeout: 120_000,
+          env: { E2E_FIXTURES: `${here}/.fixtures.json` },
+        },
+        { command: 'node e2e/serve.mjs', cwd: '..', url: `${base}/healthz`, reuseExistingServer: true, timeout: 30_000 },
+      ]
     : undefined,
 });

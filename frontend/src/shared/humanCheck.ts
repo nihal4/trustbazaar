@@ -10,7 +10,12 @@ import { solvePow } from './pow';
 type Fetch = typeof globalThis.fetch;
 type Solve = (prefix: string, difficulty: number, o: { signal?: AbortSignal }) => Promise<string>;
 
-export interface HumanChallenge { id: string; algorithm: 'sha256'; prefix: string; difficulty: number }
+export interface HumanChallenge {
+  id: string;
+  algorithm: 'sha256';
+  prefix: string;
+  difficulty: number;
+}
 
 const MAX_SOLVES = 2;
 const MAX_DIFFICULTY = 24; // 16 is issued; anything far above it would hold the page for minutes

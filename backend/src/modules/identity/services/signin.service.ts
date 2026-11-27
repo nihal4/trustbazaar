@@ -66,7 +66,15 @@ export function maskEmail(email: string): string {
   return `${shown}@${domain}`;
 }
 
-interface Ticket { userId: string; attempts: number; until: number; method?: 'email'; codeHash?: string; sends?: number; sentAt?: number }
+interface Ticket {
+  userId: string;
+  attempts: number;
+  until: number;
+  method?: 'email';
+  codeHash?: string;
+  sends?: number;
+  sentAt?: number;
+}
 
 /** E.164 for a Bangladeshi mobile number, the lower-cased address for an e-mail, or null. */
 export function normaliseLogin(login: string): { phone: string } | { email: string } | null {
@@ -100,7 +108,8 @@ export class SignInService {
     const now = this.clock.now();
     await this.throttle.check(failKey);
     // SEC-ABU-02: after repeated failures for this login the next attempt needs a solved challenge (428 otherwise)
-    if (!ctx.humanChecked && (await this.throttle.failures(failKey)) >= HUMAN_CHECK_AFTER_FAILURES) await this.human.require('signin', ctx.ip ?? '', ctx.humanProof);
+    if (!ctx.humanChecked && (await this.throttle.failures(failKey)) >= HUMAN_CHECK_AFTER_FAILURES)
+      await this.human.require('signin', ctx.ip ?? '', ctx.humanProof);
 
     let user: UserRow | undefined;
     if (account) {
@@ -121,7 +130,12 @@ export class SignInService {
     const trusted = await this.deviceTrusted(user.id, deviceKey, now);
     if (!trusted && user.mfa_enabled) {
       const ticket = randomBytes(32).toString('base64url');
-      await this.redis.set(`mfa:ticket:${sha256hex(ticket)}`, JSON.stringify({ userId: user.id, attempts: 0, until: now.getTime() + MFA_TICKET_SECONDS * 1000 } satisfies Ticket), 'EX', MFA_TICKET_SECONDS);
+      await this.redis.set(
+        `mfa:ticket:${sha256hex(ticket)}`,
+        JSON.stringify({ userId: user.id, attempts: 0, until: now.getTime() + MFA_TICKET_SECONDS * 1000 } satisfies Ticket),
+        'EX',
+        MFA_TICKET_SECONDS,
+      );
       return { kind: 'mfa', ticket, method: 'totp' };
     }
     // U10-25: with no authenticator app, the member's default is a code by e-mail, sent only now that the password is right (so nobody can fill an inbox
@@ -129,10 +143,28 @@ export class SignInService {
     if (!trusted && user.email_two_step && user.email_verified && user.email) {
       const ticket = randomBytes(32).toString('base64url');
       const code = generateOtp();
-      const t: Ticket = { userId: user.id, attempts: 0, until: now.getTime() + EMAIL_CODE_SECONDS * 1000, method: 'email', codeHash: hashOtp(this.pepper, code).toString('hex'), sends: 1, sentAt: now.getTime() };
+      const t: Ticket = {
+        userId: user.id,
+        attempts: 0,
+        until: now.getTime() + EMAIL_CODE_SECONDS * 1000,
+        method: 'email',
+        codeHash: hashOtp(this.pepper, code).toString('hex'),
+        sends: 1,
+        sentAt: now.getTime(),
+      };
       await this.redis.set(`mfa:ticket:${sha256hex(ticket)}`, JSON.stringify(t), 'EX', EMAIL_CODE_SECONDS);
       await this.notify.sendEmail(user.email, 'otp_signin_email', { code, minutes: String(EMAIL_CODE_SECONDS / 60) });
-      await this.db.transaction((m) => this.audit.record(m, { actorType: 'user', actorId: user.id, action: 'identity.signin.code_sent', objectType: 'user', objectId: user.id, sourceIp: ctx.ip, correlationId: ctx.correlationId }));
+      await this.db.transaction((m) =>
+        this.audit.record(m, {
+          actorType: 'user',
+          actorId: user.id,
+          action: 'identity.signin.code_sent',
+          objectType: 'user',
+          objectId: user.id,
+          sourceIp: ctx.ip,
+          correlationId: ctx.correlationId,
+        }),
+      );
       securityEvents.otpSent.inc({ purpose: 'signin_email' });
       return { kind: 'mfa', ticket, method: 'email', emailHint: maskEmail(user.email), resendAfter: EMAIL_CODE_GAP_SECONDS };
     }
@@ -146,7 +178,11 @@ export class SignInService {
   /** U10-25: has this browser passed a second factor here with 'remember this device' ticked, and is that still within its 30 days? */
   private async deviceTrusted(userId: string, deviceKey: string | undefined, now: Date): Promise<boolean> {
     if (!deviceKey || !DEVICE_KEY.test(deviceKey)) return false;
-    const [d] = await this.db.query(`SELECT 1 FROM identity.known_devices WHERE user_id = $1 AND device_key_hash = $2 AND trusted_until > $3`, [userId, createHash('sha256').update(deviceKey).digest(), now]);
+    const [d] = await this.db.query(`SELECT 1 FROM identity.known_devices WHERE user_id = $1 AND device_key_hash = $2 AND trusted_until > $3`, [
+      userId,
+      createHash('sha256').update(deviceKey).digest(),
+      now,
+    ]);
     return Boolean(d);
   }
 
@@ -162,17 +198,34 @@ export class SignInService {
     const waited = Math.ceil(((t.sentAt ?? 0) + EMAIL_CODE_GAP_SECONDS * 1000 - now) / 1000);
     if (waited > 0) throw new Problem('rate-limited', { retryAfter: waited });
     if ((t.sends ?? 1) >= EMAIL_CODE_SENDS) throw new Problem('rate-limited', { retryAfter: Math.max(1, Math.ceil((t.until - now) / 1000)) });
-    const [u] = await this.db.query(`SELECT email FROM identity.users WHERE id = $1 AND account_status <> 'closed' AND email_verified_at IS NOT NULL`, [t.userId]);
+    const [u] = await this.db.query(`SELECT email FROM identity.users WHERE id = $1 AND account_status <> 'closed' AND email_verified_at IS NOT NULL`, [
+      t.userId,
+    ]);
     if (!u?.email) throw new Problem('session-ended');
     const r = await this.limiter.hit(`rl:signin-code-send:user:${t.userId}`, 10, 3600);
     if (!r.allowed) throw new Problem('rate-limited', { retryAfter: r.retryAfterSeconds });
     const code = generateOtp();
     const remaining = t.until - now;
     if (remaining <= 0) throw new Problem('session-ended');
-    await this.redis.set(key, JSON.stringify({ ...t, codeHash: hashOtp(this.pepper, code).toString('hex'), attempts: 0, sends: (t.sends ?? 1) + 1, sentAt: now } satisfies Ticket), 'PX', remaining);
+    await this.redis.set(
+      key,
+      JSON.stringify({ ...t, codeHash: hashOtp(this.pepper, code).toString('hex'), attempts: 0, sends: (t.sends ?? 1) + 1, sentAt: now } satisfies Ticket),
+      'PX',
+      remaining,
+    );
     await this.notify.sendEmail(u.email, 'otp_signin_email', { code, minutes: String(Math.max(1, Math.ceil(remaining / 60000))) });
     securityEvents.otpSent.inc({ purpose: 'signin_email' });
-    await this.db.transaction((m) => this.audit.record(m, { actorType: 'user', actorId: t.userId, action: 'identity.signin.code_sent', objectType: 'user', objectId: t.userId, sourceIp: ctx.ip, correlationId: ctx.correlationId }));
+    await this.db.transaction((m) =>
+      this.audit.record(m, {
+        actorType: 'user',
+        actorId: t.userId,
+        action: 'identity.signin.code_sent',
+        objectType: 'user',
+        objectId: t.userId,
+        sourceIp: ctx.ip,
+        correlationId: ctx.correlationId,
+      }),
+    );
     return { resendAfter: EMAIL_CODE_GAP_SECONDS };
   }
 
@@ -188,10 +241,23 @@ export class SignInService {
     if (!r.allowed) throw new Problem('rate-limited', { retryAfter: r.retryAfterSeconds });
 
     // an e-mail code is checked against the HMAC kept in the ticket; an authenticator or recovery code as before
-    const accepted = t.method === 'email' ? (t.codeHash && otpMatches(this.pepper, code.trim(), Buffer.from(t.codeHash, 'hex')) ? 'email_code' : null) : await this.secondFactor.check(t.userId, code, now);
+    const accepted =
+      t.method === 'email'
+        ? t.codeHash && otpMatches(this.pepper, code.trim(), Buffer.from(t.codeHash, 'hex'))
+          ? 'email_code'
+          : null
+        : await this.secondFactor.check(t.userId, code, now);
     if (!accepted) {
       await this.db.transaction((m) =>
-        this.audit.record(m, { actorType: 'user', actorId: t.userId, action: 'identity.mfa.failed', objectType: 'user', objectId: t.userId, sourceIp: ctx.ip, correlationId: ctx.correlationId }),
+        this.audit.record(m, {
+          actorType: 'user',
+          actorId: t.userId,
+          action: 'identity.mfa.failed',
+          objectType: 'user',
+          objectId: t.userId,
+          sourceIp: ctx.ip,
+          correlationId: ctx.correlationId,
+        }),
       );
       const remainingMs = t.until - now.getTime();
       if (t.attempts + 1 < MFA_ATTEMPTS && remainingMs > 0) {
@@ -209,14 +275,31 @@ export class SignInService {
     return this.db.transaction(async (m) => {
       const { sessionId, cookies } = await this.sessions.create(m, userId, deviceKey, ctx);
       await this.audit.record(m, {
-        actorType: 'user', actorId: userId, action: 'identity.signin.succeeded', objectType: 'session', objectId: sessionId,
-        reason: method, sourceIp: ctx.ip, correlationId: ctx.correlationId,
+        actorType: 'user',
+        actorId: userId,
+        action: 'identity.signin.succeeded',
+        objectType: 'session',
+        objectId: sessionId,
+        reason: method,
+        sourceIp: ctx.ip,
+        correlationId: ctx.correlationId,
       });
       // 'remember this device': only after a passed second factor (never after the password alone), for 30 days, on the device of this session
       if (remember && method !== 'password') {
         const until = new Date(this.clock.now().getTime() + TRUSTED_DEVICE_DAYS * 86_400_000);
-        await m.query(`UPDATE identity.known_devices SET trusted_until = $2 WHERE id = (SELECT device_id FROM identity.sessions WHERE id = $1)`, [sessionId, until]);
-        await this.audit.record(m, { actorType: 'user', actorId: userId, action: 'identity.device.trusted', objectType: 'session', objectId: sessionId, sourceIp: ctx.ip, correlationId: ctx.correlationId });
+        await m.query(`UPDATE identity.known_devices SET trusted_until = $2 WHERE id = (SELECT device_id FROM identity.sessions WHERE id = $1)`, [
+          sessionId,
+          until,
+        ]);
+        await this.audit.record(m, {
+          actorType: 'user',
+          actorId: userId,
+          action: 'identity.device.trusted',
+          objectType: 'session',
+          objectId: sessionId,
+          sourceIp: ctx.ip,
+          correlationId: ctx.correlationId,
+        });
       }
       return cookies;
     });
@@ -230,8 +313,13 @@ export class SignInService {
     }
     await this.db.transaction((m) =>
       this.audit.record(m, {
-        actorType: user ? 'user' : 'system', actorId: user?.id ?? null, action: 'identity.signin.failed',
-        objectType: user ? 'user' : null, objectId: user?.id ?? null, sourceIp: ctx.ip, correlationId: ctx.correlationId,
+        actorType: user ? 'user' : 'system',
+        actorId: user?.id ?? null,
+        action: 'identity.signin.failed',
+        objectType: user ? 'user' : null,
+        objectId: user?.id ?? null,
+        sourceIp: ctx.ip,
+        correlationId: ctx.correlationId,
       }),
     );
   }

@@ -1,44 +1,181 @@
 /* The language-change loading screen: the same ruled layout as the site, drawn in shimmering blocks. It covers the whole page. */
-.sk { --tb-gutter: max(clamp(1rem, 4vw, 3.5rem), calc((100% - var(--tb-max-width)) / 2 + clamp(1rem, 4vw, 3.5rem))); position: fixed; inset: 0; z-index: 2000; overflow: hidden; background: var(--tb-bg); opacity: 1; transition: opacity 280ms ease; }
-.leaving { opacity: 0; pointer-events: none; }
-.sk i { display: block; border-radius: 4px; background: linear-gradient(100deg, var(--tb-surface) 30%, rgb(255 255 255 / 0.09) 50%, var(--tb-surface) 70%) 0 0 / 250% 100%;
+.sk {
+  --tb-gutter: max(clamp(1rem, 4vw, 3.5rem), calc((100% - var(--tb-max-width)) / 2 + clamp(1rem, 4vw, 3.5rem)));
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  overflow: hidden;
+  background: var(--tb-bg);
+  opacity: 1;
+  transition: opacity 280ms ease;
 }
-.hero i { background: linear-gradient(100deg, rgb(255 255 255 / 0.05) 30%, rgb(255 255 255 / 0.12) 50%, rgb(255 255 255 / 0.05) 70%) 0 0 / 250% 100%; animation: shimmer 1.4s linear infinite; animation: shimmer 1.4s linear infinite; }
-@keyframes shimmer { to { background-position: -150% 0; } }
-.promise { padding: 0.5rem var(--tb-gutter); border-bottom: 1px solid var(--tb-line); display: flex; justify-content: center; }
-.promise i { width: min(22rem, 70%); height: 0.875rem; }
-.header { display: flex; align-items: center; gap: 1rem; padding: 0.875rem var(--tb-gutter); border-bottom: 1px solid var(--tb-line); }
-.header span { flex: 1; }
-.logo { width: 8.5rem; height: 1.75rem; }
-.btn { width: 4.5rem; height: 2.75rem; }
-.sell { width: 8.5rem; }
-.page { display: grid; gap: 2rem; padding: 1.5rem var(--tb-gutter); }
-.hero { display: grid; gap: 1.5rem; padding: 1.25rem; border-radius: 4px; background: var(--tb-surface); }
-.heroText { display: grid; gap: 1rem; align-content: center; }
-.h1 { width: 80%; height: 2.75rem; }
-.lede { width: 70%; height: 1.125rem; }
-.bar { width: min(100%, 30rem); height: 3.25rem; margin-top: 0.5rem; }
-.short { width: 45%; }
-.window { display: grid; gap: 0.75rem; align-content: start; }
-.photo { height: 12rem; }
-.winBody { display: grid; gap: 0.625rem; }
-.line { height: 0.875rem; width: 90%; }
-.price { width: 8rem; height: 1.75rem; }
-.strip { display: flex; gap: 0; border-block: 1px solid var(--tb-line); padding: 0.5rem 0; overflow: hidden; }
-.strip i { flex: none; width: 7rem; height: 2.25rem; margin-right: 1.25rem; }
-.title { width: min(24rem, 70%); height: 2.25rem; }
-.cells { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 2rem; border-block: 1px solid var(--tb-line); }
-.cell { display: grid; gap: 0.625rem; padding: 1.25rem 0; }
-.cell:nth-child(n+3) { display: none; }
-.thumb { height: 9rem; }
+.leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+.sk i {
+  display: block;
+  border-radius: 4px;
+  background: linear-gradient(100deg, var(--tb-surface) 30%, rgb(255 255 255 / 0.09) 50%, var(--tb-surface) 70%) 0 0 / 250% 100%;
+}
+.hero i {
+  background: linear-gradient(100deg, rgb(255 255 255 / 0.05) 30%, rgb(255 255 255 / 0.12) 50%, rgb(255 255 255 / 0.05) 70%) 0 0 / 250% 100%;
+  animation: shimmer 1.4s linear infinite;
+  animation: shimmer 1.4s linear infinite;
+}
+@keyframes shimmer {
+  to {
+    background-position: -150% 0;
+  }
+}
+.promise {
+  padding: 0.5rem var(--tb-gutter);
+  border-bottom: 1px solid var(--tb-line);
+  display: flex;
+  justify-content: center;
+}
+.promise i {
+  width: min(22rem, 70%);
+  height: 0.875rem;
+}
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem var(--tb-gutter);
+  border-bottom: 1px solid var(--tb-line);
+}
+.header span {
+  flex: 1;
+}
+.logo {
+  width: 8.5rem;
+  height: 1.75rem;
+}
+.btn {
+  width: 4.5rem;
+  height: 2.75rem;
+}
+.sell {
+  width: 8.5rem;
+}
+.page {
+  display: grid;
+  gap: 2rem;
+  padding: 1.5rem var(--tb-gutter);
+}
+.hero {
+  display: grid;
+  gap: 1.5rem;
+  padding: 1.25rem;
+  border-radius: 4px;
+  background: var(--tb-surface);
+}
+.heroText {
+  display: grid;
+  gap: 1rem;
+  align-content: center;
+}
+.h1 {
+  width: 80%;
+  height: 2.75rem;
+}
+.lede {
+  width: 70%;
+  height: 1.125rem;
+}
+.bar {
+  width: min(100%, 30rem);
+  height: 3.25rem;
+  margin-top: 0.5rem;
+}
+.short {
+  width: 45%;
+}
+.window {
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+}
+.photo {
+  height: 12rem;
+}
+.winBody {
+  display: grid;
+  gap: 0.625rem;
+}
+.line {
+  height: 0.875rem;
+  width: 90%;
+}
+.price {
+  width: 8rem;
+  height: 1.75rem;
+}
+.strip {
+  display: flex;
+  gap: 0;
+  border-block: 1px solid var(--tb-line);
+  padding: 0.5rem 0;
+  overflow: hidden;
+}
+.strip i {
+  flex: none;
+  width: 7rem;
+  height: 2.25rem;
+  margin-right: 1.25rem;
+}
+.title {
+  width: min(24rem, 70%);
+  height: 2.25rem;
+}
+.cells {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 2rem;
+  border-block: 1px solid var(--tb-line);
+}
+.cell {
+  display: grid;
+  gap: 0.625rem;
+  padding: 1.25rem 0;
+}
+.cell:nth-child(n + 3) {
+  display: none;
+}
+.thumb {
+  height: 9rem;
+}
 @media (min-width: 48em) {
-  .hero { padding: 2.5rem; }
-  .cells { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .cell:nth-child(n+3) { display: grid; }
-  .thumb { height: 11rem; }
+  .hero {
+    padding: 2.5rem;
+  }
+  .cells {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .cell:nth-child(n + 3) {
+    display: grid;
+  }
+  .thumb {
+    height: 11rem;
+  }
 }
 @media (min-width: 64em) {
-  .hero { grid-template-columns: 5fr 6fr; gap: 3.5rem; padding: 3.5rem; min-height: 40rem; }
-  .photo { height: 14rem; }
+  .hero {
+    grid-template-columns: 5fr 6fr;
+    gap: 3.5rem;
+    padding: 3.5rem;
+    min-height: 40rem;
+  }
+  .photo {
+    height: 14rem;
+  }
 }
-@media (prefers-reduced-motion: reduce) { .sk i { animation: none; } .sk { transition: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .sk i {
+    animation: none;
+  }
+  .sk {
+    transition: none;
+  }
+}

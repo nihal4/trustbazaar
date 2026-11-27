@@ -1,3 +1,15 @@
 /* the canvas fades in over the hero's CSS gradient once the shader runs */
-.ground { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 900ms ease; pointer-events: none; }
-.ground[data-live] { opacity: 1; }
+.ground {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+  transition: opacity 900ms ease;
+  pointer-events: none;
+}
+.ground[data-live] {
+  opacity: 1;
+}

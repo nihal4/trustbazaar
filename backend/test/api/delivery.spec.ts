@@ -30,9 +30,18 @@ describe('delivery of e-mail and SMS', () => {
     await t?.close();
   });
 
-  const event = (type: string, payload: Record<string, unknown>) =>
-    ({ outbox: type.split('.')[0], id: randomUUID(), type, aggregateId: String(payload.userId ?? randomUUID()), payload, createdAt: new Date(), attempt: 1 });
-  const drain = async () => { for (let i = 0; i < 40 && (await worker.processDue()) > 0; i++); }; // other test files leave due rows too
+  const event = (type: string, payload: Record<string, unknown>) => ({
+    outbox: type.split('.')[0],
+    id: randomUUID(),
+    type,
+    aggregateId: String(payload.userId ?? randomUUID()),
+    payload,
+    createdAt: new Date(),
+    attempt: 1,
+  });
+  const drain = async () => {
+    for (let i = 0; i < 40 && (await worker.processDue()) > 0; i++);
+  }; // other test files leave due rows too
   async function user(o: { emailVerified?: boolean; language?: 'bn' | 'en' } = {}) {
     const userId = await fx.user({ emailVerified: o.emailVerified ?? true });
     if (o.language) await fx.query(`INSERT INTO notify.preferences (user_id, language) VALUES ($1, $2)`, [userId, o.language]);
@@ -41,21 +50,24 @@ describe('delivery of e-mail and SMS', () => {
   }
   const statusOf = (userId: string) =>
     fx.query<{ channel: string; status: string; attempts: number; last_error: string | null }>(
-      `SELECT d.channel, d.status, d.attempts, d.last_error FROM notify.deliveries d JOIN notify.notifications n ON n.id = d.notification_id WHERE n.user_id = $1 ORDER BY 1`, [userId]);
+      `SELECT d.channel, d.status, d.attempts, d.last_error FROM notify.deliveries d JOIN notify.notifications n ON n.id = d.notification_id WHERE n.user_id = $1 ORDER BY 1`,
+      [userId],
+    );
 
-  it('FR-NTF-06 a security notice is sent by e-mail and SMS to the current contact, in the user\'s language', async () => {
+  it("FR-NTF-06 a security notice is sent by e-mail and SMS to the current contact, in the user's language", async () => {
     const u = await user({ language: 'en' });
     await t.app.get(NotificationConsumers).handle(event('identity.password.changed', { userId: u.userId }));
     await drain();
     expect(await statusOf(u.userId)).toEqual([
-      { channel: 'email', status: 'sent', attempts: 1, last_error: null }, { channel: 'sms', status: 'sent', attempts: 1, last_error: null },
+      { channel: 'email', status: 'sent', attempts: 1, last_error: null },
+      { channel: 'sms', status: 'sent', attempts: 1, last_error: null },
     ]);
     const [email] = await mailbox.list(u.email);
     expect(email).toMatchObject({ channel: 'email', subject: 'Your password was changed', simulated: true });
     const [sms] = await mailbox.list(u.phone);
     expect(sms.text).toMatch(/^Your password was changed: The password of your TrustBazaar account was changed/);
     const logs = await fx.query<{ purpose: string; simulated: boolean }>(`SELECT purpose, simulated FROM notify.sms_log WHERE phone_hmac = $1`, [
-      (t.app.get<NotificationPort & { phoneHmac(p: string): Buffer }>(NOTIFICATION_PORT)).phoneHmac(u.phone),
+      t.app.get<NotificationPort & { phoneHmac(p: string): Buffer }>(NOTIFICATION_PORT).phoneHmac(u.phone),
     ]);
     expect(logs).toEqual([{ purpose: 'security_notice', simulated: true }]);
   });
@@ -78,10 +90,15 @@ describe('delivery of e-mail and SMS', () => {
       await drain();
       const [first] = await fx.query<{ status: string; attempts: number; last_error: string; delay_min: number }>(
         `SELECT d.status, d.attempts, d.last_error, round(extract(epoch FROM d.next_attempt_at - now()) / 60)::int AS delay_min
-           FROM notify.deliveries d JOIN notify.notifications n ON n.id = d.notification_id WHERE n.user_id = $1`, [u.userId]);
+           FROM notify.deliveries d JOIN notify.notifications n ON n.id = d.notification_id WHERE n.user_id = $1`,
+        [u.userId],
+      );
       expect(first).toEqual({ status: 'failed', attempts: 1, last_error: 'EPROVIDER', delay_min: RETRY_MINUTES[0] });
       for (let i = 2; i <= MAX_ATTEMPTS + 1; i++) {
-        await fx.query(`UPDATE notify.deliveries d SET next_attempt_at = now() - interval '1 second' FROM notify.notifications n WHERE n.id = d.notification_id AND n.user_id = $1`, [u.userId]);
+        await fx.query(
+          `UPDATE notify.deliveries d SET next_attempt_at = now() - interval '1 second' FROM notify.notifications n WHERE n.id = d.notification_id AND n.user_id = $1`,
+          [u.userId],
+        );
         await drain();
       }
       expect(await statusOf(u.userId)).toEqual([{ channel: 'email', status: 'failed', attempts: MAX_ATTEMPTS, last_error: 'EPROVIDER' }]);
@@ -101,13 +118,17 @@ describe('delivery of e-mail and SMS', () => {
     }
   });
 
-  it('I-36 Unit 1\'s codes go through this unit: in both languages, in the mailbox, and only an HMAC of the number in the database', async () => {
+  it("I-36 Unit 1's codes go through this unit: in both languages, in the mailbox, and only an HMAC of the number in the database", async () => {
     const phone = randomPhone();
     const port = t.app.get<NotificationPort>(NOTIFICATION_PORT);
     await port.sendSms(phone, 'otp_register', { code: '482913', minutes: '5' });
     const [m] = await mailbox.list(phone);
-    expect(m.text).toBe('TrustBazaar: আপনার নিবন্ধনের কোড 482913। 5 মিনিট বৈধ। কাউকে জানাবেন না।\n\nTrustBazaar: your registration code is 482913. Valid for 5 minutes. Never share it.');
-    const rows = await fx.query(`SELECT purpose, status FROM notify.sms_log WHERE phone_hmac = $1`, [(port as unknown as { phoneHmac(p: string): Buffer }).phoneHmac(phone)]);
+    expect(m.text).toBe(
+      'TrustBazaar: আপনার নিবন্ধনের কোড 482913। 5 মিনিট বৈধ। কাউকে জানাবেন না।\n\nTrustBazaar: your registration code is 482913. Valid for 5 minutes. Never share it.',
+    );
+    const rows = await fx.query(`SELECT purpose, status FROM notify.sms_log WHERE phone_hmac = $1`, [
+      (port as unknown as { phoneHmac(p: string): Buffer }).phoneHmac(phone),
+    ]);
     expect(rows).toEqual([{ purpose: 'otp', status: 'sent' }]);
     const leaked = await fx.query(`SELECT count(*)::int AS n FROM notify.sms_log WHERE provider_ref LIKE '%482913%'`);
     expect(leaked).toEqual([{ n: 0 }]);
@@ -137,7 +158,9 @@ describe('delivery of e-mail and SMS', () => {
     const fresh = await user();
     await t.app.get(NotificationConsumers).handle(event('identity.kyc.verified', { userId: fresh.userId }));
     await drain();
-    await fx.query(`INSERT INTO notify.sms_log (phone_hmac, purpose, status, simulated, at) VALUES (decode(repeat('ab', 32), 'hex'), 'otp', 'sent', true, now() - interval '91 days')`);
+    await fx.query(
+      `INSERT INTO notify.sms_log (phone_hmac, purpose, status, simulated, at) VALUES (decode(repeat('ab', 32), 'hex'), 'otp', 'sent', true, now() - interval '91 days')`,
+    );
     expect(await worker.purgeExpired()).toBeGreaterThanOrEqual(3);
     expect(await fx.query(`SELECT count(*)::int AS n FROM notify.notifications WHERE user_id = $1`, [u.userId])).toEqual([{ n: 0 }]);
     expect(await fx.query(`SELECT count(*)::int AS n FROM notify.notifications WHERE user_id = $1`, [fresh.userId])).toEqual([{ n: 1 }]);

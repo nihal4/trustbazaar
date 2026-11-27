@@ -24,13 +24,31 @@ const KM_PER_DEG_LAT = 111.32;
 const NO_DISTANCE = 2147483647; // listings without a location (game accounts) sort last by distance
 
 type KeyType = 'timestamptz' | 'bigint' | 'int' | 'float8';
-interface Key { expr: string; type: KeyType }
-interface SortSpec { keys: Key[]; dir: 'ASC' | 'DESC' }
+interface Key {
+  expr: string;
+  type: KeyType;
+}
+interface SortSpec {
+  keys: Key[];
+  dir: 'ASC' | 'DESC';
+}
 
 interface Row {
-  id: string; title: string; item_kind: string; sale_format: string; condition: string | null; area_district: string | null;
-  price: string; auction_end_at: Date | null; reserve_not_met: boolean; featured: boolean; currently_reserved: boolean;
-  bid_count: number | null; photo_key: string | null; distance_km: number | null; k: string[];
+  id: string;
+  title: string;
+  item_kind: string;
+  sale_format: string;
+  condition: string | null;
+  area_district: string | null;
+  price: string;
+  auction_end_at: Date | null;
+  reserve_not_met: boolean;
+  featured: boolean;
+  currently_reserved: boolean;
+  bid_count: number | null;
+  photo_key: string | null;
+  distance_km: number | null;
+  k: string[];
 }
 
 const PATTERNS: Record<KeyType, RegExp> = {
@@ -127,7 +145,13 @@ export class SearchService {
     const km = distance ? `round(${distance})::int` : 'NULL::int';
 
     const specs: Record<Sort, SortSpec> = {
-      relevance: { keys: [{ expr: rank, type: 'float8' }, { expr: 's.published_at', type: 'timestamptz' }], dir: 'DESC' },
+      relevance: {
+        keys: [
+          { expr: rank, type: 'float8' },
+          { expr: 's.published_at', type: 'timestamptz' },
+        ],
+        dir: 'DESC',
+      },
       newest: { keys: [{ expr: 's.published_at', type: 'timestamptz' }], dir: 'DESC' },
       price_asc: { keys: [{ expr: 's.display_price', type: 'bigint' }], dir: 'ASC' },
       price_desc: { keys: [{ expr: 's.display_price', type: 'bigint' }], dir: 'DESC' },
@@ -135,7 +159,11 @@ export class SearchService {
       ending_soon: { keys: [{ expr: 's.auction_end_at', type: 'timestamptz' }], dir: 'ASC' },
     };
     const spec = specs[sort];
-    const after = decodeSearchCursor(q.cursor, sort, spec.keys.map((k) => k.type));
+    const after = decodeSearchCursor(
+      q.cursor,
+      sort,
+      spec.keys.map((k) => k.type),
+    );
 
     const select = (extraWhere: string[], order: string, limit: number) => `
       SELECT s.id, s.title, s.item_kind, s.sale_format, s.condition, s.area_district, s.display_price::text AS price,
@@ -162,9 +190,7 @@ export class SearchService {
 
     // FR-MON-05: on the first page only, up to DV-21 featured matches in their own labelled list; the organic
     // ranking above is not changed by featuring (Decisions log, U3-03)
-    const featured = after
-      ? []
-      : ((await this.db.query(select(['s.featured'], `${rank} DESC, s.published_at DESC, s.id DESC`, FEATURED), values)) as Row[]);
+    const featured = after ? [] : ((await this.db.query(select(['s.featured'], `${rank} DESC, s.published_at DESC, s.id DESC`, FEATURED), values)) as Row[]);
 
     return {
       items: page.map(card),
@@ -189,8 +215,9 @@ function card(r: Row) {
     distanceKm: r.distance_km,
     featured: r.featured,
     currentlyReserved: r.currently_reserved,
-    auction: r.sale_format === 'auction'
-      ? { endAt: r.auction_end_at ? r.auction_end_at.toISOString() : null, bidCount: r.bid_count ?? 0, reserveMet: !r.reserve_not_met }
-      : null,
+    auction:
+      r.sale_format === 'auction'
+        ? { endAt: r.auction_end_at ? r.auction_end_at.toISOString() : null, bidCount: r.bid_count ?? 0, reserveMet: !r.reserve_not_met }
+        : null,
   };
 }

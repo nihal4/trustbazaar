@@ -33,8 +33,10 @@ export const FIGURES_FONT = 'TB Figures';
 /** the Bangla digits ০ to ৯ and the taka sign ৳; the separators a number uses between them */
 export const FIGURES_RANGE = 'U+09E6-09EF, U+09F3';
 export const MARKS_RANGE = 'U+002C, U+002E, U+003A';
-const LATIN_RANGE = 'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD';
-const LATIN_EXT_RANGE = 'U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF';
+const LATIN_RANGE =
+  'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD';
+const LATIN_EXT_RANGE =
+  'U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF';
 const BENGALI_RANGE = 'U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0-1CF9, U+200C-200D, U+20B9, U+25CC, U+A8F1';
 
 type Face = { family: string; url: string; weight: string; range: string; format: string };
@@ -50,11 +52,17 @@ const BANGLA: Face[] = [
   { family: BANGLA_FONT, url: semibold, weight: '600', range: BENGALI_RANGE, format: 'woff2' },
   { family: BANGLA_FONT, url: bold, weight: '700', range: BENGALI_RANGE, format: 'woff2' },
 ];
-const FIGURES: Face[] = ([[400, digits400, marks400], [500, digits500, marks500], [600, digits600, marks600], [700, digits700, marks700]] as const)
-  .flatMap(([weight, d, m]) => [
-    { family: FIGURES_FONT, url: d, weight: String(weight), range: FIGURES_RANGE, format: 'woff2' },
-    { family: FIGURES_FONT, url: m, weight: String(weight), range: MARKS_RANGE, format: 'woff2' },
-  ]);
+const FIGURES: Face[] = (
+  [
+    [400, digits400, marks400],
+    [500, digits500, marks500],
+    [600, digits600, marks600],
+    [700, digits700, marks700],
+  ] as const
+).flatMap(([weight, d, m]) => [
+  { family: FIGURES_FONT, url: d, weight: String(weight), range: FIGURES_RANGE, format: 'woff2' },
+  { family: FIGURES_FONT, url: m, weight: String(weight), range: MARKS_RANGE, format: 'woff2' },
+]);
 
 const added = new Set<string>();
 
@@ -64,7 +72,7 @@ function add(faces: Face[], fonts: FontFaceSet | undefined): void {
   added.add(faces[0].family);
   for (const f of faces) {
     const face = new FontFace(f.family, `url(${f.url}) format('${f.format}')`, { weight: f.weight, style: 'normal', display: 'swap', unicodeRange: f.range });
-    fonts.add(face);   // not load(): the browser fetches a face only when text in its range is shown
+    fonts.add(face); // not load(): the browser fetches a face only when text in its range is shown
   }
 }
 
@@ -73,18 +81,27 @@ function add(faces: Face[], fonts: FontFaceSet | undefined): void {
 export function afterLoad(run: () => void, win: Window | undefined = globalThis.window): void {
   if (!win) return;
   const idle = () => (typeof win.requestIdleCallback === 'function' ? win.requestIdleCallback(run, { timeout: 1000 }) : win.setTimeout(run, 200));
-  if (win.document.readyState === 'complete') { idle(); return; }
+  if (win.document.readyState === 'complete') {
+    idle();
+    return;
+  }
   win.addEventListener('load', idle, { once: true });
 }
 
 /** Figtree has no taka sign; the figures face, after Figtree in the stack, draws "৳" in English too, so a price never
  *  falls back to whatever font the device has (only the digits file is fetched, when a price is shown). */
 export function loadLatinFont(fonts: FontFaceSet | undefined = globalThis.document?.fonts): void {
-  afterLoad(() => { add(LATIN, fonts); add(FIGURES, fonts); });
+  afterLoad(() => {
+    add(LATIN, fonts);
+    add(FIGURES, fonts);
+  });
 }
 
 export function loadBanglaFont(fonts: FontFaceSet | undefined = globalThis.document?.fonts): void {
-  afterLoad(() => { add(FIGURES, fonts); add(BANGLA, fonts); });   // add() runs each set once per document
+  afterLoad(() => {
+    add(FIGURES, fonts);
+    add(BANGLA, fonts);
+  }); // add() runs each set once per document
 }
 
 /**

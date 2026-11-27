@@ -47,8 +47,12 @@ describe('SEC-LOG-03 log entries', () => {
 
   it('SEC-LOG-03 audit events record the actor, the time in UTC and the source address', async () => {
     const { a } = await s.signedIn();
-    const rows = await s.fx.query<{ actor_id: string; at: Date; ip: string | null }>(
-      `SELECT actor_id, created_at AS at, ip FROM audit.events WHERE actor_id = $1 ORDER BY created_at DESC LIMIT 1`, [a.userId]).catch(() => []);
+    const rows = await s.fx
+      .query<{ actor_id: string; at: Date; ip: string | null }>(
+        `SELECT actor_id, created_at AS at, ip FROM audit.events WHERE actor_id = $1 ORDER BY created_at DESC LIMIT 1`,
+        [a.userId],
+      )
+      .catch(() => []);
     for (const r of rows) {
       expect(r.actor_id).toBe(a.userId);
       expect(r.at).toBeInstanceOf(Date);

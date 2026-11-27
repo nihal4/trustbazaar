@@ -34,7 +34,7 @@ The tools check that code stays readable and that the design system is used. Run
 |---|---|
 | `npm run lint` | ESLint: errors stop CI; warnings are the report (accessibility of the markup, too complex, repeated code) |
 | `npm run lint:css` | Stylelint: a colour or a font written in a stylesheet instead of a token (`var(--tb-…)`) is flagged |
-| `npm run format` / `format:check` | Prettier, one format (`backend/` has the same two commands); apply it to the folder you are cleaning, not to the whole repository at once |
+| `npm run format` / `format:check` | Prettier, one format over the whole code (`backend/` has the same two commands); CI checks it, and the hooks leave it to you: run `npm run format` before you commit. The one commit that formatted everything (U11-14) is in `.git-blame-ignore-revs`: GitHub skips it in blame, and locally `git config blame.ignoreRevsFile .git-blame-ignore-revs` does the same |
 | `npm run dup` | jscpd: copied code |
 | `npm run unused` | knip: unused files, exports and dependencies (`backend/` too) |
 | `npm run deps` | dependency-cruiser: a cycle, or `shared/` importing a feature |

@@ -51,8 +51,8 @@ const en: LegalText = {
     {
       title: 'Buying, paying and escrow',
       clauses: [
-        'Pay only through TrustBazaar, with the payment services it offers. You enter your wallet PIN or card details only on the payment provider\'s own page. TrustBazaar will never ask you for a PIN, a password or a code, by chat, call or e-mail.',
-        'When you pay, the money is held by TrustBazaar (escrow) and is not the seller\'s until it is released under these terms. The total, with any delivery fee, is shown before you pay.',
+        "Pay only through TrustBazaar, with the payment services it offers. You enter your wallet PIN or card details only on the payment provider's own page. TrustBazaar will never ask you for a PIN, a password or a code, by chat, call or e-mail.",
+        "When you pay, the money is held by TrustBazaar (escrow) and is not the seller's until it is released under these terms. The total, with any delivery fee, is shown before you pay.",
         'Until the delivery event, a buyer may ask to cancel and the seller may agree, and the seller may cancel alone; either way the buyer is refunded in full. If the step the order needs from the seller is not recorded by its deadline, the order is cancelled and the buyer is refunded in full. A seller who cancels alone after payment, or misses a deadline, receives a strike.',
         'A refund goes back to the payment method used. A payment provider may take time to complete it.',
       ],
@@ -68,15 +68,15 @@ const en: LegalText = {
       title: 'Handover and delivery',
       clauses: [
         'For a meeting in person, use a public place. Check the item before you give the handover code. Giving the code to the seller tells TrustBazaar that you received the item. Never give the code before you have the item in your hands, and never give it to anyone but the seller you are meeting.',
-        'A seller must not hand an item over until the payment shows as held on the order. The seller may photograph the item at the handover, and may be asked to; these photographs are kept as evidence and removed when the order\'s disputes are over, as the privacy notice says. For a device with an identifier (such as an IMEI or serial number), the buyer may be asked to enter it at the handover, and the seller to check it on a return.',
-        'For delivery by courier, the delivery fee is shown before payment. A courier\'s delay, loss or damage is dealt with under the order\'s times and the dispute rules. If the courier returns the item to the seller, the order is cancelled and the buyer is refunded in full, including the delivery fee.',
+        "A seller must not hand an item over until the payment shows as held on the order. The seller may photograph the item at the handover, and may be asked to; these photographs are kept as evidence and removed when the order's disputes are over, as the privacy notice says. For a device with an identifier (such as an IMEI or serial number), the buyer may be asked to enter it at the handover, and the seller to check it on a return.",
+        "For delivery by courier, the delivery fee is shown before payment. A courier's delay, loss or damage is dealt with under the order's times and the dispute rules. If the courier returns the item to the seller, the order is cancelled and the buyer is refunded in full, including the delivery fee.",
       ],
     },
     {
       title: 'When the seller is paid',
       clauses: [
         'The money is released to the seller only when the buyer confirms receipt, or when the automatic-release time shown on the order ends with no dispute open. That time is counted from the delivery event, never from payment. A buyer who does not confirm and does not open a dispute in time is treated as satisfied.',
-        'Money is paid out to the seller\'s own verified payout account only. The commission, and any fee owed, is taken from the seller\'s payout.',
+        "Money is paid out to the seller's own verified payout account only. The commission, and any fee owed, is taken from the seller's payout.",
         'After the money is released or refunded, no dispute can be opened on that order. A later complaint is handled as a report and may lead to a sanction, not to a refund.',
       ],
     },
@@ -84,7 +84,7 @@ const en: LegalText = {
       title: 'Bids and auctions',
       clauses: [
         'A bid is binding and cannot be withdrawn. Staff may cancel a bid only on evidence of fraud or of a compromised account, and write down the reason.',
-        'An auction ends on TrustBazaar\'s clock, not yours. The highest valid bid at the end wins. A bid arriving after the end is not counted. A seller, or anyone for a seller, may not bid on the seller\'s own listing or push the price up in any other way.',
+        "An auction ends on TrustBazaar's clock, not yours. The highest valid bid at the end wins. A bid arriving after the end is not counted. A seller, or anyone for a seller, may not bid on the seller's own listing or push the price up in any other way.",
         'A winner who does not pay receives a strike. After the number of strikes set by us, the person is suspended from bidding for a period, and is told why.',
       ],
     },
@@ -100,9 +100,9 @@ const en: LegalText = {
     {
       title: 'Game accounts',
       clauses: [
-        'The game\'s publisher may prohibit the transfer of an account and may suspend or ban it. TrustBazaar\'s protection covers the handover, the takeover and the seller\'s recovery of the account during the protection period. It does not cover anything the publisher does. A buyer must confirm that they understand this before paying.',
-        'The seller\'s login details are asked for only after the payment is held, within the time shown on the order; if they are not given, the order is cancelled and the buyer is refunded in full. The money stays held during the protection period after the takeover and is released when it ends, or earlier if the buyer chooses, unless a dispute is open.',
-        'A seller who takes back, resets, uses or sells again an account after selling it commits a serious breach. When staff confirm it, the seller is suspended, the seller\'s identity document is added to the blacklist, and the order\'s evidence may be given to the police.',
+        "The game's publisher may prohibit the transfer of an account and may suspend or ban it. TrustBazaar's protection covers the handover, the takeover and the seller's recovery of the account during the protection period. It does not cover anything the publisher does. A buyer must confirm that they understand this before paying.",
+        "The seller's login details are asked for only after the payment is held, within the time shown on the order; if they are not given, the order is cancelled and the buyer is refunded in full. The money stays held during the protection period after the takeover and is released when it ends, or earlier if the buyer chooses, unless a dispute is open.",
+        "A seller who takes back, resets, uses or sells again an account after selling it commits a serious breach. When staff confirm it, the seller is suspended, the seller's identity document is added to the blacklist, and the order's evidence may be given to the police.",
       ],
     },
     {
@@ -115,7 +115,7 @@ const en: LegalText = {
     {
       title: 'Your conduct',
       clauses: [
-        'You may not: deceive, threaten, harass or abuse anyone; send spam; manipulate ratings or bids; open accounts with false or another person\'s details; get round identity verification, limits or a suspension; use another person\'s account; collect data from the site by automatic means; probe, attack or overload the service; or encourage or help anyone to do these things.',
+        "You may not: deceive, threaten, harass or abuse anyone; send spam; manipulate ratings or bids; open accounts with false or another person's details; get round identity verification, limits or a suspension; use another person's account; collect data from the site by automatic means; probe, attack or overload the service; or encourage or help anyone to do these things.",
         'If you see a listing, a person or a message that breaks these terms, report it. We review reports.',
       ],
     },
@@ -129,7 +129,7 @@ const en: LegalText = {
     {
       title: 'Responsibility',
       clauses: [
-        'As far as the law allows, TrustBazaar is not responsible for: an item\'s quality, safety or legality; what a seller, a buyer, a courier, a payment provider or a game publisher does or fails to do; a loss caused by an account you did not protect; a service interruption we could not prevent; or a loss of profit, chance or other indirect loss.',
+        "As far as the law allows, TrustBazaar is not responsible for: an item's quality, safety or legality; what a seller, a buyer, a courier, a payment provider or a game publisher does or fails to do; a loss caused by an account you did not protect; a service interruption we could not prevent; or a loss of profit, chance or other indirect loss.",
         'As far as the law allows, our total responsibility for an order is limited to the amount that order held with us. Nothing in these terms limits a responsibility that the law does not allow to be limited, such as for fraud.',
         'You must repay us for a loss, cost or claim caused by your breach of these terms, by a prohibited or false listing, or by your unlawful act.',
       ],

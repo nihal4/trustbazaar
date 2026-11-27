@@ -26,8 +26,18 @@ const problemOf = (fn: () => unknown) => {
 };
 
 const STATE_ROW = {
-  listing_id: AUCTION, status: 'open', start_price: '100000', current_price: '125000', bid_count: 2, end_at: new Date('2026-11-20T10:00:00Z'),
-  version: '7', has_reserve: true, reserve_met: false, leader_alias: 1, minimum_bid: '130000', server_time: new Date('2026-11-19T10:00:00Z'),
+  listing_id: AUCTION,
+  status: 'open',
+  start_price: '100000',
+  current_price: '125000',
+  bid_count: 2,
+  end_at: new Date('2026-11-20T10:00:00Z'),
+  version: '7',
+  has_reserve: true,
+  reserve_met: false,
+  leader_alias: 1,
+  minimum_bid: '130000',
+  server_time: new Date('2026-11-19T10:00:00Z'),
 };
 
 function setup(o: { placed?: Record<string, unknown>; placeError?: Error; bids?: Record<string, unknown>[] } = {}) {
@@ -37,7 +47,18 @@ function setup(o: { placed?: Record<string, unknown>; placeError?: Error; bids?:
     calls.push({ sql, params });
     if (sql.includes('auctions.place_bid')) {
       if (o.placeError) throw o.placeError;
-      return [o.placed ?? { bid_id: '41', outcome: 'leading', price: '125000', leader_alias: 1, end_at: new Date(), extended: false, previous_leader: null, version: '7' }];
+      return [
+        o.placed ?? {
+          bid_id: '41',
+          outcome: 'leading',
+          price: '125000',
+          leader_alias: 1,
+          end_at: new Date(),
+          extended: false,
+          previous_leader: null,
+          version: '7',
+        },
+      ];
     }
     if (sql.includes('FROM auctions.auctions a') && sql.includes('LEFT JOIN')) return [STATE_ROW];
     if (sql.includes('auctions.replay')) {
@@ -74,8 +95,12 @@ function setup(o: { placed?: Record<string, unknown>; placeError?: Error; bids?:
   };
   const blocks = { assertNotBlocked: jest.fn(async () => undefined) };
   const service = new BidService(
-    db as never, listings as unknown as ListingService, idempotency as unknown as IdempotencyKeys,
-    identity as unknown as IdentityQuery, limiter as unknown as RateLimiterPort, live as unknown as LivePort,
+    db as never,
+    listings as unknown as ListingService,
+    idempotency as unknown as IdempotencyKeys,
+    identity as unknown as IdentityQuery,
+    limiter as unknown as RateLimiterPort,
+    live as unknown as LivePort,
     blocks as never,
   );
   return { service, calls, outbox, identity, limiter, listings, live };
@@ -88,14 +113,17 @@ describe('fromPlaceBid', () => {
     expect(p.extra.errors).toEqual([{ field: 'maximum', reason: 'below_minimum', minimum: '105000' }]);
   });
 
-  it.each(['max_not_higher: new maximum must exceed your current maximum', 'auction_ended', 'auction_not_open', 'auction_not_open: listing not available', 'seller_cannot_bid'])(
-    'FR-AUC-02 the refusal "%s" keeps its stable code',
-    (message) => {
-      const p = problemOf(() => fromPlaceBid(pgError('P0001', message)));
-      expect(p.problem).toBe('bid-refused');
-      expect((p.extra.errors as { reason: string }[])[0].reason).toBe(message.split(/[: ]/)[0]);
-    },
-  );
+  it.each([
+    'max_not_higher: new maximum must exceed your current maximum',
+    'auction_ended',
+    'auction_not_open',
+    'auction_not_open: listing not available',
+    'seller_cannot_bid',
+  ])('FR-AUC-02 the refusal "%s" keeps its stable code', (message) => {
+    const p = problemOf(() => fromPlaceBid(pgError('P0001', message)));
+    expect(p.problem).toBe('bid-refused');
+    expect((p.extra.errors as { reason: string }[])[0].reason).toBe(message.split(/[: ]/)[0]);
+  });
 
   it('FR-AUC-16 a restricted bidder is told until when', () => {
     const p = problemOf(() => fromPlaceBid(pgError('P0001', 'bidder_restricted until 2026-11-20 10:00:00.5+06')));
@@ -125,8 +153,18 @@ describe('BidService', () => {
     expect(t.listings.visible).toHaveBeenCalledWith(AUCTION, ASHA);
     expect(t.calls.find((c) => c.sql.includes('place_bid'))?.params).toEqual([AUCTION, ASHA, '150000']);
     expect(r).toEqual({
-      bidId: '41', outcome: 'leading', yourMaximum: '150000', repeated: false,
-      state: expect.objectContaining({ auctionId: AUCTION, price: '125000', leaderAlias: 1, minimumBid: '130000', seq: 7, serverTime: '2026-11-19T10:00:00.000Z' }),
+      bidId: '41',
+      outcome: 'leading',
+      yourMaximum: '150000',
+      repeated: false,
+      state: expect.objectContaining({
+        auctionId: AUCTION,
+        price: '125000',
+        leaderAlias: 1,
+        minimumBid: '130000',
+        seq: 7,
+        serverTime: '2026-11-19T10:00:00.000Z',
+      }),
     });
   });
 
@@ -163,7 +201,9 @@ describe('BidService', () => {
     ['raised_own_max', ASHA],
     ['leading', null],
   ])('FR-AUC-12 no outbid notice when the outcome is %s (previous leader %s)', async (outcome, previous) => {
-    const t = setup({ placed: { bid_id: '41', outcome, price: '125000', leader_alias: 1, end_at: new Date(), extended: false, previous_leader: previous, version: '7' } });
+    const t = setup({
+      placed: { bid_id: '41', outcome, price: '125000', leader_alias: 1, end_at: new Date(), extended: false, previous_leader: previous, version: '7' },
+    });
     await t.service.place(ASHA, AUCTION, '150000', undefined);
     expect(t.live.toRoom).toHaveBeenCalledTimes(1);
     expect(t.live.toUser).not.toHaveBeenCalled();
@@ -208,7 +248,14 @@ describe('BidService', () => {
 
   it('FR-AUC-08 my-status shows the caller their own maximum', async () => {
     const t = setup();
-    expect(await t.service.myStatus(AUCTION, ASHA)).toEqual({ hasBid: true, yourMaximum: '150000', leading: true, yourAlias: 1, orderId: null, secondChanceOffer: null });
+    expect(await t.service.myStatus(AUCTION, ASHA)).toEqual({
+      hasBid: true,
+      yourMaximum: '150000',
+      leading: true,
+      yourAlias: 1,
+      orderId: null,
+      secondChanceOffer: null,
+    });
   });
 
   it('FR-AUC-01 the state of an unknown auction is not-found', async () => {
@@ -218,7 +265,8 @@ describe('BidService', () => {
     expect(s).not.toHaveProperty('reservePrice');
     expect(s).not.toHaveProperty('leaderMax');
     const empty = { query: async () => [] };
-    await expect(new BidService(empty as never, t.listings as never, {} as never, {} as never, {} as never, {} as never, {} as never).getPublicState(AUCTION))
-      .rejects.toMatchObject({ problem: 'not-found' });
+    await expect(
+      new BidService(empty as never, t.listings as never, {} as never, {} as never, {} as never, {} as never, {} as never).getPublicState(AUCTION),
+    ).rejects.toMatchObject({ problem: 'not-found' });
   });
 });

@@ -110,12 +110,8 @@ describe('configuration', () => {
   });
 
   it('I-59 in production, the database and Redis need a password of at least 32 bytes', () => {
-    expect(problems({ ...prod(), DATABASE_URL: 'postgres://tb_app@postgres:5432/trustbazaar' })).toEqual([
-      'DATABASE_URL: no password in production',
-    ]);
-    expect(problems({ ...prod(), REDIS_URL: 'redis://:short@redis:6379/0' })).toEqual([
-      `REDIS_URL password: shorter than ${MIN_SECRET_BYTES} bytes`,
-    ]);
+    expect(problems({ ...prod(), DATABASE_URL: 'postgres://tb_app@postgres:5432/trustbazaar' })).toEqual(['DATABASE_URL: no password in production']);
+    expect(problems({ ...prod(), REDIS_URL: 'redis://:short@redis:6379/0' })).toEqual([`REDIS_URL password: shorter than ${MIN_SECRET_BYTES} bytes`]);
   });
 
   it('SEC-INF-05 debug output is refused in production', () => {
@@ -134,17 +130,13 @@ describe('configuration', () => {
   });
 
   it('SEC-DAT-01 the public origin is https in production', () => {
-    expect(problems({ ...prod(), PUBLIC_ORIGIN: 'http://trustbazaar.example' })).toEqual([
-      'PUBLIC_ORIGIN: must be https in production',
-    ]);
+    expect(problems({ ...prod(), PUBLIC_ORIGIN: 'http://trustbazaar.example' })).toEqual(['PUBLIC_ORIGIN: must be https in production']);
   });
 
   it('FR-ACC-04 the current terms and privacy versions come from the environment and fit the consent record', () => {
     expect(loadConfig(dev()).legal).toEqual({ termsVersion: '2026-11-27', privacyVersion: '2026-11-01' });
     expect(loadConfig({ ...dev(), TERMS_VERSION: 'v2', PRIVACY_VERSION: '2027.1' }).legal).toEqual({ termsVersion: 'v2', privacyVersion: '2027.1' });
-    expect(problems({ ...dev(), TERMS_VERSION: 'x'.repeat(21) })).toEqual([
-      'TERMS_VERSION: 1 to 20 letters, digits, dots, dashes or underscores',
-    ]);
+    expect(problems({ ...dev(), TERMS_VERSION: 'x'.repeat(21) })).toEqual(['TERMS_VERSION: 1 to 20 letters, digits, dots, dashes or underscores']);
   });
 
   it('SEC-DAT-02 protected files live under FILES_ROOT, an absolute path (default: the Compose volumes)', () => {
