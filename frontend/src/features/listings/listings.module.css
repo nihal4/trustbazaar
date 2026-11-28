@@ -104,16 +104,6 @@
   align-items: baseline;
   border-radius: var(--tb-radius-panel) var(--tb-radius-panel) 0 0;
 }
-.auctionTop::before,
-.auctionTop::after {
-  position: absolute;
-  bottom: -7px;
-  width: 12px;
-  height: 12px;
-  border-radius: var(--tb-radius-circle);
-  background: var(--tb-bg);
-  border: 1px solid var(--tb-line);
-}
 .auctionTop::before {
   left: -7px;
   clip-path: inset(0 0 0 50%);
@@ -612,6 +602,13 @@
 }
 .auctionTop::before,
 .auctionTop::after {
+  position: absolute;
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--tb-radius-circle);
+  background: var(--tb-bg);
+  border: 1px solid var(--tb-line);
   content: none;
 }
 .auction > :not(.auctionTop) {

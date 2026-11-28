@@ -110,11 +110,6 @@
 .option:last-of-type {
   border-bottom: 1px solid var(--tb-line);
 }
-.option:has(input:checked) {
-  border-color: var(--tb-line);
-  background: none;
-  box-shadow: inset 3px 0 0 var(--tb-hot);
-}
 .field input[type='text'] {
   min-height: 46px;
   max-width: 8rem;
@@ -196,6 +191,9 @@
   padding-left: var(--tb-space-3);
 }
 .option:has(input:checked) {
+  border-color: var(--tb-line);
+  background: none;
+  box-shadow: inset 3px 0 0 var(--tb-hot);
   padding-left: var(--tb-space-3);
 }
 .option:focus-within {
