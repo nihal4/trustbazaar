@@ -41,6 +41,28 @@ interface DefaultMethod {
 const DEFAULT_KEY = ['me', 'payment-method'] as const;
 
 /** The order the sheet pays: id, total (poisha) and the query key the app keeps it under. */
+type Api = ReturnType<typeof useApi>;
+
+/** Asks the order until it says it was paid (FR-PAY-02), as long as POLL_LIMIT_MS; the order, or null when it never did. */
+async function waitUntilPaid(api: Api, orderId: string): Promise<{ status: string } | null> {
+  for (let waited = 0; waited < POLL_LIMIT_MS; waited += POLL_MS) {
+    const o = (await api.get(`/orders/${encodeURIComponent(orderId)}`)) as { status: string };
+    if (o.status === 'paid') return o;
+    await new Promise((res) => setTimeout(res, POLL_MS));
+  }
+  return null;
+}
+
+/** The sentence under a payment that failed: the known causes first, then whatever the error says. */
+function failureText(e: unknown, name: string | null | undefined, t: T, lang: Lang): string {
+  if (name === 'feature-off') return t('pay.provider_off');
+  if (name === 'provider-unavailable') return t('pay.provider_unavailable');
+  const reason = (e as Error).message;
+  if (reason === 'bad-redirect') return t('pay.bad_redirect');
+  if (reason === 'not-paid') return t('pay.sheet.not_paid');
+  return errorText(e, t, lang);
+}
+
 export interface PayableOrder {
   id: string;
   total: string;
@@ -130,13 +152,9 @@ export function PaymentSheet({
       }
       await completeMockPayment(r.redirectUrl, 'succeeded');
       // the order's own status says whether it was paid (FR-PAY-02); the sheet never takes the provider's word for it
-      let paid = false;
-      for (let waited = 0; waited < POLL_LIMIT_MS && !paid; waited += POLL_MS) {
-        const o = (await api.get(`/orders/${encodeURIComponent(order.id)}`)) as { status: string };
-        paid = o.status === 'paid';
-        if (paid) paidOrder.current = o;
-        if (!paid) await new Promise((res) => setTimeout(res, POLL_MS));
-      }
+      const paidNow = await waitUntilPaid(api, order.id);
+      if (paidNow) paidOrder.current = paidNow;
+      const paid = paidNow !== null;
       if (!paid) throw new Error('not-paid');
       const rest = MIN_PROCESSING_MS - (Date.now() - started);
       if (rest > 0) await new Promise((res) => setTimeout(res, rest));
@@ -148,17 +166,7 @@ export function PaymentSheet({
       setStep('done');
     } catch (e) {
       const name = problemName(e);
-      setMessage(
-        name === 'feature-off'
-          ? t('pay.provider_off')
-          : name === 'provider-unavailable'
-            ? t('pay.provider_unavailable')
-            : (e as Error).message === 'bad-redirect'
-              ? t('pay.bad_redirect')
-              : (e as Error).message === 'not-paid'
-                ? t('pay.sheet.not_paid')
-                : errorText(e, t, lang),
-      );
+      setMessage(failureText(e, name, t, lang));
       if (name === 'order-state') void queryClient.invalidateQueries({ queryKey: order.key });
       setStep('failed');
     } finally {

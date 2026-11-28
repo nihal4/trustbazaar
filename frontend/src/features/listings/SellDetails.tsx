@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { formatMoney, parseTaka } from '../../lib/money.js';
+import { formatMoney } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
@@ -14,6 +14,7 @@ import { FRESHNESS } from '../../shared/query';
 import { commissionOf, nearestArea, reasonTexts, type Category, type EditableListing, type SellingTerms } from './sell';
 import styles from './sell.module.css';
 import { Button, Checkbox, Input, Radio, Select, Textarea } from '../../shared/ui';
+import { detailsBody, detailsProblems, type DetailsValues } from './sellDetailsBody';
 import { listingKey, percentOf } from './sellShared';
 import { CONDITIONS, FULFILMENT, WEIGHTS, SIZES, useAreas } from './sellOptions';
 
@@ -90,42 +91,31 @@ export function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; 
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    const problems: string[] = [];
-    if (draft && !categoryId) problems.push(t('sell.need.category'));
-    if (title.trim().length < 5) problems.push(t('sell.need.title'));
-    if (description.trim().length < 20) problems.push(t('sell.need.description'));
-    if (!game && !condition) problems.push(t('sell.need.condition'));
-    if (courier && (!weight || !size)) problems.push(t('sell.need.parcel'));
-    let poisha: bigint | null = null;
-    if (saleFormat === 'fixed_price') {
-      const p = parseTaka(price);
-      if (!p.ok || p.poisha <= 0n) problems.push(t('sell.need.price'));
-      else poisha = p.poisha;
-    }
-    const q = Number(quantity);
-    if (saleFormat === 'fixed_price' && !game && !(Number.isInteger(q) && q >= 1 && q <= 9999)) problems.push(t('sell.need.quantity'));
-    if (!l && !game && !area) problems.push(t('sell.need.area'));
-    if (serial.trim() !== '' && !/^[A-Z0-9]{6,30}$/.test(serial.replace(/[\s-]/g, '').toUpperCase())) problems.push(t('sell.need.serial'));
+    const values: DetailsValues = {
+      draft,
+      isNew: !l,
+      game,
+      courier,
+      saleFormat,
+      itemKind,
+      categoryId,
+      title,
+      description,
+      condition,
+      noDefects,
+      serial,
+      fulfilment,
+      weight,
+      size,
+      price,
+      quantity,
+      area,
+      located,
+    };
+    const { problems, poisha } = detailsProblems(values, t);
     setErrors(problems);
     if (problems.length || sending.current) return;
-    const body: Record<string, unknown> = {
-      ...(draft ? { categoryId: Number(categoryId) } : {}),
-      title: title.trim(),
-      description: description.trim(),
-      ...(game
-        ? {}
-        : {
-            condition,
-            noVisibleDefects: noDefects,
-            ...(serial.trim() !== '' ? { serial: serial.trim() } : {}),
-            fulfilmentOptions: fulfilment,
-            weightClass: courier ? weight : null,
-            sizeClass: courier ? size : null,
-          }),
-      ...(saleFormat === 'fixed_price' ? { price: String(poisha), quantity: game ? 1 : q } : {}),
-      ...(area && !game ? { area: { district: area.district, lat: located?.lat ?? area.lat, lng: located?.lng ?? area.lng } } : {}),
-      ...(!l ? { itemKind, saleFormat } : {}),
-    };
+    const body = detailsBody(values, poisha);
     sending.current = true;
     save.mutate(body, {
       onSettled: () => {
