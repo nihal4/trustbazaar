@@ -7,10 +7,10 @@ import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
 import type { OrderView } from './model';
 
-/** NFR-USE-07: where the money is, in one sentence (lib/moneyState.js and the reference catalogue). */
-function moneyText(o: OrderView, t: T, lang: Lang): string {
+/** What the order says about its money, for the sentences below. */
+function describeOrder(o: OrderView) {
   const ms = (s: string | null) => (s ? Date.parse(s) : null);
-  const d = describeMoney(
+  return describeMoney(
     {
       status: o.status,
       escrowState: o.escrow?.state ?? null,
@@ -25,6 +25,11 @@ function moneyText(o: OrderView, t: T, lang: Lang): string {
     },
     o.role,
   );
+}
+
+/** NFR-USE-07: where the money is, in one sentence (lib/moneyState.js and the reference catalogue). */
+function moneyText(o: OrderView, t: T, lang: Lang): string {
+  const d = describeOrder(o);
   const vars: Record<string, string> = {};
   for (const [k, v] of Object.entries(d.vars)) vars[k] = 'money' in v ? formatMoney(BigInt(v.money), lang) : formatDateTime(v.time, lang);
   return t(d.key, vars);
@@ -42,21 +47,6 @@ const SHORT = [
 
 /** Where the money is, short, for the order page: no dates (they are cells in the Deadlines grid). Other states use the full sentence. */
 export function moneyLine(o: OrderView, t: T, lang: Lang): string {
-  const ms = (s: string | null) => (s ? Date.parse(s) : null);
-  const d = describeMoney(
-    {
-      status: o.status,
-      escrowState: o.escrow?.state ?? null,
-      releasePolicy: o.escrow?.releasePolicy ?? 'standard',
-      total: Number(o.total),
-      refunded: Number(o.escrow?.amountRefunded ?? 0),
-      paymentDueAt: ms(o.paymentDueAt) ?? 0,
-      fulfilmentDueAt: ms(o.fulfilmentDueAt) ?? 0,
-      deliveryEventAt: ms(o.deliveryEventAt),
-      autoReleaseAt: ms(o.escrow?.autoReleaseAt ?? null),
-      closedAt: ms(o.closedAt),
-    },
-    o.role,
-  );
+  const d = describeOrder(o);
   return SHORT.includes(d.key) ? t(`order.${d.key}`) : moneyText(o, t, lang);
 }

@@ -7,7 +7,7 @@
   },
   "knip": {},
   "jscpd": {
-    "clones": 13,
-    "duplicatedLines": 184
+    "clones": 8,
+    "duplicatedLines": 116
   }
 }

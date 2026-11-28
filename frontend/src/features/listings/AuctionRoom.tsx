@@ -5,26 +5,20 @@
 // the meaning. The seller sees the room read-only. "Sit this one out" turns off this page's announcements and nothing else (no storage, SEC-SES-03).
 import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { takeEarly } from '../../shared/early';
 import { formatMoney, toLocalDigits } from '../../lib/money.js';
-import { useApi } from '../../shared/api';
 import { serverClock } from '../../shared/clock';
 import { signInPath } from '../../shared/document';
-import { errorText } from '../../shared/errors';
-import { FormMessage } from '../../shared/form';
 import { useT } from '../../shared/language/Language';
 import type { Lang } from '../../shared/language/lang';
 import { useMe } from '../../shared/me';
-import { isApiError } from '../../shared/problems';
-import { FRESHNESS } from '../../shared/query';
 import { BidForm } from './AuctionBidForm';
 import { Countdown } from './Countdown';
 import { TitleParts } from './TitleParts';
-import { listingKey, type ListingView } from './model';
+import type { ListingView } from './model';
 import { useAuctionLive } from './useAuctionLive';
 import en from '../../messages/en/listings.json';
 import bn from '../../messages/bn/listings.json';
+import { ListingFailed, useListing } from './useListing';
 import styles from './listings.module.css';
 
 const CATALOGUES = { en, bn };
@@ -41,29 +35,13 @@ const formatTime = (iso: string, lang: Lang) =>
 export function Component() {
   const { id = '' } = useParams();
   const { t, lang } = useT(CATALOGUES);
-  const api = useApi();
   const me = useMe();
   const { pathname } = useLocation();
-  const listing = useQuery({
-    queryKey: listingKey(id),
-    queryFn: async ({ signal }) =>
-      (await takeEarly<ListingView>(`/listings/${id}`)) ?? (api.get(`/listings/${encodeURIComponent(id)}`, { signal }) as Promise<ListingView>),
-    staleTime: FRESHNESS.search,
-    retry: false,
-  });
+  const listing = useListing(id);
   if (listing.isPending || me.isPending) return <p role="status">{t('shell.loading')}</p>;
   if (me.isError) return <Navigate to={signInPath(pathname)} replace />;
   if (listing.isError) {
-    return isApiError(listing.error, 404) ? (
-      <div>
-        <h1>{t('listing.not_found')}</h1>
-        <p>
-          <Link to="/search">{t('shell.home_link')}</Link>
-        </p>
-      </div>
-    ) : (
-      <FormMessage kind="error">{errorText(listing.error, t, lang)}</FormMessage>
-    );
+    return <ListingFailed error={listing.error} t={t} lang={lang} />;
   }
   const l = listing.data;
   if (l.saleFormat !== 'auction' || !l.auction) {

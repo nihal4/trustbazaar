@@ -16,6 +16,7 @@ import { FRESHNESS } from '../../shared/query';
 import en from '../../messages/en/chat.json';
 import bn from '../../messages/bn/chat.json';
 import { fetchThreads, THREADS_KEY, type ThreadPage } from './model';
+import { SignedOutNotice } from './SignedOutNotice';
 import styles from './chat.module.css';
 import { Avatar, Button } from '../../shared/ui';
 
@@ -40,17 +41,7 @@ export function Component() {
   useLiveEvent('chat.message', () => void queryClient.invalidateQueries({ queryKey: THREADS_KEY }), me.isSuccess);
 
   if (me.isPending) return <p role="status">{t('shell.loading')}</p>;
-  if (me.isError) {
-    return (
-      <div className={styles.page}>
-        <h1>{t('chat.title')}</h1>
-        <p>{t('chat.signed_out')}</p>
-        <p>
-          <Link to={`/signin?next=${encodeURIComponent('/messages')}`}>{t('shell.sign_in')}</Link>
-        </p>
-      </div>
-    );
-  }
+  if (me.isError) return <SignedOutNotice next="/messages" t={t} />;
   if (pages.isPending) return <p role="status">{t('shell.loading')}</p>;
   if (pages.isError)
     return (

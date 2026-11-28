@@ -25,6 +25,7 @@ import { FRESHNESS } from '../../shared/query';
 import en from '../../messages/en/chat.json';
 import bn from '../../messages/bn/chat.json';
 import { fetchMessages, fetchThreads, newClientId, THREADS_KEY, toChatMessage, type ChatMessage, type LiveMessage, type ThreadSummary } from './model';
+import { SignedOutNotice } from './SignedOutNotice';
 import styles from './chat.module.css';
 
 import { ThreadActions } from './ThreadActions';
@@ -64,17 +65,7 @@ export function Component() {
   const me = useMe();
   const { thread: id = '' } = useParams();
   if (me.isPending) return <p role="status">{t('shell.loading')}</p>;
-  if (me.isError) {
-    return (
-      <div className={styles.page}>
-        <h1>{t('chat.title')}</h1>
-        <p>{t('chat.signed_out')}</p>
-        <p>
-          <Link to={`/signin?next=${encodeURIComponent('/messages/' + id)}`}>{t('shell.sign_in')}</Link>
-        </p>
-      </div>
-    );
-  }
+  if (me.isError) return <SignedOutNotice next={'/messages/' + id} t={t} />;
   return <Conversation key={id} id={id} t={t} lang={lang} />;
 }
 

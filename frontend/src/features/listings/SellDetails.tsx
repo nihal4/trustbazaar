@@ -11,6 +11,7 @@ import type { Lang } from '../../shared/language/lang';
 import { fieldErrors } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { commissionOf, nearestArea, reasonTexts, type Category, type EditableListing, type SellingTerms } from './sell';
+import { SellErrors } from './SellErrors';
 import styles from './sell.module.css';
 import { Button, Checkbox, Input, Radio, Select, Textarea } from '../../shared/ui';
 import { detailsBody, detailsProblems, refusedMessage, type DetailsValues } from './sellDetailsBody';
@@ -129,16 +130,7 @@ export function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; 
   return (
     <form onSubmit={submit} noValidate className={`${styles.panel} ${styles.form}`} aria-labelledby="details-title">
       <h2 id="details-title">{t('sell.details')}</h2>
-      {errors.length > 0 && (
-        <div role="alert" className={styles.errors}>
-          <p>{t('sell.fix')}</p>
-          <ul>
-            {errors.map((x) => (
-              <li key={x}>{x}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <SellErrors errors={errors} t={t} />
       {message && <FormMessage kind="error">{message}</FormMessage>}
       {!l && (
         <fieldset className={styles.choice}>
