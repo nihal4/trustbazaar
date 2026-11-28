@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ActionCell, ActionList, Calendar, Card, ConfirmDialog, FactList, Panel, Popup, Section, Stepper, Tab, Table, Tabs } from './index';
+import { ActionCell, ActionList, Calendar, Card, ConfirmDialog, FactList, FilePicker, Panel, Popup, Section, Stepper, Tab, Table, Tabs } from './index';
 
 afterEach(cleanup);
 const css = (name: string) => readFileSync(join(__dirname, name), 'utf8');
@@ -233,5 +233,24 @@ describe('ActionList (U11-15)', () => {
     expect(screen.getByRole('button', { name: 'Confirm receipt' })).toHaveProperty('type', 'button');
     expect(screen.getByRole('link', { name: 'Open chat' })).toHaveProperty('href', expect.stringContaining('/disputes/1'));
     expect(screen.getByRole('button', { name: 'Add an address' })).toBeTruthy();
+  });
+});
+
+describe('FilePicker (U11-19)', () => {
+  it('NFR-USE-06 the cell is the label of the input, and the chosen files go to the page', () => {
+    const onFiles = vi.fn();
+    render(<FilePicker id="proof" action="Choose files" status="No file chosen" accept="image/png" multiple onFiles={onFiles} />);
+    const input = screen.getByLabelText(/^Choose files/) as HTMLInputElement;
+    expect(input.type).toBe('file');
+    expect(input.multiple).toBe(true);
+    expect(screen.getByText('No file chosen')).toBeTruthy();
+    fireEvent.change(input, { target: { files: [new File(['x'], 'a.png', { type: 'image/png' })] } });
+    expect(onFiles).toHaveBeenCalledOnce();
+    expect(onFiles.mock.calls[0][0]).toHaveLength(1);
+  });
+
+  it('NFR-USE-06 a disabled picker cannot be used', () => {
+    render(<FilePicker id="proof" action="Add photos" accept="image/png" disabled onFiles={() => undefined} />);
+    expect((screen.getByLabelText('Add photos') as HTMLInputElement).disabled).toBe(true);
   });
 });

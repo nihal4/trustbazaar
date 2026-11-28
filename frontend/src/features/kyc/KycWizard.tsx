@@ -11,12 +11,13 @@ import { DateField } from '../../shared/DateField';
 import { ErrorSummary, FormMessage, TextField, type SummaryItem } from '../../shared/form';
 import { ME_KEY } from '../../shared/me';
 import { fieldErrors, isApiError, problemName } from '../../shared/problems';
-import { Capture, Preview } from './Capture';
+import { Capture } from './Capture';
 import { useKycT } from './common';
 import { FILES_FOR, isSelfie, normaliseDocNumber, STATUS_KEY, validDateOfBirth, validDocNumber, type Challenge, type DocType, type ImageKind } from './model';
 import styles from './kyc.module.css';
 import { Button } from '../../shared/ui';
 import { Step, Steps, Side, isImage } from './kycShared';
+import { IntroStep, ReviewStep } from './kycSteps';
 
 export function Wizard() {
   const { t, lang } = useKycT();
@@ -138,6 +139,11 @@ export function Wizard() {
       setMessage(errorText(err, t, lang));
       return;
     }
+    fieldsRefused(err);
+  };
+
+  /** The server refused some fields: each is marked on its own step, and the first of them is where the user goes back to. */
+  const fieldsRefused = (err: unknown) => {
     const fields = fieldErrors(err);
     const de: typeof detailErrors = {};
     const ie: typeof imageErrors = {};
@@ -194,17 +200,7 @@ export function Wizard() {
         </h2>
         {message && <FormMessage kind="error">{message}</FormMessage>}
 
-        {step === 'intro' && (
-          <div>
-            <p>{t('intro.lead')}</p>
-            <ul>
-              {(['document', 'both_sides', 'selfie', 'light', 'whole', 'time'] as const).map((k) => (
-                <li key={k}>{t(`intro.${k}`)}</li>
-              ))}
-            </ul>
-            <p>{t('intro.privacy')}</p>
-          </div>
-        )}
+        {step === 'intro' && <IntroStep t={t} />}
 
         {step === 'details' && (
           <form id="kyc-details" onSubmit={next} noValidate>
@@ -288,40 +284,7 @@ export function Wizard() {
           </>
         )}
 
-        {step === 'review' && (
-          <div>
-            <dl className={styles.facts}>
-              <div>
-                <dt>{t('details.type')}</dt>
-                <dd>{t(`details.type.${docType}`)}</dd>
-              </div>
-              <div>
-                <dt>{t(`details.number.${docType}`)}</dt>
-                <dd>{normaliseDocNumber(details.docNumber)}</dd>
-              </div>
-              <div>
-                <dt>{t('details.name')}</dt>
-                <dd>{details.fullName.trim()}</dd>
-              </div>
-              <div>
-                <dt>{t('details.dob')}</dt>
-                <dd>{toLocalDigits(details.dateOfBirth, lang)}</dd>
-              </div>
-            </dl>
-            <ul className={styles.thumbs}>
-              {FILES_FOR[docType].map(
-                (k) =>
-                  images[k] && (
-                    <li key={k}>
-                      <Preview image={images[k]!} alt={t(`image.${k}.title`)} />
-                      <span>{t(`image.${k}.title`)}</span>
-                    </li>
-                  ),
-              )}
-            </ul>
-            <p>{t('review.once')}</p>
-          </div>
-        )}
+        {step === 'review' && <ReviewStep t={t} lang={lang} docType={docType} details={details} images={images} />}
 
         <div className={styles.nav}>
           {index > 0 && (

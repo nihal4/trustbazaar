@@ -10,16 +10,16 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { formatMoney } from '../lib/money.js';
 import { useApi } from './api';
 import { errorText } from './errors';
-import { FormMessage } from './form';
 import type { T } from './language/catalogue';
 import type { Lang } from './language/lang';
 import { problemName } from './problems';
 import { SimulatedBanner } from './SimulatedBanner';
-import { cardLooksComplete, detectBrand, formatCardNumber, formatExpiry, lastFour, maskWallet, walletLooksValid } from './cardBrand';
+import { cardLooksComplete, detectBrand, lastFour, maskWallet, walletLooksValid } from './cardBrand';
 import { away, completeMockPayment, isMockProviderPage, providerPage, type Provider } from './payments';
+import { CardFields, WalletFields } from './paymentFields';
+import { ChooseStep, DoneStep, FailedStep, ProcessingStep, type Method } from './paymentSteps';
 import styles from './paymentSheet.module.css';
 
-type Method = 'bkash' | 'nagad' | 'card';
 const PROVIDER_OF: Record<Method, Provider> = { bkash: 'bkash', nagad: 'nagad', card: 'stripe' };
 const METHODS: Method[] = ['bkash', 'nagad', 'card'];
 /** The sheet shows the processing for at least this long, so a quick simulated provider still reads as a payment being made. */
@@ -41,6 +41,28 @@ interface DefaultMethod {
 const DEFAULT_KEY = ['me', 'payment-method'] as const;
 
 /** The order the sheet pays: id, total (poisha) and the query key the app keeps it under. */
+type Api = ReturnType<typeof useApi>;
+
+/** Asks the order until it says it was paid (FR-PAY-02), as long as POLL_LIMIT_MS; the order, or null when it never did. */
+async function waitUntilPaid(api: Api, orderId: string): Promise<{ status: string } | null> {
+  for (let waited = 0; waited < POLL_LIMIT_MS; waited += POLL_MS) {
+    const o = (await api.get(`/orders/${encodeURIComponent(orderId)}`)) as { status: string };
+    if (o.status === 'paid') return o;
+    await new Promise((res) => setTimeout(res, POLL_MS));
+  }
+  return null;
+}
+
+/** The sentence under a payment that failed: the known causes first, then whatever the error says. */
+function failureText(e: unknown, name: string | null | undefined, t: T, lang: Lang): string {
+  if (name === 'feature-off') return t('pay.provider_off');
+  if (name === 'provider-unavailable') return t('pay.provider_unavailable');
+  const reason = (e as Error).message;
+  if (reason === 'bad-redirect') return t('pay.bad_redirect');
+  if (reason === 'not-paid') return t('pay.sheet.not_paid');
+  return errorText(e, t, lang);
+}
+
 export interface PayableOrder {
   id: string;
   total: string;
@@ -130,13 +152,9 @@ export function PaymentSheet({
       }
       await completeMockPayment(r.redirectUrl, 'succeeded');
       // the order's own status says whether it was paid (FR-PAY-02); the sheet never takes the provider's word for it
-      let paid = false;
-      for (let waited = 0; waited < POLL_LIMIT_MS && !paid; waited += POLL_MS) {
-        const o = (await api.get(`/orders/${encodeURIComponent(order.id)}`)) as { status: string };
-        paid = o.status === 'paid';
-        if (paid) paidOrder.current = o;
-        if (!paid) await new Promise((res) => setTimeout(res, POLL_MS));
-      }
+      const paidNow = await waitUntilPaid(api, order.id);
+      if (paidNow) paidOrder.current = paidNow;
+      const paid = paidNow !== null;
       if (!paid) throw new Error('not-paid');
       const rest = MIN_PROCESSING_MS - (Date.now() - started);
       if (rest > 0) await new Promise((res) => setTimeout(res, rest));
@@ -148,17 +166,7 @@ export function PaymentSheet({
       setStep('done');
     } catch (e) {
       const name = problemName(e);
-      setMessage(
-        name === 'feature-off'
-          ? t('pay.provider_off')
-          : name === 'provider-unavailable'
-            ? t('pay.provider_unavailable')
-            : (e as Error).message === 'bad-redirect'
-              ? t('pay.bad_redirect')
-              : (e as Error).message === 'not-paid'
-                ? t('pay.sheet.not_paid')
-                : errorText(e, t, lang),
-      );
+      setMessage(failureText(e, name, t, lang));
       if (name === 'order-state') void queryClient.invalidateQueries({ queryKey: order.key });
       setStep('failed');
     } finally {
@@ -210,44 +218,18 @@ export function PaymentSheet({
         <SimulatedBanner kind="payment" />
 
         {step === 'choose' && (
-          <>
-            <h2 id="pay-sheet-title" className={styles.title}>
-              {t('pay.sheet.title', { total })}
-            </h2>
-            <p className={styles.lead}>{t('pay.sheet.choose')}</p>
-            <ul className={styles.methods}>
-              {(defaults ? [defaults.method, ...METHODS.filter((m) => m !== defaults.method)] : METHODS).map((m) => (
-                <li key={m}>
-                  <button
-                    type="button"
-                    className={styles.method}
-                    onClick={() => {
-                      setMethod(m);
-                      setStep('details');
-                    }}
-                  >
-                    <span className={styles.methodName}>{t(`pay.method.${m}`)}</span>
-                    <span className={styles.methodNote}>
-                      {defaults && defaults.method === m ? `${t('pay.sheet.default')}: ${defaults.label}` : t(`pay.sheet.note.${m}`)}
-                    </span>
-                    <svg viewBox="0 0 12 12" width="14" height="14" aria-hidden="true" focusable="false">
-                      <path d="M4 1.5 L8.5 6 L4 10.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <div className={styles.answer}>
-              {defaults && (
-                <button type="button" className={styles.quiet} onClick={() => void forget()}>
-                  {t('pay.sheet.forget')}
-                </button>
-              )}
-              <button type="button" className={styles.quiet} onClick={close}>
-                {t('pay.cancel')}
-              </button>
-            </div>
-          </>
+          <ChooseStep
+            t={t}
+            total={total}
+            methods={METHODS}
+            defaults={defaults}
+            onPick={(m) => {
+              setMethod(m);
+              setStep('details');
+            }}
+            onForget={() => void forget()}
+            onCancel={close}
+          />
         )}
 
         {step === 'details' && method && (
@@ -264,82 +246,20 @@ export function PaymentSheet({
             </h2>
             <p className={styles.lead}>{t('pay.sheet.any_details')}</p>
             {method === 'card' ? (
-              <>
-                <label className={styles.field}>
-                  <span>
-                    {t('pay.sheet.card_number')}
-                    {brand.label && (
-                      <strong className={styles.brand} data-brand={brand.id}>
-                        {brand.label}
-                      </strong>
-                    )}
-                  </span>
-                  <input
-                    inputMode="numeric"
-                    autoComplete="cc-number"
-                    value={number}
-                    onChange={(e) => setNumber(formatCardNumber(e.target.value))}
-                    placeholder="0000 0000 0000 0000"
-                    maxLength={23}
-                  />
-                </label>
-                <label className={styles.field}>
-                  <span>{t('pay.sheet.holder')}</span>
-                  <input autoComplete="cc-name" value={holder} onChange={(e) => setHolder(e.target.value)} maxLength={60} />
-                </label>
-                <div className={styles.pair}>
-                  <label className={styles.field}>
-                    <span>{t('pay.sheet.expiry')}</span>
-                    <input
-                      inputMode="numeric"
-                      autoComplete="cc-exp"
-                      value={expiry}
-                      onChange={(e) => setExpiry(formatExpiry(e.target.value))}
-                      placeholder="MM/YY"
-                      maxLength={5}
-                    />
-                  </label>
-                  <label className={styles.field}>
-                    <span>{t('pay.sheet.cvc')}</span>
-                    <input
-                      inputMode="numeric"
-                      autoComplete="cc-csc"
-                      type="password"
-                      value={cvc}
-                      onChange={(e) => setCvc(e.target.value.replace(/\D/g, '').slice(0, brand.cvc))}
-                      placeholder={'•'.repeat(brand.cvc)}
-                      maxLength={brand.cvc}
-                    />
-                  </label>
-                </div>
-              </>
+              <CardFields
+                t={t}
+                brand={brand}
+                number={number}
+                setNumber={setNumber}
+                holder={holder}
+                setHolder={setHolder}
+                expiry={expiry}
+                setExpiry={setExpiry}
+                cvc={cvc}
+                setCvc={setCvc}
+              />
             ) : (
-              <>
-                <label className={styles.field}>
-                  <span>{t('pay.sheet.wallet', { method: t(`pay.method.${method}`) })}</span>
-                  <input
-                    inputMode="numeric"
-                    autoComplete="tel-national"
-                    value={wallet}
-                    onChange={(e) => setWallet(e.target.value.replace(/\D/g, '').slice(0, 11))}
-                    placeholder="01XXXXXXXXX"
-                    maxLength={11}
-                  />
-                </label>
-                <label className={styles.field}>
-                  <span>{t('pay.sheet.pin', { method: t(`pay.method.${method}`) })}</span>
-                  <input
-                    inputMode="numeric"
-                    type="password"
-                    autoComplete="off"
-                    value={pin}
-                    onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    placeholder="••••"
-                    maxLength={6}
-                  />
-                </label>
-                <p className={styles.lead}>{t('pay.sheet.no_otp')}</p>
-              </>
+              <WalletFields t={t} method={method} wallet={wallet} setWallet={setWallet} pin={pin} setPin={setPin} />
             )}
             <button type="submit" className={styles.pay} disabled={!ready}>
               {t('pay.pay', { total })}
@@ -350,70 +270,20 @@ export function PaymentSheet({
           </form>
         )}
 
-        {step === 'processing' && (
-          <div className={styles.center} role="status" aria-live="polite">
-            <h2 id="pay-sheet-title" className={styles.title}>
-              {t('pay.sheet.processing')}
-            </h2>
-            <p className={styles.lead}>{t('pay.sheet.processing_note', { total })}</p>
-            <div className={styles.bar} aria-hidden="true">
-              <span />
-            </div>
-          </div>
-        )}
+        {step === 'processing' && <ProcessingStep t={t} total={total} />}
 
         {step === 'done' && paidWith && (
-          <div className={styles.center}>
-            <svg className={styles.tick} viewBox="0 0 48 48" width="56" height="56" aria-hidden="true" focusable="false">
-              <circle cx="24" cy="24" r="21" fill="none" stroke="currentColor" strokeWidth="3" />
-              <path d="M14 25 l7 7 l13 -15" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <h2 id="pay-sheet-title" className={styles.title} role="status">
-              {t('pay.sheet.complete')}
-            </h2>
-            <p className={styles.amount}>{total}</p>
-            <p className={styles.lead}>{t('pay.sheet.held', { method: paidWith.label })}</p>
-            {onReceipt && (
-              <button type="button" className={styles.quiet} onClick={() => onReceipt(paidOrder.current)}>
-                {t('orders.receipt')}
-              </button>
-            )}
-            {defaults?.label === paidWith.label ? (
-              <button type="button" className={styles.pay} onClick={() => void finish(false)}>
-                {t('pay.sheet.continue')}
-              </button>
-            ) : (
-              <>
-                <p className={styles.ask}>{t('pay.sheet.save_ask', { method: paidWith.label })}</p>
-                <div className={styles.answer}>
-                  <button type="button" className={styles.pay} onClick={() => void finish(true)}>
-                    {t('pay.sheet.save_yes')}
-                  </button>
-                  <button type="button" className={styles.quiet} onClick={() => void finish(false)}>
-                    {t('pay.sheet.save_no')}
-                  </button>
-                </div>
-                <p className={styles.fine}>{t('pay.sheet.save_note')}</p>
-              </>
-            )}
-          </div>
+          <DoneStep
+            t={t}
+            total={total}
+            label={paidWith.label}
+            alreadyDefault={defaults?.label === paidWith.label}
+            onReceipt={onReceipt && (() => onReceipt(paidOrder.current))}
+            onFinish={(save) => void finish(save)}
+          />
         )}
 
-        {step === 'failed' && (
-          <div className={styles.center}>
-            <h2 id="pay-sheet-title" className={styles.title}>
-              {t('pay.sheet.failed')}
-            </h2>
-            {message && <FormMessage kind="error">{message}</FormMessage>}
-            <p className={styles.lead}>{t('pay.sheet.nothing_charged')}</p>
-            <button type="button" className={styles.pay} onClick={() => setStep('details')}>
-              {t('pay.sheet.try_again')}
-            </button>
-            <button type="button" className={styles.quiet} onClick={close}>
-              {t('pay.cancel')}
-            </button>
-          </div>
-        )}
+        {step === 'failed' && <FailedStep t={t} message={message} onRetry={() => setStep('details')} onCancel={close} />}
       </div>
     </dialog>
   );

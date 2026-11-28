@@ -506,22 +506,12 @@
 .sellerRow > * + *:not(.chatError) {
   border-left: 1px solid var(--tb-line);
 }
-.avatar {
+.sellerRow > .sellerAvatar {
   display: grid;
-  place-items: center;
-  width: var(--av);
-  height: auto;
-  align-self: stretch;
-  margin: 7px;
+  align-self: center;
+  justify-self: center;
+  margin: 0;
   padding: 0;
-  box-sizing: border-box;
-  border: 0;
-  border-radius: var(--tb-radius-panel);
-  background: var(--tb-surface);
-  color: var(--tb-text);
-  font-family: var(--tb-font-display);
-  font-weight: 600;
-  font-size: var(--tb-text-xl);
 }
 .sellerRating {
   flex-direction: column;

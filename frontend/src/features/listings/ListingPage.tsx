@@ -27,6 +27,7 @@ import { listingKey, type ListingView } from './model';
 import en from '../../messages/en/listings.json';
 import bn from '../../messages/bn/listings.json';
 import styles from './listings.module.css';
+import { Avatar } from '../../shared/ui';
 import { Photos } from './ListingPhotos';
 import { T } from './listingShared';
 import { Details } from './ListingDetails';
@@ -140,9 +141,7 @@ export function Component() {
               {t('listing.seller')}
             </h2>
             <div className={l.seller.pro === true || l.seller.ratingCount ? `${styles.sellerRow} ${styles.sellerRowRated}` : styles.sellerRow}>
-              <span className={styles.avatar} aria-hidden="true">
-                {initials(l.seller.displayName)}
-              </span>
+              <Avatar size="md" name={l.seller.displayName} className={styles.sellerAvatar} />
               <div className={styles.sellerInfo}>
                 <p className={styles.sellerLine}>
                   <Link className={styles.sellerName} to={`/users/${encodeURIComponent(l.seller.id)}`}>
@@ -222,16 +221,6 @@ const Shield = () => (
     />
   </svg>
 );
-
-/** The first letters of up to two words of the seller's name, for the round badge beside it. */
-const initials = (name: string) =>
-  name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => [...w][0] ?? '')
-    .join('')
-    .toUpperCase();
 
 function Status({ l, own, t }: { l: ListingView; own: boolean; t: T }) {
   if (l.status === 'sold')

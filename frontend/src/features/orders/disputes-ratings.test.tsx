@@ -146,7 +146,7 @@ describe('disputes', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
     expect(await screen.findByText('Describe the problem in at least 20 characters.')).toBeTruthy();
     fireEvent.change(screen.getByLabelText('Describe the problem'), { target: { value: '  The shade is cracked and the switch does not work.  ' } });
-    const files = screen.getByLabelText(/^Photos and videos \(optional, up to 10/);
+    const files = screen.getByLabelText(/^Choose files/);
     fireEvent.change(files, { target: { files: [image('a.pdf', 'application/pdf')] } });
     expect(
       await screen.findByText('a.pdf cannot be used. Choose a JPEG, PNG or WebP photo of at most 10 MB, or an MP4, MOV or WebM video of at most 50 MB.'),

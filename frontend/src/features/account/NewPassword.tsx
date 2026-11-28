@@ -42,6 +42,25 @@ export function NewPasswordForm({
   const aria = (f: Target) => fieldAria(message?.target === f ? message.text : null, Boolean(message?.ok), 'reset-message', 'reset-head');
   const say = (text: string, target: Target | null, ok = false) => setMessage({ text, target, ok });
 
+  // what a refused reset says, and where it puts the focus
+  const refused = (err: unknown) => {
+    const name = problemName(err);
+    const reason = rejectedPasswordReason(err);
+    const wait = retryAfter(err);
+    if (reason) say(passwordReasonText(reason, t, lang), 'password');
+    else if (wait !== null) {
+      setWaitUntil(untilAfter(wait));
+      say(t('signin.too_many'), null);
+    } else if (name === 'mfa-required') {
+      setAskMfa(true);
+      say(t('reset.mfa_needed'), askMfa ? 'mfa' : null, !askMfa);
+    } else if (name === 'mfa-failed') say(t('code.wrong'), 'mfa');
+    else if (name === 'otp-failed' && phone) say(t('code.wrong'), 'code');
+    else if ((name === 'otp-expired' || name === 'link-invalid') && phone) say(t('reset.code_expired'), 'code');
+    else if (name === 'otp-failed' || name === 'otp-expired' || name === 'link-invalid') onLinkRefused?.();
+    else say(otherError(err, t, lang), null);
+  };
+
   const submit = async (ev: FormEvent) => {
     ev.preventDefault();
     if (busy) return;
@@ -66,21 +85,7 @@ export function NewPasswordForm({
       onDone();
       return;
     } catch (err) {
-      const name = problemName(err);
-      const reason = rejectedPasswordReason(err);
-      const wait = retryAfter(err);
-      if (reason) say(passwordReasonText(reason, t, lang), 'password');
-      else if (wait !== null) {
-        setWaitUntil(untilAfter(wait));
-        say(t('signin.too_many'), null);
-      } else if (name === 'mfa-required') {
-        setAskMfa(true);
-        say(t('reset.mfa_needed'), askMfa ? 'mfa' : null, !askMfa);
-      } else if (name === 'mfa-failed') say(t('code.wrong'), 'mfa');
-      else if (name === 'otp-failed' && phone) say(t('code.wrong'), 'code');
-      else if ((name === 'otp-expired' || name === 'link-invalid') && phone) say(t('reset.code_expired'), 'code');
-      else if (name === 'otp-failed' || name === 'otp-expired' || name === 'link-invalid') onLinkRefused?.();
-      else say(otherError(err, t, lang), null);
+      refused(err);
     }
     setBusy(false);
   };

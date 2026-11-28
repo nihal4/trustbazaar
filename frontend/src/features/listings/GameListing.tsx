@@ -16,7 +16,7 @@ import { fieldErrors } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { reasonTexts, type EditableListing } from './sell';
 import styles from './sell.module.css';
-import { Button, Input, Select, Textarea } from '../../shared/ui';
+import { Button, FilePicker, Input, Select, Textarea } from '../../shared/ui';
 
 export interface Game {
   id: number;
@@ -238,15 +238,14 @@ function Proof({ l, o, t, lang }: { l: EditableListing; o: Ownership; t: T; lang
           </p>
           {placement && <p>{t('sell.game.placement', { placement })}</p>}
           <p>{t('sell.game.code_expires', { when: formatDeadline(Date.parse(p.expiresAt), now, lang) })}</p>
-          <label htmlFor="proof-file">{t('sell.game.upload')}</label>
-          <input
-            ref={input}
+          <FilePicker
+            inputRef={input}
             id="proof-file"
-            type="file"
+            action={t('sell.game.upload')}
             accept="image/jpeg,image/png,image/webp"
             disabled={upload.isPending}
-            onChange={(e) => {
-              const f = e.target.files?.[0];
+            onFiles={(list) => {
+              const f = list?.[0];
               if (f) upload.mutate(f);
             }}
           />

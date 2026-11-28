@@ -144,7 +144,7 @@ export default tseslint.config(
     ignores: ['src/**/*.test.{ts,tsx}', 'src/**/*.stories.tsx'],
     plugins: { sonarjs },
     rules: {
-      'sonarjs/cognitive-complexity': ['warn', 20],
+      'sonarjs/cognitive-complexity': ['error', 20],
       'sonarjs/no-identical-functions': 'warn',
       'sonarjs/no-duplicate-string': ['warn', { threshold: 5 }],
       'sonarjs/no-collapsible-if': 'warn',
@@ -152,13 +152,13 @@ export default tseslint.config(
       'sonarjs/no-nested-template-literals': 'warn',
     },
   },
-  // Size and complexity limits (U11-10): ERRORS, set just above the largest file and function the code had when the large components were split, so that nothing grows past them; the
-  // lower thresholds that still have offenders (cognitive complexity over 20 and the nested conditionals) are warnings held down by the health ratchet (scripts/health-ratchet.mjs).
+  // Size and complexity limits (U11-10; the file length of 300 and the cognitive complexity of 20 joined in U11-19): ERRORS, set just above the largest file and function the code had when the large components were split, so that nothing grows past them; the
+  // lower thresholds that still have offenders (the nested conditionals) are warnings held down by the health ratchet (scripts/health-ratchet.mjs).
   {
     files: ['src/**/*.{ts,tsx}'],
     ignores: ['src/**/*.test.{ts,tsx}', 'src/**/*.stories.tsx'],
     rules: {
-      'max-lines': ['error', { max: 400, skipBlankLines: true, skipComments: true }],
+      'max-lines': ['error', { max: 300, skipBlankLines: true, skipComments: true }],
       'max-lines-per-function': ['error', { max: 360, skipBlankLines: true, skipComments: true, IIFEs: true }],
       complexity: ['error', 60],
     },

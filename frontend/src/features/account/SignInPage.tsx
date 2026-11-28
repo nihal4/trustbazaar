@@ -13,6 +13,7 @@ import { otherError, retryAfter, useAccountT, useAfterSignIn } from './common';
 import { useViewport } from '../../shared/gridCell';
 import { loginProblem, normaliseLogin } from './input';
 import { AuthSplit } from './AuthSplit';
+import { NoAccount } from './registerParts';
 import { authRows, fieldAria, headFor, Slot } from './AuthParts';
 import styles from './account.module.css';
 import { Button } from '../../shared/ui';
@@ -246,11 +247,7 @@ export function Component() {
   };
 
   // the foot of the first two steps: the way to an account, in the words the page already had
-  const toRegister = (
-    <p className={styles.footNote}>
-      {t('signin.no_account')} <Link to={next ? `/register?next=${encodeURIComponent(next)}` : '/register'}>{t('register.link')}</Link>
-    </p>
-  );
+  const toRegister = <NoAccount t={t} next={next} />;
 
   if (step === 'login') {
     return (

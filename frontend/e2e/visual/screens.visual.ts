@@ -7,6 +7,9 @@ import { expect, test } from '@playwright/test';
 import { openScreen, volatile } from './harness';
 
 const SCREENS = [
+  { name: 'order-buyer-pay', fixture: 'order-buyer-pay' },
+  { name: 'order-buyer-dispute', fixture: 'order-buyer-dispute' },
+  { name: 'dispute-seller-return', fixture: 'dispute-seller-return' },
   { name: 'home', fixture: 'home' },
   { name: 'order-buyer', fixture: 'order-buyer' },
   { name: 'order-seller', fixture: 'order-seller' },
@@ -26,7 +29,7 @@ for (const screen of SCREENS) {
 }
 
 // Every other recorded screen (screens.json): the dark theme at both widths and the light theme on the desktop, so a change to a shared style shows on every page that uses it
-const DONE = new Set(['home', 'order-buyer', 'order-seller', 'dispute-seller']);
+const DONE = new Set(['home', 'order-buyer', 'order-seller', 'dispute-seller', 'order-buyer-pay', 'order-buyer-dispute', 'dispute-seller-return']);
 const REST: { name: string }[] = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'screens.json'), 'utf8')).filter(
   (s: { name: string }) => !DONE.has(s.name),
 );
@@ -45,7 +48,9 @@ for (const screen of REST) {
 }
 
 // Bangla has longer words and its own line height: the text-heavy screens at the phone width, dark
-for (const screen of SCREENS.filter((s) => s.name !== 'order-seller')) {
+for (const screen of SCREENS.filter(
+  (s) => s.name !== 'order-seller' && !s.name.endsWith('-pay') && !s.name.endsWith('-dispute') && !s.name.endsWith('-return'),
+)) {
   test(`${screen.name} dark 390 bangla`, async ({ page }) => {
     const { unmatched } = await openScreen(page, screen.fixture, { theme: 'dark', lang: 'bn', width: 390 });
     expect(unmatched, 'requests the fixture has no answer for').toEqual([]);
@@ -104,6 +109,31 @@ const STATES = [
     fixture: 'order-seller',
     open: async (page: import('@playwright/test').Page) => {
       await page.getByRole('button', { name: 'Propose a place and time' }).click();
+      await page.getByRole('dialog').waitFor();
+    },
+  },
+  // the courier, dispute and return cells (U11-19), from fixtures made by derive-fixtures.mjs: the pay panel's choice, the dispute cell and the seller's return step
+  {
+    name: 'order-buyer-courier-popup',
+    fixture: 'order-buyer-pay',
+    open: async (page: import('@playwright/test').Page) => {
+      await page.getByRole('button', { name: /Courier to my address/ }).click();
+      await page.getByRole('dialog').waitFor();
+    },
+  },
+  {
+    name: 'order-buyer-dispute-popup',
+    fixture: 'order-buyer-dispute',
+    open: async (page: import('@playwright/test').Page) => {
+      await page.getByRole('button', { name: 'Open a dispute' }).click();
+      await page.getByRole('dialog').waitFor();
+    },
+  },
+  {
+    name: 'dispute-seller-return-popup',
+    fixture: 'dispute-seller-return',
+    open: async (page: import('@playwright/test').Page) => {
+      await page.getByRole('button', { name: 'Check the item' }).click();
       await page.getByRole('dialog').waitFor();
     },
   },
