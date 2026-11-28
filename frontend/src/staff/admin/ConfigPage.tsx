@@ -63,7 +63,7 @@ function Switches({ set, t, lang }: { set: ConfigSet; t: T; lang: Lang }) {
         return (
           <Action
             key={code}
-            title={`${t(`admin.param.${code}`)}: ${t(on ? 'admin.switches.on' : 'admin.switches.off')}`}
+            title={t(`admin.param.${code}`) + ': ' + t(on ? 'admin.switches.on' : 'admin.switches.off')}
             button={t(on ? 'admin.switches.propose_off' : 'admin.switches.propose_on')}
             consequence={t('staff.member.four_eyes_consequence')}
             t={t}

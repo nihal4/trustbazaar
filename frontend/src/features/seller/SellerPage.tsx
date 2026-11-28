@@ -161,7 +161,7 @@ function Listings({ t, lang }: { t: T; lang: Lang }) {
   const listings = useInfiniteQuery({
     queryKey: ['me', 'listings', state],
     queryFn: ({ pageParam, signal }) =>
-      api.get(`/me/listings?status=${state}${pageParam ? `&cursor=${encodeURIComponent(pageParam)}` : ''}`, { signal }) as Promise<{
+      api.get(`/me/listings?status=${state}` + (pageParam ? '&cursor=' + encodeURIComponent(pageParam) : ''), { signal }) as Promise<{
         items: MyListing[];
         nextCursor: string | null;
       }>,

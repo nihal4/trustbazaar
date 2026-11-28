@@ -76,7 +76,7 @@ export async function start(root: HTMLElement, o: Options = {}): Promise<() => v
     show(root, h('h1', { tabindex: '-1' }, t('secure.not_found')), h('p', {}, h('a', { href: '/' }, t('secure.home'))));
     return () => {};
   }
-  document.title = `${t(`secure.${m[2]}.title`)} · TrustBazaar`;
+  document.title = t(`secure.${m[2]}.title`) + ' · TrustBazaar';
   const ctx: Ctx = { api, t, lang, orderId: m[1].toLowerCase(), root, keys: o.keys ?? browserKeys, now };
   try {
     await SCREENS[m[2] as keyof typeof SCREENS](ctx);

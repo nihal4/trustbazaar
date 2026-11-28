@@ -64,7 +64,7 @@ export function Component() {
         <h1>{t('chat.title')}</h1>
         <p>{t('chat.signed_out')}</p>
         <p>
-          <Link to={`/signin?next=${encodeURIComponent(`/messages/${id}`)}`}>{t('shell.sign_in')}</Link>
+          <Link to={`/signin?next=${encodeURIComponent('/messages/' + id)}`}>{t('shell.sign_in')}</Link>
         </p>
       </div>
     );

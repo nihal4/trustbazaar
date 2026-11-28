@@ -63,7 +63,7 @@ export function Component() {
                 [t('staff.listing.price'), v.price ? formatMoney(BigInt(v.price), lang) : v.auction?.price ? formatMoney(BigInt(v.auction.price), lang) : null],
                 [t('staff.listing.condition'), v.condition],
                 [t('staff.listing.district'), v.district],
-                [t('staff.listing.seller'), `${v.seller.displayName}${v.seller.verified ? ` · ${t('staff.case.verified')}` : ''} (${short(v.seller.id)})`],
+                [t('staff.listing.seller'), v.seller.displayName + (v.seller.verified ? ' · ' + t('staff.case.verified') : '') + ` (${short(v.seller.id)})`],
               ]}
             />
             <h3>{t('staff.listing.description')}</h3>

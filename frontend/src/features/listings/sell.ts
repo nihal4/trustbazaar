@@ -119,7 +119,9 @@ export const REASONS = new Set([
 export function reasonTexts(errors: FieldError[], t: T): string[] {
   return errors.map(
     (f) =>
-      `${t(FIELDS.has(f.field) ? `sell.field.${f.field}` : 'sell.field.listing')}: ${t(REASONS.has(f.reason) ? `sell.error.${f.reason}` : 'sell.error.invalid')}`,
+      t(FIELDS.has(f.field) ? 'sell.field.' + f.field : 'sell.field.listing') +
+      ': ' +
+      t(REASONS.has(f.reason) ? 'sell.error.' + f.reason : 'sell.error.invalid'),
   );
 }
 const FIELDS = new Set([

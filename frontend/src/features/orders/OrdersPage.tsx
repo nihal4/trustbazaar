@@ -39,7 +39,7 @@ export function Component() {
   const orders = useInfiniteQuery({
     queryKey: ordersKey(role, stage),
     queryFn: ({ pageParam, signal }) =>
-      api.get(`/orders?role=${role}&stage=${stage}${pageParam ? `&cursor=${encodeURIComponent(pageParam)}` : ''}`, { signal }) as Promise<{
+      api.get(`/orders?role=${role}&stage=${stage}` + (pageParam ? '&cursor=' + encodeURIComponent(pageParam) : ''), { signal }) as Promise<{
         items: OrderView[];
         nextCursor: string | null;
       }>,

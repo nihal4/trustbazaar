@@ -43,7 +43,7 @@ export const PREFERENCES_KEY = ['me', 'notification-preferences'] as const;
 export const UNREAD_POLL_MS = 60_000;
 
 export const fetchNotifications = (api: Api, cursor?: string, signal?: AbortSignal): Promise<NotificationPage> =>
-  api.get(`/notifications${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`, { signal });
+  api.get('/notifications' + (cursor ? '?cursor=' + encodeURIComponent(cursor) : ''), { signal });
 
 /** The unread count, only while someone is signed in. */
 export function useUnreadCount(): number | null {

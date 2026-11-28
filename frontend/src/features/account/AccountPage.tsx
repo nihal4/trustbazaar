@@ -94,7 +94,7 @@ export function Component() {
             )}
           </h2>
           <ul className={styles.marks}>
-            <Mark on={u.kycStatus === 'verified'} text={`${t('account.kyc')}: ${t(`kyc.status.${u.kycStatus}`)}`} />
+            <Mark on={u.kycStatus === 'verified'} text={t('account.kyc') + ': ' + t(`kyc.status.${u.kycStatus}`)} />
             {u.email && (
               <Mark on={u.emailVerified} text={`${t('field.email')}: ${t(u.emailVerified ? 'account.email_verified' : 'account.email_unverified')}`} />
             )}

@@ -110,7 +110,7 @@ export function PaymentSheet({
   const savedLabel = (m: Saved) =>
     m.kind === 'card'
       ? `${m.brand || t('pay.sheet.card')} ${t('pay.sheet.ending', { last: m.last4 })}`
-      : `${t(`pay.method.${m.kind}`)} ${t('pay.sheet.ending', { last: m.last4 })}`;
+      : t(`pay.method.${m.kind}`) + ' ' + t('pay.sheet.ending', { last: m.last4 });
   const defaults: DefaultMethod | null = saved.data?.method
     ? { method: saved.data.method.kind, label: savedLabel(saved.data.method), saved: saved.data.method }
     : null;
@@ -131,7 +131,7 @@ export function PaymentSheet({
   const label = (m: Method): string =>
     m === 'card'
       ? `${brand.label || t('pay.sheet.card')} ${t('pay.sheet.ending', { last: lastFour(number) })}`
-      : `${t(`pay.method.${m}`)} ${maskWallet(wallet)}`;
+      : t(`pay.method.${m}`) + ' ' + maskWallet(wallet);
 
   async function pay() {
     if (!method || !ready || sending.current) return;
