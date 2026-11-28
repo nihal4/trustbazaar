@@ -22,8 +22,8 @@
     "warning:declaration-block-no-duplicate-properties": 1
   },
   "knip": {
-    "exports": 43,
-    "types": 19
+    "exports": 41,
+    "types": 17
   },
   "jscpd": {
     "clones": 13,

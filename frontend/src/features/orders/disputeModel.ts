@@ -43,7 +43,7 @@ export const MAX_BYTES = 10_485_760;
 /** Up to two videos beside the photos, 50 MB each (Decisions log, U10-23). */
 export const MAX_VIDEOS = 2;
 export const MAX_VIDEO_BYTES = 52_428_800;
-export const IMAGE = /^image\/(jpeg|png|webp)$/;
+const IMAGE = /^image\/(jpeg|png|webp)$/;
 export const VIDEO = /^video\/(mp4|quicktime|webm)$/;
 /** A file the dispute accepts: a photo up to 10 MB or a video up to 50 MB. */
 export const usableEvidence = (f: { type: string; size: number }) =>

@@ -1,8 +1,8 @@
 // The state and the handlers of registration (FR-ACC-01, FR-ACC-04): the steps as history entries, the checks before each call, the resend timer and the
 // refusals of Unit 1. RegisterPage draws the steps from what this returns.
 import { formatWait } from '../../shared/wait';
-import { useEffect, useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from 'react';
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect, useRef, useState, type FormEvent, type MouseEvent } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useApi } from '../../shared/api';
 import { untilAfter, untilServerTime, useSecondsLeft } from '../../shared/countdown';
 import { useViewport } from '../../shared/gridCell';
@@ -11,9 +11,8 @@ import { toAsciiDigits } from '../../lib/money.js';
 import { otherError, passwordReasonText, rejectedPasswordReason, retryAfter, useAccountT } from './common';
 import { bangladeshiMobile, isSixDigits, looksLikeEmail, passwordLengthProblem } from './input';
 import { LEGAL_VERSIONS } from './legal';
+import { acceptText, HaveAccount } from './registerParts';
 import { authRows, fieldAria, headFor } from './AuthParts';
-import styles from './account.module.css';
-import { Button } from '../../shared/ui';
 
 export type Step = 'name' | 'email' | 'password' | 'code' | 'phone' | 'terms';
 
@@ -243,11 +242,7 @@ export function useRegisterFlow() {
     }
     setBusy(false);
   };
-  const signIn = (
-    <p className={styles.footNote}>
-      {t('register.have_account')} <Link to={next ? `/signin?next=${encodeURIComponent(next)}` : '/signin'}>{t('signin.link')}</Link>
-    </p>
-  );
+  const signIn = <HaveAccount t={t} next={next} />;
   const heading = <h1 id="register-head">{t('register.title')}</h1>;
   const aria = (ok = false) => fieldAria(message, ok, 'register-message', 'register-head');
   const open = (kind: 'terms' | 'privacy') => (ev: MouseEvent<HTMLButtonElement>) => {
@@ -258,23 +253,7 @@ export function useRegisterFlow() {
     say(null);
     setStep(to);
   };
-  const acceptLabel: ReactNode = t('register.accept_text', { terms: '{terms}', privacy: '{privacy}' })
-    .split(/(\{terms\}|\{privacy\})/)
-    .map((part, i) => {
-      if (part === '{terms}')
-        return (
-          <Button variant="link" inline key={i} type="button" onClick={open('terms')}>
-            {t('legal.terms_name')}
-          </Button>
-        );
-      if (part === '{privacy}')
-        return (
-          <Button variant="link" inline key={i} type="button" onClick={open('privacy')}>
-            {t('legal.privacy_name')}
-          </Button>
-        );
-      return part;
-    });
+  const acceptLabel = acceptText(t, open);
   return {
     t,
     lang,

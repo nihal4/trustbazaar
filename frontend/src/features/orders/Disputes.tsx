@@ -23,23 +23,10 @@ import { OpenDispute } from './OpenDispute';
 import { orderKey, type OrderView } from './model';
 import styles from './orders.module.css';
 
-import {
-  disputeKey,
-  disputesKey,
-  LIVE,
-  MAX_BYTES,
-  MAX_FILES,
-  MAX_VIDEO_BYTES,
-  MAX_VIDEOS,
-  usableEvidence,
-  type DisputeStatus,
-  type DisputeSummary,
-  type DisputeType,
-  type DisputeView,
-} from './disputeModel';
+import { disputeKey, disputesKey, LIVE, MAX_VIDEOS, usableEvidence, type DisputeSummary, type DisputeView } from './disputeModel';
 
-export { disputeKey, disputesKey, MAX_BYTES, MAX_FILES, MAX_VIDEO_BYTES, MAX_VIDEOS, usableEvidence };
-export type { DisputeStatus, DisputeSummary, DisputeType, DisputeView };
+export { disputesKey, MAX_VIDEOS, usableEvidence };
+export type { DisputeSummary, DisputeView };
 
 export function useOrderDisputes(o: OrderView) {
   const api = useApi();

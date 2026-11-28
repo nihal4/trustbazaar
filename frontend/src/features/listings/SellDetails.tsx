@@ -15,6 +15,7 @@ import { commissionOf, nearestArea, reasonTexts, type Category, type EditableLis
 import styles from './sell.module.css';
 import { Button, Checkbox, Input, Radio, Select, Textarea } from '../../shared/ui';
 import { detailsBody, detailsProblems, type DetailsValues } from './sellDetailsBody';
+import { AreaFields } from './SellArea';
 import { listingKey, percentOf } from './sellShared';
 import { CONDITIONS, FULFILMENT, WEIGHTS, SIZES, useAreas } from './sellOptions';
 
@@ -280,33 +281,22 @@ export function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; 
       )}
       {saleFormat === 'auction' && <p className={styles.hint}>{t('sell.commission', { percent: percentOf(terms.commissionBps, lang) })}</p>}
       {!game && (
-        <>
-          <label htmlFor="area">{t('sell.field.area')}</label>
-          <Select
-            block
-            id="area"
-            value={areaId}
-            onChange={(e) => {
-              setAreaId(e.target.value);
-              setLocated(null);
-            }}
-            aria-describedby="area-hint"
-          >
-            <option value="">{l?.own?.area ? t('sell.area_keep', { district: l.own.area.district }) : t('sell.area_choose')}</option>
-            {(areas.data?.items ?? []).map((a) => (
-              <option key={a.id} value={String(a.id)}>{`${lang === 'bn' ? a.nameBn : a.nameEn}, ${a.district}`}</option>
-            ))}
-          </Select>
-          <p id="area-hint" className={styles.hint}>
-            {t('sell.area_hint')}
-          </p>
-          <p>
-            <Button variant="secondary" type="button" onClick={locate} disabled={locating || !areas.data} aria-busy={locating}>
-              {t('sell.use_location')}
-            </Button>
-          </p>
-          {located && area && <p className={styles.hint}>{t('sell.located', { area: `${lang === 'bn' ? area.nameBn : area.nameEn}, ${area.district}` })}</p>}
-        </>
+        <AreaFields
+          t={t}
+          lang={lang}
+          areas={areas.data?.items ?? []}
+          ready={!!areas.data}
+          keepDistrict={l?.own?.area?.district}
+          areaId={areaId}
+          onArea={(id) => {
+            setAreaId(id);
+            setLocated(null);
+          }}
+          area={area}
+          located={located}
+          locating={locating}
+          onLocate={locate}
+        />
       )}
       <div className={styles.buttons}>
         <Button variant="primary" type="submit" disabled={save.isPending}>
