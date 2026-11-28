@@ -122,8 +122,10 @@ export function Filters({
     );
   };
 
+  const anyLabel = t('search.any');
   const name = (c: Category) => (lang === 'bn' ? c.nameBn : c.nameEn);
   return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- Escape closes the open filter list from anywhere in the form
     <form
       role="search"
       className={styles.filters}
@@ -171,7 +173,7 @@ export function Filters({
           label={t('search.category')}
           value={v.category}
           onChange={set('category')}
-          any={t('search.any')}
+          any={anyLabel}
           options={categoryTree(categories)
             .filter(({ c }) => c.selectable)
             .map(({ c, depth }) => [String(c.id), `${'\u00a0'.repeat(depth * 2)}${name(c)}`])}
@@ -181,7 +183,7 @@ export function Filters({
           label={t('search.item_kind')}
           value={v.itemKind}
           onChange={set('itemKind')}
-          any={t('search.any')}
+          any={anyLabel}
           options={(['physical', 'game_account'] as const).map((k) => [k, t(`search.item_kind.${k}`)])}
         />
         <Select
@@ -189,7 +191,7 @@ export function Filters({
           label={t('search.sale_format')}
           value={v.saleFormat}
           onChange={set('saleFormat')}
-          any={t('search.any')}
+          any={anyLabel}
           options={(['fixed_price', 'auction'] as const).map((k) => [k, t(`search.sale_format.${k}`)])}
         />
         <Select
@@ -197,14 +199,14 @@ export function Filters({
           label={t('search.condition')}
           value={v.condition}
           onChange={set('condition')}
-          any={t('search.any')}
+          any={anyLabel}
           options={CONDITIONS.map((k) => [k, t(`search.condition.${k}`)])}
         />
         <div className={styles.pair}>
-          <Text id="search-min" label={t('search.min_price')} value={v.minPrice} onChange={set('minPrice')} placeholder={t('search.any')} />
-          <Text id="search-max" label={t('search.max_price')} value={v.maxPrice} onChange={set('maxPrice')} placeholder={t('search.any')} />
+          <Text id="search-min" label={t('search.min_price')} value={v.minPrice} onChange={set('minPrice')} placeholder={anyLabel} />
+          <Text id="search-max" label={t('search.max_price')} value={v.maxPrice} onChange={set('maxPrice')} placeholder={anyLabel} />
         </div>
-        <Text id="search-km" label={t('search.max_km')} value={v.maxKm} onChange={set('maxKm')} placeholder={t('search.any')} />
+        <Text id="search-km" label={t('search.max_km')} value={v.maxKm} onChange={set('maxKm')} placeholder={anyLabel} />
         <Select
           id="search-sort"
           label={t('search.sort')}

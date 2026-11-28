@@ -270,6 +270,7 @@ function Conversation({ id, t, lang }: { id: string; t: T; lang: Lang }) {
             {t('shell.loading')}
           </p>
         ) : (
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrolling region has to be reachable by keyboard to be scrolled (WCAG 2.1.1)
           <div ref={log} className={styles.messages} role="log" tabIndex={0} aria-label={t('thread.messages')}>
             <ol className={styles.messageList}>
               {messages.length === 0 && pending.length === 0 && <li className={styles.empty}>{t('thread.empty')}</li>}

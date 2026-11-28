@@ -164,6 +164,7 @@ export function Calendar({
           <span key={w}>{w}</span>
         ))}
       </div>
+      {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus -- the keys come from the day that has the focus (one tab stop); the grid is not a stop of its own */}
       <div className={styles.days} role="grid" aria-label={`${monthName(m)} ${digits(String(y))}`} ref={grid} onKeyDown={onKey}>
         {weeks.map((week, wi) => (
           <div key={wi} role="row" className={styles.week}>

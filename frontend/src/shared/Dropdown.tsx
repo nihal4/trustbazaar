@@ -129,6 +129,7 @@ export function Dropdown({ id, label, value, onChange, options, any }: DropdownP
       {open && (
         <ul id={listId} role="listbox" aria-labelledby={labelId} className={styles.list}>
           {all.map(([k, text], i) => (
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events -- the combobox pattern: the keys are heard by the button that keeps the focus (aria-activedescendant), the options only take the pointer
             <li
               key={k || 'any'}
               id={optionId(i)}

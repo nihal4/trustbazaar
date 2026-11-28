@@ -49,6 +49,7 @@ export function Popup({
     if (!busy) onClose();
   };
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- a click on the backdrop closes; the keyboard closes with Escape (onCancel)
     <dialog
       ref={dialog}
       className={cx(styles.popup, wide && styles.wide)}
