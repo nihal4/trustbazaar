@@ -1,7 +1,7 @@
 // The ID-check wizard (FR-KYC-01, FR-KYC-02; NFR-USE-02): the details, then the picture of each side of the document and the selfies, the review status at every
 // step, and what happens after the submission.
 import { formatWait } from '../../shared/wait';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toLocalDigits } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
@@ -18,6 +18,11 @@ import styles from './kyc.module.css';
 import { Button } from '../../shared/ui';
 import { Step, Steps, Side, isImage } from './kycShared';
 import { IntroStep, ReviewStep } from './kycSteps';
+
+/** The file extension of what the camera or the file picker gave. */
+const IMAGE_EXTENSION: Record<string, string> = { 'image/png': 'png', 'image/webp': 'webp' };
+/** What the server says is wrong with a picture, in the words of the page. */
+const IMAGE_REFUSAL: Record<string, string> = { 'too-large': 'capture.too_large', required: 'capture.required' };
 
 export function Wizard() {
   const { t, lang } = useKycT();
@@ -101,7 +106,7 @@ export function Wizard() {
     form.append('challengeId', challenge.challengeId);
     for (const k of FILES_FOR[docType]) {
       const image = images[k]!;
-      form.append(k, image, `${k}.${image.type === 'image/png' ? 'png' : image.type === 'image/webp' ? 'webp' : 'jpg'}`);
+      form.append(k, image, `${k}.${IMAGE_EXTENSION[image.type] ?? 'jpg'}`);
     }
     try {
       await api.post('/kyc/submissions', form);
@@ -165,7 +170,7 @@ export function Wizard() {
         to ??= 'selfie_action';
       } else if ((FILES_FOR[docType] as string[]).includes(f.field)) {
         const k = f.field as ImageKind;
-        ie[k] = f.reason === 'too-large' ? t('capture.too_large') : f.reason === 'required' ? t('capture.required') : t('capture.unreadable');
+        ie[k] = t(IMAGE_REFUSAL[f.reason] ?? 'capture.unreadable');
         setImages((i) => ({ ...i, [k]: undefined }));
         to ??= k;
       }
@@ -187,6 +192,28 @@ export function Wizard() {
     setDetailErrors((e) => ({ ...e, [k]: undefined }));
   };
   const summary: SummaryItem[] = (Object.entries(detailErrors) as [string, string][]).map(([f, m]) => ({ id: `kyc-${f}`, message: m }));
+
+  // the one button that goes on: send at the review, "Next" in the form of the details, otherwise the step's own
+  let action: ReactNode;
+  if (step === 'review') {
+    action = (
+      <Button variant="primary" type="button" onClick={() => void submit()} disabled={busy || waitFor > 0 || !challenge} aria-busy={busy || undefined}>
+        {waitFor > 0 ? t('wizard.wait', { time: formatWait(waitFor, lang) }) : t('review.submit')}
+      </Button>
+    );
+  } else if (step === 'details') {
+    action = (
+      <Button variant="primary" type="submit" form="kyc-details">
+        {t('wizard.next')}
+      </Button>
+    );
+  } else {
+    action = (
+      <Button variant="primary" type="button" onClick={() => next()} disabled={!canGoOn}>
+        {t(step === 'intro' ? 'intro.start' : 'wizard.next')}
+      </Button>
+    );
+  }
 
   return (
     <div className={styles.layout}>
@@ -292,19 +319,7 @@ export function Wizard() {
               {t('wizard.back')}
             </Button>
           )}
-          {step === 'review' ? (
-            <Button variant="primary" type="button" onClick={() => void submit()} disabled={busy || waitFor > 0 || !challenge} aria-busy={busy || undefined}>
-              {waitFor > 0 ? t('wizard.wait', { time: formatWait(waitFor, lang) }) : t('review.submit')}
-            </Button>
-          ) : step === 'details' ? (
-            <Button variant="primary" type="submit" form="kyc-details">
-              {t('wizard.next')}
-            </Button>
-          ) : (
-            <Button variant="primary" type="button" onClick={() => next()} disabled={!canGoOn}>
-              {t(step === 'intro' ? 'intro.start' : 'wizard.next')}
-            </Button>
-          )}
+          {action}
         </div>
       </section>
       {step !== 'intro' && <Side />}

@@ -22,7 +22,8 @@ export function ActiveFilters({
     switch (k) {
       case 'category': {
         const c = categories.find((x) => String(x.id) === v);
-        return c ? (lang === 'bn' ? c.nameBn : c.nameEn) : null;
+        if (!c) return null;
+        return lang === 'bn' ? c.nameBn : c.nameEn;
       }
       case 'itemKind':
         return t(`search.item_kind.${v}`);

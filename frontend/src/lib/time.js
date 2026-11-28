@@ -4,7 +4,7 @@
 
 import { toLocalDigits } from './money.js';
 
-export const TZ = 'Asia/Dhaka';
+const TZ = 'Asia/Dhaka';
 
 const fmt = {
   en: new Intl.DateTimeFormat('en-GB', {

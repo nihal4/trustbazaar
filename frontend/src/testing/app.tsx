@@ -16,6 +16,9 @@ import { createDocument, DocumentRoot, signInHere } from '../shared/document';
 import type { LiveSocket } from '../shared/live';
 import type { Me } from '../shared/me';
 
+/** What a join and a leave do to the number of people in a room. */
+const ROOM_STEP: Record<string, number> = { join: 1, leave: -1 };
+
 export interface Call {
   method: string;
   path: string;
@@ -56,7 +59,9 @@ export function fakeBackend(answers: Record<string, Answer | Answer[]>) {
     const u = new URL(String(url), 'https://tb.test');
     const path = u.pathname.replace(/^\/api\/v1/, '');
     const method = (init.method ?? 'GET').toUpperCase();
-    const body = init.body instanceof FormData ? init.body : init.body ? JSON.parse(String(init.body)) : undefined;
+    let body: unknown;
+    if (init.body instanceof FormData) body = init.body;
+    else if (init.body) body = JSON.parse(String(init.body));
     const call: Call = { method, path, query: u.searchParams, body, headers: new Headers(init.headers) };
     calls.push(call);
     const key = `${method} ${path}`;
@@ -131,7 +136,7 @@ export class FakeSocket implements LiveSocket {
     for (const e of this.emitted) {
       const room = (e.payload as { room?: string } | undefined)?.room;
       if (!room) continue;
-      joined.set(room, (joined.get(room) ?? 0) + (e.event === 'join' ? 1 : e.event === 'leave' ? -1 : 0));
+      joined.set(room, (joined.get(room) ?? 0) + (ROOM_STEP[e.event] ?? 0));
     }
     return [...joined].filter(([, n]) => n > 0).map(([r]) => r);
   }

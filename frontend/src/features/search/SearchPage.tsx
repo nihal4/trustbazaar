@@ -78,7 +78,7 @@ export function Component() {
       const q = new URLSearchParams(query);
       if (pageParam) q.set('cursor', pageParam);
       const s = q.toString();
-      return api.get(`/search${s ? `?${s}` : ''}`, { signal }) as Promise<SearchPage>;
+      return api.get('/search' + (s ? '?' + s : ''), { signal }) as Promise<SearchPage>;
     },
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (last: SearchPage) => last.nextCursor ?? undefined,

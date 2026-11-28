@@ -7,7 +7,7 @@
 import { useEffect, useRef } from 'react';
 import { nameArt } from './gridArt';
 
-export const GRID_PULSE = 'tb-grid-pulse';
+const GRID_PULSE = 'tb-grid-pulse';
 /** Sends a ring across the grid from a point of the window (a step of the form, a tap). */
 export const pulseGrid = (x: number, y: number) => window.dispatchEvent(new CustomEvent(GRID_PULSE, { detail: { x, y } }));
 

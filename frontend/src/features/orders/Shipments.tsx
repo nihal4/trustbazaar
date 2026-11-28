@@ -113,6 +113,7 @@ export function ShipmentHistory({ items, t, lang }: { items: Shipment[]; t: T; l
       <ActionCell onClick={() => setOpen(true)}>{t('shipments.history')}</ActionCell>
       {open && (
         <Popup id={`history-${s.id}`} title={t('shipments.history')} closeLabel={t('actions.back')} onClose={() => setOpen(false)}>
+          {/* eslint-disable-next-line jsx-a11y/no-redundant-roles -- Safari drops the list semantics of a list without markers; the role puts them back */}
           <ol className={styles.ruledList} role="list">
             {s.history.map((h, i) => (
               <li key={i}>

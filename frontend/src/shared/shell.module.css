@@ -119,7 +119,7 @@
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
 }
@@ -247,7 +247,7 @@
   font-weight: 500;
   color: var(--tb-text);
   text-decoration: none;
-  background-image: linear-gradient(currentColor, currentColor);
+  background-image: linear-gradient(currentcolor, currentcolor);
   background-repeat: no-repeat;
   background-size: 0 1.5px;
   background-position: 0.75rem calc(100% - 0.4rem);

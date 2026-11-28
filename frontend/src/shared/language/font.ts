@@ -26,9 +26,9 @@ import marks500 from './figures/figures-marks-500.woff2?url';
 import marks600 from './figures/figures-marks-600.woff2?url';
 import marks700 from './figures/figures-marks-700.woff2?url';
 
-export const LATIN_FONT = 'Figtree Variable';
-export const DISPLAY_FONT = 'Schibsted Grotesk Variable';
-export const BANGLA_FONT = 'Hind Siliguri';
+const LATIN_FONT = 'Figtree Variable';
+const DISPLAY_FONT = 'Schibsted Grotesk Variable';
+const BANGLA_FONT = 'Hind Siliguri';
 export const FIGURES_FONT = 'TB Figures';
 /** the Bangla digits ০ to ৯ and the taka sign ৳; the separators a number uses between them */
 export const FIGURES_RANGE = 'U+09E6-09EF, U+09F3';

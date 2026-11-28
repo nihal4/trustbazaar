@@ -27,7 +27,8 @@ function statusWords(o: OrderView, stage: OrderStage, t: (k: string) => string):
   if (o.status === 'cancelled') return t('orders.state.cancelled');
   if (o.status === 'closed') return t('orders.state.closed');
   if (o.escrow?.state === 'frozen_disputed') return t('orders.state.disputed');
-  return stage === 'on_the_way' ? t(o.fulfilment === 'courier' ? 'orders.state.on_the_way' : 'orders.state.handed_over') : t('orders.state.paid');
+  if (stage !== 'on_the_way') return t('orders.state.paid');
+  return t(o.fulfilment === 'courier' ? 'orders.state.on_the_way' : 'orders.state.handed_over');
 }
 
 export function Component() {
@@ -39,7 +40,7 @@ export function Component() {
   const orders = useInfiniteQuery({
     queryKey: ordersKey(role, stage),
     queryFn: ({ pageParam, signal }) =>
-      api.get(`/orders?role=${role}&stage=${stage}${pageParam ? `&cursor=${encodeURIComponent(pageParam)}` : ''}`, { signal }) as Promise<{
+      api.get(`/orders?role=${role}&stage=${stage}` + (pageParam ? '&cursor=' + encodeURIComponent(pageParam) : ''), { signal }) as Promise<{
         items: OrderView[];
         nextCursor: string | null;
       }>,

@@ -4,11 +4,11 @@
    over the title, hairline blocks instead of panels, square ruled fields and buttons. Text keeps a contrast of at least 4.5:1, control borders 3:1. The key's
    fingerprint and the login details stay in a monospace face, so 0 and O or l and 1 cannot be confused (Decisions
    log, U10-08). */
-@import '@fontsource-variable/figtree/wght.css';
-@import '@fontsource/hind-siliguri/bengali-400.css';
-@import '@fontsource/hind-siliguri/bengali-500.css';
-@import '@fontsource/hind-siliguri/bengali-600.css';
-@import '@fontsource/hind-siliguri/bengali-700.css';
+@import url('@fontsource-variable/figtree/wght.css');
+@import url('@fontsource/hind-siliguri/bengali-400.css');
+@import url('@fontsource/hind-siliguri/bengali-500.css');
+@import url('@fontsource/hind-siliguri/bengali-600.css');
+@import url('@fontsource/hind-siliguri/bengali-700.css');
 
 :root {
   --bg: #0a1110;
@@ -29,7 +29,7 @@
   --mono: ui-monospace, 'Cascadia Mono', 'Consolas', monospace;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   color-scheme: dark;
-  --font: 'Figtree Variable', 'TB Figures', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font: 'Figtree Variable', 'TB Figures', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', roboto, sans-serif;
   --line-height: 1.5;
 }
 @font-face {
@@ -65,7 +65,7 @@
   unicode-range: U+002C, U+002E, U+003A;
 }
 :root:lang(bn) {
-  --font: 'TB Figures', 'Hind Siliguri', 'Figtree Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font: 'TB Figures', 'Hind Siliguri', 'Figtree Variable', system-ui, -apple-system, 'Segoe UI', roboto, sans-serif;
   --line-height: 1.7;
 }
 *,
@@ -127,7 +127,7 @@ body {
   width: 1px;
   height: 1px;
   overflow: hidden;
-  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
   white-space: nowrap;
 }
 

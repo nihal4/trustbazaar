@@ -15,10 +15,11 @@ import type { Lang } from '../../shared/language/lang';
 import { fieldErrors } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { reasonTexts, type EditableListing } from './sell';
+import { SellErrors } from './SellErrors';
 import styles from './sell.module.css';
 import { Button, FilePicker, Input, Select, Textarea } from '../../shared/ui';
 
-export interface Game {
+interface Game {
   id: number;
   slug: string;
   name: string;
@@ -26,19 +27,19 @@ export interface Game {
   codePlacement: string;
   publisherNote: string;
 }
-export interface GameDetails {
+interface GameDetails {
   gameId: number;
   platform: string;
   playerId: string;
   contents: string;
 }
-export type ProofStatus = 'issued' | 'expired' | 'submitted' | 'approved' | 'rejected';
-export interface Ownership {
+type ProofStatus = 'issued' | 'expired' | 'submitted' | 'approved' | 'rejected';
+interface Ownership {
   details: GameDetails | null;
   proof: { code: string; status: ProofStatus; expiresAt: string; submittedAt: string | null; reviewedAt: string | null; reason: string | null } | null;
 }
 
-export const ownershipKey = (id: string) => ['listings', id, 'ownership'] as const;
+const ownershipKey = (id: string) => ['listings', id, 'ownership'] as const;
 
 export function useOwnership(l: EditableListing) {
   const api = useApi();
@@ -111,16 +112,7 @@ function GameDetailsForm({ l, details, fixed, t, lang }: { l: EditableListing; d
     <form onSubmit={submit} noValidate className={`${styles.panel} ${styles.form}`} aria-labelledby="game-title">
       <h2 id="game-title">{t('sell.game.title')}</h2>
       <p className={styles.hint}>{t('sell.game.no_logins')}</p>
-      {errors.length > 0 && (
-        <div role="alert" className={styles.errors}>
-          <p>{t('sell.fix')}</p>
-          <ul>
-            {errors.map((x) => (
-              <li key={x}>{x}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <SellErrors errors={errors} t={t} />
       {message && <FormMessage kind="error">{message}</FormMessage>}
       {saved && <FormMessage kind="success">{t('sell.game.saved')}</FormMessage>}
       <label htmlFor="game">{t('sell.field.gameId')}</label>

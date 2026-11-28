@@ -39,7 +39,7 @@ export class ApiError extends Error {
 }
 
 /** @param {string} cookieHeader @param {string} name */
-export function readCookie(cookieHeader, name) {
+function readCookie(cookieHeader, name) {
   for (const part of cookieHeader.split(';')) {
     const i = part.indexOf('=');
     if (i > 0 && part.slice(0, i).trim() === name) return decodeURIComponent(part.slice(i + 1).trim());

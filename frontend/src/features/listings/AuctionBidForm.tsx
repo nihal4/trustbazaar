@@ -70,13 +70,9 @@ export function BidForm({
       setAmount('');
       onPlaced(r, sentAt);
       const price = money(r.state.price ?? r.state.startPrice, lang);
-      setResult(
-        r.outcome === 'leading'
-          ? { kind: 'success', text: t('auction.result.leading', { price }) }
-          : r.outcome === 'raised_own_max'
-            ? { kind: 'success', text: t('auction.result.raised_own_max', { amount: money(r.yourMaximum, lang) }) }
-            : { kind: 'info', text: t('auction.result.outbid', { price }) },
-      );
+      if (r.outcome === 'leading') setResult({ kind: 'success', text: t('auction.result.leading', { price }) });
+      else if (r.outcome === 'raised_own_max') setResult({ kind: 'success', text: t('auction.result.raised_own_max', { amount: money(r.yourMaximum, lang) }) });
+      else setResult({ kind: 'info', text: t('auction.result.outbid', { price }) });
     },
     onError: (e) => {
       setConfirming(null);

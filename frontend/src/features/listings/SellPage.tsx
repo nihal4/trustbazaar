@@ -25,6 +25,7 @@ import { GameListing } from './GameListing';
 import { type EditableListing, type SellingTerms } from './sell';
 import en from '../../messages/en/sell.json';
 import bn from '../../messages/bn/sell.json';
+import type { StepPhase } from '../../shared/stepPhase';
 import styles from './sell.module.css';
 
 import { Photos } from './SellPhotos';
@@ -127,10 +128,16 @@ export function sellStepsOf(
   const game = l?.itemKind === 'game_account';
   const media = game ? 'game' : 'photos';
   const mediaDone = !!l && !game && l.photos.length >= minPhotos;
+  let mediaPhase: StepPhase = 'current';
+  if (!l) mediaPhase = 'next';
+  else if (mediaDone) mediaPhase = 'done';
+  let publishPhase: StepPhase = 'next';
+  if (l && l.status !== 'draft') publishPhase = 'done';
+  else if (mediaDone) publishPhase = 'current';
   return [
     { key: 'details', state: l ? 'done' : 'current' },
-    { key: media, state: !l ? 'next' : mediaDone ? 'done' : 'current' },
-    { key: 'publish', state: l && l.status !== 'draft' ? 'done' : mediaDone ? 'current' : 'next' },
+    { key: media, state: mediaPhase },
+    { key: 'publish', state: publishPhase },
   ];
 }
 

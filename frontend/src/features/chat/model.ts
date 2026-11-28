@@ -4,7 +4,7 @@
 import type { Api } from '../../shared/api';
 
 export type Flag = 'payment_phrase' | 'off_platform_app' | 'credentials';
-export const FLAGS: Flag[] = ['payment_phrase', 'off_platform_app', 'credentials'];
+const FLAGS: Flag[] = ['payment_phrase', 'off_platform_app', 'credentials'];
 
 export interface ThreadSummary {
   id: string;

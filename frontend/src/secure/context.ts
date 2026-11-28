@@ -5,7 +5,7 @@ import type { createApi } from '../lib/api.js';
 
 export type Lang = 'en' | 'bn';
 export type T = (key: string, vars?: Record<string, string>) => string;
-export type Api = ReturnType<typeof createApi>;
+type Api = ReturnType<typeof createApi>;
 export interface KeyStore {
   store(orderId: string, version: number, pair: CryptoKeyPair): Promise<void>;
   load(orderId: string, version: number): Promise<CryptoKeyPair | null>;
@@ -20,9 +20,9 @@ export interface Ctx {
   now: () => number;
 }
 
-export type HandoverStatus = 'preparing' | 'awaiting_credentials' | 'delivered' | 'rekey_requested' | 'disputed' | 'taken_over' | 'cancelled' | 'closed';
+type HandoverStatus = 'preparing' | 'awaiting_credentials' | 'delivered' | 'rekey_requested' | 'disputed' | 'taken_over' | 'cancelled' | 'closed';
 export const STEPS = ['password', 'recovery_email', 'recovery_phone', 'social_logins', 'two_step'] as const;
-export type Step = (typeof STEPS)[number];
+type Step = (typeof STEPS)[number];
 export interface GameView {
   orderId: string;
   role: 'buyer' | 'seller';

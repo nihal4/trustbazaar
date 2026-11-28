@@ -1,0 +1,1446 @@
+{
+ "start": "2026-11-25T08:56:10.992Z",
+ "round": 3,
+ "idle": 2,
+ "errors": 3,
+ "status": "open",
+ "history": [
+  {
+   "at": "2026-11-25T20:18:07.522Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-25T20:18:38.960Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-25T20:19:42.580Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-25T20:20:45.813Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-25T20:21:48.988Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-25T20:22:19.955Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-25T20:23:58.276Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-25T20:32:55.978Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-25T20:43:49.462Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-25T21:13:30.303Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-25T21:29:21.000Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-25T21:56:26.656Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-26T01:21:41.628Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-26T01:27:51.369Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-26T01:33:36.240Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-26T01:40:57.522Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-26T01:43:28.461Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-26T01:44:10.106Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-26T01:44:48.044Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-26T01:50:37.942Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  }
+ ],
+ "max": 3,
+ "marker": {
+  "page": null,
+  "dir": "/Users/nihalahmed/Documents/trustbazaar",
+  "kind": "software",
+  "start": "2026-11-25T08:56:10.992Z",
+  "by": "start.mjs",
+  "url": "http://localhost:5173/",
+  "category": "online marketplace with protected payments",
+  "primary": "Search"
+ },
+ "setupTold": true,
+ "session": "0c729778-e0cf-4c2a-91df-fb462f9bb13b",
+ "at": "2026-11-25T09:11:50.433Z",
+ "manual": true,
+ "roundKey": "6924307104074bcc:da39a3ee",
+ "roundFree": false,
+ "idleFree": true,
+ "blockKey": "6924307104074bcc:da39a3ee",
+ "fp": "6924307104074bcc",
+ "page": "http://localhost:5173/",
+ "found": {
+  "fails": [
+   {
+    "check": "flush",
+    "where": "div._page_toy73_3 > section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._pay_rravn_47 \"Pay the way you already do Choose bKash,\"",
+    "msg": "its last line sits 0px above the lower edge of section._safe_rravn_3, where the ground changes to section._journey_rravn_52",
+    "fix": "give the section its padding at the edge where the ground changes (the closing call keeps a clear gap above the footer)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "flush"
+    ],
+    "wheres": [
+     "div._page_toy73_3 > section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._pay_rravn_47 \"Pay the way you already do Choose bKash,\""
+    ]
+   },
+   {
+    "check": "caption",
+    "where": "div#root > div._page_1sz15_4 > p._promiseBar_1sz15_306 \"Your money is held safely until you conf\"",
+    "msg": "a line about the page, not the client: \"until you confirm\"",
+    "fix": "no line under a picture: never how it was made, what it shows, what is missing or what will follow (credits: one footer line)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "caption"
+    ],
+    "wheres": [
+     "div#root > div._page_1sz15_4 > p._promiseBar_1sz15_306 \"Your money is held safely until you conf\""
+    ]
+   },
+   {
+    "check": "spill",
+    "where": "div._page_toy73_3 > section._hero_toy73_6 > div._art_toy73_20 > div._card_toy73_36 \"Payment held Released to the seller when\"",
+    "msg": "runs 16px past the left edge of the panel it sits on (div._page_toy73_3 > section._hero_toy73_6 > div._art_toy73_20 > div._window_toy73_21)",
+    "fix": "keep the box inside the panel it starts on: shrink it, or grow the panel to hold it",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "spill"
+    ],
+    "wheres": [
+     "div._page_toy73_3 > section._hero_toy73_6 > div._art_toy73_20 > div._card_toy73_36 \"Payment held Released to the seller when\""
+    ]
+   },
+   {
+    "check": "row-gap",
+    "where": "div._page_toy73_3 > section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._pay_rravn_47 \"Pay the way you already do Choose bKash,\"",
+    "msg": "stretched alone across the last row (1200px) while the 3 like it above are 693px",
+    "fix": "fill the row at this width: span the columns, or stack the split",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "row-gap"
+    ],
+    "wheres": [
+     "div._page_toy73_3 > section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._pay_rravn_47 \"Pay the way you already do Choose bKash,\""
+    ]
+   },
+   {
+    "check": "no-visual",
+    "where": "main#main > div._page_toy73_3 > section._safe_rravn_3 \"Why paying a stranger is safe here\"",
+    "msg": "no picture, effect or mock in this section; a feature section needs a visual",
+    "fix": "give the section a visual: a UI fragment on a ground, real icons, or a photograph that fits",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "no-visual"
+    ],
+    "wheres": [
+     "main#main > div._page_toy73_3 > section._safe_rravn_3 \"Why paying a stranger is safe here\""
+    ]
+   },
+   {
+    "check": "no-visual",
+    "where": "main#main > div._page_toy73_3 > section._journey_rravn_52 \"How a purchase goes\"",
+    "msg": "no picture, effect or mock in this section; a feature section needs a visual",
+    "fix": "give the section a visual: a UI fragment on a ground, real icons, or a photograph that fits",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "no-visual"
+    ],
+    "wheres": [
+     "main#main > div._page_toy73_3 > section._journey_rravn_52 \"How a purchase goes\""
+    ]
+   },
+   {
+    "check": "text-only",
+    "where": "main#main > div._page_toy73_3 > section._sell_toy73_66 \"Selling something?\"",
+    "msg": "the closing section is only text: no picture, icon, mock or effect in it",
+    "fix": "give the section a visual: a photograph that fits, the real icons, or a UI fragment on a ground",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "text-only"
+    ],
+    "wheres": [
+     "main#main > div._page_toy73_3 > section._sell_toy73_66 \"Selling something?\""
+    ]
+   },
+   {
+    "check": "card-visual",
+    "where": "main#main > div._page_toy73_3 > section._safe_rravn_3 > div._bento_rravn_12 \"HOW YOUR MONEY MOVES Your money waits wi\"",
+    "msg": "4 cards hold only text: no picture, icon, UI fragment or effect in any of them",
+    "fix": "give the cards a visual: an inset panel with a UI fragment, a photograph or real icons",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "card-visual"
+    ],
+    "wheres": [
+     "main#main > div._page_toy73_3 > section._safe_rravn_3 > div._bento_rravn_12 \"HOW YOUR MONEY MOVES Your money waits wi\""
+    ]
+   },
+   {
+    "check": "button-styles",
+    "where": "(one screen)",
+    "msg": "3 button styles on one screen: soft, fill #232323 (\"Sell an item\"); soft, fill #f3f3f3 (\"বাংলা – change the language to Bangla\"); soft, fill #a1ffcb (\"Start selling\"); the odd one out: \"Start selling\"",
+    "fix": "one primary and one secondary button: one shape, one height per size, one label size",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "button-styles"
+    ],
+    "wheres": [
+     "(one screen)"
+    ]
+   },
+   {
+    "check": "button-styles",
+    "where": "(the page)",
+    "msg": "3 button styles on the page: soft, fill #f3f3f3 x1 (\"বাংলা – change the language to Bangla\"); soft, fill #232323 x2 (\"Sell an item\"); soft, fill #a1ffcb x1 (\"Start selling\")",
+    "fix": "one primary and one secondary button: one shape, one height per size, one label size",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "button-styles"
+    ],
+    "wheres": [
+     "(the page)"
+    ]
+   },
+   {
+    "check": "copy-headline",
+    "where": "div._page_toy73_3 > section._hero_toy73_6 > div._heroText_toy73_7 > h1._title_toy73_8 \"Find it nearby. Pay when it is in your h\"",
+    "msg": "\"Find it nearby. Pay when it is in your hands.\" does not name what is sold (online marketplace with protected payments, online, marketplace, protected, from flags)",
+    "fix": "put the category noun in the h1 (and who it is for, or where), in 2 to 8 words",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "copy-headline"
+    ],
+    "wheres": [
+     "div._page_toy73_3 > section._hero_toy73_6 > div._heroText_toy73_7 > h1._title_toy73_8 \"Find it nearby. Pay when it is in your h\""
+    ]
+   },
+   {
+    "check": "copy-fact",
+    "where": "div._page_toy73_3 > section._hero_toy73_6 > div._heroText_toy73_7 > h1._title_toy73_8 \"Find it nearby. Pay when it is in your h\"",
+    "msg": "the first screen holds no number, price, date, place, platform or genre",
+    "fix": "put one hard fact from the brief on the first screen: a number, a price, a date, the place, the platforms it runs on or a game's genre; take it from the brief or remove the claim",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "copy-fact"
+    ],
+    "wheres": [
+     "div._page_toy73_3 > section._hero_toy73_6 > div._heroText_toy73_7 > h1._title_toy73_8 \"Find it nearby. Pay when it is in your h\""
+    ]
+   },
+   {
+    "check": "copy-headings",
+    "where": "h2#home-safe \"Why paying a stranger is safe here\"",
+    "msg": "\"Why paying a stranger is safe here\" names no product, part, place or section (6 headings like it; at most one brand line per page) (and 5 more like it: \"Your money waits with us\", \"Pay the way you already \", \"How a purchase goes\", \"Newest listings\", ...)",
+    "fix": "name the thing in every heading: the product, a part, the place or a section noun",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "copy-headings"
+    ],
+    "wheres": [
+     "h2#home-safe \"Why paying a stranger is safe here\""
+    ]
+   },
+   {
+    "check": "heading-scale",
+    "where": "section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._auction_rravn_66 > h3._h3_rravn_6 \"Auctions with a clock you can trust\"",
+    "msg": "an h3 at 22px, as large as the smallest h2 (22px) or larger (and 2 more like it: \"Every seller is ID-check\", \"Hand over with a one-tim\")",
+    "fix": "size headings by level: the h1 largest, one size per level, each level below the one above",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "heading-scale"
+    ],
+    "wheres": [
+     "section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._auction_rravn_66 > h3._h3_rravn_6 \"Auctions with a clock you can trust\""
+    ]
+   },
+   {
+    "check": "heading-scale",
+    "where": "h2#home-safe \"Why paying a stranger is safe here\"",
+    "msg": "h2 headings in 3 sizes, 22px (\"Your money waits with us\") to 44px (x2.00)",
+    "fix": "size headings by level: the h1 largest, one size per level, each level below the one above",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "heading-scale"
+    ],
+    "wheres": [
+     "h2#home-safe \"Why paying a stranger is safe here\""
+    ]
+   },
+   {
+    "check": "text-contrast",
+    "where": "div._page_toy73_3 > section._hero_toy73_6 > div._heroText_toy73_7 > p._lede_toy73_10 \"The seller is paid only after you confir\"",
+    "msg": "body text in #686868 on #ffffff reads 5.57:1 (needs 7:1)",
+    "fix": "body text in the ink at 7:1 or more; grey (4.5:1 or more) only for captions and labels",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "text-contrast"
+    ],
+    "wheres": [
+     "div._page_toy73_3 > section._hero_toy73_6 > div._heroText_toy73_7 > p._lede_toy73_10 \"The seller is paid only after you confir\""
+    ]
+   },
+   {
+    "check": "text-contrast",
+    "where": "section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._auction_rravn_66 > p._text_rravn_8 \"The server keeps the time. A bid in the \"",
+    "msg": "body text in #686868 on #f3f3f3 reads 5.02:1 (needs 7:1); 3 like it, like \"An ID card and two sel\", \"Inspect the item first\"",
+    "fix": "body text in the ink at 7:1 or more; grey (4.5:1 or more) only for captions and labels",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "text-contrast"
+    ],
+    "wheres": [
+     "section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._auction_rravn_66 > p._text_rravn_8 \"The server keeps the time. A bid in the \""
+    ]
+   },
+   {
+    "check": "text-contrast",
+    "where": "section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._pay_rravn_47 > p._text_rravn_8 \"Choose bKash, Nagad or a card. The money\"",
+    "msg": "body text in #a4a4a4 on #232323 reads 6.31:1 (needs 7:1); 6 like it, like \"Search or browse. Ever\", \"TrustBazaar holds your\", \"Inspect the item, give\"",
+    "fix": "body text in the ink at 7:1 or more; grey (4.5:1 or more) only for captions and labels",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "text-contrast"
+    ],
+    "wheres": [
+     "section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._pay_rravn_47 > p._text_rravn_8 \"Choose bKash, Nagad or a card. The money\""
+    ]
+   },
+   {
+    "check": "section-tile",
+    "where": "main#main > div._page_toy73_3 > section._safe_rravn_3 \"Why paying a stranger is safe here\"",
+    "msg": "the section is 1014px tall (1.13 screens at 1440x900), not one screen or two: the screen one screen on from its top (scroll 1891px) shows 114px of it and 332px of the next section, its heading \"How a purchase goes\" on screen",
+    "fix": "set every section after the hero to one screen or two (height: calc(var(--h,1) * 100vh)) and fit its content above --padb",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "section-tile"
+    ],
+    "wheres": [
+     "main#main > div._page_toy73_3 > section._safe_rravn_3 \"Why paying a stranger is safe here\""
+    ]
+   },
+   {
+    "check": "section-tile",
+    "where": "main#main > div._page_toy73_3 > section._journey_rravn_52 \"How a purchase goes\"",
+    "msg": "the section is 332px tall (0.37 screens at 1440x900), shorter than the screen: its tile (the screen from its top) shows 331px of it and 149px of the next section, its heading \"Newest listings\" on screen",
+    "fix": "set every section after the hero to one screen or two (height: calc(var(--h,1) * 100vh)) and fit its content above --padb",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "section-tile"
+    ],
+    "wheres": [
+     "main#main > div._page_toy73_3 > section._journey_rravn_52 \"How a purchase goes\""
+    ]
+   },
+   {
+    "check": "section-tile",
+    "where": "main#main > div._page_toy73_3 > section._section_toy73_55 \"Newest listings\"",
+    "msg": "the section is 149px tall (0.17 screens at 1440x900), shorter than the screen: its tile, held at the page's end (scroll 2471px) shows 149px of it and 345px of the next section, its heading \"Selling something?\" on screen",
+    "fix": "set every section after the hero to one screen or two (height: calc(var(--h,1) * 100vh)) and fit its content above --padb",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "section-tile"
+    ],
+    "wheres": [
+     "main#main > div._page_toy73_3 > section._section_toy73_55 \"Newest listings\""
+    ]
+   },
+   {
+    "check": "section-tile",
+    "where": "main#main > div._page_toy73_3 > section._sell_toy73_66 \"Selling something?\"",
+    "msg": "the section is 345px tall (0.38 screens at 1440x900), shorter than the screen: its tile, held at the page's end (scroll 2471px) shows 345px of it and 149px of the section above, its heading \"Newest listings\" on screen",
+    "fix": "set every section after the hero to one screen or two (height: calc(var(--h,1) * 100vh)) and fit its content above --padb",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "section-tile"
+    ],
+    "wheres": [
+     "main#main > div._page_toy73_3 > section._sell_toy73_66 \"Selling something?\""
+    ]
+   },
+   {
+    "check": "field-label",
+    "where": "input#head-q",
+    "msg": "a input[type=search] without a label you can see: its <label> is hidden",
+    "fix": "put a <label for> with the field's name above it (references/system.md, Forms); a placeholder is no label",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "field-label"
+    ],
+    "wheres": [
+     "input#head-q"
+    ]
+   },
+   {
+    "check": "field-label",
+    "where": "input#home-q",
+    "msg": "a input[type=search] without a label you can see: its <label> is hidden",
+    "fix": "put a <label for> with the field's name above it (references/system.md, Forms); a placeholder is no label",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "field-label"
+    ],
+    "wheres": [
+     "input#home-q"
+    ]
+   },
+   {
+    "check": "focus-ring",
+    "where": "._main_1sz15_104:focus",
+    "msg": "\"._main_1sz15_104:focus\" in the page removes the focus outline and sets nothing in its place",
+    "fix": "keep the kit's :focus-visible ring, or put a change of the same strength (a 2px line in --action) in the rule that removes it",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "focus-ring"
+    ],
+    "wheres": [
+     "._main_1sz15_104:focus"
+    ]
+   },
+   {
+    "check": "focus-ring",
+    "where": ".mantine-focus-never:focus",
+    "msg": "\".mantine-focus-never:focus\" in the page removes the focus outline and sets nothing in its place",
+    "fix": "keep the kit's :focus-visible ring, or put a change of the same strength (a 2px line in --action) in the rule that removes it",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "focus-ring"
+    ],
+    "wheres": [
+     ".mantine-focus-never:focus"
+    ]
+   },
+   {
+    "check": "moment-none",
+    "where": "(the page)",
+    "msg": "a software page (--type) deals no moment: every kind carries one, two on a long page (moments.md)",
+    "fix": "deal one (moments.mjs pick --page software) and mount it in its own section",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "moment-none"
+    ],
+    "wheres": [
+     "(the page)"
+    ]
+   },
+   {
+    "check": "container",
+    "where": "page",
+    "msg": "no .wrap",
+    "fix": "put the content in one .wrap",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "layout",
+    "ids": [
+     "container"
+    ],
+    "wheres": [
+     "page"
+    ]
+   }
+  ],
+  "warns": [
+   {
+    "check": "assets",
+    "where": "(the page)",
+    "msg": "the data file api/v1/search?sort=newest did not load (500)",
+    "fix": "fix the path, or remove the reference",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "copy-headline",
+    "where": "div._page_toy73_3 > section._hero_toy73_6 > div._heroText_toy73_7 > h1._title_toy73_8 \"Find it nearby. Pay when it is in your h\"",
+    "msg": "the h1 has 10 words (2 to 8 read at a glance)",
+    "fix": "put the category noun in the h1 (and who it is for, or where), in 2 to 8 words",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "copy-headings",
+    "where": "section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._auction_rravn_66 > h3._h3_rravn_6 \"Auctions with a clock you can trust\"",
+    "msg": "the card title \"Auctions with a clock you can trust\" names no product, part, place or section (3 card titles like it) (and 2 more like it: \"Every seller is ID-check\", \"Hand over with a one-tim\")",
+    "fix": "name the thing in every heading: the product, a part, the place or a section noun",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "copy-buttons",
+    "where": "div#root > div._page_1sz15_4 > header._header_1sz15_27 > button._langSwitch_1sz15_72 \"বাংলা – change the language to Bangla\"",
+    "msg": "\"বাংলা – change the language to Bangla\" does not start with a verb (book, buy, try, start, get, see...) (and 2 more like it: \"Sell an item\", \"Search\")",
+    "fix": "label buttons with a verb and what the visitor gets (\"Book a room\", \"Start free trial\")",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "copy-actions",
+    "where": "div#root > div._page_1sz15_4 > header._header_1sz15_27 > a.mantine-focus-auto.mantine-active \"Sell an item\"",
+    "msg": "2 labels for one target /sell/new: \"Sell an item\", \"Start selling\"",
+    "fix": "few actions, one wording: at most 2 in the hero, the main action word for word in nav, hero and close",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "copy-actions",
+    "where": "(the page)",
+    "msg": "the main action \"Search\" does not read word for word the same in the closing section",
+    "fix": "few actions, one wording: at most 2 in the hero, the main action word for word in nav, hero and close",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "off-grid",
+    "where": "h2#home-journey \"How a purchase goes\"",
+    "msg": "the section's heading starts at 176px, 56px off the page margin (120px), and no other section starts there",
+    "fix": "move it onto the page margin, or the column edge its section uses",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "off-grid",
+    "where": "h2#home-sell \"Selling something?\"",
+    "msg": "the section's heading starts at 168px, 48px off the page margin (120px), and no other section starts there",
+    "fix": "move it onto the page margin, or the column edge its section uses",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "section-gaps",
+    "where": "main#main > div._page_toy73_3 > section._hero_toy73_6 / main#main > div._page_toy73_3 > section._safe_rravn_3",
+    "msg": "195px between these sections, +30% against the median 150px",
+    "fix": "use one gap between sections (all within 25% of each other)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "hole",
+    "where": "div._page_toy73_3 > section._safe_rravn_3 > div._bento_rravn_12 > section._cardBox_rravn_13._escrow_rravn_17 \"HOW YOUR MONEY MOVES Your money waits wi\"",
+    "msg": "an empty band 240px tall across the card (38% of its height), with content above and below it",
+    "fix": "close the empty space: move the content together, or give the space the visual it lacks",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "copy-length",
+    "where": "main#main > div._page_toy73_3 > section._safe_rravn_3 \"Why paying a stranger is safe here\"",
+    "msg": "1 section over 90 words a screen outside the UI mocks (\"Why paying a stranger is\" 120); 55 words a screen across the page (283 words in 5.1 screens): a tech page says it in about 80 or fewer",
+    "fix": "cut every section to its heading, one line and the product UI: the UI says the rest; no second paragraph, no list of feature sentences",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "button-contrast",
+    "where": "div#root > div._page_1sz15_4 > header._header_1sz15_27 > button._langSwitch_1sz15_72 \"বাংলা – change the language to Bangla\"",
+    "msg": "the button \"বাংলা – change the language to\" (#f3f3f3) stands only 1.11:1 off the ground around it: it reads as part of the ground, or as switched off",
+    "fix": "give the button a fill that stands at least 1.5:1 off what is around it, or an outline in the ink",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "focus-hidden",
+    "where": "div#root > div._page_1sz15_4 > a._skip_1sz15_12 \"Skip to main content\"",
+    "msg": "Tab stop 1, \"Skip to main content\" is partly under div#root > div._page_1sz15_4 > header._header_1sz15_27: a keyboard user cannot see where they are",
+    "fix": "a focused control must stay in view: nothing fixed may cover it (the header is opaque and --nav tall; leave room under it)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "page-meta",
+    "where": "head \"TrustBazaar\"",
+    "msg": "no <meta name=\"description\">: a search result and a shared link show a scrap of the page instead",
+    "fix": "write a <title> \"Name: what it is for whom or where\" and a one-sentence description in other words (starter.html)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "share-meta",
+    "where": "head",
+    "msg": "the head lacks og:title, og:description, og:image, twitter:card, an icon, theme-color: a shared link shows no picture or title of its own",
+    "fix": "copy the head block of starter.html: og tags, twitter:card, the icon and theme-color (references/system.md, Head)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "form-fields",
+    "where": "div#root > div._page_1sz15_4 > header._header_1sz15_27 > form._headSearch_1sz15_310",
+    "msg": "the form has no status line (role=\"status\"): sending, sent and errors are never read out",
+    "fix": "give each field its type, autocomplete and inputmode, never block paste or disable the button before a submit, and add the status line (references/system.md, Forms)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "form-fields",
+    "where": "div._page_toy73_3 > section._hero_toy73_6:nth-of-type(1) > div._heroText_toy73_7:nth-of-type(1) > form._search_toy73_11",
+    "msg": "the form has no status line (role=\"status\"): sending, sent and errors are never read out",
+    "fix": "give each field its type, autocomplete and inputmode, never block paste or disable the button before a submit, and add the status line (references/system.md, Forms)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "hero-screen",
+    "where": "body",
+    "msg": "not measured at 1440px: no tab could be opened (see the probe error)",
+    "fix": "make the page load and lay out at this width (the probe error says what stopped it), then run the check again",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "section-height",
+    "where": "body",
+    "msg": "not measured at 1440px: no tab could be opened (see the probe error)",
+    "fix": "make the page load and lay out at this width (the probe error says what stopped it), then run the check again",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "section-air",
+    "where": "body",
+    "msg": "not measured at 1440px: no tab could be opened (see the probe error)",
+    "fix": "make the page load and lay out at this width (the probe error says what stopped it), then run the check again",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "one-section",
+    "where": "body",
+    "msg": "not measured at 1440px: no tab could be opened (see the probe error)",
+    "fix": "make the page load and lay out at this width (the probe error says what stopped it), then run the check again",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "one-heading",
+    "where": "body",
+    "msg": "not measured at 1440px: no tab could be opened (see the probe error)",
+    "fix": "make the page load and lay out at this width (the probe error says what stopped it), then run the check again",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "container-edges",
+    "where": "body",
+    "msg": "not measured at 1440px: no tab could be opened (see the probe error)",
+    "fix": "make the page load and lay out at this width (the probe error says what stopped it), then run the check again",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "row-lines",
+    "where": "body",
+    "msg": "not measured at 1440px: no tab could be opened (see the probe error)",
+    "fix": "make the page load and lay out at this width (the probe error says what stopped it), then run the check again",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "split-pair",
+    "where": "body",
+    "msg": "not measured at 1440px: no tab could be opened (see the probe error)",
+    "fix": "make the page load and lay out at this width (the probe error says what stopped it), then run the check again",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "hidden-content",
+    "where": "(the page)",
+    "msg": "partly measured: content hidden until a script reveals it (CDP socket closed)",
+    "fix": "run the check again on a quieter machine; if it keeps failing, the probe error line says what stopped it",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "hero-screen",
+    "where": "(the page)",
+    "msg": "partly measured: the rhythm tab block (CDP socket closed)",
+    "fix": "run the check again on a quieter machine; if it keeps failing, the probe error line says what stopped it",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "section-height",
+    "where": "(the page)",
+    "msg": "partly measured: the rhythm tab block (CDP socket closed)",
+    "fix": "run the check again on a quieter machine; if it keeps failing, the probe error line says what stopped it",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "section-air",
+    "where": "(the page)",
+    "msg": "partly measured: the rhythm tab block (CDP socket closed)",
+    "fix": "run the check again on a quieter machine; if it keeps failing, the probe error line says what stopped it",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "one-section",
+    "where": "(the page)",
+    "msg": "partly measured: the rhythm tab block (CDP socket closed)",
+    "fix": "run the check again on a quieter machine; if it keeps failing, the probe error line says what stopped it",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "one-heading",
+    "where": "(the page)",
+    "msg": "partly measured: the rhythm tab block (CDP socket closed)",
+    "fix": "run the check again on a quieter machine; if it keeps failing, the probe error line says what stopped it",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "container-edges",
+    "where": "(the page)",
+    "msg": "partly measured: the rhythm tab block (CDP socket closed)",
+    "fix": "run the check again on a quieter machine; if it keeps failing, the probe error line says what stopped it",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "row-lines",
+    "where": "(the page)",
+    "msg": "partly measured: the rhythm tab block (CDP socket closed)",
+    "fix": "run the check again on a quieter machine; if it keeps failing, the probe error line says what stopped it",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "split-pair",
+    "where": "(the page)",
+    "msg": "partly measured: the rhythm tab block (CDP socket closed)",
+    "fix": "run the check again on a quieter machine; if it keeps failing, the probe error line says what stopped it",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   }
+  ],
+  "crashed": [
+   "consistency.mjs could not walk 390"
+  ],
+  "seconds": {
+   "consistency": 38,
+   "layout": 13
+  }
+ },
+ "open": [
+  {
+   "check": "flush",
+   "where": "div._page_toy73_3 > section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._pay_rravn_47 \"Pay the way you already do Choose bKash,\"",
+   "msg": "its last line sits 0px above the lower edge of section._safe_rravn_3, where the ground changes to section._journey_rravn_52",
+   "fix": "give the section its padding at the edge where the ground changes (the closing call keeps a clear gap above the footer)",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "flush"
+   ],
+   "wheres": [
+    "div._page_toy73_3 > section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._pay_rravn_47 \"Pay the way you already do Choose bKash,\""
+   ]
+  },
+  {
+   "check": "caption",
+   "where": "div#root > div._page_1sz15_4 > p._promiseBar_1sz15_306 \"Your money is held safely until you conf\"",
+   "msg": "a line about the page, not the client: \"until you confirm\"",
+   "fix": "no line under a picture: never how it was made, what it shows, what is missing or what will follow (credits: one footer line)",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "caption"
+   ],
+   "wheres": [
+    "div#root > div._page_1sz15_4 > p._promiseBar_1sz15_306 \"Your money is held safely until you conf\""
+   ]
+  },
+  {
+   "check": "spill",
+   "where": "div._page_toy73_3 > section._hero_toy73_6 > div._art_toy73_20 > div._card_toy73_36 \"Payment held Released to the seller when\"",
+   "msg": "runs 16px past the left edge of the panel it sits on (div._page_toy73_3 > section._hero_toy73_6 > div._art_toy73_20 > div._window_toy73_21)",
+   "fix": "keep the box inside the panel it starts on: shrink it, or grow the panel to hold it",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "spill"
+   ],
+   "wheres": [
+    "div._page_toy73_3 > section._hero_toy73_6 > div._art_toy73_20 > div._card_toy73_36 \"Payment held Released to the seller when\""
+   ]
+  },
+  {
+   "check": "row-gap",
+   "where": "div._page_toy73_3 > section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._pay_rravn_47 \"Pay the way you already do Choose bKash,\"",
+   "msg": "stretched alone across the last row (1200px) while the 3 like it above are 693px",
+   "fix": "fill the row at this width: span the columns, or stack the split",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "row-gap"
+   ],
+   "wheres": [
+    "div._page_toy73_3 > section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._pay_rravn_47 \"Pay the way you already do Choose bKash,\""
+   ]
+  },
+  {
+   "check": "no-visual",
+   "where": "main#main > div._page_toy73_3 > section._safe_rravn_3 \"Why paying a stranger is safe here\"",
+   "msg": "no picture, effect or mock in this section; a feature section needs a visual",
+   "fix": "give the section a visual: a UI fragment on a ground, real icons, or a photograph that fits",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "no-visual"
+   ],
+   "wheres": [
+    "main#main > div._page_toy73_3 > section._safe_rravn_3 \"Why paying a stranger is safe here\""
+   ]
+  },
+  {
+   "check": "no-visual",
+   "where": "main#main > div._page_toy73_3 > section._journey_rravn_52 \"How a purchase goes\"",
+   "msg": "no picture, effect or mock in this section; a feature section needs a visual",
+   "fix": "give the section a visual: a UI fragment on a ground, real icons, or a photograph that fits",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "no-visual"
+   ],
+   "wheres": [
+    "main#main > div._page_toy73_3 > section._journey_rravn_52 \"How a purchase goes\""
+   ]
+  },
+  {
+   "check": "text-only",
+   "where": "main#main > div._page_toy73_3 > section._sell_toy73_66 \"Selling something?\"",
+   "msg": "the closing section is only text: no picture, icon, mock or effect in it",
+   "fix": "give the section a visual: a photograph that fits, the real icons, or a UI fragment on a ground",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "text-only"
+   ],
+   "wheres": [
+    "main#main > div._page_toy73_3 > section._sell_toy73_66 \"Selling something?\""
+   ]
+  },
+  {
+   "check": "card-visual",
+   "where": "main#main > div._page_toy73_3 > section._safe_rravn_3 > div._bento_rravn_12 \"HOW YOUR MONEY MOVES Your money waits wi\"",
+   "msg": "4 cards hold only text: no picture, icon, UI fragment or effect in any of them",
+   "fix": "give the cards a visual: an inset panel with a UI fragment, a photograph or real icons",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "card-visual"
+   ],
+   "wheres": [
+    "main#main > div._page_toy73_3 > section._safe_rravn_3 > div._bento_rravn_12 \"HOW YOUR MONEY MOVES Your money waits wi\""
+   ]
+  },
+  {
+   "check": "button-styles",
+   "where": "(one screen)",
+   "msg": "3 button styles on one screen: soft, fill #232323 (\"Sell an item\"); soft, fill #f3f3f3 (\"বাংলা – change the language to Bangla\"); soft, fill #a1ffcb (\"Start selling\"); the odd one out: \"Start selling\"",
+   "fix": "one primary and one secondary button: one shape, one height per size, one label size",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "button-styles"
+   ],
+   "wheres": [
+    "(one screen)"
+   ]
+  },
+  {
+   "check": "button-styles",
+   "where": "(the page)",
+   "msg": "3 button styles on the page: soft, fill #f3f3f3 x1 (\"বাংলা – change the language to Bangla\"); soft, fill #232323 x2 (\"Sell an item\"); soft, fill #a1ffcb x1 (\"Start selling\")",
+   "fix": "one primary and one secondary button: one shape, one height per size, one label size",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "button-styles"
+   ],
+   "wheres": [
+    "(the page)"
+   ]
+  },
+  {
+   "check": "copy-headline",
+   "where": "div._page_toy73_3 > section._hero_toy73_6 > div._heroText_toy73_7 > h1._title_toy73_8 \"Find it nearby. Pay when it is in your h\"",
+   "msg": "\"Find it nearby. Pay when it is in your hands.\" does not name what is sold (online marketplace with protected payments, online, marketplace, protected, from flags)",
+   "fix": "put the category noun in the h1 (and who it is for, or where), in 2 to 8 words",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "copy-headline"
+   ],
+   "wheres": [
+    "div._page_toy73_3 > section._hero_toy73_6 > div._heroText_toy73_7 > h1._title_toy73_8 \"Find it nearby. Pay when it is in your h\""
+   ]
+  },
+  {
+   "check": "copy-fact",
+   "where": "div._page_toy73_3 > section._hero_toy73_6 > div._heroText_toy73_7 > h1._title_toy73_8 \"Find it nearby. Pay when it is in your h\"",
+   "msg": "the first screen holds no number, price, date, place, platform or genre",
+   "fix": "put one hard fact from the brief on the first screen: a number, a price, a date, the place, the platforms it runs on or a game's genre; take it from the brief or remove the claim",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "copy-fact"
+   ],
+   "wheres": [
+    "div._page_toy73_3 > section._hero_toy73_6 > div._heroText_toy73_7 > h1._title_toy73_8 \"Find it nearby. Pay when it is in your h\""
+   ]
+  },
+  {
+   "check": "copy-headings",
+   "where": "h2#home-safe \"Why paying a stranger is safe here\"",
+   "msg": "\"Why paying a stranger is safe here\" names no product, part, place or section (6 headings like it; at most one brand line per page) (and 5 more like it: \"Your money waits with us\", \"Pay the way you already \", \"How a purchase goes\", \"Newest listings\", ...)",
+   "fix": "name the thing in every heading: the product, a part, the place or a section noun",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "copy-headings"
+   ],
+   "wheres": [
+    "h2#home-safe \"Why paying a stranger is safe here\""
+   ]
+  },
+  {
+   "check": "heading-scale",
+   "where": "section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._auction_rravn_66 > h3._h3_rravn_6 \"Auctions with a clock you can trust\"",
+   "msg": "an h3 at 22px, as large as the smallest h2 (22px) or larger (and 2 more like it: \"Every seller is ID-check\", \"Hand over with a one-tim\")",
+   "fix": "size headings by level: the h1 largest, one size per level, each level below the one above",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "heading-scale"
+   ],
+   "wheres": [
+    "section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._auction_rravn_66 > h3._h3_rravn_6 \"Auctions with a clock you can trust\""
+   ]
+  },
+  {
+   "check": "heading-scale",
+   "where": "h2#home-safe \"Why paying a stranger is safe here\"",
+   "msg": "h2 headings in 3 sizes, 22px (\"Your money waits with us\") to 44px (x2.00)",
+   "fix": "size headings by level: the h1 largest, one size per level, each level below the one above",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "heading-scale"
+   ],
+   "wheres": [
+    "h2#home-safe \"Why paying a stranger is safe here\""
+   ]
+  },
+  {
+   "check": "text-contrast",
+   "where": "div._page_toy73_3 > section._hero_toy73_6 > div._heroText_toy73_7 > p._lede_toy73_10 \"The seller is paid only after you confir\"",
+   "msg": "body text in #686868 on #ffffff reads 5.57:1 (needs 7:1)",
+   "fix": "body text in the ink at 7:1 or more; grey (4.5:1 or more) only for captions and labels",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "text-contrast"
+   ],
+   "wheres": [
+    "div._page_toy73_3 > section._hero_toy73_6 > div._heroText_toy73_7 > p._lede_toy73_10 \"The seller is paid only after you confir\""
+   ]
+  },
+  {
+   "check": "text-contrast",
+   "where": "section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._auction_rravn_66 > p._text_rravn_8 \"The server keeps the time. A bid in the \"",
+   "msg": "body text in #686868 on #f3f3f3 reads 5.02:1 (needs 7:1); 3 like it, like \"An ID card and two sel\", \"Inspect the item first\"",
+   "fix": "body text in the ink at 7:1 or more; grey (4.5:1 or more) only for captions and labels",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "text-contrast"
+   ],
+   "wheres": [
+    "section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._auction_rravn_66 > p._text_rravn_8 \"The server keeps the time. A bid in the \""
+   ]
+  },
+  {
+   "check": "text-contrast",
+   "where": "section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._pay_rravn_47 > p._text_rravn_8 \"Choose bKash, Nagad or a card. The money\"",
+   "msg": "body text in #a4a4a4 on #232323 reads 6.31:1 (needs 7:1); 6 like it, like \"Search or browse. Ever\", \"TrustBazaar holds your\", \"Inspect the item, give\"",
+   "fix": "body text in the ink at 7:1 or more; grey (4.5:1 or more) only for captions and labels",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "text-contrast"
+   ],
+   "wheres": [
+    "section._safe_rravn_3 > div._bento_rravn_12 > article._cardBox_rravn_13._pay_rravn_47 > p._text_rravn_8 \"Choose bKash, Nagad or a card. The money\""
+   ]
+  },
+  {
+   "check": "section-tile",
+   "where": "main#main > div._page_toy73_3 > section._safe_rravn_3 \"Why paying a stranger is safe here\"",
+   "msg": "the section is 1014px tall (1.13 screens at 1440x900), not one screen or two: the screen one screen on from its top (scroll 1891px) shows 114px of it and 332px of the next section, its heading \"How a purchase goes\" on screen",
+   "fix": "set every section after the hero to one screen or two (height: calc(var(--h,1) * 100vh)) and fit its content above --padb",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "section-tile"
+   ],
+   "wheres": [
+    "main#main > div._page_toy73_3 > section._safe_rravn_3 \"Why paying a stranger is safe here\""
+   ]
+  },
+  {
+   "check": "section-tile",
+   "where": "main#main > div._page_toy73_3 > section._journey_rravn_52 \"How a purchase goes\"",
+   "msg": "the section is 332px tall (0.37 screens at 1440x900), shorter than the screen: its tile (the screen from its top) shows 331px of it and 149px of the next section, its heading \"Newest listings\" on screen",
+   "fix": "set every section after the hero to one screen or two (height: calc(var(--h,1) * 100vh)) and fit its content above --padb",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "section-tile"
+   ],
+   "wheres": [
+    "main#main > div._page_toy73_3 > section._journey_rravn_52 \"How a purchase goes\""
+   ]
+  },
+  {
+   "check": "section-tile",
+   "where": "main#main > div._page_toy73_3 > section._section_toy73_55 \"Newest listings\"",
+   "msg": "the section is 149px tall (0.17 screens at 1440x900), shorter than the screen: its tile, held at the page's end (scroll 2471px) shows 149px of it and 345px of the next section, its heading \"Selling something?\" on screen",
+   "fix": "set every section after the hero to one screen or two (height: calc(var(--h,1) * 100vh)) and fit its content above --padb",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "section-tile"
+   ],
+   "wheres": [
+    "main#main > div._page_toy73_3 > section._section_toy73_55 \"Newest listings\""
+   ]
+  },
+  {
+   "check": "section-tile",
+   "where": "main#main > div._page_toy73_3 > section._sell_toy73_66 \"Selling something?\"",
+   "msg": "the section is 345px tall (0.38 screens at 1440x900), shorter than the screen: its tile, held at the page's end (scroll 2471px) shows 345px of it and 149px of the section above, its heading \"Newest listings\" on screen",
+   "fix": "set every section after the hero to one screen or two (height: calc(var(--h,1) * 100vh)) and fit its content above --padb",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "section-tile"
+   ],
+   "wheres": [
+    "main#main > div._page_toy73_3 > section._sell_toy73_66 \"Selling something?\""
+   ]
+  },
+  {
+   "check": "field-label",
+   "where": "input#head-q",
+   "msg": "a input[type=search] without a label you can see: its <label> is hidden",
+   "fix": "put a <label for> with the field's name above it (references/system.md, Forms); a placeholder is no label",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "field-label"
+   ],
+   "wheres": [
+    "input#head-q"
+   ]
+  },
+  {
+   "check": "field-label",
+   "where": "input#home-q",
+   "msg": "a input[type=search] without a label you can see: its <label> is hidden",
+   "fix": "put a <label for> with the field's name above it (references/system.md, Forms); a placeholder is no label",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "field-label"
+   ],
+   "wheres": [
+    "input#home-q"
+   ]
+  },
+  {
+   "check": "focus-ring",
+   "where": "._main_1sz15_104:focus",
+   "msg": "\"._main_1sz15_104:focus\" in the page removes the focus outline and sets nothing in its place",
+   "fix": "keep the kit's :focus-visible ring, or put a change of the same strength (a 2px line in --action) in the rule that removes it",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "focus-ring"
+   ],
+   "wheres": [
+    "._main_1sz15_104:focus"
+   ]
+  },
+  {
+   "check": "focus-ring",
+   "where": ".mantine-focus-never:focus",
+   "msg": "\".mantine-focus-never:focus\" in the page removes the focus outline and sets nothing in its place",
+   "fix": "keep the kit's :focus-visible ring, or put a change of the same strength (a 2px line in --action) in the rule that removes it",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "focus-ring"
+   ],
+   "wheres": [
+    ".mantine-focus-never:focus"
+   ]
+  },
+  {
+   "check": "moment-none",
+   "where": "(the page)",
+   "msg": "a software page (--type) deals no moment: every kind carries one, two on a long page (moments.md)",
+   "fix": "deal one (moments.mjs pick --page software) and mount it in its own section",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "moment-none"
+   ],
+   "wheres": [
+    "(the page)"
+   ]
+  },
+  {
+   "check": "container",
+   "where": "page",
+   "msg": "no .wrap",
+   "fix": "put the content in one .wrap",
+   "widths": [
+    1440,
+    390
+   ],
+   "from": "layout",
+   "ids": [
+    "container"
+   ],
+   "wheres": [
+    "page"
+   ]
+  }
+ ],
+ "waived": [],
+ "warnCount": 34,
+ "openTold": true
+}

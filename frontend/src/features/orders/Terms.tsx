@@ -13,7 +13,7 @@ import type { Lang } from '../../shared/language/lang';
 import styles from './orders.module.css';
 
 /** The version of the terms texts; raise it when their wording changes. */
-export const TERMS_VERSION = 1;
+const TERMS_VERSION = 1;
 
 export function Terms({
   id,
@@ -69,6 +69,7 @@ export function Terms({
   return (
     <Popup id={id} title={title} closeLabel={back} busy={working} onClose={onClose}>
       <p className={styles.hint}>{intro}</p>
+      {/* eslint-disable-next-line jsx-a11y/no-redundant-roles -- Safari drops the list semantics of a list without markers; the role puts them back */}
       <ol className={styles.terms} role="list">
         {Array.from({ length: count }, (_, i) => (
           <li key={i}>{t(`${prefix}.${i + 1}`)}</li>

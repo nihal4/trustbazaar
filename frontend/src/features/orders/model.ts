@@ -2,7 +2,7 @@
 // GET /orders/{id} and Unit 4's handover and shipments that the screens read. Money in poisha, as strings.
 // Query keys follow the API paths (section 4.3).
 
-export type Fulfilment = 'self_pickup' | 'courier' | 'game_account';
+type Fulfilment = 'self_pickup' | 'courier' | 'game_account';
 
 export interface OrderView {
   id: string;
@@ -91,7 +91,7 @@ export interface HandoverView {
   lockedAt: string | null;
 }
 
-export type ShipmentStatus = 'preparing' | 'booked' | 'picked_up' | 'in_transit' | 'delivered' | 'delivery_failed' | 'returned_to_seller' | 'cancelled';
+type ShipmentStatus = 'preparing' | 'booked' | 'picked_up' | 'in_transit' | 'delivered' | 'delivery_failed' | 'returned_to_seller' | 'cancelled';
 export interface Area {
   id: number;
   district: string;

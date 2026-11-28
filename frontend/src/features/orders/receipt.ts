@@ -29,7 +29,7 @@ export function buildReceipt(o: OrderView, t: T, lang: Lang, party: string | nul
     [t('receipt.delivery_method'), o.fulfilment ? t(`receipt.method.${o.fulfilment}`) : '—'],
   ];
   const lines: [string, string][] = [
-    [`${o.listing.title}${o.quantity > 1 ? ` × ${o.quantity}` : ''}`, money(o.itemPrice)],
+    [o.listing.title + (o.quantity > 1 ? ' × ' + o.quantity : ''), money(o.itemPrice)],
     [t('receipt.delivery'), money(o.deliveryFee)],
   ];
   const metaHtml = meta.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('');

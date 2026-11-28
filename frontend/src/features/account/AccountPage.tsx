@@ -68,8 +68,9 @@ export function Component() {
 
   const u = me.data;
   const n = (v: number | string) => toLocalDigits(String(v), lang);
+  const locale = lang === 'bn' ? 'bn-BD' : 'en-GB';
   const since = u.memberSince
-    ? new Intl.DateTimeFormat(lang === 'bn' ? 'bn-BD' : 'en-GB', { month: 'long', year: 'numeric', timeZone: 'Asia/Dhaka' }).format(new Date(u.memberSince))
+    ? new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'Asia/Dhaka' }).format(new Date(u.memberSince))
     : null;
   const rating = trust.data?.ratingCount
     ? t('account.rating_value', { average: n((trust.data.averageRating ?? 0).toFixed(1)), count: n(trust.data.ratingCount) })
@@ -94,7 +95,7 @@ export function Component() {
             )}
           </h2>
           <ul className={styles.marks}>
-            <Mark on={u.kycStatus === 'verified'} text={`${t('account.kyc')}: ${t(`kyc.status.${u.kycStatus}`)}`} />
+            <Mark on={u.kycStatus === 'verified'} text={t('account.kyc') + ': ' + t(`kyc.status.${u.kycStatus}`)} />
             {u.email && (
               <Mark on={u.emailVerified} text={`${t('field.email')}: ${t(u.emailVerified ? 'account.email_verified' : 'account.email_unverified')}`} />
             )}

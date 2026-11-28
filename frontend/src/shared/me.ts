@@ -5,7 +5,7 @@ import { useApi, type Api } from './api';
 import { FRESHNESS } from './query';
 
 export type KycStatus = 'unsubmitted' | 'pending_review' | 'verified' | 'rejected' | 'revoked';
-export type AccountStatus = 'active' | 'suspended' | 'closed';
+type AccountStatus = 'active' | 'suspended' | 'closed';
 
 export interface Me {
   id: string;
@@ -27,7 +27,7 @@ export const ME_KEY = ['me'] as const;
 /** The console's GET /staff/me (src/staff/); named here so the document knows whether a staff member was signed in. */
 export const STAFF_ME_KEY = ['staff', 'me'] as const;
 
-export function fetchMe(api: Api, signal?: AbortSignal): Promise<Me> {
+function fetchMe(api: Api, signal?: AbortSignal): Promise<Me> {
   return api.get('/me', { signal });
 }
 

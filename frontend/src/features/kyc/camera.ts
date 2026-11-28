@@ -12,7 +12,7 @@ export interface Camera {
   capture(video: HTMLVideoElement): Promise<Blob>;
 }
 
-export const browserCamera: Camera = {
+const browserCamera: Camera = {
   open(facing) {
     if (!navigator.mediaDevices?.getUserMedia) return Promise.reject(Object.assign(new Error('no camera API'), { name: 'NotFoundError' }));
     return navigator.mediaDevices.getUserMedia({

@@ -58,7 +58,8 @@ export function Component() {
   const [resending, setResending] = useState(false);
   // each step names itself in the tab and to a screen reader (the heading is also the first thing the field is described by)
   useEffect(() => {
-    const name = step === 'mfa' ? t(method === 'email' ? 'signin.email_title' : 'signin.mfa_title') : t('signin.title');
+    const second = method === 'email' ? 'signin.email_title' : 'signin.mfa_title';
+    const name = step === 'mfa' ? t(second) : t('signin.title');
     document.title = `${name} – TrustBazaar`;
   }, [step, method, t]);
 

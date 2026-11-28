@@ -6,7 +6,7 @@ import { fingerprint, generateBuyerKey } from '../lib/sealed.js';
 import { b64u, h, show } from './dom';
 import { errorText, gamePath, orderLink, reasonOf, type Ctx, type GameView } from './context';
 
-export async function publicRawOf(pair: CryptoKeyPair): Promise<Uint8Array> {
+async function publicRawOf(pair: CryptoKeyPair): Promise<Uint8Array> {
   return new Uint8Array(await crypto.subtle.exportKey('raw', pair.publicKey));
 }
 

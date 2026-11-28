@@ -138,6 +138,18 @@ export function Component() {
     const key = m.template === 'dispute.decided' ? `dispute.msg.decided.${String(p.outcome ?? 'none')}.${c.role}` : `dispute.msg.${m.template}.${c.role}`;
     return t(key, { ...p, amount: p.itemRefund ? formatMoney(BigInt(String(p.itemRefund)), lang) : '' });
   };
+  // what a bubble says: a link to the file, that the file was removed, or the words
+  const bubbleBody = (m: ChatItem) => {
+    if (m.file?.link) {
+      return (
+        <a href={m.file.link.url} target="_blank" rel="noopener noreferrer">
+          {t(VIDEO.test(m.file.mime) ? 'dispute.sent_video' : 'dispute.sent_photo')}
+        </a>
+      );
+    }
+    if (m.file) return <p>{t('dispute.removed')}</p>;
+    return <p>{m.from === 'you' ? (m.text ?? t('dispute.removed')) : said(m)}</p>;
+  };
   const submit = (e?: FormEvent) => {
     e?.preventDefault();
     if (!text.trim() || send.isPending) return;
@@ -207,6 +219,7 @@ export function Component() {
             <span>{stateWord}</span>
           </div>
         </header>
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrolling region has to be reachable by keyboard to be scrolled (WCAG 2.1.1) */}
         <div className={styles.dcThread} ref={thread} tabIndex={0} role="log" aria-live="polite" aria-label={t('dispute.chat_title')}>
           {rows.length === 0 && <p className={styles.dcEmpty}>{t('dispute.chat_empty')}</p>}
           {rows.map((r, i) =>
@@ -218,17 +231,7 @@ export function Component() {
               <div key={`m${i}`} className={r.m.from === 'you' ? `${styles.dcRow} ${styles.dcMine}` : styles.dcRow}>
                 <div className={styles.dcBubble}>
                   <span className={styles.srOnly}>{t(r.m.from === 'you' ? 'dispute.party.you' : 'dispute.party.trustbazaar')}: </span>
-                  {r.m.file ? (
-                    r.m.file.link ? (
-                      <a href={r.m.file.link.url} target="_blank" rel="noopener noreferrer">
-                        {t(VIDEO.test(r.m.file.mime) ? 'dispute.sent_video' : 'dispute.sent_photo')}
-                      </a>
-                    ) : (
-                      <p>{t('dispute.removed')}</p>
-                    )
-                  ) : (
-                    <p>{r.m.from === 'you' ? (r.m.text ?? t('dispute.removed')) : said(r.m)}</p>
-                  )}
+                  {bubbleBody(r.m)}
                   <span className={styles.dcTime}>
                     <DateCells at={Date.parse(r.m.at)} t={t} lang={lang} label={false} compact inline part="time" />
                   </span>
@@ -253,6 +256,7 @@ export function Component() {
                 disabled={attach.isPending}
               />
               <label htmlFor="chat-file" className={styles.dcAttach} title={t('dispute.attach')}>
+                <span className={styles.srOnly}>{t('dispute.attach')}</span>
                 <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" focusable="false">
                   <path
                     d="M14.5 9.5 9 15a3 3 0 0 1-4.2-4.2l6-6a2 2 0 0 1 2.8 2.8l-6 6a1 1 0 0 1-1.4-1.4L11 7.6"

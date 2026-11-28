@@ -1,8 +1,9 @@
 // What the wizard knows about a submission (Unit 1 section 6.6): the status answer, the files each
 // document needs, and the early checks Unit 1 also makes.
 import { toAsciiDigits } from '../../lib/money.js';
+import { phaseOf } from '../../shared/stepPhase';
 
-export type KycStatus = 'unsubmitted' | 'pending_review' | 'verified' | 'rejected' | 'revoked';
+type KycStatus = 'unsubmitted' | 'pending_review' | 'verified' | 'rejected' | 'revoked';
 export type DocType = 'nid' | 'passport';
 export type ImageKind = 'doc_front' | 'doc_back' | 'passport_photo_page' | 'selfie_neutral' | 'selfie_action';
 
@@ -77,9 +78,14 @@ export type StepGroup = 'details' | 'document' | 'selfies' | 'send';
  * groups (what you need and the details; the document's photos; the two selfies; checking and sending), each done,
  * now or still to come.
  */
+function groupOf(step: WizardStep): StepGroup {
+  if (step === 'intro' || step === 'details') return 'details';
+  if (step === 'review') return 'send';
+  return isSelfie(step) ? 'selfies' : 'document';
+}
+
 export function kycStepsOf(step: WizardStep): { key: StepGroup; state: 'done' | 'current' | 'next' }[] {
-  const group: StepGroup = step === 'intro' || step === 'details' ? 'details' : step === 'review' ? 'send' : isSelfie(step) ? 'selfies' : 'document';
   const order: StepGroup[] = ['details', 'document', 'selfies', 'send'];
-  const at = order.indexOf(group);
-  return order.map((key, i) => ({ key, state: i < at ? 'done' : i === at ? 'current' : 'next' }));
+  const at = order.indexOf(groupOf(step));
+  return order.map((key, i) => ({ key, state: phaseOf(i, at) }));
 }

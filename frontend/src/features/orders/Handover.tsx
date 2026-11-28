@@ -42,7 +42,7 @@ export function useHandover(o: OrderView) {
   });
 }
 
-export const HANDOVER_RETRIES = 10;
+const HANDOVER_RETRIES = 10;
 
 export function Handover({ o, h, t, lang, after, before }: { o: OrderView; h: HandoverView; t: T; lang: Lang; after?: ReactNode; before?: ReactNode }) {
   const open = h.status === 'arranging' || h.status === 'agreed';

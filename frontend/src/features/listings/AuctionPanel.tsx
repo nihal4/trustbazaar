@@ -27,7 +27,7 @@ import { BidForm } from './AuctionBidForm';
 import { money } from './auctionShared';
 import { Offer } from './AuctionOffer';
 
-export { GUEST_POLL_MS, SIGNED_IN_POLL_MS, CLOSING_POLL_MS } from './useAuctionLive';
+export { GUEST_POLL_MS } from './useAuctionLive';
 
 export function AuctionPanel({
   initial,
@@ -278,15 +278,12 @@ export function AuctionPanel({
 }
 
 function Closed({ state, t, lang, mine }: { state: AuctionState; t: T; lang: Lang; mine: MyStatus | undefined }) {
+  let closedText = t('auction.closed.cancelled');
+  if (state.status === 'awarded') closedText = t('auction.closed.awarded', { price: money(state.price ?? state.startPrice, lang) });
+  else if (state.status === 'unsold') closedText = t('auction.closed.unsold');
   return (
     <div className={styles.closed}>
-      <p role="status">
-        {state.status === 'awarded'
-          ? t('auction.closed.awarded', { price: money(state.price ?? state.startPrice, lang) })
-          : state.status === 'unsold'
-            ? t('auction.closed.unsold')
-            : t('auction.closed.cancelled')}
-      </p>
+      <p role="status">{closedText}</p>
       {mine?.orderId && (
         <p>
           {t('auction.won')}{' '}

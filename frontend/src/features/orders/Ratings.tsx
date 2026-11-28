@@ -33,7 +33,7 @@ export interface OrderRatings {
   mine: RatingView | null;
   received: RatingView | null;
 }
-export const ratingsKey = (orderId: string) => ['orders', orderId, 'ratings'] as const;
+const ratingsKey = (orderId: string) => ['orders', orderId, 'ratings'] as const;
 
 export function useOrderRatings(o: OrderView) {
   const api = useApi();

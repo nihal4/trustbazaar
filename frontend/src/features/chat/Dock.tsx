@@ -18,6 +18,10 @@ export function Dock({ threadId, t, lang, onSend, onSent }: { threadId: string; 
   const field = useRef<HTMLTextAreaElement>(null);
   const length = [...text.normalize('NFC')].length;
   const tooLong = length > MAX_TEXT;
+  // the count under the box is shown only when the text nears the limit, in the error colour once past it
+  let noteClass: string = styles.visuallyHidden;
+  if (tooLong) noteClass = `${styles.error} ${styles.dockNote}`;
+  else if (length > MAX_TEXT - 200) noteClass = `${styles.hint} ${styles.dockNote}`;
   const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState('');
   const [busy, setBusy] = useState(false);
@@ -133,10 +137,7 @@ export function Dock({ threadId, t, lang, onSend, onSent }: { threadId: string; 
       <p id="chat-hint" className={`${styles.hint} ${styles.dockNote}`}>
         {t('thread.hint')}
       </p>
-      <p
-        id="chat-count"
-        className={tooLong ? `${styles.error} ${styles.dockNote}` : length > MAX_TEXT - 200 ? `${styles.hint} ${styles.dockNote}` : styles.visuallyHidden}
-      >
+      <p id="chat-count" className={noteClass}>
         {tooLong
           ? t('thread.too_long', { max: toLocalDigits(String(MAX_TEXT), lang) })
           : t('thread.counter', { count: toLocalDigits(String(length), lang), max: toLocalDigits(String(MAX_TEXT), lang) })}

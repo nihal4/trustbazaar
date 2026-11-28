@@ -124,7 +124,8 @@ export function Component() {
   const pickup = l.fulfilmentOptions !== 'courier_only';
   const courier = l.fulfilmentOptions === 'courier_only' || l.fulfilmentOptions === 'pickup_or_courier';
   const game = l.itemKind === 'game_account';
-  const chosen: 'self_pickup' | 'courier' | 'game_account' = game ? 'game_account' : (method ?? (pickup ? 'self_pickup' : 'courier'));
+  const usual = pickup ? 'self_pickup' : 'courier';
+  const chosen: 'self_pickup' | 'courier' | 'game_account' = game ? 'game_account' : (method ?? usual);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();

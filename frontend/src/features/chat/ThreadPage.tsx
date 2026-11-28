@@ -25,6 +25,7 @@ import { FRESHNESS } from '../../shared/query';
 import en from '../../messages/en/chat.json';
 import bn from '../../messages/bn/chat.json';
 import { fetchMessages, fetchThreads, newClientId, THREADS_KEY, toChatMessage, type ChatMessage, type LiveMessage, type ThreadSummary } from './model';
+import { SignedOutNotice } from './SignedOutNotice';
 import styles from './chat.module.css';
 
 import { ThreadActions } from './ThreadActions';
@@ -53,22 +54,18 @@ async function findThread(api: Api, id: string, signal?: AbortSignal): Promise<T
   return null;
 }
 
+/** What the other person has done with a message of mine: read it, had it delivered, or neither yet. */
+function markOf(marks: { read: number; delivered: number }, seq: number): 'read' | 'delivered' | null {
+  if (marks.read >= seq) return 'read';
+  return marks.delivered >= seq ? 'delivered' : null;
+}
+
 export function Component() {
   const { t, lang } = useT(CATALOGUES);
   const me = useMe();
   const { thread: id = '' } = useParams();
   if (me.isPending) return <p role="status">{t('shell.loading')}</p>;
-  if (me.isError) {
-    return (
-      <div className={styles.page}>
-        <h1>{t('chat.title')}</h1>
-        <p>{t('chat.signed_out')}</p>
-        <p>
-          <Link to={`/signin?next=${encodeURIComponent(`/messages/${id}`)}`}>{t('shell.sign_in')}</Link>
-        </p>
-      </div>
-    );
-  }
+  if (me.isError) return <SignedOutNotice next={'/messages/' + id} t={t} />;
   return <Conversation key={id} id={id} t={t} lang={lang} />;
 }
 
@@ -264,6 +261,7 @@ function Conversation({ id, t, lang }: { id: string; t: T; lang: Lang }) {
             {t('shell.loading')}
           </p>
         ) : (
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrolling region has to be reachable by keyboard to be scrolled (WCAG 2.1.1)
           <div ref={log} className={styles.messages} role="log" tabIndex={0} aria-label={t('thread.messages')}>
             <ol className={styles.messageList}>
               {messages.length === 0 && pending.length === 0 && <li className={styles.empty}>{t('thread.empty')}</li>}
@@ -276,14 +274,7 @@ function Conversation({ id, t, lang }: { id: string; t: T; lang: Lang }) {
                         <span>{`${p.weekday}, ${p.day} ${p.month} ${p.year}`}</span>
                       </li>
                     )}
-                    <MessageItem
-                      m={m}
-                      role={s?.role ?? null}
-                      threadId={id}
-                      t={t}
-                      lang={lang}
-                      mark={m === lastMine ? (marks.read >= m.seq ? 'read' : marks.delivered >= m.seq ? 'delivered' : null) : null}
-                    />
+                    <MessageItem m={m} role={s?.role ?? null} threadId={id} t={t} lang={lang} mark={m === lastMine ? markOf(marks, m.seq) : null} />
                   </Fragment>
                 );
               })}

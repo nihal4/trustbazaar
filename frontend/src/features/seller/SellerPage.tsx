@@ -102,6 +102,8 @@ function Figures({ orders, t, lang }: { orders: SellerOrder[] | null; t: T; lang
   });
   const a = account.data?.account ?? null;
   const dash = '–';
+  let figStatus = dash;
+  if (account.isSuccess) figStatus = a ? accountStatus(a, t, lang) : t('seller.fig_none');
   return (
     <dl className={styles.figures}>
       <div>
@@ -114,7 +116,7 @@ function Figures({ orders, t, lang }: { orders: SellerOrder[] | null; t: T; lang
       </div>
       <div>
         <dt>{t('seller.account_title')}</dt>
-        <dd className={styles.figText}>{account.isSuccess ? (a ? accountStatus(a, t, lang) : t('seller.fig_none')) : dash}</dd>
+        <dd className={styles.figText}>{figStatus}</dd>
       </div>
       <div>
         <dt>{t('seller.fig_completed')}</dt>
@@ -161,7 +163,7 @@ function Listings({ t, lang }: { t: T; lang: Lang }) {
   const listings = useInfiniteQuery({
     queryKey: ['me', 'listings', state],
     queryFn: ({ pageParam, signal }) =>
-      api.get(`/me/listings?status=${state}${pageParam ? `&cursor=${encodeURIComponent(pageParam)}` : ''}`, { signal }) as Promise<{
+      api.get(`/me/listings?status=${state}` + (pageParam ? '&cursor=' + encodeURIComponent(pageParam) : ''), { signal }) as Promise<{
         items: MyListing[];
         nextCursor: string | null;
       }>,

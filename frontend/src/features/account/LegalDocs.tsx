@@ -82,6 +82,7 @@ export function LegalDialog({ kind, opener, onClose }: { kind: 'terms' | 'privac
   const version = toLocalDigits(kind === 'terms' ? LEGAL_VERSIONS.terms : LEGAL_VERSIONS.privacy, lang);
   const body: ReactNode = kind === 'terms' ? <TermsBody level={3} /> : <PrivacyPoints />;
   return createPortal(
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- a click outside closes the dialog; the keyboard closes it with Escape and its button
     <div
       className={styles.dialogBackdrop}
       onMouseDown={(e) => {
@@ -98,6 +99,7 @@ export function LegalDialog({ kind, opener, onClose }: { kind: 'terms' | 'privac
             ×
           </button>
         </div>
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrolling region has to be reachable by keyboard to be scrolled (WCAG 2.1.1) */}
         <div className={styles.dialogBody} tabIndex={0} role="region" aria-labelledby="legal-dialog-title" data-first>
           {body}
         </div>

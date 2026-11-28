@@ -97,7 +97,7 @@ export function Statements({ t, lang }: { t: T; lang: Lang }) {
   const statements = useInfiniteQuery({
     queryKey: ['me', 'statements'],
     queryFn: ({ pageParam, signal }) =>
-      api.get(`/me/statements${pageParam ? `?cursor=${encodeURIComponent(pageParam)}` : ''}`, { signal }) as Promise<{
+      api.get('/me/statements' + (pageParam ? '?cursor=' + encodeURIComponent(pageParam) : ''), { signal }) as Promise<{
         items: Statement[];
         owed: string;
         nextCursor: string | null;

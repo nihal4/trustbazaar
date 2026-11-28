@@ -11,6 +11,25 @@ import { staffError } from './common';
 import { Button } from '../../shared/ui';
 import { ChatView } from './disputeTypes';
 
+/** What one message says: that it was removed, its words, or its caption with a link to the file. */
+function MessageBody({ m, t }: { m: ChatView['messages'][number]; t: T }) {
+  if (m.removed) return <p className={styles.hint}>{t('staff.dispute.removed')}</p>;
+  if (m.kind === 'text') return <p className={styles.text}>{m.text}</p>;
+  return (
+    <p>
+      {m.caption}
+      {m.image && (
+        <>
+          {' '}
+          <a href={m.image.url} target="_blank" rel="noopener noreferrer">
+            {t('staff.case.open_file')}
+          </a>
+        </>
+      )}
+    </p>
+  );
+}
+
 export function Chat({ path, t, lang }: { path: string; t: T; lang: Lang }) {
   const api = useApi();
   const [shown, setShown] = useState(false);
@@ -38,23 +57,7 @@ export function Chat({ path, t, lang }: { path: string; t: T; lang: Lang }) {
                 <strong>{t(`staff.party.${m.from}`)}</strong> · {formatDateTime(Date.parse(m.at), lang)}
                 {m.flags.length ? ` · ${m.flags.join(', ')}` : ''}
               </p>
-              {m.removed ? (
-                <p className={styles.hint}>{t('staff.dispute.removed')}</p>
-              ) : m.kind === 'text' ? (
-                <p className={styles.text}>{m.text}</p>
-              ) : (
-                <p>
-                  {m.caption}
-                  {m.image && (
-                    <>
-                      {' '}
-                      <a href={m.image.url} target="_blank" rel="noopener noreferrer">
-                        {t('staff.case.open_file')}
-                      </a>
-                    </>
-                  )}
-                </p>
-              )}
+              <MessageBody m={m} t={t} />
             </li>
           ))}
         </ol>

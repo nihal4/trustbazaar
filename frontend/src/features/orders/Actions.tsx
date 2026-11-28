@@ -37,6 +37,7 @@ export function actionsOf(o: OrderView): Action[] {
 export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang: Lang; extra?: ReactNode; bare?: boolean }) {
   const api = useApi();
   const queryClient = useQueryClient();
+  const back = t('actions.back');
   const [open, setOpen] = useState<Action | null>(null);
   const [reason, setReason] = useState('');
   const [message, setMessage] = useState<string | null>(null);
@@ -135,7 +136,7 @@ export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang:
         <Popup
           id="action-reason"
           title={t(open === 'request' ? 'actions.ask_cancel' : 'actions.seller_cancel')}
-          closeLabel={t('actions.back')}
+          closeLabel={back}
           busy={act.isPending}
           onClose={() => {
             setOpen(null);
@@ -168,7 +169,7 @@ export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang:
                   setMessage(null);
                 }}
               >
-                {t('actions.back')}
+                {back}
               </button>
             </PopupActions>
           </form>
@@ -181,7 +182,7 @@ export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang:
           title={t('actions.confirm_receipt')}
           busy={act.isPending}
           confirmLabel={t('actions.release_button', { amount: toSeller })}
-          cancelLabel={t('actions.back')}
+          cancelLabel={back}
           onConfirm={() => run('confirm')}
           onCancel={() => setOpen(null)}
         >
@@ -194,7 +195,7 @@ export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang:
           title={t('actions.accept_request')}
           busy={act.isPending}
           confirmLabel={t('actions.refund_button', { amount: refund })}
-          cancelLabel={t('actions.back')}
+          cancelLabel={back}
           onConfirm={() => run('accept')}
           onCancel={() => setOpen(null)}
         >
@@ -207,7 +208,7 @@ export function Actions({ o, t, lang, extra, bare }: { o: OrderView; t: T; lang:
           title={t('actions.seller_cancel')}
           busy={act.isPending}
           confirmLabel={t('actions.cancel_button', { amount: refund })}
-          cancelLabel={t('actions.back')}
+          cancelLabel={back}
           onConfirm={() => run('cancel')}
           onCancel={() => setConfirming(false)}
         >

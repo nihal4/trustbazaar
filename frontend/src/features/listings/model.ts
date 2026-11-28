@@ -68,6 +68,5 @@ export interface BidResult {
 }
 
 export const listingKey = (id: string) => ['listings', id] as const;
-export const stateKey = (id: string) => ['auctions', id, 'state'] as const;
 export const myStatusKey = (id: string) => ['auctions', id, 'my-status'] as const;
 export const historyKey = (id: string) => ['auctions', id, 'bids'] as const;

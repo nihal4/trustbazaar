@@ -10,6 +10,7 @@ import { CodeField, FormMessage } from '../../shared/form';
 import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
 import { isApiError, problemName } from '../../shared/problems';
+import { stepMark } from '../../shared/stepPhase';
 import { handoverKey, orderKey, type HandoverView, type OrderView } from './model';
 import styles from './orders.module.css';
 
@@ -31,10 +32,9 @@ export function SellerCode({ o, h, t, lang }: { o: OrderView; h: HandoverView; t
       void queryClient.invalidateQueries({ queryKey: orderKey(o.id) });
     },
     onError: (e) => {
-      const wrong =
-        isApiError(e) && problemName(e) === 'delivery-refused'
-          ? (Array.isArray(e.errors) ? (e.errors as { reason?: string; attemptsLeft?: number }[]) : []).find((x) => x.reason === 'wrong_code')
-          : undefined;
+      const refused = isApiError(e) && problemName(e) === 'delivery-refused' && Array.isArray(e.errors);
+      const reasons = refused ? (e.errors as { reason?: string; attemptsLeft?: number }[]) : [];
+      const wrong = reasons.find((x) => x.reason === 'wrong_code');
       setMessage(wrong ? t('handover.wrong_code', { left: toLocalDigits(String(wrong.attemptsLeft ?? 0), lang) }) : errorText(e, t, lang));
       void queryClient.invalidateQueries({ queryKey: handoverKey(o.id) });
     },
@@ -101,7 +101,7 @@ export function SellerCode({ o, h, t, lang }: { o: OrderView; h: HandoverView; t
             </p>
             <ol aria-hidden="true">
               {names.map((n, i) => (
-                <li key={n} data-state={i + 1 < step ? 'done' : i + 1 === step ? 'now' : 'next'} />
+                <li key={n} data-state={stepMark(i + 1, step)} />
               ))}
             </ol>
           </div>

@@ -59,13 +59,9 @@ export function Component() {
     onError: (e) => {
       if (e instanceof StepUpCancelled) return;
       const reasons = fieldErrors(e).map((f) => f.reason);
-      setMessage(
-        reasons.includes('not-verified-number')
-          ? t('payout.not_verified_number')
-          : reasons.includes('not-bangladeshi-mobile')
-            ? t('payout.bad_wallet')
-            : errorText(e, t, lang),
-      );
+      if (reasons.includes('not-verified-number')) setMessage(t('payout.not_verified_number'));
+      else if (reasons.includes('not-bangladeshi-mobile')) setMessage(t('payout.bad_wallet'));
+      else setMessage(errorText(e, t, lang));
     },
   });
 

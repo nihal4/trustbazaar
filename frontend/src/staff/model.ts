@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useApi } from '../shared/api';
 import { STAFF_ME_KEY } from '../shared/me';
 
-export type StaffRole = 'operator' | 'administrator';
+type StaffRole = 'operator' | 'administrator';
 /** GET /staff/me, with the session's CP-03 limits (Decisions log, U8-10). */
 export interface StaffMe {
   id: string;
