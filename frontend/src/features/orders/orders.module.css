@@ -1,7 +1,3 @@
-.head {
-  display: grid;
-  gap: var(--tb-space-4);
-}
 .headText {
   min-width: 0;
 }
@@ -103,6 +99,7 @@
 .form {
   display: grid;
   margin-block: var(--tb-space-2);
+  gap: var(--tb-space-1-5);
 }
 .form input,
 .form select,
@@ -348,6 +345,8 @@
   overflow: hidden;
   border-radius: var(--tb-radius-panel);
   background: var(--tb-surface);
+  width: 64px;
+  height: 64px;
 }
 .thumb img {
   display: block;
@@ -588,6 +587,7 @@
 .cols {
   display: grid;
   gap: var(--tb-space-6);
+  margin-top: var(--tb-space-4);
 }
 .main,
 .rail {
@@ -597,6 +597,7 @@
   display: grid;
   align-content: start;
   border-top: 2px solid var(--tb-hot);
+  margin-top: 0;
 }
 .rail > section {
   margin-block: 0;
@@ -632,10 +633,14 @@
 .partyRow {
   display: grid;
   border-block: 1px solid var(--tb-line);
+  --av: 52px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  min-height: 84px;
 }
 .partyRow > * {
   display: flex;
   align-items: center;
+  padding: var(--tb-space-4) 0;
 }
 .partyRow > * + *:not(.chatError) {
   border-left: 1px solid var(--tb-line);
@@ -682,14 +687,8 @@
   border-left: 0 !important;
   padding: 0 0 var(--tb-space-3);
 }
-.cols {
-  margin-top: var(--tb-space-4);
-}
 .main > .moneyPanel {
   margin-top: var(--tb-space-4);
-}
-.rail {
-  margin-top: 0;
 }
 
 /* ---- review round (impeccable): one ruled structure for the whole page ---- */
@@ -710,14 +709,12 @@
   margin: 0;
   align-self: center;
 }
-.thumb {
-  width: 64px;
-  height: 64px;
-}
 /* the facts under the title: three ruled cells, label over value */
 
 /* alignment (review): the title sits in the left column so the rail starts at the top beside it; the title is smaller */
 .head {
+  display: grid;
+  gap: var(--tb-space-4);
   margin-top: 0;
   margin-bottom: var(--tb-space-2);
   row-gap: 0;
@@ -773,24 +770,12 @@
 }
 
 /* the popup: map links quiet, Back a plain underlined link */
-.choice a {
-  color: var(--tb-muted);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
 .form .buttons .secondary {
   border: 0;
   background: none;
   text-decoration: underline;
   text-underline-offset: 3px;
   min-width: 0;
-}
-.deadlineGrid > div {
-  display: grid;
-  gap: var(--tb-space-0-5);
-}
-.deadlineGrid > div + div {
-  border-left: 1px solid var(--tb-line);
 }
 .deadlineGrid dt {
   color: var(--tb-muted);
@@ -834,9 +819,6 @@
 .receiptLink,
 .form button {
   border-radius: 0;
-}
-.form {
-  gap: var(--tb-space-1-5);
 }
 .form > label,
 .form > .fieldLabel,
@@ -973,10 +955,10 @@
   gap: 1px;
   background: var(--tb-line);
   border: 1px solid var(--tb-line);
-}
-.deadlineGrid > div {
-  background: var(--tb-bg);
-  border-left: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  margin: 0;
+  overflow: hidden;
 }
 .deadlineGrid > div + div {
   border-left: 0;
@@ -1092,10 +1074,6 @@
   font-weight: 600;
 }
 /* the dispute panel: quieter headings, one rhythm */
-.main .panel h3 {
-  margin: var(--tb-space-5) 0 var(--tb-space-2);
-  font-size: var(--tb-text-base);
-}
 .main .panel > p {
   margin: var(--tb-space-2) 0;
 }
@@ -1356,6 +1334,10 @@
   margin-top: var(--tb-space-1);
 }
 .deadlineGrid > div {
+  display: grid;
+  gap: var(--tb-space-0-5);
+  background: var(--tb-bg);
+  border-left: 0;
   padding: var(--tb-space-3-5) var(--tb-space-4);
 }
 .rail .deadlineGrid > div {
@@ -1708,12 +1690,6 @@ input[type='file'].fileHidden {
 }
 
 /* review: both columns scroll together (the rail is not sticky); deadlines are the first grid row of the Meetup handover */
-.deadlineGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  margin: 0;
-  overflow: hidden;
-}
 /* the attach control shows keyboard focus (the real input is clipped) */
 .dcBar:has(.fileHidden:focus-visible) .dcAttach {
   outline: 2px solid var(--tb-hot);
@@ -1785,6 +1761,9 @@ input[type='file'].fileHidden {
   padding: var(--tb-space-3) 0;
 }
 .choice a {
+  color: var(--tb-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
   display: inline-flex;
   align-items: center;
   min-height: 44px;
@@ -2014,6 +1993,8 @@ input[type='file'].fileHidden {
   line-height: 1.6;
 }
 .main .panel h3 {
+  margin: var(--tb-space-5) 0 var(--tb-space-2);
+  font-size: var(--tb-text-base);
   margin-block: var(--tb-space-6) var(--tb-space-3);
 }
 .main .form {
@@ -2025,14 +2006,6 @@ input[type='file'].fileHidden {
    between; the party is a square photo place with the grid and the initials, the name with the tick, since when, and the message cell */
 
 /* ---- review round (impeccable, before the PR) ---- */
-.partyRow {
-  --av: 52px;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  min-height: 84px;
-}
-.partyRow > * {
-  padding: var(--tb-space-4) 0;
-}
 .partyRow > .partyAvatar {
   display: grid;
   padding: 0;

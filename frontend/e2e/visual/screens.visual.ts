@@ -119,6 +119,9 @@ const STATES = [
     open: async (page: import('@playwright/test').Page) => {
       await page.getByRole('button', { name: /Courier to my address/ }).click();
       await page.getByRole('dialog').waitFor();
+      // the saved addresses arrive after the dialog opens, and the page's clock is paused: let it run until the row is there (a slow machine needs more turns)
+      for (let turns = 0; turns < 40 && !(await page.getByText(/Home: House 12/).isVisible()); turns++) await page.clock.runFor(250);
+      await page.getByText(/Home: House 12/).waitFor({ timeout: 2_000 });
     },
   },
   {

@@ -95,25 +95,6 @@
   border-radius: var(--tb-radius-panel);
   background: var(--tb-sheet);
 }
-.auctionTop {
-  position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--tb-space-1) var(--tb-space-4);
-  justify-content: space-between;
-  align-items: baseline;
-  border-radius: var(--tb-radius-panel) var(--tb-radius-panel) 0 0;
-}
-.auctionTop::before,
-.auctionTop::after {
-  position: absolute;
-  bottom: -7px;
-  width: 12px;
-  height: 12px;
-  border-radius: var(--tb-radius-circle);
-  background: var(--tb-bg);
-  border: 1px solid var(--tb-line);
-}
 .auctionTop::before {
   left: -7px;
   clip-path: inset(0 0 0 50%);
@@ -121,10 +102,6 @@
 .auctionTop::after {
   right: -7px;
   clip-path: inset(0 50% 0 0);
-}
-.auctionTop h2 {
-  margin: 0;
-  font-weight: 600;
 }
 .facts p {
   margin: var(--tb-space-1) 0;
@@ -148,6 +125,7 @@
   color: var(--tb-error-text);
   padding: var(--tb-space-2) var(--tb-space-3);
   font-weight: 600;
+  border-radius: var(--tb-radius-panel);
 }
 .bid {
   display: flex;
@@ -182,15 +160,6 @@
   list-style: none;
   padding: 0;
   margin: 0 0 var(--tb-space-4);
-}
-.history li {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--tb-space-1) var(--tb-space-4);
-  justify-content: space-between;
-  padding: var(--tb-space-2) 0;
-  font-size: var(--tb-text-md);
-  font-variant-numeric: tabular-nums;
 }
 
 .primaryLink {
@@ -586,6 +555,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   line-height: 1;
+  font-size: var(--tb-text-2xs);
 }
 .sellerMeta {
   display: flex;
@@ -606,12 +576,26 @@
 
 /* the auction panel: the same ruled panel; the clock and the bids are the live signal */
 .auctionTop {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-1) var(--tb-space-4);
+  justify-content: space-between;
+  align-items: baseline;
+  border-radius: var(--tb-radius-panel) var(--tb-radius-panel) 0 0;
   background: none;
   border-bottom: 1px solid var(--tb-line);
   padding: 0 0 var(--tb-space-3);
 }
 .auctionTop::before,
 .auctionTop::after {
+  position: absolute;
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--tb-radius-circle);
+  background: var(--tb-bg);
+  border: 1px solid var(--tb-line);
   content: none;
 }
 .auction > :not(.auctionTop) {
@@ -619,6 +603,8 @@
   margin-right: 0;
 }
 .auctionTop h2 {
+  margin: 0;
+  font-weight: 600;
   color: var(--tb-hot);
   font-size: var(--tb-text-md);
   letter-spacing: 0.02em;
@@ -634,9 +620,6 @@
 .facts {
   font-variant-numeric: tabular-nums;
   padding-top: var(--tb-space-4);
-}
-.warning {
-  border-radius: var(--tb-radius-panel);
 }
 .mine {
   font-weight: 600;
@@ -663,6 +646,13 @@
   outline-offset: 1px;
 }
 .history li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-1) var(--tb-space-4);
+  justify-content: space-between;
+  padding: var(--tb-space-2) 0;
+  font-size: var(--tb-text-md);
+  font-variant-numeric: tabular-nums;
   border-top: 1px solid var(--tb-line);
 }
 .rules {
@@ -886,9 +876,6 @@
   min-width: 44px;
   margin-block: -8px;
   font-size: var(--tb-text-base);
-}
-.pro {
-  font-size: var(--tb-text-2xs);
 }
 /* colour discipline: green is for held and verified only (the payment line is a promise, so its shield is muted); gold is for Pro and the rating star */
 .shield {
@@ -1334,6 +1321,7 @@ body:has(.bidBar) {
 .barBody > .barCell {
   padding: var(--tb-space-2-5) var(--tb-space-6);
   gap: var(--tb-space-1);
+  justify-content: center;
 }
 .barBody > .barCell:first-child {
   padding-left: 0;
@@ -1695,6 +1683,8 @@ body:has(.bidBar) {
   grid-template-columns: auto minmax(0, 1fr) auto auto;
   gap: 0 var(--tb-space-6);
   align-items: center;
+  border-bottom: 0;
+  padding-bottom: var(--tb-space-4);
 }
 .roomThumb {
   width: 64px;
@@ -1831,6 +1821,7 @@ body:has(.bidBar) {
 }
 .roomControls .bid > input {
   grid-column: 1;
+  min-height: 52px;
 }
 @media (max-width: 30rem) {
   .roomControls .bid > input {
@@ -1918,12 +1909,6 @@ body:has(.bidBar) {
   line-height: 1.15;
   font-variant-numeric: tabular-nums;
 }
-.countCell small {
-  color: var(--tb-muted);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  line-height: 1.2;
-}
 :lang(bn) .countCell small {
   letter-spacing: 0;
   font-size: var(--tb-text-2xs);
@@ -1933,9 +1918,6 @@ body:has(.bidBar) {
 }
 .barCell .countGrid {
   margin-top: var(--tb-space-0-5);
-}
-.barBody > .barCell {
-  justify-content: center;
 }
 .quickBid {
   min-height: 52px;
@@ -1958,9 +1940,6 @@ body:has(.bidBar) {
   outline-offset: -3px;
 }
 /* the amount and Place bid: two cells of one ruled row */
-.roomControls .bid > input {
-  min-height: 52px;
-}
 @media (max-width: 30rem) {
   .roomControls .bid > input {
     border-right: 1px solid var(--tb-border);
@@ -2141,10 +2120,6 @@ body:has(.bidBar) {
   padding: var(--tb-space-5) 0 0;
   border-bottom: 0;
 }
-.roomHead {
-  border-bottom: 0;
-  padding-bottom: var(--tb-space-4);
-}
 
 /* ---- final room review ---- */
 /* the dialog is inside the room's controls: its paragraphs keep their spacing, and nothing in it is left alone on a line */
@@ -2179,6 +2154,10 @@ body:has(.bidBar) {
   padding-right: 0;
 }
 .countCell small {
+  color: var(--tb-muted);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
   font-size: var(--tb-text-2xs);
 }
 @media (max-width: 47.99em) {

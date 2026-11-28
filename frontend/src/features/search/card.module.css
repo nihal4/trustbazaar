@@ -21,6 +21,7 @@
   font-size: var(--tb-text-xs);
   line-height: 1.35;
   font-weight: 600;
+  border-radius: var(--tb-radius-slight);
 }
 .clock i {
   margin-top: 0.4em;
@@ -91,10 +92,6 @@
 }
 .link:hover .photo img {
   transform: scale(1.03);
-}
-.clock,
-.featured {
-  border-radius: var(--tb-radius-slight);
 }
 /* the time left is never cut off: on a narrow card, or in Bangla, it wraps onto a second line inside its box */
 .clock {
