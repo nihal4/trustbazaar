@@ -15,7 +15,7 @@ import { useApi } from '../../shared/api';
 import { useOpenThread } from '../../shared/chat';
 import { useServerNow } from '../../shared/clock';
 import { postmarkDate } from '../../shared/postmark';
-import { Avatar, FactList, Stepper } from '../../shared/ui';
+import { Avatar, FactList, Panel, Stepper } from '../../shared/ui';
 import { moneySteps } from '../../shared/moneySteps';
 import { orderProgress } from './progress';
 import { signInPath } from '../../shared/document';
@@ -316,8 +316,7 @@ function PayPanel({ o, t, lang, onPay }: { o: OrderView; t: T; lang: Lang; onPay
   const total = formatMoney(BigInt(o.total), lang);
   // one step: how do you want it? Meeting the seller is chosen at once; courier asks for the address and the fee in a popup
   return (
-    <section aria-labelledby="pay-title" className={`${styles.panel} ${styles.early}`}>
-      <h2 id="pay-title">{t('pay.title')}</h2>
+    <Panel title={t('pay.title')} className={`${styles.panel} ${styles.early}`}>
       {message && <FormMessage kind="error">{message}</FormMessage>}
       {choosing && !isGame ? (
         <div className={styles.choiceGrid} role="group" aria-label={t('pay.fulfilment')}>
@@ -389,6 +388,6 @@ function PayPanel({ o, t, lang, onPay }: { o: OrderView; t: T; lang: Lang; onPay
           )}
         </div>
       )}
-    </section>
+    </Panel>
   );
 }

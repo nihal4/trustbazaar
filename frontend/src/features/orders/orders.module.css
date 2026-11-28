@@ -20,10 +20,6 @@
   font-weight: 600;
   max-width: 40rem;
 }
-.panel h2 {
-  margin-top: 0;
-  font-size: var(--tb-text-2xl);
-}
 .choice {
   border: 0;
   padding: 0;
@@ -217,12 +213,6 @@
   background: none;
   color: var(--tb-hot);
   font-weight: 700;
-}
-.panel {
-  padding: var(--tb-space-5) 0;
-  border-radius: 0;
-  border-top: 1px solid var(--tb-line);
-  background: none;
 }
 .deadlines {
   display: grid;
@@ -2079,9 +2069,6 @@ input[type='file'].fileHidden {
 .main .panel > p,
 .main .panel .hint {
   line-height: 1.6;
-}
-.main .panel > h2 {
-  margin-bottom: var(--tb-space-3);
 }
 .main .panel h3 {
   margin-block: var(--tb-space-6) var(--tb-space-3);
