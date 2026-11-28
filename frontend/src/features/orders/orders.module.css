@@ -2,10 +2,6 @@
   display: grid;
   gap: var(--tb-space-4);
 }
-.thumb {
-  display: block;
-  border: 1px solid var(--tb-line);
-}
 .headText {
   min-width: 0;
 }
@@ -19,10 +15,6 @@
   line-height: 1.45;
   font-weight: 600;
   max-width: 40rem;
-}
-.choice {
-  border: 0;
-  padding: 0;
 }
 .choice div {
   display: flex;
@@ -351,6 +343,8 @@
   color: var(--tb-muted);
 }
 .thumb {
+  display: block;
+  border: 1px solid var(--tb-line);
   overflow: hidden;
   border-radius: var(--tb-radius-panel);
   background: var(--tb-surface);
@@ -853,6 +847,8 @@
   font-weight: 600;
 }
 .choice {
+  border: 0;
+  padding: 0;
   margin: 0;
 }
 .choice legend {
