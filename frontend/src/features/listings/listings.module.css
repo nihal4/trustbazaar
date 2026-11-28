@@ -195,7 +195,7 @@
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
 }
@@ -1027,7 +1027,7 @@
   padding-bottom: var(--tb-space-6);
 }
 body:has(.bidBar) {
-  padding-bottom: var(--bar-h, 0px);
+  padding-bottom: var(--bar-h, 0);
 }
 .flow .auction {
   padding-top: var(--tb-space-3-5);
@@ -1438,7 +1438,7 @@ body:has(.bidBar) {
     width: 100%;
   }
   .sheetOpen {
-    bottom: var(--bar-h, 0px);
+    bottom: var(--bar-h, 0);
   }
 }
 @media (prefers-reduced-motion: no-preference) {

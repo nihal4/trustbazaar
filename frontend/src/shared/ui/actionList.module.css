@@ -48,7 +48,7 @@
   height: 0.5rem;
   margin-left: var(--tb-space-2);
   margin-right: var(--tb-space-1);
-  border: solid currentColor;
+  border: solid currentcolor;
   border-width: 1.5px 1.5px 0 0;
   transform: rotate(45deg);
   flex: none;
@@ -117,7 +117,7 @@
   width: 0.5rem;
   height: 0.5rem;
   margin-left: var(--tb-space-3);
-  border: solid currentColor;
+  border: solid currentcolor;
   border-width: 1.5px 1.5px 0 0;
   transform: rotate(45deg);
   flex: none;

@@ -13,13 +13,7 @@
     "warning:jsx-a11y/interactive-supports-focus": 1
   },
   "stylelint": {
-    "warning:import-notation": 5,
-    "warning:property-no-deprecated": 22,
-    "warning:value-keyword-case": 11,
-    "warning:color-function-alias-notation": 12,
-    "warning:no-duplicate-selectors": 11,
-    "warning:length-zero-no-unit": 2,
-    "warning:declaration-block-no-duplicate-properties": 1
+    "warning:no-duplicate-selectors": 11
   },
   "knip": {
     "exports": 41,

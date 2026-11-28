@@ -102,7 +102,7 @@
 }
 
 .codeGroup[data-focused] .codeCells > span[data-here] {
-  background: rgba(255, 107, 53, 0.08);
+  background: rgb(255, 107, 53, 0.08);
 }
 
 .codeGroup[data-focused] .codeCells > span[data-here]::after {
