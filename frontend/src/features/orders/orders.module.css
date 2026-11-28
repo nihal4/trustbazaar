@@ -789,9 +789,6 @@
   display: grid;
   gap: var(--tb-space-0-5);
 }
-.deadlineGrid > div + div {
-  border-left: 1px solid var(--tb-line);
-}
 .deadlineGrid dt {
   color: var(--tb-muted);
   font-size: var(--tb-text-xs);
