@@ -1,7 +1,3 @@
-.head {
-  display: grid;
-  gap: var(--tb-space-4);
-}
 .headText {
   min-width: 0;
 }
@@ -717,6 +713,8 @@
 
 /* alignment (review): the title sits in the left column so the rail starts at the top beside it; the title is smaller */
 .head {
+  display: grid;
+  gap: var(--tb-space-4);
   margin-top: 0;
   margin-bottom: var(--tb-space-2);
   row-gap: 0;
@@ -772,21 +770,12 @@
 }
 
 /* the popup: map links quiet, Back a plain underlined link */
-.choice a {
-  color: var(--tb-muted);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
 .form .buttons .secondary {
   border: 0;
   background: none;
   text-decoration: underline;
   text-underline-offset: 3px;
   min-width: 0;
-}
-.deadlineGrid > div {
-  display: grid;
-  gap: var(--tb-space-0-5);
 }
 .deadlineGrid dt {
   color: var(--tb-muted);
@@ -971,10 +960,6 @@
   margin: 0;
   overflow: hidden;
 }
-.deadlineGrid > div {
-  background: var(--tb-bg);
-  border-left: 0;
-}
 .deadlineGrid > div + div {
   border-left: 0;
 }
@@ -1089,10 +1074,6 @@
   font-weight: 600;
 }
 /* the dispute panel: quieter headings, one rhythm */
-.main .panel h3 {
-  margin: var(--tb-space-5) 0 var(--tb-space-2);
-  font-size: var(--tb-text-base);
-}
 .main .panel > p {
   margin: var(--tb-space-2) 0;
 }
@@ -1353,6 +1334,10 @@
   margin-top: var(--tb-space-1);
 }
 .deadlineGrid > div {
+  display: grid;
+  gap: var(--tb-space-0-5);
+  background: var(--tb-bg);
+  border-left: 0;
   padding: var(--tb-space-3-5) var(--tb-space-4);
 }
 .rail .deadlineGrid > div {
@@ -1776,6 +1761,9 @@ input[type='file'].fileHidden {
   padding: var(--tb-space-3) 0;
 }
 .choice a {
+  color: var(--tb-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
   display: inline-flex;
   align-items: center;
   min-height: 44px;
@@ -2005,6 +1993,8 @@ input[type='file'].fileHidden {
   line-height: 1.6;
 }
 .main .panel h3 {
+  margin: var(--tb-space-5) 0 var(--tb-space-2);
+  font-size: var(--tb-text-base);
   margin-block: var(--tb-space-6) var(--tb-space-3);
 }
 .main .form {

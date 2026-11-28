@@ -95,15 +95,6 @@
   border-radius: var(--tb-radius-panel);
   background: var(--tb-sheet);
 }
-.auctionTop {
-  position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--tb-space-1) var(--tb-space-4);
-  justify-content: space-between;
-  align-items: baseline;
-  border-radius: var(--tb-radius-panel) var(--tb-radius-panel) 0 0;
-}
 .auctionTop::before {
   left: -7px;
   clip-path: inset(0 0 0 50%);
@@ -111,10 +102,6 @@
 .auctionTop::after {
   right: -7px;
   clip-path: inset(0 50% 0 0);
-}
-.auctionTop h2 {
-  margin: 0;
-  font-weight: 600;
 }
 .facts p {
   margin: var(--tb-space-1) 0;
@@ -173,15 +160,6 @@
   list-style: none;
   padding: 0;
   margin: 0 0 var(--tb-space-4);
-}
-.history li {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--tb-space-1) var(--tb-space-4);
-  justify-content: space-between;
-  padding: var(--tb-space-2) 0;
-  font-size: var(--tb-text-md);
-  font-variant-numeric: tabular-nums;
 }
 
 .primaryLink {
@@ -598,6 +576,13 @@
 
 /* the auction panel: the same ruled panel; the clock and the bids are the live signal */
 .auctionTop {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-1) var(--tb-space-4);
+  justify-content: space-between;
+  align-items: baseline;
+  border-radius: var(--tb-radius-panel) var(--tb-radius-panel) 0 0;
   background: none;
   border-bottom: 1px solid var(--tb-line);
   padding: 0 0 var(--tb-space-3);
@@ -618,6 +603,8 @@
   margin-right: 0;
 }
 .auctionTop h2 {
+  margin: 0;
+  font-weight: 600;
   color: var(--tb-hot);
   font-size: var(--tb-text-md);
   letter-spacing: 0.02em;
@@ -659,6 +646,13 @@
   outline-offset: 1px;
 }
 .history li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-1) var(--tb-space-4);
+  justify-content: space-between;
+  padding: var(--tb-space-2) 0;
+  font-size: var(--tb-text-md);
+  font-variant-numeric: tabular-nums;
   border-top: 1px solid var(--tb-line);
 }
 .rules {
@@ -1915,12 +1909,6 @@ body:has(.bidBar) {
   line-height: 1.15;
   font-variant-numeric: tabular-nums;
 }
-.countCell small {
-  color: var(--tb-muted);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  line-height: 1.2;
-}
 :lang(bn) .countCell small {
   letter-spacing: 0;
   font-size: var(--tb-text-2xs);
@@ -2166,6 +2154,10 @@ body:has(.bidBar) {
   padding-right: 0;
 }
 .countCell small {
+  color: var(--tb-muted);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
   font-size: var(--tb-text-2xs);
 }
 @media (max-width: 47.99em) {
