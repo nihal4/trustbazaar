@@ -16,6 +16,8 @@ import { signInPath } from '../../shared/document';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
 import { useT } from '../../shared/language/Language';
+import type { T } from '../../shared/language/catalogue';
+import type { Lang } from '../../shared/language/lang';
 import { useMe } from '../../shared/me';
 import { isApiError, problemName } from '../../shared/problems';
 import { moneySteps } from '../../shared/moneySteps';
@@ -48,6 +50,25 @@ interface Listing {
 /** Unit 5, AS-5: a game account needs a browser that keeps a non-extractable key (Web Crypto) in IndexedDB. */
 function browserKeepsKeys(): boolean {
   return typeof globalThis.crypto?.subtle?.generateKey === 'function' && typeof globalThis.indexedDB?.open === 'function';
+}
+
+/** The sentence under an order that could not be created. */
+function createFailure(e: unknown, name: string | null | undefined, t: T, lang: Lang): string {
+  if (name === 'not-available') return t('checkout.unavailable');
+  if (name === 'order-limit') return t('checkout.limit');
+  if (name === 'transaction-not-allowed') return t('checkout.verify');
+  if (name === 'feature-off') return t('checkout.not_active');
+  if (isApiError(e, 403)) return t('checkout.own');
+  return errorText(e, t, lang);
+}
+
+/** Why this listing cannot be bought now (null when it can). */
+function blockedReason(l: Listing, own: boolean, t: T): string | null {
+  if (own) return t('checkout.own');
+  if (l.saleFormat !== 'fixed_price' || l.status !== 'active' || !l.price) return t('checkout.not_active');
+  if (l.itemKind === 'game_account' && !browserKeepsKeys()) return t('checkout.game_browser');
+  if (l.quantity.available < 1) return t('checkout.unavailable');
+  return null;
 }
 
 export function Component() {
@@ -83,19 +104,7 @@ export function Component() {
     onSuccess: (o, v) => (v.f === 'self_pickup' ? setPaying(o.id) : void navigate(`/orders/${encodeURIComponent(o.id)}`)),
     onError: (e) => {
       const name = problemName(e);
-      setError(
-        name === 'not-available'
-          ? t('checkout.unavailable')
-          : name === 'order-limit'
-            ? t('checkout.limit')
-            : name === 'transaction-not-allowed'
-              ? t('checkout.verify')
-              : name === 'feature-off'
-                ? t('checkout.not_active')
-                : isApiError(e, 403)
-                  ? t('checkout.own')
-                  : errorText(e, t, lang),
-      );
+      setError(createFailure(e, name, t, lang));
       void listing.refetch();
     },
   });
@@ -106,15 +115,7 @@ export function Component() {
   if (listing.isError) return <FormMessage kind="error">{errorText(listing.error, t, lang)}</FormMessage>;
   const l = listing.data;
   const own = me.data.id === l.seller.id;
-  const blocked = own
-    ? t('checkout.own')
-    : l.saleFormat !== 'fixed_price' || l.status !== 'active' || !l.price
-      ? t('checkout.not_active')
-      : l.itemKind === 'game_account' && !browserKeepsKeys()
-        ? t('checkout.game_browser')
-        : l.quantity.available < 1
-          ? t('checkout.unavailable')
-          : null;
+  const blocked = blockedReason(l, own, t);
   const max = l.quantity.available;
   const n = Number(toAsciiDigits(quantity).trim());
   const valid = Number.isInteger(n) && n >= 1 && n <= max;

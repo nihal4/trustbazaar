@@ -1,8 +1,7 @@
 {
   "eslint": {
-    "warning:sonarjs/no-nested-conditional": 68,
+    "warning:sonarjs/no-nested-conditional": 57,
     "warning:sonarjs/no-nested-template-literals": 16,
-    "warning:sonarjs/cognitive-complexity": 9,
     "warning:jsx-a11y/no-static-element-interactions": 1,
     "warning:jsx-a11y/no-noninteractive-tabindex": 3,
     "warning:jsx-a11y/no-autofocus": 15,

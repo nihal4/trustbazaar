@@ -87,6 +87,28 @@ function seatAt(i: number, n: number) {
   return { x: 400 + 330 * Math.cos(a), y: 225 - 165 * Math.sin(a) };
 }
 
+/** The seats at the table: at most MAX_SEATS of the bidders, the leader and the viewer always among them, kept in the order they first bid. */
+function seatsOf(aliases: number[], leader: number | null | undefined, you: number | null | undefined): number[] {
+  const keep = new Set<number | null | undefined>([leader, you]);
+  return [...aliases.filter((a) => keep.has(a)), ...aliases.filter((a) => !keep.has(a))]
+    .slice(0, MAX_SEATS)
+    .sort((a, b) => aliases.indexOf(a) - aliases.indexOf(b));
+}
+
+/** The three quick bids follow the auction's own increment (the minimum minus the price); a bidder who already leads raises their own maximum by one, two or three increments. */
+function quickBids(
+  state: { price?: string | null; startPrice: string; minimumBid?: string | null },
+  mine: { leading?: boolean; yourMaximum?: string | null } | null | undefined,
+): bigint[] {
+  const priceP = BigInt(state.price ?? state.startPrice);
+  const minP = BigInt(state.minimumBid ?? state.price ?? state.startPrice);
+  const stepP = state.price && state.minimumBid && minP > priceP ? minP - priceP : priceP / 50n + 1n;
+  const wholeTaka = (x: bigint) => ((x + 99n) / 100n) * 100n;
+  return mine?.leading && mine.yourMaximum
+    ? [1n, 2n, 3n].map((k) => wholeTaka(BigInt(mine.yourMaximum!) + k * stepP))
+    : [0n, 1n, 2n].map((k) => wholeTaka(minP + k * stepP));
+}
+
 function Room({ l, auction, own, t, lang }: { l: ListingView; auction: NonNullable<ListingView['auction']>; own: boolean; t: T; lang: Lang }) {
   const live = useAuctionLive({ initial: auction, t, lang, signedIn: true, own });
   const { state, history, mine, open, closing, countdown, left, accept, refreshMine, refetch, announcement } = live;
@@ -95,10 +117,7 @@ function Room({ l, auction, own, t, lang }: { l: ListingView; auction: NonNullab
   // seats: the bidders who have bid, in the order they first bid (the server does not report who is only watching)
   const aliases = [...new Set([...items].reverse().map((b) => b.bidderAlias))];
   // more than nine: the leader and the viewer always keep a seat, the rest are the earliest bidders; the count above still shows everyone
-  const keep = new Set<number | null | undefined>([state.leaderAlias, mine?.yourAlias]);
-  const seats = [...aliases.filter((a) => keep.has(a)), ...aliases.filter((a) => !keep.has(a))]
-    .slice(0, MAX_SEATS)
-    .sort((a, b) => aliases.indexOf(a) - aliases.indexOf(b));
+  const seats = seatsOf(aliases, state.leaderAlias, mine?.yourAlias);
   const you = mine?.yourAlias ?? null;
   const nameOf = (alias: number) => (alias === you ? t('room.you') : t('room.seat', { alias: toLocalDigits(String(alias), lang) }));
   // a row that arrives after the room opened flashes once (not with reduced motion; see the stylesheet)
@@ -112,15 +131,7 @@ function Room({ l, auction, own, t, lang }: { l: ListingView; auction: NonNullab
   }, [history.data]);
   const price = money(state.price ?? state.startPrice, lang);
   const biddingOpen = open && !closing && !own;
-  // quick bids follow the auction's own increment (the minimum minus the price); a bidder who already leads raises their own maximum by one, two or three increments
-  const priceP = BigInt(state.price ?? state.startPrice);
-  const minP = BigInt(state.minimumBid ?? state.price ?? state.startPrice);
-  const stepP = state.price && state.minimumBid && minP > priceP ? minP - priceP : priceP / 50n + 1n;
-  const wholeTaka = (x: bigint) => ((x + 99n) / 100n) * 100n;
-  const quick =
-    mine?.leading && mine.yourMaximum
-      ? [1n, 2n, 3n].map((k) => wholeTaka(BigInt(mine.yourMaximum!) + k * stepP))
-      : [0n, 1n, 2n].map((k) => wholeTaka(minP + k * stepP));
+  const quick = quickBids(state, mine);
   const photo = l.photos[0];
   return (
     <div className={styles.room}>

@@ -138,6 +138,11 @@ export function Wizard() {
       setMessage(errorText(err, t, lang));
       return;
     }
+    fieldsRefused(err);
+  };
+
+  /** The server refused some fields: each is marked on its own step, and the first of them is where the user goes back to. */
+  const fieldsRefused = (err: unknown) => {
     const fields = fieldErrors(err);
     const de: typeof detailErrors = {};
     const ie: typeof imageErrors = {};
