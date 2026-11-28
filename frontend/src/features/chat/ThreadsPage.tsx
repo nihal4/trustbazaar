@@ -17,12 +17,11 @@ import en from '../../messages/en/chat.json';
 import bn from '../../messages/bn/chat.json';
 import { fetchThreads, THREADS_KEY, type ThreadPage } from './model';
 import styles from './chat.module.css';
-import { Button } from '../../shared/ui';
+import { Avatar, Button } from '../../shared/ui';
 
 const CATALOGUES = { en, bn };
 
 /** The first letter of the other party's name, for the photo place of a row (there is no photo upload). */
-const initialOf = (name: string) => (Array.from(name.trim())[0] ?? '?').toUpperCase();
 
 export function Component() {
   const { t, lang } = useT(CATALOGUES);
@@ -73,9 +72,7 @@ export function Component() {
           {items.map((th) => (
             <li key={th.id} className={th.unread > 0 ? styles.unreadThread : undefined}>
               <Link to={`/messages/${encodeURIComponent(th.id)}`} className={styles.threadLink}>
-                <span className={styles.avatar} aria-hidden="true">
-                  {initialOf(th.other?.displayName ?? '?')}
-                </span>
+                <Avatar size="sm" words={1} name={th.other?.displayName ?? '?'} />
                 <span className={styles.threadMain}>
                   <span className={styles.name}>
                     {th.other?.displayName ?? t('chat.closed_account')}

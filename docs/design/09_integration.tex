@@ -444,7 +444,7 @@ postgres & \texttt{postgres:15-alpine} & IF-SW-09. SCRAM passwords; the first st
 redis & \texttt{redis:7-alpine} & Password required; no persistence; \texttt{noeviction} (DV-65); read-only root; internal network only. \\
 migrate & the backend image & One-shot job: applies the migrations as \texttt{tb\_owner} and exits. The backend starts only after it succeeded. \\
 backend & \texttt{node:20-alpine}, two stages & User 10001; read-only root, \texttt{/tmp} in memory; all capabilities dropped; six file volumes; on both networks; port 3000 not published. \\
-web & \texttt{nginx-\allowbreak unprivileged:\allowbreak 1.27-alpine}, two stages & User 101; Unit~8's tested nginx configuration and headers; the only published port. \\
+web & \texttt{nginx-\allowbreak unprivileged:\allowbreak 1.29-alpine}, two stages & User 101; Unit~8's tested nginx configuration and headers; the only published port. \\
 \bottomrule
 \end{dtable}
 NFR-MNT-01 asks for four containers. These are the four long-running ones. The migration job runs once and exits before the backend starts, so the backend never holds the owner's password. Running migrations inside the backend container would need that password there, which SEC-INF-03 is meant to prevent. An SRS clarification states this reading (I-66).

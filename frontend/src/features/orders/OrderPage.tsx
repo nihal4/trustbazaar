@@ -15,7 +15,7 @@ import { useApi } from '../../shared/api';
 import { useOpenThread } from '../../shared/chat';
 import { useServerNow } from '../../shared/clock';
 import { postmarkDate } from '../../shared/postmark';
-import { Stepper } from '../../shared/ui';
+import { Avatar, FactList, Stepper } from '../../shared/ui';
 import { moneySteps } from '../../shared/moneySteps';
 import { orderProgress } from './progress';
 import { signInPath } from '../../shared/document';
@@ -113,22 +113,15 @@ function OrderBody({ o, attempt, failed, waited, t, lang }: { o: OrderView; atte
             <div className={styles.headText}>
               <h1>{t('order.title', { title: o.listing.title })}</h1>
             </div>
-            <dl className={styles.facts}>
-              <div>
-                <dt>{t('order.fact.status')}</dt>
-                <dd className={styles.status}>{t(`order.status.${o.status}`)}</dd>
-              </div>
-              <div>
-                <dt>{t('order.fact.role')}</dt>
-                <dd>{t(`order.role.${o.role}`)}</dd>
-              </div>
-              <div>
-                <dt>{t('order.fact.listing')}</dt>
-                <dd>
-                  <Link to={`/listings/${encodeURIComponent(o.listing.id)}`}>{t('order.listing_link')}</Link>
-                </dd>
-              </div>
-            </dl>
+            <FactList
+              columns={3}
+              className={styles.headFacts}
+              items={[
+                { label: t('order.fact.status'), value: <span className={styles.status}>{t(`order.status.${o.status}`)}</span> },
+                { label: t('order.fact.role'), value: t(`order.role.${o.role}`) },
+                { label: t('order.fact.listing'), value: <Link to={`/listings/${encodeURIComponent(o.listing.id)}`}>{t('order.listing_link')}</Link> },
+              ]}
+            />
           </header>
           <Money o={o} t={t} lang={lang} />
           <div className={styles.early}>
@@ -236,22 +229,13 @@ function PartyCard({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
   const c = o.counterparty;
   if (!c?.displayName) return null;
   const which = o.role === 'buyer' ? 'seller' : 'buyer';
-  const initials = c.displayName
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => [...w][0] ?? '')
-    .join('')
-    .toUpperCase();
   return (
     <section aria-labelledby="party-title" className={styles.party}>
       <h2 id="party-title" className={styles.partyHead}>
         {t(`order.party.${which}`)}
       </h2>
       <div className={styles.partyRow}>
-        <span className={styles.avatar} aria-hidden="true">
-          {initials}
-        </span>
+        <Avatar size="md" name={c.displayName} className={styles.partyAvatar} />
         <div className={styles.partyInfo}>
           <p className={styles.partyLine}>
             <strong>{c.displayName}</strong>

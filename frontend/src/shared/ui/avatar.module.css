@@ -1,15 +1,14 @@
-/* An avatar or photo place (Avatar.tsx): a square on the grid. */
+/* An avatar or photo place (Avatar.tsx): a square on the grid, the initial in the accent colour. */
 .avatar {
-  display: inline-grid;
+  display: grid;
   flex: none;
   place-items: center;
+  box-sizing: border-box;
   overflow: hidden;
-  border: 1px solid var(--tb-line);
-  background-color: var(--tb-surface);
-  background-image: linear-gradient(var(--tb-line) 1px, transparent 1px), linear-gradient(90deg, var(--tb-line) 1px, transparent 1px);
-  background-size: 16px 16px;
-  color: var(--tb-muted);
-  font-weight: 600;
+  border: 1px solid var(--tb-border);
+  background-image: linear-gradient(to right, var(--tb-line) 1px, transparent 1px), linear-gradient(to bottom, var(--tb-line) 1px, transparent 1px);
+  color: var(--tb-hot);
+  font-weight: 700;
 }
 .avatar img {
   width: 100%;
@@ -17,17 +16,21 @@
   object-fit: cover;
 }
 .sm {
-  width: 40px;
-  height: 40px;
-  font-size: var(--tb-text-xs);
+  width: 3rem;
+  height: 3rem;
+  background-size: 16px 16px;
+  font-size: var(--tb-text-2xl);
 }
 .md {
-  width: 64px;
-  height: 64px;
-  font-size: var(--tb-text-base);
+  width: 52px;
+  height: 52px;
+  background-size: 13px 13px;
+  font-size: var(--tb-text-xl);
 }
 .lg {
-  width: 96px;
-  height: 96px;
-  font-size: var(--tb-text-2xl);
+  width: 8rem;
+  height: 8rem;
+  background-size: 32px 32px;
+  font-size: 3.5rem;
+  line-height: 1;
 }

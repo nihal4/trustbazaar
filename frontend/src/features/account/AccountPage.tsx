@@ -12,7 +12,7 @@ import { toLocalDigits } from '../../lib/money.js';
 import { Tick } from '../../shared/icons';
 import { otherError, useAccountT } from './common';
 import styles from './account.module.css';
-import { Button } from '../../shared/ui';
+import { Avatar, Button } from '../../shared/ui';
 
 const KYC_ACTION: Record<KycStatus, boolean> = {
   unsubmitted: true,
@@ -29,7 +29,6 @@ interface TrustSummary {
 }
 
 /** The first letter of the name, for the photo place: there is no photo upload yet, so the member's initial stands in it. */
-const initialOf = (name: string) => (Array.from(name.trim())[0] ?? '?').toUpperCase();
 
 export function Component() {
   const { t, lang } = useAccountT();
@@ -83,9 +82,7 @@ export function Component() {
 
       {/* who: the photo place (the initial), the name, and what is verified, as marks */}
       <section className={styles.idBand} aria-label={u.displayName}>
-        <div className={styles.avatar} aria-hidden="true">
-          <span>{initialOf(u.displayName)}</span>
-        </div>
+        <Avatar size="lg" words={1} name={u.displayName} className={styles.idAvatar} />
         <div className={styles.idText}>
           <h2 className={styles.nameLine}>
             <span>{u.displayName}</span>

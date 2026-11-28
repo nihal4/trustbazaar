@@ -653,25 +653,6 @@
   border-bottom: 1px solid var(--tb-line);
 }
 
-/* the photo place: a square on the 32 px grid with the grid drawn inside it and the member's initial */
-.avatar {
-  position: relative;
-  width: 8rem;
-  height: 8rem;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--tb-border);
-  background-image: linear-gradient(to right, var(--tb-line) 1px, transparent 1px), linear-gradient(to bottom, var(--tb-line) 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-
-.avatar span {
-  font-size: 3.5rem;
-  line-height: 1;
-  font-weight: 700;
-  color: var(--tb-hot);
-}
-
 .idText h2 {
   margin: 0 0 var(--tb-space-3);
   font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.5rem);
@@ -848,12 +829,9 @@
     padding: var(--tb-space-5) 0;
   }
 
-  .avatar {
+  .idBand .idAvatar {
     width: 5.5rem;
     height: 5.5rem;
-  }
-
-  .avatar span {
     font-size: var(--tb-text-4xl);
   }
 
