@@ -1,5 +1,7 @@
 // Panel, Section and Card (U11-05): the ruled surfaces of a page.
 //   Panel    a block of a page. section: a rule on top (the usual block); boxed: ruled on all sides (an item in a list); emphasis: a 2 px vermilion rule on top (money, the order's rail).
+//   ledger: ruled top and bottom with room round it, and a quiet label for a heading (the order's money panel).
+//   plain: no rule of its own (the page, such as the order's rail, rules its blocks), a heading in the text colour at 600.
 //   Section  a heading and what belongs under it, with an optional action beside the heading; it has no surface of its own.
 //   Card     a boxed panel that can be a link (a listing in a grid): it lifts its rule on hover and has a picture slot on top.
 // None of them knows what is inside: the page gives the content and the heading words.
@@ -7,7 +9,7 @@ import { useId, type ComponentPropsWithoutRef, type ElementType, type ReactNode 
 import { cx } from './cx';
 import styles from './panel.module.css';
 
-export type PanelVariant = 'section' | 'boxed' | 'emphasis';
+export type PanelVariant = 'section' | 'boxed' | 'emphasis' | 'ledger' | 'plain';
 type HeadingLevel = 2 | 3 | 4;
 
 interface PanelOwn<T extends ElementType> {

@@ -68,13 +68,6 @@
   background: var(--tb-line);
 }
 
-.notice {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--tb-space-2) var(--tb-space-4);
-}
-
 .notice p {
   margin: 0;
   flex: 1 1 12rem;
@@ -739,6 +732,10 @@
 
 /* the "test mode" strip on payment screens: a ruled band with a warning line above and below, not a filled box */
 .notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-2) var(--tb-space-4);
   margin: var(--tb-space-4) 0;
   padding: var(--tb-space-2) 0;
   background: none;

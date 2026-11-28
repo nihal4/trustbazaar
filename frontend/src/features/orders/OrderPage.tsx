@@ -190,10 +190,7 @@ function Money({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
   const progress = orderProgress(o);
   const out = postmarkOf(o, lang);
   return (
-    <section aria-labelledby="money-title" className={styles.moneyPanel}>
-      <h2 id="money-title" className={styles.moneyLabel}>
-        {t('order.counterfoil.stub')}
-      </h2>
+    <Panel variant="ledger" title={t('order.counterfoil.stub')} className={styles.moneyPanel}>
       <p className={styles.moneyAmount}>{formatMoney(BigInt(o.total), lang)}</p>
       <p className={styles.money}>{o.status === 'awaiting_payment' && o.role === 'buyer' ? t('order.counterfoil.unpaid') : moneyLine(o, t, lang)}</p>
       {out && <p className={styles.hint}>{t('order.money_out_on', { date: out })}</p>}
@@ -220,7 +217,7 @@ function Money({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
           stateWords={{ done: t('order.steps.state.done'), current: t('order.steps.state.current'), next: t('order.steps.state.next') }}
         />
       )}
-    </section>
+    </Panel>
   );
 }
 
@@ -230,10 +227,7 @@ function PartyCard({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
   if (!c?.displayName) return null;
   const which = o.role === 'buyer' ? 'seller' : 'buyer';
   return (
-    <section aria-labelledby="party-title" className={styles.party}>
-      <h2 id="party-title" className={styles.partyHead}>
-        {t(`order.party.${which}`)}
-      </h2>
+    <Panel variant="plain" title={t(`order.party.${which}`)} className={styles.party}>
       <div className={styles.partyRow}>
         <Avatar size="md" name={c.displayName} className={styles.partyAvatar} />
         <div className={styles.partyInfo}>
@@ -250,7 +244,7 @@ function PartyCard({ o, t, lang }: { o: OrderView; t: T; lang: Lang }) {
         </div>
         <OrderChat o={o} t={t} lang={lang} />
       </div>
-    </section>
+    </Panel>
   );
 }
 

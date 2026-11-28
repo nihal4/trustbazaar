@@ -184,16 +184,6 @@
 
 /* ---- redesign v3 (U10-23): the order screens in the ruled look of the home, the listing and the room: hairlines and dividers, no outlined or filled boxes
    (buttons and images keep theirs); one vermilion rule on top of the money panel ---- */
-.moneyPanel {
-  margin-block: var(--tb-space-4);
-  border-bottom: 1px solid var(--tb-line);
-}
-.moneyLabel {
-  margin: 0;
-  color: var(--tb-muted);
-  font-size: var(--tb-text-md);
-  font-weight: 500;
-}
 .moneyAmount {
   margin: var(--tb-space-0-5) 0 var(--tb-space-2);
   font-family: var(--tb-font);
@@ -742,20 +732,9 @@
 }
 
 /* the money panel keeps a hairline on top: the vermilion rule belongs to the rail */
-.moneyPanel {
-  border-top: 1px solid var(--tb-line);
-}
-
 /* the rail: normal-case headings, ruled cells that show they act, the other party without a filled badge */
 
 /* the other party: the seller row of the listing page */
-.partyHead {
-  text-transform: none;
-  letter-spacing: 0;
-  font-size: var(--tb-text-xl) !important;
-  font-weight: 600;
-  color: var(--tb-text);
-}
 .chatCell {
   justify-content: center;
   min-width: 56px;
@@ -2043,9 +2022,6 @@ input[type='file'].fileHidden {
 }
 
 /* the left column with room to read (U10-25): the money panel's sentences breathe, its parts are set apart (the day it left, the receipt, the line of steps), and the blocks below have more space between them */
-.moneyPanel {
-  padding: var(--tb-space-6) 0 var(--tb-space-8);
-}
 .moneyPanel .money {
   margin: var(--tb-space-3) 0 var(--tb-space-3);
   font-weight: 500;

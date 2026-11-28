@@ -17,6 +17,25 @@
   border-top: 2px solid var(--tb-hot);
   border-bottom: 1px solid var(--tb-line);
 }
+.ledger {
+  margin-block: var(--tb-space-4);
+  padding: var(--tb-space-6) 0 var(--tb-space-8);
+  border-block: 1px solid var(--tb-line);
+}
+.ledger .title {
+  margin: 0;
+  color: var(--tb-muted);
+  font-size: var(--tb-text-md);
+  font-weight: 500;
+}
+.plain .title {
+  margin: 0;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: var(--tb-text-xl);
+  font-weight: 600;
+  color: var(--tb-text);
+}
 .title {
   margin: 0 0 var(--tb-space-3);
   font-size: var(--tb-text-2xl);

@@ -1069,11 +1069,6 @@ body:has(.bidBar) {
   background: var(--tb-sheet);
   border-top: 2px solid var(--tb-hot);
 }
-.barCell {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
 .barK {
   color: var(--tb-muted);
   font-size: var(--tb-text-xs);
@@ -1370,6 +1365,9 @@ body:has(.bidBar) {
 }
 /* review: label rows, Bangla sizes, the sheet's close mark aligned with the rule's end, the placeholder never clipped mid-word */
 .barCell {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   padding-bottom: 0;
 }
 .barToggle {
