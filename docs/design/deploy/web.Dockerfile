@@ -16,7 +16,7 @@ ARG VITE_PRIVACY_VERSION="2026-11-01"
 ENV VITE_TERMS_VERSION=$VITE_TERMS_VERSION VITE_PRIVACY_VERSION=$VITE_PRIVACY_VERSION
 RUN npm run build
 
-FROM nginxinc/nginx-unprivileged:1.28-alpine AS runtime
+FROM nginxinc/nginx-unprivileged:1.29-alpine AS runtime
 USER root
 RUN apk upgrade --no-cache   # Alpine security fixes for the image scan (SEC-SDL-07)
 COPY --from=webconf nginx.conf /etc/nginx/conf.d/default.conf
