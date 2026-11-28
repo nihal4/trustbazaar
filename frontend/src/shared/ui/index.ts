@@ -7,6 +7,7 @@ export { Field, FieldMessage, Input, Select, TextField, Textarea, type ControlLo
 export { Notice, type NoticeTone } from './Notice';
 export { Calendar, isValidDate, type CalendarLabels } from './Calendar';
 export { ConfirmDialog, type ConfirmDialogProps } from './ConfirmDialog';
+export { FilePicker, type FilePickerProps } from './FilePicker';
 export { FactList, type Fact } from './FactList';
 export { Card, Panel, Section, type PanelVariant } from './Panel';
 export { Popup, PopupActions, type PopupProps } from './Popup';

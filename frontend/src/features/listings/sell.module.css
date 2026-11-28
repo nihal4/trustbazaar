@@ -229,25 +229,6 @@
   font-size: var(--tb-text-2xs);
   font-weight: 600;
 }
-.addTile {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--tb-space-1-5);
-  padding: var(--tb-space-4);
-  border: 1px dashed var(--tb-border);
-  border-radius: var(--tb-radius-panel);
-  background: none;
-}
-.addTile label {
-  font-weight: 600;
-  color: var(--tb-hot);
-}
-.addTile input[type='file'] {
-  max-width: 100%;
-  font: inherit;
-  font-size: var(--tb-text-sm);
-}
 .code {
   font-size: var(--tb-text-2xl);
   font-weight: 600;

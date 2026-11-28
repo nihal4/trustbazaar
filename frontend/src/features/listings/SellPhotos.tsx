@@ -9,7 +9,7 @@ import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
 import { type EditableListing, type SellingTerms } from './sell';
 import styles from './sell.module.css';
-import { Button, Checkbox } from '../../shared/ui';
+import { Button, Checkbox, FilePicker } from '../../shared/ui';
 import { listingKey } from './sellShared';
 
 export function Photos({ l, terms, t, lang }: { l: EditableListing; terms: SellingTerms; t: T; lang: Lang }) {
@@ -77,19 +77,16 @@ export function Photos({ l, terms, t, lang }: { l: EditableListing; terms: Selli
       {left > 0 && (
         <>
           <Checkbox id="shows-defects" checked={defects} onChange={(e) => setDefects(e.target.checked)} label={t('sell.these_show_defects')} />
-          <div className={styles.addTile}>
-            <label htmlFor="photo-files">{t('sell.add_photos', { left: toLocalDigits(String(left), lang) })}</label>
-            <span className={styles.hint}>{t('sell.add_photos_formats')}</span>
-            <input
-              ref={input}
-              id="photo-files"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              multiple
-              disabled={progress !== null}
-              onChange={(e) => void upload(e.target.files)}
-            />
-          </div>
+          <p className={styles.hint}>{t('sell.add_photos_formats')}</p>
+          <FilePicker
+            inputRef={input}
+            id="photo-files"
+            action={t('sell.add_photos', { left: toLocalDigits(String(left), lang) })}
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            disabled={progress !== null}
+            onFiles={(list) => void upload(list)}
+          />
         </>
       )}
       {progress && <p role="status">{progress}</p>}

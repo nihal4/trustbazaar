@@ -839,6 +839,7 @@
   gap: var(--tb-space-1-5);
 }
 .form > label,
+.form > .fieldLabel,
 .choice legend {
   margin: var(--tb-space-3) 0 var(--tb-space-0-5);
   padding: 0;
@@ -1098,23 +1099,6 @@
 .main .panel > p {
   margin: var(--tb-space-2) 0;
 }
-/* file inputs: the browser button as a sharp ruled cell */
-input[type='file'] {
-  width: 100%;
-  padding: var(--tb-space-2) 0;
-  border: 0;
-  color: var(--tb-muted);
-  font: inherit;
-  font-size: var(--tb-text-md);
-}
-input[type='file']:hover::file-selector-button {
-  background: var(--tb-surface);
-  color: var(--tb-hot);
-}
-.form input[type='file'] {
-  padding: var(--tb-space-2) 0;
-  border-bottom: 0;
-}
 .rail .deadlineGrid > div {
   padding: var(--tb-space-3-5) var(--tb-space-4);
   gap: var(--tb-space-1);
@@ -1216,19 +1200,6 @@ input[type='file']:hover::file-selector-button {
 .rail .deadlineGrid {
   grid-template-columns: 1fr;
   gap: 0;
-}
-input[type='file']::file-selector-button {
-  padding: var(--tb-space-2-5) var(--tb-space-4);
-  border: 1px solid var(--tb-line);
-  border-radius: 0;
-  background: none;
-  color: var(--tb-text);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-  border-inline: 0;
-  padding-inline: 0;
-  margin-right: var(--tb-space-4);
 }
 /* the delivery choice: two ruled rows, the whole row is the button */
 .choiceGrid {

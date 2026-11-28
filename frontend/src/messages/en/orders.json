@@ -575,5 +575,7 @@
   "dispute.return_received": "I have the item back",
   "dispute.return_received_button": "Record the return",
   "dispute.return_received_confirm": "Record that the item is back with you. The buyer is refunded straight away and this cannot be undone.",
-  "dispute.return_courier": "The item is coming back by courier. The return is recorded when the courier delivers it to you."
+  "dispute.return_courier": "The item is coming back by courier. The return is recorded when the courier delivers it to you.",
+  "dispute.file_choose": "Choose files",
+  "dispute.file_none": "No file chosen"
 }

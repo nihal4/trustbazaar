@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toLocalDigits } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
 import { Popup } from '../../shared/Popup';
-import { ActionCell, Panel, PopupActions } from '../../shared/ui';
+import { ActionCell, FilePicker, Panel, PopupActions } from '../../shared/ui';
 import { Terms } from './Terms';
 import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
@@ -128,21 +128,21 @@ export function OpenDispute({ o, t, lang, onOpened }: { o: OrderView; t: T; lang
             <p id="dispute-description-hint" className={styles.hint}>
               {t('dispute.description_hint')}
             </p>
-            <label htmlFor="dispute-files">
+            <p id="dispute-files-label" className={styles.fieldLabel}>
               {t('dispute.files', { max: toLocalDigits(String(MAX_FILES), lang), videos: toLocalDigits(String(MAX_VIDEOS), lang) })}
-            </label>
-            <input
+            </p>
+            <FilePicker
               id="dispute-files"
-              type="file"
+              action={t('dispute.file_choose')}
+              status={files.length > 0 ? t('dispute.files_chosen', { n: toLocalDigits(String(files.length), lang) }) : t('dispute.file_none')}
               accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm"
               multiple
-              aria-describedby="dispute-files-hint"
-              onChange={(e) => pick(e.target.files)}
+              aria-describedby="dispute-files-label dispute-files-hint"
+              onFiles={(list) => pick(list)}
             />
             <p id="dispute-files-hint" className={styles.hint}>
               {t('dispute.files_hint')}
             </p>
-            {files.length > 0 && <p className={styles.hint}>{t('dispute.files_chosen', { n: toLocalDigits(String(files.length), lang) })}</p>}
             {progress && <p role="status">{progress}</p>}
             <PopupActions>
               <button type="submit" disabled={open.isPending}>
