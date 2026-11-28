@@ -103,6 +103,7 @@
 .form {
   display: grid;
   margin-block: var(--tb-space-2);
+  gap: var(--tb-space-1-5);
 }
 .form input,
 .form select,
@@ -348,6 +349,8 @@
   overflow: hidden;
   border-radius: var(--tb-radius-panel);
   background: var(--tb-surface);
+  width: 64px;
+  height: 64px;
 }
 .thumb img {
   display: block;
@@ -588,6 +591,7 @@
 .cols {
   display: grid;
   gap: var(--tb-space-6);
+  margin-top: var(--tb-space-4);
 }
 .main,
 .rail {
@@ -597,6 +601,7 @@
   display: grid;
   align-content: start;
   border-top: 2px solid var(--tb-hot);
+  margin-top: 0;
 }
 .rail > section {
   margin-block: 0;
@@ -632,10 +637,14 @@
 .partyRow {
   display: grid;
   border-block: 1px solid var(--tb-line);
+  --av: 52px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  min-height: 84px;
 }
 .partyRow > * {
   display: flex;
   align-items: center;
+  padding: var(--tb-space-4) 0;
 }
 .partyRow > * + *:not(.chatError) {
   border-left: 1px solid var(--tb-line);
@@ -682,14 +691,8 @@
   border-left: 0 !important;
   padding: 0 0 var(--tb-space-3);
 }
-.cols {
-  margin-top: var(--tb-space-4);
-}
 .main > .moneyPanel {
   margin-top: var(--tb-space-4);
-}
-.rail {
-  margin-top: 0;
 }
 
 /* ---- review round (impeccable): one ruled structure for the whole page ---- */
@@ -709,10 +712,6 @@
   font-size: clamp(1.25rem, 1.05rem + 0.7vw, 1.625rem);
   margin: 0;
   align-self: center;
-}
-.thumb {
-  width: 64px;
-  height: 64px;
 }
 /* the facts under the title: three ruled cells, label over value */
 
@@ -831,9 +830,6 @@
 .receiptLink,
 .form button {
   border-radius: 0;
-}
-.form {
-  gap: var(--tb-space-1-5);
 }
 .form > label,
 .form > .fieldLabel,
@@ -970,6 +966,10 @@
   gap: 1px;
   background: var(--tb-line);
   border: 1px solid var(--tb-line);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  margin: 0;
+  overflow: hidden;
 }
 .deadlineGrid > div {
   background: var(--tb-bg);
@@ -1705,12 +1705,6 @@ input[type='file'].fileHidden {
 }
 
 /* review: both columns scroll together (the rail is not sticky); deadlines are the first grid row of the Meetup handover */
-.deadlineGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  margin: 0;
-  overflow: hidden;
-}
 /* the attach control shows keyboard focus (the real input is clipped) */
 .dcBar:has(.fileHidden:focus-visible) .dcAttach {
   outline: 2px solid var(--tb-hot);
@@ -2022,14 +2016,6 @@ input[type='file'].fileHidden {
    between; the party is a square photo place with the grid and the initials, the name with the tick, since when, and the message cell */
 
 /* ---- review round (impeccable, before the PR) ---- */
-.partyRow {
-  --av: 52px;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  min-height: 84px;
-}
-.partyRow > * {
-  padding: var(--tb-space-4) 0;
-}
 .partyRow > .partyAvatar {
   display: grid;
   padding: 0;

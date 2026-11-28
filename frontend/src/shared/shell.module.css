@@ -62,6 +62,7 @@
   color: var(--tb-text);
   font-weight: 600;
   cursor: pointer;
+  border-radius: var(--tb-radius);
 }
 
 .langSwitch:hover {
@@ -210,6 +211,13 @@
   gap: var(--tb-space-2);
   min-height: 46px;
   color: var(--tb-muted);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--tb-border);
+  border-radius: 0;
+  padding: 0 var(--tb-space-1);
+  box-shadow: none;
+  transition: box-shadow var(--tb-dur-base);
 }
 .headSearch input:focus-visible {
   outline: 2px solid var(--tb-text);
@@ -249,9 +257,6 @@
   text-decoration: underline;
   text-underline-offset: 4px;
   background-size: calc(100% - 1.5rem) 1.5px;
-}
-.langSwitch {
-  border-radius: var(--tb-radius);
 }
 @media (max-width: 47.99em) {
   .header {
@@ -363,15 +368,6 @@
 
 /* The header search, ruled like the page: a line under the field instead of a box, and one focus mark (the hot underline) instead
    of two rings (the field's and the input's). */
-.headSearch {
-  background: none;
-  border: 0;
-  border-bottom: 1px solid var(--tb-border);
-  border-radius: 0;
-  padding: 0 var(--tb-space-1);
-  box-shadow: none;
-  transition: box-shadow var(--tb-dur-base);
-}
 .headSearch:focus-within {
   border-color: var(--tb-text);
   background: none;
@@ -592,6 +588,7 @@
   text-decoration: none;
   background: none;
   transition: background var(--tb-dur-base);
+  border-radius: 0;
 }
 .navCell:hover {
   background: var(--tb-surface);
@@ -688,9 +685,6 @@
   border: 0;
   border-radius: 0;
   overflow: visible;
-}
-.navCell {
-  border-radius: 0;
 }
 .navCell + .navCell {
   border-left: 1px solid var(--tb-line);

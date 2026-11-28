@@ -138,6 +138,7 @@
   color: var(--tb-error-text);
   padding: var(--tb-space-2) var(--tb-space-3);
   font-weight: 600;
+  border-radius: var(--tb-radius-panel);
 }
 .bid {
   display: flex;
@@ -576,6 +577,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   line-height: 1;
+  font-size: var(--tb-text-2xs);
 }
 .sellerMeta {
   display: flex;
@@ -631,9 +633,6 @@
 .facts {
   font-variant-numeric: tabular-nums;
   padding-top: var(--tb-space-4);
-}
-.warning {
-  border-radius: var(--tb-radius-panel);
 }
 .mine {
   font-weight: 600;
@@ -883,9 +882,6 @@
   min-width: 44px;
   margin-block: -8px;
   font-size: var(--tb-text-base);
-}
-.pro {
-  font-size: var(--tb-text-2xs);
 }
 /* colour discipline: green is for held and verified only (the payment line is a promise, so its shield is muted); gold is for Pro and the rating star */
 .shield {
@@ -1331,6 +1327,7 @@ body:has(.bidBar) {
 .barBody > .barCell {
   padding: var(--tb-space-2-5) var(--tb-space-6);
   gap: var(--tb-space-1);
+  justify-content: center;
 }
 .barBody > .barCell:first-child {
   padding-left: 0;
@@ -1692,6 +1689,8 @@ body:has(.bidBar) {
   grid-template-columns: auto minmax(0, 1fr) auto auto;
   gap: 0 var(--tb-space-6);
   align-items: center;
+  border-bottom: 0;
+  padding-bottom: var(--tb-space-4);
 }
 .roomThumb {
   width: 64px;
@@ -1828,6 +1827,7 @@ body:has(.bidBar) {
 }
 .roomControls .bid > input {
   grid-column: 1;
+  min-height: 52px;
 }
 @media (max-width: 30rem) {
   .roomControls .bid > input {
@@ -1931,9 +1931,6 @@ body:has(.bidBar) {
 .barCell .countGrid {
   margin-top: var(--tb-space-0-5);
 }
-.barBody > .barCell {
-  justify-content: center;
-}
 .quickBid {
   min-height: 52px;
   border: 0;
@@ -1955,9 +1952,6 @@ body:has(.bidBar) {
   outline-offset: -3px;
 }
 /* the amount and Place bid: two cells of one ruled row */
-.roomControls .bid > input {
-  min-height: 52px;
-}
 @media (max-width: 30rem) {
   .roomControls .bid > input {
     border-right: 1px solid var(--tb-border);
@@ -2137,10 +2131,6 @@ body:has(.bidBar) {
   background: none;
   padding: var(--tb-space-5) 0 0;
   border-bottom: 0;
-}
-.roomHead {
-  border-bottom: 0;
-  padding-bottom: var(--tb-space-4);
 }
 
 /* ---- final room review ---- */
