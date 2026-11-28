@@ -12,7 +12,7 @@ import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
 import { FRESHNESS } from '../../shared/query';
 import { Popup } from '../../shared/Popup';
-import { ActionCell } from '../../shared/ui';
+import { ActionCell, Panel } from '../../shared/ui';
 import { DateCells } from '../../shared/Moment';
 import { SimulatedBanner } from '../../shared/SimulatedBanner';
 import { AddressForm, useAddresses } from './Courier';
@@ -34,14 +34,13 @@ const areaName = (a: { district: string; nameEn: string; nameBn: string }, lang:
 
 export function Shipments({ o, items, t, lang }: { o: OrderView; items: Shipment[]; t: T; lang: Lang }) {
   return (
-    <section aria-labelledby="shipments-title" className={styles.panel}>
-      <h2 id="shipments-title">{t('shipments.title')}</h2>
+    <Panel title={t('shipments.title')} className={styles.panel}>
       {items.some((s) => s.simulated) && <SimulatedBanner kind="courier" />}
       {items.length === 0 && <p className={styles.hint}>{t('shipments.none')}</p>}
       {items.map((s) => (
         <ShipmentCard key={s.id} o={o} s={s} t={t} lang={lang} />
       ))}
-    </section>
+    </Panel>
   );
 }
 

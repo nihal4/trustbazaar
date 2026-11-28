@@ -72,6 +72,33 @@ const STATES = [
       await page.getByRole('dialog').waitFor();
     },
   },
+  // the confirm dialogs (U11-17): closing an account, blocking someone in a chat, cancelling an order after its reason
+  {
+    name: 'privacy-close-confirm',
+    fixture: 'privacy-seller',
+    open: async (page: import('@playwright/test').Page) => {
+      await page.getByRole('button', { name: 'Close my account' }).click();
+      await page.getByRole('dialog').waitFor();
+    },
+  },
+  {
+    name: 'thread-block-confirm',
+    fixture: 'thread-seller',
+    open: async (page: import('@playwright/test').Page) => {
+      await page.getByRole('button', { name: /^Block / }).click();
+      await page.getByRole('dialog').waitFor();
+    },
+  },
+  {
+    name: 'order-seller-cancel-confirm',
+    fixture: 'order-seller',
+    open: async (page: import('@playwright/test').Page) => {
+      await page.getByRole('button', { name: 'Cancel this order' }).click();
+      await page.getByRole('dialog').getByLabel('Reason').fill('The item is no longer available.');
+      await page.getByRole('dialog').getByRole('button', { name: 'Continue' }).click();
+      await page.getByRole('button', { name: /^Cancel and refund/ }).waitFor();
+    },
+  },
   {
     name: 'order-seller-propose-popup',
     fixture: 'order-seller',

@@ -1,14 +1,16 @@
 /* Panel, Section, Card (Panel.tsx). */
 .panel {
   display: block;
-  padding: var(--tb-space-6);
-  background: var(--tb-sheet);
+  padding: var(--tb-space-5) 0;
+  background: none;
   color: var(--tb-text);
 }
 .section {
   border-top: 1px solid var(--tb-line);
 }
 .boxed {
+  padding: var(--tb-space-6);
+  background: var(--tb-sheet);
   border: 1px solid var(--tb-line);
 }
 .emphasis {
@@ -16,10 +18,9 @@
   border-bottom: 1px solid var(--tb-line);
 }
 .title {
-  margin: 0 0 var(--tb-space-1-5);
-  font-family: var(--tb-font-display);
-  font-size: var(--tb-text-base);
-  font-weight: var(--tb-display-weight);
+  margin: 0 0 var(--tb-space-3);
+  font-size: var(--tb-text-2xl);
+  font-weight: 700;
 }
 
 .sectionBlock {

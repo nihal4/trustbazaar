@@ -5,6 +5,7 @@
 // own (a name and an optional pin from the device's position, never a map link, shown with a safety notice; Decisions
 // log, U4-03). Times are Dhaka time.
 
+import { Panel } from '../../shared/ui';
 import { DateCells } from '../../shared/Moment';
 
 import { type ReactNode } from 'react';
@@ -46,8 +47,7 @@ export const HANDOVER_RETRIES = 10;
 export function Handover({ o, h, t, lang, after, before }: { o: OrderView; h: HandoverView; t: T; lang: Lang; after?: ReactNode; before?: ReactNode }) {
   const open = h.status === 'arranging' || h.status === 'agreed';
   return (
-    <section aria-labelledby="handover-title" className={styles.panel}>
-      <h2 id="handover-title">{t('handover.title')}</h2>
+    <Panel title={t('handover.title')} className={styles.panel}>
       {before}
       <dl className={styles.statusGrid}>
         <div>
@@ -69,7 +69,7 @@ export function Handover({ o, h, t, lang, after, before }: { o: OrderView; h: Ha
       {open && h.role === 'buyer' && (h.code || h.deviceCheck) && <BuyerCode order={o.id} code={h.code} device={h.deviceCheck ?? null} t={t} lang={lang} />}
       {open && h.role === 'seller' && <SellerCode o={o} h={h} t={t} lang={lang} />}
       {open && <Proposals o={o} h={h} t={t} lang={lang} />}
-    </section>
+    </Panel>
   );
 }
 

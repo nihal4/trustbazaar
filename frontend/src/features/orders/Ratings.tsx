@@ -2,6 +2,7 @@
 // U8-09). After the order's escrow is terminal each party may rate the other once, 1 to 5 stars with an optional
 // text, until the rating window ends (CP-39); a rating can be edited until its edit period ends, and the rated party
 // may reply once, publicly. GET /orders/{id}/ratings gives the window and both ratings (Decisions log, U8-09).
+import { Panel } from '../../shared/ui';
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toLocalDigits } from '../../lib/money.js';
@@ -66,8 +67,7 @@ export function Ratings({ o, r, t, lang }: { o: OrderView; r: OrderRatings; t: T
   const other = o.role === 'buyer' ? 'seller' : 'buyer';
   if (!r.canRate && !r.mine && !r.received) return null;
   return (
-    <section aria-labelledby="ratings-title" className={styles.panel}>
-      <h2 id="ratings-title">{t('rating.title')}</h2>
+    <Panel title={t('rating.title')} className={styles.panel}>
       {r.canRate && r.rateUntil && (
         <>
           <p className={styles.hint}>{t('rating.window', { until: formatDeadline(Date.parse(r.rateUntil), now, lang) })}</p>
@@ -76,7 +76,7 @@ export function Ratings({ o, r, t, lang }: { o: OrderView; r: OrderRatings; t: T
       )}
       {r.mine && <Mine o={o} rating={r.mine} t={t} lang={lang} />}
       {r.received && <Received o={o} rating={r.received} from={other} t={t} lang={lang} />}
-    </section>
+    </Panel>
   );
 }
 

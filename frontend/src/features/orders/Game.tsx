@@ -5,6 +5,7 @@
 // (/secure/orders/{id}/key, /credentials, /deliver), so their strict policy holds (SEC-GAM-03). After payment the
 // tab shows the handover's state with its deadlines as countdowns, and the buyer may release early after the
 // takeover, with step-up and confirm.release_early.
+import { Panel } from '../../shared/ui';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { formatMoney } from '../../lib/money.js';
@@ -156,8 +157,7 @@ export function GameTab({ o, g, t, lang }: { o: OrderView; g: GameView; t: T; la
   const sealFor = !buyer && (g.status === 'awaiting_credentials' || g.status === 'rekey_requested');
   const open = buyer && (g.status === 'delivered' || g.status === 'taken_over' || g.status === 'disputed');
   return (
-    <section aria-labelledby="game-title" className={styles.panel}>
-      <h2 id="game-title">{t('game.title')}</h2>
+    <Panel title={t('game.title')} className={styles.panel}>
       <p>
         <strong>{g.status ? t(`game.status.${g.status}.${g.role}`) : t('game.status.none')}</strong>
       </p>
@@ -189,7 +189,7 @@ export function GameTab({ o, g, t, lang }: { o: OrderView; g: GameView; t: T; la
       )}
       {open && <p className={styles.hint}>{t('game.same_browser')}</p>}
       {buyer && g.status === 'taken_over' && <ReleaseEarly o={o} g={g} t={t} lang={lang} />}
-    </section>
+    </Panel>
   );
 }
 

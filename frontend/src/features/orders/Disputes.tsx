@@ -13,7 +13,7 @@ import { useApi } from '../../shared/api';
 import { useServerNow } from '../../shared/clock';
 import { ConfirmDialog } from '../../shared/ConfirmDialog';
 import { Popup } from '../../shared/Popup';
-import { ActionCell, PopupActions } from '../../shared/ui';
+import { ActionCell, Panel, PopupActions } from '../../shared/ui';
 import { Moment } from '../../shared/Moment';
 import { Terms } from './Terms';
 import { errorText } from '../../shared/errors';
@@ -123,8 +123,7 @@ export function DisputeSlot({ o, items, t, lang }: { o: OrderView; items: Disput
   return (
     <>
       {d && (
-        <section aria-labelledby="dispute-slot-title" className={styles.panel}>
-          <h2 id="dispute-slot-title">{t('dispute.slot_title')}</h2>
+        <Panel title={t('dispute.slot_title')} className={styles.panel}>
           <dl className={styles.statusGrid}>
             <div>
               <dt>{t('handover.status_label')}</dt>
@@ -171,7 +170,7 @@ export function DisputeSlot({ o, items, t, lang }: { o: OrderView; items: Disput
               </>
             )}
           </ActionCell>
-        </section>
+        </Panel>
       )}
       {dispute.isError && <FormMessage kind="error">{errorText(dispute.error, t, lang)}</FormMessage>}
       {o.role === 'buyer' &&
@@ -180,15 +179,14 @@ export function DisputeSlot({ o, items, t, lang }: { o: OrderView; items: Disput
         (received ? (
           <OpenDispute o={o} t={t} lang={lang} onOpened={(failed) => setSent({ failed })} />
         ) : (
-          <section aria-labelledby="open-dispute-title" className={styles.panel}>
-            <h2 id="open-dispute-title">{t('dispute.slot_title')}</h2>
+          <Panel title={t('dispute.slot_title')} className={styles.panel}>
             <ActionCell disabled aria-describedby="dispute-not-yet">
               {t('dispute.open_button')}
             </ActionCell>
             <p id="dispute-not-yet" className={styles.hint}>
               {t('dispute.not_yet')}
             </p>
-          </section>
+          </Panel>
         ))}
     </>
   );
@@ -278,8 +276,7 @@ function OpenDispute({ o, t, lang, onOpened }: { o: OrderView; t: T; lang: Lang;
     setMessage(null);
   };
   return (
-    <section aria-labelledby="open-dispute-title" className={styles.panel}>
-      <h2 id="open-dispute-title">{t('dispute.slot_title')}</h2>
+    <Panel title={t('dispute.slot_title')} className={styles.panel}>
       {message && !shown && <FormMessage kind="error">{message}</FormMessage>}
       <ActionCell onClick={() => setShown(true)}>{t('dispute.open_button')}</ActionCell>
       {shown && !confirming && (
@@ -354,7 +351,7 @@ function OpenDispute({ o, t, lang, onOpened }: { o: OrderView; t: T; lang: Lang;
           onClose={() => setConfirming(false)}
         />
       )}
-    </section>
+    </Panel>
   );
 }
 
