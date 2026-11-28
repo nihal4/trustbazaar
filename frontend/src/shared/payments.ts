@@ -3,7 +3,7 @@
 // value (VITE_PAYMENT_HOSTS); with none configured only the mock's same-origin page is followed.
 import { checkProviderRedirect } from '../lib/redirect.js';
 
-export const PROVIDER_HOSTS: string[] = (import.meta.env.VITE_PAYMENT_HOSTS ?? '')
+const PROVIDER_HOSTS: string[] = (import.meta.env.VITE_PAYMENT_HOSTS ?? '')
   .split(',')
   .map((h) => h.trim().toLowerCase())
   .filter(Boolean);
@@ -19,8 +19,7 @@ export const away = { go: (url: string) => window.location.assign(url) };
 /** Section 7.4: the return page checks every 2 s for up to 30 s (NFR-PERF-06 expects about 5 s). */
 export const RETURN_POLL_MS = 2_000;
 export const RETURN_WAIT_MS = 30_000;
-export const PROVIDERS = ['bkash', 'nagad', 'stripe'] as const;
-export type Provider = (typeof PROVIDERS)[number];
+export type Provider = 'bkash' | 'nagad' | 'stripe';
 
 /** The simulated providers' payment page (PAYMENT_MODE=mock): a same-origin path of the backend. The payment sheet plays that page itself. */
 export const isMockProviderPage = (target: string, origin = window.location.origin): boolean => {

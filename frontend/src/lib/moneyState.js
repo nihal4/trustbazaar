@@ -54,7 +54,7 @@ export function describeMoney(o, role) {
  * @param {{key: string, vars: Record<string, {money: number} | {time: number}>}} d
  * @param {'en'|'bn'} lang
  */
-export function renderMoney(t, d, lang) {
+function renderMoney(t, d, lang) {
   /** @type {Record<string, string>} */
   const vars = {};
   for (const [name, v] of Object.entries(d.vars)) {
@@ -64,7 +64,7 @@ export function renderMoney(t, d, lang) {
 }
 
 /** every key describeMoney can return, for the catalogue test */
-export const MONEY_KEYS = [
+const MONEY_KEYS = [
   'awaiting_payment',
   'cancelled_unpaid',
   'held_before_delivery',

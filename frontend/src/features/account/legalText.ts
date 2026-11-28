@@ -1,7 +1,7 @@
 // The terms and conditions a new member accepts (FR-ACC-04; U10-25), in both languages. Written to say only what the system does (the SRS rules named
 // in PROGRESS.md, Decisions log U10-25) and to leave no gap between the member's duties and ours. A draft for the team's and a lawyer's review before
 // real money moves (U8-02); the version in legal.ts must change with any change of this text, so every new member accepts the current one.
-export interface LegalSection {
+interface LegalSection {
   title: string;
   clauses: string[];
 }

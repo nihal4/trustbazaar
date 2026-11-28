@@ -18,7 +18,7 @@ const sr = 'tb-sr-only';
 const MIN_MS = 750;
 const LEAVE_MS = 300;
 
-export function initialLang(): Lang {
+function initialLang(): Lang {
   return chooseLang(readStoredLang(), globalThis.navigator?.languages ?? []);
 }
 

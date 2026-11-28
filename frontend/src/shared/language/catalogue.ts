@@ -11,7 +11,7 @@ import type { Lang } from './lang';
 export type Catalogue = Record<string, string>;
 export type T = (key: string, vars?: Record<string, string>) => string;
 
-export const SHELL_CATALOGUES: Record<Lang, Catalogue> = {
+const SHELL_CATALOGUES: Record<Lang, Catalogue> = {
   en: { ...libEn, ...shellEn },
   bn: { ...libBn, ...shellBn },
 };

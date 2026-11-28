@@ -1,6 +1,6 @@
 // What the grid draws on the sign-in page (U10-25): cells, not drawings. Only the name: TRUST over BAZAAR in a 3 by 5 letter face. A picture is a list of cell
 // offsets and a kind: 'o' is drawn in the hot colour, 'w' in the pale colour of the logotype's "bazaar". Fixed data.
-export interface Cell {
+interface Cell {
   x: number;
   y: number;
   k: 'o' | 'w';

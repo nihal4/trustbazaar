@@ -27,7 +27,7 @@ import { BidForm } from './AuctionBidForm';
 import { money } from './auctionShared';
 import { Offer } from './AuctionOffer';
 
-export { GUEST_POLL_MS, SIGNED_IN_POLL_MS, CLOSING_POLL_MS } from './useAuctionLive';
+export { GUEST_POLL_MS } from './useAuctionLive';
 
 export function AuctionPanel({
   initial,

@@ -2,7 +2,7 @@
 // card the number looks like, from its first digits (the issuer ranges), and shapes the number, the security code and their lengths to that brand. Nothing
 // here validates a real card, and nothing typed in the sheet is ever sent or stored (no real money moves; PCI is out of scope).
 
-export type CardBrandId = 'visa' | 'mastercard' | 'amex' | 'discover' | 'diners' | 'jcb' | 'unionpay' | 'rupay' | 'maestro' | 'unknown';
+type CardBrandId = 'visa' | 'mastercard' | 'amex' | 'discover' | 'diners' | 'jcb' | 'unionpay' | 'rupay' | 'maestro' | 'unknown';
 
 export interface CardBrand {
   id: CardBrandId;

@@ -18,9 +18,9 @@ import { historyKey, listingKey, myStatusKey, type AuctionState, type BidHistory
 
 /** DV-19: guests poll the state; DV-55: signed-in pages fetch it again every 60 s besides the live feed. */
 export const GUEST_POLL_MS = 5_000;
-export const SIGNED_IN_POLL_MS = 60_000;
+const SIGNED_IN_POLL_MS = 60_000;
 /** After the end, until the close is announced (DV-17 is 2 s; the closer runs every 2 s). */
-export const CLOSING_POLL_MS = 3_000;
+const CLOSING_POLL_MS = 3_000;
 
 const money = (p: string | bigint, lang: Lang) => formatMoney(p, lang);
 

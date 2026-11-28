@@ -18,7 +18,7 @@ import { reasonTexts, type EditableListing } from './sell';
 import styles from './sell.module.css';
 import { Button, FilePicker, Input, Select, Textarea } from '../../shared/ui';
 
-export interface Game {
+interface Game {
   id: number;
   slug: string;
   name: string;
@@ -26,19 +26,19 @@ export interface Game {
   codePlacement: string;
   publisherNote: string;
 }
-export interface GameDetails {
+interface GameDetails {
   gameId: number;
   platform: string;
   playerId: string;
   contents: string;
 }
-export type ProofStatus = 'issued' | 'expired' | 'submitted' | 'approved' | 'rejected';
-export interface Ownership {
+type ProofStatus = 'issued' | 'expired' | 'submitted' | 'approved' | 'rejected';
+interface Ownership {
   details: GameDetails | null;
   proof: { code: string; status: ProofStatus; expiresAt: string; submittedAt: string | null; reviewedAt: string | null; reason: string | null } | null;
 }
 
-export const ownershipKey = (id: string) => ['listings', id, 'ownership'] as const;
+const ownershipKey = (id: string) => ['listings', id, 'ownership'] as const;
 
 export function useOwnership(l: EditableListing) {
   const api = useApi();

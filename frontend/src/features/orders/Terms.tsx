@@ -13,7 +13,7 @@ import type { Lang } from '../../shared/language/lang';
 import styles from './orders.module.css';
 
 /** The version of the terms texts; raise it when their wording changes. */
-export const TERMS_VERSION = 1;
+const TERMS_VERSION = 1;
 
 export function Terms({
   id,

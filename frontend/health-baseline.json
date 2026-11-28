@@ -5,10 +5,7 @@
   "stylelint": {
     "warning:no-duplicate-selectors": 11
   },
-  "knip": {
-    "exports": 41,
-    "types": 17
-  },
+  "knip": {},
   "jscpd": {
     "clones": 13,
     "duplicatedLines": 184

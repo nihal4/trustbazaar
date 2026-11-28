@@ -3,7 +3,7 @@
 import { toAsciiDigits } from '../../lib/money.js';
 import { phaseOf } from '../../shared/stepPhase';
 
-export type KycStatus = 'unsubmitted' | 'pending_review' | 'verified' | 'rejected' | 'revoked';
+type KycStatus = 'unsubmitted' | 'pending_review' | 'verified' | 'rejected' | 'revoked';
 export type DocType = 'nid' | 'passport';
 export type ImageKind = 'doc_front' | 'doc_back' | 'passport_photo_page' | 'selfie_neutral' | 'selfie_action';
 

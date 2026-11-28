@@ -87,7 +87,7 @@ export function durationLabel(d: string, t: T, lang: Lang): string {
 }
 
 /** The server's field reasons this screen words; any other is shown with the general message. */
-export const REASONS = new Set([
+const REASONS = new Set([
   'required',
   'item-kind',
   'prohibited',

@@ -2,7 +2,7 @@
 // region at most every 5 seconds, the newest one winning; an outbid notice at once.
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-export const ANNOUNCE_GAP_MS = 5_000;
+const ANNOUNCE_GAP_MS = 5_000;
 
 export function useAnnouncer(gap = ANNOUNCE_GAP_MS) {
   const [text, setText] = useState('');

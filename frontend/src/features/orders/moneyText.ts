@@ -8,7 +8,7 @@ import type { Lang } from '../../shared/language/lang';
 import type { OrderView } from './model';
 
 /** NFR-USE-07: where the money is, in one sentence (lib/moneyState.js and the reference catalogue). */
-export function moneyText(o: OrderView, t: T, lang: Lang): string {
+function moneyText(o: OrderView, t: T, lang: Lang): string {
   const ms = (s: string | null) => (s ? Date.parse(s) : null);
   const d = describeMoney(
     {

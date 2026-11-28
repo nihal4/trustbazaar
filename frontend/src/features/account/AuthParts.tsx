@@ -40,11 +40,11 @@ export const headFor = (vw: number, bangla: boolean) => {
   if (vw < 520) return bangla ? 7 : 6;
   return 5;
 };
-export const bodyFor = (vw: number) => {
+const bodyFor = (vw: number) => {
   if (vw < 360) return 14;
   return vw < 520 ? 13 : 11;
 };
-export const rowsFor = (vw: number, bangla: boolean, body = bodyFor(vw), foot = 2) => headFor(vw, bangla) + body + foot;
+const rowsFor = (vw: number, bangla: boolean, body = bodyFor(vw), foot = 2) => headFor(vw, bangla) + body + foot;
 
 /** THE card of every bare page (sign-in, registration, reset, verify): one size in every step of every page, sized for the tallest step of any of them (the
  *  reset by SMS with the second factor and a message), so the card never changes shape between steps or between pages. */

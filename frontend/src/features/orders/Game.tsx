@@ -23,7 +23,7 @@ import { StepUpCancelled } from '../../shared/stepUp';
 import { orderKey, type OrderView } from './model';
 import styles from './orders.module.css';
 
-export type HandoverStatus = 'preparing' | 'awaiting_credentials' | 'delivered' | 'rekey_requested' | 'disputed' | 'taken_over' | 'cancelled' | 'closed';
+type HandoverStatus = 'preparing' | 'awaiting_credentials' | 'delivered' | 'rekey_requested' | 'disputed' | 'taken_over' | 'cancelled' | 'closed';
 export interface GameView {
   orderId: string;
   role: 'buyer' | 'seller';
@@ -41,17 +41,17 @@ export interface GameView {
   steps: Record<'password' | 'recovery_email' | 'recovery_phone' | 'social_logins' | 'two_step', string | null>;
   protectionEndsAt: string | null;
 }
-export const gameKey = (orderId: string) => ['orders', orderId, 'game'] as const;
+const gameKey = (orderId: string) => ['orders', orderId, 'game'] as const;
 /** The disclosure texts this client has, by version (Decisions log, U5-03: the text is the web client's). */
-export const DISCLOSURE_VERSIONS = [1];
+const DISCLOSURE_VERSIONS = [1];
 
 /** Unit 5, AS-5: the browser can keep a non-extractable key (Web Crypto) in IndexedDB. */
-export function gameBrowserReady(): boolean {
+function gameBrowserReady(): boolean {
   return typeof globalThis.crypto?.subtle?.generateKey === 'function' && typeof globalThis.indexedDB?.open === 'function';
 }
 
 /** A credential screen: a full page load of secure.html, never a client-side route. */
-export const secureHref = (orderId: string, screen: 'key' | 'credentials' | 'deliver') => `/secure/orders/${encodeURIComponent(orderId)}/${screen}`;
+const secureHref = (orderId: string, screen: 'key' | 'credentials' | 'deliver') => `/secure/orders/${encodeURIComponent(orderId)}/${screen}`;
 
 export function useGame(o: OrderView) {
   const api = useApi();
@@ -68,7 +68,7 @@ export function useGame(o: OrderView) {
   });
 }
 
-export const GAME_POLL_MS = 2_000;
+const GAME_POLL_MS = 2_000;
 const GAME_POLLS = 30;
 
 /** Ready to pay: the current disclosure acknowledged and key version 1 registered (Unit 5's checkout_ready). */
