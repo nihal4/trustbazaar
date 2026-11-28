@@ -35,8 +35,15 @@ export const fieldAria = (message: string | null, ok: boolean, messageId: string
 
 /** The card's bands in cells, shared by the pages that are several steps long (U10-25). The heading band wraps more lines on a narrow screen; the form band is
  *  sized for the tallest step with a message under it (two fields and a message need more room on a phone). One height for every step of a page. */
-export const headFor = (vw: number, bangla: boolean) => (vw < 360 ? (bangla ? 8 : 7) : vw < 520 ? (bangla ? 7 : 6) : 5);
-export const bodyFor = (vw: number) => (vw < 360 ? 14 : vw < 520 ? 13 : 11);
+export const headFor = (vw: number, bangla: boolean) => {
+  if (vw < 360) return bangla ? 8 : 7;
+  if (vw < 520) return bangla ? 7 : 6;
+  return 5;
+};
+export const bodyFor = (vw: number) => {
+  if (vw < 360) return 14;
+  return vw < 520 ? 13 : 11;
+};
 export const rowsFor = (vw: number, bangla: boolean, body = bodyFor(vw), foot = 2) => headFor(vw, bangla) + body + foot;
 
 /** THE card of every bare page (sign-in, registration, reset, verify): one size in every step of every page, sized for the tallest step of any of them (the

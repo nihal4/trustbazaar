@@ -51,7 +51,10 @@ export function Calendar({
   onClose: () => void;
 }) {
   const today = iso(Date.now());
-  const clamp = (v: string) => (v < min ? min : v > max ? max : v);
+  const clamp = (v: string) => {
+    if (v < min) return min;
+    return v > max ? max : v;
+  };
   // the day that holds the focus (the one chosen, or today, or the start); its month is the one shown
   const [focus, setFocus] = useState(() => clamp(value || startAt || today));
   const grid = useRef<HTMLDivElement>(null);

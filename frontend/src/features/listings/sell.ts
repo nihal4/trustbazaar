@@ -81,7 +81,8 @@ export function durationLabel(d: string, t: T, lang: Lang): string {
   const m = /^(\d+)\s*(hour|hours|day|days)$/.exec(d.trim());
   if (!m) return d;
   const n = Number(m[1]);
-  const key = m[2].startsWith('day') ? (n === 1 ? 'sell.duration.day' : 'sell.duration.days') : n === 1 ? 'sell.duration.hour' : 'sell.duration.hours';
+  const unit = m[2].startsWith('day') ? 'day' : 'hour';
+  const key = `sell.duration.${unit}${n === 1 ? '' : 's'}`;
   return t(key, { n: toLocalDigits(String(n), lang) });
 }
 

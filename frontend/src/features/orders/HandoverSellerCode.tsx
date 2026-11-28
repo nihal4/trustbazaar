@@ -10,6 +10,7 @@ import { CodeField, FormMessage } from '../../shared/form';
 import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
 import { isApiError, problemName } from '../../shared/problems';
+import { stepMark } from '../../shared/stepPhase';
 import { handoverKey, orderKey, type HandoverView, type OrderView } from './model';
 import styles from './orders.module.css';
 
@@ -101,7 +102,7 @@ export function SellerCode({ o, h, t, lang }: { o: OrderView; h: HandoverView; t
             </p>
             <ol aria-hidden="true">
               {names.map((n, i) => (
-                <li key={n} data-state={i + 1 < step ? 'done' : i + 1 === step ? 'now' : 'next'} />
+                <li key={n} data-state={stepMark(i + 1, step)} />
               ))}
             </ol>
           </div>

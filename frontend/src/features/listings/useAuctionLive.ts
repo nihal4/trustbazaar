@@ -125,7 +125,8 @@ export function useAuctionLive({ initial, t, lang, signedIn, own }: { initial: A
   const closing = open && ended;
   useEffect(() => {
     if (!open) return;
-    const ms = closing ? CLOSING_POLL_MS : signedIn ? SIGNED_IN_POLL_MS : GUEST_POLL_MS;
+    const patient = signedIn ? SIGNED_IN_POLL_MS : GUEST_POLL_MS;
+    const ms = closing ? CLOSING_POLL_MS : patient;
     const timer = setInterval(() => void refetch(), ms);
     return () => clearInterval(timer);
   }, [open, closing, signedIn, refetch]);
