@@ -87,5 +87,6 @@ export function SaveForm({
 /** A coordinate as text, in Bangladesh's range (Unit 4 stores areas and points there). */
 export const coordinate = (s: string, lat: boolean) => {
   const n = Number(s.trim());
-  return Number.isFinite(n) && s.trim() !== '' && (lat ? n >= 20 && n <= 27 : n >= 88 && n <= 93) ? n : null;
+  const inRange = lat ? n >= 20 && n <= 27 : n >= 88 && n <= 93;
+  return Number.isFinite(n) && s.trim() !== '' && inRange ? n : null;
 };

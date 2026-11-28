@@ -263,7 +263,10 @@ function ConfigValue({
   );
 }
 
-const show = (v: Json) => (Array.isArray(v) ? v.join(', ') : v === null ? '' : String(v));
+const show = (v: Json) => {
+  if (Array.isArray(v)) return v.join(', ');
+  return v === null ? '' : String(v);
+};
 /** The typed value of a field, in the form the original had (Unit 7 stores numbers, durations as text, lists). */
 export function parse(text: string, original: Json): { ok: boolean; value: Json } {
   const s = text.trim();

@@ -51,7 +51,9 @@ export function Component() {
     try {
       await work();
     } catch (e) {
-      setMessage(isApiError(e, 429) ? t('staff.signin.too_many') : problemName(e) === 'session-ended' ? t('staff.signin.ticket_ended') : refused(e));
+      if (isApiError(e, 429)) setMessage(t('staff.signin.too_many'));
+      else if (problemName(e) === 'session-ended') setMessage(t('staff.signin.ticket_ended'));
+      else setMessage(refused(e));
       if (problemName(e) === 'session-ended') {
         setStep('password');
         setCode('');

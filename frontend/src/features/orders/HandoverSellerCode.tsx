@@ -32,10 +32,9 @@ export function SellerCode({ o, h, t, lang }: { o: OrderView; h: HandoverView; t
       void queryClient.invalidateQueries({ queryKey: orderKey(o.id) });
     },
     onError: (e) => {
-      const wrong =
-        isApiError(e) && problemName(e) === 'delivery-refused'
-          ? (Array.isArray(e.errors) ? (e.errors as { reason?: string; attemptsLeft?: number }[]) : []).find((x) => x.reason === 'wrong_code')
-          : undefined;
+      const refused = isApiError(e) && problemName(e) === 'delivery-refused' && Array.isArray(e.errors);
+      const reasons = refused ? (e.errors as { reason?: string; attemptsLeft?: number }[]) : [];
+      const wrong = reasons.find((x) => x.reason === 'wrong_code');
       setMessage(wrong ? t('handover.wrong_code', { left: toLocalDigits(String(wrong.attemptsLeft ?? 0), lang) }) : errorText(e, t, lang));
       void queryClient.invalidateQueries({ queryKey: handoverKey(o.id) });
     },

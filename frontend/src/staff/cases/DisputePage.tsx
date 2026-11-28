@@ -47,7 +47,10 @@ function CaseBody({ f, t, lang }: { f: CaseFile; t: T; lang: Lang }) {
   const now = useServerNow();
   const money = (p: string) => formatMoney(BigInt(p), lang);
   const at = (iso: string) => formatDateTime(Date.parse(iso), lang);
-  const party = (p: { displayName: string; verified: boolean } | null) => (p ? p.displayName + (p.verified ? ' · ' + t('staff.case.verified') : '') : '—');
+  const party = (p: { displayName: string; verified: boolean } | null) => {
+    if (!p) return '—';
+    return p.displayName + (p.verified ? ' · ' + t('staff.case.verified') : '');
+  };
   const d = f.dispute;
   const open = d.status !== 'decided' && d.status !== 'withdrawn' && d.status !== 'closed';
   return (

@@ -53,6 +53,12 @@ async function findThread(api: Api, id: string, signal?: AbortSignal): Promise<T
   return null;
 }
 
+/** What the other person has done with a message of mine: read it, had it delivered, or neither yet. */
+function markOf(marks: { read: number; delivered: number }, seq: number): 'read' | 'delivered' | null {
+  if (marks.read >= seq) return 'read';
+  return marks.delivered >= seq ? 'delivered' : null;
+}
+
 export function Component() {
   const { t, lang } = useT(CATALOGUES);
   const me = useMe();
@@ -276,14 +282,7 @@ function Conversation({ id, t, lang }: { id: string; t: T; lang: Lang }) {
                         <span>{`${p.weekday}, ${p.day} ${p.month} ${p.year}`}</span>
                       </li>
                     )}
-                    <MessageItem
-                      m={m}
-                      role={s?.role ?? null}
-                      threadId={id}
-                      t={t}
-                      lang={lang}
-                      mark={m === lastMine ? (marks.read >= m.seq ? 'read' : marks.delivered >= m.seq ? 'delivered' : null) : null}
-                    />
+                    <MessageItem m={m} role={s?.role ?? null} threadId={id} t={t} lang={lang} mark={m === lastMine ? markOf(marks, m.seq) : null} />
                   </Fragment>
                 );
               })}

@@ -47,6 +47,7 @@ export function Component() {
     void queryClient.invalidateQueries({ queryKey: queueKey('listings_review') });
   };
   const v = l.data;
+  const price = v?.price || v?.auction?.price;
   return (
     <CaseFrame title={t('staff.listing.title', { ref: short(id) })} back="/staff/queues/listings_review" t={t}>
       {l.isPending && <p role="status">{t('shell.loading')}</p>}
@@ -60,7 +61,7 @@ export function Component() {
                 [t('staff.listing.status'), v.status],
                 [t('staff.listing.kind'), t(`staff.listing.kind.${v.itemKind}`)],
                 [t('staff.listing.category'), lang === 'bn' ? v.category.nameBn : v.category.nameEn],
-                [t('staff.listing.price'), v.price ? formatMoney(BigInt(v.price), lang) : v.auction?.price ? formatMoney(BigInt(v.auction.price), lang) : null],
+                [t('staff.listing.price'), price ? formatMoney(BigInt(price), lang) : null],
                 [t('staff.listing.condition'), v.condition],
                 [t('staff.listing.district'), v.district],
                 [t('staff.listing.seller'), v.seller.displayName + (v.seller.verified ? ' · ' + t('staff.case.verified') : '') + ` (${short(v.seller.id)})`],
