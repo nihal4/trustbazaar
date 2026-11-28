@@ -5,16 +5,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { formatMoney } from '../../lib/money.js';
 import { useApi } from '../../shared/api';
-import { errorText } from '../../shared/errors';
 import { FormMessage } from '../../shared/form';
 import type { T } from '../../shared/language/catalogue';
 import type { Lang } from '../../shared/language/lang';
-import { fieldErrors, problemName } from '../../shared/problems';
+import { fieldErrors } from '../../shared/problems';
 import { FRESHNESS } from '../../shared/query';
 import { commissionOf, nearestArea, reasonTexts, type Category, type EditableListing, type SellingTerms } from './sell';
 import styles from './sell.module.css';
 import { Button, Checkbox, Input, Radio, Select, Textarea } from '../../shared/ui';
-import { detailsBody, detailsProblems, type DetailsValues } from './sellDetailsBody';
+import { detailsBody, detailsProblems, refusedMessage, type DetailsValues } from './sellDetailsBody';
 import { AreaFields } from './SellArea';
 import { listingKey, percentOf } from './sellShared';
 import { CONDITIONS, FULFILMENT, WEIGHTS, SIZES, useAreas } from './sellOptions';
@@ -86,7 +85,7 @@ export function DetailsForm({ l, terms, t, lang }: { l: EditableListing | null; 
     onError: (e) => {
       const fields = fieldErrors(e);
       setErrors(reasonTexts(fields, t));
-      setMessage(problemName(e) === 'listing-state' ? t('sell.changed') : fields.length ? null : errorText(e, t, lang));
+      setMessage(refusedMessage(e, fields.length > 0, t, lang));
     },
   });
 

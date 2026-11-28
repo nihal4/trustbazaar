@@ -2,7 +2,7 @@
 // camera is refused or missing, the wizard says how to allow it and, for documents only, offers a file
 // from the device; a selfie is never taken from a file. The view sits in a dark stage with a guide for the card, the
 // passport page or the face (docs/design/10_visual.md, section 7.9).
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 import { FormMessage } from '../../shared/form';
 import { cameraProblem, IMAGE_TYPES, MAX_IMAGE_BYTES, stopStream, useCamera, type CameraProblem, type Facing } from './camera';
 import { useKycT } from './common';
@@ -87,6 +87,33 @@ export function Capture({ id, title, labelledBy, hint, facing, frame, allowFile,
   };
 
   const shown = error ?? fileError;
+  let action: ReactNode;
+  if (value) {
+    action = (
+      <Button
+        variant="secondary"
+        type="button"
+        onClick={() => {
+          onChange(null);
+          void start();
+        }}
+      >
+        {t('capture.retake')}
+      </Button>
+    );
+  } else if (stream) {
+    action = (
+      <Button variant="primary" type="button" onClick={() => void take()} disabled={busy || !ready}>
+        {t('capture.take')}
+      </Button>
+    );
+  } else {
+    action = (
+      <Button variant="primary" type="button" onClick={() => void start()} disabled={busy}>
+        {t('capture.start')}
+      </Button>
+    );
+  }
   return (
     <div role="group" aria-labelledby={labelledBy} className={styles.capture}>
       <p>{hint}</p>
@@ -103,28 +130,7 @@ export function Capture({ id, title, labelledBy, hint, facing, frame, allowFile,
         {!value && <span className={frame === 'selfie' ? styles.oval : styles.card} aria-hidden="true" />}
         {!value && <p className={styles.frameText}>{t(`frame.${frame}`)}</p>}
       </div>
-      <div className={styles.nav}>
-        {value ? (
-          <Button
-            variant="secondary"
-            type="button"
-            onClick={() => {
-              onChange(null);
-              void start();
-            }}
-          >
-            {t('capture.retake')}
-          </Button>
-        ) : stream ? (
-          <Button variant="primary" type="button" onClick={() => void take()} disabled={busy || !ready}>
-            {t('capture.take')}
-          </Button>
-        ) : (
-          <Button variant="primary" type="button" onClick={() => void start()} disabled={busy}>
-            {t('capture.start')}
-          </Button>
-        )}
-      </div>
+      <div className={styles.nav}>{action}</div>
       {problem && !value && (
         <FormMessage kind="info">
           <p>{t(`capture.problem.${problem}`)}</p>

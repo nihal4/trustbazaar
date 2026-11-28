@@ -1,6 +1,9 @@
 // What the details form of a listing checks before it sends, and the body it sends (kept out of the component so each part is small).
 import { parseTaka } from '../../lib/money.js';
+import { errorText } from '../../shared/errors';
 import type { T } from '../../shared/language/catalogue';
+import type { Lang } from '../../shared/language/lang';
+import { problemName } from '../../shared/problems';
 import type { Area } from './sell';
 
 export interface DetailsValues {
@@ -70,4 +73,10 @@ export function detailsBody(v: DetailsValues, poisha: bigint | null): Record<str
     ...(area && !v.game ? { area: { district: area.district, lat: located?.lat ?? area.lat, lng: located?.lng ?? area.lng } } : {}),
     ...(v.isNew ? { itemKind: v.itemKind, saleFormat: v.saleFormat } : {}),
   };
+}
+
+/** The line above the form when a save is refused: the listing changed under the person, nothing (the field reasons say it all), or what the error says. */
+export function refusedMessage(e: unknown, hasFieldReasons: boolean, t: T, lang: Lang): string | null {
+  if (problemName(e) === 'listing-state') return t('sell.changed');
+  return hasFieldReasons ? null : errorText(e, t, lang);
 }

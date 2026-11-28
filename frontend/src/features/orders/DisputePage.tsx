@@ -138,6 +138,18 @@ export function Component() {
     const key = m.template === 'dispute.decided' ? `dispute.msg.decided.${String(p.outcome ?? 'none')}.${c.role}` : `dispute.msg.${m.template}.${c.role}`;
     return t(key, { ...p, amount: p.itemRefund ? formatMoney(BigInt(String(p.itemRefund)), lang) : '' });
   };
+  // what a bubble says: a link to the file, that the file was removed, or the words
+  const bubbleBody = (m: ChatItem) => {
+    if (m.file?.link) {
+      return (
+        <a href={m.file.link.url} target="_blank" rel="noopener noreferrer">
+          {t(VIDEO.test(m.file.mime) ? 'dispute.sent_video' : 'dispute.sent_photo')}
+        </a>
+      );
+    }
+    if (m.file) return <p>{t('dispute.removed')}</p>;
+    return <p>{m.from === 'you' ? (m.text ?? t('dispute.removed')) : said(m)}</p>;
+  };
   const submit = (e?: FormEvent) => {
     e?.preventDefault();
     if (!text.trim() || send.isPending) return;
@@ -218,17 +230,7 @@ export function Component() {
               <div key={`m${i}`} className={r.m.from === 'you' ? `${styles.dcRow} ${styles.dcMine}` : styles.dcRow}>
                 <div className={styles.dcBubble}>
                   <span className={styles.srOnly}>{t(r.m.from === 'you' ? 'dispute.party.you' : 'dispute.party.trustbazaar')}: </span>
-                  {r.m.file ? (
-                    r.m.file.link ? (
-                      <a href={r.m.file.link.url} target="_blank" rel="noopener noreferrer">
-                        {t(VIDEO.test(r.m.file.mime) ? 'dispute.sent_video' : 'dispute.sent_photo')}
-                      </a>
-                    ) : (
-                      <p>{t('dispute.removed')}</p>
-                    )
-                  ) : (
-                    <p>{r.m.from === 'you' ? (r.m.text ?? t('dispute.removed')) : said(r.m)}</p>
-                  )}
+                  {bubbleBody(r.m)}
                   <span className={styles.dcTime}>
                     <DateCells at={Date.parse(r.m.at)} t={t} lang={lang} label={false} compact inline part="time" />
                   </span>

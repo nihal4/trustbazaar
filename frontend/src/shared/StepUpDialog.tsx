@@ -64,15 +64,18 @@ export function StepUpDialog({ request }: { request: StepUpRequest }) {
     } catch (err) {
       const name = problemName(err);
       if (isApiError(err, 429)) setWaitUntil(untilAfter(err.retryAfter ?? 60));
-      setError(
-        name === 'otp-failed' || name === 'mfa-failed' ? t('stepup.wrong_code') : name === 'otp-expired' ? t('stepup.expired') : errorText(err, t, lang),
-      );
+      if (name === 'otp-failed' || name === 'mfa-failed') setError(t('stepup.wrong_code'));
+      else if (name === 'otp-expired') setError(t('stepup.expired'));
+      else setError(errorText(err, t, lang));
       setBusy(false);
     }
   };
 
   // while the start has not been answered "Loading…" is said; when it was refused (a wait, for instance) the refusal alone is said, not both
-  const instruction = started?.method === 'totp' ? t('stepup.totp') : started?.method === 'sms' ? t('stepup.sms') : error ? null : t('shell.loading');
+  let instruction: string | null = null;
+  if (started?.method === 'totp') instruction = t('stepup.totp');
+  else if (started?.method === 'sms') instruction = t('stepup.sms');
+  else if (!error) instruction = t('shell.loading');
   return (
     <Popup id="stepup" title={t('stepup.title')} closeLabel={t('stepup.cancel')} decorativeClose isStepUp busy={busy} onClose={cancel}>
       <form onSubmit={submit}>

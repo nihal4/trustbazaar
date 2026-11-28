@@ -37,14 +37,10 @@ export function Decide({ f, t, lang }: { f: CaseFile; t: T; lang: Lang }) {
       setPreviewError(staffError(e, t, lang));
     }
   };
-  const split =
-    outcome === 'release'
-      ? f.outcomes.release
-      : outcome === 'full_refund' || outcome === 'refund_after_return'
-        ? f.outcomes.fullRefund
-        : outcome === 'partial_refund' && partial && partial.itemRefund === itemRefund
-          ? partial
-          : null;
+  let split: Outcomes['partialRefund'] | Outcomes['release'] | Outcomes['fullRefund'] = null;
+  if (outcome === 'release') split = f.outcomes.release;
+  else if (outcome === 'full_refund' || outcome === 'refund_after_return') split = f.outcomes.fullRefund;
+  else if (outcome === 'partial_refund' && partial && partial.itemRefund === itemRefund) split = partial;
   const valid = outcome !== '' && (outcome !== 'partial_refund' || split !== null) && (outcome !== 'refund_after_return' || payer !== '');
   const options: [Outcome, string][] = [
     ['release', t('staff.outcome.release')],

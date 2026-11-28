@@ -250,9 +250,12 @@ function NotificationsLink({ unread, icon = false, cell = false }: { unread: num
   const n = unread ?? 0;
   const count = toLocalDigits(String(n > 99 ? 99 : n), lang) + (n > 99 ? '+' : '');
   const label = t('shell.notifications_unread');
+  let linkClass = styles.account;
+  if (cell) linkClass = styles.navCell;
+  else if (icon) linkClass = styles.iconLink;
   return (
     // The name is the visible text, the count in words after it (WCAG 2.5.3, Label in Name).
-    <Link className={cell ? styles.navCell : icon ? styles.iconLink : styles.account} to="/notifications" title={cell ? t('shell.notifications') : undefined}>
+    <Link className={linkClass} to="/notifications" title={cell ? t('shell.notifications') : undefined}>
       {icon ? (
         <>
           <BellIcon />

@@ -130,7 +130,9 @@ export function CourierChoice({ o, t, lang, disabled, onDone }: { o: OrderView; 
   const [terms, setTerms] = useState(false);
   const failed = (e: unknown) => {
     const name = problemName(e);
-    setMessage(name === 'courier-unavailable' ? t('courier.unavailable') : name === 'feature-off' ? t('courier.off') : errorText(e, t, lang));
+    if (name === 'courier-unavailable') setMessage(t('courier.unavailable'));
+    else if (name === 'feature-off') setMessage(t('courier.off'));
+    else setMessage(errorText(e, t, lang));
   };
   const ask = useMutation({
     mutationFn: (addressId: string) => api.post('/delivery/quotes', { listingId: o.listing.id, quantity: o.quantity, addressId }) as Promise<Quote>,

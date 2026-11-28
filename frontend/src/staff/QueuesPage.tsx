@@ -22,6 +22,13 @@ import styles from './staff.module.css';
 
 const CLAIM_PROBLEMS = new Set(['conflict-of-interest', 'already-claimed']);
 
+/** Who has the case: you, someone else, nobody yet (it can be taken), or nobody (it needs no one). */
+function claimKey(assignedTo: string | null | undefined, me: string, takeable: boolean): string {
+  if (assignedTo === me) return 'staff.claim.yours';
+  if (assignedTo) return 'staff.claim.other';
+  return takeable ? 'staff.claim.open' : 'staff.claim.none_needed';
+}
+
 export function Component() {
   const { queue } = useParams();
   const { t, lang } = useStaffT();
@@ -108,15 +115,7 @@ function Queue({ queue, me, t, lang }: { queue: QueueName; me: StaffMe; t: T; la
                     </span>
                     <span className={styles.since}>{t('staff.queue.since', { at: formatDateTime(Date.parse(item.since), lang) })}</span>
                   </td>
-                  <td data-label={t('staff.queue.col.who')}>
-                    {item.assignedTo === me.id
-                      ? t('staff.claim.yours')
-                      : item.assignedTo
-                        ? t('staff.claim.other')
-                        : path
-                          ? t('staff.claim.open')
-                          : t('staff.claim.none_needed')}
-                  </td>
+                  <td data-label={t('staff.queue.col.who')}>{t(claimKey(item.assignedTo, me.id, !!path))}</td>
                   <td className={styles.act}>
                     {casePath(queue, item.id) && (!path || item.assignedTo === me.id) && (
                       <Link className={styles.openLink} to={casePath(queue, item.id)!}>

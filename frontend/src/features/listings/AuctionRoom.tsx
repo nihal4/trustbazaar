@@ -131,6 +131,9 @@ function Room({ l, auction, own, t, lang }: { l: ListingView; auction: NonNullab
   }, [history.data]);
   const price = money(state.price ?? state.startPrice, lang);
   const biddingOpen = open && !closing && !own;
+  let closedNote = 'auction.ending';
+  if (own) closedNote = 'room.own';
+  else if (!open) closedNote = 'room.closed';
   const quick = quickBids(state, mine);
   const photo = l.photos[0];
   return (
@@ -237,7 +240,7 @@ function Room({ l, auction, own, t, lang }: { l: ListingView; auction: NonNullab
             </p>
           </>
         ) : (
-          <p role="status">{own ? t('room.own') : !open ? t('room.closed') : t('auction.ending')}</p>
+          <p role="status">{t(closedNote)}</p>
         )}
         {!biddingOpen && (
           <p>
