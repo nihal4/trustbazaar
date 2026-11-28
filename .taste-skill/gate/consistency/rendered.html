@@ -1,0 +1,1330 @@
+<!doctype html>
+<html lang="en" data-mantine-color-scheme="light" data-respect-reduced-motion="true"><head>
+    <script type="module">import { injectIntoGlobalHook } from "/@react-refresh";
+injectIntoGlobalHook(window);
+window.$RefreshReg$ = () => {};
+window.$RefreshSig$ = () => (type) => type;</script>
+
+    <script type="module" src="/@vite/client"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/early.js" async=""></script>
+    <title>TrustBazaar</title>
+  <style type="text/css" data-vite-dev-id="/Users/nihalahmed/Documents/trustbazaar/frontend/src/shared/shell.module.css">/* The shell: one column, small screens first, no sideways scroll at 320px (NFR-USE-05). Daylight design
+   (docs/design/10_visual.md, section 6): white header with the logo, the user app's footer and, on phones, the
+   tab bar. */
+._page_1sz15_4 {
+  /* header and footer line up with the main region, whose width is capped */
+  --tb-gutter: max(clamp(1rem, 4vw, 3.5rem), calc((100% - var(--tb-max-width)) / 2 + clamp(1rem, 4vw, 3.5rem)));
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+._skip_1sz15_12 {
+  position: absolute;
+  left: var(--tb-space-2);
+  top: -3rem;
+  padding: var(--tb-space-2) var(--tb-space-3);
+  background: var(--tb-accent);
+  color: var(--tb-accent-text);
+  border-radius: var(--tb-radius);
+  z-index: 10;
+}
+
+._skip_1sz15_12:focus {
+  top: var(--tb-space-2);
+}
+
+._header_1sz15_27 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-2) var(--tb-space-4);
+  padding: var(--tb-space-3) var(--tb-gutter);
+  border-bottom: 1px solid var(--tb-line);
+  background: var(--tb-bg);
+}
+
+._brand_1sz15_37 {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  color: var(--tb-text);
+  text-decoration: none;
+}
+
+._logo_1sz15_45 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+._mark_1sz15_51 {
+  flex: none;
+}
+
+._wordmark_1sz15_55 {
+  font-weight: 600;
+  font-size: 1.4rem;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  font-family: var(--tb-font-display);
+}
+
+._docTitle_1sz15_63 {
+  color: var(--tb-muted);
+  font-weight: 500;
+}
+
+._spacer_1sz15_68 {
+  flex: 1 1 0;
+}
+
+._langSwitch_1sz15_72 {
+  min-height: 44px;
+  padding: var(--tb-space-1) var(--tb-space-3);
+  border: 0;
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-surface);
+  color: var(--tb-text);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+._langSwitch_1sz15_72:hover {
+  background: var(--tb-line);
+}
+
+._notice_1sz15_87 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-2) var(--tb-space-3);
+  margin: var(--tb-space-3);
+  padding: var(--tb-space-2) var(--tb-space-3);
+  background: var(--tb-warning-bg);
+  border: 1px solid var(--tb-warning-border);
+  border-radius: var(--tb-radius);
+}
+
+._notice_1sz15_87 p {
+  margin: 0;
+  flex: 1 1 12rem;
+}
+
+._main_1sz15_104 {
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: var(--tb-max-width);
+  margin: 0 auto;
+  padding: var(--tb-space-4) clamp(1rem, 4vw, 3.5rem);
+}
+
+/* room for the tab bar, so it never covers the end of the page */
+._withTabs_1sz15_113 {
+  padding-bottom: 6rem;
+}
+
+._main_1sz15_104:focus {
+  outline: none;
+}
+
+._account_1sz15_121 {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--tb-space-2);
+  color: var(--tb-text);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+._account_1sz15_121:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+._iconLink_1sz15_136 {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-surface);
+  color: var(--tb-text);
+}
+
+._footer_1sz15_148 {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--tb-space-4);
+  margin-top: var(--tb-space-4);
+  padding: var(--tb-space-4) var(--tb-gutter) 3rem;
+  border-top: 1px solid var(--tb-line);
+  color: var(--tb-muted);
+  font-size: 0.9375rem;
+}
+
+._footerAbout_1sz15_160 {
+  max-width: 22rem;
+}
+
+._footerAbout_1sz15_160 p {
+  margin: var(--tb-space-2) 0 0;
+}
+
+._footerLinks_1sz15_168 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-2) var(--tb-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+._footerLinks_1sz15_168 a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  color: var(--tb-text);
+}
+
+._tabBar_1sz15_184 {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  background: var(--tb-bg);
+  border-top: 1px solid var(--tb-line);
+  padding: 0.375rem 0 calc(0.375rem + env(safe-area-inset-bottom));
+}
+
+._tabBar_1sz15_184 ul {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+._tabBar_1sz15_184 li {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+._tab_1sz15_184 {
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--tb-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+._tabOn_1sz15_220 {
+  color: var(--tb-accent);
+}
+
+._tabSell_1sz15_224 {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 1.75rem;
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-accent);
+  color: var(--tb-accent-text);
+}
+
+._dialog_1sz15_234 {
+  width: min(28rem, calc(100vw - 2rem));
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius);
+  padding: var(--tb-space-3);
+}
+
+._dialog_1sz15_234::backdrop {
+  background: rgb(0 0 0 / 0.4);
+}
+
+._dialog_1sz15_234 h2 {
+  margin-top: 0;
+}
+
+._dialogActions_1sz15_249 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-2);
+}
+
+._dialogActions_1sz15_249 button {
+  min-height: 44px;
+}
+
+._badge_1sz15_259 {
+  display: inline-block;
+  min-width: 1.5em;
+  margin-left: var(--tb-space-1);
+  padding: 0 var(--tb-space-1);
+  border-radius: var(--tb-radius-control);
+  background: var(--tb-accent);
+  color: var(--tb-accent-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Read by screen readers, not shown (WCAG 1.3.1); used to add words after a visible label */
+._visuallyHidden_1sz15_273 { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* Phones: logo, sign-in or the two icons, and the language switch stay on one line down to 320 px. */
+@media (max-width: 47.99em) {
+  ._header_1sz15_27 { flex-wrap: nowrap; gap: 0.5rem; }
+  ._wordmark_1sz15_55 { font-size: 1.2rem; }
+  ._mark_1sz15_51 { width: 26px; height: 26px; }
+  ._langSwitch_1sz15_72 { padding: var(--tb-space-1) 0.75rem; }
+  ._account_1sz15_121 { padding: 0 0.375rem; }
+  ._langSwitch_1sz15_72, ._account_1sz15_121, ._wordmark_1sz15_55 { white-space: nowrap; }
+  /* the unread count sits on the bell's corner, so the header keeps one line */
+  ._iconLink_1sz15_136 { position: relative; flex: none; }
+  ._iconLink_1sz15_136 ._badge_1sz15_259 { position: absolute; top: -2px; right: -4px; margin: 0; font-size: 0.75rem; line-height: 1.4; }
+}
+@media (max-width: 26rem) {
+  ._header_1sz15_27 { gap: 0.375rem; }
+  ._wordmark_1sz15_55 { font-size: 1.05rem; }
+  ._iconLink_1sz15_136 { min-width: 44px; }
+}
+/* at 320 px, signed in and in Bangla, "English" is the widest switch: a little less padding keeps the line */
+@media (max-width: 21rem) {
+  ._langSwitch_1sz15_72 { padding-inline: 0.5rem; }
+  ._wordmark_1sz15_55 { font-size: 1rem; }
+}
+
+/* The KYC wizard's way out (docs/design/10_visual.md, section 7.9, AC-KYC-1): plain words on the right of the slim
+   header; on narrow phones the document's name gives way to it. */
+._exit_1sz15_300 { display: inline-flex; align-items: center; min-height: 44px; color: var(--tb-text); font-weight: 600; white-space: nowrap; text-underline-offset: 3px; }
+@media (max-width: 30rem) { ._docTitle_1sz15_63 { display: none; } }
+@media (max-width: 26rem) { ._withExit_1sz15_302 ._wordmark_1sz15_55 { display: none; } ._withExit_1sz15_302 ._exit_1sz15_300 { margin-left: auto; } }
+
+/* ---- Redesign v3 (docs/design/10_visual_v3.md): flat and plain. A mint promise bar, a white header with a search field,
+   an ink footer, a standard bottom bar on phones. These rules follow the older ones and win. ---- */
+._promiseBar_1sz15_306 { margin: 0; display: flex; justify-content: center; align-items: center; gap: 0.5rem; padding: 0.5rem var(--tb-gutter); background: var(--tb-accent-soft); color: var(--tb-text); font-size: 0.875rem; font-weight: 500; line-height: 1.4; text-align: center; }
+._promiseBar_1sz15_306 svg { flex: none; }
+._header_1sz15_27 { position: sticky; top: 0; z-index: 20; flex-wrap: nowrap; padding-block: 0.75rem; background: var(--tb-bg); border-bottom: 1px solid var(--tb-line); }
+._wordmark_1sz15_55 { font-weight: 500; font-size: 1.4rem; letter-spacing: -0.03em; color: var(--tb-text); }
+._headSearch_1sz15_310 { flex: 1 1 18rem; max-width: 32rem; margin-inline: auto; display: flex; align-items: center; gap: 0.5rem; min-height: 46px; padding: 0 0.875rem; border-radius: var(--tb-radius); background: var(--tb-surface); border: 1.5px solid transparent; color: var(--tb-muted); transition: border-color 140ms, background 140ms; }
+._headSearch_1sz15_310:focus-within { background: var(--tb-sheet); border-color: var(--tb-text); }
+._headSearch_1sz15_310 input:focus-visible { outline: 2px solid var(--tb-text); outline-offset: 4px; border-radius: 4px; }
+._headSearch_1sz15_310 input { flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; color: var(--tb-text); outline: 0; min-height: 44px; }
+._headSearch_1sz15_310 svg { flex: none; width: 20px; height: 20px; }
+._account_1sz15_121 { padding: 0.5rem 0.75rem; font-weight: 500; color: var(--tb-text); text-decoration: none; background-image: linear-gradient(currentColor, currentColor); background-repeat: no-repeat; background-size: 0 1.5px; background-position: 0.75rem calc(100% - 0.4rem); transition: background-size 180ms; }
+._account_1sz15_121:hover { background-size: calc(100% - 1.5rem) 1.5px; }
+._langSwitch_1sz15_72 { border-radius: var(--tb-radius); }
+._footer_1sz15_148 { margin-top: 4rem; background: var(--tb-text); color: var(--tb-on-ink); padding-block: 3rem; }
+._footer_1sz15_148 a { color: var(--tb-on-ink); }
+._footer_1sz15_148 a:hover { color: #fff; }
+._footer_1sz15_148 ._wordmark_1sz15_55 { color: #fff; }
+._tabOn_1sz15_220 { color: var(--tb-text); font-weight: 600; }
+._tabSell_1sz15_224 { background: var(--tb-text); color: #fff; border-radius: var(--tb-radius); }
+@media (max-width: 47.99em) { ._header_1sz15_27 { flex-wrap: wrap; } }
+
+._footer_1sz15_148 a:focus-visible { outline: 2px solid var(--tb-accent-soft); outline-offset: 3px; }
+</style><style type="text/css" data-vite-dev-id="/Users/nihalahmed/Documents/trustbazaar/frontend/src/shared/form.module.css">/* Forms (section 7; Daylight design, docs/design/10_visual.md, sections 4, 6 and 7.8): one column, visible labels,
+   the hint under the label and the error under the field in danger red; inputs 48 px high with a 12 px radius and
+   the control border (3.9:1, WCAG 1.4.11); the main button a 48 px plum pill. */
+._field_qzsen_4 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: 1.125rem;
+}
+
+._field_qzsen_4 label {
+  font-weight: 600;
+}
+
+._field_qzsen_4 input {
+  font: inherit;
+  min-height: 48px;
+  padding: 0 0.875rem;
+  border: 1.5px solid var(--tb-border);
+  border-radius: var(--tb-radius);
+  background: var(--tb-bg);
+  color: var(--tb-text);
+  width: 100%;
+  max-width: 32rem;
+}
+
+._field_qzsen_4 input:focus-visible {
+  outline: 3px solid var(--tb-accent-soft);
+  outline-offset: 0;
+  border-color: var(--tb-accent);
+}
+
+._field_qzsen_4 input[aria-invalid='true'] {
+  border: 2px solid var(--tb-error);
+}
+
+._hint_qzsen_37 {
+  margin: 0;
+  color: var(--tb-muted);
+  font-size: 0.9375rem;
+}
+
+._error_qzsen_43 {
+  margin: 0;
+  color: var(--tb-error);
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+._checkbox_qzsen_50 {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--tb-space-1) 0.75rem;
+  align-items: start;
+  margin-bottom: 1.125rem;
+}
+
+._checkbox_qzsen_50 ._error_qzsen_43 {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+._checkbox_qzsen_50 input {
+  width: 22px;
+  height: 22px;
+  margin: 1px 0 0;
+  accent-color: var(--tb-accent);
+}
+
+._summary_qzsen_70 {
+  border: 2px solid var(--tb-error);
+  border-radius: var(--tb-radius-panel);
+  padding: 0.875rem 1.125rem;
+  margin-bottom: 1.25rem;
+}
+
+._summary_qzsen_70 h2 {
+  font-size: 1.0625rem;
+  margin: 0 0 var(--tb-space-1);
+}
+
+._summary_qzsen_70 a {
+  color: var(--tb-error);
+  font-weight: 600;
+}
+
+._primary_qzsen_87 {
+  min-height: 48px;
+  padding: 0 1.75rem;
+  border: 0;
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-accent);
+  color: var(--tb-accent-text);
+  font: inherit;
+  font-weight: 600;
+  font-size: 1.0625rem;
+  cursor: pointer;
+}
+
+._primary_qzsen_87:focus-visible {
+  outline: 3px solid var(--tb-focus);
+  outline-offset: 3px;
+}
+
+._primary_qzsen_87:disabled {
+  background: var(--tb-muted);
+  cursor: not-allowed;
+}
+
+._info_qzsen_110,
+._success_qzsen_111,
+._error_qzsen_43 {
+  border-radius: var(--tb-radius);
+}
+
+div._info_qzsen_110,
+div._success_qzsen_111,
+div._error_qzsen_43 {
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  border: 0;
+  border-radius: var(--tb-radius-panel);
+  background: var(--tb-surface);
+  color: var(--tb-text);
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+div._error_qzsen_43 {
+  background: var(--tb-error-bg);
+  color: var(--tb-error-text);
+  border-left: 4px solid var(--tb-error);
+}
+
+div._success_qzsen_111 {
+  background: var(--tb-accent-wash);
+  border-left: 4px solid var(--tb-success);
+}
+
+div._info_qzsen_110 > :first-child,
+div._success_qzsen_111 > :first-child,
+div._error_qzsen_43 > :first-child {
+  margin-top: 0;
+}
+</style><style type="text/css" data-vite-dev-id="/Users/nihalahmed/Documents/trustbazaar/frontend/src/shared/kit.css">/* The component kit's static CSS (docs/design/10_visual.md, section 6; Decisions log, U10-01): Mantine's reset and
+   global rules, the theme's variables (generated, mantine-theme.css) and only the components in use. The fonts are
+   not here: language/font.ts adds them after the page's load event (AC-ALL-4; Decisions log, U10-10). All of it is
+   served from the site (style-src 'self', font-src 'self'). Each entry imports this before tokens.css, so the site's own rules come last. Add a component's file here when a screen starts using it. */
+:root,
+:host {
+  color-scheme: var(--mantine-color-scheme);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+select {
+  text-transform: none;
+}
+
+body,
+:host {
+  margin: 0;
+  font-family: var(--mantine-font-family);
+  font-size: var(--mantine-font-size-md);
+  line-height: var(--mantine-line-height);
+  background-color: var(--mantine-color-body);
+  color: var(--mantine-color-text);
+
+  -webkit-font-smoothing: var(--mantine-webkit-font-smoothing);
+  -moz-osx-font-smoothing: var(--mantine-moz-font-smoothing);
+}
+
+@media screen and (max-device-width: 31.25em) {
+
+body,
+:host {
+    -webkit-text-size-adjust: 100%
+}
+  }
+@media (prefers-reduced-motion: reduce) {
+    [data-respect-reduced-motion] [data-reduce-motion] {
+      transition: none;
+      animation: none;
+    }
+  }
+
+[data-mantine-color-scheme='light'] .mantine-light-hidden {
+    display: none;
+}
+
+[data-mantine-color-scheme='dark'] .mantine-dark-hidden {
+    display: none;
+}
+
+.mantine-focus-auto:focus-visible {
+    outline: 2px solid var(--mantine-primary-color-filled);
+    outline-offset: 2px;
+  }
+
+.mantine-focus-always:focus {
+    outline: 2px solid var(--mantine-primary-color-filled);
+    outline-offset: 2px;
+  }
+
+.mantine-focus-never:focus {
+    outline: none;
+  }
+
+.mantine-active:active {
+    transform: translateY(calc(0.0625rem * var(--mantine-scale)));
+  }
+
+fieldset:disabled .mantine-active:active {
+    transform: none;
+  }
+
+:where([dir="rtl"]) .mantine-rotate-rtl {
+    transform: rotate(180deg);
+}
+/* Generated from theme.ts by `npm run mantine:css` (theme.test.tsx). Do not edit. */
+:root, :host{--mantine-z-index-app: 100;--mantine-z-index-modal: 200;--mantine-z-index-popover: 300;--mantine-z-index-overlay: 400;--mantine-z-index-max: 9999;--mantine-scale: 1;--mantine-cursor-type: pointer;--mantine-webkit-font-smoothing: antialiased;--mantine-moz-font-smoothing: grayscale;--mantine-color-white: #FFFFFF;--mantine-color-black: #232323;--mantine-line-height: 1.55;--mantine-font-family: 'Figtree Variable', 'TB Figures', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;--mantine-font-family-monospace: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;--mantine-font-family-headings: 'Gabarito Variable', 'TB Figures', 'Hind Siliguri', system-ui, sans-serif;--mantine-heading-font-weight: 500;--mantine-heading-text-wrap: wrap;--mantine-radius-default: 10px;--mantine-primary-color-filled: var(--mantine-color-brand-filled);--mantine-primary-color-filled-hover: var(--mantine-color-brand-filled-hover);--mantine-primary-color-light: var(--mantine-color-brand-light);--mantine-primary-color-light-hover: var(--mantine-color-brand-light-hover);--mantine-primary-color-light-color: var(--mantine-color-brand-light-color);--mantine-breakpoint-xs: 36em;--mantine-breakpoint-sm: 48em;--mantine-breakpoint-md: 62em;--mantine-breakpoint-lg: 75em;--mantine-breakpoint-xl: 88em;--mantine-spacing-xs: calc(0.625rem * var(--mantine-scale));--mantine-spacing-sm: calc(0.75rem * var(--mantine-scale));--mantine-spacing-md: calc(1rem * var(--mantine-scale));--mantine-spacing-lg: calc(1.25rem * var(--mantine-scale));--mantine-spacing-xl: calc(2rem * var(--mantine-scale));--mantine-font-size-xs: calc(0.75rem * var(--mantine-scale));--mantine-font-size-sm: calc(0.875rem * var(--mantine-scale));--mantine-font-size-md: calc(1rem * var(--mantine-scale));--mantine-font-size-lg: calc(1.125rem * var(--mantine-scale));--mantine-font-size-xl: calc(1.25rem * var(--mantine-scale));--mantine-line-height-xs: 1.4;--mantine-line-height-sm: 1.45;--mantine-line-height-md: 1.55;--mantine-line-height-lg: 1.6;--mantine-line-height-xl: 1.65;--mantine-shadow-xs: 0 calc(0.0625rem * var(--mantine-scale)) calc(0.1875rem * var(--mantine-scale)) rgba(0, 0, 0, 0.05), 0 calc(0.0625rem * var(--mantine-scale)) calc(0.125rem * var(--mantine-scale)) rgba(0, 0, 0, 0.1);--mantine-shadow-sm: 0 calc(0.0625rem * var(--mantine-scale)) calc(0.1875rem * var(--mantine-scale)) rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05) 0 calc(0.625rem * var(--mantine-scale)) calc(0.9375rem * var(--mantine-scale)) calc(-0.3125rem * var(--mantine-scale)), rgba(0, 0, 0, 0.04) 0 calc(0.4375rem * var(--mantine-scale)) calc(0.4375rem * var(--mantine-scale)) calc(-0.3125rem * var(--mantine-scale));--mantine-shadow-md: 0 calc(0.0625rem * var(--mantine-scale)) calc(0.1875rem * var(--mantine-scale)) rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05) 0 calc(1.25rem * var(--mantine-scale)) calc(1.5625rem * var(--mantine-scale)) calc(-0.3125rem * var(--mantine-scale)), rgba(0, 0, 0, 0.04) 0 calc(0.625rem * var(--mantine-scale)) calc(0.625rem * var(--mantine-scale)) calc(-0.3125rem * var(--mantine-scale));--mantine-shadow-lg: 0 calc(0.0625rem * var(--mantine-scale)) calc(0.1875rem * var(--mantine-scale)) rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05) 0 calc(1.75rem * var(--mantine-scale)) calc(1.4375rem * var(--mantine-scale)) calc(-0.4375rem * var(--mantine-scale)), rgba(0, 0, 0, 0.04) 0 calc(0.75rem * var(--mantine-scale)) calc(0.75rem * var(--mantine-scale)) calc(-0.4375rem * var(--mantine-scale));--mantine-shadow-xl: 0 calc(0.0625rem * var(--mantine-scale)) calc(0.1875rem * var(--mantine-scale)) rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05) 0 calc(2.25rem * var(--mantine-scale)) calc(1.75rem * var(--mantine-scale)) calc(-0.4375rem * var(--mantine-scale)), rgba(0, 0, 0, 0.04) 0 calc(1.0625rem * var(--mantine-scale)) calc(1.0625rem * var(--mantine-scale)) calc(-0.4375rem * var(--mantine-scale));--mantine-radius-xs: 6px;--mantine-radius-sm: 8px;--mantine-radius-md: 10px;--mantine-radius-lg: 16px;--mantine-radius-xl: 24px;--mantine-primary-color-0: var(--mantine-color-brand-0);--mantine-primary-color-1: var(--mantine-color-brand-1);--mantine-primary-color-2: var(--mantine-color-brand-2);--mantine-primary-color-3: var(--mantine-color-brand-3);--mantine-primary-color-4: var(--mantine-color-brand-4);--mantine-primary-color-5: var(--mantine-color-brand-5);--mantine-primary-color-6: var(--mantine-color-brand-6);--mantine-primary-color-7: var(--mantine-color-brand-7);--mantine-primary-color-8: var(--mantine-color-brand-8);--mantine-primary-color-9: var(--mantine-color-brand-9);--mantine-color-dark-0: #C9C9C9;--mantine-color-dark-1: #b8b8b8;--mantine-color-dark-2: #828282;--mantine-color-dark-3: #696969;--mantine-color-dark-4: #424242;--mantine-color-dark-5: #3b3b3b;--mantine-color-dark-6: #2e2e2e;--mantine-color-dark-7: #242424;--mantine-color-dark-8: #1f1f1f;--mantine-color-dark-9: #141414;--mantine-color-gray-0: #FFFFFF;--mantine-color-gray-1: #F3F3F3;--mantine-color-gray-2: #E4E4E4;--mantine-color-gray-3: #C8C8C8;--mantine-color-gray-4: #A4A4A4;--mantine-color-gray-5: #8A8A8A;--mantine-color-gray-6: #757575;--mantine-color-gray-7: #686868;--mantine-color-gray-8: #3A3A3A;--mantine-color-gray-9: #232323;--mantine-color-red-0: #FEF3F2;--mantine-color-red-1: #FEE4E2;--mantine-color-red-2: #FECDCA;--mantine-color-red-3: #FDA29B;--mantine-color-red-4: #F97066;--mantine-color-red-5: #F04438;--mantine-color-red-6: #B42318;--mantine-color-red-7: #912018;--mantine-color-red-8: #7A271A;--mantine-color-red-9: #55160C;--mantine-color-pink-0: #fff0f6;--mantine-color-pink-1: #ffdeeb;--mantine-color-pink-2: #fcc2d7;--mantine-color-pink-3: #faa2c1;--mantine-color-pink-4: #f783ac;--mantine-color-pink-5: #f06595;--mantine-color-pink-6: #e64980;--mantine-color-pink-7: #d6336c;--mantine-color-pink-8: #c2255c;--mantine-color-pink-9: #a61e4d;--mantine-color-grape-0: #f8f0fc;--mantine-color-grape-1: #f3d9fa;--mantine-color-grape-2: #eebefa;--mantine-color-grape-3: #e599f7;--mantine-color-grape-4: #da77f2;--mantine-color-grape-5: #cc5de8;--mantine-color-grape-6: #be4bdb;--mantine-color-grape-7: #ae3ec9;--mantine-color-grape-8: #9c36b5;--mantine-color-grape-9: #862e9c;--mantine-color-violet-0: #f3f0ff;--mantine-color-violet-1: #e5dbff;--mantine-color-violet-2: #d0bfff;--mantine-color-violet-3: #b197fc;--mantine-color-violet-4: #9775fa;--mantine-color-violet-5: #845ef7;--mantine-color-violet-6: #7950f2;--mantine-color-violet-7: #7048e8;--mantine-color-violet-8: #6741d9;--mantine-color-violet-9: #5f3dc4;--mantine-color-indigo-0: #edf2ff;--mantine-color-indigo-1: #dbe4ff;--mantine-color-indigo-2: #bac8ff;--mantine-color-indigo-3: #91a7ff;--mantine-color-indigo-4: #748ffc;--mantine-color-indigo-5: #5c7cfa;--mantine-color-indigo-6: #4c6ef5;--mantine-color-indigo-7: #4263eb;--mantine-color-indigo-8: #3b5bdb;--mantine-color-indigo-9: #364fc7;--mantine-color-blue-0: #e7f5ff;--mantine-color-blue-1: #d0ebff;--mantine-color-blue-2: #a5d8ff;--mantine-color-blue-3: #74c0fc;--mantine-color-blue-4: #4dabf7;--mantine-color-blue-5: #339af0;--mantine-color-blue-6: #228be6;--mantine-color-blue-7: #1c7ed6;--mantine-color-blue-8: #1971c2;--mantine-color-blue-9: #1864ab;--mantine-color-cyan-0: #e3fafc;--mantine-color-cyan-1: #c5f6fa;--mantine-color-cyan-2: #99e9f2;--mantine-color-cyan-3: #66d9e8;--mantine-color-cyan-4: #3bc9db;--mantine-color-cyan-5: #22b8cf;--mantine-color-cyan-6: #15aabf;--mantine-color-cyan-7: #1098ad;--mantine-color-cyan-8: #0c8599;--mantine-color-cyan-9: #0b7285;--mantine-color-teal-0: #e6fcf5;--mantine-color-teal-1: #c3fae8;--mantine-color-teal-2: #96f2d7;--mantine-color-teal-3: #63e6be;--mantine-color-teal-4: #38d9a9;--mantine-color-teal-5: #20c997;--mantine-color-teal-6: #12b886;--mantine-color-teal-7: #0ca678;--mantine-color-teal-8: #099268;--mantine-color-teal-9: #087f5b;--mantine-color-green-0: #ebfbee;--mantine-color-green-1: #d3f9d8;--mantine-color-green-2: #b2f2bb;--mantine-color-green-3: #8ce99a;--mantine-color-green-4: #69db7c;--mantine-color-green-5: #51cf66;--mantine-color-green-6: #40c057;--mantine-color-green-7: #37b24d;--mantine-color-green-8: #2f9e44;--mantine-color-green-9: #2b8a3e;--mantine-color-lime-0: #f4fce3;--mantine-color-lime-1: #e9fac8;--mantine-color-lime-2: #d8f5a2;--mantine-color-lime-3: #c0eb75;--mantine-color-lime-4: #a9e34b;--mantine-color-lime-5: #94d82d;--mantine-color-lime-6: #82c91e;--mantine-color-lime-7: #74b816;--mantine-color-lime-8: #66a80f;--mantine-color-lime-9: #5c940d;--mantine-color-yellow-0: #fff9db;--mantine-color-yellow-1: #fff3bf;--mantine-color-yellow-2: #ffec99;--mantine-color-yellow-3: #ffe066;--mantine-color-yellow-4: #ffd43b;--mantine-color-yellow-5: #fcc419;--mantine-color-yellow-6: #fab005;--mantine-color-yellow-7: #f59f00;--mantine-color-yellow-8: #f08c00;--mantine-color-yellow-9: #e67700;--mantine-color-orange-0: #fff4e6;--mantine-color-orange-1: #ffe8cc;--mantine-color-orange-2: #ffd8a8;--mantine-color-orange-3: #ffc078;--mantine-color-orange-4: #ffa94d;--mantine-color-orange-5: #ff922b;--mantine-color-orange-6: #fd7e14;--mantine-color-orange-7: #f76707;--mantine-color-orange-8: #e8590c;--mantine-color-orange-9: #d9480f;--mantine-color-brand-0: #F3F3F3;--mantine-color-brand-1: #E4E4E4;--mantine-color-brand-2: #CFCFCF;--mantine-color-brand-3: #A9A9A9;--mantine-color-brand-4: #808080;--mantine-color-brand-5: #5C5C5C;--mantine-color-brand-6: #3A3A3A;--mantine-color-brand-7: #232323;--mantine-color-brand-8: #161616;--mantine-color-brand-9: #0A0A0A;--mantine-h1-font-size: 2.125rem;--mantine-h1-line-height: 1.1;--mantine-h1-font-weight: 500;--mantine-h2-font-size: 1.75rem;--mantine-h2-line-height: 1.15;--mantine-h2-font-weight: 500;--mantine-h3-font-size: 1.3125rem;--mantine-h3-line-height: 1.25;--mantine-h3-font-weight: 500;--mantine-h4-font-size: 1.0625rem;--mantine-h4-line-height: 1.35;--mantine-h4-font-weight: 500;--mantine-h5-font-size: calc(1rem * var(--mantine-scale));--mantine-h5-line-height: 1.5;--mantine-h5-font-weight: 500;--mantine-h6-font-size: calc(0.875rem * var(--mantine-scale));--mantine-h6-line-height: 1.5;--mantine-h6-font-weight: 500;}
+
+
+:root[data-mantine-color-scheme="dark"], :host([data-mantine-color-scheme="dark"]){--mantine-color-scheme: dark;--mantine-primary-color-contrast: var(--mantine-color-white);--mantine-color-bright: var(--mantine-color-white);--mantine-color-text: var(--mantine-color-dark-0);--mantine-color-body: var(--mantine-color-dark-7);--mantine-color-error: var(--mantine-color-red-8);--mantine-color-placeholder: var(--mantine-color-dark-3);--mantine-color-anchor: var(--mantine-color-brand-4);--mantine-color-default: var(--mantine-color-dark-6);--mantine-color-default-hover: var(--mantine-color-dark-5);--mantine-color-default-color: var(--mantine-color-white);--mantine-color-default-border: var(--mantine-color-dark-4);--mantine-color-dimmed: var(--mantine-color-dark-2);--mantine-color-disabled: var(--mantine-color-dark-6);--mantine-color-disabled-color: var(--mantine-color-dark-3);--mantine-color-disabled-border: var(--mantine-color-dark-4);--mantine-color-dark-text: var(--mantine-color-dark-4);--mantine-color-dark-filled: var(--mantine-color-dark-7);--mantine-color-dark-filled-hover: var(--mantine-color-dark-8);--mantine-color-dark-light: rgba(59, 59, 59, 0.15);--mantine-color-dark-light-hover: rgba(59, 59, 59, 0.2);--mantine-color-dark-light-color: var(--mantine-color-dark-2);--mantine-color-dark-outline: var(--mantine-color-dark-3);--mantine-color-dark-outline-hover: rgba(105, 105, 105, 0.05);--mantine-color-gray-text: var(--mantine-color-gray-4);--mantine-color-gray-filled: var(--mantine-color-gray-7);--mantine-color-gray-filled-hover: var(--mantine-color-gray-8);--mantine-color-gray-light: rgba(138, 138, 138, 0.15);--mantine-color-gray-light-hover: rgba(138, 138, 138, 0.2);--mantine-color-gray-light-color: var(--mantine-color-gray-2);--mantine-color-gray-outline: var(--mantine-color-gray-3);--mantine-color-gray-outline-hover: rgba(200, 200, 200, 0.05);--mantine-color-red-text: var(--mantine-color-red-4);--mantine-color-red-filled: var(--mantine-color-red-7);--mantine-color-red-filled-hover: var(--mantine-color-red-8);--mantine-color-red-light: rgba(240, 68, 56, 0.15);--mantine-color-red-light-hover: rgba(240, 68, 56, 0.2);--mantine-color-red-light-color: var(--mantine-color-red-2);--mantine-color-red-outline: var(--mantine-color-red-3);--mantine-color-red-outline-hover: rgba(253, 162, 155, 0.05);--mantine-color-pink-text: var(--mantine-color-pink-4);--mantine-color-pink-filled: var(--mantine-color-pink-7);--mantine-color-pink-filled-hover: var(--mantine-color-pink-8);--mantine-color-pink-light: rgba(240, 101, 149, 0.15);--mantine-color-pink-light-hover: rgba(240, 101, 149, 0.2);--mantine-color-pink-light-color: var(--mantine-color-pink-2);--mantine-color-pink-outline: var(--mantine-color-pink-3);--mantine-color-pink-outline-hover: rgba(250, 162, 193, 0.05);--mantine-color-grape-text: var(--mantine-color-grape-4);--mantine-color-grape-filled: var(--mantine-color-grape-7);--mantine-color-grape-filled-hover: var(--mantine-color-grape-8);--mantine-color-grape-light: rgba(204, 93, 232, 0.15);--mantine-color-grape-light-hover: rgba(204, 93, 232, 0.2);--mantine-color-grape-light-color: var(--mantine-color-grape-2);--mantine-color-grape-outline: var(--mantine-color-grape-3);--mantine-color-grape-outline-hover: rgba(229, 153, 247, 0.05);--mantine-color-violet-text: var(--mantine-color-violet-4);--mantine-color-violet-filled: var(--mantine-color-violet-7);--mantine-color-violet-filled-hover: var(--mantine-color-violet-8);--mantine-color-violet-light: rgba(132, 94, 247, 0.15);--mantine-color-violet-light-hover: rgba(132, 94, 247, 0.2);--mantine-color-violet-light-color: var(--mantine-color-violet-2);--mantine-color-violet-outline: var(--mantine-color-violet-3);--mantine-color-violet-outline-hover: rgba(177, 151, 252, 0.05);--mantine-color-indigo-text: var(--mantine-color-indigo-4);--mantine-color-indigo-filled: var(--mantine-color-indigo-7);--mantine-color-indigo-filled-hover: var(--mantine-color-indigo-8);--mantine-color-indigo-light: rgba(92, 124, 250, 0.15);--mantine-color-indigo-light-hover: rgba(92, 124, 250, 0.2);--mantine-color-indigo-light-color: var(--mantine-color-indigo-2);--mantine-color-indigo-outline: var(--mantine-color-indigo-3);--mantine-color-indigo-outline-hover: rgba(145, 167, 255, 0.05);--mantine-color-blue-text: var(--mantine-color-blue-4);--mantine-color-blue-filled: var(--mantine-color-blue-7);--mantine-color-blue-filled-hover: var(--mantine-color-blue-8);--mantine-color-blue-light: rgba(51, 154, 240, 0.15);--mantine-color-blue-light-hover: rgba(51, 154, 240, 0.2);--mantine-color-blue-light-color: var(--mantine-color-blue-2);--mantine-color-blue-outline: var(--mantine-color-blue-3);--mantine-color-blue-outline-hover: rgba(116, 192, 252, 0.05);--mantine-color-cyan-text: var(--mantine-color-cyan-4);--mantine-color-cyan-filled: var(--mantine-color-cyan-7);--mantine-color-cyan-filled-hover: var(--mantine-color-cyan-8);--mantine-color-cyan-light: rgba(34, 184, 207, 0.15);--mantine-color-cyan-light-hover: rgba(34, 184, 207, 0.2);--mantine-color-cyan-light-color: var(--mantine-color-cyan-2);--mantine-color-cyan-outline: var(--mantine-color-cyan-3);--mantine-color-cyan-outline-hover: rgba(102, 217, 232, 0.05);--mantine-color-teal-text: var(--mantine-color-teal-4);--mantine-color-teal-filled: var(--mantine-color-teal-7);--mantine-color-teal-filled-hover: var(--mantine-color-teal-8);--mantine-color-teal-light: rgba(32, 201, 151, 0.15);--mantine-color-teal-light-hover: rgba(32, 201, 151, 0.2);--mantine-color-teal-light-color: var(--mantine-color-teal-2);--mantine-color-teal-outline: var(--mantine-color-teal-3);--mantine-color-teal-outline-hover: rgba(99, 230, 190, 0.05);--mantine-color-green-text: var(--mantine-color-green-4);--mantine-color-green-filled: var(--mantine-color-green-7);--mantine-color-green-filled-hover: var(--mantine-color-green-8);--mantine-color-green-light: rgba(81, 207, 102, 0.15);--mantine-color-green-light-hover: rgba(81, 207, 102, 0.2);--mantine-color-green-light-color: var(--mantine-color-green-2);--mantine-color-green-outline: var(--mantine-color-green-3);--mantine-color-green-outline-hover: rgba(140, 233, 154, 0.05);--mantine-color-lime-text: var(--mantine-color-lime-4);--mantine-color-lime-filled: var(--mantine-color-lime-7);--mantine-color-lime-filled-hover: var(--mantine-color-lime-8);--mantine-color-lime-light: rgba(148, 216, 45, 0.15);--mantine-color-lime-light-hover: rgba(148, 216, 45, 0.2);--mantine-color-lime-light-color: var(--mantine-color-lime-2);--mantine-color-lime-outline: var(--mantine-color-lime-3);--mantine-color-lime-outline-hover: rgba(192, 235, 117, 0.05);--mantine-color-yellow-text: var(--mantine-color-yellow-4);--mantine-color-yellow-filled: var(--mantine-color-yellow-7);--mantine-color-yellow-filled-hover: var(--mantine-color-yellow-8);--mantine-color-yellow-light: rgba(252, 196, 25, 0.15);--mantine-color-yellow-light-hover: rgba(252, 196, 25, 0.2);--mantine-color-yellow-light-color: var(--mantine-color-yellow-2);--mantine-color-yellow-outline: var(--mantine-color-yellow-3);--mantine-color-yellow-outline-hover: rgba(255, 224, 102, 0.05);--mantine-color-orange-text: var(--mantine-color-orange-4);--mantine-color-orange-filled: var(--mantine-color-orange-7);--mantine-color-orange-filled-hover: var(--mantine-color-orange-8);--mantine-color-orange-light: rgba(255, 146, 43, 0.15);--mantine-color-orange-light-hover: rgba(255, 146, 43, 0.2);--mantine-color-orange-light-color: var(--mantine-color-orange-2);--mantine-color-orange-outline: var(--mantine-color-orange-3);--mantine-color-orange-outline-hover: rgba(255, 192, 120, 0.05);--mantine-color-brand-text: var(--mantine-color-brand-4);--mantine-color-brand-filled: var(--mantine-color-brand-7);--mantine-color-brand-filled-hover: var(--mantine-color-brand-8);--mantine-color-brand-light: rgba(92, 92, 92, 0.15);--mantine-color-brand-light-hover: rgba(92, 92, 92, 0.2);--mantine-color-brand-light-color: var(--mantine-color-brand-2);--mantine-color-brand-outline: var(--mantine-color-brand-3);--mantine-color-brand-outline-hover: rgba(169, 169, 169, 0.05);}
+
+
+:root[data-mantine-color-scheme="light"], :host([data-mantine-color-scheme="light"]){--mantine-color-scheme: light;--mantine-primary-color-contrast: var(--mantine-color-white);--mantine-color-bright: var(--mantine-color-black);--mantine-color-text: #232323;--mantine-color-body: #FFFFFF;--mantine-color-error: var(--mantine-color-red-6);--mantine-color-placeholder: var(--mantine-color-gray-5);--mantine-color-anchor: var(--mantine-color-brand-7);--mantine-color-default: var(--mantine-color-white);--mantine-color-default-hover: var(--mantine-color-gray-0);--mantine-color-default-color: var(--mantine-color-black);--mantine-color-default-border: var(--mantine-color-gray-4);--mantine-color-dimmed: var(--mantine-color-gray-6);--mantine-color-disabled: var(--mantine-color-gray-2);--mantine-color-disabled-color: var(--mantine-color-gray-5);--mantine-color-disabled-border: var(--mantine-color-gray-3);--mantine-color-dark-text: var(--mantine-color-dark-filled);--mantine-color-dark-filled: var(--mantine-color-dark-7);--mantine-color-dark-filled-hover: var(--mantine-color-dark-8);--mantine-color-dark-light: rgba(36, 36, 36, 0.1);--mantine-color-dark-light-hover: rgba(36, 36, 36, 0.12);--mantine-color-dark-light-color: var(--mantine-color-dark-7);--mantine-color-dark-outline: var(--mantine-color-dark-7);--mantine-color-dark-outline-hover: rgba(36, 36, 36, 0.05);--mantine-color-gray-text: var(--mantine-color-gray-filled);--mantine-color-gray-filled: var(--mantine-color-gray-7);--mantine-color-gray-filled-hover: var(--mantine-color-gray-8);--mantine-color-gray-light: rgba(104, 104, 104, 0.1);--mantine-color-gray-light-hover: rgba(104, 104, 104, 0.12);--mantine-color-gray-light-color: var(--mantine-color-gray-7);--mantine-color-gray-outline: var(--mantine-color-gray-7);--mantine-color-gray-outline-hover: rgba(104, 104, 104, 0.05);--mantine-color-red-text: var(--mantine-color-red-filled);--mantine-color-red-filled: var(--mantine-color-red-7);--mantine-color-red-filled-hover: var(--mantine-color-red-8);--mantine-color-red-light: rgba(145, 32, 24, 0.1);--mantine-color-red-light-hover: rgba(145, 32, 24, 0.12);--mantine-color-red-light-color: var(--mantine-color-red-7);--mantine-color-red-outline: var(--mantine-color-red-7);--mantine-color-red-outline-hover: rgba(145, 32, 24, 0.05);--mantine-color-pink-text: var(--mantine-color-pink-filled);--mantine-color-pink-filled: var(--mantine-color-pink-7);--mantine-color-pink-filled-hover: var(--mantine-color-pink-8);--mantine-color-pink-light: rgba(214, 51, 108, 0.1);--mantine-color-pink-light-hover: rgba(214, 51, 108, 0.12);--mantine-color-pink-light-color: var(--mantine-color-pink-7);--mantine-color-pink-outline: var(--mantine-color-pink-7);--mantine-color-pink-outline-hover: rgba(214, 51, 108, 0.05);--mantine-color-grape-text: var(--mantine-color-grape-filled);--mantine-color-grape-filled: var(--mantine-color-grape-7);--mantine-color-grape-filled-hover: var(--mantine-color-grape-8);--mantine-color-grape-light: rgba(174, 62, 201, 0.1);--mantine-color-grape-light-hover: rgba(174, 62, 201, 0.12);--mantine-color-grape-light-color: var(--mantine-color-grape-7);--mantine-color-grape-outline: var(--mantine-color-grape-7);--mantine-color-grape-outline-hover: rgba(174, 62, 201, 0.05);--mantine-color-violet-text: var(--mantine-color-violet-filled);--mantine-color-violet-filled: var(--mantine-color-violet-7);--mantine-color-violet-filled-hover: var(--mantine-color-violet-8);--mantine-color-violet-light: rgba(112, 72, 232, 0.1);--mantine-color-violet-light-hover: rgba(112, 72, 232, 0.12);--mantine-color-violet-light-color: var(--mantine-color-violet-7);--mantine-color-violet-outline: var(--mantine-color-violet-7);--mantine-color-violet-outline-hover: rgba(112, 72, 232, 0.05);--mantine-color-indigo-text: var(--mantine-color-indigo-filled);--mantine-color-indigo-filled: var(--mantine-color-indigo-7);--mantine-color-indigo-filled-hover: var(--mantine-color-indigo-8);--mantine-color-indigo-light: rgba(66, 99, 235, 0.1);--mantine-color-indigo-light-hover: rgba(66, 99, 235, 0.12);--mantine-color-indigo-light-color: var(--mantine-color-indigo-7);--mantine-color-indigo-outline: var(--mantine-color-indigo-7);--mantine-color-indigo-outline-hover: rgba(66, 99, 235, 0.05);--mantine-color-blue-text: var(--mantine-color-blue-filled);--mantine-color-blue-filled: var(--mantine-color-blue-7);--mantine-color-blue-filled-hover: var(--mantine-color-blue-8);--mantine-color-blue-light: rgba(28, 126, 214, 0.1);--mantine-color-blue-light-hover: rgba(28, 126, 214, 0.12);--mantine-color-blue-light-color: var(--mantine-color-blue-7);--mantine-color-blue-outline: var(--mantine-color-blue-7);--mantine-color-blue-outline-hover: rgba(28, 126, 214, 0.05);--mantine-color-cyan-text: var(--mantine-color-cyan-filled);--mantine-color-cyan-filled: var(--mantine-color-cyan-7);--mantine-color-cyan-filled-hover: var(--mantine-color-cyan-8);--mantine-color-cyan-light: rgba(16, 152, 173, 0.1);--mantine-color-cyan-light-hover: rgba(16, 152, 173, 0.12);--mantine-color-cyan-light-color: var(--mantine-color-cyan-7);--mantine-color-cyan-outline: var(--mantine-color-cyan-7);--mantine-color-cyan-outline-hover: rgba(16, 152, 173, 0.05);--mantine-color-teal-text: var(--mantine-color-teal-filled);--mantine-color-teal-filled: var(--mantine-color-teal-7);--mantine-color-teal-filled-hover: var(--mantine-color-teal-8);--mantine-color-teal-light: rgba(12, 166, 120, 0.1);--mantine-color-teal-light-hover: rgba(12, 166, 120, 0.12);--mantine-color-teal-light-color: var(--mantine-color-teal-7);--mantine-color-teal-outline: var(--mantine-color-teal-7);--mantine-color-teal-outline-hover: rgba(12, 166, 120, 0.05);--mantine-color-green-text: var(--mantine-color-green-filled);--mantine-color-green-filled: var(--mantine-color-green-7);--mantine-color-green-filled-hover: var(--mantine-color-green-8);--mantine-color-green-light: rgba(55, 178, 77, 0.1);--mantine-color-green-light-hover: rgba(55, 178, 77, 0.12);--mantine-color-green-light-color: var(--mantine-color-green-7);--mantine-color-green-outline: var(--mantine-color-green-7);--mantine-color-green-outline-hover: rgba(55, 178, 77, 0.05);--mantine-color-lime-text: var(--mantine-color-lime-filled);--mantine-color-lime-filled: var(--mantine-color-lime-7);--mantine-color-lime-filled-hover: var(--mantine-color-lime-8);--mantine-color-lime-light: rgba(116, 184, 22, 0.1);--mantine-color-lime-light-hover: rgba(116, 184, 22, 0.12);--mantine-color-lime-light-color: var(--mantine-color-lime-7);--mantine-color-lime-outline: var(--mantine-color-lime-7);--mantine-color-lime-outline-hover: rgba(116, 184, 22, 0.05);--mantine-color-yellow-text: var(--mantine-color-yellow-filled);--mantine-color-yellow-filled: var(--mantine-color-yellow-7);--mantine-color-yellow-filled-hover: var(--mantine-color-yellow-8);--mantine-color-yellow-light: rgba(245, 159, 0, 0.1);--mantine-color-yellow-light-hover: rgba(245, 159, 0, 0.12);--mantine-color-yellow-light-color: var(--mantine-color-yellow-7);--mantine-color-yellow-outline: var(--mantine-color-yellow-7);--mantine-color-yellow-outline-hover: rgba(245, 159, 0, 0.05);--mantine-color-orange-text: var(--mantine-color-orange-filled);--mantine-color-orange-filled: var(--mantine-color-orange-7);--mantine-color-orange-filled-hover: var(--mantine-color-orange-8);--mantine-color-orange-light: rgba(247, 103, 7, 0.1);--mantine-color-orange-light-hover: rgba(247, 103, 7, 0.12);--mantine-color-orange-light-color: var(--mantine-color-orange-7);--mantine-color-orange-outline: var(--mantine-color-orange-7);--mantine-color-orange-outline-hover: rgba(247, 103, 7, 0.05);--mantine-color-brand-text: var(--mantine-color-brand-filled);--mantine-color-brand-filled: var(--mantine-color-brand-7);--mantine-color-brand-filled-hover: var(--mantine-color-brand-8);--mantine-color-brand-light: rgba(35, 35, 35, 0.1);--mantine-color-brand-light-hover: rgba(35, 35, 35, 0.12);--mantine-color-brand-light-color: var(--mantine-color-brand-7);--mantine-color-brand-outline: var(--mantine-color-brand-7);--mantine-color-brand-outline-hover: rgba(35, 35, 35, 0.05);}
+
+
+:root[data-mantine-color-scheme="dark"], :host([data-mantine-color-scheme="dark"]){--mantine-color-scheme: dark;}
+
+
+:root[data-mantine-color-scheme="light"], :host([data-mantine-color-scheme="light"]){--mantine-color-scheme: light;}
+
+@media (max-width: 35.99375em) {.mantine-visible-from-xs {display: none !important;}
+}
+@media (min-width: 36em) {.mantine-hidden-from-xs {display: none !important;}
+}
+@media (max-width: 47.99375em) {.mantine-visible-from-sm {display: none !important;}
+}
+@media (min-width: 48em) {.mantine-hidden-from-sm {display: none !important;}
+}
+@media (max-width: 61.99375em) {.mantine-visible-from-md {display: none !important;}
+}
+@media (min-width: 62em) {.mantine-hidden-from-md {display: none !important;}
+}
+@media (max-width: 74.99375em) {.mantine-visible-from-lg {display: none !important;}
+}
+@media (min-width: 75em) {.mantine-hidden-from-lg {display: none !important;}
+}
+@media (max-width: 87.99375em) {.mantine-visible-from-xl {display: none !important;}
+}
+@media (min-width: 88em) {.mantine-hidden-from-xl {display: none !important;}
+}
+.m_87cf2631 {
+  background-color: transparent;
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  appearance: none;
+  font-size: var(--mantine-font-size-md);
+  text-align: left;
+  text-decoration: none;
+  color: inherit;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+  :where([dir="rtl"]) .m_87cf2631 {
+    text-align: right;
+}
+.m_77c9d27d {
+  --button-height-xs: 30px;
+  --button-height-sm: 36px;
+  --button-height-md: 42px;
+  --button-height-lg: 50px;
+  --button-height-xl: 60px;
+
+  --button-height-compact-xs: 22px;
+  --button-height-compact-sm: 26px;
+  --button-height-compact-md: 30px;
+  --button-height-compact-lg: 34px;
+  --button-height-compact-xl: 40px;
+
+  --button-padding-x-xs: 14px;
+  --button-padding-x-sm: 18px;
+  --button-padding-x-md: 22px;
+  --button-padding-x-lg: 26px;
+  --button-padding-x-xl: 32px;
+
+  --button-padding-x-compact-xs: 7px;
+  --button-padding-x-compact-sm: 8px;
+  --button-padding-x-compact-md: 10px;
+  --button-padding-x-compact-lg: 12px;
+  --button-padding-x-compact-xl: 14px;
+
+  --button-height: var(--button-height-sm);
+  --button-padding-x: var(--button-padding-x-sm);
+  --button-color: var(--mantine-color-white);
+
+  user-select: none;
+  font-weight: 600;
+  position: relative;
+  line-height: 1;
+  text-align: center;
+  overflow: hidden;
+
+  width: auto;
+  cursor: pointer;
+  display: inline-block;
+  border-radius: var(--button-radius, var(--mantine-radius-default));
+  font-size: var(--button-fz, var(--mantine-font-size-sm));
+  background: var(--button-bg, var(--mantine-primary-color-filled));
+  border: var(--button-bd, calc(0.0625rem * var(--mantine-scale)) solid transparent);
+  color: var(--button-color, var(--mantine-color-white));
+  height: var(--button-height, var(--button-height-sm));
+  padding-inline: var(--button-padding-x, var(--button-padding-x-sm));
+  vertical-align: middle;
+}
+
+  .m_77c9d27d:where([data-block]) {
+    display: block;
+    width: 100%;
+  }
+
+  .m_77c9d27d:where([data-with-left-section]) {
+    padding-inline-start: calc(var(--button-padding-x) / 1.5);
+  }
+
+  .m_77c9d27d:where([data-with-right-section]) {
+    padding-inline-end: calc(var(--button-padding-x) / 1.5);
+  }
+
+  .m_77c9d27d:where(:disabled:not([data-loading]), [data-disabled]:not([data-loading])) {
+    cursor: not-allowed;
+    border: 1px solid transparent;
+    transform: none;
+    color: var(--mantine-color-disabled-color);
+    background: var(--mantine-color-disabled);
+  }
+
+  .m_77c9d27d::before {
+    content: '';
+    pointer-events: none;
+    position: absolute;
+    inset: -1px;
+    border-radius: var(--button-radius, var(--mantine-radius-default));
+    transform: translateY(-100%);
+    opacity: 0;
+    filter: blur(12px);
+    transition:
+      transform 150ms ease,
+      opacity 100ms ease;
+  }
+
+  :where([data-mantine-color-scheme='light']) .m_77c9d27d::before {
+      background-color: rgba(255, 255, 255, 0.15);
+}
+
+  :where([data-mantine-color-scheme='dark']) .m_77c9d27d::before {
+      background-color: rgba(0, 0, 0, 0.15);
+}
+
+  .m_77c9d27d:where([data-loading]) {
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .m_77c9d27d:where([data-loading])::before {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+  .m_77c9d27d:where([data-loading]) .m_80f1301b {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+
+  @media (hover: hover) {
+    .m_77c9d27d:hover:where(:not([data-loading], :disabled, [data-disabled])) {
+      background-color: var(--button-hover, var(--mantine-primary-color-filled-hover));
+      color: var(--button-hover-color, var(--button-color));
+    }
+}
+
+  @media (hover: none) {
+    .m_77c9d27d:active:where(:not([data-loading], :disabled, [data-disabled])) {
+      background-color: var(--button-hover, var(--mantine-primary-color-filled-hover));
+      color: var(--button-hover-color, var(--button-color));
+    }
+}
+
+.m_80f1301b {
+  display: flex;
+  align-items: center;
+  justify-content: var(--button-justify, center);
+  height: 100%;
+  overflow: visible;
+  transition:
+    transform 150ms ease,
+    opacity 100ms ease;
+}
+
+.m_811560b9 {
+  white-space: nowrap;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  opacity: 1;
+}
+
+.m_811560b9:where([data-loading]) {
+    opacity: 0.2;
+  }
+
+.m_a74036a {
+  display: flex;
+  align-items: center;
+}
+
+.m_a74036a:where([data-position='left']) {
+    margin-inline-end: var(--mantine-spacing-xs);
+  }
+
+.m_a74036a:where([data-position='right']) {
+    margin-inline-start: var(--mantine-spacing-xs);
+  }
+
+.m_a25b86ee {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+}
+
+.m_80d6d844 {
+  --button-border-width: 1px;
+  display: flex;
+}
+
+.m_80d6d844 :where(.m_77c9d27d):focus {
+      position: relative;
+      z-index: 1;
+    }
+
+.m_80d6d844[data-orientation='horizontal'] {
+    flex-direction: row;
+  }
+
+.m_80d6d844[data-orientation='horizontal'] .m_77c9d27d:not(:only-child):first-child, .m_80d6d844[data-orientation='horizontal'] .m_70be2a01:not(:only-child):first-child {
+        border-end-end-radius: 0;
+        border-start-end-radius: 0;
+        border-inline-end-width: calc(var(--button-border-width) / 2);
+      }
+
+.m_80d6d844[data-orientation='horizontal'] .m_77c9d27d:not(:only-child):last-child, .m_80d6d844[data-orientation='horizontal'] .m_70be2a01:not(:only-child):last-child {
+        border-end-start-radius: 0;
+        border-start-start-radius: 0;
+        border-inline-start-width: calc(var(--button-border-width) / 2);
+      }
+
+.m_80d6d844[data-orientation='horizontal'] .m_77c9d27d:not(:only-child):not(:first-child):not(:last-child), .m_80d6d844[data-orientation='horizontal'] .m_70be2a01:not(:only-child):not(:first-child):not(:last-child) {
+        border-radius: 0;
+        border-inline-width: calc(var(--button-border-width) / 2);
+      }
+
+.m_80d6d844[data-orientation='vertical'] {
+    flex-direction: column;
+  }
+
+.m_80d6d844[data-orientation='vertical'] .m_77c9d27d:not(:only-child):first-child, .m_80d6d844[data-orientation='vertical'] .m_70be2a01:not(:only-child):first-child {
+        border-end-start-radius: 0;
+        border-end-end-radius: 0;
+        border-bottom-width: calc(var(--button-border-width) / 2);
+      }
+
+.m_80d6d844[data-orientation='vertical'] .m_77c9d27d:not(:only-child):last-child, .m_80d6d844[data-orientation='vertical'] .m_70be2a01:not(:only-child):last-child {
+        border-start-start-radius: 0;
+        border-start-end-radius: 0;
+        border-top-width: calc(var(--button-border-width) / 2);
+      }
+
+.m_80d6d844[data-orientation='vertical'] .m_77c9d27d:not(:only-child):not(:first-child):not(:last-child), .m_80d6d844[data-orientation='vertical'] .m_70be2a01:not(:only-child):not(:first-child):not(:last-child) {
+        border-radius: 0;
+        border-bottom-width: calc(var(--button-border-width) / 2);
+        border-top-width: calc(var(--button-border-width) / 2);
+      }
+
+.m_70be2a01 {
+  --section-height-xs: 30px;
+  --section-height-sm: 36px;
+  --section-height-md: 42px;
+  --section-height-lg: 50px;
+  --section-height-xl: 60px;
+
+  --section-height-compact-xs: 22px;
+  --section-height-compact-sm: 26px;
+  --section-height-compact-md: 30px;
+  --section-height-compact-lg: 34px;
+  --section-height-compact-xl: 40px;
+
+  --section-padding-x-xs: 14px;
+  --section-padding-x-sm: 18px;
+  --section-padding-x-md: 22px;
+  --section-padding-x-lg: 26px;
+  --section-padding-x-xl: 32px;
+
+  --section-padding-x-compact-xs: 7px;
+  --section-padding-x-compact-sm: 8px;
+  --section-padding-x-compact-md: 10px;
+  --section-padding-x-compact-lg: 12px;
+  --section-padding-x-compact-xl: 14px;
+
+  --section-height: var(--section-height-sm);
+  --section-padding-x: var(--section-padding-x-sm);
+  --section-color: var(--mantine-color-white);
+
+  font-weight: 600;
+  width: auto;
+  border-radius: var(--section-radius, var(--mantine-radius-default));
+  font-size: var(--section-fz, var(--mantine-font-size-sm));
+  background: var(--section-bg, var(--mantine-primary-color-filled));
+  border: var(--section-bd, calc(0.0625rem * var(--mantine-scale)) solid transparent);
+  color: var(--section-color, var(--mantine-color-white));
+  height: var(--section-height, var(--section-height-sm));
+  padding-inline: var(--section-padding-x, var(--section-padding-x-sm));
+  vertical-align: middle;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.m_5ae2e3c {
+  --loader-size-xs: 18px;
+  --loader-size-sm: 22px;
+  --loader-size-md: 36px;
+  --loader-size-lg: 44px;
+  --loader-size-xl: 58px;
+  --loader-size: var(--loader-size-md);
+  --loader-color: var(--mantine-primary-color-filled);
+}
+
+/* ----- Bars loader ----- */
+@keyframes m_5d2b3b9d {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+
+  50%,
+  100% {
+    transform: scale(1);
+  }
+}
+
+.m_7a2bd4cd {
+  position: relative;
+  width: var(--loader-size);
+  height: var(--loader-size);
+  display: flex;
+  gap: calc(var(--loader-size) / 5);
+}
+
+.m_870bb79 {
+  flex: 1;
+  background: var(--loader-color);
+  animation: m_5d2b3b9d 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+  border-radius: 2px;
+}
+
+.m_870bb79:nth-of-type(1) {
+    animation-delay: -240ms;
+  }
+
+.m_870bb79:nth-of-type(2) {
+    animation-delay: -120ms;
+  }
+
+.m_870bb79:nth-of-type(3) {
+    animation-delay: 0;
+  }
+
+/* ----- Dots loader ----- */
+@keyframes m_aac34a1 {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(0.6);
+    opacity: 0.5;
+  }
+}
+
+.m_4e3f22d7 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: calc(var(--loader-size) / 10);
+  position: relative;
+  width: var(--loader-size);
+  height: var(--loader-size);
+}
+
+.m_870c4af {
+  width: calc(var(--loader-size) / 3 - var(--loader-size) / 15);
+  height: calc(var(--loader-size) / 3 - var(--loader-size) / 15);
+  border-radius: 50%;
+  background: var(--loader-color);
+  animation: m_aac34a1 0.8s infinite linear;
+}
+
+.m_870c4af:nth-child(2) {
+    animation-delay: 0.4s;
+  }
+
+/* ----- Oval loader ----- */
+@keyframes m_f8e89c4b {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.m_b34414df {
+  display: inline-block;
+  width: var(--loader-size);
+  height: var(--loader-size);
+}
+
+.m_b34414df::after {
+    content: '';
+    display: block;
+    width: var(--loader-size);
+    height: var(--loader-size);
+    border-radius: 10000px;
+    border-width: calc(var(--loader-size) / 8);
+    border-style: solid;
+    border-color: var(--loader-color) var(--loader-color) var(--loader-color) transparent;
+    animation: m_f8e89c4b 1.2s linear infinite;
+  }
+</style><style type="text/css" data-vite-dev-id="/Users/nihalahmed/Documents/trustbazaar/frontend/src/shared/tokens.css">/* Design tokens and base styles (docs/design/08_frontend.pdf, sections 2.3 and 7; docs/design/10_visual_v2.md).
+   Colours keep text contrast of at least 4.5:1 on the page background; the focus ring is 2px with at least 3:1. */
+:root {
+  /* Redesign v3 palette (docs/design/10_visual_v3.md), dealt by taste-skill ("white-mint-tiles"): white ground, ink actions, mint as the highlight. Text keeps
+     at least 4.5:1 on paper, sheet and surface; control borders and the focus ring at least 3:1. The Mantine theme
+     (theme.ts) uses the same values. */
+  --tb-bg: #ffffff;
+  --tb-sheet: #ffffff;
+  --tb-surface: #f3f3f3;
+  --tb-text: #232323;
+  --tb-muted: #686868;
+  --tb-border: #8a8a8a;
+  --tb-line: #e4e4e4;
+  --tb-accent: #232323;
+  --tb-accent-text: #ffffff;
+  --tb-accent-soft: #a1ffcb;
+  --tb-accent-strong: #232323;
+  --tb-accent-wash: #f3f3f3;
+  --tb-cream: #f3f3f3;
+  --tb-on-ink: #a4a4a4;
+  --tb-on-ink-accent: #a1ffcb;
+  --tb-warning-bg: #fbeee3;
+  --tb-warning-border: #9a4a12;
+  --tb-focus: #232323;
+  --tb-error: #b42318;
+  --tb-error-bg: #fef3f2;
+  --tb-error-line: #fecdca;
+  --tb-error-text: #912018;
+  --tb-success: #0b6b3f;
+  --tb-protect: #0b6b3f;
+  --tb-protect-soft: #a1ffcb;
+  --tb-radius: 10px;
+  --tb-radius-pill: 999px;
+  --tb-radius-control: 10px;
+  --tb-radius-panel: 16px;
+  --tb-space-1: 0.25rem;
+  --tb-space-2: 0.5rem;
+  --tb-space-3: 1rem;
+  --tb-space-4: 1.5rem;
+  --tb-max-width: 82rem;
+  --tb-shadow-card: 0 1px 2px rgba(35,35,35,.06), 0 6px 18px -8px rgba(35,35,35,.16);
+  --tb-shadow-lift: 0 2px 4px rgba(35,35,35,.08), 0 16px 32px -12px rgba(35,35,35,.24);
+  --tb-font: 'Figtree Variable', 'TB Figures', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tb-font-display: 'Gabarito Variable', 'TB Figures', 'Hind Siliguri', system-ui, sans-serif;
+  --tb-line-height: 1.5;
+}
+
+/* Hind Siliguri covers the Bengali block and is loaded only for Bangla (language/font.ts); the Bangla figures (digits,
+   taka sign and the separators between them) come first from 'TB Figures', so numbers read clearly in one face (Decisions
+   log, U10-20). Bangla needs taller lines. */
+:root:lang(bn) {
+  --tb-font: 'TB Figures', 'Hind Siliguri', 'Figtree Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --tb-line-height: 1.7;
+  --mantine-font-family: var(--tb-font);
+  --mantine-font-family-headings: var(--tb-font);
+  --mantine-line-height: 1.7;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--tb-bg);
+  color: var(--tb-text);
+  font-family: var(--tb-font);
+  font-size: 1rem;
+  line-height: var(--tb-line-height);
+  overflow-wrap: anywhere;
+}
+
+a {
+  color: var(--tb-accent);
+}
+
+button {
+  font: inherit;
+  min-height: 24px;
+  min-width: 24px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--tb-focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Forms never push the page sideways (NFR-USE-05, checked at 320 px by the end-to-end sweep, U8-11): a fieldset
+   otherwise refuses to shrink below its content, and inputs keep their default character width. */
+fieldset { min-width: 0; }
+input, select, textarea { max-width: 100%; box-sizing: border-box; }
+</style><style type="text/css" data-vite-dev-id="/Users/nihalahmed/Documents/trustbazaar/frontend/src/features/search/bento.module.css">/* The home page's showcase sections (docs/design/10_visual_v3.md): a bento of product-UI cards on a grey field, and a dark
+   strip with an animated line. Motion is one slow loop a card (3.6 s), CSS only, resting under reduced motion. */
+._safe_rravn_3 { display: flex; flex-direction: column; gap: 1.5rem; }
+._h2_rravn_4 { margin: 0; font-family: var(--tb-font-display); font-weight: 400; font-size: clamp(1.75rem, 3.6vw, 2.75rem); letter-spacing: -0.035em; line-height: 1.08; max-width: 24ch; text-wrap: balance; }
+:lang(bn) ._h2_rravn_4 { font-weight: 500; letter-spacing: 0; line-height: 1.3; }
+._h3_rravn_6 { margin: 0; font-family: var(--tb-font-display); font-weight: 500; font-size: 1.375rem; letter-spacing: -0.02em; line-height: 1.15; }
+:lang(bn) ._h3_rravn_6 { letter-spacing: 0; line-height: 1.35; }
+._text_rravn_8 { margin: 0; color: var(--tb-muted); max-width: 34ch; }
+._label_rravn_9 { margin: 0; font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--tb-muted); }
+:lang(bn) ._label_rravn_9 { letter-spacing: 0; text-transform: none; }
+
+._bento_rravn_12 { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+._cardBox_rravn_13 { position: relative; display: flex; flex-direction: column; gap: 0.75rem; padding: 1.5rem; border-radius: var(--tb-radius-panel); background: var(--tb-surface); overflow: hidden; transition: transform 180ms, box-shadow 180ms; }
+._cardBox_rravn_13:hover { transform: translateY(-2px); box-shadow: var(--tb-shadow-card); }
+._ui_rravn_15 { margin-top: auto; padding-top: 0.75rem; }
+
+._escrow_rravn_17 { background: var(--tb-accent-soft); }
+._escrow_rravn_17 ._text_rravn_8 { color: #2c3d34; }
+._escrow_rravn_17 ._label_rravn_9 { color: #2c3d34; }
+._amount_rravn_20 { margin: 0.5rem 0 0; font-family: var(--tb-font-display); font-size: clamp(2.25rem, 5vw, 3.5rem); letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+._timeline_rravn_21 { list-style: none; margin: auto 0 0; padding: 1rem 0 0; display: grid; gap: 0.625rem; }
+._timeline_rravn_21 li { display: flex; align-items: center; gap: 0.75rem; padding: 1.125rem 1.25rem; font-size: 1.0625rem; border-radius: 10px; background: rgb(255 255 255 / 0.55); font-weight: 500; animation: _step_rravn_1 10.8s infinite; }
+._timeline_rravn_21 li::before { content: ''; flex: none; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--tb-text); }
+._t1_rravn_24 { animation-delay: 0s !important; } ._t2_rravn_24 { animation-delay: 3.6s !important; } ._t3_rravn_24 { animation-delay: 7.2s !important; }
+@keyframes _step_rravn_1 { 0%, 33% { background: var(--tb-text); color: #fff; } 34%, 100% { background: rgb(255 255 255 / 0.55); color: var(--tb-text); } }
+
+._clockRow_rravn_27 { display: flex; align-items: center; gap: 0.5rem; font-weight: 500; }
+._clockRow_rravn_27 strong { margin-left: auto; font-family: var(--tb-font-display); font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+._live_rravn_29 { width: 9px; height: 9px; border-radius: 50%; background: var(--tb-error); animation: _ping_rravn_1 1.8s infinite; }
+@keyframes _ping_rravn_1 { 50% { box-shadow: 0 0 0 7px rgb(180 35 24 / 0); } 0% { box-shadow: 0 0 0 0 rgb(180 35 24 / 0.45); } }
+._bids_rravn_31 { list-style: none; margin: 0.75rem 0 0; padding: 0; display: grid; gap: 0.5rem; }
+._bids_rravn_31 li { display: flex; justify-content: space-between; padding: 0.625rem 0.875rem; border-radius: 10px; background: var(--tb-sheet); font-size: 0.9375rem; animation: _bid_rravn_31 7.2s infinite; animation-delay: calc(var(--i) * 0.4s); }
+._bids_rravn_31 li:first-child b { color: var(--tb-protect); }
+._bids_rravn_31 b { font-variant-numeric: tabular-nums; }
+@keyframes _bid_rravn_31 { 0%, 8% { transform: translateY(8px); opacity: 0.35; } 14%, 90% { transform: none; opacity: 1; } 100% { opacity: 1; } }
+
+._checks_rravn_37 { list-style: none; margin: auto 0 0; padding: 0.75rem 0 0; display: grid; gap: 0.5rem; }
+._checks_rravn_37 li { display: flex; align-items: center; gap: 0.625rem; font-weight: 500; }
+._tickBox_rravn_39 { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; background: var(--tb-text); color: var(--tb-accent-soft); }
+._tickPath_rravn_40 { stroke-dasharray: 16; stroke-dashoffset: 0; animation: _draw_rravn_1 3.6s infinite; }
+@keyframes _draw_rravn_1 { 0% { stroke-dashoffset: 16; } 25%, 100% { stroke-dashoffset: 0; } }
+
+._digits_rravn_43 { display: flex; gap: 0.375rem; }
+._digits_rravn_43 span { flex: 1; display: grid; place-items: center; min-height: 3rem; border-radius: 10px; background: var(--tb-sheet); font-family: var(--tb-font-display); font-size: 1.5rem; font-variant-numeric: tabular-nums; animation: _flip_rravn_1 3.6s infinite; animation-delay: calc(var(--i) * 0.12s); }
+@keyframes _flip_rravn_1 { 0%, 6% { transform: translateY(-6px); opacity: 0; } 14%, 100% { transform: none; opacity: 1; } }
+
+._pay_rravn_47 { background: var(--tb-text); color: #fff; }
+._pay_rravn_47 ._text_rravn_8 { color: var(--tb-on-ink); }
+._methods_rravn_49 { list-style: none; margin: auto 0 0; padding: 0.75rem 0 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+._methods_rravn_49 li { padding: 0.5rem 0.875rem; border-radius: 8px; background: rgb(255 255 255 / 0.1); border: 1px solid rgb(255 255 255 / 0.2); font-weight: 600; }
+
+._journey_rravn_52 { position: relative; padding: clamp(1.75rem, 4vw, 3.5rem); border-radius: var(--tb-radius-panel); background: var(--tb-text); color: #fff; display: grid; gap: 2rem; }
+._jTitle_rravn_53 { margin: 0; font-family: var(--tb-font-display); font-weight: 400; font-size: clamp(1.75rem, 3.6vw, 2.75rem); letter-spacing: -0.035em; line-height: 1.08; }
+:lang(bn) ._jTitle_rravn_53 { font-weight: 500; letter-spacing: 0; line-height: 1.3; }
+._jSteps_rravn_55 { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.5rem; position: relative; }
+._jSteps_rravn_55 li { display: grid; gap: 0.375rem; color: var(--tb-on-ink); position: relative; padding-left: 3.5rem; }
+._jSteps_rravn_55 li strong { color: #fff; font-family: var(--tb-font-display); font-weight: 500; font-size: 1.25rem; }
+._jNum_rravn_58 { position: absolute; left: 0; top: 0; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; background: var(--tb-accent-soft); color: var(--tb-text); font-weight: 700; font-variant-numeric: tabular-nums; animation: _glow_rravn_1 7.2s infinite; animation-delay: calc(var(--i) * 1.8s); }
+@keyframes _glow_rravn_1 { 0%, 20% { box-shadow: 0 0 0 0 rgb(161 255 203 / 0.7); } 40%, 100% { box-shadow: 0 0 0 10px rgb(161 255 203 / 0); } }
+._jSteps_rravn_55::before { content: ''; position: absolute; left: 19px; top: 20px; bottom: 20px; width: 2px; background: linear-gradient(var(--tb-accent-soft) 0 0) 0 0 / 100% 30% no-repeat, rgb(255 255 255 / 0.18); animation: _run_rravn_1 7.2s linear infinite; }
+@keyframes _run_rravn_1 { from { background-position: 0 -40%; } to { background-position: 0 140%; } }
+
+@media (min-width: 48em) {
+  ._bento_rravn_12 { grid-template-columns: repeat(12, minmax(0, 1fr)); grid-auto-rows: minmax(15rem, auto); }
+  ._escrow_rravn_17 { grid-column: 1 / span 5; grid-row: span 2; }
+  ._auction_rravn_66 { grid-column: 6 / span 7; }
+  ._idCard_rravn_67 { grid-column: 6 / span 4; }
+  ._code_rravn_68 { grid-column: 10 / span 3; }
+  ._pay_rravn_47 { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+  ._pay_rravn_47 ._methods_rravn_49 { margin: 0 0 0 auto; padding: 0; }
+  ._jSteps_rravn_55 { grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+  ._jSteps_rravn_55 li { padding-left: 0; padding-top: 3.5rem; }
+  ._jSteps_rravn_55::before { left: 20px; right: 20px; top: 19px; bottom: auto; width: auto; height: 2px; background: linear-gradient(90deg, var(--tb-accent-soft) 0 0) 0 0 / 30% 100% no-repeat, rgb(255 255 255 / 0.18); animation-name: _runx_rravn_1; }
+  @keyframes _runx_rravn_1 { from { background-position: -40% 0; } to { background-position: 140% 0; } }
+}
+@media (prefers-reduced-motion: reduce) {
+  ._timeline_rravn_21 li, ._live_rravn_29, ._bids_rravn_31 li, ._tickPath_rravn_40, ._digits_rravn_43 span, ._jNum_rravn_58, ._jSteps_rravn_55::before { animation: none !important; }
+  ._t2_rravn_24 { background: var(--tb-text) !important; color: #fff; }
+}
+</style><style type="text/css" data-vite-dev-id="/Users/nihalahmed/Documents/trustbazaar/frontend/src/features/search/card.module.css">/* The listing card (docs/design/10_visual_v2.md, section 7, AC-HOME-2): the photo on the second sheet inside a
+   hairline, small boxes on it for the time left and "Featured", then the price in tabular figures, the title and the
+   details. One radius, no shadow; hover underlines the title and darkens the frame. */
+._card_nw16x_4 { list-style: none; min-width: 0; }
+._link_nw16x_5 { display: flex; flex-direction: column; gap: 2px; color: var(--tb-text); text-decoration: none; border-radius: var(--tb-radius-panel); }
+._link_nw16x_5:focus-visible { outline: 3px solid var(--tb-focus); outline-offset: 3px; }
+._link_nw16x_5:hover ._title_nw16x_7 { text-decoration: underline; text-underline-offset: 3px; }
+._link_nw16x_5:hover ._photo_nw16x_8 { border-color: var(--tb-border); }
+._photo_nw16x_8 { position: relative; display: block; aspect-ratio: 1 / 1; border: 1px solid var(--tb-line); border-radius: var(--tb-radius-panel); overflow: hidden; background: var(--tb-surface); margin-bottom: 8px; transition: border-color 150ms; }
+._photo_nw16x_8 img { width: 100%; height: 100%; object-fit: cover; display: block; }
+._clock_nw16x_11, ._featured_nw16x_11 {
+  position: absolute; top: 8px; display: inline-flex; align-items: center; gap: 6px; max-width: calc(100% - 16px);
+  border-radius: 4px; padding: 3px 8px; font-size: 0.8125rem; line-height: 1.35; font-weight: 600;
+}
+/* the time left is never cut off: on a narrow card, or in Bangla, it wraps onto a second line inside its box */
+._clock_nw16x_11 { align-items: flex-start; }
+._clock_nw16x_11 i { margin-top: 0.4em; }
+._featured_nw16x_11 { white-space: nowrap; }
+._clock_nw16x_11 { left: 8px; background: var(--tb-text); color: #fff; font-variant-numeric: tabular-nums; }
+._clock_nw16x_11 i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--tb-on-ink-accent); }
+._soon_nw16x_21 { background: var(--tb-error); }
+._soon_nw16x_21 i { background: #fff; }
+._featured_nw16x_11 { right: 8px; background: var(--tb-sheet); color: var(--tb-accent); border: 1.5px solid var(--tb-accent); }
+._clock_nw16x_11 + ._featured_nw16x_11 { top: auto; bottom: 8px; }
+@media (max-width: 30rem) { ._clock_nw16x_11, ._featured_nw16x_11 { font-size: 0.75rem; padding: 2px 6px; } }
+._price_nw16x_26 { font-size: 1.125rem; font-weight: 600; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+:lang(bn) ._price_nw16x_26 { letter-spacing: 0; }
+._title_nw16x_7 { line-height: 1.35; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+._meta_nw16x_29, ._note_nw16x_29 { color: var(--tb-muted); font-size: 0.875rem; line-height: 1.4; }
+
+/* ---- Redesign v3: the photo leads; the card lifts 2px and the photo zooms inside its frame ---- */
+._link_nw16x_5 { gap: 4px; transition: transform 180ms; }
+._link_nw16x_5:hover { transform: translateY(-2px); }
+._link_nw16x_5:hover ._title_nw16x_7 { text-decoration: none; }
+._link_nw16x_5:hover ._photo_nw16x_8 { border-color: var(--tb-line); }
+._photo_nw16x_8 { border: 0; border-radius: var(--tb-radius-panel); aspect-ratio: 4 / 3.4; background: var(--tb-surface); margin-bottom: 10px; }
+._photo_nw16x_8 img { transition: transform 400ms cubic-bezier(.2,.7,.2,1); }
+._link_nw16x_5:hover ._photo_nw16x_8 img { transform: scale(1.03); }
+._clock_nw16x_11, ._featured_nw16x_11 { border-radius: 6px; }
+._clock_nw16x_11 { background: var(--tb-text); }
+._featured_nw16x_11 { border: 0; background: var(--tb-accent-soft); color: var(--tb-text); }
+._price_nw16x_26 { font-family: var(--tb-font-display); font-size: 1.25rem; font-weight: 500; letter-spacing: -0.02em; }
+._title_nw16x_7 { font-weight: 500; }
+@media (prefers-reduced-motion: reduce) { ._link_nw16x_5, ._photo_nw16x_8 img { transition: none; } ._link_nw16x_5:hover, ._link_nw16x_5:hover ._photo_nw16x_8 img { transform: none; } }
+</style><style type="text/css" data-vite-dev-id="/Users/nihalahmed/Documents/trustbazaar/frontend/src/features/search/home.module.css">/* The home page (docs/design/10_visual_v3.md; taste-skill hero "collage": the text on the left, the product's window on a
+   lit ground on the right, cut by the frame, one small card over its corner). Flat, ink and mint on white. */
+._page_toy73_3 { display: flex; flex-direction: column; gap: 4.5rem; padding-bottom: 3rem; }
+._visuallyHidden_toy73_4 { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+._hero_toy73_6 { display: grid; grid-template-columns: 1fr; gap: 2rem; align-items: center; padding-top: clamp(1rem, 3vw, 2.5rem); }
+._heroText_toy73_7 { display: flex; flex-direction: column; gap: 1.25rem; align-items: flex-start; }
+._title_toy73_8 { margin: 0; font-family: var(--tb-font-display); font-weight: 400; font-size: clamp(2.5rem, 6.2vw, 4rem); line-height: 1.02; letter-spacing: -0.04em; text-wrap: balance; }
+:lang(bn) ._title_toy73_8 { font-weight: 500; letter-spacing: 0; line-height: 1.3; }
+._lede_toy73_10 { margin: 0; max-width: 30rem; font-size: 1.25rem; line-height: 1.5; color: var(--tb-muted); }
+._search_toy73_11 { display: flex; align-items: center; gap: 0.5rem; width: 100%; max-width: 34rem; padding: 0.375rem 0.375rem 0.375rem 1rem; border-radius: var(--tb-radius); background: var(--tb-sheet); border: 1.5px solid var(--tb-text); transition: box-shadow 140ms; }
+._search_toy73_11 input:focus-visible { outline: 2px solid var(--tb-text); outline-offset: 4px; border-radius: 4px; }
+._searchIcon_toy73_13 { flex: none; color: var(--tb-muted); }
+._search_toy73_11 input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: inherit; font-size: 1.0625rem; min-height: 48px; color: var(--tb-text); }
+._search_toy73_11 button { flex: none; min-height: 48px; padding: 0 1.5rem; border: 0; border-radius: var(--tb-radius); background: var(--tb-text); color: #fff; font-weight: 600; cursor: pointer; transition: background 140ms, transform 140ms; }
+._search_toy73_11 button:hover { background: #000; }
+._search_toy73_11 button:active { transform: scale(0.97); }
+._proof_toy73_18 { margin: 0; color: var(--tb-muted); font-size: 0.9375rem; }
+
+._art_toy73_20 { position: relative; height: 22rem; overflow: hidden; border-radius: var(--tb-radius-panel); background: radial-gradient(70% 60% at 25% 15%, #ffffff 0%, rgb(255 255 255 / 0) 70%), #d9fbe8; }
+._window_toy73_21 { position: absolute; left: 2rem; top: 2rem; width: calc(100% - 1rem); height: 100%; background: var(--tb-sheet); border-radius: 14px 0 0 0; box-shadow: var(--tb-shadow-lift); display: grid; grid-template-columns: 1.1fr 0.9fr; overflow: hidden; }
+._winPhoto_toy73_22 { min-height: 0; background: var(--tb-surface); }
+._winPhoto_toy73_22 img { width: 100%; height: 100%; object-fit: cover; display: block; }
+._winBody_toy73_24 { padding: 1.25rem 3rem 1.25rem 1.25rem; display: flex; flex-direction: column; gap: 0.25rem; }
+._winTitle_toy73_25 { margin: 0; font-weight: 600; line-height: 1.3; }
+._winWhere_toy73_26 { margin: 0; font-size: 0.875rem; color: var(--tb-muted); }
+._winPrice_toy73_27 { margin: 0.75rem 0; font-family: var(--tb-font-display); font-size: 1.75rem; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+._winBtn_toy73_28 { align-self: flex-start; padding: 0.625rem 1rem; border-radius: 8px; background: var(--tb-text); color: #fff; font-weight: 600; font-size: 0.9375rem; }
+._winSteps_toy73_29 { list-style: none; margin: 1.25rem 0 0; padding: 0; display: grid; gap: 0.5rem; font-size: 0.875rem; color: var(--tb-muted); }
+._winSteps_toy73_29 li { display: flex; align-items: center; gap: 0.5rem; }
+._winSteps_toy73_29 li::before { content: ''; flex: none; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--tb-border); }
+._winDone_toy73_32 { color: var(--tb-text); }
+._winDone_toy73_32::before { background: var(--tb-text); border-color: var(--tb-text) !important; }
+._winNow_toy73_34 { color: var(--tb-text); font-weight: 600; }
+._winNow_toy73_34::before { background: var(--tb-accent-soft); border-color: var(--tb-text) !important; }
+._card_toy73_36 { position: absolute; left: 1rem; bottom: 1.25rem; width: min(18.75rem, calc(100% - 2rem)); display: flex; gap: 0.75rem; align-items: center; padding: 0.875rem 1rem; border-radius: 12px; background: var(--tb-text); color: var(--tb-on-ink); font-size: 0.875rem; line-height: 1.35; box-shadow: var(--tb-shadow-lift); }
+._card_toy73_36 strong { display: block; color: #fff; font-size: 1rem; }
+._cardTick_toy73_38 { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; background: var(--tb-accent-soft); }
+._cardTick_toy73_38 svg circle { fill: var(--tb-text); } ._cardTick_toy73_38 svg path { stroke: var(--tb-accent-soft); }
+
+._catsWrap_toy73_41 { margin-top: -1.5rem; }
+._cats_toy73_41 { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+._cat_toy73_41 { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1rem; border-radius: 8px; background: var(--tb-surface); color: var(--tb-text); text-decoration: none; font-weight: 500; transition: background 140ms, transform 140ms; }
+._cat_toy73_41:hover { background: var(--tb-accent-soft); transform: translateY(-2px); }
+._catAll_toy73_45 { background: var(--tb-text); color: #fff; }
+._catAll_toy73_45:hover { background: #000; }
+
+._how_toy73_48 { display: grid; gap: 1.25rem; padding-block: 0.5rem; border-top: 1.5px solid var(--tb-text); padding-top: 1.5rem; }
+._how_toy73_48 h2 { margin: 0; font-family: var(--tb-font-display); font-weight: 400; font-size: clamp(1.75rem, 3.6vw, 2.5rem); letter-spacing: -0.03em; }
+._howLabel_toy73_50 { margin: 0; color: var(--tb-muted); }
+._howSteps_toy73_51 { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.75rem; counter-reset: s; }
+._howSteps_toy73_51 li { counter-increment: s; display: flex; gap: 0.875rem; align-items: baseline; padding: 1rem; border-radius: var(--tb-radius-panel); background: var(--tb-surface); font-weight: 500; }
+._howSteps_toy73_51 li::before { content: counter(s); flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: var(--tb-accent-soft); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+._section_toy73_55 { display: flex; flex-direction: column; gap: 1.25rem; }
+._head_toy73_56 { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+._head_toy73_56 h2 { margin: 0; font-family: var(--tb-font-display); font-weight: 400; font-size: clamp(1.75rem, 3.6vw, 2.5rem); letter-spacing: -0.03em; }
+:lang(bn) ._head_toy73_56 h2, :lang(bn) ._how_toy73_48 h2 { font-weight: 500; letter-spacing: 0; }
+._head_toy73_56 a { font-weight: 600; min-height: 44px; display: inline-flex; align-items: center; }
+._note_toy73_60 { margin: 0; color: var(--tb-muted); }
+._grid_toy73_61 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.75rem 1rem; margin: 0; padding: 0; list-style: none; }
+._rail_toy73_62 { display: flex; gap: 1rem; margin: 0 calc(-1 * var(--tb-gutter, 1rem)); padding: 0 var(--tb-gutter, 1rem) 0.5rem; list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+._rail_toy73_62::-webkit-scrollbar { display: none; }
+._rail_toy73_62 > li { flex: 0 0 min(72vw, 15rem); scroll-snap-align: start; }
+
+._sell_toy73_66 { display: grid; gap: 1.75rem; padding: clamp(1.5rem, 4vw, 3rem); border-radius: var(--tb-radius-panel); background: var(--tb-text); color: #fff; }
+._sell_toy73_66 h2 { margin: 0; font-family: var(--tb-font-display); font-weight: 400; font-size: clamp(1.75rem, 4vw, 2.75rem); letter-spacing: -0.035em; max-width: 22ch; text-wrap: balance; }
+:lang(bn) ._sell_toy73_66 h2 { font-weight: 500; letter-spacing: 0; }
+._steps_toy73_69 { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+._steps_toy73_69 li { display: flex; gap: 1rem; color: var(--tb-on-ink); }
+._steps_toy73_69 strong { display: block; color: #fff; font-size: 1.125rem; margin-bottom: 0.25rem; }
+._num_toy73_72 { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 8px; background: var(--tb-accent-soft); color: var(--tb-text); font-weight: 700; font-variant-numeric: tabular-nums; }
+._sellBtn_toy73_73 { justify-self: start; display: inline-flex; align-items: center; min-height: 48px; padding: 0 1.5rem; border-radius: var(--tb-radius); background: var(--tb-accent-soft); color: var(--tb-text) !important; font-weight: 700; text-decoration: none; transition: transform 140ms, background 140ms; }
+._sellBtn_toy73_73:hover { background: #fff; transform: translateY(-2px); }
+
+@media (min-width: 48em) {
+  ._hero_toy73_6 { grid-template-columns: 5fr 6fr; gap: 3rem; min-height: calc(100svh - 8rem); margin-bottom: 1rem; }
+  ._art_toy73_20 { height: min(32rem, calc(100svh - 11rem)); }
+  ._grid_toy73_61 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem 1.25rem; }
+  ._steps_toy73_69, ._howSteps_toy73_51 { grid-template-columns: repeat(3, 1fr); }
+  ._rail_toy73_62 > li { flex-basis: 16rem; }
+}
+@media (max-width: 47.99em) { ._window_toy73_21 { grid-template-columns: 1fr; } ._winBody_toy73_24 { display: none; } ._card_toy73_36 { display: none; } }
+@media (min-width: 64em) { ._grid_toy73_61 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+._sellBtn_toy73_73:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+/* hero entrance: once, on load, from a visible default */
+@keyframes _rise_toy73_1 { from { opacity: 0; transform: translateY(14px); } }
+@keyframes _slide_toy73_1 { from { opacity: 0; transform: translateX(28px); } }
+._heroText_toy73_7 > * { animation: _rise_toy73_1 600ms cubic-bezier(.2,.7,.2,1) backwards; }
+._heroText_toy73_7 > :nth-child(2) { animation-delay: 80ms; } ._heroText_toy73_7 > :nth-child(3) { animation-delay: 160ms; } ._heroText_toy73_7 > :nth-child(4) { animation-delay: 240ms; }
+._window_toy73_21 { animation: _slide_toy73_1 800ms cubic-bezier(.2,.7,.2,1) 200ms backwards; }
+._card_toy73_36 { animation: _rise_toy73_1 600ms cubic-bezier(.2,.7,.2,1) 700ms backwards; }
+._art_toy73_20::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(rgb(35 35 35 / 0.16) 1px, transparent 1.4px); background-size: 18px 18px; mask-image: linear-gradient(135deg, #000, transparent 65%); -webkit-mask-image: linear-gradient(135deg, #000, transparent 65%); }
+@media (prefers-reduced-motion: reduce) { ._heroText_toy73_7 > *, ._window_toy73_21, ._card_toy73_36 { animation: none; } }
+</style></head>
+  <body>
+    <div id="root"><div class="_page_1sz15_4"><a class="_skip_1sz15_12" href="#main">Skip to main content</a><p class="_promiseBar_1sz15_306"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="M12 2.8 4.5 5.7v5.6c0 4.7 3.1 8.4 7.5 9.9 4.4-1.5 7.5-5.2 7.5-9.9V5.7Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path><path d="m8.8 12.1 2.3 2.3 4.3-4.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Your money is held safely until you confirm the item.</p><header class="_header_1sz15_27"><a class="_brand_1sz15_37" aria-label="TrustBazaar home" href="/"><span class="_logo_1sz15_45"><svg class="_mark_1sz15_51" viewBox="0 0 34 34" width="32" height="32" aria-hidden="true" focusable="false"><rect width="34" height="34" rx="10" fill="#232323"></rect><path d="M17 6.5 8.8 9.7v6.3c0 5.1 3.4 9.1 8.2 10.8 4.8-1.7 8.2-5.7 8.2-10.8V9.7Z" fill="none" stroke="#A1FFCB" stroke-width="2.2" stroke-linejoin="round"></path><path d="m13.2 16.4 2.800 2.800 5-5.300" fill="none" stroke="#A1FFCB" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"></path></svg><span class="_wordmark_1sz15_55" aria-hidden="true">trustbazaar</span></span></a><form role="search" aria-label="Search TrustBazaar" class="_headSearch_1sz15_310"><label for="head-q" class="_visuallyHidden_1sz15_273">Search TrustBazaar</label><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M11 4 a7 7 0 1 0 0.01 0 Z M16.5 16.5 L21 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><input id="head-q" type="search" maxlength="100" placeholder="Search phones, cameras, bikes…" value=""></form><a class="_account_1sz15_121" href="/signin?next=%2F">Sign in</a><button type="button" class="_langSwitch_1sz15_72"><span lang="bn">বাংলা</span><span class="_visuallyHidden_1sz15_273">– change the language to Bangla</span></button><a class="mantine-focus-auto mantine-active m_77c9d27d mantine-Button-root m_87cf2631 mantine-UnstyledButton-root" data-size="md" href="/sell/new" style="--button-height: var(--button-height-md); --button-padding-x: var(--button-padding-x-md); --button-fz: var(--mantine-font-size-md); --button-radius: var(--mantine-radius-md); --button-color: var(--mantine-color-white);"><span class="m_80f1301b mantine-Button-inner"><span class="m_811560b9 mantine-Button-label">Sell an item</span></span></a></header><main id="main" tabindex="-1" class="_main_1sz15_104"><div class="_page_toy73_3"><section class="_hero_toy73_6"><div class="_heroText_toy73_7"><h1 class="_title_toy73_8">Find it nearby. Pay when it is in your hands.</h1><p class="_lede_toy73_10">The seller is paid only after you confirm you have the item.</p><form role="search" aria-label="Phones, cycles, game accounts" class="_search_toy73_11"><label for="home-q" class="_visuallyHidden_toy73_4">What are you looking for?</label><svg class="_searchIcon_toy73_13" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M11 4 a7 7 0 1 0 0.01 0 Z M16.5 16.5 L21 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg><input id="home-q" type="search" maxlength="100" placeholder="Phones, cycles, game accounts" value=""><button type="submit">Search</button></form><p class="_proof_toy73_18">Every seller's identity is checked. Pay with bKash, Nagad or card.</p></div><div class="_art_toy73_20" aria-hidden="true"><div class="_window_toy73_21"><div class="_winPhoto_toy73_22"><img src="/img/photo-f120292367-960.jpg" srcset="/img/photo-f120292367-500.jpg 500w, /img/photo-f120292367-960.jpg 960w" sizes="(max-width: 47.99em) 90vw, 40vw" width="960" height="817" alt="" loading="eager" decoding="async" data-source="stand-in" data-subject="mirrorless camera"></div><div class="_winBody_toy73_24"><p class="_winTitle_toy73_25">Sony A7 III camera, body only</p><p class="_winWhere_toy73_26">Dhaka · ID checked</p><p class="_winPrice_toy73_27">৳85,000</p><span class="_winBtn_toy73_28">Buy with protection</span><ol class="_winSteps_toy73_29"><li class="_winDone_toy73_32">You pay TrustBazaar</li><li class="_winNow_toy73_34">We hold it</li><li>The seller is paid when you confirm</li></ol></div></div><div class="_card_toy73_36"><span class="_cardTick_toy73_38"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="8" fill="currentColor"></circle><path d="M4.5 8.2 l2.3 2.3 l4.7 -5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span><strong>Payment held</strong>Released to the seller when you confirm</span></div></div></section><section aria-labelledby="home-safe" class="_safe_rravn_3"><h2 id="home-safe" class="_h2_rravn_4">Why paying a stranger is safe here</h2><div class="_bento_rravn_12"><section aria-labelledby="home-promise" class="_cardBox_rravn_13 _escrow_rravn_17"><p class="_label_rravn_9">How your money moves</p><h2 id="home-promise" class="_h3_rravn_6">Your money waits with us</h2><p class="_text_rravn_8">You pay TrustBazaar, not the seller. The seller sees that the money is held, and it moves only when you confirm.</p><ol class="_timeline_rravn_21"><li class="_t1_rravn_24">You pay TrustBazaar</li><li class="_t2_rravn_24">We hold it</li><li class="_t3_rravn_24">The seller is paid when you confirm</li></ol></section><article class="_cardBox_rravn_13 _auction_rravn_66"><h3 class="_h3_rravn_6">Auctions with a clock you can trust</h3><p class="_text_rravn_8">The server keeps the time. A bid in the last minutes extends the end, so nobody is sniped.</p><div class="_ui_rravn_15" aria-hidden="true"><div class="_clockRow_rravn_27"><span class="_live_rravn_29"></span>Ends in<strong>02:14:09</strong></div><ul class="_bids_rravn_31"><li style="--i: 0;"><span>Bidder 3</span><b>৳87,000</b></li><li style="--i: 1;"><span>Bidder 1</span><b>৳86,500</b></li><li style="--i: 2;"><span>Bidder 2</span><b>৳86,000</b></li></ul></div></article><article class="_cardBox_rravn_13 _idCard_rravn_67"><h3 class="_h3_rravn_6">Every seller is ID-checked</h3><p class="_text_rravn_8">An ID card and two selfies, reviewed by a person. One verified account per person.</p><ul class="_checks_rravn_37" aria-hidden="true"><li><span class="_tickBox_rravn_39"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path class="_tickPath_rravn_40" d="M3.5 8.4 l3 3 l6-6.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>ID card checked</li><li><span class="_tickBox_rravn_39"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path class="_tickPath_rravn_40" d="M3.5 8.4 l3 3 l6-6.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>Selfies match</li></ul></article><article class="_cardBox_rravn_13 _code_rravn_68"><h3 class="_h3_rravn_6">Hand over with a one-time code</h3><p class="_text_rravn_8">Inspect the item first. Give the seller the code only when you are happy.</p><div class="_ui_rravn_15" aria-hidden="true"><p class="_label_rravn_9">Handover code</p><div class="_digits_rravn_43"><span style="--i: 0;">4</span><span style="--i: 1;">1</span><span style="--i: 2;">7</span><span style="--i: 3;">9</span><span style="--i: 4;">0</span><span style="--i: 5;">2</span></div></div></article><article class="_cardBox_rravn_13 _pay_rravn_47"><h3 class="_h3_rravn_6">Pay the way you already do</h3><p class="_text_rravn_8">Choose bKash, Nagad or a card. The money goes to TrustBazaar first.</p><ul class="_methods_rravn_49" aria-hidden="true"><li>bKash</li><li>Nagad</li><li>Card</li></ul></article></div></section><section aria-labelledby="home-journey" class="_journey_rravn_52"><h2 id="home-journey" class="_jTitle_rravn_53">How a purchase goes</h2><ol class="_jSteps_rravn_55"><li style="--i: 0;"><span class="_jNum_rravn_58" aria-hidden="true">1</span><strong>Find it</strong><span>Search or browse. Every listing shows its seller's ID check.</span></li><li style="--i: 1;"><span class="_jNum_rravn_58" aria-hidden="true">2</span><strong>Ask</strong><span>Message the seller in the app, never outside it.</span></li><li style="--i: 2;"><span class="_jNum_rravn_58" aria-hidden="true">3</span><strong>Pay safely</strong><span>TrustBazaar holds your money. The seller can see that it is there.</span></li><li style="--i: 3;"><span class="_jNum_rravn_58" aria-hidden="true">4</span><strong>Meet and confirm</strong><span>Inspect the item, give the code, and the seller is paid.</span></li></ol></section><section aria-labelledby="home-newest" class="_section_toy73_55"><div class="_head_toy73_56"><h2 id="home-newest">Newest listings</h2><a href="/search?sort=newest">See everything new</a></div><div role="alert" class="_error_qzsen_43">Something went wrong on our side. If you contact us, quote reference -.</div></section><section aria-labelledby="home-sell" class="_sell_toy73_66"><h2 id="home-sell">Selling something?</h2><ol class="_steps_toy73_69"><li><span class="_num_toy73_72" aria-hidden="true">1</span><span><strong>Take a few photos</strong>Two or more, in good light.</span></li><li><span class="_num_toy73_72" aria-hidden="true">2</span><span><strong>Check your ID once</strong>Your ID card and two selfies, the first time you sell.</span></li><li><span class="_num_toy73_72" aria-hidden="true">3</span><span><strong>Get paid on handover</strong>The money reaches you when the buyer confirms.</span></li></ol><a class="_sellBtn_toy73_73" href="/sell/new">Start selling</a></section></div></main><footer class="_footer_1sz15_148"><div class="_footerAbout_1sz15_160"><span class="_logo_1sz15_45"><svg class="_mark_1sz15_51" viewBox="0 0 34 34" width="32" height="32" aria-hidden="true" focusable="false"><rect width="34" height="34" rx="10" fill="#232323"></rect><path d="M17 6.5 8.8 9.7v6.3c0 5.1 3.4 9.1 8.2 10.8 4.8-1.7 8.2-5.7 8.2-10.8V9.7Z" fill="none" stroke="#A1FFCB" stroke-width="2.2" stroke-linejoin="round"></path><path d="m13.2 16.4 2.800 2.800 5-5.300" fill="none" stroke="#A1FFCB" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"></path></svg><span class="_wordmark_1sz15_55" aria-hidden="true">trustbazaar</span></span><p>A marketplace for Bangladesh where every payment is held until the buyer has the item.</p></div><nav aria-label="Site links"><ul class="_footerLinks_1sz15_168"><li><a href="/search">Search</a></li><li><a href="/sell/new">Sell an item</a></li><li><a href="/help/terms">Terms</a></li><li><a href="/help/privacy">Privacy</a></li></ul></nav></footer></div></div>
+    <script type="module" src="/src/entries/app.tsx?t=1795597672859"></script>
+  
+
+</body></html>

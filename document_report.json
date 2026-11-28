@@ -1,0 +1,3302 @@
+{
+ "mentions": {
+  "IF-UI-01": [
+   1,
+   8
+  ],
+  "IF-UI-02": [
+   1,
+   8
+  ],
+  "IF-UI-03": [
+   3,
+   8
+  ],
+  "IF-UI-04": [
+   2,
+   8
+  ],
+  "IF-UI-05": [
+   2,
+   8
+  ],
+  "IF-UI-06": [
+   5,
+   8,
+   9
+  ],
+  "IF-UI-07": [
+   8
+  ],
+  "IF-UI-08": [
+   2,
+   8
+  ],
+  "IF-UI-09": [
+   1,
+   8
+  ],
+  "IF-UI-10": [
+   8
+  ],
+  "IF-SW-01": [
+   2
+  ],
+  "IF-SW-02": [
+   2
+  ],
+  "IF-SW-03": [
+   2
+  ],
+  "IF-SW-04": [
+   4
+  ],
+  "IF-SW-05": [
+   1,
+   6
+  ],
+  "IF-SW-06": [
+   1,
+   6
+  ],
+  "IF-SW-07": [
+   5,
+   8
+  ],
+  "IF-SW-08": [
+   8
+  ],
+  "IF-SW-09": [
+   9
+  ],
+  "IF-SW-10": [
+   9
+  ],
+  "IF-COM-01": [
+   8
+  ],
+  "IF-COM-02": [
+   3,
+   6,
+   8,
+   9
+  ],
+  "IF-COM-03": [
+   4,
+   6
+  ],
+  "IF-COM-04": [
+   9
+  ],
+  "FR-ACC-01": [
+   1
+  ],
+  "FR-ACC-02": [
+   1
+  ],
+  "FR-ACC-03": [
+   1
+  ],
+  "FR-ACC-04": [
+   1
+  ],
+  "FR-ACC-05": [
+   1
+  ],
+  "FR-ACC-06": [
+   1
+  ],
+  "FR-ACC-07": [
+   1
+  ],
+  "FR-ACC-08": [
+   1
+  ],
+  "FR-ACC-09": [
+   1
+  ],
+  "FR-ACC-10": [
+   1,
+   4,
+   6
+  ],
+  "FR-ACC-11": [
+   1,
+   2,
+   8
+  ],
+  "FR-ACC-12": [
+   1
+  ],
+  "FR-ACC-13": [
+   1
+  ],
+  "FR-KYC-01": [
+   1
+  ],
+  "FR-KYC-02": [
+   1,
+   8
+  ],
+  "FR-KYC-03": [
+   1
+  ],
+  "FR-KYC-04": [
+   1
+  ],
+  "FR-KYC-05": [
+   1
+  ],
+  "FR-KYC-06": [
+   1
+  ],
+  "FR-KYC-07": [
+   1
+  ],
+  "FR-KYC-08": [
+   1
+  ],
+  "FR-KYC-09": [
+   1
+  ],
+  "FR-KYC-10": [
+   1,
+   3
+  ],
+  "FR-KYC-11": [
+   1
+  ],
+  "FR-KYC-12": [
+   1
+  ],
+  "FR-LST-01": [
+   3
+  ],
+  "FR-LST-02": [
+   3
+  ],
+  "FR-LST-03": [
+   3,
+   4
+  ],
+  "FR-LST-04": [
+   3
+  ],
+  "FR-LST-05": [
+   2,
+   3
+  ],
+  "FR-LST-06": [
+   1,
+   3
+  ],
+  "FR-LST-07": [
+   3,
+   8
+  ],
+  "FR-LST-08": [
+   3,
+   9
+  ],
+  "FR-LST-09": [
+   3
+  ],
+  "FR-LST-10": [
+   3,
+   8
+  ],
+  "FR-LST-11": [
+   3
+  ],
+  "FR-LST-12": [
+   3
+  ],
+  "FR-LST-13": [
+   3
+  ],
+  "FR-SRC-01": [
+   3
+  ],
+  "FR-SRC-02": [
+   3
+  ],
+  "FR-SRC-03": [
+   3
+  ],
+  "FR-SRC-04": [
+   3
+  ],
+  "FR-SRC-05": [
+   3
+  ],
+  "FR-SRC-06": [
+   3
+  ],
+  "FR-AUC-01": [
+   3,
+   8
+  ],
+  "FR-AUC-02": [
+   3
+  ],
+  "FR-AUC-03": [
+   3
+  ],
+  "FR-AUC-04": [
+   3
+  ],
+  "FR-AUC-05": [
+   3
+  ],
+  "FR-AUC-06": [
+   3
+  ],
+  "FR-AUC-07": [
+   3
+  ],
+  "FR-AUC-08": [
+   3
+  ],
+  "FR-AUC-09": [
+   3
+  ],
+  "FR-AUC-10": [
+   3
+  ],
+  "FR-AUC-11": [
+   3
+  ],
+  "FR-AUC-12": [
+   3
+  ],
+  "FR-AUC-13": [
+   3,
+   8
+  ],
+  "FR-AUC-14": [
+   2,
+   3
+  ],
+  "FR-AUC-15": [
+   2,
+   3
+  ],
+  "FR-AUC-16": [
+   2,
+   3
+  ],
+  "FR-AUC-17": [
+   3
+  ],
+  "FR-AUC-18": [
+   3,
+   7
+  ],
+  "FR-FIX-01": [
+   2
+  ],
+  "FR-FIX-02": [
+   2,
+   3
+  ],
+  "FR-FIX-03": [
+   2
+  ],
+  "FR-FIX-04": [
+   2,
+   3
+  ],
+  "FR-FIX-05": [
+   2,
+   3
+  ],
+  "FR-PAY-01": [
+   2
+  ],
+  "FR-PAY-02": [
+   2,
+   4,
+   8
+  ],
+  "FR-PAY-03": [
+   2
+  ],
+  "FR-PAY-04": [
+   2
+  ],
+  "FR-PAY-05": [
+   2
+  ],
+  "FR-PAY-06": [
+   2
+  ],
+  "FR-PAY-07": [
+   2,
+   4,
+   5
+  ],
+  "FR-PAY-08": [
+   2,
+   4,
+   5
+  ],
+  "FR-PAY-09": [
+   2,
+   4,
+   7
+  ],
+  "FR-PAY-10": [
+   2
+  ],
+  "FR-PAY-11": [
+   2,
+   7
+  ],
+  "FR-PAY-12": [
+   2
+  ],
+  "FR-PAY-13": [
+   2
+  ],
+  "FR-PAY-14": [
+   2
+  ],
+  "FR-PAY-15": [
+   2,
+   4
+  ],
+  "FR-PAY-16": [
+   2
+  ],
+  "FR-PAY-17": [
+   1,
+   2,
+   8
+  ],
+  "FR-PAY-18": [
+   2
+  ],
+  "FR-PAY-19": [
+   2
+  ],
+  "FR-PAY-20": [
+   2
+  ],
+  "FR-PAY-21": [
+   2
+  ],
+  "FR-DLV-01": [
+   4
+  ],
+  "FR-DLV-02": [
+   2,
+   4
+  ],
+  "FR-DLV-03": [
+   4
+  ],
+  "FR-DLV-04": [
+   4
+  ],
+  "FR-DLV-05": [
+   4
+  ],
+  "FR-DLV-06": [
+   4
+  ],
+  "FR-DLV-07": [
+   4
+  ],
+  "FR-DLV-08": [
+   4
+  ],
+  "FR-DLV-09": [
+   4
+  ],
+  "FR-DLV-10": [
+   4
+  ],
+  "FR-DLV-11": [
+   2,
+   4,
+   7
+  ],
+  "FR-DLV-12": [
+   2,
+   4
+  ],
+  "FR-DLV-13": [
+   2,
+   4
+  ],
+  "FR-DLV-14": [
+   4
+  ],
+  "FR-GAM-01": [
+   5,
+   7
+  ],
+  "FR-GAM-02": [
+   5
+  ],
+  "FR-GAM-03": [
+   5
+  ],
+  "FR-GAM-04": [
+   5
+  ],
+  "FR-GAM-05": [
+   2,
+   5,
+   8
+  ],
+  "FR-GAM-06": [
+   2,
+   5
+  ],
+  "FR-GAM-07": [
+   2,
+   5
+  ],
+  "FR-GAM-08": [
+   5
+  ],
+  "FR-GAM-09": [
+   5
+  ],
+  "FR-GAM-10": [
+   2,
+   5
+  ],
+  "FR-GAM-11": [
+   5
+  ],
+  "FR-GAM-12": [
+   5,
+   6
+  ],
+  "FR-GAM-13": [
+   5
+  ],
+  "FR-GAM-14": [
+   5,
+   7,
+   8
+  ],
+  "FR-GAM-15": [
+   5
+  ],
+  "FR-GAM-16": [
+   2,
+   5,
+   7
+  ],
+  "FR-GAM-17": [
+   2,
+   5
+  ],
+  "FR-GAM-18": [
+   1,
+   5,
+   7
+  ],
+  "FR-GAM-19": [
+   5
+  ],
+  "FR-GAM-20": [
+   5,
+   6
+  ],
+  "FR-CHT-01": [
+   6
+  ],
+  "FR-CHT-02": [
+   6
+  ],
+  "FR-CHT-03": [
+   6
+  ],
+  "FR-CHT-04": [
+   6
+  ],
+  "FR-CHT-05": [
+   6
+  ],
+  "FR-CHT-06": [
+   6,
+   7
+  ],
+  "FR-CHT-07": [
+   6
+  ],
+  "FR-CHT-08": [
+   6,
+   9
+  ],
+  "FR-CHT-09": [
+   6
+  ],
+  "FR-CHT-10": [
+   6,
+   7
+  ],
+  "FR-REV-01": [
+   2,
+   7
+  ],
+  "FR-REV-02": [
+   7
+  ],
+  "FR-REV-03": [
+   7
+  ],
+  "FR-REV-04": [
+   7,
+   8
+  ],
+  "FR-REV-05": [
+   7
+  ],
+  "FR-REV-06": [
+   7
+  ],
+  "FR-REV-07": [
+   7
+  ],
+  "FR-DSP-01": [
+   2,
+   4,
+   5,
+   7
+  ],
+  "FR-DSP-02": [
+   2,
+   7
+  ],
+  "FR-DSP-03": [
+   7
+  ],
+  "FR-DSP-04": [
+   7
+  ],
+  "FR-DSP-05": [
+   4,
+   5,
+   6,
+   7,
+   9
+  ],
+  "FR-DSP-06": [
+   2,
+   4,
+   7
+  ],
+  "FR-DSP-07": [
+   7
+  ],
+  "FR-DSP-08": [
+   7
+  ],
+  "FR-DSP-09": [
+   7
+  ],
+  "FR-DSP-10": [
+   2,
+   5,
+   7
+  ],
+  "FR-DSP-11": [
+   2,
+   7
+  ],
+  "FR-DSP-12": [
+   7
+  ],
+  "FR-NTF-01": [
+   3,
+   6
+  ],
+  "FR-NTF-02": [
+   3,
+   6,
+   9
+  ],
+  "FR-NTF-03": [
+   1,
+   6
+  ],
+  "FR-NTF-04": [
+   6,
+   8
+  ],
+  "FR-NTF-05": [
+   6
+  ],
+  "FR-NTF-06": [
+   1,
+   6
+  ],
+  "FR-NTF-07": [
+   2,
+   4,
+   5,
+   6,
+   9
+  ],
+  "FR-NTF-08": [
+   5,
+   6
+  ],
+  "FR-NTF-09": [
+   6
+  ],
+  "FR-MON-01": [
+   2,
+   8
+  ],
+  "FR-MON-02": [
+   2
+  ],
+  "FR-MON-03": [
+   2
+  ],
+  "FR-MON-04": [
+   2
+  ],
+  "FR-MON-05": [
+   2,
+   3
+  ],
+  "FR-MON-06": [
+   2
+  ],
+  "FR-MON-07": [
+   2
+  ],
+  "FR-MON-08": [
+   2,
+   3
+  ],
+  "FR-MON-09": [
+   2
+  ],
+  "FR-MON-10": [
+   2
+  ],
+  "FR-TNS-01": [
+   6,
+   7
+  ],
+  "FR-TNS-02": [
+   3,
+   7,
+   9
+  ],
+  "FR-TNS-03": [
+   1,
+   6,
+   7
+  ],
+  "FR-TNS-04": [
+   2,
+   7
+  ],
+  "FR-TNS-10": [
+   7
+  ],
+  "FR-TNS-05": [
+   1,
+   2,
+   3,
+   7
+  ],
+  "FR-TNS-06": [
+   1,
+   7
+  ],
+  "FR-TNS-07": [
+   2,
+   7
+  ],
+  "FR-TNS-08": [
+   3,
+   7
+  ],
+  "FR-TNS-09": [
+   6,
+   7
+  ],
+  "FR-OPS-01": [
+   1,
+   2,
+   5,
+   7,
+   8,
+   9
+  ],
+  "FR-OPS-02": [
+   2,
+   3,
+   7,
+   8
+  ],
+  "FR-OPS-03": [
+   1,
+   7
+  ],
+  "FR-OPS-04": [
+   1,
+   7,
+   8
+  ],
+  "FR-OPS-05": [
+   1,
+   7
+  ],
+  "FR-OPS-06": [
+   1,
+   7,
+   8,
+   9
+  ],
+  "FR-OPS-07": [
+   1,
+   7
+  ],
+  "FR-OPS-08": [
+   1,
+   2,
+   3,
+   4,
+   7,
+   9
+  ],
+  "FR-OPS-09": [
+   7
+  ],
+  "FR-PRV-01": [
+   1,
+   4,
+   8
+  ],
+  "FR-PRV-02": [
+   1
+  ],
+  "FR-PRV-03": [
+   7
+  ],
+  "FR-PRV-04": [
+   1,
+   6,
+   9
+  ],
+  "FR-PRV-05": [
+   1
+  ],
+  "FR-PRV-06": [
+   7
+  ],
+  "SEC-GEN-01": [
+   1,
+   9
+  ],
+  "SEC-GEN-02": [
+   9
+  ],
+  "SEC-GEN-03": [
+   9
+  ],
+  "SEC-AUTH-01": [
+   1
+  ],
+  "SEC-AUTH-02": [
+   1,
+   9
+  ],
+  "SEC-AUTH-03": [
+   1,
+   9
+  ],
+  "SEC-AUTH-04": [
+   1,
+   9
+  ],
+  "SEC-AUTH-05": [
+   1,
+   9
+  ],
+  "SEC-AUTH-06": [
+   1,
+   9
+  ],
+  "SEC-AUTH-07": [
+   1,
+   9
+  ],
+  "SEC-AUTH-08": [
+   1,
+   5,
+   8
+  ],
+  "SEC-AUTH-09": [
+   1,
+   4,
+   6
+  ],
+  "SEC-AUTH-10": [
+   1,
+   9
+  ],
+  "SEC-AUTH-11": [
+   1,
+   9
+  ],
+  "SEC-AUTH-12": [
+   1,
+   9
+  ],
+  "SEC-SES-01": [
+   1,
+   9
+  ],
+  "SEC-SES-02": [
+   1,
+   8
+  ],
+  "SEC-SES-03": [
+   1,
+   8
+  ],
+  "SEC-SES-04": [
+   1,
+   8
+  ],
+  "SEC-SES-05": [
+   1,
+   8
+  ],
+  "SEC-SES-06": [
+   1,
+   9
+  ],
+  "SEC-SES-07": [
+   1,
+   3,
+   6,
+   8
+  ],
+  "SEC-ACC-01": [
+   1,
+   3,
+   4,
+   7,
+   8,
+   9
+  ],
+  "SEC-ACC-02": [
+   1,
+   3,
+   4,
+   7,
+   9
+  ],
+  "SEC-ACC-03": [
+   1,
+   3,
+   4,
+   7,
+   9
+  ],
+  "SEC-ACC-04": [
+   1,
+   7,
+   9
+  ],
+  "SEC-ACC-05": [
+   1,
+   4,
+   7,
+   8,
+   9
+  ],
+  "SEC-ACC-06": [
+   1,
+   9
+  ],
+  "SEC-DAT-01": [
+   1,
+   9
+  ],
+  "SEC-DAT-02": [
+   1,
+   9
+  ],
+  "SEC-DAT-03": [
+   1,
+   9
+  ],
+  "SEC-DAT-04": [
+   1,
+   9
+  ],
+  "SEC-DAT-05": [
+   1,
+   9
+  ],
+  "SEC-DAT-06": [
+   1,
+   9
+  ],
+  "SEC-DAT-07": [
+   1,
+   4,
+   5,
+   6,
+   9
+  ],
+  "SEC-DAT-08": [
+   1,
+   3,
+   6,
+   9
+  ],
+  "SEC-DAT-09": [
+   1,
+   9
+  ],
+  "SEC-DAT-10": [
+   5
+  ],
+  "SEC-DAT-11": [
+   1,
+   9
+  ],
+  "SEC-GAM-01": [
+   5
+  ],
+  "SEC-GAM-02": [
+   5
+  ],
+  "SEC-GAM-03": [
+   5,
+   8
+  ],
+  "SEC-INP-01": [
+   1,
+   9
+  ],
+  "SEC-INP-02": [
+   9
+  ],
+  "SEC-INP-03": [
+   3,
+   8
+  ],
+  "SEC-INP-04": [
+   1,
+   3,
+   6,
+   9
+  ],
+  "SEC-INP-05": [
+   4,
+   9
+  ],
+  "SEC-INP-06": [
+   1,
+   8
+  ],
+  "SEC-WEB-01": [
+   1,
+   8
+  ],
+  "SEC-WEB-02": [
+   1,
+   8
+  ],
+  "SEC-WEB-03": [
+   1,
+   8,
+   9
+  ],
+  "SEC-WEB-04": [
+   8
+  ],
+  "SEC-WEB-05": [
+   3,
+   9
+  ],
+  "SEC-PAY-01": [
+   2
+  ],
+  "SEC-PAY-02": [
+   2
+  ],
+  "SEC-PAY-03": [
+   2,
+   4,
+   9
+  ],
+  "SEC-PAY-04": [
+   2,
+   4
+  ],
+  "SEC-PAY-05": [
+   2,
+   4,
+   9
+  ],
+  "SEC-PAY-06": [
+   2,
+   4,
+   8,
+   9
+  ],
+  "SEC-PAY-07": [
+   2,
+   4,
+   9
+  ],
+  "SEC-ABU-01": [
+   1,
+   2,
+   3,
+   4,
+   6,
+   7,
+   9
+  ],
+  "SEC-ABU-02": [
+   9
+  ],
+  "SEC-ABU-03": [
+   1,
+   9
+  ],
+  "SEC-LOG-01": [
+   1,
+   2,
+   6,
+   7
+  ],
+  "SEC-LOG-02": [
+   1,
+   9
+  ],
+  "SEC-LOG-03": [
+   1,
+   9
+  ],
+  "SEC-LOG-04": [
+   1
+  ],
+  "SEC-LOG-05": [
+   1,
+   9
+  ],
+  "SEC-SDL-01": [
+   9
+  ],
+  "SEC-SDL-02": [
+   9
+  ],
+  "SEC-SDL-03": [
+   9
+  ],
+  "SEC-SDL-04": [
+   9
+  ],
+  "SEC-SDL-05": [
+   9
+  ],
+  "SEC-SDL-06": [
+   9
+  ],
+  "SEC-SDL-07": [
+   9
+  ],
+  "SEC-SDL-08": [
+   9
+  ],
+  "SEC-SDL-09": [
+   1,
+   4,
+   5,
+   9
+  ],
+  "SEC-INF-01": [
+   9
+  ],
+  "SEC-INF-02": [
+   9
+  ],
+  "SEC-INF-03": [
+   1,
+   9
+  ],
+  "SEC-INF-04": [
+   9
+  ],
+  "SEC-INF-05": [
+   9
+  ],
+  "SEC-IRM-01": [
+   9
+  ],
+  "SEC-IRM-02": [
+   9
+  ],
+  "SEC-IRM-03": [
+   9
+  ],
+  "SEC-IRM-04": [
+   5,
+   7,
+   9
+  ],
+  "NFR-PERF-01": [
+   3,
+   9
+  ],
+  "NFR-PERF-02": [
+   3,
+   9
+  ],
+  "NFR-PERF-03": [
+   3,
+   8,
+   9
+  ],
+  "NFR-PERF-04": [
+   6,
+   8,
+   9
+  ],
+  "NFR-PERF-05": [
+   3,
+   9
+  ],
+  "NFR-PERF-06": [
+   2,
+   8,
+   9
+  ],
+  "NFR-PERF-07": [
+   8
+  ],
+  "NFR-PERF-08": [
+   2,
+   3
+  ],
+  "NFR-REL-01": [
+   1,
+   3,
+   9
+  ],
+  "NFR-REL-02": [
+   2,
+   9
+  ],
+  "NFR-REL-03": [
+   2,
+   3,
+   4,
+   9
+  ],
+  "NFR-REL-04": [
+   2,
+   4,
+   9
+  ],
+  "NFR-REL-05": [
+   9
+  ],
+  "NFR-REL-06": [
+   9
+  ],
+  "NFR-USE-01": [
+   3,
+   8
+  ],
+  "NFR-USE-02": [
+   1,
+   8
+  ],
+  "NFR-USE-03": [
+   5,
+   8
+  ],
+  "NFR-USE-04": [
+   8
+  ],
+  "NFR-USE-05": [
+   8
+  ],
+  "NFR-USE-06": [
+   8
+  ],
+  "NFR-USE-07": [
+   8
+  ],
+  "NFR-USE-08": [
+   8
+  ],
+  "NFR-MNT-01": [
+   1,
+   4,
+   6,
+   8,
+   9
+  ],
+  "NFR-MNT-02": [
+   5,
+   9
+  ],
+  "NFR-MNT-03": [
+   9
+  ],
+  "NFR-MNT-04": [
+   1,
+   9
+  ],
+  "NFR-MNT-05": [
+   1,
+   9
+  ],
+  "NFR-MNT-06": [
+   1,
+   8,
+   9
+  ],
+  "NFR-MNT-07": [
+   8,
+   9
+  ],
+  "NFR-MNT-08": [
+   9
+  ],
+  "NFR-SCL-01": [
+   3,
+   6,
+   9
+  ],
+  "NFR-SCL-02": [
+   3,
+   9
+  ],
+  "NFR-SCL-03": [
+   3
+  ],
+  "NFR-OBS-01": [
+   9
+  ],
+  "NFR-OBS-02": [
+   9
+  ],
+  "NFR-OBS-03": [
+   9
+  ],
+  "NFR-CMP-01": [
+   9
+  ],
+  "NFR-CMP-02": [
+   2
+  ],
+  "NFR-CMP-03": [
+   2
+  ],
+  "NFR-CMP-04": [
+   8
+  ],
+  "NFR-CMP-05": [
+   2,
+   4,
+   8
+  ]
+ },
+ "mentions_1_8": {
+  "IF-UI-01": [
+   1,
+   8
+  ],
+  "IF-UI-02": [
+   1,
+   8
+  ],
+  "IF-UI-03": [
+   3,
+   8
+  ],
+  "IF-UI-04": [
+   2,
+   8
+  ],
+  "IF-UI-05": [
+   2,
+   8
+  ],
+  "IF-UI-06": [
+   5,
+   8
+  ],
+  "IF-UI-07": [
+   8
+  ],
+  "IF-UI-08": [
+   2,
+   8
+  ],
+  "IF-UI-09": [
+   1,
+   8
+  ],
+  "IF-UI-10": [
+   8
+  ],
+  "IF-SW-01": [
+   2
+  ],
+  "IF-SW-02": [
+   2
+  ],
+  "IF-SW-03": [
+   2
+  ],
+  "IF-SW-04": [
+   4
+  ],
+  "IF-SW-05": [
+   1,
+   6
+  ],
+  "IF-SW-06": [
+   1,
+   6
+  ],
+  "IF-SW-07": [
+   5,
+   8
+  ],
+  "IF-SW-08": [
+   8
+  ],
+  "IF-SW-09": [],
+  "IF-SW-10": [],
+  "IF-COM-01": [
+   8
+  ],
+  "IF-COM-02": [
+   3,
+   6,
+   8
+  ],
+  "IF-COM-03": [
+   4,
+   6
+  ],
+  "IF-COM-04": [],
+  "FR-ACC-01": [
+   1
+  ],
+  "FR-ACC-02": [
+   1
+  ],
+  "FR-ACC-03": [
+   1
+  ],
+  "FR-ACC-04": [
+   1
+  ],
+  "FR-ACC-05": [
+   1
+  ],
+  "FR-ACC-06": [
+   1
+  ],
+  "FR-ACC-07": [
+   1
+  ],
+  "FR-ACC-08": [
+   1
+  ],
+  "FR-ACC-09": [
+   1
+  ],
+  "FR-ACC-10": [
+   1,
+   4,
+   6
+  ],
+  "FR-ACC-11": [
+   1,
+   2,
+   8
+  ],
+  "FR-ACC-12": [
+   1
+  ],
+  "FR-ACC-13": [
+   1
+  ],
+  "FR-KYC-01": [
+   1
+  ],
+  "FR-KYC-02": [
+   1,
+   8
+  ],
+  "FR-KYC-03": [
+   1
+  ],
+  "FR-KYC-04": [
+   1
+  ],
+  "FR-KYC-05": [
+   1
+  ],
+  "FR-KYC-06": [
+   1
+  ],
+  "FR-KYC-07": [
+   1
+  ],
+  "FR-KYC-08": [
+   1
+  ],
+  "FR-KYC-09": [
+   1
+  ],
+  "FR-KYC-10": [
+   1,
+   3
+  ],
+  "FR-KYC-11": [
+   1
+  ],
+  "FR-KYC-12": [
+   1
+  ],
+  "FR-LST-01": [
+   3
+  ],
+  "FR-LST-02": [
+   3
+  ],
+  "FR-LST-03": [
+   3,
+   4
+  ],
+  "FR-LST-04": [
+   3
+  ],
+  "FR-LST-05": [
+   2,
+   3
+  ],
+  "FR-LST-06": [
+   1,
+   3
+  ],
+  "FR-LST-07": [
+   3,
+   8
+  ],
+  "FR-LST-08": [
+   3
+  ],
+  "FR-LST-09": [
+   3
+  ],
+  "FR-LST-10": [
+   3,
+   8
+  ],
+  "FR-LST-11": [
+   3
+  ],
+  "FR-LST-12": [
+   3
+  ],
+  "FR-LST-13": [
+   3
+  ],
+  "FR-SRC-01": [
+   3
+  ],
+  "FR-SRC-02": [
+   3
+  ],
+  "FR-SRC-03": [
+   3
+  ],
+  "FR-SRC-04": [
+   3
+  ],
+  "FR-SRC-05": [
+   3
+  ],
+  "FR-SRC-06": [
+   3
+  ],
+  "FR-AUC-01": [
+   3,
+   8
+  ],
+  "FR-AUC-02": [
+   3
+  ],
+  "FR-AUC-03": [
+   3
+  ],
+  "FR-AUC-04": [
+   3
+  ],
+  "FR-AUC-05": [
+   3
+  ],
+  "FR-AUC-06": [
+   3
+  ],
+  "FR-AUC-07": [
+   3
+  ],
+  "FR-AUC-08": [
+   3
+  ],
+  "FR-AUC-09": [
+   3
+  ],
+  "FR-AUC-10": [
+   3
+  ],
+  "FR-AUC-11": [
+   3
+  ],
+  "FR-AUC-12": [
+   3
+  ],
+  "FR-AUC-13": [
+   3,
+   8
+  ],
+  "FR-AUC-14": [
+   2,
+   3
+  ],
+  "FR-AUC-15": [
+   2,
+   3
+  ],
+  "FR-AUC-16": [
+   2,
+   3
+  ],
+  "FR-AUC-17": [
+   3
+  ],
+  "FR-AUC-18": [
+   3,
+   7
+  ],
+  "FR-FIX-01": [
+   2
+  ],
+  "FR-FIX-02": [
+   2,
+   3
+  ],
+  "FR-FIX-03": [
+   2
+  ],
+  "FR-FIX-04": [
+   2,
+   3
+  ],
+  "FR-FIX-05": [
+   2,
+   3
+  ],
+  "FR-PAY-01": [
+   2
+  ],
+  "FR-PAY-02": [
+   2,
+   4,
+   8
+  ],
+  "FR-PAY-03": [
+   2
+  ],
+  "FR-PAY-04": [
+   2
+  ],
+  "FR-PAY-05": [
+   2
+  ],
+  "FR-PAY-06": [
+   2
+  ],
+  "FR-PAY-07": [
+   2,
+   4,
+   5
+  ],
+  "FR-PAY-08": [
+   2,
+   4,
+   5
+  ],
+  "FR-PAY-09": [
+   2,
+   4,
+   7
+  ],
+  "FR-PAY-10": [
+   2
+  ],
+  "FR-PAY-11": [
+   2,
+   7
+  ],
+  "FR-PAY-12": [
+   2
+  ],
+  "FR-PAY-13": [
+   2
+  ],
+  "FR-PAY-14": [
+   2
+  ],
+  "FR-PAY-15": [
+   2,
+   4
+  ],
+  "FR-PAY-16": [
+   2
+  ],
+  "FR-PAY-17": [
+   1,
+   2,
+   8
+  ],
+  "FR-PAY-18": [
+   2
+  ],
+  "FR-PAY-19": [
+   2
+  ],
+  "FR-PAY-20": [
+   2
+  ],
+  "FR-PAY-21": [
+   2
+  ],
+  "FR-DLV-01": [
+   4
+  ],
+  "FR-DLV-02": [
+   2,
+   4
+  ],
+  "FR-DLV-03": [
+   4
+  ],
+  "FR-DLV-04": [
+   4
+  ],
+  "FR-DLV-05": [
+   4
+  ],
+  "FR-DLV-06": [
+   4
+  ],
+  "FR-DLV-07": [
+   4
+  ],
+  "FR-DLV-08": [
+   4
+  ],
+  "FR-DLV-09": [
+   4
+  ],
+  "FR-DLV-10": [
+   4
+  ],
+  "FR-DLV-11": [
+   2,
+   4,
+   7
+  ],
+  "FR-DLV-12": [
+   2,
+   4
+  ],
+  "FR-DLV-13": [
+   2,
+   4
+  ],
+  "FR-DLV-14": [
+   4
+  ],
+  "FR-GAM-01": [
+   5,
+   7
+  ],
+  "FR-GAM-02": [
+   5
+  ],
+  "FR-GAM-03": [
+   5
+  ],
+  "FR-GAM-04": [
+   5
+  ],
+  "FR-GAM-05": [
+   2,
+   5,
+   8
+  ],
+  "FR-GAM-06": [
+   2,
+   5
+  ],
+  "FR-GAM-07": [
+   2,
+   5
+  ],
+  "FR-GAM-08": [
+   5
+  ],
+  "FR-GAM-09": [
+   5
+  ],
+  "FR-GAM-10": [
+   2,
+   5
+  ],
+  "FR-GAM-11": [
+   5
+  ],
+  "FR-GAM-12": [
+   5,
+   6
+  ],
+  "FR-GAM-13": [
+   5
+  ],
+  "FR-GAM-14": [
+   5,
+   7,
+   8
+  ],
+  "FR-GAM-15": [
+   5
+  ],
+  "FR-GAM-16": [
+   2,
+   5,
+   7
+  ],
+  "FR-GAM-17": [
+   2,
+   5
+  ],
+  "FR-GAM-18": [
+   1,
+   5,
+   7
+  ],
+  "FR-GAM-19": [
+   5
+  ],
+  "FR-GAM-20": [
+   5,
+   6
+  ],
+  "FR-CHT-01": [
+   6
+  ],
+  "FR-CHT-02": [
+   6
+  ],
+  "FR-CHT-03": [
+   6
+  ],
+  "FR-CHT-04": [
+   6
+  ],
+  "FR-CHT-05": [
+   6
+  ],
+  "FR-CHT-06": [
+   6,
+   7
+  ],
+  "FR-CHT-07": [
+   6
+  ],
+  "FR-CHT-08": [
+   6
+  ],
+  "FR-CHT-09": [
+   6
+  ],
+  "FR-CHT-10": [
+   6,
+   7
+  ],
+  "FR-REV-01": [
+   2,
+   7
+  ],
+  "FR-REV-02": [
+   7
+  ],
+  "FR-REV-03": [
+   7
+  ],
+  "FR-REV-04": [
+   7,
+   8
+  ],
+  "FR-REV-05": [
+   7
+  ],
+  "FR-REV-06": [
+   7
+  ],
+  "FR-REV-07": [
+   7
+  ],
+  "FR-DSP-01": [
+   2,
+   4,
+   5,
+   7
+  ],
+  "FR-DSP-02": [
+   2,
+   7
+  ],
+  "FR-DSP-03": [
+   7
+  ],
+  "FR-DSP-04": [
+   7
+  ],
+  "FR-DSP-05": [
+   4,
+   5,
+   6,
+   7
+  ],
+  "FR-DSP-06": [
+   2,
+   4,
+   7
+  ],
+  "FR-DSP-07": [
+   7
+  ],
+  "FR-DSP-08": [
+   7
+  ],
+  "FR-DSP-09": [
+   7
+  ],
+  "FR-DSP-10": [
+   2,
+   5,
+   7
+  ],
+  "FR-DSP-11": [
+   2,
+   7
+  ],
+  "FR-DSP-12": [
+   7
+  ],
+  "FR-NTF-01": [
+   3,
+   6
+  ],
+  "FR-NTF-02": [
+   3,
+   6
+  ],
+  "FR-NTF-03": [
+   1,
+   6
+  ],
+  "FR-NTF-04": [
+   6,
+   8
+  ],
+  "FR-NTF-05": [
+   6
+  ],
+  "FR-NTF-06": [
+   1,
+   6
+  ],
+  "FR-NTF-07": [
+   2,
+   4,
+   5,
+   6
+  ],
+  "FR-NTF-08": [
+   5,
+   6
+  ],
+  "FR-NTF-09": [
+   6
+  ],
+  "FR-MON-01": [
+   2,
+   8
+  ],
+  "FR-MON-02": [
+   2
+  ],
+  "FR-MON-03": [
+   2
+  ],
+  "FR-MON-04": [
+   2
+  ],
+  "FR-MON-05": [
+   2,
+   3
+  ],
+  "FR-MON-06": [
+   2
+  ],
+  "FR-MON-07": [
+   2
+  ],
+  "FR-MON-08": [
+   2,
+   3
+  ],
+  "FR-MON-09": [
+   2
+  ],
+  "FR-MON-10": [
+   2
+  ],
+  "FR-TNS-01": [
+   6,
+   7
+  ],
+  "FR-TNS-02": [
+   3,
+   7
+  ],
+  "FR-TNS-03": [
+   1,
+   6,
+   7
+  ],
+  "FR-TNS-04": [
+   2,
+   7
+  ],
+  "FR-TNS-10": [
+   7
+  ],
+  "FR-TNS-05": [
+   1,
+   2,
+   3,
+   7
+  ],
+  "FR-TNS-06": [
+   1,
+   7
+  ],
+  "FR-TNS-07": [
+   2,
+   7
+  ],
+  "FR-TNS-08": [
+   3,
+   7
+  ],
+  "FR-TNS-09": [
+   6,
+   7
+  ],
+  "FR-OPS-01": [
+   1,
+   2,
+   5,
+   7,
+   8
+  ],
+  "FR-OPS-02": [
+   2,
+   3,
+   7,
+   8
+  ],
+  "FR-OPS-03": [
+   1,
+   7
+  ],
+  "FR-OPS-04": [
+   1,
+   7,
+   8
+  ],
+  "FR-OPS-05": [
+   1,
+   7
+  ],
+  "FR-OPS-06": [
+   1,
+   7,
+   8
+  ],
+  "FR-OPS-07": [
+   1,
+   7
+  ],
+  "FR-OPS-08": [
+   1,
+   2,
+   3,
+   4,
+   7
+  ],
+  "FR-OPS-09": [
+   7
+  ],
+  "FR-PRV-01": [
+   1,
+   4,
+   8
+  ],
+  "FR-PRV-02": [
+   1
+  ],
+  "FR-PRV-03": [
+   7
+  ],
+  "FR-PRV-04": [
+   1,
+   6
+  ],
+  "FR-PRV-05": [
+   1
+  ],
+  "FR-PRV-06": [
+   7
+  ],
+  "SEC-GEN-01": [
+   1
+  ],
+  "SEC-GEN-02": [],
+  "SEC-GEN-03": [],
+  "SEC-AUTH-01": [
+   1
+  ],
+  "SEC-AUTH-02": [
+   1
+  ],
+  "SEC-AUTH-03": [
+   1
+  ],
+  "SEC-AUTH-04": [
+   1
+  ],
+  "SEC-AUTH-05": [
+   1
+  ],
+  "SEC-AUTH-06": [
+   1
+  ],
+  "SEC-AUTH-07": [
+   1
+  ],
+  "SEC-AUTH-08": [
+   1,
+   5,
+   8
+  ],
+  "SEC-AUTH-09": [
+   1,
+   4,
+   6
+  ],
+  "SEC-AUTH-10": [
+   1
+  ],
+  "SEC-AUTH-11": [
+   1
+  ],
+  "SEC-AUTH-12": [
+   1
+  ],
+  "SEC-SES-01": [
+   1
+  ],
+  "SEC-SES-02": [
+   1,
+   8
+  ],
+  "SEC-SES-03": [
+   1,
+   8
+  ],
+  "SEC-SES-04": [
+   1,
+   8
+  ],
+  "SEC-SES-05": [
+   1,
+   8
+  ],
+  "SEC-SES-06": [
+   1
+  ],
+  "SEC-SES-07": [
+   1,
+   3,
+   6,
+   8
+  ],
+  "SEC-ACC-01": [
+   1,
+   3,
+   4,
+   7,
+   8
+  ],
+  "SEC-ACC-02": [
+   1,
+   3,
+   4,
+   7
+  ],
+  "SEC-ACC-03": [
+   1,
+   3,
+   4,
+   7
+  ],
+  "SEC-ACC-04": [
+   1,
+   7
+  ],
+  "SEC-ACC-05": [
+   1,
+   4,
+   7,
+   8
+  ],
+  "SEC-ACC-06": [
+   1
+  ],
+  "SEC-DAT-01": [
+   1
+  ],
+  "SEC-DAT-02": [
+   1
+  ],
+  "SEC-DAT-03": [
+   1
+  ],
+  "SEC-DAT-04": [
+   1
+  ],
+  "SEC-DAT-05": [
+   1
+  ],
+  "SEC-DAT-06": [
+   1
+  ],
+  "SEC-DAT-07": [
+   1,
+   4,
+   5,
+   6
+  ],
+  "SEC-DAT-08": [
+   1,
+   3,
+   6
+  ],
+  "SEC-DAT-09": [
+   1
+  ],
+  "SEC-DAT-10": [
+   5
+  ],
+  "SEC-DAT-11": [
+   1
+  ],
+  "SEC-GAM-01": [
+   5
+  ],
+  "SEC-GAM-02": [
+   5
+  ],
+  "SEC-GAM-03": [
+   5,
+   8
+  ],
+  "SEC-INP-01": [
+   1
+  ],
+  "SEC-INP-02": [],
+  "SEC-INP-03": [
+   3,
+   8
+  ],
+  "SEC-INP-04": [
+   1,
+   3,
+   6
+  ],
+  "SEC-INP-05": [
+   4
+  ],
+  "SEC-INP-06": [
+   1,
+   8
+  ],
+  "SEC-WEB-01": [
+   1,
+   8
+  ],
+  "SEC-WEB-02": [
+   1,
+   8
+  ],
+  "SEC-WEB-03": [
+   1,
+   8
+  ],
+  "SEC-WEB-04": [
+   8
+  ],
+  "SEC-WEB-05": [
+   3
+  ],
+  "SEC-PAY-01": [
+   2
+  ],
+  "SEC-PAY-02": [
+   2
+  ],
+  "SEC-PAY-03": [
+   2,
+   4
+  ],
+  "SEC-PAY-04": [
+   2,
+   4
+  ],
+  "SEC-PAY-05": [
+   2,
+   4
+  ],
+  "SEC-PAY-06": [
+   2,
+   4,
+   8
+  ],
+  "SEC-PAY-07": [
+   2,
+   4
+  ],
+  "SEC-ABU-01": [
+   1,
+   2,
+   3,
+   4,
+   6,
+   7
+  ],
+  "SEC-ABU-02": [],
+  "SEC-ABU-03": [
+   1
+  ],
+  "SEC-LOG-01": [
+   1,
+   2,
+   6,
+   7
+  ],
+  "SEC-LOG-02": [
+   1
+  ],
+  "SEC-LOG-03": [
+   1
+  ],
+  "SEC-LOG-04": [
+   1
+  ],
+  "SEC-LOG-05": [
+   1
+  ],
+  "SEC-SDL-01": [],
+  "SEC-SDL-02": [],
+  "SEC-SDL-03": [],
+  "SEC-SDL-04": [],
+  "SEC-SDL-05": [],
+  "SEC-SDL-06": [],
+  "SEC-SDL-07": [],
+  "SEC-SDL-08": [],
+  "SEC-SDL-09": [
+   1,
+   4,
+   5
+  ],
+  "SEC-INF-01": [],
+  "SEC-INF-02": [],
+  "SEC-INF-03": [
+   1
+  ],
+  "SEC-INF-04": [],
+  "SEC-INF-05": [],
+  "SEC-IRM-01": [],
+  "SEC-IRM-02": [],
+  "SEC-IRM-03": [],
+  "SEC-IRM-04": [
+   5,
+   7
+  ],
+  "NFR-PERF-01": [
+   3
+  ],
+  "NFR-PERF-02": [
+   3
+  ],
+  "NFR-PERF-03": [
+   3,
+   8
+  ],
+  "NFR-PERF-04": [
+   6,
+   8
+  ],
+  "NFR-PERF-05": [
+   3
+  ],
+  "NFR-PERF-06": [
+   2,
+   8
+  ],
+  "NFR-PERF-07": [
+   8
+  ],
+  "NFR-PERF-08": [
+   2,
+   3
+  ],
+  "NFR-REL-01": [
+   1,
+   3
+  ],
+  "NFR-REL-02": [
+   2
+  ],
+  "NFR-REL-03": [
+   2,
+   3,
+   4
+  ],
+  "NFR-REL-04": [
+   2,
+   4
+  ],
+  "NFR-REL-05": [],
+  "NFR-REL-06": [],
+  "NFR-USE-01": [
+   3,
+   8
+  ],
+  "NFR-USE-02": [
+   1,
+   8
+  ],
+  "NFR-USE-03": [
+   5,
+   8
+  ],
+  "NFR-USE-04": [
+   8
+  ],
+  "NFR-USE-05": [
+   8
+  ],
+  "NFR-USE-06": [
+   8
+  ],
+  "NFR-USE-07": [
+   8
+  ],
+  "NFR-USE-08": [
+   8
+  ],
+  "NFR-MNT-01": [
+   1,
+   4,
+   6,
+   8
+  ],
+  "NFR-MNT-02": [
+   5
+  ],
+  "NFR-MNT-03": [],
+  "NFR-MNT-04": [
+   1
+  ],
+  "NFR-MNT-05": [
+   1
+  ],
+  "NFR-MNT-06": [
+   1,
+   8
+  ],
+  "NFR-MNT-07": [
+   8
+  ],
+  "NFR-MNT-08": [],
+  "NFR-SCL-01": [
+   3,
+   6
+  ],
+  "NFR-SCL-02": [
+   3
+  ],
+  "NFR-SCL-03": [
+   3
+  ],
+  "NFR-OBS-01": [],
+  "NFR-OBS-02": [],
+  "NFR-OBS-03": [],
+  "NFR-CMP-01": [],
+  "NFR-CMP-02": [
+   2
+  ],
+  "NFR-CMP-03": [
+   2
+  ],
+  "NFR-CMP-04": [
+   8
+  ],
+  "NFR-CMP-05": [
+   2,
+   4,
+   8
+  ]
+ },
+ "requirements": {
+  "total": 346,
+  "covered": 346,
+  "by_priority": {
+   "M": 267,
+   "S": 63,
+   "C": 16
+  },
+  "uncovered": {}
+ },
+ "dv": {
+  "1": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10
+  ],
+  "2": [
+   11,
+   12,
+   13,
+   14,
+   15,
+   16
+  ],
+  "3": [
+   17,
+   18,
+   19,
+   20,
+   21,
+   22
+  ],
+  "4": [
+   23,
+   24,
+   25,
+   26,
+   27,
+   28,
+   29,
+   30,
+   31,
+   32
+  ],
+  "5": [
+   33,
+   34,
+   35,
+   36,
+   37,
+   38,
+   39
+  ],
+  "6": [
+   40,
+   41,
+   42,
+   43,
+   44,
+   45,
+   46
+  ],
+  "7": [
+   47,
+   48,
+   49,
+   50,
+   51,
+   52
+  ],
+  "8": [
+   53,
+   54,
+   55,
+   56,
+   57,
+   58,
+   59,
+   60
+  ],
+  "9": [
+   61,
+   62,
+   63,
+   64,
+   65,
+   66,
+   67
+  ]
+ },
+ "notes": {
+  "1": {
+   "from": 1,
+   "to": 7,
+   "targets": [
+    {
+     "label": "User location",
+     "text": "The saved approximate location is stored here. The Listings unit decides whether each listing copies it (FR-LST-06). \\item"
+    },
+    {
+     "label": "Pro Seller status",
+     "text": "belongs to the Monetization part of the Order unit; \\texttt{IdentityQuery} does not expose it. \\item"
+    },
+    {
+     "label": "Message templates",
+     "text": "and their Bangla and English texts belong to the Notifications unit; this unit supplies event data only. \\item"
+    },
+    {
+     "label": "Parameter store",
+     "text": "\\texttt{ConfigPort} moves from environment configuration to the Staff Tools unit's versioned store (FR-OPS-08) without changing callers. \\item"
+    },
+    {
+     "label": "Lost MFA and recovery codes",
+     "text": "An operator-assisted re-verification procedure is to be designed in the Staff Tools unit. \\item"
+    },
+    {
+     "label": "SRS updates proposed",
+     "text": ""
+    },
+    {
+     "label": "Shared infrastructure first",
+     "text": "The \\texttt{security} and \\texttt{audit} modules, and \\texttt{ApprovalService}, should be implemented first, because every later unit imports them. \\end{enumerate} % ------------------------------------------------------------------ \\appendix \\section{Traceability} \\label{app:trace} {\\small\\begin{longtable}{@{}>{\\ttfamily}p{2.4cm}>{\\raggedright\\arraybackslash}p{10.4cm}>{\\raggedright\\arraybackslash}p{2.4cm}@{}} \\toprule \\textnormal{\\textbf{Requirement}} & \\textbf{Design element} & \\textbf{Section} \\\\ \\midrule \\endhead FR-ACC-01 & Registration endpoints; the sign-up kept in Redis; phone parsing & 6.1 \\\\ FR-ACC-02 & E-mail OTP kept in Redis before the \\texttt{users} row exists; \\texttt{email_verified_at} set at creation; e-mail link token for a change & 6.1 \\\\ FR-ACC-03 & Partial unique indexes on number and e-mail; enumeration-safe responses & 5.2, 6.1 \\\\ FR-ACC-04 & Age confirmation; consents rows with versions & 6.1 \\\\ FR-ACC-05 & Sign-in flow; session creation & 6.2 \\\\ FR-ACC-06 & totp_factors, recovery_codes; MFA ticket; enrol/disable flows & 6.2, 6.5 \\\\ FR-ACC-07 & Forgot/reset endpoints; reset requires second factor when enabled & 6.4 \\\\ FR-ACC-08 & Sessions list/end endpoints; known_devices & 4.2, 6.2 \\\\ FR-ACC-09 & Step-up; OTP or link to new contact; notice to old contact & 6.5 \\\\ FR-ACC-10 & \\texttt{getPublicProfile} returns only permitted fields & 4.3 \\\\ FR-ACC-11 & \\texttt{AccountClosureCheck} port; closure flow & 4.5, 6.10 \\\\ FR-KYC-01 & Submission endpoint; kyc_submissions, kyc_files & 6.6 \\\\ FR-KYC-02 & Liveness challenge; two camera frames; no gallery upload & 6.6 \\\\ FR-KYC-03 & \\texttt{is_adult}; underage flag; DB forbids approving underage & 5.2, 6.6 \\\\ FR-KYC-04 & identity_claims primary key; blind index; duplicate flags & 5.3, 6.7 \\\\ FR-KYC-05 & kyc_status enum; transition trigger; kyc_status_history & Fig.~\\ref{fig:kyc-states} \\\\ FR-KYC-06 & kyc_reason enum; DB requires reason on rejection & 6.7 \\\\ FR-KYC-07 & \\texttt{@Verified} policy; \\texttt{assertCanTransact} port & 4.1, 4.3 \\\\ FR-KYC-08 & \\texttt{kyc_status} exposed through \\texttt{IdentityQuery}; events update listings & 4.3, 4.4 \\\\ FR-KYC-09 & Resubmission from \\texttt{rejected}; CP-34 count & 6.6 \\\\ FR-KYC-10 & \\texttt{kyc.revoke} four-eyes action; \\texttt{identity.kyc.revoked} event & 6.7 \\\\ FR-KYC-11 & IdentityCheckPort; advisory \\texttt{precheck}; never decides & 4.5, 6.6 \\\\ FR-KYC-12 & Queue ordered by age, shown against CP-44 & 6.7 \\\\ FR-TNS-06 & nid_blacklist; checked at submission and approval & 6.7 \\\\ FR-OPS-03 & Administrator endpoints limited to staff, approvals, audit & 4.2 \\\\ FR-OPS-04 & staff_accounts separate from users; bootstrap command; single bootstrap row & 4.2, 6.11 \\\\ FR-OPS-05 & approvals table; proposer $\\neq$ decider; handler in same transaction & 6.9 \\\\ FR-OPS-06 & Conflict check at claim (number, e-mail, NID, declared) & 6.7 \\\\ FR-OPS-07 & AuditService in every staff action & DC-8 \\\\ FR-PRV-01 & Consent and notice versions recorded at registration & 6.1 \\\\ FR-PRV-02 & Optional consents endpoint & 4.2 \\\\ FR-PRV-04 & Erasure job; anonymisation; crypto-shredding & 6.10 \\\\ FR-PRV-05 & KYC data reachable only by review flows and \\texttt{getKycLegalName} & 4.3, 6.7 \\\\ FR-NTF-06 & Security events through the outbox & 4.4 \\\\ SEC-AUTH-01 & 15/8 rule; \\texttt{password_single_factor_ok}; DB check & 6.5 \\\\ SEC-AUTH-02 & Bundled blocklist and context words & 6.1 \\\\ SEC-AUTH-03 & Argon2id only (DB check); re-hash on sign-in & 6.2 \\\\ SEC-AUTH-04 & signin rule; progressive delay (DV-10) & 5.4, 6.2 \\\\ SEC-AUTH-05 & Dummy hash; identical responses & 6.2 \\\\ SEC-AUTH-06 & Registration notice to owner; same response & 6.1 \\\\ SEC-AUTH-07 & Staff MFA mandatory; \\texttt{pending_mfa}; no SMS factor & 6.11 \\\\ SEC-AUTH-08 & StepUpService; single-use grant bound to session and action & 6.3 \\\\ SEC-AUTH-09 & otp_challenges with HMAC, attempts cap, send limits & 5.2, 5.4 \\\\ SEC-AUTH-10 & 256-bit link tokens, hashed, single-use; sessions ended & 6.4 \\\\ SEC-AUTH-11 & Password change ends other sessions & 6.4 \\\\ SEC-AUTH-12 & known_devices; device cookie & 6.2 \\\\ SEC-SES-01 & HS256 only, \\texttt{kid}, 15-min access token & 7.1 \\\\ SEC-SES-02 & refresh_tokens rotation; one live token; reuse detection & Fig.~\\ref{fig:seq-signin} \\\\ SEC-SES-03 & HttpOnly cookies; no local storage & 7.1 \\\\ SEC-SES-04 & Signed double-submit CSRF and origin check & 4.1 \\\\ SEC-SES-05 & Session row checked on every request & 4.1 \\\\ SEC-SES-06 & CP-03 limits for staff sessions & 6.11 \\\\ SEC-SES-07 & WebSocket handshake authentication; \\texttt{sid} rooms & 6.2 \\\\ SEC-ACC-01 & Global deny-by-default guard (DC-7) & 4.1 \\\\ SEC-ACC-02 & Object checks; claim-based access; signed links & 6.7, 6.8 \\\\ SEC-ACC-03 & Policy decorators per role & 4.1 \\\\ SEC-ACC-04 & Whitelisted DTOs (DC-3) & 2 \\\\ SEC-ACC-05 & Masked staff views; full value only during review, audited & 6.7 \\\\ SEC-ACC-06 & Claim, reason and audit for every KYC image view & 6.7, 6.8 \\\\ SEC-DAT-01 & TLS and HSTS (DC-11) & 2 \\\\ SEC-DAT-02 & AES-256-GCM field and file encryption; keys outside the database & 5.5 \\\\ SEC-DAT-03 & Encrypted document number; HMAC blind indexes & 5.5 \\\\ SEC-DAT-04 & Signed links bound to session, CP-31 & 6.8 \\\\ SEC-DAT-05 & Versioned secrets from environment; start-up check & 5.5 \\\\ SEC-DAT-06 & Crypto-shredding; backup note & 5.5 \\\\ SEC-DAT-07 & Masked contacts; no secrets in logs & 5.5 \\\\ SEC-DAT-08 & Images re-encoded without metadata & 6.6 \\\\ SEC-DAT-09 & Node.js \\texttt{crypto} random bytes for every secret & 3.3 \\\\ SEC-DAT-11 & Random UUID keys (DC-4) & 2 \\\\ SEC-INP-04 & Content-type check, size limit, re-encoding, random names & 6.6 \\\\ SEC-ABU-01 & Rate-limit rules table & 5.4 \\\\ SEC-ABU-03 & Counters in Redis shared by all instances & 5.4 \\\\ SEC-LOG-01 & AuditService; event list & DC-8 \\\\ SEC-LOG-02 & Hash chain trigger; \\texttt{verify_chain()} & 5.3 \\\\ SEC-LOG-03 & \\texttt{clock_timestamp()} under lock; correlation id & 5.3 \\\\ SEC-LOG-04 & Grants: insert and select only; admin read-only view & 5.3 \\\\ SEC-LOG-05 & Volume alert on image links & 5.4 \\\\ IF-UI-01 & Registration, sign-in, MFA, security settings views & 3.2 \\\\ IF-UI-02 & KYC wizard and status & 6.6 \\\\ IF-UI-09 & Staff console views & 4.2 \\\\ IF-SW-05 & NotificationPort (SMS) & 4.5 \\\\ IF-SW-06 & NotificationPort (e-mail) & 4.5 \\\\ NFR-USE-02 & Status endpoint with reason; wizard states & 4.2 \\\\ DR-01 & users, consents, sessions, factors & 5 \\\\ DR-02 & kyc_submissions, kyc_files, history & 5 \\\\ DR-09 & staff_accounts, approvals, audit.events & 5 \\\\ DR-10 & Append-only triggers and grants & 5.3 \\\\ \\bottomrule\\end{longtable}} \\section{Database Schema and Tests} \\label{app:ddl} \\subsection{Test results} \\label{app:tests} The schema was loaded into PostgreSQL 16 (only features available in PostgreSQL 15, the project's target, are used) and the test script was run. Every case passed: {\\scriptsize \\begin{verbatim} PASS only one bootstrap administrator (rejected: duplicate key value violates unique constraint \"staff_single_bootstrap) PASS staff password must be Argon2id (rejected: new row for relation \"staff_accounts\" violates check constraint \"staff) PASS FR-ACC-03 duplicate live mobile number (rejected: duplicate key value violates unique constraint \"users_phone_live\") PASS FR-ACC-03 duplicate live e-mail, case-insensitive (rejected: duplicate key value violates unique constraint \"users_email_live\") PASS Bangladeshi mobile format enforced (rejected: new row for relation \"users\" violates check constraint \"users_phone_e1) PASS SEC-AUTH-01 short password allowed only with MFA (rejected: new row for relation \"users\" violates check constraint \"users_check3\") PASS SEC-AUTH-01 cannot switch MFA off while password is short (rejected: new row for relation \"users\" violates check constraint \"users_check3\") PASS personal fields removable only after erasure (rejected: new row for relation \"users\" violates check constraint \"users_check\") PASS erased account frees its number and e-mail PASS FR-KYC-05 unsubmitted -> verified not permitted (rejected: kyc_status unsubmitted -> verified is not permitted) PASS unsubmitted -> pending_review -> verified permitted PASS FR-KYC-05 verified -> pending_review not permitted (rejected: kyc_status verified -> pending_review is not permitted) PASS one open KYC submission per user (rejected: duplicate key value violates unique constraint \"kyc_one_pending\") PASS FR-KYC-06 rejection needs a reason code (rejected: new row for relation \"kyc_submissions\" violates check constraint \"kyc_) PASS FR-KYC-03 underage submission cannot be approved (rejected: new row for relation \"kyc_submissions\" violates check constraint \"kyc_) PASS FR-KYC-04 same NID cannot verify a second account (rejected: duplicate key value violates unique constraint \"identity_claims_pkey\") PASS routed flags restricted to known values (rejected: new row for relation \"kyc_submissions\" violates check constraint \"kyc_) PASS SEC-INP-04 only JPEG/PNG/WebP accepted (rejected: new row for relation \"kyc_files\" violates check constraint \"kyc_files_) PASS CP-33 10 MB upload limit (rejected: new row for relation \"kyc_files\" violates check constraint \"kyc_files_) PASS erased file must have its key destroyed (rejected: new row for relation \"kyc_files\" violates check constraint \"kyc_files_) PASS KYC history is append-only (rejected: table identity.kyc_status_history is append-only) PASS KYC history rows cannot be deleted (rejected: table identity.kyc_status_history is append- only) PASS FR-OPS-05 proposer cannot approve own action (rejected: new row for relation \"approvals\" violates check constraint \"approvals_) PASS one open proposal per action and target (rejected: duplicate key value violates unique constraint \"approvals_one_open\") PASS decider recorded without a decision (rejected: new row for relation \"approvals\" violates check constraint \"approvals_) PASS cannot execute before approval (rejected: new row for relation \"approvals\" violates check constraint \"approvals_) PASS one active blacklist entry per identity (rejected: duplicate key value violates unique constraint \"blacklist_active\") PASS blacklist removal needs an approval (rejected: new row for relation \"nid_blacklist\" violates check constraint \"nid_bl) PASS session belongs to exactly one principal type (rejected: new row for relation \"sessions\" violates check constraint \"sessions_ch) PASS idle expiry cannot exceed absolute expiry (rejected: new row for relation \"sessions\" violates check constraint \"sessions_ch) PASS SEC-SES-02 only one live refresh token per session (rejected: duplicate key value violates unique constraint \"refresh_one_live\") PASS rotation leaves exactly one live token PASS a reused token is detectable (used_at set) PASS SEC-AUTH-09 attempts cannot exceed the limit (rejected: new row for relation \"otp_challenges\" violates check constraint \"otp_c) PASS register OTP must belong to a pending registration (rejected: new row for relation \"otp_challenges\" violates check constraint \"otp_c) PASS SEC-LOG-02 chain verifies when intact PASS each entry links to the previous hash PASS audit entries cannot be updated (rejected: table audit.events is append-only) PASS audit entries cannot be deleted (rejected: table audit.events is append-only) PASS action names follow the dotted convention (rejected: new row for relation \"events\" violates check constraint \"events_action) PASS SEC-LOG-02 verification finds the tampered entry PASS outbox event names belong to this unit (rejected: new row for relation \"outbox\" violates check constraint \"outbox_event_) PASS SEC-INF-03 application role cannot change the schema (rejected: must be owner of table users) PASS SEC-LOG-04 application role cannot update audit entries (rejected: permission denied for table events) PASS application role cannot delete users (rejected: permission denied for table users) PASS application role can append to the audit log \\end{verbatim} } \\subsection{Schema} \\lstinputlisting[language=SQLpg]{sql/01_identity_access.sql} \\end{document}"
+    }
+   ]
+  },
+  "2": {
+   "from": 8,
+   "to": 13,
+   "targets": [
+    {
+     "label": "Unit 1 port addition",
+     "text": "\\texttt{IdentityQuery.getPrincipal} should also return \\texttt{verifiedAt} for the CP-27 limits, and Unit~1 should emit a fraud flag with \\texttt{identity.account.suspended} so that payouts can be held. \\item"
+    },
+    {
+     "label": "Listings (Unit 3)",
+     "text": "must provide \\texttt{reserve} and \\texttt{release} as single conditional updates (DC-13), mark units sold on \\texttt{order.paid} and release them on \\texttt{order.cancelled}. \\item"
+    },
+    {
+     "label": "Delivery (Unit 4)",
+     "text": "issues quotes bound to buyer, listing and expiry, and reports pickup, handover code, delivered and returned through \\texttt{EscrowCommands}. \\item"
+    },
+    {
+     "label": "Game-Account (Unit 5)",
+     "text": "reports credential delivery and takeover completion, and exposes \\texttt{assertCheckoutReady}. \\item"
+    },
+    {
+     "label": "Disputes (Unit 7)",
+     "text": "owns dispute windows by type, four-eyes approval of large outcomes, and the return shipment for ``refund after return''. \\item"
+    },
+    {
+     "label": "SRS clarifications proposed",
+     "text": ""
+    }
+   ]
+  },
+  "3": {
+   "from": 14,
+   "to": 18,
+   "targets": [
+    {
+     "label": "Unit 2",
+     "text": "\\texttt{ListingsPort} is implemented by \\texttt{listings.reserve}, \\texttt{release} and \\texttt{mark_sold}. On an auction order being paid, the listing moves to \\texttt{sold} through \\texttt{markSold}. A refund after payment does not return stock automatically; the seller relists. \\item"
+    },
+    {
+     "label": "Unit 5",
+     "text": "adds its game-account details table with a foreign key to \\texttt{listings.listings} (allowed by DC-5), and approves listings through \\texttt{ListingsCommands}. \\item"
+    },
+    {
+     "label": "Unit 6",
+     "text": "delivers \\texttt{auctions.bid.outbid} and the ending-soon notices (FR-NTF-02). Ending-soon notices are driven by \\texttt{auctions_due}. \\item"
+    },
+    {
+     "label": "Unit 7",
+     "text": "hosts the queues for listings in review, flags and voids, using this unit's staff endpoints. \\item"
+    },
+    {
+     "label": "SRS clarifications proposed",
+     "text": ""
+    }
+   ]
+  },
+  "4": {
+   "from": 19,
+   "to": 28,
+   "targets": [
+    {
+     "label": "Unit 2: \\texttt{orders.order.paid} payload",
+     "text": "It must carry the fulfilment method, buyer, seller, \\texttt{fulfilment_due_at} and the delivery quote id. \\item"
+    },
+    {
+     "label": "Unit 2: \\texttt{OrdersPort.lockForFulfilment(orderId, tx)}",
+     "text": "New. Locks the order row and returns its status, fulfilment, parties, deadline and whether the step or delivery event is recorded (DC-14). \\item"
+    },
+    {
+     "label": "Unit 2: quotes and courier costs",
+     "text": "\\texttt{DeliveryPort.getQuote} becomes \\texttt{claimQuote}, which also checks quantity and allows one use. New \\texttt{EscrowCommands.recordCourierCost(orderId, amount, tx)} books a return charge for an order that was already refunded. \\item"
+    },
+    {
+     "label": "Unit 2: fulfilment job",
+     "text": "Before refunding a courier order for a missed pickup, it calls \\texttt{DeliveryPort.syncPickup} outside its lock. \\texttt{recordFulfilmentStep} is called only for a pickup made by the deadline. \\item"
+    },
+    {
+     "label": "Unit 3",
+     "text": "New \\texttt{ListingsQueries.fulfilmentFacts(listingId)}. The listing form, and a constraint added to \\texttt{listings.listings}, should refuse courier options for the \\texttt{over_10kg} weight class and the \\texttt{oversize} size class, which no fare covers (DV-24, DV-25). \\item"
+    },
+    {
+     "label": "Unit 1",
+     "text": "New \\texttt{IdentityQuery.getApproxArea(userId)}. Add \\texttt{HANDOVER_KEY} and the courier API and webhook secrets to the key table (Unit~1 Section~3). \\item"
+    },
+    {
+     "label": "Unit 6",
+     "text": "delivers the meetup, handover, lock and shipment notifications, and the deadline reminders (FR-NTF-07). No notification may contain the handover code. \\item"
+    },
+    {
+     "label": "Unit 7",
+     "text": "hosts the delivery issue queue and the unlock action. It uses \\texttt{fulfilmentRecord} in the case file (FR-DSP-05), \\texttt{notReceivedAllowed} for \\texttt{not_received} disputes, and \\texttt{quoteReturn} and \\texttt{bookReturn} for outcome (d). \\item"
+    },
+    {
+     "label": "Unit 8",
+     "text": "(frontend) shows the code screen with its instruction, the seller's entry screen with the ``hand over only after'' instruction, a ``simulated'' banner on every mock shipment, and map links for meetup points only. \\item"
+    },
+    {
+     "label": "SRS clarifications proposed",
+     "text": ""
+    }
+   ]
+  },
+  "5": {
+   "from": 29,
+   "to": 35,
+   "targets": [
+    {
+     "label": "Unit 2",
+     "text": "\\texttt{GameAccountPort.assertCheckoutReady} is \\texttt{checkout_ready} plus the CP-36 check. \\texttt{orders.order.paid} for a game account must carry \\texttt{fulfilment_due_at} (CP-22), as I-19 already requires. The first delivery calls \\texttt{recordFulfilmentStep(credentials_delivered)}; completion calls \\texttt{recordDeliveryEvent(game_takeover, at)} with the recorded completion time, which may be slightly in the past. Escrow-terminal events must say whether the delivery event had happened. \\item"
+    },
+    {
+     "label": "Unit 3",
+     "text": "Publish \\texttt{listings.listing.cancelled} as well, so a claim can be released. While CP-36 is off, refuse game-account publishing and purchases, and leave game-account listings out of \\texttt{listings.searchable}. Add password words in Bangla and English to the screening terms. \\item"
+    },
+    {
+     "label": "Unit 1",
+     "text": "\\texttt{FileVault} gains a purpose for ownership screenshots, on its own volume, with retention DV-39. The CP-36 switch is one of the administrator controls under four-eyes approval (SEC-IRM-04). Suspension and blacklisting for FR-GAM-18 use the existing approvals. \\item"
+    },
+    {
+     "label": "Unit 6",
+     "text": "Notify the seller when credentials are requested and the buyer when they are delivered, and remind both at CP-38 before the credential deadline, the window end and the protection end (FR-NTF-07). No notification contains credentials, keys or fingerprints. For FR-GAM-20 (Could), warn a seller whose chat message looks like login details (for example ``password'' or ``pass'' in Bangla or English next to a token, or an e-mail address with another string) and link to the sealed handover. The warning never blocks or stores the message's content. \\item"
+    },
+    {
+     "label": "Unit 7",
+     "text": "The ownership-proof queue (FR-OPS-01) calls \\texttt{reviewProof}. A \\texttt{credentials_invalid} dispute is opened in the same transaction as the report, and also when a re-key is overdue. A withdrawal calls \\texttt{disputeWithdrawn}. The case file and the FR-GAM-18 export use \\texttt{evidence}. \\item"
+    },
+    {
+     "label": "Unit 8",
+     "text": "Screens of IF-UI-06 use \\texttt{sealed.js}; check Web Crypto and IndexedDB before purchase (AS-5); warn the buyer to stay in the same browser; follow the strict-page rules of the security section. The browser module needs \\texttt{@hpke/core} pinned to an exact version and bundled into the application, not loaded from a CDN, because a CDN would be a third-party script on the credential pages (SEC-GAM-03). \\item"
+    },
+    {
+     "label": "SRS clarifications proposed",
+     "text": ""
+    }
+   ]
+  },
+  "6": {
+   "from": 36,
+   "to": 42,
+   "targets": [
+    {
+     "label": "Unit 1",
+     "text": "\\texttt{NotificationPort} is implemented here; OTP rate limits stay in Unit~1. New \\texttt{IdentityQuery.getContact(userId)} returns the e-mail address and number at send time. On \\texttt{identity.account.closed}, chat shows ``Closed account'', and the user's preferences and watches are deleted. \\item"
+    },
+    {
+     "label": "Unit 2",
+     "text": "Call \\texttt{BlockPort.assertNotBlocked} when creating an order and when accepting a second-chance offer (FR-CHT-08). Order and escrow events must carry the deadlines they set (\\texttt{payment_due_at}, \\texttt{fulfilment_due_at}, \\texttt{dispute_window_ends_at}, \\texttt{auto_release_at}) and the listing title. Provide a deadline query for the reminder job. \\item"
+    },
+    {
+     "label": "Unit 3",
+     "text": "Call \\texttt{BlockPort.assertNotBlocked} in \\texttt{BidService} before \\texttt{auctions.place_bid}. New \\texttt{AuctionQuery.endingBetween(from, to)} and \\texttt{bidders(auctionId)} for FR-NTF-02. \\item"
+    },
+    {
+     "label": "Units 4 and 5",
+     "text": "Their events already carry the deadlines (meetup, pickup, credential delivery, takeover window, re-key); this unit schedules and cancels reminders from them. Notices about the handover code and sealed credentials say only that something happened, never the code, key or fingerprint. \\item"
+    },
+    {
+     "label": "Unit 7",
+     "text": "Use \\texttt{ChatCommands.hold} and \\texttt{release} for every dispute and report that concerns a thread, and \\texttt{chat.staff_read} in the case file (FR-DSP-05). Implement \\texttt{ReportCommands} for FR-CHT-06. Notify parties and reporters through \\texttt{Notifier} (FR-TNS-09). Use \\texttt{chat.message.flagged} as a signal. \\item"
+    },
+    {
+     "label": "Unit 8",
+     "text": "Render chat as text only; give every message a client id; resync after reconnects and gaps; show the warnings on flagged messages to both parties; offer block and report on every thread; provide the notification centre and preferences, in Bangla and English. \\item"
+    },
+    {
+     "label": "SRS clarifications proposed",
+     "text": ""
+    }
+   ]
+  },
+  "7": {
+   "from": 43,
+   "to": 50,
+   "targets": [
+    {
+     "label": "Unit 1",
+     "text": "\\texttt{assertCanTransact} must call \\texttt{SanctionPort.restrictions} (selling, or buying and bidding). Register the approval handlers \\texttt{dispute.outcome_20000}, \\texttt{account.reinstate}, \\texttt{emergency.control} and \\texttt{disclosure} for Unit~7. Provide the conflict check as a query used at claim. All units read parameters through \\texttt{ConfigPort}. \\item"
+    },
+    {
+     "label": "Unit 2",
+     "text": "The refund event at a missed fulfilment deadline must carry its reason, so it can count as a strike. Add \\texttt{EscrowCommands.completeReturnRefund(orderId, disputeId, tx)} for outcome (d), called when the return is recorded. The payout job must ask \\texttt{SanctionPort} for \\texttt{fraudHold}. Escrow terminal events create rating eligibility. \\item"
+    },
+    {
+     "label": "Unit 3",
+     "text": "Publish \\texttt{listings.listing.relisting_flagged}. Hide and show a user's listings also on \\texttt{trust.sanction.applied} and \\texttt{.lifted} for selling and account suspensions. Provide \\texttt{ListingsCommands.remove(listingId, reason, staffId)} for the listing-removal sanction. \\item"
+    },
+    {
+     "label": "Unit 4",
+     "text": "Publish \\texttt{delivery.issue.opened}, so delivery issues appear as signals in the flagged-activity queue rather than a queue of their own. \\texttt{bookReturn} is called with the payer from the decision; \\texttt{delivery.return.delivered} completes outcome (d). \\item"
+    },
+    {
+     "label": "Unit 5",
+     "text": "\\texttt{DisputeCommands.open} is implemented as designed, for the \\texttt{credentials_invalid} report and the overdue re-key (\\texttt{opened_by = system}). \\texttt{evidence} feeds the case file and the FR-GAM-18 pack. \\item"
+    },
+    {
+     "label": "Unit 6",
+     "text": "Holds are placed when a dispute opens or a report concerns a thread, and released on decision, withdrawal or resolution. \\texttt{ReportCommands} is implemented here. Templates are needed for the dispute, sanction and report events. \\item"
+    },
+    {
+     "label": "Unit 8",
+     "text": "The staff console: the eight queues with ages; claim; the case file with masked data; the decision form with the outcome preview and the four-eyes notice; the parameter editor that shows every broken rule. For users: the dispute flow from the order view with deadlines as countdowns, ratings, reports and the data export. \\item"
+    },
+    {
+     "label": "SRS clarifications proposed",
+     "text": ""
+    }
+   ]
+  },
+  "8": {
+   "from": 51,
+   "to": 58,
+   "targets": [
+    {
+     "label": "Unit 1",
+     "text": "(a) Staff sessions use their own cookies, for example \\texttt{__Host-tb_sat}, \\texttt{__Host-tb_scsrf} and \\texttt{__Secure-tb_srt} on \\texttt{/api/v1/staff/auth/refresh}, with \\texttt{POST /staff/auth/refresh} and \\texttt{GET /staff/me}. Then a staff session and a user session in one browser do not overwrite each other. (b) Honour \\texttt{Idempotency-Key} on creating requests: keep the key with the principal and the response for 24 hours in Redis; the same key with a different body is \\texttt{422}. (c) \\texttt{GET /me} is the refresh probe: it must stay cheap and must not be rate-limited below a few calls a minute per session. (d) The Socket.IO handshake answers an expired access token with a distinct error, so the client refreshes and reconnects. \\item"
+    },
+    {
+     "label": "Unit 2",
+     "text": "Idempotency keys on \\texttt{POST /orders} and \\texttt{/orders/\\{id\\}/payments}. \\texttt{GET /orders/\\{id\\}} returns every field \\texttt{describeMoney} reads: status, escrow state, release policy, total, refunded, the deadlines, the delivery event time and the close time; and the item price and delivery fee for the checkout's confirmation. The providers' page hosts are part of the adapter settings, for the build's redirect list. \\item"
+    },
+    {
+     "label": "Unit 3",
+     "text": "Idempotency keys on \\texttt{POST /auctions/\\{id\\}/bids} and \\texttt{POST /listings}. A bid's answer carries the new state with \\texttt{seq} and \\texttt{serverTime}. The state includes the minimum next bid, so the client never computes the increment. \\texttt{GET /listings/\\{id\\}} embeds the auction state, so the page renders from one request. \\item"
+    },
+    {
+     "label": "Units 4 and 5",
+     "text": "The handover answer includes the code attempts left. The credential screens are routes under \\texttt{/secure/orders/\\{id\\}/}, served by \\texttt{secure.html}, which imports \\texttt{sealed.js} unchanged; Unit~5's links and notices point there. \\item"
+    },
+    {
+     "label": "Unit 6",
+     "text": "\\texttt{notification.new} names the object it concerns (for example the order id), so the client refreshes exactly that data. The language in the notification preferences is the client's language choice. \\item"
+    },
+    {
+     "label": "Unit 7",
+     "text": "The dispute form needs the types that may be opened now: \\texttt{GET /orders/\\{id\\}/dispute-types} answers from the owning units' checks. It is a new endpoint, used by the dispute flow of Section~\\ref{sec:screens}. \\item"
+    },
+    {
+     "label": "Unit 9",
+     "text": "The web container is the two-stage Dockerfile with the reference nginx configuration, and its health check is \\texttt{/healthz}. HSTS and TLS are set at the front. The end-to-end, accessibility and performance runs use the Compose system. \\item"
+    },
+    {
+     "label": "SRS clarifications proposed",
+     "text": ""
+    }
+   ]
+  },
+  "9": {
+   "from": 59,
+   "to": 66,
+   "targets": [
+    {
+     "label": "Unit 1, shared kernel",
+     "text": "The backend refuses to start in production if a secret is missing, is shorter than 32 bytes or starts with \\texttt{dev-only-}. The kernel provides the health endpoints, JSON logging with the redaction list, the metrics port, the job runner, the outbox dispatcher for all units, and graceful shutdown (DV-61 to DV-63, DV-66, DV-67). \\item"
+    },
+    {
+     "label": "All units",
+     "text": "One TypeORM migration per design SQL file, in unit order, then \\texttt{09_integration.sql}. The \\texttt{migrate} entry point (\\texttt{dist/migrate.js}) runs them as \\texttt{tb_owner}. No migration may assume a superuser. \\item"
+    },
+    {
+     "label": "Units 1 and 3",
+     "text": "Implement \\texttt{FileVault}, \\texttt{IdentityCrypto} and \\texttt{StaffQuery} (Unit~1) and \\texttt{ListingsQueries} (Unit~3) as declared in Section~\\ref{sec:ports}. \\item"
+    },
+    {
+     "label": "Units 3, 4 and 6",
+     "text": "Publish \\texttt{listings.listing.cancelled} and \\texttt{listings.listing.relisting_flagged} (Unit~3) and \\texttt{delivery.issue.opened} (Unit~4); list \\texttt{chat.message.flagged} among Unit~6's events. \\item"
+    },
+    {
+     "label": "Units 2, 5 and 7",
+     "text": "Retention jobs: the credential-access log after 2 years and ownership screenshots under DV-39 (Unit~5); dispute statements and evidence files 2 years after the decision (Unit~7); settlement records after 6 years (Unit~2). \\item"
+    },
+    {
+     "label": "Units 1 and 8",
+     "text": "The human-verification challenge of SEC-ABU-02: Unit~1 issues and checks it and answers \\texttt{428}; Unit~8 solves it in a Web Worker. \\item"
+    },
+    {
+     "label": "Unit 8",
+     "text": "The Socket.IO client connects with \\texttt{transports: ['websocket']}, so no sticky sessions are needed with several backend instances. \\item"
+    },
+    {
+     "label": "SRS clarifications proposed",
+     "text": ""
+    }
+   ]
+  }
+ },
+ "events": {
+  "published": {
+   "1": [
+    "identity.account.closed",
+    "identity.account.reinstated",
+    "identity.account.suspended",
+    "identity.contact.changed",
+    "identity.email.verified",
+    "identity.kyc.rejected",
+    "identity.kyc.revoked",
+    "identity.kyc.submitted",
+    "identity.kyc.verified",
+    "identity.mfa.disabled",
+    "identity.mfa.enabled",
+    "identity.password.changed",
+    "identity.session.reuse_detected",
+    "identity.signin.new_device",
+    "identity.user.registered"
+   ],
+   "2": [
+    "orders.escrow.frozen",
+    "orders.escrow.partially_refunded",
+    "orders.escrow.refunded",
+    "orders.escrow.released",
+    "orders.order.cancelled",
+    "orders.order.cancelled_by_seller",
+    "orders.order.created",
+    "orders.order.delivered",
+    "orders.order.paid",
+    "orders.order.payment_expired",
+    "payments.featured.ended",
+    "payments.featured.started",
+    "payments.payout.failed",
+    "payments.payout_account.changed",
+    "payments.refund.manual_required",
+    "payments.subscription.changed"
+   ],
+   "3": [
+    "auctions.auction.awarded",
+    "auctions.auction.cancelled",
+    "auctions.auction.unsold",
+    "auctions.bid.outbid",
+    "auctions.bidder.restricted",
+    "auctions.flag.raised",
+    "auctions.offer.expired",
+    "auctions.offer.made",
+    "listings.listing.cancelled",
+    "listings.listing.ended_unsold",
+    "listings.listing.published",
+    "listings.listing.relisting_flagged",
+    "listings.listing.removed",
+    "listings.listing.sold"
+   ],
+   "4": [
+    "delivery.handover.completed",
+    "delivery.handover.locked",
+    "delivery.issue.opened",
+    "delivery.meetup.agreed",
+    "delivery.meetup.proposed",
+    "delivery.return.delivered",
+    "delivery.shipment.status_changed"
+   ],
+   "5": [
+    "game_accounts.credentials.delivered",
+    "game_accounts.credentials.reported_invalid",
+    "game_accounts.credentials.requested",
+    "game_accounts.ownership.approved",
+    "game_accounts.ownership.rejected",
+    "game_accounts.rekey.overdue",
+    "game_accounts.rekey.requested",
+    "game_accounts.takeover.completed"
+   ],
+   "6": [
+    "chat.message.flagged"
+   ],
+   "7": [
+    "disputes.dispute.decided",
+    "disputes.dispute.opened",
+    "disputes.dispute.withdrawn",
+    "staff.config.published",
+    "trust.report.resolved",
+    "trust.sanction.applied",
+    "trust.sanction.lifted"
+   ],
+   "8": [],
+   "9": []
+  },
+  "consumed": {
+   "1": [],
+   "2": [],
+   "3": [
+    "identity.account.reinstated",
+    "identity.account.suspended",
+    "identity.kyc.revoked",
+    "identity.kyc.verified",
+    "orders.order.cancelled",
+    "orders.order.paid",
+    "orders.order.payment_expired",
+    "payments.featured.ended",
+    "payments.featured.started",
+    "payments.subscription.changed"
+   ],
+   "4": [
+    "identity.account.closed",
+    "orders.escrow.refunded",
+    "orders.order.paid"
+   ],
+   "5": [
+    "listings.listing.cancelled",
+    "listings.listing.ended_unsold",
+    "listings.listing.removed",
+    "orders.escrow.partially_refunded",
+    "orders.escrow.refunded",
+    "orders.escrow.released",
+    "orders.order.paid"
+   ],
+   "6": [
+    "auctions.auction.awarded",
+    "auctions.auction.unsold",
+    "auctions.bid.outbid",
+    "auctions.offer.*",
+    "delivery.handover.*",
+    "delivery.meetup.*",
+    "delivery.shipment.status_changed",
+    "game_accounts.credentials.*",
+    "game_accounts.ownership.*",
+    "game_accounts.rekey.*",
+    "game_accounts.takeover.completed",
+    "identity.account.reinstated",
+    "identity.account.suspended",
+    "identity.contact.changed",
+    "identity.kyc.rejected",
+    "identity.kyc.verified",
+    "identity.mfa.*",
+    "identity.password.changed",
+    "identity.signin.new_device",
+    "listings.listing.published",
+    "listings.listing.removed",
+    "orders.escrow.frozen",
+    "orders.escrow.partially_refunded",
+    "orders.escrow.refunded",
+    "orders.escrow.released",
+    "orders.order.created",
+    "orders.order.delivered",
+    "orders.order.paid",
+    "payments.payout.*",
+    "payments.payout_account.changed",
+    "payments.refund.*"
+   ],
+   "7": [
+    "auctions.flag.raised",
+    "chat.message.flagged",
+    "delivery.issue.opened",
+    "delivery.return.delivered",
+    "identity.account.closed",
+    "listings.listing.relisting_flagged",
+    "orders.escrow.partially_refunded",
+    "orders.escrow.refunded",
+    "orders.escrow.released",
+    "orders.order.cancelled_by_seller"
+   ],
+   "8": [],
+   "9": []
+  },
+  "db": [],
+  "missing": [],
+  "undocumented": []
+ },
+ "ports": {
+  "provided": {
+   "1": [
+    "ApprovalService",
+    "AuditService",
+    "FileVault",
+    "IdentityCommands",
+    "IdentityCrypto",
+    "IdentityQuery",
+    "RateLimiter",
+    "StaffQuery"
+   ],
+   "2": [
+    "EscrowCommands",
+    "EscrowQuery",
+    "OrdersPort",
+    "PaymentProvider",
+    "PayoutProvider",
+    "ProStatusQuery"
+   ],
+   "3": [
+    "AuctionQuery",
+    "ListingsCommands",
+    "ListingsPort",
+    "ListingsQueries"
+   ],
+   "4": [
+    "CourierPort",
+    "DeliveryCommands",
+    "DeliveryPort",
+    "DeliveryQueries"
+   ],
+   "5": [
+    "GameAccountCommands",
+    "GameAccountPort",
+    "GameAccountQueries"
+   ],
+   "6": [
+    "BlockPort",
+    "ChatCommands",
+    "NotificationPort",
+    "Notifier"
+   ],
+   "7": [
+    "ConfigPort",
+    "DisputeCommands",
+    "ReportCommands",
+    "SanctionPort",
+    "TrustQuery"
+   ]
+  },
+  "required": [
+   [
+    4,
+    "IdentityQuery",
+    1
+   ],
+   [
+    4,
+    "AuditService",
+    1
+   ],
+   [
+    4,
+    "RateLimiter",
+    1
+   ],
+   [
+    4,
+    "IdentityCrypto",
+    1
+   ],
+   [
+    4,
+    "OrdersPort",
+    2
+   ],
+   [
+    4,
+    "EscrowCommands",
+    2
+   ],
+   [
+    4,
+    "ListingsQueries",
+    3
+   ],
+   [
+    5,
+    "IdentityQuery",
+    1
+   ],
+   [
+    5,
+    "AuditService",
+    1
+   ],
+   [
+    5,
+    "FileVault",
+    1
+   ],
+   [
+    5,
+    "OrdersPort",
+    2
+   ],
+   [
+    5,
+    "EscrowCommands",
+    2
+   ],
+   [
+    5,
+    "ListingsCommands",
+    3
+   ],
+   [
+    5,
+    "DisputeCommands",
+    7
+   ],
+   [
+    6,
+    "IdentityQuery",
+    1
+   ],
+   [
+    6,
+    "FileVault",
+    1
+   ],
+   [
+    6,
+    "ListingsQueries",
+    3
+   ],
+   [
+    6,
+    "AuctionQuery",
+    3
+   ],
+   [
+    6,
+    "ReportCommands",
+    7
+   ],
+   [
+    7,
+    "IdentityCommands",
+    1
+   ],
+   [
+    7,
+    "ApprovalService",
+    1
+   ],
+   [
+    7,
+    "AuditService",
+    1
+   ],
+   [
+    7,
+    "StaffQuery",
+    1
+   ],
+   [
+    7,
+    "FileVault",
+    1
+   ],
+   [
+    7,
+    "OrdersPort",
+    2
+   ],
+   [
+    7,
+    "EscrowQuery",
+    2
+   ],
+   [
+    7,
+    "EscrowCommands",
+    2
+   ],
+   [
+    7,
+    "ListingsCommands",
+    3
+   ],
+   [
+    7,
+    "DeliveryQueries",
+    4
+   ],
+   [
+    7,
+    "DeliveryCommands",
+    4
+   ],
+   [
+    7,
+    "GameAccountQueries",
+    5
+   ],
+   [
+    7,
+    "ChatCommands",
+    6
+   ],
+   [
+    7,
+    "Notifier",
+    6
+   ]
+  ],
+  "missing": []
+ }
+}
