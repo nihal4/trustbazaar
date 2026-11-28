@@ -203,17 +203,13 @@
 .select {
   min-height: 46px;
   font: inherit;
-  width: 100%;
   box-sizing: border-box;
-  max-width: 34rem;
   padding: 0 var(--tb-space-1);
   border: 0;
   border-bottom: 1px solid var(--tb-border);
   border-radius: 0;
   background: none;
   color: var(--tb-text);
-}
-.select {
   width: auto;
   max-width: 18rem;
 }

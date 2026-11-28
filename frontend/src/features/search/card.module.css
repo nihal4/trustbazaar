@@ -22,11 +22,6 @@
   line-height: 1.35;
   font-weight: 600;
 }
-.clock {
-  left: 8px;
-  color: var(--tb-white);
-  font-variant-numeric: tabular-nums;
-}
 .clock i {
   margin-top: 0.4em;
   flex: none;
@@ -103,6 +98,9 @@
 }
 /* the time left is never cut off: on a narrow card, or in Bangla, it wraps onto a second line inside its box */
 .clock {
+  left: 8px;
+  color: var(--tb-white);
+  font-variant-numeric: tabular-nums;
   align-items: flex-start;
   background: var(--tb-ink);
 }
